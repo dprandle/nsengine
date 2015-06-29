@@ -1,0 +1,102 @@
+/*! 
+	\file nsresource.h
+	
+	\brief Header file for NSResource class
+
+	This file contains all of the neccessary declarations for the NSResource class.
+
+	\author Daniel Randle
+	\date November 23 2013
+	\copywrite Earth Banana Games 2013
+*/
+#ifndef NSRESOURCE_H
+#define NSRESOURCE_H
+
+#include <nsglobal.h>
+#include <nsmath.h>
+#include <nspupper.h>
+
+class NSResource
+{
+public:
+	friend class NSResManager;
+
+	NSResource();
+	virtual ~NSResource();
+
+	virtual void init() = 0;
+
+	const nsstring & extension() const;
+
+	const nsstring & name() const;
+
+	nsuint plugid() const;
+
+	nsuint id() const;
+
+	const nsstring & subDir() const;
+
+	/*!
+	Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
+	\return Map of resource ID to resource type containing all other used resources (doesn't include this resource)
+	*/
+	virtual uivec2array resources();
+
+	/*!
+	Gets whether there has been a change since saving - each resource should change the state of
+	this to indicate that the contents of the resource should be saved to file
+	\return void
+	*/
+	nsbool changed() const;
+
+	const nsstring & iconPath();
+
+	const uivec2 & iconTexID();
+
+	/*!
+	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
+	is then it will update the handle
+	*/
+	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+
+	virtual void pup(NSFilePUPer * p) = 0;
+
+	nsbool owned() { return mOwned; }
+
+	/*!
+	Set the state of the resoure to has or has not changed since last save. Use this to keep track
+	of whether or not we need to save changes.
+	\return void
+	\param pChanged The new value for changed
+	*/
+	void setChanged(const nsbool & pChanged);
+
+	void setExtension( const nsstring & pExt);
+
+	void rename(const nsstring & pResName);
+
+	uivec2 fullid();
+
+	void setIconPath(const nsstring & pIconPath);
+
+	void setIconTexID(const uivec2 & texID);
+
+	void setSubDir(const nsstring & pDir);
+
+	virtual nsstring typeString() = 0;
+
+	virtual nsstring managerTypeString() = 0;
+
+protected:
+	nsstring mIconPath;
+	uivec2 mIconTexID;
+	nsstring mName;
+	nsstring mSubDir;
+	nsstring mExtension;
+	nsuint mID;
+	nsuint mPlugID;
+	nsbool mChanged; //!< Has the resource been edited since last save
+	nsbool mOwned;
+};
+
+#endif
