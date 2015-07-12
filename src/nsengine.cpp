@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the NSEngine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsfileos.h>
 #include <nsglobal.h>
 #include <nsengine.h>
 #include <nsrendersystem.h>
@@ -185,29 +186,44 @@ NSPlugin * NSEngine::loadPlugin(const nsstring & fname, bool appendDirs)
 	return current()->plugins->load<NSPlugin>(fname, appendDirs);
 }
 
-bool NSEngine::save()
+void NSEngine::save(NSSaveResCallback * scallback)
 {
-	return current()->plugins->save(true);
+	current()->plugins->save(true, scallback);
+	auto plugiter = current()->plugins->begin();
+	while (plugiter != current()->plugins->end())
+	{
+		NSPlugin * plg = plugin(plugiter->first);
+		plg->save(scallback);
+		++plugiter;
+	}
 }
 
-bool NSEngine::save(const nsstring & plugname)
+bool NSEngine::save(const nsstring & plugname, NSSaveResCallback * scallback)
 {
-	return current()->plugins->save(plugname);
+	NSPlugin * plug = plugin(plugname);
+	return save(plug, scallback);
 }
 
-bool NSEngine::save(nsuint plugid)
+bool NSEngine::save(nsuint plugid, NSSaveResCallback * scallback)
 {
-	return current()->plugins->save(plugid);
+	NSPlugin * plug = plugin(plugid);
+	return save(plug, scallback);
 }
 
-bool NSEngine::save(NSPlugin * plugtosave)
+bool NSEngine::save(NSPlugin * plugtosave, NSSaveResCallback * scallback)
 {
-	return current()->plugins->save(plugtosave);
+	if (plugtosave == NULL)
+		return false;
+	
+	bool ret = current()->plugins->save(plugtosave);
+	if (ret)
+		plugtosave->save(scallback);
+	return ret;
 }
 
-bool NSEngine::savecore()
+void NSEngine::savecore(NSSaveResCallback * scallback)
 {
-	return engplug()->save();
+	engplug()->save(scallback);
 }
 
 bool NSEngine::delFactory(const nsstring & objtype)
@@ -308,6 +324,21 @@ NSSystem * NSEngine::system(const nsstring & pTypeName)
 	if (iter == cont->systems->end())
 		return NULL;
 	return iter->second;
+}
+
+bool NSEngine::resourceChanged(NSResource * res)
+{
+	if (res->plugid() == 0)
+		return plugins()->changed(res);
+	else if (res->plugid() == engplug()->id())
+		return false;
+	else
+	{
+		NSPlugin * plg = plugin(res->plugid());
+		if (plg == NULL)
+			return false;
+		return plg->resourceChanged(res);
+	}
 }
 
 const nsstring & NSEngine::resourceDirectory()
@@ -506,16 +537,19 @@ void NSEngine::start()
 		return;
 	}
 	srand(static_cast <unsigned> (time(0)));
-	int i = ilInit();
-	i = iluInit();
-	i = ilutInit();
+    ilInit();
+	iluInit();
+	ilutInit();
 
-	setResourceDir(DEFAULT_RESOURCE_DIR);
-	setImportDir(DEFAULT_IMPORT_DIR);
-	setPluginDirectory(LOCAL_PLUGIN_DIR_DEFAULT);
+	nsstring cwd = nsfileio::cwd() + nsstring("/");
+	
+	setResourceDir(cwd + nsstring(DEFAULT_RESOURCE_DIR));
+	setImportDir(cwd + nsstring(DEFAULT_IMPORT_DIR));
+	setPluginDirectory(cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
+
 	engplug()->init();
 	engplug()->bind();
-	engplug()->setResourceDirectory("core/");
+	engplug()->setResourceDirectory(cwd + nsstring("core/"));
 	engplug()->addNameToResPath(false);
 	loadInput(DEFAULT_ENGINE_INPUT, 0);
 	mInput->pushContext(DEFAULT_INPUT_CONTEXT);
@@ -605,8 +639,8 @@ void NSEngine::update()
 	mt.lock();
 	mTimer->update();
 	
-	while (mTimer->lag() >= mTimer->fixed())
-	{
+//	while (mTimer->lag() >= mTimer->fixed())
+//	{
 		// Go through each system and update
 		auto sysUpdateIter = mSystemUpdateOrder.begin();
 		while (sysUpdateIter != mSystemUpdateOrder.end())
@@ -615,8 +649,8 @@ void NSEngine::update()
 			sys->update();
 			++sysUpdateIter;
 		}
-		mTimer->lag() -= mTimer->fixed();
-	}
+//		mTimer->lag() -= mTimer->fixed();
+//	}
 
 	// Go through each system and draw
 	auto sysDrawIter = mSystemDrawOrder.begin();

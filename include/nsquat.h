@@ -371,9 +371,9 @@ struct NSQuat
 		T iz = w * rhs.z + x * rhs.y - y * rhs.x;
 		T iw = -x * rhs.x - y * rhs.y - z * rhs.z;
 		// vec3 * inverse(quat)
-		ret.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-		ret.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-		ret.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+		ret.x = ix * w + iw * -x + iy * -z - iz * -y;
+		ret.y = iy * w + iw * -y + iz * -x - ix * -z;
+		ret.z = iz * w + iw * -z + ix * -y - iy * -x;
 		return ret;
 	}
 

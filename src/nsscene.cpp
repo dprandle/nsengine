@@ -57,7 +57,6 @@ void NSScene::clear()
 	}
 
 	mUnloaded.clear();
-	mChanged = true;
 }
 
 /*!
@@ -113,8 +112,7 @@ nsuint NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 			return -1;
 		}
 	}
-
-	mChanged = true;
+	
 	// Adding transform will never fail unless out of memory
 
 	nsuint index = tComp->add(t);
@@ -198,7 +196,6 @@ nsuint NSScene::addGridded(
 		pEnt->del<NSTFormComp>();
 		return false;
 	}
-	mChanged = true;
 	return true;
 }
 
@@ -214,7 +211,6 @@ void NSScene::changeMaxPlayers(nsint pAmount)
 	}
 
 	mMaxPlayers += pAmount;
-	mChanged = true;
 }
 
 void NSScene::enableShowBit(nsbool pEnable)
@@ -343,7 +339,6 @@ void NSScene::hideLayer(nsint pLayer, nsbool pHide)
 				if (ent != NULL)
 				{
 					ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
-					mChanged = true;
 				}
 			}
 		}
@@ -368,7 +363,6 @@ void NSScene::hideLayersAbove(nsint pBaseLayer, nsbool pHide)
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
-						mChanged = true;
 					}
 				}
 			}
@@ -388,7 +382,6 @@ void NSScene::hideLayersAbove(nsint pBaseLayer, nsbool pHide)
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, !pHide, id.z);
-						mChanged = true;
 					}
 				}
 			}
@@ -414,7 +407,6 @@ void NSScene::hideLayersBelow(nsint pTopLayer, nsbool pHide)
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
-						mChanged = true;
 					}
 				}
 			}
@@ -434,7 +426,6 @@ void NSScene::hideLayersBelow(nsint pTopLayer, nsbool pHide)
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, !pHide, id.z);
-						mChanged = true;
 					}
 				}
 			}
@@ -552,7 +543,6 @@ nsbool NSScene::remove(NSEntity * entity, nsuint tformid)
 			mCamID = 0;
 	}
 	
-	mChanged = ret;
 	return ret;
 }
 
@@ -591,13 +581,11 @@ nsbool NSScene::remove(NSEntity * ent)
 void NSScene::setBackgroundColor(const fvec3 & pBackgroundColor)
 {
 	mBackgroundColor = pBackgroundColor;
-	mChanged = true;
 }
 
 void NSScene::setCreator(const nsstring & pCreator)
 {
 	mCreator = pCreator;
-	mChanged = true;
 }
 
 
@@ -615,7 +603,6 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 		camtf->enableParent(true);
 		mCamID = uivec2(cam->plugid(),cam->id());
 		dprint("NSScene::setCamera - Map \"" + mName + "\"'s camera set to \"" + cam->name() + "\"");
-		mChanged = true;
 	}
 	else
 	{
@@ -626,7 +613,6 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 			if (add(cam->plugid(),cam->id()) != -1) // -1 indicates failure
 			{
 				setCamera(cam);
-				mChanged = true;
 			}
 			else
 				dprint("NSScene::setCamera - Camera " + cam->name() + " could not be loaded in to the scene");
@@ -642,13 +628,11 @@ void NSScene::setMaxPlayers(nsuint pMaxPlayers)
 		return;
 	}
 	mMaxPlayers = pMaxPlayers;
-	mChanged = true;
 }
 
 void NSScene::setNotes(const nsstring & pNotes)
 {
 	mNotes = pNotes;
-	mChanged = true;
 }
 
 void NSScene::setSkydome(NSEntity * skydome, bool addToSceneIfNeeded)
@@ -662,7 +646,6 @@ void NSScene::setSkydome(NSEntity * skydome, bool addToSceneIfNeeded)
 	{
 		mSkydomeID = uivec2(skydome->plugid(), skydome->id());
 		dprint("NSScene::setSkydome - Map \"" + mName + "\"'s skydome set to \"" + skydome->name() + "\"");
-		mChanged = true;
 	}
 	else
 	{
@@ -672,7 +655,6 @@ void NSScene::setSkydome(NSEntity * skydome, bool addToSceneIfNeeded)
 			{
 				setSkydome(skydome);
 				dprint("NSScene::setSkydome - Map \"" + mName + "\"'s skydome set to \"" + skydome->name() + "\"");
-				mChanged = true;
 			}
 		}
 	}

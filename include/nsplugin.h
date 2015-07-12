@@ -26,6 +26,10 @@ public:
 	friend void pup(PUPer & p, NSPlugin & plug);
 
 	typedef std::unordered_map<nsstring, NSResManager*> ManagerMap;
+
+	// This is manager type string to pair(resource typestring, resource name)
+	// Sometimes managers can manage an abstract type - NSTexture for example - which
+	// means the resource type string must also be included so we can get the right factory
 	typedef std::unordered_multimap<nsstring, std::pair<std::string, std::string>> ResTypeMap;
 
 	enum Tile_t
@@ -176,6 +180,8 @@ public:
 		return manager(managerType)->get<NSResource>(name);
 	}
 
+	bool resourceChanged(NSResource * res);
+
 	template<class ManagerType>
 	ManagerType * manager()
 	{
@@ -268,7 +274,7 @@ public:
 		return rm->save();
 	}
 
-	nsbool save();
+	void save( NSSaveResCallback * scallback = NULL);
 
 	void setCreator(const nsstring & pCreator);
 

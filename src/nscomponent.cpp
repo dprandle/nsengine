@@ -42,6 +42,11 @@ void NSComponent::postUpdate(bool pUpdate)
 	mUpdate = pUpdate;
 }
 
+void NSComponent::nameChange(const uivec2 & oldid, const uivec2 newid)
+{
+	// do nothing
+}
+
 NSComponent & NSComponent::operator=(const NSComponent & pRHSComp)
 {
 	copy(&pRHSComp);

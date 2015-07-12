@@ -16,6 +16,9 @@
 #include <nsglobal.h>
 #include <nsresource.h>
 #include <unordered_map>
+#include <nscallback.h>
+#include <nsfileos.h>
+#include <hash/sha256.h>
 
 class NSResManager
 {
@@ -36,6 +39,32 @@ public:
 
 	MapType::iterator begin();
 
+	template<class T>
+	nsbool changed(const T & resource, nsstring fname="")
+	{
+		NSResource * res = get(resource);
+		if (res == NULL)
+			return false;
+
+		if (fname == "")
+			fname = mResourceDirectory + mLocalDirectory + res->subDir() + res->name() + res->extension();
+
+		saveAs(res, ".tmp");
+
+		nschararray v1, v2;
+		nsfileio::read(".tmp",&v1);
+		nsfileio::read(fname, &v2);
+
+		if (v1.empty() || v2.empty())
+			return true;
+
+		SHA256 sha256;
+		std::string s1 = sha256(&v1[0], v1.size());
+		std::string s2 = sha256(&v2[0], v2.size());
+		nsfileio::remove_file(".tmp");
+		return (s1 != s2);
+	}
+	
 	bool contains(nsuint pResourceID);
 
 	bool contains(const nsstring & pResourceName);
@@ -112,13 +141,26 @@ public:
 	*/
 	virtual bool rename(const nsstring & oldName, const nsstring & newName);
 
-	virtual bool save(bool pAppendDirectories=true);
+	template<class T>
+	bool saveAs(const T & resource, const nsstring & filename, bool appenddirs = false)
+	{
+		NSResource * res = get(resource);
+		if (res == NULL)
+			return false;
+		nsstring origName = res->name();
+		res->rename(nameFromFilename(filename));
+		bool success = save(filename, appenddirs);
+		res->rename(origName);
+		return success;
+	}
+
+	virtual void save(bool pAppendDirectories=true, NSSaveResCallback * scallback = NULL);
 
 	virtual bool save(const nsstring & resName, bool pAppendDirectories=true);
 
-	bool save(nsuint resid);
+	bool save(nsuint resid, bool pAppendDirectories=true);
 
-	bool save(NSResource * res);
+	bool save(NSResource * res, bool pAppendDirectories=true);
 
 	void setPlugID(nsuint plugid);
 	

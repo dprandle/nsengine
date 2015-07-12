@@ -465,7 +465,8 @@ struct NSVec3
 
 	NSVec3<T> & projectOnPlane(const NSVec3<T> & planeNormal)
 	{
-		NSVec3<T> aonb(*this).projectOn(planeNormal);
+		NSVec3<T> aonb(*this);
+		aonb.projectOn(planeNormal);
 		(*this) -= aonb;
 		return *this;
 	}

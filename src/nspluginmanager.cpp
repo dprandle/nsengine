@@ -68,19 +68,6 @@ const nsstring & NSPluginManager::resourceDirectory()
 	return mResourceDirForOwnedPlugs;
 }
 
-bool NSPluginManager::save(const nsstring & resName, bool pAppendDirectories)
-{
-	NSPlugin * plug = NULL;
-	if (!pAppendDirectories)
-		plug = get(nameFromFilename(resName));
-	else
-		plug = get(resName);
-	if (plug == NULL)
-		return false;
-	plug->save();
-	return NSResManager::save(resName, pAppendDirectories);
-}
-
 NSPlugin * NSPluginManager::active()
 {
 	return get(mActivePlugin);

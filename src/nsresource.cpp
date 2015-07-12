@@ -22,7 +22,6 @@ mName(),
 mSubDir(),
 mID(0),
 mPlugID(0),
-mChanged(true),
 mOwned(false)
 {}
 
@@ -90,11 +89,6 @@ uivec2array  NSResource::resources()
 	return uivec2array();
 }
 
-nsbool NSResource::changed() const
-{
-	return mChanged;
-}
-
 /*!
 This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
 is then it will update the handle
@@ -102,11 +96,6 @@ is then it will update the handle
 void NSResource::nameChange(const uivec2 & oldid, const uivec2 newid)
 {
 	// do nothing
-}
-
-void NSResource::setChanged(const nsbool & pChanged)
-{
-	mChanged = pChanged;
 }
 
 void NSResource::setExtension(const nsstring & pExt)

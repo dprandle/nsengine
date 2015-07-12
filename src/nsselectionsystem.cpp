@@ -40,16 +40,20 @@ Need to fix the bug where when holding z in build mode and clicking to select is
 
 
 NSSelectionSystem::NSSelectionSystem() :
-mFocusEnt(),
-mPickPos(),
-mSelectedEnts(),
-selShader(NULL),
-mCachedPoint(),
-mMoving(false),
-mLayerMode(false),
-mLayer(0),
-mCachedLPoint(),
-NSSystem()
+	mFocusEnt(),
+	mPickPos(),
+	mSelectedEnts(),
+	selShader(NULL),
+	mCachedPoint(),
+	mMoving(false),
+	mLayerMode(false),
+	mLayer(0),
+	mCachedLPoint(),
+	drawOcc(false),
+	finalBuf(0),
+	pickBuf(0),
+	trans(),
+	NSSystem()
 {}
 
 NSSelectionSystem::~NSSelectionSystem()
@@ -819,8 +823,6 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, nsbool pPressed, const uivec3 
 			{
 				fvec3 pos = ent->get<NSTFormComp>()->wpos(mFocusEnt.z);
 				scene->grid().snap(pos);
-				if (mCachedPoint != pos)
-					scene->setChanged(true);
 				addToGrid();
 			}
 
@@ -878,7 +880,8 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 				fvec3 pos = tForm->lpos(mFocusEnt.z) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				uivec3 refid = scene->refid(pos);
 				NSEntity * selEnt = nsengine.resource<NSEntity>(refid.x, refid.y);
-
+				if (selEnt == NULL)
+					continue;
 				NSSelComp * selComp = selEnt->get<NSSelComp>();
 				if (selComp == NULL)
 					continue;

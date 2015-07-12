@@ -350,33 +350,36 @@ bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
 	return (ret == 0);
 }
 
-bool NSResManager::save(bool pAppendDirectories)
+void NSResManager::save(bool pAppendDirectories, NSSaveResCallback * scallback)
 {
 	// Iterate through resources
 	MapType::iterator iter = mIDResourceMap.begin();
-	bool ret = true;
-
 	while (iter != mIDResourceMap.end())
 	{
 		// Save the current iterated resource to file
-		ret = save(iter->second->name(), true) || ret;
+		bool success = save(iter->second->name(), pAppendDirectories);
+		if (scallback != NULL)
+		{
+			scallback->saved = success;
+			scallback->resid = iter->second->fullid();
+			scallback->run();
+		}
 		++iter;
 	}
-	return ret;
 }
 
-bool NSResManager::save(nsuint resid)
+bool NSResManager::save(nsuint resid, bool pAppendDirectories)
 {
 	NSResource * res = get(resid);
 	if (res == NULL)
 		return false;
 
-	return save(res->name(), true);
+	return save(res->name(), pAppendDirectories);
 }
 
-bool NSResManager::save(NSResource * res)
+bool NSResManager::save(NSResource * res, bool pAppendDirectories)
 {
-	return save(res->name(), true);
+	return save(res->name(), pAppendDirectories);
 }
 
 bool NSResManager::save(const nsstring & resName, bool pAppendDirectories)

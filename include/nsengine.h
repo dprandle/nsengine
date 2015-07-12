@@ -351,15 +351,15 @@ public:
 		return plug->load<ResType>(fileName, appendDirs);
 	}
 
-	bool save();
+	void save(NSSaveResCallback * scallback=NULL);
 
-	bool save(const nsstring & plugname);
+	bool save(const nsstring & plugname, NSSaveResCallback * scallback=NULL);
 
-	bool save(nsuint plugid);
+	bool save(nsuint plugid, NSSaveResCallback * scallback=NULL);
 
-	bool save(NSPlugin * plugtosave);
+	bool save(NSPlugin * plugtosave, NSSaveResCallback * scallback=NULL);
 
-	bool savecore();
+	void savecore(NSSaveResCallback * scallback=NULL);
 
 	void setPluginDirectory(const nsstring & plugdir);
 
@@ -467,6 +467,8 @@ public:
 
 		return plug->resource<ResType>(res);
 	}
+
+	bool resourceChanged(NSResource * res);
 
 	/*!
 	Overload of Propagate name change

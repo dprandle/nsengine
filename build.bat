@@ -1,8 +1,10 @@
 @echo off
+cd "f:/Users/DreamInColor/My Documents/EmacsProjects/nsengine"
 if "%2" == "/c" (
    rm -r build
+   mkdir build
 )
-mkdir build
+
 cd build
 SET libname=nsengine.lib
 call "F:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall"

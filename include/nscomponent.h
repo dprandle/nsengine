@@ -37,7 +37,7 @@ public:
 
 	virtual void init()=0;
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid) {}
+	virtual void nameChange(const uivec2 &, const uivec2);
 
 	/*!
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.

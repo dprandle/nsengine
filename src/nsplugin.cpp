@@ -736,6 +736,8 @@ const nsstring & NSPlugin::creationDate()
 
 const nsstringset & NSPlugin::parents()
 {
+	if (mBound)
+		_updateParents();
 	return mParents;
 }
 
@@ -744,8 +746,6 @@ nsbool NSPlugin::bind()
 	if (!parentsLoaded())
 		return false;
 
-	mParents.clear();
-	
 	auto liter = resmap.begin();
 	while (liter != resmap.end())
 	{
@@ -756,7 +756,6 @@ nsbool NSPlugin::bind()
 		++liter;
 	}
 
-	resmap.clear();
 	return (mBound = true);
 }
 
@@ -770,34 +769,26 @@ nsbool NSPlugin::unbind()
 	return !mBound;
 }
 
-nsbool NSPlugin::save()
+void NSPlugin::save( NSSaveResCallback * scallback)
 {
-	bool ret = true;
 	auto iter = mManagers.begin();
 	while (iter != mManagers.end())
 	{
-		ret = iter->second->save(true) && ret;
+		iter->second->save(true,scallback);
 		++iter;
 	}
-	return ret;
 }
 
 nsstring NSPlugin::details()
 {
-	if (!mBound)
-		return "";
-
+	if (mBound)
+		_updateResMap();
+	
 	nsstring ret;
-	auto iter = mManagers.begin();
-	while (iter != mManagers.end())
+	auto iter = resmap.begin();
+	while (iter != resmap.end())
 	{
-		auto iter2 = iter->second->begin();
-		while (iter2 != iter->second->end())
-		{
-			ret += iter2->second->name();
-			ret += "\n";
-			++iter2;
-		}
+		ret += iter->second.second + "\n";
 		++iter;
 	}
 	return ret;
@@ -844,16 +835,17 @@ const nsstring & NSPlugin::resourceDirectory()
 	return mResDir;
 }
 
+bool NSPlugin::resourceChanged(NSResource * res)
+{
+	NSResManager * rm = manager(res->managerTypeString());
+	return rm->changed(res);
+}
+
 nsuint NSPlugin::resourceCount()
 {
-	nsuint count = 0;
-	auto iter = mManagers.begin();
-	while (iter != mManagers.end())
-	{
-		count += iter->second->count();
-		++iter;
-	}
-	return count;
+	if (mBound)
+		_updateResMap();
+	return resmap.size();
 }
 
 bool NSPlugin::unload(NSResource * res)
@@ -926,7 +918,7 @@ void NSPlugin::_updateParents()
 		if (resIter->x != mID) // if the owning plugin of this resource is not us, then add it to parents
 		{
 			NSPlugin * plug = nsengine.plugin(resIter->x);
-			if (plug != NULL)
+			if (plug != NULL && plug->id() != nsengine.engplug()->id())
 				mParents.insert(plug->name());
 		}
 		++resIter;

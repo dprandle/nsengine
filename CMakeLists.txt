@@ -39,21 +39,21 @@ add_library(nsengine STATIC ${SRC_FILES})
 
 # add libraries
 # add OpenGL
-find_library(OPENGL opengl32.lib)
-target_link_libraries(nsengine debug
-{OPENGL}
-${PROJECT_STATIC_LIB_DIR}/glew32mxsd.lib 
-${PROJECT_STATIC_LIB_DIR}/assimpsd.libz
-${PROJECT_STATIC_LIB_DIR}/DevIL.lib
-${PROJECT_STATIC_LIB_DIR}/ILU.lib
-${PROJECT_STATIC_LIB_DIR}/ILUT.lib
-)
+# find_library(OPENGL opengl32.lib)
+# target_link_libraries(nsengine debug
+# {OPENGL}
+# ${PROJECT_STATIC_LIB_DIR}/glew32mxsd.lib 
+# ${PROJECT_STATIC_LIB_DIR}/assimpsd.libz
+# ${PROJECT_STATIC_LIB_DIR}/DevIL.lib
+# ${PROJECT_STATIC_LIB_DIR}/ILU.lib
+# ${PROJECT_STATIC_LIB_DIR}/ILUT.lib
+# )
 
-target_link_libraries(nsengine optimized
-{OPENGL}
-${PROJECT_STATIC_LIB_DIR}/glew32mxs.lib
-${PROJECT_STATIC_LIB_DIR}/assimps.lib
-${PROJECT_STATIC_LIB_DIR}/DevIL.lib
-${PROJECT_STATIC_LIB_DIR}/ILU.lib
-${PROJECT_STATIC_LIB_DIR}/ILUT.lib
-)
+# target_link_libraries(nsengine optimized
+# {OPENGL}
+# ${PROJECT_STATIC_LIB_DIR}/glew32mxs.lib
+# ${PROJECT_STATIC_LIB_DIR}/assimps.lib
+# ${PROJECT_STATIC_LIB_DIR}/DevIL.lib
+# ${PROJECT_STATIC_LIB_DIR}/ILU.lib
+# ${PROJECT_STATIC_LIB_DIR}/ILUT.lib
+# )

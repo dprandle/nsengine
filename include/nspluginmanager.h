@@ -107,8 +107,6 @@ public:
 		return static_cast<NSPlugin*>(NSResManager::remove(res));
 	}
 
-	virtual bool save(const nsstring & resName, bool pAppendDirectories = true);
-
 	void setPluginDirectory(const nsstring & dir);
 
 	const nsstring & pluginDirectory();

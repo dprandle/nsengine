@@ -59,8 +59,6 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
-
-	bool changes = scene->changed();
 	
 	if (pEnable && !mEnabled)
 	{
@@ -168,7 +166,6 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 		nsengine.engplug()->unload<NSEntity>("MirrorBrush");
 		mMirrorBrush = NULL;
 	}
-	scene->setChanged(changes);
 }
 
 void NSBuildSystem::enableOverwrite(nsbool pEnable)

@@ -23,7 +23,7 @@
 #include <nstexture.h>
 #include <nsresmanager.h>
 #include <IL/il.h>
-#include <SOIL.h>
+#include <soil/SOIL.h>
 #include <IL/ilu.h>
 
 class NSTexManager : public NSResManager

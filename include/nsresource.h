@@ -42,13 +42,6 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	/*!
-	Gets whether there has been a change since saving - each resource should change the state of
-	this to indicate that the contents of the resource should be saved to file
-	\return void
-	*/
-	nsbool changed() const;
-
 	const nsstring & iconPath();
 
 	const uivec2 & iconTexID();
@@ -62,14 +55,6 @@ public:
 	virtual void pup(NSFilePUPer * p) = 0;
 
 	nsbool owned() { return mOwned; }
-
-	/*!
-	Set the state of the resoure to has or has not changed since last save. Use this to keep track
-	of whether or not we need to save changes.
-	\return void
-	\param pChanged The new value for changed
-	*/
-	void setChanged(const nsbool & pChanged);
 
 	void setExtension( const nsstring & pExt);
 
@@ -95,7 +80,6 @@ protected:
 	nsstring mExtension;
 	nsuint mID;
 	nsuint mPlugID;
-	nsbool mChanged; //!< Has the resource been edited since last save
 	nsbool mOwned;
 };
 
