@@ -205,6 +205,7 @@ Description:
 #define ENTITY_TYPESTRING "NSEntity"
 #define MATERIAL_TYPESTRING "NSMaterial"
 #define MESH_TYPESTRING "NSMesh"
+#define INPUTMAP_TYPESTRING "NSInputMap"
 #define TEX1D_TYPESTRING "NSTex1D"
 #define TEX1DARRAY_TYPESTRING "NSTex1DArray"
 #define TEX2D_TYPESTRING "NSTex2D"
@@ -250,6 +251,7 @@ Description:
 #define SHADER_MANAGER_TYPESTRING "NSShaderManager"
 #define SCENE_MANAGER_TYPESTRING "NSSceneManager"
 #define PLUGIN_MANAGER_TYPESTRING "NSPluginManager"
+#define INPUTMAP_MANAGER_TYPESTRING "NSInputMapManager"
 
 // Component Typenames
 #define ANIM_COMP_TYPESTRING "NSAnimComp"

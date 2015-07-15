@@ -449,8 +449,10 @@ public:
 	template<class T>
 	bool unloadPlugin(const T & name)
 	{
-		return current()->plugins->unload(name);
+		return unloadPlugin(plugin(name));
 	}
+
+	bool unloadPlugin(NSPlugin * plug);
 
 	template<class ResType>
 	ResType * resource(const uivec2 & resID)

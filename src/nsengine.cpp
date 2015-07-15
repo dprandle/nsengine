@@ -23,6 +23,8 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsmatmanager.h>
 #include <nseventhandler.h>
 #include <nsshadermanager.h>
+#include <nsinputmapmanager.h>
+
 #include <nspupper.h>
 #include <nsscenemanager.h>
 #include <nsselcomp.h>
@@ -462,9 +464,9 @@ nsuint NSEngine::createContext(bool add)
 	auto iter = mContexts.emplace(id, new GLContext());
 	if (!iter.second)
 		return -1;
+	mCurrentContext = id;
 	if (add)
 		_initDefaultFactories();
-	mCurrentContext = id;
 	return id++;
 }
 
@@ -792,6 +794,11 @@ nsuint NSEngine::currentid()
 	return mCurrentContext;
 }
 
+bool NSEngine::unloadPlugin(NSPlugin * plug)
+{
+	return current()->plugins->unload(plug);
+}
+
 #ifdef NSDEBUG
 NSDebug * NSEngine::debug()
 {
@@ -799,7 +806,7 @@ NSDebug * NSEngine::debug()
 }
 #endif
 
-nsbool NSEngine::delResource(NSResource * res)
+ nsbool NSEngine::delResource(NSResource * res)
 {
 	if (res == NULL)
 		return false;

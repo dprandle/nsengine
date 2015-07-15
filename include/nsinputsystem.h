@@ -40,11 +40,19 @@ public:
 	static nsstring getTypeString();
 
 private:
+
+	bool _checkKeyTriggerModifiers(const Trigger & t);
+	bool _checkMouseTriggerModifiers(const Trigger & t);
+	
 	void _eventKey(NSInputKeyEvent * pEvent);
 	void _eventMouseButton(NSInputMouseButtonEvent * pEvent);
 	void _eventMouseMove(NSInputMouseMoveEvent * pEvent);
 	void _eventMouseScroll(NSInputMouseScrollEvent * pEvent);
-
+	
+	ContextStack mContextStack;
+	NSInputMap::Modifiers mMods;
+	NSInputMap::MouseModifiers mMouseMods;
+	fvec2 mMLastPos;
 };
 
 
