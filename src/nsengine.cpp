@@ -24,7 +24,7 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nseventhandler.h>
 #include <nsshadermanager.h>
 #include <nsinputmapmanager.h>
-
+#include <nsinputmap.h>
 #include <nspupper.h>
 #include <nsscenemanager.h>
 #include <nsselcomp.h>
@@ -58,27 +58,18 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsdebug.h>
 #endif
 
-NSEngine::NSEngine():
-mTimer(new NSTimer()),
-mInput(new NSInputManager())
-#ifdef NSDEBUG
-, mDebug(new NSDebug())
-#endif
+NSEngine::NSEngine()
 {
-	mInput->setDirectory(LOCAL_INPUT_DIR_DEFAULT);
+	srand(static_cast <unsigned> (time(0)));
+    ilInit();
+	iluInit();
+	ilutInit();
 
-#ifdef NSDEBUG
-	mDebug->clearLog();
-#endif
+	cwd = nsfileio::cwd() + nsstring("/");	
 }
 
 NSEngine::~NSEngine()
 {
-	delete mTimer;
-	delete mInput;
-#ifdef NSDEBUG
-	delete mDebug;
-#endif
 }
 
 NSPlugin * NSEngine::active()
@@ -299,18 +290,13 @@ SystemMap::iterator NSEngine::endSys()
 
 NSTimer * NSEngine::timer()
 {
-	return mTimer;
-}
-
-NSInputManager * NSEngine::input()
-{
-	return mInput;
+	return current()->timer;
 }
 
 #ifdef NSDEBUG
 void NSEngine::debugPrint(const nsstring & str)
 {
-	mDebug->print(str);
+	current()->mDebug->print(str);
 }
 #endif
 
@@ -359,49 +345,6 @@ nsbool NSEngine::hasSystem(const nsstring & pTypeString)
 	return (cont->systems->find(pTypeString) != cont->systems->end());
 }
 
-bool NSEngine::loadInput(nsstring pFileName, nsuint plugid, bool prefixdir)
-{
-	NSPlugin * plug = NULL;
-	if (plugid == 0)
-		plug = engplug();
-	else
-		plug = plugin(plugid);
-
-	if (plug == NULL)
-		return false;
-
-	if (prefixdir)
-	{
-		if (plug->addingNameToResPath())
-			pFileName = plug->resourceDirectory() + plug->name() + "/" + mInput->directory() + pFileName;
-		else
-			pFileName = plug->resourceDirectory() + mInput->directory() + pFileName;
-	}
-
-	nsfstream fIn;
-	fIn.open(pFileName, std::ios::in);
-	if (!fIn.is_open())
-		return false;
-
-	NSTextFilePUPer p(fIn, PUP_IN);
-
-	nsstring rt;
-
-	pup(p, rt, "type");
-	if (rt != "inputconfig")
-	{
-		dprint("NSEngine::loadInput Attempted to load input config from file that is not of that type: " + pFileName);
-		fIn.close();
-		return false;
-	}
-
-	pup(p, *mInput);
-	
-	saveInput(pFileName, 0, false);
-	fIn.close();
-	return true;
-}
-
 NSEntity * NSEngine::loadModel(const nsstring & entname, const nsstring & fname, bool prefixWithImportDir, const nsstring & meshname, bool flipuv)
 {
 	return loadModel(active(), entname, fname, prefixWithImportDir, meshname, flipuv);
@@ -427,41 +370,10 @@ void NSEngine::nameChange(const uivec2 & oldid, const uivec2 newid)
 	plugins()->nameChange(oldid, newid);
 }
 
-bool NSEngine::saveInput(nsstring pFileName, nsuint plugid, bool prefixdir)
-{
-	NSPlugin * plug = NULL;
-	if (plugid == 0)
-		plug = engplug();
-	else
-		plug = plugin(plugid);
-
-	if (plug == NULL)
-		return false;
-
-	if (prefixdir)
-	{
-		if (plug->addingNameToResPath())
-			pFileName = plug->resourceDirectory() + plug->name() + "/" + mInput->directory() + pFileName;
-		else
-			pFileName = plug->resourceDirectory() + mInput->directory() + pFileName;
-	}
-
-	nsfstream fout;
-	fout.open(pFileName, std::ios::out);
-	if (!fout.is_open())
-		return false;
-
-	NSTextFilePUPer p(fout, PUP_OUT);
-	pup(p, nsstring("inputconfig"), "type");
-	pup(p, *mInput);
-	fout.close();
-	return true;
-}
-
 nsuint NSEngine::createContext(bool add)
 {
 	static nsuint id = 1; // forever increasing id
-	auto iter = mContexts.emplace(id, new GLContext());
+	auto iter = mContexts.emplace(id, new GLContext(id));
 	if (!iter.second)
 		return -1;
 	mCurrentContext = id;
@@ -530,6 +442,7 @@ void NSEngine::start()
 		return;
 
 	glewExperimental = TRUE;
+
 	// Initialize the glew extensions - if this fails we want a crash because there is nothing
 	// useful the program can do without these initialized
 	GLenum cont = glewInit();
@@ -538,13 +451,7 @@ void NSEngine::start()
 		NSLogFile("GLEW extensions unable to initialize");
 		return;
 	}
-	srand(static_cast <unsigned> (time(0)));
-    ilInit();
-	iluInit();
-	ilutInit();
 
-	nsstring cwd = nsfileio::cwd() + nsstring("/");
-	
 	setResourceDir(cwd + nsstring(DEFAULT_RESOURCE_DIR));
 	setImportDir(cwd + nsstring(DEFAULT_IMPORT_DIR));
 	setPluginDirectory(cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
@@ -553,15 +460,15 @@ void NSEngine::start()
 	engplug()->bind();
 	engplug()->setResourceDirectory(cwd + nsstring("core/"));
 	engplug()->addNameToResPath(false);
-	loadInput(DEFAULT_ENGINE_INPUT, 0);
-	mInput->pushContext(DEFAULT_INPUT_CONTEXT);
+
 	current()->compositeBuf = createFramebuffer();
 	_initSystems();
 	_initShaders();
 	_initMaterials();
 	_initMeshes();
 	_initEntities();
-	mTimer->start();
+	_initInputMaps();
+	timer()->start();
 }
 
 void NSEngine::shutdown()
@@ -639,9 +546,9 @@ nsbool NSEngine::unloadResource(NSResource * res)
 void NSEngine::update()
 {
 	mt.lock();
-	mTimer->update();
+	timer()->update();
 	
-//	while (mTimer->lag() >= mTimer->fixed())
+//	while (timer()->lag() >= timer()->fixed())
 //	{
 		// Go through each system and update
 		auto sysUpdateIter = mSystemUpdateOrder.begin();
@@ -651,7 +558,7 @@ void NSEngine::update()
 			sys->update();
 			++sysUpdateIter;
 		}
-//		mTimer->lag() -= mTimer->fixed();
+//		timer()->lag() -= timer()->fixed();
 //	}
 
 	// Go through each system and draw
@@ -664,6 +571,13 @@ void NSEngine::update()
 	}
 	system<NSRenderSystem>()->blitFinalFrame();
 	mt.unlock();
+}
+
+void NSEngine::_initInputMaps()
+{
+	NSInputMap * inmap = engplug()->load<NSInputMap>(DEFAULT_ENGINE_INPUT);
+	system<NSInputSystem>()->setInputMap(inmap->fullid());
+	system<NSInputSystem>()->pushContext(DEFAULT_INPUT_CONTEXT);	
 }
 
 void NSEngine::_initShaders()
@@ -776,9 +690,13 @@ void NSEngine::_initSystems()
 	system<NSParticleSystem>()->setFinalfbo(current()->compositeBuf);
 }
 
-void NSEngine::makeCurrent(nsuint cID)
+bool NSEngine::makeCurrent(nsuint cID)
 {
+	auto fIter = mContexts.find(cID);
+	if (fIter == mContexts.end())
+		return false;
 	mCurrentContext = cID;
+	return true;
 }
 
 GLContext * NSEngine::current()
@@ -802,7 +720,7 @@ bool NSEngine::unloadPlugin(NSPlugin * plug)
 #ifdef NSDEBUG
 NSDebug * NSEngine::debug()
 {
-	return mDebug;
+	return current()->mDebug;
 }
 #endif
 
@@ -868,6 +786,7 @@ void NSEngine::_initDefaultFactories()
 	createComponentFactory<NSTileBrushComp>();
 	createComponentFactory<NSTileComp>();
 	createComponentFactory<NSTerrainComp>();
+
 	createSystemFactory<NSAnimSystem>();
 	createSystemFactory<NSBuildSystem>();
 	createSystemFactory<NSCameraSystem>();
@@ -876,6 +795,7 @@ void NSEngine::_initDefaultFactories()
 	createSystemFactory<NSParticleSystem>();
 	createSystemFactory<NSRenderSystem>();
 	createSystemFactory<NSSelectionSystem>();
+	
 	createResourceFactory<NSAnimSet>();
 	createResourceFactory<NSEntity>();
 	createResourceFactory<NSMaterial>();
@@ -914,6 +834,8 @@ void NSEngine::_initDefaultFactories()
 	createResourceFactory<NSSkyboxShader>();
 	createResourceFactory<NSTransparencyShader>();
 	createResourceFactory<NSSelectionShader>();
+	createResourceFactory<NSInputMap>();
+	
 	createResourceManagerFactory<NSAnimManager>();
 	createResourceManagerFactory<NSEntityManager>();
 	createResourceManagerFactory<NSMatManager>();
@@ -921,11 +843,27 @@ void NSEngine::_initDefaultFactories()
 	createResourceManagerFactory<NSSceneManager>();
 	createResourceManagerFactory<NSShaderManager>();
 	createResourceManagerFactory<NSTexManager>();
+	createResourceManagerFactory<NSInputMapManager>();
 }
 
-GLContext::GLContext() :glewContext(new GLEWContext()), engplug(new NSPlugin()), systems(new SystemMap()), plugins(new NSPluginManager()),mEvents(new NSEventHandler()), compositeBuf(0)
+GLContext::GLContext(nsuint id) :
+	glewContext(new GLEWContext()),
+	engplug(new NSPlugin()),
+	systems(new SystemMap()),
+	plugins(new NSPluginManager()),
+	mEvents(new NSEventHandler()),
+	fbmap(),
+	timer(new NSTimer()),
+	compositeBuf(0),
+	context_id(id)
+#ifdef NSDEBUG
+	,mDebug(new NSDebug())
+#endif
 {
 	engplug->rename(ENGINE_PLUG);
+#ifdef NSDEBUG
+	mDebug->setLogFile("engine_ctxt" + std::to_string(context_id) + ".log");
+#endif
 }
 
 GLContext::~GLContext()
@@ -935,6 +873,10 @@ GLContext::~GLContext()
 	delete engplug;
 	delete mEvents;
 	delete glewContext;
+	delete timer;
+#ifdef NSDEBUG
+	delete mDebug;
+#endif
 }
 
 NSEngine & NSEngine::inst()

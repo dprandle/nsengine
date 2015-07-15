@@ -26,6 +26,7 @@ This file contains all of the neccessary definitions for the NSBuildSystem class
 #include <nsinputmanager.h>
 #include <nsentitymanager.h>
 #include <nsplugin.h>
+#include <nsinputsystem.h>
 
 NSBuildSystem::NSBuildSystem() :
 mEnabled(false),
@@ -63,7 +64,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 	if (pEnable && !mEnabled)
 	{
 		mEnabled = pEnable;
-		nsengine.input()->pushContext("BuildMode");
+		nsengine.system<NSInputSystem>()->pushContext("BuildMode");
 		nsengine.events()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
 		if (mCurrentBrushMode == Tile)
@@ -150,7 +151,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 	else if (!pEnable && mEnabled)
 	{
 		mEnabled = pEnable;
-		nsengine.input()->popContext();
+		nsengine.system<NSInputSystem>()->popContext();
 
 		if (mObjectBrush != NULL)
 		{

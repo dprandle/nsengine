@@ -133,25 +133,23 @@ class NSInputMap : public NSResource
 	struct Trigger
 	{
 		Trigger(const nsstring & pName="",
-		Key pKMod1=Key_None,
-		Key pKMod2=Key_None,
-		MouseButton pMMod1=NoButton,
-		MouseButton pMMod2=NoButton):
-		mName(pName),
-		mKModifier1(pKMod1),
-		mKModifier2(pKMod2),
-		mMModifier1(pMMod1),
-		mMModifier2(pMMod2)
+				Key pKMod1=Key_None,
+				Key pKMod2=Key_None,
+				MouseButton pMMod1=NoButton,
+				MouseButton pMMod2=NoButton):
+			mName(pName),
+			mKModifier1(pKMod1),
+			mKModifier2(pKMod2),
+			mMModifier1(pMMod1),
+			mMModifier2(pMMod2)
 		{}
 		nsstring mName;
-		// If these are non-zero only send the event if the key modifiers match the current key modifiers exactly
-		// IE if mModifier and mMouseModifier are both set to a non zero value, only send the event if there are two
-		// current key modifiers and they match mModifier and mMouseModifier in value
 		Key mKModifier1;
 		Key mKModifier2;
 		MouseButton mMModifier1;
 		MouseButton mMModifier2;
 
+		
 		const Trigger & operator=(const Trigger & pRhs)
 		{
 			mName = pRhs.mName;
@@ -200,21 +198,29 @@ class NSInputMap : public NSResource
 
 	bool addKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger);
 
-	bool addMouseTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger);
+	bool addMouseButtonTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger);
 
+	bool allowedModifier(Key mod);
+	
+	Context * context(nsstring name);
+	
 	Context * createContext(const nsstring & pName);
 
 	void removeAllowedModifier(Key pKey);
 
 	bool removeContext(const nsstring & pName);
 
+	bool removeKey(const nsstring & context_name, Key key);
+
 	bool removeKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger);
 
 	bool removeKeyTriggers(const nsstring & pContextName, const nsstring & pTriggerName);
 
-	bool removeMouseTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger);
+	bool removeMouseButton(const nsstring & context_name, MouseButton button);
+	
+	bool removeMouseButtonTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger);
 
-	bool removeMouseTriggers(const nsstring & pContextName, const nsstring & pTriggerName);
+	bool removeMouseButtonTriggers(const nsstring & pContextName, const nsstring & pTriggerName);
 
 	bool renameContext(const nsstring & pOldContextName, const nsstring & pNewContextName);
 
@@ -241,38 +247,38 @@ class NSInputMap : public NSResource
 
 
 template <class PUPer>
-void pup(PUPer & p, NSInputManager & input)
+void pup(PUPer & p, NSInputMap & input)
 {
 	pup(p, input.mContexts, "contexts");
 	pup(p, input.mAllowedModifiers, "allowedmodifiers");
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSInputManager::Key & en, const nsstring & pString)
+void pup(PUPer & p, NSInputMap::Key & en, const nsstring & pString)
 {
 	nsuint in = static_cast<nsuint>(en);
 	pup(p, in, pString);
-	en = static_cast<NSInputManager::Key>(in);
+	en = static_cast<NSInputMap::Key>(in);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSInputManager::MouseButton & en, const nsstring & pString)
+void pup(PUPer & p, NSInputMap::MouseButton & en, const nsstring & pString)
 {
 	nsuint in = static_cast<nsuint>(en);
 	pup(p, in, pString);
-	en = static_cast<NSInputManager::MouseButton>(in);
+	en = static_cast<NSInputMap::MouseButton>(in);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputManager::Context * & c, const nsstring & varName)
+void pup(PUPer & p, NSInputMap::Context * & c, const nsstring & varName)
 {
 	if (p.mode() == PUP_IN)
-		c = new NSInputManager::Context();
+		c = new NSInputMap::Context();
 	pup(p, *c, varName);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputManager::Context & c, const nsstring & varName)
+void pup(PUPer & p, NSInputMap::Context & c, const nsstring & varName)
 {
 	pup(p, c.mName, varName + ".mName");
 	pup(p, c.mKeyMap, varName + ".mKeyMap");
@@ -280,7 +286,7 @@ void pup(PUPer & p, NSInputManager::Context & c, const nsstring & varName)
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputManager::Trigger & t, const nsstring & varName)
+void pup(PUPer & p, NSInputMap::Trigger & t, const nsstring & varName)
 {
 	pup(p, t.mName, varName + ".mName");
 	pup(p, t.mKModifier1, varName + ".mKModifier1");

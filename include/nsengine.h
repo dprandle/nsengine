@@ -297,8 +297,6 @@ public:
 		return static_cast<BaseFacType*>(fIter->second);
 	}
 
-	NSInputManager * input();
-
 	NSEventHandler * events();
 
 	template<class ObjType>
@@ -364,8 +362,6 @@ public:
 	void setPluginDirectory(const nsstring & plugdir);
 
 	const nsstring & pluginDirectory();
-
-	bool loadInput(nsstring pFileName, nsuint plugid, bool prefixdir = true);
 
 	template < class ManagerType, class T>
 	ManagerType * manager(const T & plug_)
@@ -479,8 +475,6 @@ public:
 
 	const nsstring & resourceDirectory();
 
-	bool saveInput(nsstring pFileName, nsuint plugid, bool prefixdir = true);
-
 	template<class ResType, class T1, class T2>
 	nsbool saveResource(const T1 & plug_, const T2 & name)
 	{
@@ -502,7 +496,7 @@ public:
 
 	void setCurrentScene(nsuint scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	void makeCurrent(nsuint cID);
+	bool makeCurrent(nsuint cID);
 
 	const nsstring & importdir();
 
@@ -555,6 +549,7 @@ private:
 	void _initShaders();
 	void _initMaterials();
 	void _initMeshes();
+	void _initInputMaps();
 	void _initEntities();
 	void _initDefaultFactories();
 	void _removeSys(const nsstring & systype);
@@ -564,22 +559,17 @@ private:
 	SystemPriorityMap mSystemUpdateOrder;
 	SystemPriorityMap mSystemDrawOrder;
 
-	NSTimer * mTimer;
 
 	FactoryMap mFactories;
 	ContextMap mContexts;
 	nsuint mCurrentContext;
-	NSInputManager * mInput;
+	nsstring cwd;
 	std::mutex mt;
-
-#ifdef NSDEBUG
-	NSDebug * mDebug;
-#endif
 };
 
 struct GLContext
 {
-	GLContext();
+	GLContext(nsuint id);
 	~GLContext();
 	GLEWContext * glewContext;
 	NSPlugin * engplug;
@@ -587,7 +577,13 @@ struct GLContext
 	NSPluginManager * plugins;
 	NSEventHandler * mEvents;
 	FramebufferMap fbmap;
+	NSTimer * timer;
 	nsuint compositeBuf;
+	nsuint context_id;
+#ifdef NSDEBUG
+	NSDebug * mDebug;
+#endif
+	
 };
 
 #endif

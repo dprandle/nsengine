@@ -2,6 +2,7 @@
 #define NSINPUTMAP_MANAGER_H
 
 #include <nsresmanager.h>
+#include <nsinputmap.h>
 
 class NSInputMapManager : public NSResManager
 {
@@ -76,7 +77,7 @@ public:
 	
 	virtual nsstring typeString() {return getTypeString();}
 
-	static nsstring getTypeString() {return NSINPUTMAP_MANAGER_TYPESTRING;}
+	static nsstring getTypeString() {return INPUTMAP_MANAGER_TYPESTRING;}
 };
 
 #endif

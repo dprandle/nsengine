@@ -1,4 +1,4 @@
-/*!
+ /*!
 \file nslogfile.cpp
 
 \brief Definition file for NSLogFile class
