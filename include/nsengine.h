@@ -450,6 +450,20 @@ public:
 
 	bool unloadPlugin(NSPlugin * plug);
 
+	
+	template<class ObjType>
+	NSFactory * createComponentFactory()
+	{
+		NSFactory * fac = new NSCompFactoryType<ObjType>();
+		if (!addFactory<ObjType>(fac))
+		{
+			delete fac;
+			return NULL;
+		}
+		return fac;
+	}
+
+
 	template<class ResType>
 	ResType * resource(const uivec2 & resID)
 	{
@@ -585,5 +599,7 @@ struct GLContext
 #endif
 	
 };
+
+nsuint hash_id(const nsstring & str);
 
 #endif

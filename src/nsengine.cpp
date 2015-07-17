@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the NSEngine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <hash/crc32.h>
 #include <nsfileos.h>
 #include <nsglobal.h>
 #include <nsengine.h>
@@ -905,6 +906,11 @@ bool GLError(nsstring errorMessage)
 	return false;
 }
 
+nsuint hash_id(const nsstring & str)
+{
+	return crc32(str.c_str(),str.size(),0);
+}
+
 nsuint HashedStringID(const nsstring & string)
 {
 	nsuint hash = 5381;
@@ -915,3 +921,4 @@ nsuint HashedStringID(const nsstring & string)
 
 	return hash;
 }
+
