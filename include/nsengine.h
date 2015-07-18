@@ -18,6 +18,7 @@ This file contains all of the neccessary declartations for the NSEngine class.
 #include <nsplugin.h>
 #include <nsfactory.h>
 #include <mutex>
+#include <typeindex>
 
 class NSScene;
 class NSRenderSystem;
@@ -42,7 +43,9 @@ struct GLContext;
 class NSFrameBuffer;
 
 typedef std::unordered_map<nsstring, NSSystem*> SystemMap;
-typedef std::unordered_map<nsstring, NSFactory*> FactoryMap;
+typedef std::unordered_map<std::type_index, nsuint> TypeHashMap;
+typedef std::unordered_map<nsuint, nsstring> HashMap;
+typedef std::unordered_map<nsuint, NSFactory*> FactoryMap;
 typedef std::unordered_map<nsuint, GLContext*> ContextMap;
 typedef std::unordered_map<nsuint, NSFrameBuffer*> FramebufferMap;
 
@@ -96,16 +99,6 @@ public:
 	~NSEngine();
 	typedef std::map<nsfloat, nsstring> SystemPriorityMap;
 
-	template<class ObjType>
-	bool addFactory(NSFactory * fac)
-	{
-		if (fac == NULL)
-			return false;
-
-		auto it = mFactories.emplace(ObjType::getTypeString(), fac);
-		return it.second;
-	}
-
 	bool addPlugin(NSPlugin * plug);
 
 	/* Add a system to the current context */
@@ -148,54 +141,6 @@ public:
 		);
 
 	nsuint createFramebuffer();
-
-	template<class ObjType>
-	NSFactory * createResourceManagerFactory()
-	{
-		NSFactory * fac = new NSResManagerFactoryType<ObjType>();
-		if (!addFactory<ObjType>(fac))
-		{
-			delete fac;
-			return NULL;
-		}
-		return fac;
-	}
-
-	template<class ObjType>
-	NSFactory * createResourceFactory()
-	{
-		NSFactory * fac = new NSResFactoryType<ObjType>();
-		if (!addFactory<ObjType>(fac))
-		{
-			delete fac;
-			return NULL;
-		}
-		return fac;
-	}
-
-	template<class ObjType>
-	NSFactory * createSystemFactory()
-	{
-		NSFactory * fac = new NSSysFactoryType<ObjType>();
-		if (!addFactory<ObjType>(fac))
-		{
-			delete fac;
-			return NULL;
-		}
-		return fac;
-	}
-
-	template<class ObjType>
-	NSFactory * createComponentFactory()
-	{
-		NSFactory * fac = new NSCompFactoryType<ObjType>();
-		if (!addFactory<ObjType>(fac))
-		{
-			delete fac;
-			return NULL;
-		}
-		return fac;
-	}
 
 	NSPlugin * createPlugin(const nsstring & plugname, bool makeactive=true);
 
@@ -248,14 +193,6 @@ public:
 		return current()->plugins->del(name);
 	}
 
-	template<class ObjType>
-	bool delFactory()
-	{
-		return delFactory(ObjType::getTypeString());
-	}
-
-	bool delFactory(const nsstring & objtype);
-
 	bool delFramebuffer(nsuint fbid);
 
 	template<class SysType>
@@ -286,32 +223,47 @@ public:
 
 	NSPluginManager * plugins();
 
-	NSFactory * factory(const nsstring & typeString);
-
-	template<class BaseFacType>
-	BaseFacType * factory(const nsstring & typeString)
-	{
-		auto fIter = mFactories.find(typeString);
-		if (fIter == mFactories.end())
-			return NULL;
-		return static_cast<BaseFacType*>(fIter->second);
-	}
-
 	NSEventHandler * events();
-
-	template<class ObjType>
-	nsbool hasFactory()
-	{
-		auto fIter = mFactories.find(ObjType::getTypeString());
-		return (fIter != mFactories.end());
-	}
-
-	nsbool hasFactory(const nsstring & pObjType);
 
 	template<class T>
 	bool hasPlugin(const T & name)
 	{
 		return current()->plugins->contains(name);
+	}
+
+	template<class ObjType>
+	NSFactory * factory()
+	{
+		std::type_index ti = std::type_index(typeid(ObjType));
+		auto iter = mObjTypeHashes.find(ti);
+		if (iter == mObjTypeHashes.end())
+			return NULL;
+		return factory(iter->second);
+	}
+
+	NSFactory * factory(nsuint hashid);
+
+	template<class BaseFacType>
+	BaseFacType * factory(nsuint hashid)
+	{
+		return static_cast<BaseFacType*>(factory(hashid));
+	}
+
+	template<class BaseFacType>
+	BaseFacType * factory(const nsstring & guid_)
+	{
+		return factory<BaseFacType>(hash_id(guid_)) ;
+	}
+
+
+	template<class BaseFacType, class ObjType>
+	BaseFacType * factory()
+	{
+		std::type_index ti = std::type_index(typeid(ObjType));
+		auto iter = mObjTypeHashes.find(ti);
+		if (iter == mObjTypeHashes.end())
+			return NULL;
+		return static_cast<BaseFacType*>(factory(iter->second));
 	}
 
 	NSFrameBuffer * framebuffer(nsuint id);
@@ -347,6 +299,117 @@ public:
 			return NULL;
 
 		return plug->load<ResType>(fileName, appendDirs);
+	}
+
+	template<class CompType>
+	bool registerComponentType(const nsstring & guid_)
+	{
+		nsuint hashed = hash_id(guid_);
+		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		
+		if (!ret.second)
+		{
+			dprint(nsstring("registerComponentType - Could not generate unique hash from ") + guid_);
+			return false;
+		}
+
+		std::type_index ti(typeid(CompType));
+		auto check = mObjTypeHashes.emplace(ti, hashed);
+
+		if (!check.second)
+		{
+			dprint(nsstring("registerComponentType - Could not generate unique type_index from ") + ti.name());
+			return false;
+		}
+
+		return (createFactory<NSCompFactoryType<CompType>,CompType>() != NULL);		
+	}
+
+	template<class SysType>
+	bool registerSystemType(const nsstring & guid_)
+	{
+		nsuint hashed = hash_id(guid_);
+		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		
+		if (!ret.second)
+		{
+			dprint(nsstring("registerSystemType - Could not generate unique hash from ") + guid_);
+			return false;
+		}
+
+		std::type_index ti(typeid(SysType));
+		auto check = mObjTypeHashes.emplace(ti, hashed);
+
+		if (!check.second)
+		{
+			dprint(nsstring("registerSystemType - Could not generate unique type_index from ") + ti.name());
+			return false;
+		}
+
+		return (createFactory<NSSysFactoryType<SysType>,SysType>() != NULL);
+	}
+
+	template<class ResType, class ManagerType>
+	bool registerResourceType(const nsstring & guid_)
+	{
+		nsuint hashed = hash_id(guid_);
+		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		
+		if (!ret.second)
+		{
+			dprint(nsstring("registerResourceType - Could not generate unique hash from ") + guid_);
+			return false;
+		}
+
+		std::type_index ti(typeid(ResType));
+		auto check = mObjTypeHashes.emplace(ti, hashed);
+
+		if (!check.second)
+		{
+			dprint(nsstring("registerResourceType - Could not generate unique type_index from ") + ti.name());
+			return false;
+		}
+
+		std::type_index tim(typeid(ManagerType));
+		auto fiter = mObjTypeHashes.find(tim);
+
+		if (fiter == mObjTypeHashes.end())
+		{
+			dprint(nsstring("registerResourceType - Could not find hash_id for ") + tim.name() + nsstring(" - did you forget to register the manager first?"));
+			return false;
+		}
+
+
+		NSResFactoryType<ResType> * rf = createFactory<NSResFactoryType<ResType>, ResType>();
+		if (rf == NULL)
+			return false;
+		
+		rf->mManagerID = fiter->second;
+		return true;
+	}
+
+	template<class ManagerType>
+	bool registerResourceManagerType(const nsstring & guid_)
+	{
+		nsuint hashed = hash_id(guid_);
+		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		
+		if (!ret.second)
+		{
+			dprint(nsstring("registerResourceManagerType - Could not generate unique hash from ") + guid_);
+			return false;
+		}
+
+		std::type_index ti(typeid(ManagerType));
+		auto check = mObjTypeHashes.emplace(ti, hashed);
+
+		if (!check.second)
+		{
+			dprint(nsstring("registerResourceManagerType - Could not generate unique type_index from ") + ti.name());
+			return false;
+		}
+
+		return (createFactory<NSResManagerFactoryType<ManagerType>,ManagerType>() != NULL);
 	}
 
 	void save(NSSaveResCallback * scallback=NULL);
@@ -400,17 +463,6 @@ public:
 		return current()->plugins->remove<NSPlugin>(name);
 	}
 
-	NSFactory * removeFactory(const nsstring & objtype);
-
-	template<class BaseFacType>
-	BaseFacType * removeFactory(const nsstring & objtype)
-	{
-		BaseFacType * fac = factory<BaseFacType>(objtype);
-		if (fac == NULL)
-			return NULL;
-		mFactories.erase(objtype);
-		return fac;
-	}
 
 	template<class SysType>
 	SysType * removeSystem()
@@ -450,19 +502,7 @@ public:
 
 	bool unloadPlugin(NSPlugin * plug);
 
-	
-	template<class ObjType>
-	NSFactory * createComponentFactory()
-	{
-		NSFactory * fac = new NSCompFactoryType<ObjType>();
-		if (!addFactory<ObjType>(fac))
-		{
-			delete fac;
-			return NULL;
-		}
-		return fac;
-	}
-
+   
 
 	template<class ResType>
 	ResType * resource(const uivec2 & resID)
@@ -497,6 +537,8 @@ public:
 			return plug->save(name);
 		return false;
 	}
+
+	nsstring guid(nsuint hash);
 
 	void setActive(const nsstring & plugname);
 
@@ -559,6 +601,64 @@ public:
 	static NSEngine & inst();
 
 private:
+
+	template<class ObjType>
+	bool addFactory(NSFactory * fac)
+	{
+		if (fac == NULL)
+			return false;
+
+		std::type_index ti = std::type_index(typeid(ObjType));
+		auto iter = mObjTypeHashes.find(ti);
+
+		if (iter == mObjTypeHashes.end())
+			return false;
+		
+		auto it = mFactories.emplace(iter->second, fac);
+		return it.second;
+	}
+	
+	template<class BaseFacType, class ObjType>
+	BaseFacType * createFactory()
+	{
+		BaseFacType * fac = new BaseFacType;
+		if (!addFactory<ObjType>(fac))
+		{
+			delete fac;
+			return NULL;
+		}
+		return fac;
+	}
+	
+	template<class ObjType>
+	bool delFactory()
+	{
+		std::type_index ti = std::type_index(typeid(ObjType));
+		auto iter = mObjTypeHashes.find(ti);
+
+		if (iter == mObjTypeHashes.end())
+			return false;
+
+		return delFactory(iter.second);
+	}
+
+	bool delFactory(nsuint hashid);
+
+	NSFactory * removeFactory(nsuint hashid);
+	
+	template<class BaseFacType,class ObjType>
+	BaseFacType * removeFactory()
+	{
+		std::type_index ti = std::type_index(typeid(ObjType));
+		auto iter = mObjTypeHashes.find(ti);
+
+		if (iter == mObjTypeHashes.end())
+			return false;
+
+		return static_cast<BaseFacType*>(removeFactory(iter.second));
+	}
+
+
 	void _initSystems();
 	void _initShaders();
 	void _initMaterials();
@@ -573,8 +673,10 @@ private:
 	SystemPriorityMap mSystemUpdateOrder;
 	SystemPriorityMap mSystemDrawOrder;
 
-
+	TypeHashMap mObjTypeHashes;
+	HashMap mObjTypeNames;
 	FactoryMap mFactories;
+	
 	ContextMap mContexts;
 	nsuint mCurrentContext;
 	nsstring cwd;

@@ -521,9 +521,10 @@ void NSPlugin::init()
 	NSResManager * rm = NULL;
 	while (fiter != nsengine.endFac())
 	{
-		if (fiter->second->type() == NSFactory::ResManager)
+		NSFactory * plug_man_fac = nsengine.factory<NSPluginManager>();
+		if (fiter->second->type() == NSFactory::ResManager && fiter->second != plug_man_fac)
 		{
-			rm = createManager(fiter->first);
+			rm = createManager(nsengine.guid(fiter->first));
 
 			if (mAddname)
 				rm->setResourceDirectory(mResDir + mName + "/");

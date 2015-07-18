@@ -220,9 +220,9 @@ void NSEngine::savecore(NSSaveResCallback * scallback)
 	engplug()->save(scallback);
 }
 
-bool NSEngine::delFactory(const nsstring & objtype)
+bool NSEngine::delFactory(nsuint hashid)
 {
-	NSFactory * fac = removeFactory(objtype);
+	NSFactory * fac = removeFactory(hashid);
 	if (fac == NULL)
 		return false;
 	delete fac;
@@ -333,11 +333,6 @@ bool NSEngine::resourceChanged(NSResource * res)
 const nsstring & NSEngine::resourceDirectory()
 {
 	return mResourceDirectory;
-}
-
-nsbool NSEngine::hasFactory(const nsstring & pObjType)
-{
-	return (mFactories.find(pObjType) != mFactories.end());
 }
 
 nsbool NSEngine::hasSystem(const nsstring & pTypeString)
@@ -519,20 +514,28 @@ NSPlugin * NSEngine::plugin(NSPlugin * plug)
 	return plugin(plug->id());
 }
 
-NSFactory * NSEngine::factory(const nsstring & typeString)
+NSFactory * NSEngine::factory(nsuint hash_id)
 {
-	auto fIter = mFactories.find(typeString);
+	auto fIter = mFactories.find(hash_id);
 	if (fIter == mFactories.end())
 		return NULL;
 	return fIter->second;
 }
 
-NSFactory * NSEngine::removeFactory(const nsstring & objtype)
+nsstring NSEngine::guid(nsuint hash)
 {
-	NSFactory * f = factory(objtype);
+	auto fiter = mObjTypeNames.find(hash);
+	if (fiter != mObjTypeNames.end())
+		return fiter->second;
+	return "";
+}
+
+NSFactory * NSEngine::removeFactory(nsuint hash_id)
+{
+	NSFactory * f = factory(hash_id);
 	if (f == NULL)
 		return NULL;
-	mFactories.erase(objtype);
+	mFactories.erase(hash_id);
 	return f;
 }
 
@@ -682,7 +685,7 @@ void NSEngine::_initSystems()
 	while (fiter != nsengine.endFac())
 	{
 		if (fiter->second->type() == NSFactory::System)
-			createSystem(fiter->first);
+			createSystem(guid(fiter->first));
 		++fiter;
 	}
 	system<NSRenderSystem>()->setFinalfbo(current()->compositeBuf);
@@ -775,76 +778,79 @@ NSResource * NSEngine::removeResource(NSResource * res)
 
 void NSEngine::_initDefaultFactories()
 {
-	createComponentFactory<NSAnimComp>();
-	createComponentFactory<NSCamComp>();
-	createComponentFactory<NSInputComp>();
-	createComponentFactory<NSLightComp>();
-	createComponentFactory<NSOccupyComp>();
-	createComponentFactory<NSParticleComp>();
-	createComponentFactory<NSRenderComp>();
-	createComponentFactory<NSSelComp>();
-	createComponentFactory<NSTFormComp>();
-	createComponentFactory<NSTileBrushComp>();
-	createComponentFactory<NSTileComp>();
-	createComponentFactory<NSTerrainComp>();
+	registerComponentType<NSAnimComp>("NSAnimComp");
+	registerComponentType<NSCamComp>("NSCamComp");
+	registerComponentType<NSInputComp>("NSInputComp");
+	registerComponentType<NSLightComp>("NSLightComp");
+	registerComponentType<NSOccupyComp>("NSOccupyComp");
+	registerComponentType<NSParticleComp>("NSParticleComp");
+	registerComponentType<NSRenderComp>("NSRenderComp");
+	registerComponentType<NSSelComp>("NSSelComp");
+	registerComponentType<NSTFormComp>("NSTFormComp");
+	registerComponentType<NSTileBrushComp>("NSTileBrushComp");
+	registerComponentType<NSTileComp>("NSTileComp");
+	registerComponentType<NSTerrainComp>("NSTerrainComp");
 
-	createSystemFactory<NSAnimSystem>();
-	createSystemFactory<NSBuildSystem>();
-	createSystemFactory<NSCameraSystem>();
-	createSystemFactory<NSInputSystem>();
-	createSystemFactory<NSMovementSystem>();
-	createSystemFactory<NSParticleSystem>();
-	createSystemFactory<NSRenderSystem>();
-	createSystemFactory<NSSelectionSystem>();
+	registerSystemType<NSAnimSystem>("NSAnimSystem");
+	registerSystemType<NSBuildSystem>("NSBuildSystem");
+	registerSystemType<NSCameraSystem>("NSCameraSystem");
+	registerSystemType<NSInputSystem>("NSInputSystem");
+	registerSystemType<NSMovementSystem>("NSMovementSystem");
+	registerSystemType<NSParticleSystem>("NSParticleSystem");
+	registerSystemType<NSRenderSystem>("NSRenderSystem");
+	registerSystemType<NSSelectionSystem>("NSSelectionSystem");
 	
-	createResourceFactory<NSAnimSet>();
-	createResourceFactory<NSEntity>();
-	createResourceFactory<NSMaterial>();
-	createResourceFactory<NSMesh>();
-	createResourceFactory<NSPlugin>();
-	createResourceFactory<NSScene>();
-	createResourceFactory<NSTex1D>();
-	createResourceFactory<NSTex1DArray>();
-	createResourceFactory<NSTex2D>();
-	createResourceFactory<NSTex2DArray>();
-	createResourceFactory<NSTex3D>();
-	createResourceFactory<NSTexRectangle>();
-	createResourceFactory<NSTexBuffer>();
-	createResourceFactory<NSTexCubeMap>();
-	createResourceFactory<NSTexCubeMapArray>();
-	createResourceFactory<NSTex2DMultisample>();
-	createResourceFactory<NSTex2DMultisampleArray>();
-	createResourceFactory<NSShader>();
-	createResourceFactory<NSDirLightShader>();
-	createResourceFactory<NSSpotLightShader>();
-	createResourceFactory<NSPointLightShader>();
-	createResourceFactory<NSMaterialShader>();
-	createResourceFactory<NSParticleProcessShader>();
-	createResourceFactory<NSParticleRenderShader>();
-	createResourceFactory<NSDirShadowMapShader>();
-	createResourceFactory<NSPointShadowMapShader>();
-	createResourceFactory<NSSpotShadowMapShader>();
-	createResourceFactory<NSEarlyZShader>();
-	createResourceFactory<NSDirShadowMapXFBShader>();
-	createResourceFactory<NSPointShadowMapXFBShader>();
-	createResourceFactory<NSSpotShadowMapXFBShader>();
-	createResourceFactory<NSEarlyZXFBShader>();
-	createResourceFactory<NSRenderXFBShader>();
-	createResourceFactory<NSXFBShader>();
-	createResourceFactory<NSLightStencilShader>();
-	createResourceFactory<NSSkyboxShader>();
-	createResourceFactory<NSTransparencyShader>();
-	createResourceFactory<NSSelectionShader>();
-	createResourceFactory<NSInputMap>();
 	
-	createResourceManagerFactory<NSAnimManager>();
-	createResourceManagerFactory<NSEntityManager>();
-	createResourceManagerFactory<NSMatManager>();
-	createResourceManagerFactory<NSMeshManager>();
-	createResourceManagerFactory<NSSceneManager>();
-	createResourceManagerFactory<NSShaderManager>();
-	createResourceManagerFactory<NSTexManager>();
-	createResourceManagerFactory<NSInputMapManager>();
+	registerResourceManagerType<NSAnimManager>("NSAnimManager");
+	registerResourceManagerType<NSEntityManager>("NSEntityManager");
+	registerResourceManagerType<NSMatManager>("NSMatManager");
+	registerResourceManagerType<NSMeshManager>("NSMeshManager");
+	registerResourceManagerType<NSSceneManager>("NSSceneManager");
+	registerResourceManagerType<NSShaderManager>("NSShaderManager");
+	registerResourceManagerType<NSTexManager>("NSTexManager");
+	registerResourceManagerType<NSInputMapManager>("NSInputMapManager");
+	registerResourceManagerType<NSPluginManager>("NSPluginManager");
+	
+	registerResourceType<NSAnimSet, NSAnimManager>("NSAnimSet");
+	registerResourceType<NSEntity, NSEntityManager>("NSEntity");
+	registerResourceType<NSMaterial, NSMatManager>("NSMaterial");
+	registerResourceType<NSMesh, NSMeshManager>("NSMesh");
+	registerResourceType<NSPlugin, NSPluginManager>("NSPlugin");
+	registerResourceType<NSScene, NSSceneManager>("NSScene");
+	registerResourceType<NSTex1D, NSTexManager>("NSTex1D");
+	registerResourceType<NSTex1DArray, NSTexManager>("NSTex1DArray");
+	registerResourceType<NSTex2D, NSTexManager>("NSTex2D");
+	registerResourceType<NSTex2DArray, NSTexManager>("NSTex2DArray");
+	registerResourceType<NSTex3D, NSTexManager>("NSTex3D");
+	registerResourceType<NSTexRectangle, NSTexManager>("NSTexRectangle");
+	registerResourceType<NSTexBuffer, NSTexManager>("NSTexBuffer");
+	registerResourceType<NSTexCubeMap, NSTexManager>("NSTexCubeMap");
+	registerResourceType<NSTexCubeMapArray, NSTexManager>("NSTexCubeMapArray");
+	registerResourceType<NSTex2DMultisample, NSTexManager>("NSTex2DMultisample");
+	registerResourceType<NSTex2DMultisampleArray, NSTexManager>("NSTex2DMultisampleArray");
+
+	registerResourceType<NSShader, NSShaderManager>("NSShader");
+	registerResourceType<NSDirLightShader, NSShaderManager>("NSDirLightShader");
+	registerResourceType<NSSpotLightShader, NSShaderManager>("NSSpotLightShader");
+	registerResourceType<NSPointLightShader, NSShaderManager>("NSPointLightShader");
+	registerResourceType<NSMaterialShader, NSShaderManager>("NSMaterialShader");
+	registerResourceType<NSParticleProcessShader, NSShaderManager>("NSParticleProcessShader");
+	registerResourceType<NSParticleRenderShader, NSShaderManager>("NSParticleRenderShader");
+	registerResourceType<NSDirShadowMapShader, NSShaderManager>("NSDirShadowMapShader");
+	registerResourceType<NSPointShadowMapShader, NSShaderManager>("NSPointShadowMapShader");
+	registerResourceType<NSSpotShadowMapShader, NSShaderManager>("NSSpotShadowMapShader");
+	registerResourceType<NSEarlyZShader, NSShaderManager>("NSEarlyZShader");
+	registerResourceType<NSDirShadowMapXFBShader, NSShaderManager>("NSDirShadowMapXFBShader");
+	registerResourceType<NSPointShadowMapXFBShader, NSShaderManager>("NSPointShadowMapXFBShader");
+	registerResourceType<NSSpotShadowMapXFBShader, NSShaderManager>("NSSpotShadowMapXFBShader");
+	registerResourceType<NSEarlyZXFBShader, NSShaderManager>("NSEarlyZXFBShader");
+	registerResourceType<NSRenderXFBShader, NSShaderManager>("NSRenderXFBShader");
+	registerResourceType<NSXFBShader, NSShaderManager>("NSXFBShader");
+	registerResourceType<NSLightStencilShader, NSShaderManager>("NSLightStencilShader");
+	registerResourceType<NSSkyboxShader, NSShaderManager>("NSSkyboxShader");
+	registerResourceType<NSTransparencyShader, NSShaderManager>("NSTransparencyShader");
+	registerResourceType<NSSelectionShader, NSShaderManager>("NSSelectionShader");
+	registerResourceType<NSInputMap, NSInputMapManager>("NSInputMap");
 }
 
 GLContext::GLContext(nsuint id) :

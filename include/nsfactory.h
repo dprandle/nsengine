@@ -41,9 +41,17 @@ public:
 template<class T>
 class NSResFactoryType : public NSResFactory
 {
-public:
-	NSResFactoryType() :NSResFactory() {}
+	friend class NSEngine;
+  public:
+	NSResFactoryType() :
+		mManagerID(0),
+		NSResFactory()
+	{}
+	
 	NSResource* create() { return new T(); }
+	nsuint managerID();
+  private:
+	nsuint mManagerID;
 };
 
 class NSResManagerFactory : public NSFactory
