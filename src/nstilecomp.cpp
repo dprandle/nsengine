@@ -51,8 +51,3 @@ NSTileComp & NSTileComp::operator=(const NSTileComp & pRHSComp)
 	postUpdate(true);
 	return (*this);
 }
-
-nsstring NSTileComp::getTypeString()
-{
-	return TILE_COMP_TYPESTRING;
-}

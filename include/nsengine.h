@@ -540,6 +540,10 @@ public:
 
 	nsstring guid(nsuint hash);
 
+	nsstring guid(std::type_index type);
+
+	nsuint typeID(std::type_index type);
+	
 	void setActive(const nsstring & plugname);
 
 	void setActive(NSPlugin * plug);

@@ -92,10 +92,6 @@ public:
 		postUpdate(true);
 	}
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 	NSRenderComp & operator=(const NSRenderComp & pRHSComp);
 
 private:

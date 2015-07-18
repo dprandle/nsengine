@@ -148,10 +148,6 @@ public:
 
 	void setShadowSamples(nsint pNumSamples);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 	NSLightComp & operator=(const NSLightComp & pRHSComp);
 
 private:

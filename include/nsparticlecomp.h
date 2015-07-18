@@ -237,10 +237,6 @@ public:
 
 	void swap();
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 	NSBufferObject * mFrontBuf;
 	NSBufferObject * mBackBuf;
 private:

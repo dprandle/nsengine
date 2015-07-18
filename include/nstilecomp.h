@@ -34,9 +34,6 @@ public:
 
 	NSTileComp & operator=(const NSTileComp & pRHSComp);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
 };
 
 template <class PUPer>

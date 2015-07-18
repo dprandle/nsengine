@@ -325,10 +325,6 @@ public:
 
 	void translateZ(nsfloat pAmount);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 	NSTFormComp & operator=(const NSTFormComp & pRHSComp);
 
 private:

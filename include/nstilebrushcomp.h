@@ -56,10 +56,6 @@ public:
 
 	NSTileBrushComp & operator=(const NSTileBrushComp & pRHSComp);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 private:
 	ivec2array mBrush;
 	nsint mHeight;

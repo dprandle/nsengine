@@ -253,10 +253,6 @@ public:
 
 	void translateFocus(const fvec3 & pAmount);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
-
 	NSCamComp & operator=(const NSCamComp & pRHSComp);
 
 private:

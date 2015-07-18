@@ -27,7 +27,7 @@ class NSRenderSystem;
 class NSScene : public NSResource
 {
 public:
-	typedef std::map<nsstring, nspentityset> EntitiesByComp;
+	typedef std::map<nsuint, nspentityset> EntitiesByComp;
 
 	template<class PUPer>
 	friend void pup(PUPer & p, NSScene & sc);
@@ -117,7 +117,8 @@ public:
 	template<class CompType>
 	const nspentityset & entities() const
 	{
-		auto fiter = mEntsByCompType.find(CompType::getTypeString());
+		nsuint type_id = nsengine.typeID(std::type_index(typeid(CompType)));
+		auto fiter = mEntsByCompType.find(type_id);
 		if (fiter != mEntsByCompType.end())
 			return fiter->second;
 		return dummyret;

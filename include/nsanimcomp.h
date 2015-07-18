@@ -75,10 +75,6 @@ public:
 
 	NSAnimComp & operator=(const NSAnimComp & pRHSComp);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
-
 private:
 	void _fillBoneTransform(NSMesh::NodeTree * pNodeTree, NSMesh::Node * pNode, NSAnimSet::AnimationData * pCurrentAnim, fmat4 & pParentTransform);
 

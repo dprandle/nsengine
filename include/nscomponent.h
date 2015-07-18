@@ -51,15 +51,11 @@ public:
 
 	void setOwner(NSEntity * owner);
 
-	virtual nsstring typeString() = 0;
-
 	NSComponent & operator=(const NSComponent & pRHSComp);
 
 protected:
 	NSEntity * mOwner;
 	bool mUpdate;
 };
-
-typedef NSComponent* (*CreateCompFunc)(NSEntity *);
 
 #endif

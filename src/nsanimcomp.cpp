@@ -149,11 +149,6 @@ NSAnimComp & NSAnimComp::operator=(const NSAnimComp & pRHSComp)
 	return (*this);
 }
 
-nsstring NSAnimComp::getTypeString()
-{
-	return ANIM_COMP_TYPESTRING;
-}
-
 void NSAnimComp::_fillBoneTransform(NSMesh::NodeTree * pNodeTree, NSMesh::Node * pNode, NSAnimSet::AnimationData * pCurrentAnim, fmat4 & pParentTransform)
 {
 	fmat4 globalTransform;

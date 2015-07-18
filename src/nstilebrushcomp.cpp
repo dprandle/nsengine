@@ -137,8 +137,3 @@ NSTileBrushComp & NSTileBrushComp::operator=(const NSTileBrushComp & pRHSComp)
 	postUpdate(true);
 	return (*this);
 }
-
-nsstring NSTileBrushComp::getTypeString()
-{
-	return TILEBRUSH_COMP_TYPESTRING;
-}

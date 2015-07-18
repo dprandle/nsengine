@@ -73,10 +73,6 @@ public:
 
 	NSInputComp & operator=(const NSInputComp & pRHSComp);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 private:
 	ActionMap mActions;
 };

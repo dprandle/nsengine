@@ -220,11 +220,6 @@ void NSRenderComp::setMeshID(const uivec2 & pMeshID)
 	mMeshID = pMeshID;
 }
 
-nsstring NSRenderComp::getTypeString()
-{
-	return RENDER_COMP_TYPESTRING;
-}
-
 NSRenderComp & NSRenderComp::operator=(const NSRenderComp & pRHSComp)
 {
 	mMeshID = pRHSComp.mMeshID;

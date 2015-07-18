@@ -73,10 +73,6 @@ public:
 
 	NSOccupyComp & operator=(const NSOccupyComp & pRHSComp);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 private:
 	ivec3array mSpaces;
 	uivec2 mMeshID;

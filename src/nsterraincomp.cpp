@@ -67,8 +67,3 @@ NSTerrainComp & NSTerrainComp::operator=(const NSTerrainComp & pRHSComp)
 	postUpdate(true);
 	return (*this);
 }
-
-nsstring NSTerrainComp::getTypeString()
-{
-	return TERRAIN_COMP_TYPESTRING;
-}

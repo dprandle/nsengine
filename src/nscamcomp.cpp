@@ -316,12 +316,6 @@ void NSCamComp::setStrafe(Direction pDir, bool pAnimate)
 	postUpdate(true);
 }
 
-
-nsstring NSCamComp::getTypeString()
-{
-	return CAM_COMP_TYPESTRING;
-}
-
 NSCamComp & NSCamComp::operator=(const NSCamComp & pRHSComp)
 {
 	mFlying = pRHSComp.mFlying;

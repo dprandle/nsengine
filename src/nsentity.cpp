@@ -25,8 +25,8 @@ NSEntity::NSEntity() :mComponents(), NSResource()
 
 NSEntity::NSEntity(NSEntity & toCopy) :mComponents(), NSResource()
 {
-	auto iter = toCopy.compBegin();
-	while (iter != toCopy.compEnd())
+	auto iter = toCopy.begin();
+	while (iter != toCopy.end())
 	{
 		copy(iter->second);
 		++iter;
@@ -43,7 +43,16 @@ nsbool NSEntity::add(NSComponent * pComp)
 	if (pComp == NULL)
 		return false;
 
-	auto ret = mComponents.emplace(pComp->typeString(), pComp);
+	std::type_index ti(typeid(*pComp));
+	nsuint hashed_type = nsengine.typeID(ti);
+	if (hashed_type == 0)
+	{
+		dprint(nsstring("Cannot add component with type ") + ti.name() + nsstring(" to Entity ") + mName +
+			   nsstring(": No hash_id found"));
+		return false;
+	}
+	
+	auto ret = mComponents.emplace(hashed_type, pComp);
 	if (ret.second)
 	{
 		pComp->setOwner(this);
@@ -58,14 +67,16 @@ nsbool NSEntity::copy(NSComponent * toCopy, bool overwrite)
 		return false;
 
 	NSComponent * nc = NULL;
-
-	if (has(toCopy->typeString()))
+	
+	std::type_index ti(typeid(*toCopy));
+	nsuint type_id = nsengine.typeID(ti);
+	if (has(type_id))
 	{
 		if (!overwrite)
 			return false;
 	}
 	else
-		nc = create(toCopy->typeString());
+		nc = create(type_id);
 
 	if (nc == NULL)
 		return false;
@@ -85,41 +96,51 @@ void NSEntity::clear()
 	updateScene();
 }
 
-NSEntity::CompSet::iterator NSEntity::compBegin()
+NSEntity::CompSet::iterator NSEntity::begin()
 {
 	return mComponents.begin();
 }
 
-NSEntity::CompSet::iterator NSEntity::compEnd()
+NSEntity::CompSet::iterator NSEntity::end()
 {
 	return mComponents.end();
 }
 
-NSComponent * NSEntity::create(const nsstring & compType)
+NSComponent * NSEntity::create(nsuint type_id)
 {
-	NSComponent * comp = nsengine.factory<NSCompFactory>(compType)->create();
-	if (!add(comp))
+	NSComponent * comp_t = nsengine.factory<NSCompFactory>(type_id)->create();
+	comp_t->init();
+	if (!add(comp_t))
 	{
-		dprint("NSEntity::createComponent - Failed adding comp type " + compType);
-		delete comp;
+		dprint(nsstring("NSEntity::createComponent - Failed adding comp_t type ") + nsengine.guid(type_id) +
+			   nsstring(" to Entity ") + mName);
+		delete comp_t;
 		return NULL;
 	}
-	comp->init();
-	return comp;
+	return comp_t;
 }
 
-bool NSEntity::del(const nsstring & compType)
+NSComponent * NSEntity::create(const nsstring & guid)
 {
-	auto iter = mComponents.find(compType);
-	if (iter != mComponents.end())
+	return create(hash_id(guid));
+}
+
+bool NSEntity::del(const nsstring & guid)
+{
+	return del(hash_id(guid));
+}
+
+bool NSEntity::del(nsuint type_id)
+{
+	NSComponent * cmp = remove(type_id);
+	if (cmp != NULL) // Log delete
 	{
-		delete iter->second;
-		mComponents.erase(iter);
+		delete cmp;
 		updateScene();
-		dprint("NSEntity::del - Deleting \"" + compType + "\" from Entity " + mName + "\"");
+		dprint("NSEntity::del - Deleting \"" + nsengine.guid(type_id) + "\" from Entity " + mName + "\"");
 		return true;
 	}
-	dprint("NSEntity::del - Component type \"" + compType + "\" was not part of Entity \"" + mName + "\"");
+	dprint("NSEntity::del - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + mName + "\"");
 	return false;
 }
 
@@ -137,15 +158,20 @@ void NSEntity::pup(NSFilePUPer * p)
 	}
 }
 
-nsuint NSEntity::compCount()
+nsuint NSEntity::count()
 {
 	return mComponents.size();
 }
 
-NSComponent * NSEntity::get(const nsstring & compType)
+NSComponent * NSEntity::get(const nsstring & guid)
 {
-	CompSet::iterator iter = mComponents.find(compType);
-	if (iter != mComponents.end()) // check to make sure it has the comp or else the cast could mess up memory
+	return get(hash_id(guid));
+}
+
+NSComponent * NSEntity::get(nsuint type_id)
+{
+	CompSet::iterator iter = mComponents.find(type_id);
+	if (iter != mComponents.end())
 		return iter->second;
 	return NULL;
 }
@@ -168,7 +194,7 @@ uivec2array NSEntity::resources()
 {
 	uivec2array ret;
 
-	// Go through each component and insert all used resources from each comp
+	// Go through each component and insert all used resources from each comp_t
 	auto iter = mComponents.begin();
 	while (iter != mComponents.end())
 	{
@@ -179,10 +205,14 @@ uivec2array NSEntity::resources()
 	return ret;
 }
 
-bool NSEntity::has(const nsstring & compType)
+bool NSEntity::has(const nsstring & guid)
 {
-	CompSet::iterator iter = mComponents.find(compType);
-	return (iter != mComponents.end());
+	return has(hash_id(guid));
+}
+
+bool NSEntity::has(nsuint type_id)
+{
+	return (mComponents.find(type_id) != mComponents.end());
 }
 
 void NSEntity::init()
@@ -190,22 +220,28 @@ void NSEntity::init()
 	// do nothing
 }
 
-NSComponent * NSEntity::remove(const nsstring & typeName)
+NSComponent * NSEntity::remove(nsuint type_id)
 {
-	NSComponent * comp = NULL;
-	auto iter = mComponents.find(typeName);
+	NSComponent * comp_t = NULL;
+	auto iter = mComponents.find(type_id);
 	if (iter != mComponents.end())
 	{
-		comp = iter->second;
-		comp->setOwner(NULL);
+		comp_t = iter->second;
+		comp_t->setOwner(NULL);
 		mComponents.erase(iter);
 		updateScene();
-		dprint("NSEntity::remove - Removing \"" + typeName + "\" from Entity " + mName + "\"");
+		dprint("NSEntity::remove - Removing \"" + nsengine.guid(type_id) + "\" from Entity " + mName + "\"");
 	}
 	else
-		dprint("NSEntity::remove - Component type \"" + typeName + "\" was not part of Entity \"" + mName + "\"");
+		dprint("NSEntity::remove - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + mName + "\"");
 
-	return comp;
+	return comp_t;
+	
+}
+
+NSComponent * NSEntity::remove(const nsstring & guid)
+{
+	return remove(hash_id(guid));
 }
 
 void NSEntity::postUpdateAll(nsbool pUpdate)
@@ -220,16 +256,16 @@ void NSEntity::postUpdateAll(nsbool pUpdate)
 
 void NSEntity::postUpdate(const nsstring & compType, nsbool update)
 {
-	NSComponent * comp = get(compType);
-	if (comp != NULL)
-		comp->postUpdate(update);
+	NSComponent * comp_t = get(compType);
+	if (comp_t != NULL)
+		comp_t->postUpdate(update);
 }
 
 nsbool NSEntity::updatePosted(const nsstring & compType)
 {
-	NSComponent * comp = get(compType);
-	if (comp != NULL)
-		return comp->updatePosted();
+	NSComponent * comp_t = get(compType);
+	if (comp_t != NULL)
+		return comp_t->updatePosted();
 	return false;
 }
 

@@ -176,11 +176,6 @@ nsuint NSSelComp::count()
 	return mSelection.size();
 }
 
-nsstring NSSelComp::getTypeString()
-{
-	return SEL_COMP_TYPESTRING;
-}
-
 bool NSSelComp::empty()
 {
 	return mSelection.empty();

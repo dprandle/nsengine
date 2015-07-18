@@ -344,11 +344,6 @@ NSLightComp & NSLightComp::operator=(const NSLightComp & pRHSComp)
 	return (*this);
 }
 
-nsstring NSLightComp::getTypeString()
-{
-	return LIGHT_COMP_TYPESTRING;
-}
-
 void NSLightComp::_updateMeshRadius()
 {
 	if (mLightType == Spot)

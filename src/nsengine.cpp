@@ -522,12 +522,28 @@ NSFactory * NSEngine::factory(nsuint hash_id)
 	return fIter->second;
 }
 
+nsstring NSEngine::guid(std::type_index type)
+{
+	auto fiter = mObjTypeHashes.find(type);
+	if (fiter == mObjTypeHashes.end())
+		return "";
+	return guid(fiter->second);
+}
+
 nsstring NSEngine::guid(nsuint hash)
 {
 	auto fiter = mObjTypeNames.find(hash);
 	if (fiter != mObjTypeNames.end())
 		return fiter->second;
 	return "";
+}
+
+nsuint NSEngine::typeID(std::type_index type)
+{
+	auto fiter = mObjTypeHashes.find(type);
+	if (fiter != mObjTypeHashes.end())
+		return fiter->second;
+	return 0;
 }
 
 NSFactory * NSEngine::removeFactory(nsuint hash_id)

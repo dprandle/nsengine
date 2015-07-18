@@ -693,8 +693,3 @@ void NSParticleComp::enableSimulation(bool pEnable)
 {
 	mSimulating = pEnable;
 }
-
-nsstring NSParticleComp::getTypeString()
-{
-	return PARTICLE_COMP_TYPESTRING;
-}

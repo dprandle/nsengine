@@ -40,10 +40,6 @@ public:
 
 	NSTerrainComp & operator=(const NSTerrainComp & pRHSComp);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 private:
 	fvec2 minmax;
 };

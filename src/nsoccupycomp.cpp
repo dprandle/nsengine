@@ -349,8 +349,3 @@ NSOccupyComp & NSOccupyComp::operator=(const NSOccupyComp & pRHSComp)
 	postUpdate(true);
 	return (*this);
 }
-
-nsstring NSOccupyComp::getTypeString()
-{
-	return OCCUPY_COMP_TYPESTRING;
-}

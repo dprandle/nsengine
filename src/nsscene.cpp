@@ -667,7 +667,6 @@ uivec2array & NSScene::unloaded()
 
 /*!
 Go through all entities and add only entities here that are part of the scene
-This requires that their scene ID is equal to this scenes resource ID
 */
 void NSScene::updateCompMaps(nsuint plugid, nsuint entid)
 {
@@ -678,8 +677,8 @@ void NSScene::updateCompMaps(nsuint plugid, nsuint entid)
 	if (ent->has<NSTFormComp>()) // if the entity is in the scene
 	{
 		// Insert the entity to each component type set - its okay if its already there insertion will just fail
-		auto compiter = ent->compBegin();
-		while (compiter != ent->compEnd())
+		auto compiter = ent->begin();
+		while (compiter != ent->end())
 		{
 			mEntsByCompType[compiter->first].emplace(ent);
 			++compiter;

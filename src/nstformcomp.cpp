@@ -1056,11 +1056,6 @@ NSTFormComp & NSTFormComp::operator=(const NSTFormComp & pRHSComp)
 	return (*this);
 }
 
-nsstring NSTFormComp::getTypeString()
-{
-	return TFORM_COMP_TYPESTRING;
-}
-
 void NSTFormComp::InstTrans::compute()
 {
 	mTransform.set(rotationMat3(mOrientation) % mScaling);

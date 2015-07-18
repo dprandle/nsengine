@@ -105,9 +105,3 @@ NSInputComp & NSInputComp::operator=(const NSInputComp & pRHSComp)
 	postUpdate(true);
 	return (*this);
 }
-
-nsstring NSInputComp::getTypeString()
-{
-	return INPUT_COMP_TYPESTRING;
-}
-

@@ -78,10 +78,6 @@ public:
 
 	void setColor(const fvec4 & pColor);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
 	NSSelComp & operator=(const NSSelComp & pRHS);
 
 private:
