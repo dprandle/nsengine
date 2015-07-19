@@ -225,16 +225,10 @@ void NSInputSystem::init()
 	nsengine.events()->addListener(this, NSEvent::InputMouseScroll);
 }
 
-float NSInputSystem::updatePriority()
+nsint NSInputSystem::updatePriority()
 {
 	return INP_SYS_UPDATE_PR;
 }
-
-nsstring NSInputSystem::getTypeString()
-{
-	return INP_SYS_TYPESTRING;
-}
-
 
 void NSInputSystem::setInputMap(const uivec2 & resid)
 {

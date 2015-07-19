@@ -32,9 +32,9 @@ public:
 
 	virtual void draw();
 
-	virtual float drawPriority();
+	virtual nsint drawPriority();
 
-	virtual float updatePriority();
+	virtual nsint updatePriority();
 
 	virtual bool handleEvent(NSEvent * pEvent);
 
@@ -47,10 +47,6 @@ public:
 	virtual void update();
 
 	void setShader(NSParticleProcessShader * shader) { mDefaultShader = shader; }
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
 
 private:
 	NSParticleProcessShader * mDefaultShader;

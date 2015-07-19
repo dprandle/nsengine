@@ -109,7 +109,6 @@ NSEntity::CompSet::iterator NSEntity::end()
 NSComponent * NSEntity::create(nsuint type_id)
 {
 	NSComponent * comp_t = nsengine.factory<NSCompFactory>(type_id)->create();
-	comp_t->init();
 	if (!add(comp_t))
 	{
 		dprint(nsstring("NSEntity::createComponent - Failed adding comp_t type ") + nsengine.guid(type_id) +
@@ -117,6 +116,7 @@ NSComponent * NSEntity::create(nsuint type_id)
 		delete comp_t;
 		return NULL;
 	}
+	comp_t->init();
 	return comp_t;
 }
 

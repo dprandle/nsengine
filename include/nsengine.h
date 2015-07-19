@@ -42,7 +42,7 @@ class NSDebug;
 struct GLContext;
 class NSFrameBuffer;
 
-typedef std::unordered_map<nsstring, NSSystem*> SystemMap;
+typedef std::unordered_map<nsuint, NSSystem*> SystemMap;
 typedef std::unordered_map<std::type_index, nsuint> TypeHashMap;
 typedef std::unordered_map<nsuint, nsstring> HashMap;
 typedef std::unordered_map<nsuint, NSFactory*> FactoryMap;
@@ -97,7 +97,7 @@ class NSEngine
 public:
 	NSEngine();
 	~NSEngine();
-	typedef std::map<nsfloat, nsstring> SystemPriorityMap;
+	typedef std::map<nsint, nsuint> SystemPriorityMap;
 
 	bool addPlugin(NSPlugin * plug);
 
@@ -147,17 +147,13 @@ public:
 	template<class SysType>
 	SysType * createSystem()
 	{
-		SysType * system = new SysType();
-		system->init();
-		if (!addSystem(system))
-		{
-			delete system;
-			return NULL;
-		}
-		return system;
+		nsuint tid = typeID(std::type_index(typeid(SysType)));
+		return static_cast<SysType*>(createSystem(tid));
 	}
 
-	NSSystem * createSystem(const nsstring & systype);
+	NSSystem * createSystem(nsuint type_id);
+	
+	NSSystem * createSystem(const nsstring & guid_);
 
 	template<class ResType, class T>
 	ResType * createResource(const T & plug_, const nsstring & resName)
@@ -196,12 +192,15 @@ public:
 	bool delFramebuffer(nsuint fbid);
 
 	template<class SysType>
-	bool delSystem()
+	bool destroySystem()
 	{
-		return delSystem(SysType::getTypeString());
+		nsuint tid = typeID(std::type_index(typeid(SysType)));
+		return destroySystem(tid);
 	}
 
-	bool delSystem(const nsstring & systype);
+	bool destroySystem(nsuint type_id);
+
+	bool destroySystem(const nsstring & guid_);
 
 	template<class ResType, class T1, class T2>
 	nsbool delResource(const T1 & plug, const T2 & res)
@@ -234,11 +233,8 @@ public:
 	template<class ObjType>
 	NSFactory * factory()
 	{
-		std::type_index ti = std::type_index(typeid(ObjType));
-		auto iter = mObjTypeHashes.find(ti);
-		if (iter == mObjTypeHashes.end())
-			return NULL;
-		return factory(iter->second);
+		nsuint hashed_type = typeID(std::type_index(typeid(ObjType)));
+		return factory(hashed_type);
 	}
 
 	NSFactory * factory(nsuint hashid);
@@ -259,11 +255,8 @@ public:
 	template<class BaseFacType, class ObjType>
 	BaseFacType * factory()
 	{
-		std::type_index ti = std::type_index(typeid(ObjType));
-		auto iter = mObjTypeHashes.find(ti);
-		if (iter == mObjTypeHashes.end())
-			return NULL;
-		return static_cast<BaseFacType*>(factory(iter->second));
+		nsuint hashed_type = typeID(std::type_index(typeid(ObjType)));
+		return static_cast<BaseFacType*>(factory(hashed_type));
 	}
 
 	NSFrameBuffer * framebuffer(nsuint id);
@@ -271,11 +264,13 @@ public:
 	template<class SysType>
 	nsbool hasSystem()
 	{
-		auto fIter = mSystems.find(SysType::getTypeString());
-		return (fIter != mSystems.end());
+		nsuint hashed_type = typeID(std::type_index(typeid(SysType)));
+		return hasSystem(hashed_type);
 	}
 
-	nsbool hasSystem(const nsstring & pTypeString);
+	nsbool hasSystem(nsuint type_id);
+	
+	nsbool hasSystem(const nsstring & guid_);
 
 	NSPlugin * loadPlugin(const nsstring & fname, bool appendDirs = true);
 
@@ -467,15 +462,13 @@ public:
 	template<class SysType>
 	SysType * removeSystem()
 	{
-		SysType * sys = system<SysType>();
-		if (sys == NULL)
-			return NULL;
-		current()->systems->erase(sys->typeString());
-		_removeSys(sys->typeString());
-		return sys;
+		nsuint hashed_type = typeID(std::type_index(typeid(SysType)));
+		return static_cast<SysType*>(removeSystem(hashed_type));
 	}
 
-	NSSystem * removeSystem(const nsstring & sysType);
+	NSSystem * removeSystem(nsuint type_id);
+
+	NSSystem * removeSystem(const nsstring & gui);
 
 	template<class ResType, class T1, class T2>
 	ResType * removeResource(const T1 & plug, const T2 & res)
@@ -571,14 +564,13 @@ public:
 	template<class SysType>
 	SysType * system()
 	{
-		GLContext * cont = current();
-		auto fIter = cont->systems->find(SysType::getTypeString());
-		if (fIter == cont->systems->end())
-			return NULL;
-		return (SysType*)fIter->second;
+		nsuint hashed_type = typeID(std::type_index(typeid(SysType)));
+		return static_cast<SysType*>(system(hashed_type));
 	}
 
-	NSSystem * system(const nsstring & pTypeName);
+	NSSystem * system(nsuint type_id);
+
+	NSSystem * system(const nsstring & guid_);
 
 	NSTimer * timer();
 
@@ -635,7 +627,7 @@ private:
 	}
 	
 	template<class ObjType>
-	bool delFactory()
+	bool destroyFactory()
 	{
 		std::type_index ti = std::type_index(typeid(ObjType));
 		auto iter = mObjTypeHashes.find(ti);
@@ -643,10 +635,10 @@ private:
 		if (iter == mObjTypeHashes.end())
 			return false;
 
-		return delFactory(iter.second);
+		return destroyFactory(iter.second);
 	}
 
-	bool delFactory(nsuint hashid);
+	bool destroyFactory(nsuint hashid);
 
 	NSFactory * removeFactory(nsuint hashid);
 	
@@ -670,7 +662,7 @@ private:
 	void _initInputMaps();
 	void _initEntities();
 	void _initDefaultFactories();
-	void _removeSys(const nsstring & systype);
+	void _removeSys(nsuint type_id);
 	nsstring mResourceDirectory;
 	nsstring mImportDirectory;
 	

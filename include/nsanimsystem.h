@@ -30,11 +30,8 @@ public:
 
 	virtual void update();
 
-	virtual float updatePriority();
+	virtual nsint updatePriority();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
 };
 
 

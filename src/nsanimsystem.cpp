@@ -141,12 +141,7 @@ void NSAnimSystem::update()
 	}
 }
 
-float NSAnimSystem::updatePriority()
+nsint NSAnimSystem::updatePriority()
 {
 	return ANIM_SYS_UPDATE_PR;
-}
-
-nsstring NSAnimSystem::getTypeString()
-{
-	return ANIM_SYS_TYPESTRING;
 }

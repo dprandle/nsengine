@@ -159,12 +159,12 @@ void NSParticleSystem::init()
 {
 }
 
-float NSParticleSystem::drawPriority()
+nsint NSParticleSystem::drawPriority()
 {
 	return PARTICLE_SYS_DRAW_PR;
 }
 
-float NSParticleSystem::updatePriority()
+nsint NSParticleSystem::updatePriority()
 {
 	return PARTICLE_SYS_UPDATE_PR;
 }
@@ -263,9 +263,4 @@ void NSParticleSystem::update()
 
 	glDisable(GL_RASTERIZER_DISCARD);
 	
-}
-
-nsstring NSParticleSystem::getTypeString()
-{
-	return PARTICLE_SYS_TYPESTRING;
 }

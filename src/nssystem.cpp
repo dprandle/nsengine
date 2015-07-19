@@ -23,7 +23,7 @@ void NSSystem::draw()
 	// do nothing
 }
 
-float NSSystem::drawPriority()
+nsint NSSystem::drawPriority()
 {
 	return NO_DRAW_PR;
 }

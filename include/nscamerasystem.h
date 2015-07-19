@@ -96,11 +96,7 @@ public:
 
 	void toggleMode();
 
-	virtual float updatePriority();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
+	virtual nsint updatePriority();
 
 private:
 	nsfloat mZoomFactor;

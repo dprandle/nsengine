@@ -188,13 +188,9 @@ public:
 
 	void update();
 
-	virtual float drawPriority();
+	virtual nsint drawPriority();
 
-	virtual float updatePriority();
-
-	virtual nsstring typeString() { return getTypeString(); }
-	
-	static nsstring getTypeString();
+	virtual nsint updatePriority();
 
 private:
 	void _blendDirectionLight(NSLightComp * pLight);

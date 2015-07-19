@@ -128,18 +128,26 @@ nsbool NSEngine::addSystem(NSSystem * pSystem)
 		return false;
 
 	GLContext * gc = current();
-	auto it = gc->systems->emplace(pSystem->typeString(), pSystem);
+	std::type_index ti(typeid(*pSystem));
+	nsuint type_hash = nsengine.typeID(ti);
+
+	if (type_hash == 0)
+	{
+		dprint(nsstring("NSEngine::addSystem - Could not find type id for type: ") + ti.name());
+		return false;
+	}
+	auto it = gc->systems->emplace(type_hash, pSystem);
 
 	if (!it.second)
 		return false;
 
-	nsfloat drawPriority = pSystem->drawPriority();
+	nsint drawPriority = pSystem->drawPriority();
 
 	// Only add systems with a draw priority
 	if (drawPriority != NO_DRAW_PR)
-		mSystemDrawOrder[drawPriority] = pSystem->typeString();
+		mSystemDrawOrder[drawPriority] = type_hash;
 
-	mSystemUpdateOrder[pSystem->updatePriority()] = pSystem->typeString();
+	mSystemUpdateOrder[pSystem->updatePriority()] = type_hash;
 	return true;
 }
 
@@ -220,7 +228,7 @@ void NSEngine::savecore(NSSaveResCallback * scallback)
 	engplug()->save(scallback);
 }
 
-bool NSEngine::delFactory(nsuint hashid)
+bool NSEngine::destroyFactory(nsuint hashid)
 {
 	NSFactory * fac = removeFactory(hashid);
 	if (fac == NULL)
@@ -229,14 +237,18 @@ bool NSEngine::delFactory(nsuint hashid)
 	return true;
 }
 
-
-bool NSEngine::delSystem(const nsstring & systype)
+bool NSEngine::destroySystem(nsuint type_id)
 {
-	NSSystem * sys = removeSystem(systype);
+	NSSystem * sys = removeSystem(type_id);
 	if (sys == NULL)
 		return false;
 	delete sys;
 	return true;
+}
+
+bool NSEngine::destroySystem(const nsstring & guid_)
+{
+	return destroySystem(hash_id(guid_));
 }
 
 FactoryMap::iterator NSEngine::beginFac()
@@ -257,9 +269,9 @@ NSPlugin * NSEngine::createPlugin(const nsstring & plugname, bool makeactive)
 	return plug;
 }
 
-NSSystem * NSEngine::createSystem(const nsstring & systype)
+NSSystem * NSEngine::createSystem(nsuint type_id)
 {
-	NSSystem * system = factory<NSSysFactory>(systype)->create();
+	NSSystem * system = factory<NSSysFactory>(type_id)->create();
 	if (!addSystem(system))
 	{
 		delete system;
@@ -269,6 +281,10 @@ NSSystem * NSEngine::createSystem(const nsstring & systype)
 	return system;
 }
 
+NSSystem * NSEngine::createSystem(const nsstring & guid_)
+{
+	return createSystem(hash_id(guid_));
+}
 
 NSScene * NSEngine::currentScene()
 {
@@ -306,13 +322,19 @@ NSEventHandler * NSEngine::events()
 	return current()->mEvents;
 }
 
-NSSystem * NSEngine::system(const nsstring & pTypeName)
+NSSystem * NSEngine::system(nsuint type_id)
 {
 	GLContext * cont = current();
-	auto iter = cont->systems->find(pTypeName);
+	auto iter = cont->systems->find(type_id);
 	if (iter == cont->systems->end())
 		return NULL;
 	return iter->second;
+}
+
+
+NSSystem * NSEngine::system(const nsstring & guid_)
+{
+	return system(hash_id(guid_));
 }
 
 bool NSEngine::resourceChanged(NSResource * res)
@@ -335,10 +357,15 @@ const nsstring & NSEngine::resourceDirectory()
 	return mResourceDirectory;
 }
 
-nsbool NSEngine::hasSystem(const nsstring & pTypeString)
+nsbool NSEngine::hasSystem(nsuint type_id)
 {
 	GLContext * cont = current();
-	return (cont->systems->find(pTypeString) != cont->systems->end());
+	return (cont->systems->find(type_id) != cont->systems->end());
+}
+
+nsbool NSEngine::hasSystem(const nsstring & guid_)
+{
+	return hasSystem(hash_id(guid_));
 }
 
 NSEntity * NSEngine::loadModel(const nsstring & entname, const nsstring & fname, bool prefixWithImportDir, const nsstring & meshname, bool flipuv)
@@ -388,15 +415,21 @@ NSPluginManager * NSEngine::plugins()
 	return current()->plugins;
 }
 
-NSSystem * NSEngine::removeSystem(const nsstring & sysType)
+NSSystem * NSEngine::removeSystem(nsuint type_id)
 {
-	NSSystem * sys = system(sysType);
+	NSSystem * sys = system(type_id);
 	if (sys == NULL)
 		return NULL;
-	current()->systems->erase(sysType);
-	_removeSys(sysType);
+	current()->systems->erase(type_id);
+	_removeSys(type_id);
 	return sys;
 }
+
+NSSystem * NSEngine::removeSystem(const nsstring & guid_)
+{
+	return removeSystem(hash_id(guid_));
+}
+
 
 const nsstring & NSEngine::importdir()
 {
@@ -651,12 +684,12 @@ void NSEngine::_initEntities()
 	system<NSBuildSystem>()->setObjectBrush(objBrush);
 }
 
-void NSEngine::_removeSys(const nsstring & systype)
+void NSEngine::_removeSys(nsuint type_id)
 {
 	auto iter1 = mSystemDrawOrder.begin();
 	while (iter1 != mSystemDrawOrder.end())
 	{
-		if (iter1->second == systype)
+		if (iter1->second == type_id)
 		{
 			mSystemDrawOrder.erase(iter1);
 			return;
@@ -667,7 +700,7 @@ void NSEngine::_removeSys(const nsstring & systype)
 	auto iter2 = mSystemUpdateOrder.begin();
 	while (iter2 != mSystemUpdateOrder.end())
 	{
-		if (iter2->second == systype)
+		if (iter2->second == type_id)
 		{
 			mSystemUpdateOrder.erase(iter2);
 			return;

@@ -475,12 +475,7 @@ void NSCameraSystem::update()
 	}
 }
 
-float NSCameraSystem::updatePriority()
+nsint NSCameraSystem::updatePriority()
 {
 	return CAM_SYS_UPDATE_PR;
-}
-
-nsstring NSCameraSystem::getTypeString()
-{
-	return CAM_SYS_TYPESTRING;
 }

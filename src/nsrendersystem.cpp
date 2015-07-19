@@ -1232,17 +1232,12 @@ bool NSRenderSystem::DrawCall::operator!=(const DrawCall & rhs) const
 	return !(*this == rhs);
 }
 
-float NSRenderSystem::drawPriority()
+nsint NSRenderSystem::drawPriority()
 {
 	return RENDER_SYS_DRAW_PR;
 }
 
-float NSRenderSystem::updatePriority()
+nsint NSRenderSystem::updatePriority()
 {
 	return RENDER_SYS_UPDATE_PR;
-}
-
-nsstring NSRenderSystem::getTypeString()
-{
-	return RENDER_SYS_TYPESTRING;
 }

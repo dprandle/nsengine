@@ -61,9 +61,9 @@ public:
 
 	const uivec3 & center();
 
-	virtual float drawPriority();
+	virtual nsint drawPriority();
 
-	virtual float updatePriority();
+	virtual nsint updatePriority();
 
 	virtual bool handleEvent(NSEvent * pEvent);
 
@@ -162,10 +162,6 @@ public:
 	void translate(NSTFormComp::Axis pDir, nsfloat pAmount);
 
 	virtual void update();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
 
 protected:
 

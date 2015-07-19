@@ -556,6 +556,11 @@ void NSBuildSystem::toggle(const fvec2 & pMousePos)
 	enable(!mEnabled, pMousePos);
 }
 
+nsint NSBuildSystem::updatePriority()
+{
+	return BUILD_SYS_UPDATE_PR;
+}
+
 void NSBuildSystem::update()
 {
 	NSScene * scene = nsengine.currentScene();
@@ -654,14 +659,4 @@ void NSBuildSystem::update()
 			}
 		}
 	}
-}
-
-float NSBuildSystem::updatePriority()
-{
-	return BUILD_SYS_UPDATE_PR;
-}
-
-nsstring NSBuildSystem::getTypeString()
-{
-	return BUILD_SYS_TYPESTRING;
 }

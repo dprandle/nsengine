@@ -34,11 +34,9 @@ public:
 
 	virtual void update() = 0;
 
-	virtual float drawPriority();
+	virtual nsint drawPriority();
 
-	virtual float updatePriority() = 0;
-
-	virtual nsstring typeString() = 0;
+	virtual nsint updatePriority() = 0;
 };
 
 #endif

@@ -107,12 +107,7 @@ void NSMovementSystem::update()
 	}
 }
 
-float NSMovementSystem::updatePriority()
+nsint NSMovementSystem::updatePriority()
 {
 	return MOVE_SYS_UPDATE_PR;
-}
-
-nsstring NSMovementSystem::getTypeString()
-{
-	return MOVE_SYS_TYPESTRING;
 }

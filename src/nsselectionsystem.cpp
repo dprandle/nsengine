@@ -713,12 +713,12 @@ void NSSelectionSystem::init()
 	nsengine.events()->addListener(this, NSEvent::ClearSelection);
 }
 
-float NSSelectionSystem::drawPriority()
+nsint NSSelectionSystem::drawPriority()
 {
 	return SEL_SYS_DRAW_PR;
 }
 
-float NSSelectionSystem::updatePriority()
+nsint NSSelectionSystem::updatePriority()
 {
 	return SEL_SYS_UPDATE_PR;
 }
@@ -1725,9 +1725,4 @@ void NSSelectionSystem::update()
 
 		++entIter;
 	}
-}
-
-nsstring NSSelectionSystem::getTypeString()
-{
-	return SEL_SYS_TYPESTRING;
 }
