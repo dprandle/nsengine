@@ -13,8 +13,8 @@
 #ifndef NSENTITYMANAGER_H
 #define NSENTITYMANAGER_H
 
-#include <nsentity.h>
 #include <nsresmanager.h>
+#include <nsentity.h>
 
 class NSEntityManager : public NSResManager
 {
@@ -31,12 +31,7 @@ public:
 
 	virtual NSEntity * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSEntity>(resName);
-	}
-
-	virtual NSEntity * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSEntity*>(NSResManager::create(resType, resName));
+		return create<NSEntity>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -44,67 +39,47 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSEntity * get(nsuint resid)
+	
+	template<class T>
+	NSEntity * get(const T & resname)
 	{
-		return static_cast<NSEntity*>(NSResManager::get(resid));
-	}
-
-	virtual NSEntity * get(const nsstring & resName)
-	{
-		return static_cast<NSEntity*>(NSResManager::get(resName));
+		return get<NSEntity>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSEntity * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSEntity * load(const nsstring & fname)
 	{
-		return static_cast<NSEntity*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSEntity>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSEntity * remove(const nsstring & name)
+	template<class T >
+	NSEntity * remove(const T & rname)
 	{
-		return static_cast<NSEntity*>(NSResManager::remove(name));
-	}
-
-	virtual NSEntity * remove(nsuint id)
-	{
-		return static_cast<NSEntity*>(NSResManager::remove(id));
-	}
-
-	virtual NSEntity * remove(NSResource * res)
-	{
-		return static_cast<NSEntity*>(NSResManager::remove(res));
+		return remove<NSEntity>(rname);
 	}
 
 	template<class CompType>
 	nspentityset entities()
 	{
-		nspentityset ret;
-		auto iter = mIDResourceMap.begin();
-		while (iter != mIDResourceMap.end())
-		{
-			NSEntity * curEnt = get<NSEntity>(iter->first);
-			if (curEnt->has<CompType>())
-				ret.emplace(curEnt);
-			++iter;
-		}
-		return ret;
+		nsuint hashed_type = nsengine.typeID(std::type_index(typeid(CompType)));
+		return entities(hashed_type);
 	}
 
-	virtual nsstring typeString() { return getTypeString(); }
+	nspentityset entities(nsuint comp_type_id);
 
-	static nsstring getTypeString();
+	nspentityset entities(const nsstring & comp_guid);
+	
 };
 
 #endif

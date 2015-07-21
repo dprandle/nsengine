@@ -14,8 +14,8 @@ This file contains all of the neccessary declarations for the NSPlugin class.
 #define NSPLUGIN_H
 
 #include <nsglobal.h>
-#include <nsresource.h>
 #include <nsresmanager.h>
+#include <nsresource.h>
 class NSEntity;
 class NSScene;
 
@@ -25,11 +25,11 @@ public:
 	template <class PUPer>
 	friend void pup(PUPer & p, NSPlugin & plug);
 
-	typedef std::unordered_map<nsstring, NSResManager*> ManagerMap;
+	typedef std::unordered_map<nsuint, NSResManager*> ManagerMap;
 
-	// This is manager type string to pair(resource typestring, resource name)
+	// This is manager type string to pair(get typestring, get name)
 	// Sometimes managers can manage an abstract type - NSTexture for example - which
-	// means the resource type string must also be included so we can get the right factory
+	// means the get type string must also be included so we can get the right factory
 	typedef std::unordered_multimap<nsstring, std::pair<std::string, std::string>> ResTypeMap;
 
 	enum Tile_t
@@ -53,15 +53,18 @@ public:
 
 	template<class ResType, class T>
 	bool contains(const T & res)
-	{
-		return manager(ResType::getManagerTypeString())->contains(res);
+	{	
+		return contains(get<ResType>(res));
 	}
 
 	template<class ResType>
 	ResType * create(const nsstring & resName)
 	{
-		return manager(ResType::getManagerTypeString())->create<ResType>(resName);
+		nsuint hashed_type = type_to_hash(ResType);
+		return static_cast<ResType*>(create(hashed_type, resName));
 	}
+
+	NSResource * create(nsuint res_typeid, const nsstring & resName);
 
 	NSEntity * createCamera(const nsstring & name,
 		float fov,
@@ -115,7 +118,6 @@ public:
 		float s_pwr,
 		float s_int,
 		fvec3 s_col,
-		bool appenddirs,
 		bool collides,
 		Tile_t type = Full);
 
@@ -134,19 +136,17 @@ public:
 		bool collides, 
 		Tile_t type = Full);
 
+
 	template<class ManagerType>
 	ManagerType * createManager()
 	{
-		ManagerType * manager = new ManagerType();
-		if (!addManager(manager))
-		{
-			delete manager;
-			return NULL;
-		}
-		return manager;
+		nsuint hashed_type = type_to_hash(ManagerType);
+		return createManager(hashed_type);
 	}
 
-	NSResManager * createManager(const nsstring & managertype);
+	NSResManager * createManager(nsuint manager_typeid);
+
+	NSResManager * createManager(const nsstring & manager_guid);
 
 	NSScene * currentScene();
 
@@ -159,48 +159,52 @@ public:
 	nsbool del(NSResource * res);
 
 	template<class ResManager>
-	bool delManager()
+	bool destroyManager()
 	{
-		return delManager(ResManager::getTypeString());
+		nsuint hashed_type = type_to_hash(ResManager);
+		return destroyManager(hashed_type);
 	}
 
-	bool delManager(const nsstring & managerType);
+	bool destroyManager(nsuint manager_typeid);
+
+	bool destroyManager(const nsstring & manager_guid);
 
 	bool hasParent(const nsstring & pname);
 
 	template<class ResType, class T>
-	ResType * resource(const T & name)
+	ResType * get(const T & name)
 	{
-		return manager(ResType::getManagerTypeString())->get<ResType>(name);
+		nsuint hashed_type = type_to_hash(ResType);
+		return static_cast<ResType*>(get(hashed_type, name));
 	}
 
-	template<class T>
-	NSResource * resource(const nsstring & managerType, const T & name)
-	{
-		return manager(managerType)->get<NSResource>(name);
-	}
+	NSResource * get(nsuint res_typeid, nsuint resid);
+
+	NSResource * get(nsuint res_typeid, const nsstring & resName);
 
 	bool resourceChanged(NSResource * res);
 
 	template<class ManagerType>
 	ManagerType * manager()
 	{
-		auto fIter = mManagers.find(ManagerType::getTypeString());
-		if (fIter == mManagers.end())
-			return NULL;
-		return (ManagerType*)fIter->second;
+		nsuint hashed_type = type_to_hash(ManagerType);
+		return static_cast<ManagerType*>(manager(hashed_type));
 	}
 
-	NSResManager * manager(const nsstring & pManagerType);
+	NSResManager * manager(const nsstring & manager_guid);
+	
+	NSResManager * manager(nsuint manager_typeid);
 
 	template<class ManagerType>
 	nsbool hasManager()
 	{
-		auto fIter = mManagers.find(ManagerType::getTypeString());
-		return (fIter != mManagers.end());
+		nsuint hashed_type = type_to_hash(ManagerType);
+		return hasManager(hashed_type);
 	}
 
-	nsbool hasManager(const nsstring & pResType);
+	nsbool hasManager(nsuint manager_typeid);
+
+	nsbool hasManager(const nsstring & manager_guid);
 
 	void init();
 
@@ -209,21 +213,26 @@ public:
 	nsstring details();
 
 	const nsstring & notes();
-
-	NSResource * load(const nsstring & managerType, const nsstring & restype, const nsstring & fileName, bool appendDirs = true);
-
+	
 	template<class ResType>
-	ResType * load(const nsstring & fileName, bool appendDirs = true)
+	ResType * load(const nsstring & fname)
 	{
-		NSResource * res = load(ResType::getManagerTypeString(), ResType::getTypeString(), fileName, appendDirs);
-		if (res != NULL)
-			return (ResType*)res;
-		return NULL;
+		nsuint hashed_type = type_to_hash(ResType);
+		return static_cast<ResType*>(load(hashed_type, fname));
 	}
 
-	NSEntity * loadModel(const nsstring & entname, nsstring fname, bool prefixWithImportDir, const nsstring & meshname = "", bool pFlipUVs = true);
+	NSResource * load(nsuint res_typeid, const nsstring & fname);
 
-	bool loadModelResources(nsstring fname, bool prefixWithImportDir, const nsstring & meshname = "", bool flipuv = true);
+	NSEntity * loadModel(const nsstring & entname,
+						 nsstring fname,
+						 bool prefixWithImportDir,
+						 const nsstring & meshname = "",
+						 bool pFlipUVs = true);
+
+	bool loadModelResources(nsstring fname,
+							bool prefixWithImportDir,
+							const nsstring & meshname = "",
+							bool flipuv = true);
 	
 	nsbool bind();
 
@@ -238,12 +247,15 @@ public:
 	const nsstring & creationDate();
 
 	template<class ResManager>
-	NSResManager * removeManager()
+	ResManager * removeManager()
 	{
-		return removeManager(ResManager::getTypeString());
+		nsuint hashed_type = type_to_hash(ResManager);
+		return static_cast<ResManager*>(removeManager(hashed_type));
 	}
 
-	NSResManager * removeManager(const nsstring & managerType);
+	NSResManager * removeManager(nsuint manager_typeid);
+
+	NSResManager * removeManager(const nsstring & manager_guid);
 
 	nsuint resourceCount();
 
@@ -252,7 +264,7 @@ public:
 	const nsstring & importDir() { return mImportDir; }
 
 	/*!
-	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
+	This should be called if there was a name change to a get - will check if the get is used by this component and if is
 	is then it will update the handle
 	*/
 	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
@@ -260,21 +272,32 @@ public:
 	bool parentsLoaded();
 
 	template<class ResType, class T>
-	nsbool save(const T & name)
+	nsbool save(const T & name, const nsstring & path="")
 	{
-		return save(resource<ResType>(name));
+		return save(get<ResType>(name),path);
 	}
 
-	nsbool save(NSResource * res);
+	nsbool save(NSResource * res, const nsstring & path="");
 
 	template<class ResType>
-	nsbool save()
+	void saveAll(const nsstring & path="", NSSaveResCallback * scallback = NULL)
 	{
-		NSResManager * rm = manager(ResType::getManagerTypeString());
-		return rm->save();
+		nsuint hashed_type = type_to_hash(ResType);
+		return saveAll(hashed_type, path, scallback);
 	}
 
-	void save( NSSaveResCallback * scallback = NULL);
+	void saveAll(const nsstring & path="", NSSaveResCallback * scallback = NULL);
+
+	void saveAll(nsuint res_typeid, const nsstring & path, NSSaveResCallback * scallback);
+	
+	template<class ResType, class T>
+	bool saveAs(const T & resname, const nsstring & fname)
+	{
+		NSResource * res = get<ResType>(resname);
+		return saveAs(res, fname);
+	}
+
+	bool saveAs(NSResource * res, const nsstring & fname);
 
 	void setCreator(const nsstring & pCreator);
 
@@ -291,35 +314,27 @@ public:
 	template<class ResType, class T>
 	ResType * remove(const T & resName)
 	{
-		NSResManager * rm = manager(ResType::getManagerTypeString());
-		return rm->remove<ResType>(resName);
+		NSResource * res = get<ResType>(resName);
+		return static_cast<ResType*>(remove(res));
 	}
 
 	NSResource * remove(NSResource * res);
-
+	
 	template<class ResType, class T>
-	nsbool unload(const T & name)
+	nsbool destroy(const T & name)
 	{
-		return unload(resource<ResType>(name));
+		return destroy(get<ResType>(name));
 	}
 
-	bool unload(NSResource * res);
+	bool destroy(NSResource * res);
 
 	bool unbind();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return PLUGIN_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return PLUGIN_MANAGER_TYPESTRING; }
 
 private:
 	void _updateParents();
 	void _updateResMap();
 	void _clear();
-
+	
 	nsstring mResDir;
 	nsstring mImportDir;
 	nsstring mNotes;

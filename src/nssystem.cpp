@@ -12,7 +12,8 @@ This file contains all of the neccessary definitions for the NSSystem class.
 
 #include <nssystem.h>
 
-NSSystem::NSSystem()
+NSSystem::NSSystem():
+	mHashedType(0)
 {}
 
 NSSystem::~NSSystem()
@@ -21,6 +22,11 @@ NSSystem::~NSSystem()
 void NSSystem::draw()
 {
 	// do nothing
+}
+
+nsuint NSSystem::type()
+{
+	return mHashedType;
 }
 
 nsint NSSystem::drawPriority()

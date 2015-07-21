@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsselectionsystem.h>
 #include <nsscenemanager.h>
 #include <nsscene.h>
-#include <nseventhandler.h>
+#include <nseventdispatcher.h>
 #include <nsrendersystem.h>
 #include <nsinputcomp.h>
 #include <nsselcomp.h>
@@ -29,7 +29,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsbuildsystem.h>
 #include <nscamcomp.h>
 #include <nsterraincomp.h>
-
+#include <nsplugin.h>
 
 /*
 Notes:
@@ -462,7 +462,7 @@ void NSSelectionSystem::draw()
 	// Draw mirror mode center
 	if (nsengine.system<NSBuildSystem>()->mirror())
 	{
-		NSMesh * tileM = nsengine.engplug()->resource<NSMesh>(MESH_FULL_TILE);
+		NSMesh * tileM = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
 		fvec3 mypos = nsengine.system<NSBuildSystem>()->mirror();
 		mypos.z = nsengine.system<NSBuildSystem>()->layer() * Z_GRID;
 		selShader->setTransform(translationMat4(mypos));
@@ -547,7 +547,7 @@ void NSSelectionSystem::_drawOcc()
 	if (!drawOcc)
 		return;
 
-	NSMesh * occMesh = nsengine.engplug()->resource<NSMesh>(MESH_FULL_TILE);
+	NSMesh * occMesh = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
 	for (nsuint i = 0; i < occMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * occSub = occMesh->submesh(i);

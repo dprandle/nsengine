@@ -70,7 +70,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -95,7 +95,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -120,7 +120,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -145,7 +145,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -170,7 +170,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -195,7 +195,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -220,7 +220,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -245,7 +245,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -270,7 +270,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -295,7 +295,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -320,7 +320,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName, false);
+				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
@@ -336,9 +336,4 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 		mat->setColorMode(true);
 
 	return mat;
-}
-
-nsstring NSMatManager::getTypeString()
-{
-	return MAT_MANAGER_TYPESTRING;
 }

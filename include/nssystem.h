@@ -22,6 +22,8 @@ class NSSystem
 {
 public:
 
+	friend class NSSysFactory;
+	
 	NSSystem();
 
 	virtual ~NSSystem();
@@ -37,6 +39,11 @@ public:
 	virtual nsint drawPriority();
 
 	virtual nsint updatePriority() = 0;
+
+	nsuint type();
+	
+  private:
+	nsuint mHashedType;
 };
 
 #endif

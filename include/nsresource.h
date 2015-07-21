@@ -20,6 +20,7 @@ class NSResource
 {
 public:
 	friend class NSResManager;
+	friend class NSResFactory;
 
 	NSResource();
 	virtual ~NSResource();
@@ -33,6 +34,8 @@ public:
 	nsuint plugid() const;
 
 	nsuint id() const;
+
+	nsuint type();
 
 	const nsstring & subDir() const;
 
@@ -68,11 +71,8 @@ public:
 
 	void setSubDir(const nsstring & pDir);
 
-	virtual nsstring typeString() = 0;
-
-	virtual nsstring managerTypeString() = 0;
-
 protected:
+	nsuint mHashedType;
 	nsstring mIconPath;
 	uivec2 mIconTexID;
 	nsstring mName;

@@ -20,11 +20,8 @@
 #define NSTEXTUREMANAGER_H
 
 #include <nsglobal.h>
-#include <nstexture.h>
 #include <nsresmanager.h>
-#include <IL/il.h>
-#include <soil/SOIL.h>
-#include <IL/ilu.h>
+#include <nstexture.h>
 
 class NSTexManager : public NSResManager
 {
@@ -39,9 +36,9 @@ public:
 		return NSResManager::create<ResType>(resName);
 	}
 
-	virtual NSTexture * create(const nsstring & resType, const nsstring & resName)
+	virtual NSTex2D * create(const nsstring & resName)
 	{
-		return static_cast<NSTexture*>(NSResManager::create(resType, resName));
+		return create<NSTex2D>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -49,68 +46,62 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSTexture * get(nsuint resid)
+	
+	template<class T>
+	NSTexture * get(const T & resname)
 	{
-		return static_cast<NSTexture*>(NSResManager::get(resid));
-	}
-
-	virtual NSTexture * get(const nsstring & resName)
-	{
-		return static_cast<NSTexture*>(NSResManager::get(resName));
+		return get<NSTexture>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSTexture * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories);
+	NSTexture * load(const nsstring & fname)
+	{
+		return load<NSTexture>(fname);
+	}
 
-	virtual NSTexCubeMap * loadCubemap(const nsstring & pFileName, bool pAppendDirectories);
-
-	virtual NSTexCubeMap * loadCubemap(const nsstring & pXPlus,
-		const nsstring & pXMinus,
-		const nsstring & pYPlus,
-		const nsstring & pYMinus,
-		const nsstring & pZPlus,
-		const nsstring & pZMinus,
-		const nsstring & pResourceName,
-		bool pAppendDirectories);
-
-	virtual NSTex2D * loadImage(const nsstring & filename, bool pAppendDirectories);
-
+	virtual NSTexture * load(nsuint res_type_id, const nsstring & fname);
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSTexture * remove(const nsstring & name)
+	template<class T >
+	NSTexture * remove(const T & rname)
 	{
-		return static_cast<NSTexture*>(NSResManager::remove(name));
+		return remove<NSTexture>(rname);
 	}
 
-	virtual NSTexture * remove(nsuint id)
+	template<class T>
+	bool save(const T & res_name, nsstring path="")
 	{
-		return static_cast<NSTexture*>(NSResManager::remove(id));
+		NSResource * res = get(res_name);
+		return save(res, path);
 	}
 
-	virtual NSTexture * remove(NSResource * res)
-	{
-		return static_cast<NSTexture*>(NSResManager::remove(res));
-	}
+	virtual bool save(NSResource * res, const nsstring & path);
+	
+	virtual NSTexCubeMap * loadCubemap(const nsstring & fname);
 
-	virtual bool save(const nsstring & resName, bool pAppendDirectories);
+	virtual NSTexCubeMap * loadCubemap(const nsstring & pXPlus,
+									   const nsstring & pXMinus,
+									   const nsstring & pYPlus,
+									   const nsstring & pYMinus,
+									   const nsstring & pZPlus,
+									   const nsstring & pZMinus,
+									   const nsstring & fname);
 
-	virtual bool saveImage(NSTex2D * image, const nsstring & fname);
+	virtual NSTex2D * loadImage(const nsstring & fname);
 
-	virtual bool saveCubemap(NSTexCubeMap * cubemap, const nsstring & fname);
+	virtual bool save(NSTex2D * image, const nsstring & path);
 
-	static nsstring getTypeString();
-
-	virtual nsstring typeString() { return getTypeString(); }
+	virtual bool save(NSTexCubeMap * cubemap, const nsstring & path);
 };
 
 #endif

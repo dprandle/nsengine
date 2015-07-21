@@ -234,14 +234,6 @@ public:
 
 	uivec2array & unloaded();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return SCENE_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SCENE_MANAGER_TYPESTRING; }
-
 private:
 
 	uivec2 mCamID;

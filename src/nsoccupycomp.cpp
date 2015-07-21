@@ -13,13 +13,20 @@ This file contains all of the neccessary definitions for the NSOccupyComp class.
 
 #include <nsoccupycomp.h>
 #include <nsentity.h>
+#include <nsplugin.h>
 
 NSOccupyComp::NSOccupyComp() :
 mDrawEnabled(false),
-mMeshID(0,HashedStringID(MESH_FULL_TILE)),
+mMeshID(),
 mMatID(),
 NSComponent()
-{}
+{
+	NSMesh * occ = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
+	if (occ == NULL)
+		dprint("NSOccupyComp::NSOccupyComp Could not get occupy mesh");
+	else
+		mMeshID = occ->fullid();
+}
 
 NSOccupyComp::~NSOccupyComp()
 {}

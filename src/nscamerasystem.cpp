@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <nscamerasystem.h>
 #include <nsentity.h>
 #include <nsselectionsystem.h>
-#include <nseventhandler.h>
+#include <nseventdispatcher.h>
 #include <nscamcomp.h>
 #include <nstimer.h>
 #include <nsscene.h>

@@ -134,14 +134,6 @@ public:
 
 	TransformFeedbackMode xfb();
 
-	virtual nsstring typeString() { return getTypeString();}
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
-
 protected:
 	struct ShaderStage
 	{
@@ -230,7 +222,6 @@ public:
 
 	void setShadowSampler(nsint sampler);
 
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSDirLightShader : public NSLightShader
@@ -251,11 +242,6 @@ public:
 
 	void setDirection(const fvec3 & dir);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return DIRLIGHTSHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSPointLightShader : public NSLightShader
@@ -284,11 +270,6 @@ public:
 
 	void setNodeTransform(const fmat4 & mat) { setUniform("nodeTransform", mat); }
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return POINTLIGHTSHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSSpotLightShader : public NSPointLightShader
@@ -305,11 +286,6 @@ public:
 
 	void setCutoff(float cutoff);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return SPOTLIGHTSHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSMaterialShader : public NSShader
@@ -364,11 +340,6 @@ public:
 
 	void setHasBones(bool hasthem);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return MATERIALSHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 
 };
 
@@ -414,11 +385,6 @@ public:
 
 	void setVisualKeys(const fvec3uimap & keys, nsuint maxKeys, nsuint lifetime);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return PARTICLEPROCESSSHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSParticleRenderShader : public NSShader
@@ -453,11 +419,6 @@ public:
 
 	void setWorldUp(const fvec3 & vec);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return PARTICLERENDERSHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSDepthShader : public NSShader
@@ -482,7 +443,6 @@ public:
 
 	void setHeightMinMax(const fvec2 & hu) { setUniform("hminmax", hu); }
 
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSDirShadowMapShader : public NSDepthShader
@@ -495,11 +455,6 @@ public:
 
 	void init();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return DIR_SHADOWMAP_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSPointShadowMapShader : public NSDepthShader
@@ -518,11 +473,6 @@ public:
 
 	void setInverseTMat(const fmat4 & invt);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return POINT_SHADOWMAP_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSSpotShadowMapShader : public NSDepthShader
@@ -535,11 +485,6 @@ public:
 
 	void init();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return SPOT_SHADOWMAP_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSEarlyZShader : public NSDepthShader
@@ -552,11 +497,6 @@ public:
 
 	void init();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return EARLYZ_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSDirShadowMapXFBShader : public NSShader
@@ -570,12 +510,6 @@ public:
 	void init(){ NSShader::init(); }
 
 	void setProjLightMat(const fmat4 & mat){ setUniform("projLightMat", mat); }
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return DIR_SHADOWMAPXFB_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSPointShadowMapXFBShader : public NSShader
@@ -604,11 +538,6 @@ public:
 
 	void setMaxDepth(nsfloat d) { setUniform("maxDepth", d); }
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return POINT_SHADOWMAPXFB_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSSpotShadowMapXFBShader : public NSShader
@@ -623,11 +552,6 @@ public:
 
 	void setProjLightMat(const fmat4 & mat){ setUniform("projLightMat", mat); }
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return SPOT_SHADOWMAPXFB_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSEarlyZXFBShader : public NSSpotShadowMapXFBShader
@@ -642,11 +566,6 @@ public:
 
 	void setProjCamMat(const fmat4 & mat){ setUniform("projCamMat", mat); }
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return EARLYZXFB_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSRenderXFBShader : public NSMaterialShader
@@ -654,12 +573,6 @@ class NSRenderXFBShader : public NSMaterialShader
 public:
 	NSRenderXFBShader();
 	~NSRenderXFBShader();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return RENDERXFB_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSXFBShader : public NSShader
@@ -673,12 +586,6 @@ public:
 	void init();
 
 	void setNodeTransform(const fmat4 & mat);
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return XFB_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 
 };
 
@@ -700,12 +607,6 @@ public:
 	void setTransform(const fmat4 & mat) { setUniform("transform", mat); }
 
 	void setProjCamMat(const fmat4 & mat){ setUniform("projCamMat", mat); }
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return LIGHTSTENCIL_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSSkyboxShader : public NSMaterialShader
@@ -714,11 +615,6 @@ public:
 	NSSkyboxShader() : NSMaterialShader() {}
 	~NSSkyboxShader() {}
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return SKYBOX_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSTransparencyShader : public NSMaterialShader
@@ -726,12 +622,6 @@ class NSTransparencyShader : public NSMaterialShader
 public:
 	NSTransparencyShader() : NSMaterialShader() {}
 	~NSTransparencyShader() {}
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TRANSPARENCY_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 class NSSelectionShader : public NSShader
@@ -761,12 +651,6 @@ public:
 	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
 
 	void setHeightMinMax(const fvec2 & hu) { setUniform("hminmax", hu); }
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return SELECTION_SHADER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return SHADER_MANAGER_TYPESTRING; }
 };
 
 #endif

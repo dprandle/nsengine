@@ -11,12 +11,13 @@ This file contains all of the neccessary definitions for the NSResManager class.
 */
 
 #include <nsengine.h>
-#include <nsglobal.h>
 #include <nsresmanager.h>
 #include <nspupper.h>
 #include <nsfileos.h>
-#include <filesystem>
 #include <nsfactory.h>
+#include <nscallback.h>
+#include <hash/sha256.h>
+
 using namespace nsfileio;
 
 NSResManager::NSResManager():
@@ -24,13 +25,14 @@ mResourceDirectory(),
 mLocalDirectory(),
 mIDResourceMap(),
 mPlugID(),
+mHashedType(0),
 mSaveMode(Binary)
 {}
 
 
 NSResManager::~NSResManager()
 {
-	unload();
+	destroyAll();
 }
 
 nsbool NSResManager::add(NSResource * res)
@@ -44,12 +46,12 @@ nsbool NSResManager::add(NSResource * res)
 	auto check = mIDResourceMap.emplace(res->id(), res);
 	if (check.second)
 	{
-		dprint("NSResManager::add Successfully added " + res->typeString() + " with name " + res->name());
+		dprint("NSResManager::add Successfully added resource with name " + res->name());
 		res->mPlugID = mPlugID;
 		res->mOwned = true;
 	}
 	else
-		dprint("NSResManager::add Could not add " + res->typeString() + " with name " + res->name() + " because " + res->typeString() + " with that name already exists");
+		dprint("NSResManager::add Could not add resource with name " + res->name() + " because resource with that name already exists");
 	return check.second;
 	
 }
@@ -59,31 +61,58 @@ NSResManager::MapType::iterator NSResManager::begin()
 	return mIDResourceMap.begin();
 }
 
-NSResource * NSResManager::create(const nsstring & resType, const nsstring & resName)
+nsbool NSResManager::changed(NSResource * res, nsstring fname)
+{
+	if (fname == "")
+		fname = mResourceDirectory + mLocalDirectory + res->subDir() + res->name() + res->extension();
+
+	saveAs(res, ".tmp");
+
+	nschararray v1, v2;
+	nsfileio::read(".tmp",&v1);
+	nsfileio::read(fname, &v2);
+
+	if (v1.empty() || v2.empty())
+		return true;
+
+	SHA256 sha256;
+	std::string s1 = sha256(&v1[0], v1.size());
+	std::string s2 = sha256(&v2[0], v2.size());
+	nsfileio::remove_file(".tmp");
+	return (s1 != s2);
+}
+
+nsuint NSResManager::type()
+{
+	return mHashedType;
+}
+
+NSResource * NSResManager::create(const nsstring & guid_, const nsstring & resName)
+{
+	return create(hash_id(guid_), resName);
+}
+
+NSResource * NSResManager::create(nsuint res_type_id, const nsstring & resName)
 {
 	// Create the resource and add it to the map - if there is a resource with the same name already
 	// in the map then insertion will have failed, so delete the created resource and retun NULL
-	NSResource * res = nsengine.factory<NSResFactory>(resType)->create();
+	NSResource * res = nsengine.factory<NSResFactory>(res_type_id)->create();
 	res->rename(resName);
-	res->init();
 	if (!add(res))
 	{
-		dprint("NSResManager::create Deleting unadded " + resType + " with name " + resName);
+		dprint("NSResManager::create Deleting unadded " + nsengine.guid(res_type_id) + " with name " + resName);
 		delete res;
 		return NULL;
 	}
+	res->init();
 	return res;
 }
 
-bool NSResManager::contains(nsuint pResourceID)
+bool NSResManager::contains(NSResource * res)
 {
-	auto fIter = mIDResourceMap.find(pResourceID);
-	return (fIter != mIDResourceMap.end());
-}
-
-bool NSResManager::contains(const nsstring & pResourceName)
-{
-	return contains(getHashedStringID(pResourceName));
+	if (res == NULL)
+		return false;
+	return (get(res->id()) != NULL);
 }
 
 nsuint NSResManager::count() const
@@ -91,16 +120,8 @@ nsuint NSResManager::count() const
 	return mIDResourceMap.size();
 }
 
-/*!
-Removes the resource with pResID from the resource ID map, as well deletes it. If the resource
-ID cannot be found, will return false and do nothing.
-*/
-bool NSResManager::del(nsuint resID)
+bool NSResManager::del(NSResource * res)
 {
-	NSResource * res = get(resID);
-	if (res == NULL)
-		return false;
-
 	nsstring dir = mResourceDirectory + mLocalDirectory + res->subDir();
 	nsstring fName = dir + res->name() + res->extension();
 	bool ret = remove_file(fName);
@@ -108,7 +129,7 @@ bool NSResManager::del(nsuint resID)
 	if (ret)
 	{
 		dprint("NSResManager::del - Succesfully deleted file with name: " + fName);
-		unload(res);
+		destroy(res);
 	}
 	else
 	{
@@ -116,16 +137,6 @@ bool NSResManager::del(nsuint resID)
 	}
 	
 	return (ret == 0);
-}
-
-bool NSResManager::del(const nsstring & name)
-{
-	return del(HashedStringID(name));
-}
-
-bool NSResManager::del(NSResource * res)
-{
-	return del(res->id());
 }
 
 NSResManager::MapType::iterator NSResManager::end()
@@ -138,14 +149,6 @@ bool NSResManager::empty()
 	return mIDResourceMap.empty();
 }
 
-NSResource * NSResManager::get(NSResource * res)
-{
-	if (res == NULL)
-		return NULL;
-	NSResource * ret = get(res->id());
-	return ret;
-}
-
 NSResource * NSResManager::get(nsuint resid)
 {
 	MapType::iterator iter = mIDResourceMap.find(resid);
@@ -156,7 +159,12 @@ NSResource * NSResManager::get(nsuint resid)
 
 NSResource * NSResManager::get(const nsstring & resName)
 {
-	return get(getHashedStringID(resName));
+	return get(hash_id(resName));
+}
+
+NSResource * NSResManager::get(NSResource * res)
+{
+	return get(res->id());
 }
 
 NSResManager::SaveMode NSResManager::saveMode() const
@@ -169,29 +177,43 @@ void NSResManager::setSaveMode(SaveMode sm)
 	mSaveMode = sm;
 }
 
-NSResource * NSResManager::load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories)
+NSResource * NSResManager::load(const nsstring & res_guid,
+								const nsstring & fname)
 {
-	nsstring resName(pFileName);
+	return load(hash_id(res_guid), fname);
+}
+
+NSResource * NSResManager::load(nsuint res_type_id, const nsstring & fname)
+{
+	nsstring resName(fname);
 	nsstring resExtension;
-	nsstring fName(pFileName);
+	nsstring fName;
 	nsstring subDir;
+	bool shouldPrefix = false;
 	
+	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
 	nsuint pos = resName.find_last_of("/\\");
-
-	if (pos != nsstring::npos && (pos + 1) < resName.size())
+	if (pos != nsstring::npos)
 	{
-		if (pAppendDirectories)
+		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
+		{
 			subDir = resName.substr(0, pos + 1);
+			shouldPrefix = true;
+		}
 		resName = resName.substr(pos + 1);
 	}
+	else
+		shouldPrefix = true;
 
 	nsuint extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
-	if (pAppendDirectories)
-		fName = mResourceDirectory + mLocalDirectory + subDir + resName + resExtension;
+	if (shouldPrefix)
+		fName = prefixdirs + subDir + resName + resExtension;
+	else
+		fName = fname;
 
 	nsfstream file;
 	NSFilePUPer * p;
@@ -208,7 +230,7 @@ NSResource * NSResManager::load(const nsstring & resType, const nsstring & pFile
 
 	if (!file.is_open())
 	{
-		dprint("NSResManager::load : Error opening " + resType + " file " + pFileName);
+		dprint("NSResManager::load : Error opening resource file " + fName);
 		delete p;
 		return NULL;
 	}
@@ -216,7 +238,7 @@ NSResource * NSResManager::load(const nsstring & resType, const nsstring & pFile
 	NSResource * res = get(resName);
 	if (res == NULL)
 	{
-		res = create(resType, resName);
+		res = create(res_type_id, resName);
 	}
 	else
 	{
@@ -235,26 +257,21 @@ NSResource * NSResManager::load(const nsstring & resType, const nsstring & pFile
 	else
 		pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
 
-	if (rt != resType)
+	if (rt != nsengine.guid(res_type_id))
 	{
-		dprint("NSResManager::load Attempted to load resource type " + resType + " from file that is not of that type: " + fName);
+		dprint("NSResManager::load Attempted to load resource type " + nsengine.guid(res_type_id) + " from file that is not of that type: " + fName);
 		delete p;
 		file.close();
-		unload(res);
+		destroy(res);
 		return NULL;
 	}
 
 
 	res->pup(p);
-	dprint("NSResManager::load - Succesfully loaded " + resType + " from file " + fName);
+	dprint("NSResManager::load - Succesfully loaded resource from file " + fName);
 	delete p;
 	file.close();
 	return res;
-}
-
-nsuint NSResManager::getHashedStringID(const nsstring & pString)
-{
-	return HashedStringID(pString);
 }
 
 const nsstring & NSResManager::localDirectory()
@@ -297,39 +314,31 @@ nsuint NSResManager::plugid()
 	return mPlugID;
 }
 
-NSResource * NSResManager::remove(const nsstring & name)
+NSResource * NSResManager::remove(nsuint res_type_id)
 {
-	return remove(HashedStringID(name));
+	return remove((get(res_type_id)));
 }
 
-NSResource * NSResManager::remove(nsuint id)
+NSResource * NSResManager::remove(const nsstring & resName)
 {
-	NSResource * res = get(id);
-
-	if (res != NULL)
-	{
-		mIDResourceMap.erase(id);
-		res->mPlugID = 0;
-		res->mOwned = false;
-		dprint("NSResManager::remove - Succesfully removed " + res->typeString() + " with name " + res->name());
-	}
-
-	return res;
+	return remove((get(resName)));
 }
 
 NSResource * NSResManager::remove(NSResource * res)
 {
-	return remove(res->id());
+	if (res != NULL)
+	{
+		mIDResourceMap.erase(res->mID);
+		res->mPlugID = 0;
+		res->mOwned = false;
+		dprint("NSResManager::remove - Succesfully removed resource " + res->name());
+	}
+	return res;
 }
-/*!
-Renames the resource with pOldName to pNewName - it does this by removing the resource
-from the resource id map and re-inserting it with the new name. If the old name cannot be found
-in the resource id map, or the new name already exists, this function will return false without
-renaming anything (leaving the state of the resource unchanged).
-*/
+
 bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
 {
-	NSResource * res = get<NSResource>(oldName);
+	NSResource * res = get(oldName);
 
 	if (res == NULL) // resource not in map
 		return false;
@@ -350,14 +359,14 @@ bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
 	return (ret == 0);
 }
 
-void NSResManager::save(bool pAppendDirectories, NSSaveResCallback * scallback)
+void NSResManager::saveAll(const nsstring & path, NSSaveResCallback * scallback)
 {
 	// Iterate through resources
 	MapType::iterator iter = mIDResourceMap.begin();
 	while (iter != mIDResourceMap.end())
 	{
 		// Save the current iterated resource to file
-		bool success = save(iter->second->name(), pAppendDirectories);
+		bool success = save(iter->second, path);
 		if (scallback != NULL)
 		{
 			scallback->saved = success;
@@ -368,39 +377,21 @@ void NSResManager::save(bool pAppendDirectories, NSSaveResCallback * scallback)
 	}
 }
 
-bool NSResManager::save(nsuint resid, bool pAppendDirectories)
+bool NSResManager::save(NSResource * res,const nsstring & path)
 {
-	NSResource * res = get(resid);
-	if (res == NULL)
-		return false;
-
-	return save(res->name(), pAppendDirectories);
-}
-
-bool NSResManager::save(NSResource * res, bool pAppendDirectories)
-{
-	return save(res->name(), pAppendDirectories);
-}
-
-bool NSResManager::save(const nsstring & resName, bool pAppendDirectories)
-{
-	NSResource * res = NULL;
-
-	if (!pAppendDirectories)
-		res = get(nameFromFilename(resName));
-	else
-		res = get(resName);
-
 	if (res == NULL)
 	{
 		dprint("NSResManager::save : Cannot save NULL valued resource");
 		return false;
 	}
 
-	nsstring fName(resName);
+	nsstring fName(res->name() + res->extension());
 
-	if (pAppendDirectories)
-		fName = mResourceDirectory + mLocalDirectory + res->subDir() + res->name() + res->extension();
+	if (path == "")
+		fName = mResourceDirectory + mLocalDirectory + res->subDir() + fName;
+	else
+		fName = path + fName;
+	// otherwise create in cwd
 
 	bool fret = create_dir(fName);
 	if (fret)
@@ -421,12 +412,13 @@ bool NSResManager::save(const nsstring & resName, bool pAppendDirectories)
 
 	if (!file.is_open())
 	{
-		dprint("NSResManager::save : Error opening " + res->typeString() + " file " + fName);
+		dprint("NSResManager::save : Error opening file " + fName);
 		delete p;
 		return false;
 	}
 
-	nsstring rest = res->typeString();
+	nsuint hashed_type = res->type();
+	nsstring rest = nsengine.guid(hashed_type);
 
 	if (mSaveMode == Binary)
 		pup(*(static_cast<NSBinFilePUPer*>(p)), rest, "type");
@@ -434,15 +426,21 @@ bool NSResManager::save(const nsstring & resName, bool pAppendDirectories)
 		pup(*(static_cast<NSTextFilePUPer*>(p)), rest, "type");
 
 	res->pup(p);
-	dprint("NSResManager::save - Succesfully saved " + res->typeString() + " to file " + fName);
+	dprint("NSResManager::save - Succesfully saved " + rest + " to file " + fName);
 	delete p;
 	file.close();
 	return true;
 }
 
-/*!
-Set the local resource directory - ResourceDir/ *LocalDir* /SubDir/ResourceName.ResExt
-*/
+bool NSResManager::saveAs(NSResource * res, const nsstring & fname)
+{
+	nsstring origName = res->name();
+	res->rename(nameFromFilename(fname));
+	bool success = save(res, pathFromFilename(fname));
+	res->rename(origName);
+	return success;
+}
+
 void NSResManager::setLocalDirectory(const nsstring & pDirectory)
 {
 	mLocalDirectory = pDirectory;
@@ -453,68 +451,48 @@ void NSResManager::setPlugID(nsuint plugid)
 	mPlugID = plugid;
 }
 
-bool NSResManager::unload()
+void NSResManager::destroyAll()
 {
-	MapType::iterator iter = mIDResourceMap.begin();
-	while (iter != mIDResourceMap.end())
+	MapType::iterator iter = begin();
+	while (iter != end())
 	{
-		delete iter->second;
-		iter->second = NULL;
+		if (destroy(iter->second))
+			iter->second = NULL;
+		else
+			return;
 		++iter;
 	}
 	mIDResourceMap.clear();
-	return true;
 }
 
-bool NSResManager::unload(const nsstring & name)
+bool NSResManager::destroy(NSResource * res)
 {
-	return unload(HashedStringID(name));
-}
-
-bool NSResManager::unload(nsuint resID)
-{
-	NSResource * res = remove(resID);
-	if (res == NULL)
+	NSResource * res_ = remove(res);
+	if (res_ == NULL)
 	{
-		dprint("NSResManager::unload - Could not unload NULL valued resource");
+		dprint("NSResManager::destroy - Couldn't destroy " + res_->name());
 		return false;
 	}
-	dprint("NSResManager::unload - Successfully deleted " + res->typeString() + " with name " + res->name());
-	delete res;
+	delete res_;
 	return true;
 }
 
-bool NSResManager::unload(NSResource * res)
-{
-	return unload(res->id());
-}
-
-/*!
-Set the local resource directory - *ResourceDir* /LocalDir/SubDir/ResourceName.ResExt
-Resource managers should really all have the same Resource directory.. but they can be
-different if that is really needed for some reason
-*/
 void NSResManager::setResourceDirectory(const nsstring & pDirectory)
 {
 	mResourceDirectory = pDirectory;
 }
 
-/*!
-Using the full path the resource name is extracted. This just finds the name after the last
-forward slash or double backslash (/\\) and before the extension marker (.) and uses this
-as the resource name.
-*/
-nsstring NSResManager::nameFromFilename(const nsstring & pFName)
+nsstring NSResManager::nameFromFilename(const nsstring & fname)
 {
 	// full file path
-	nsstring resName(pFName);
+	nsstring resName(fname);
 
 	// After last / or \\ (ie if bla/blabla/blablabla/name.ext this will get position before name.ext)
 	nsuint pos = resName.find_last_of("/\\");
 
 	// If position is valid, the extract name.ext. If it is not then means there was likely not a path in the first
 	// place and so we leave resName alone.
-	if (pos != nsstring::npos && (pos + 1) < pFName.size())
+	if (pos != nsstring::npos && (pos + 1) < fname.size())
 		resName = resName.substr(pos + 1);
 
 	// Find the position before the period
@@ -525,4 +503,15 @@ nsstring NSResManager::nameFromFilename(const nsstring & pFName)
 		resName = resName.substr(0, extPos);
 
 	return resName;
+}
+
+nsstring NSResManager::pathFromFilename(const nsstring & fname)
+{
+	nsstring path = "";
+
+	nsuint pos = fname.find_last_of("/\\");
+	if (pos != nsstring::npos && (pos + 1) < fname.size())
+		path = fname.substr(0, pos + 1);
+
+	return path;
 }

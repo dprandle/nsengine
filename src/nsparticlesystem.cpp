@@ -10,7 +10,7 @@ This file contains all of the neccessary definitions for the NSParticleSystem cl
 \copywrite Earth Banana Games 2013
 */
 
-#include <nseventhandler.h>
+#include <nseventdispatcher.h>
 #include <nsparticlesystem.h>
 #include <nsparticlecomp.h>
 #include <nsscene.h>
@@ -75,7 +75,7 @@ void NSParticleSystem::draw()
 		NSParticleRenderShader * renderShader = nsengine.resource<NSParticleRenderShader>(mat->shaderID());
 
 		if (renderShader == NULL)
-			renderShader = nsengine.engplug()->resource<NSParticleRenderShader>(DEFAULT_RENDER_PARTICLE_SHADER);
+			renderShader = nsengine.engplug()->get<NSParticleRenderShader>(DEFAULT_RENDER_PARTICLE_SHADER);
 
 		if (renderShader == NULL || comp->first())
 		{

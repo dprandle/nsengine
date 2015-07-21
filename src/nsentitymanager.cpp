@@ -26,7 +26,21 @@ NSEntityManager::NSEntityManager() : NSResManager()
 NSEntityManager::~NSEntityManager()
 {}
 
-nsstring NSEntityManager::getTypeString()
+nspentityset NSEntityManager::entities(nsuint comp_type_id)
 {
-	return ENTITY_MANAGER_TYPESTRING;
+	nspentityset ret;
+	auto iter = mIDResourceMap.begin();
+	while (iter != mIDResourceMap.end())
+	{
+		NSEntity * curEnt = get(iter->first);
+		if (curEnt->has(comp_type_id))
+			ret.emplace(curEnt);
+		++iter;
+	}
+	return ret;	
+}
+
+nspentityset NSEntityManager::entities(const nsstring & comp_guid)
+{
+	return entities(hash_id(comp_guid));
 }

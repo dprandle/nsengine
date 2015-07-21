@@ -15,10 +15,10 @@ This file contains all of the neccessary declartations for the NSEngine class.
 
 #include <map>
 #include <nsglobal.h>
-#include <nsplugin.h>
 #include <nsfactory.h>
 #include <mutex>
 #include <typeindex>
+#include <nsmath.h>
 
 class NSScene;
 class NSRenderSystem;
@@ -34,6 +34,10 @@ class NSMovementSystem;
 class NSTimer;
 class NSPluginManager;
 class NSSystem;
+class NSPlugin;
+class NSEventDispatcher;
+struct NSSaveResCallback;
+class NSResManager;
 
 #ifdef NSDEBUG
 class NSDebug;
@@ -43,6 +47,7 @@ struct GLContext;
 class NSFrameBuffer;
 
 typedef std::unordered_map<nsuint, NSSystem*> SystemMap;
+typedef std::unordered_map<nsuint, nsuint> ResManagerMap;
 typedef std::unordered_map<std::type_index, nsuint> TypeHashMap;
 typedef std::unordered_map<nsuint, nsstring> HashMap;
 typedef std::unordered_map<nsuint, NSFactory*> FactoryMap;
@@ -104,29 +109,11 @@ public:
 	/* Add a system to the current context */
 	bool addSystem(NSSystem * pSystem);
 
-	template<class T>
-	bool addResource(const T & plug_, NSResource * res)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug != NULL)
-			return plug->add(res);
-		return false;
-	}
-
-	bool addResource(NSResource * res);
-
 	NSPlugin * active();
 
 	FactoryMap::iterator beginFac();
 
 	SystemMap::iterator beginSys();
-
-	template<class ResType, class T1, class T2>
-	bool containsResource(const T1 & plug_, const T2 & res_)
-	{
-		NSResource * res = nsengine.resource<ResType>(plug_, res_);
-		return (res != NULL);
-	}
 
 	/*!
 	Create a GLContext and return a unique id - this id can be used to set the current context and
@@ -155,22 +142,6 @@ public:
 	
 	NSSystem * createSystem(const nsstring & guid_);
 
-	template<class ResType, class T>
-	ResType * createResource(const T & plug_, const nsstring & resName)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug != NULL)
-			return plug->create<ResType>(resName);
-		return NULL;
-	}
-
-	template<class ResType>
-	ResType * createResource(const nsstring & resName)
-	{
-		NSPlugin * plug = active();
-		return createResource<ResType>(plug, resName);
-	}
-
 	GLContext * current();
 
 	nsuint currentid();
@@ -181,13 +152,16 @@ public:
 	Delete the context with ID cID
 	Make sure shutdown has been called with the context to be deleted set as the current context
 	*/
-	bool delContext(nsuint cID);
+	bool destroyContext(nsuint cID);
 
 	template<class T>
 	bool delPlugin(const T & name)
 	{
-		return current()->plugins->del(name);
+		NSPlugin * plg = plugin(name);
+		return delPlugin(plg);
 	}
+
+	bool delPlugin(NSPlugin * plg);
 
 	bool delFramebuffer(nsuint fbid);
 
@@ -202,14 +176,6 @@ public:
 
 	bool destroySystem(const nsstring & guid_);
 
-	template<class ResType, class T1, class T2>
-	nsbool delResource(const T1 & plug, const T2 & res)
-	{
-		return delResource(resource<ResType>(plug, res));
-	}
-
-	nsbool delResource(NSResource * res);
-
 #ifdef NSDEBUG
 	void debugPrint(const nsstring & str);
 #endif
@@ -222,13 +188,16 @@ public:
 
 	NSPluginManager * plugins();
 
-	NSEventHandler * events();
+	NSEventDispatcher * events();
 
 	template<class T>
 	bool hasPlugin(const T & name)
 	{
-		return current()->plugins->contains(name);
+		NSPlugin * plg = plugin(name);
+		return hasPlugin(plg);
 	}
+
+	bool hasPlugin(NSPlugin * plg);
 
 	template<class ObjType>
 	NSFactory * factory()
@@ -251,7 +220,6 @@ public:
 		return factory<BaseFacType>(hash_id(guid_)) ;
 	}
 
-
 	template<class BaseFacType, class ObjType>
 	BaseFacType * factory()
 	{
@@ -272,29 +240,18 @@ public:
 	
 	nsbool hasSystem(const nsstring & guid_);
 
-	NSPlugin * loadPlugin(const nsstring & fname, bool appendDirs = true);
+	NSPlugin * loadPlugin(const nsstring & fname);
 
-	template<class ResType>
-	ResType * loadResource(nsuint plugid, const nsstring & fileName, bool appendDirs = true)
+	template<class ManagerType, class T>
+	ManagerType * manager(const T & plugname)
 	{
-		NSPlugin * plug = plugin(plugid);
-
-		if (plug == NULL)
-			return NULL;
-
-		return plug->load<ResType>(fileName, appendDirs);
+		nsuint hashed_type = type_to_hash(ManagerType);
+		return static_cast<ManagerType*>(manager(hashed_type, plugin(plugname)));
 	}
 
-	template<class ResType>
-	ResType * loadResource(const nsstring & fileName, bool appendDirs = true)
-	{
-		NSPlugin * plug = active();
+	NSResManager * manager(nsuint manager_typeid, NSPlugin * plg);
 
-		if (plug == NULL)
-			return NULL;
-
-		return plug->load<ResType>(fileName, appendDirs);
-	}
+	NSResManager * manager(const nsstring & manager_guid, NSPlugin * plg);
 
 	template<class CompType>
 	bool registerComponentType(const nsstring & guid_)
@@ -317,7 +274,12 @@ public:
 			return false;
 		}
 
-		return (createFactory<NSCompFactoryType<CompType>,CompType>() != NULL);		
+		auto rf = createFactory<NSCompFactoryType<CompType>,CompType>();
+		if (rf == NULL)
+			return false;
+		
+		rf->type_id = hashed;
+		return true;
 	}
 
 	template<class SysType>
@@ -341,7 +303,12 @@ public:
 			return false;
 		}
 
-		return (createFactory<NSSysFactoryType<SysType>,SysType>() != NULL);
+		auto rf = createFactory<NSSysFactoryType<SysType>,SysType>();
+		if (rf == NULL)
+			return false;
+		
+		rf->type_id = hashed;
+		return true;
 	}
 
 	template<class ResType, class ManagerType>
@@ -379,7 +346,42 @@ public:
 		if (rf == NULL)
 			return false;
 		
-		rf->mManagerID = fiter->second;
+		rf->type_id = hashed;
+		mResManagerMap.emplace(hashed, fiter->second);
+		return true;
+	}
+
+	template<class ResType, class ManagerType>
+	bool registerAbstractResourceType(const nsstring & guid_)
+	{
+		nsuint hashed = hash_id(guid_);
+		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		
+		if (!ret.second)
+		{
+			dprint(nsstring("registerAbstractResourceType - Could not generate unique hash from ") + guid_);
+			return false;
+		}
+
+		std::type_index ti(typeid(ResType));
+		auto check = mObjTypeHashes.emplace(ti, hashed);
+
+		if (!check.second)
+		{
+			dprint(nsstring("registerAbstractResourceType - Could not generate unique type_index from ") + ti.name());
+			return false;
+		}
+
+		std::type_index tim(typeid(ManagerType));
+		auto fiter = mObjTypeHashes.find(tim);
+
+		if (fiter == mObjTypeHashes.end())
+		{
+			dprint(nsstring("registerResourceType - Could not find hash_id for ") + tim.name() + nsstring(" - did you forget to register the manager first?"));
+			return false;
+		}
+
+		mResManagerMap.emplace(hashed, fiter->second);
 		return true;
 	}
 
@@ -404,60 +406,32 @@ public:
 			return false;
 		}
 
-		return (createFactory<NSResManagerFactoryType<ManagerType>,ManagerType>() != NULL);
+		auto rf = createFactory<NSResManagerFactoryType<ManagerType>,ManagerType>();
+		if (rf == NULL)
+			return false;
+		
+		rf->type_id = hashed;
+		return true;
 	}
 
-	void save(NSSaveResCallback * scallback=NULL);
+	void saveCore(NSSaveResCallback * scallback=NULL);
 
-	bool save(const nsstring & plugname, NSSaveResCallback * scallback=NULL);
+	bool savePlugin(NSPlugin * plg, bool saveOwnedResources=false, NSSaveResCallback * scallback=NULL);
 
-	bool save(nsuint plugid, NSSaveResCallback * scallback=NULL);
-
-	bool save(NSPlugin * plugtosave, NSSaveResCallback * scallback=NULL);
-
-	void savecore(NSSaveResCallback * scallback=NULL);
+	void savePlugins(bool saveOwnedResources=false, NSSaveResCallback * scallback = NULL);
 
 	void setPluginDirectory(const nsstring & plugdir);
 
 	const nsstring & pluginDirectory();
 
-	template < class ManagerType, class T>
-	ManagerType * manager(const T & plug_)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug == NULL)
-			return NULL;
-		return plug->manager<ManagerType>();
-	}
-
-	template<class T>
-	NSEntity * loadModel(const T & plug_, const nsstring & entname, const nsstring & fname, bool prefixWithImportDir, const nsstring & meshname = "", bool flipuv = true)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug == NULL)
-			return NULL;
-		return plug->loadModel(entname, fname, prefixWithImportDir, meshname, flipuv);
-	}
-
-	NSEntity * loadModel(const nsstring & entname, const nsstring & fname, bool prefixWithImportDir, const nsstring & meshname = "", bool flipuv = true);
-
-	template<class T>
-	bool loadModelResources(const T & plug_, const nsstring & fname, bool prefixWithImportDir, const nsstring & meshname = "", bool flipuv = true)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug == NULL)
-			return NULL;
-		return plug->loadModelResources(fname, prefixWithImportDir, meshname, flipuv);
-	}
-
-	bool loadModelResources(const nsstring & fname, bool prefixWithImportDir, const nsstring & meshname = "", bool flipuv = true);
-
 	template<class T>
 	NSPlugin * removePlugin(const T & name)
 	{
-		return current()->plugins->remove<NSPlugin>(name);
+		NSPlugin * plg = plugin(name);
+		return removePlugin(plg);
 	}
 
+	NSPlugin * removePlugin(NSPlugin * plg);
 
 	template<class SysType>
 	SysType * removeSystem()
@@ -470,51 +444,38 @@ public:
 
 	NSSystem * removeSystem(const nsstring & gui);
 
-	template<class ResType, class T1, class T2>
-	ResType * removeResource(const T1 & plug, const T2 & res)
-	{
-		NSResource * res = removeResource(resource<ResType>(plug, res));
-		if (res != NULL)
-			return static_cast<ResType*>(res);
-		return NULL;
-	}
-
-	NSResource * removeResource(NSResource * res);
-
 	NSPlugin * plugin(const nsstring & name);
 
 	NSPlugin * plugin(nsuint id);
 
-	NSPlugin * plugin(NSPlugin * plug);
+	NSPlugin * plugin(NSPlugin * plg);
 
 	template<class T>
-	bool unloadPlugin(const T & name)
+	bool destroyPlugin(const T & name)
 	{
-		return unloadPlugin(plugin(name));
+		return destroyPlugin(plugin(name));
 	}
 
-	bool unloadPlugin(NSPlugin * plug);
-
-   
+	bool destroyPlugin(NSPlugin * plug);
 
 	template<class ResType>
 	ResType * resource(const uivec2 & resID)
 	{
-		return resource<ResType>(resID.x, resID.y);
+		nsuint hashed_type = type_to_hash(ResType);
+		return static_cast<ResType*>(_resource(hashed_type,resID));
 	}
 
-	template<class ResType, class T1, class T2>
-	ResType * resource(const T1 & plug_, const T2 & res)
+	template<class ResType,class T1, class T2>
+	ResType * resource(const T1 & plg, const T2 & res)
 	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug == NULL)
-			return NULL;
-
-		return plug->resource<ResType>(res);
+		NSPlugin * plug = plugin(plg);
+		return static_cast<ResType*>(resource(type_to_hash(ResType),plug,res));
 	}
 
-	bool resourceChanged(NSResource * res);
+	NSResource * resource(nsuint res_typeid, NSPlugin * plg, nsuint resid);
 
+	NSResource * resource(nsuint res_typeid, NSPlugin * plg, const nsstring & resname);
+	
 	/*!
 	Overload of Propagate name change
 	*/
@@ -522,18 +483,15 @@ public:
 
 	const nsstring & resourceDirectory();
 
-	template<class ResType, class T1, class T2>
-	nsbool saveResource(const T1 & plug_, const T2 & name)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug != NULL)
-			return plug->save(name);
-		return false;
-	}
-
 	nsstring guid(nsuint hash);
 
 	nsstring guid(std::type_index type);
+
+	nsuint managerID(nsuint res_id);
+
+	nsuint managerID(std::type_index res_type);
+
+	nsuint managerID(const nsstring & res_guid);
 
 	nsuint typeID(std::type_index type);
 	
@@ -573,17 +531,6 @@ public:
 	NSSystem * system(const nsstring & guid_);
 
 	NSTimer * timer();
-
-	template<class ResType, class T1, class T2>
-	nsbool unloadResource(const T1 & plug_, const T2 & res)
-	{
-		NSPlugin * plug = plugin(plug_);
-		if (plug != NULL)
-			return plug->unload<ResType>(res);
-		return false;
-	}
-
-	nsbool unloadResource(NSResource * res);
 
 	void update();
 
@@ -663,6 +610,9 @@ private:
 	void _initEntities();
 	void _initDefaultFactories();
 	void _removeSys(nsuint type_id);
+
+	NSResource * _resource(nsuint restype_id, const uivec2 & resid);
+	
 	nsstring mResourceDirectory;
 	nsstring mImportDirectory;
 	
@@ -672,6 +622,7 @@ private:
 	TypeHashMap mObjTypeHashes;
 	HashMap mObjTypeNames;
 	FactoryMap mFactories;
+	ResManagerMap mResManagerMap;
 	
 	ContextMap mContexts;
 	nsuint mCurrentContext;
@@ -687,7 +638,7 @@ struct GLContext
 	NSPlugin * engplug;
 	SystemMap * systems;
 	NSPluginManager * plugins;
-	NSEventHandler * mEvents;
+	NSEventDispatcher * mEvents;
 	FramebufferMap fbmap;
 	NSTimer * timer;
 	nsuint compositeBuf;

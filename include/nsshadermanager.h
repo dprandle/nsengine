@@ -16,25 +16,12 @@
 #include <nsresmanager.h>
 #include <nsshader.h>
 
-class NSShader;
-
 class NSShaderManager : public NSResManager
 {
 public:
 
 	NSShaderManager();
 	~NSShaderManager();
-
-	bool compile();
-
-	template<class T>
-	bool compile(const T & shader)
-	{
-		NSShader * sh = get(shader);
-		if (sh == NULL)
-			return false;
-		return sh->compile();
-	}
 
 	template <class ResType>
 	ResType * create(const nsstring & resName)
@@ -44,12 +31,7 @@ public:
 
 	virtual NSShader * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSShader>(resName);
-	}
-
-	virtual NSShader * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSShader*>(NSResManager::create(resType, resName));
+		return create<NSShader>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -57,186 +39,86 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSShader * get(nsuint resid)
-	{
-		return static_cast<NSShader*>(NSResManager::get(resid));
-	}
-
-	virtual NSShader * get(const nsstring & resName)
-	{
-		return static_cast<NSShader*>(NSResManager::get(resName));
-	}
-
-	void initUniforms();
-
+	
 	template<class T>
-	void initUniforms(const T & shader)
+	NSShader * get(const T & resname)
 	{
-		NSShader * sh = get(shader);
-		if (sh == NULL)
-			return;
-		sh->initUniforms();
-	}
-
-	bool link();
-
-	template<class T>
-	bool link(const T & shader)
-	{
-		NSShader * sh = get(shader);
-		if (sh == NULL)
-			return false;
-		return sh->link();
-	}
-
-	template<class ResType, class T>
-	ResType * loadStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype, bool pAppendDirectories = true)
-	{
-		ResType * sh = get<ResType>(shader);
-		if (sh == NULL)
-			return NULL;
-
-		nsstring fName(filename);
-		if (pAppendDirectories)
-			fName = mResourceDirectory + mLocalDirectory + filename;
-
-		nsfstream file;
-		NSFilePUPer * p;
-		if (mSaveMode == Binary)
-		{
-			file.open(fName, nsfstream::in | nsfstream::binary);
-			p = new NSBinFilePUPer(file, PUP_IN);
-		}
-		else
-		{
-			file.open(fName, nsfstream::in);
-			p = new NSTextFilePUPer(file, PUP_IN);
-		}
-
-		if (!file.is_open())
-		{
-			dprint("NSShaderManager::loadStage : Error opening file with name - " + fName);
-			delete p;
-			return NULL;
-		}
-
-		nsstring rt;
-		if (mSaveMode == Binary)
-			pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
-		else
-			pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
-
-		if (rt != sh->typeString() + "stage:" + std::to_string(stagetype))
-		{
-			dprint("NSShaderManager::loadStage Attempted to load shader stage " + fName + " which is not of stage type " + std::to_string(stagetype));
-			delete p;
-			file.close();
-			unload(sc);
-			return false;
-		}
-
-		sh->pup(p, stagetype);
-		dprint("NSShaderManager::loadStage - Succesfully loaded " + sh->typeString() + " stage " + std::to_string(stagetype) + " from file " + fName);
-		delete p;
-		file.close();
-		return sh;
-	}
-
-	template<class T>
-	NSShader * loadStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype, bool pAppendDirectories = true)
-	{
-		return loadStage<NSShader>(shader, filename, stagetype, pAppendDirectories);
+		return get<NSShader>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSShader * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSShader * load(const nsstring & fname)
 	{
-		return static_cast<NSShader*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSShader>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSShader * remove(const nsstring & name)
+	template<class T >
+	NSShader * remove(const T & rname)
 	{
-		return static_cast<NSShader*>(NSResManager::remove(name));
+		return remove<NSShader>(rname);
 	}
 
-	virtual NSShader * remove(nsuint id)
-	{
-		return static_cast<NSShader*>(NSResManager::remove(id));
-	}
-
-	virtual NSShader * remove(NSResource * res)
-	{
-		return static_cast<NSShader*>(NSResManager::remove(res));
-	}
-
-	template<class ResType, class T>
-	ResType * saveStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype, bool pAppendDirectories = true)
-	{
-		ResType * sh = get<ResType>(shader);
-		if (sh == NULL)
-			return NULL;
-
-		nsstring fName(filename);
-		if (pAppendDirectories)
-			fName = mResourceDirectory + mLocalDirectory + filename;
-
-		bool fret = create_dir(fName);
-		if (fret)
-			dprint("NSShaderManager::save Created directory " + fName);
-
-		nsfstream file;
-		NSFilePUPer * p;
-		if (mSaveMode == Binary)
-		{
-			file.open(fName, nsfstream::out | nsfstream::binary);
-			p = new NSBinFilePUPer(file, PUP_OUT);
-		}
-		else
-		{
-			file.open(fName, nsfstream::out);
-			p = new NSTextFilePUPer(file, PUP_OUT);
-		}
-
-		if (!file.is_open())
-		{
-			dprint("NSShaderManager::saveStage : Error opening " + sh->typeString " stage " + std::to_string(stagetype) + " file " + fName);
-			delete p;
-			return NULL;
-		}
-
-		if (mSaveMode == Binary)
-			pup(*(static_cast<NSBinFilePUPer*>(p)), sh->typeString() + "stage:" + std::to_string(stagetype), "type");
-		else
-			pup(*(static_cast<NSTextFilePUPer*>(p)), sh->typeString() + "stage:" + std::to_string(stagetype), "type");
-
-		sh->pup(p, stagetype);
-		dprint("NSShaderManager::saveStage - Succesfully saved " + sh->typeString " stage " + std::to_string(stagetype) + " to file " + fName);
-		delete p;
-		file.close();
-		return sh;
-	}
+	bool compileAll();
 
 	template<class T>
-	NSShader * saveStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype, bool pAppendDirectories = true)
+	bool compile(const T & shader)
 	{
-		return saveStage<NSShader>(shader, filename, stagetype, pAppendDirectories);
+		NSShader * sh = get(shader);
+		return compile(sh);
 	}
 
-	static nsstring getTypeString();
+	bool compile(NSShader * sh);
 
-	virtual nsstring typeString() { return getTypeString(); }
+	void initUniformsAll();
+
+	template<class T>
+	void initUniforms(const T & shader)
+	{
+		NSShader * sh = get(shader);
+		initUniforms(sh);
+	}
+
+	void initUniforms(NSShader * sh);
+
+	bool linkAll();
+
+	template<class T>
+	bool link(const T & shader)
+	{
+		NSShader * sh = get(shader);
+		return link(sh);
+	}
+
+	bool link(NSShader * sh);
+	
+	template<class T>
+	bool loadStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype)
+	{
+		NSShader * sh = get(shader);
+		return loadStage(shader, filename, stagetype, pAppendDirectories);
+	}
+
+	bool loadStage(NSShader * shader, const nsstring & fname, NSShader::ShaderType stagetype);
+
+	template<class T>
+	bool saveStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype)
+	{
+		NSShader * sh = get(shader);
+		return saveStage(sh, filename, stagetype, pAppendDirectories);
+	}
+
+	bool saveStage(NSShader * sh, const nsstring & filename, NSShader::ShaderType stagetype);
 };
 
 #endif

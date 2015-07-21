@@ -14,7 +14,8 @@
 
 NSComponent::NSComponent(): 
 mOwner(NULL),
-mUpdate(true)
+mUpdate(true),
+mHashedType(0)
 {}
 
 NSComponent::~NSComponent()
@@ -40,6 +41,11 @@ bool NSComponent::updatePosted() const
 void NSComponent::postUpdate(bool pUpdate)
 {
 	mUpdate = pUpdate;
+}
+
+nsuint NSComponent::type()
+{
+	return mHashedType;
 }
 
 void NSComponent::nameChange(const uivec2 & oldid, const uivec2 newid)

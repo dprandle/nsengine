@@ -41,13 +41,18 @@ nsbool NSPluginManager::add(NSResource * res)
 	return false;
 }
 
+nsbool NSPluginManager::bind(NSPlugin * plg)
+{
+	return plg->bind();
+}
+
 void NSPluginManager::setResourceDirectory(const nsstring & pDirectory)
 {
 	mResourceDirForOwnedPlugs = pDirectory;
 	auto iter = mIDResourceMap.begin();
 	while (iter != mIDResourceMap.end())
 	{
-		NSPlugin * plug = get(iter->second);
+		NSPlugin * plug = get(iter->first);
 		plug->setResourceDirectory(mResourceDirForOwnedPlugs);
 		++iter;
 	}
@@ -73,7 +78,19 @@ NSPlugin * NSPluginManager::active()
 	return get(mActivePlugin);
 }
 
-nsstring NSPluginManager::getTypeString()
+void NSPluginManager::setActive(NSPlugin * plg)
 {
-	return PLUGIN_MANAGER_TYPESTRING;
+	if (plg != NULL)
+	{
+		if (!plg->bound())
+			plg->bind();
+		mActivePlugin = plg->id();
+	}
+	else
+		mActivePlugin = 0;
+}
+
+nsbool NSPluginManager::unbind(NSPlugin * plg)
+{
+	return plg->unbind();
 }

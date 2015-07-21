@@ -11,4 +11,3 @@ NSInputMapManager::~NSInputMapManager()
 {
 	
 }
-	

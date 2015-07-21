@@ -10,7 +10,7 @@ public:
 
 	NSInputMapManager();
 	~NSInputMapManager();
-
+	
 	template <class ResType>
 	ResType * create(const nsstring & resName)
 	{
@@ -19,12 +19,7 @@ public:
 
 	virtual NSInputMap * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSInputMap>(resName);
-	}
-
-	virtual NSInputMap * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSInputMap*>(NSResManager::create(resType, resName));
+		return create<NSInputMap>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -32,52 +27,36 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSInputMap * get(nsuint resid)
+	
+	template<class T>
+	NSInputMap * get(const T & resname)
 	{
-		return static_cast<NSInputMap*>(NSResManager::get(resid));
-	}
-
-	virtual NSInputMap * get(const nsstring & resName)
-	{
-		return static_cast<NSInputMap*>(NSResManager::get(resName));
+		return get<NSInputMap>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSInputMap * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSInputMap * load(const nsstring & fname)
 	{
-		return static_cast<NSInputMap*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSInputMap>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSInputMap * remove(const nsstring & name)
+	template<class T >
+	NSInputMap * remove(const T & rname)
 	{
-		return static_cast<NSInputMap*>(NSResManager::remove(name));
+		return remove<NSInputMap>(rname);
 	}
 
-	virtual NSInputMap * remove(nsuint id)
-	{
-		return static_cast<NSInputMap*>(NSResManager::remove(id));
-	}
-
-	virtual NSInputMap * remove(NSResource * res)
-	{
-		return static_cast<NSInputMap*>(NSResManager::remove(res));
-	}
-	
-	virtual nsstring typeString() {return getTypeString();}
-
-	static nsstring getTypeString() {return INPUTMAP_MANAGER_TYPESTRING;}
 };
 
 #endif

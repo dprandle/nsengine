@@ -13,8 +13,8 @@
 #ifndef NSANIMMANAGER_H
 #define NSANIMMANAGER_H
 
-#include <nsanimset.h>
 #include <nsresmanager.h>
+#include <nsanimset.h>
 
 struct aiScene;
 
@@ -32,12 +32,7 @@ public:
 
 	virtual NSAnimSet * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSAnimSet>(resName);
-	}
-
-	virtual NSAnimSet * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSAnimSet*>(NSResManager::create(resType, resName));
+		return create<NSAnimSet>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -45,54 +40,37 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSAnimSet * get(nsuint resid)
+	
+	template<class T>
+	NSAnimSet * get(const T & resname)
 	{
-		return static_cast<NSAnimSet*>(NSResManager::get(resid));
-	}
-
-	virtual NSAnimSet * get(const nsstring & resName)
-	{
-		return static_cast<NSAnimSet*>(NSResManager::get(resName));
+		return get<NSAnimSet>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSAnimSet * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSAnimSet * load(const nsstring & fname)
 	{
-		return static_cast<NSAnimSet*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSAnimSet>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSAnimSet * remove(const nsstring & name)
+	template<class T >
+	NSAnimSet * remove(const T & rname)
 	{
-		return static_cast<NSAnimSet*>(NSResManager::remove(name));
-	}
-
-	virtual NSAnimSet * remove(nsuint id)
-	{
-		return static_cast<NSAnimSet*>(NSResManager::remove(id));
-	}
-
-	virtual NSAnimSet * remove(NSResource * res)
-	{
-		return static_cast<NSAnimSet*>(NSResManager::remove(res));
+		return remove<NSAnimSet>(rname);
 	}
 
 	NSAnimSet * assimpLoadAnimationSet(const aiScene * pScene, const nsstring & pSceneName);
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
 };
 
 #endif

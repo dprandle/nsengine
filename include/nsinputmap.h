@@ -232,14 +232,6 @@ class NSInputMap : public NSResource
 
 	virtual void pup(NSFilePUPer * p);
 
-	virtual nsstring typeString() {return getTypeString();}
-
-	virtual nsstring managerTypeString() {return getManagerTypeString();}
-
-	static nsstring getTypeString() {return INPUTMAP_TYPESTRING;}
-
-	static nsstring getManagerTypeString() {return INPUTMAP_MANAGER_TYPESTRING;}
-
   private:	
 	ContextCollection mContexts;
 	Modifiers mAllowedModifiers;

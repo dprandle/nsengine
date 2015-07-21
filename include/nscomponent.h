@@ -25,6 +25,8 @@ class NSComponent
 {
 public:
 
+	friend class NSCompFactory;
+
 	NSComponent();
 
 	virtual ~NSComponent();
@@ -36,6 +38,8 @@ public:
 	bool updatePosted() const;
 
 	virtual void init()=0;
+
+	nsuint type();
 
 	virtual void nameChange(const uivec2 &, const uivec2);
 
@@ -55,6 +59,7 @@ public:
 
 protected:
 	NSEntity * mOwner;
+	nsuint mHashedType;
 	bool mUpdate;
 };
 

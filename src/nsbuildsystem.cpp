@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the NSBuildSystem class
 */
 
 #include <nsbuildsystem.h>
-#include <nseventhandler.h>
+#include <nseventdispatcher.h>
 #include <nstilebrushcomp.h>
 #include <nsevent.h>
 #include <nsscene.h>
@@ -23,7 +23,7 @@ This file contains all of the neccessary definitions for the NSBuildSystem class
 #include <nsrendersystem.h>
 #include <nsselectionsystem.h>
 #include <nsrendercomp.h>
-#include <nsinputmanager.h>
+#include <nsinputmapmanager.h>
 #include <nsentitymanager.h>
 #include <nsplugin.h>
 #include <nsinputsystem.h>
@@ -164,7 +164,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 
 		nsengine.events()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
-		nsengine.engplug()->unload<NSEntity>("MirrorBrush");
+		nsengine.engplug()->destroy<NSEntity>("MirrorBrush");
 		mMirrorBrush = NULL;
 	}
 }

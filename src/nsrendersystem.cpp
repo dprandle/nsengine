@@ -21,7 +21,7 @@
 #include <nsmeshmanager.h>
 #include <nstimer.h>
 #include <nsmatmanager.h>
-#include <nseventhandler.h>
+#include <nseventdispatcher.h>
 #include <nsscene.h>
 #include <nsterraincomp.h>
 

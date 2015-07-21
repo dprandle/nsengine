@@ -13,8 +13,8 @@
 #ifndef NSMESHMANAGER_H
 #define NSMESHMANAGER_H
 
-#include <nsmesh.h>
 #include <nsresmanager.h>
+#include <nsmesh.h>
 
 struct aiScene;
 
@@ -24,7 +24,6 @@ public:
 	NSMeshManager();
 	~NSMeshManager();
 
-
 	template <class ResType>
 	ResType * create(const nsstring & resName)
 	{
@@ -33,12 +32,7 @@ public:
 
 	virtual NSMesh * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSMesh>(resName);
-	}
-
-	virtual NSMesh * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSMesh*>(NSResManager::create(resType, resName));
+		return create<NSMesh>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -46,54 +40,37 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSMesh * get(nsuint resid)
+	
+	template<class T>
+	NSMesh * get(const T & resname)
 	{
-		return static_cast<NSMesh*>(NSResManager::get(resid));
-	}
-
-	virtual NSMesh * get(const nsstring & resName)
-	{
-		return static_cast<NSMesh*>(NSResManager::get(resName));
+		return get<NSMesh>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSMesh * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSMesh * load(const nsstring & fname)
 	{
-		return static_cast<NSMesh*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSMesh>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSMesh * remove(const nsstring & name)
+	template<class T >
+	NSMesh * remove(const T & rname)
 	{
-		return static_cast<NSMesh*>(NSResManager::remove(name));
-	}
-
-	virtual NSMesh * remove(nsuint id)
-	{
-		return static_cast<NSMesh*>(NSResManager::remove(id));
-	}
-
-	virtual NSMesh * remove(NSResource * res)
-	{
-		return static_cast<NSMesh*>(NSResManager::remove(res));
+		return remove<NSMesh>(rname);
 	}
 
 	NSMesh* assimpLoadMeshFromScene(const aiScene * scene, const nsstring & pMeshName);
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
 
 private:
 

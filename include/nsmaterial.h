@@ -154,14 +154,6 @@ public:
 
 	void setSpecularIntensity(nsfloat pIntensity);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return MATERIAL_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return MAT_MANAGER_TYPESTRING; }
-
 private:
 	nsbool mAlphaBlend;
 	uivec2 mMatShaderID;

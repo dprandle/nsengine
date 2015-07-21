@@ -221,10 +221,6 @@ public:
 
 	void unbind();
 
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
-
 protected:
 	/*
 	Returns the pixel size in bytes using the format
@@ -361,12 +357,6 @@ public:
 
 	nsuint width();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX1D_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
-
 private:
 	nsuint mWidth;
 	nsuint mCompByteSize;
@@ -460,12 +450,6 @@ public:
 	*/
 	nsbool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX2D_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
-
 private:
 	uivec2 mDim;
 	nsuint mCompByteSize;
@@ -492,12 +476,6 @@ class NSTex1DArray : public NSTex2D
 public:
 	NSTex1DArray();
 	~NSTex1DArray();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX1DARRAY_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 class NSTex3D : public NSTexture
@@ -564,12 +542,6 @@ public:
 
 	void setImmutable(nsbool immutable);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX3D_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
-
 private:
 	uivec3 mDim;
 	nsuint mCompByteSize;
@@ -596,12 +568,6 @@ class NSTex2DArray : public NSTex3D
 public:
 	NSTex2DArray();
 	~NSTex2DArray();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX2DARRAY_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 class NSTexCubeMap : public NSTexture
@@ -696,12 +662,6 @@ public:
 
 	nsbool setDataFromScreen(CubeFace f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEXCUBEMAP_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
-
 private:
 	uivec2 mDim;
 	nsuint mCompByteSize;
@@ -727,12 +687,6 @@ class NSTexRectangle : public NSTex2D
 public:
 	NSTexRectangle();
 	~NSTexRectangle();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEXRECTANGLE_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 class NSTexCubeMapArray : public NSTex3D
@@ -740,12 +694,6 @@ class NSTexCubeMapArray : public NSTex3D
 public:
 	NSTexCubeMapArray();
 	~NSTexCubeMapArray();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEXCUBEMAPARRAY_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 class NSTex2DMultisample : public NSTex2D
@@ -753,12 +701,6 @@ class NSTex2DMultisample : public NSTex2D
 public:
 	NSTex2DMultisample();
 	~NSTex2DMultisample();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX2DMULTISAMPLE_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 class NSTex2DMultisampleArray : public NSTex3D
@@ -766,12 +708,6 @@ class NSTex2DMultisampleArray : public NSTex3D
 public:
 	NSTex2DMultisampleArray();
 	~NSTex2DMultisampleArray();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEX2DMULTISAMPLEARRAY_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 class NSTexBuffer : public NSTexture
@@ -787,12 +723,6 @@ public:
 	nsbool lock();
 
 	nsbool unlock();
-
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString() { return TEXBUFFER_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return TEX_MANAGER_TYPESTRING; }
 };
 
 #endif

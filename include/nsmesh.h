@@ -220,14 +220,6 @@ public:
 	*/
 	nsfloat volume();
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return MESH_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return MESH_MANAGER_TYPESTRING; }
-
 private:
 	void _propagateWorldTransform(Node * pChildNode);
 	std::vector<SubMesh*> subMeshes;

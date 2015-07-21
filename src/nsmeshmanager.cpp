@@ -20,8 +20,7 @@ NSMeshManager::NSMeshManager(): NSResManager()
 }
 
 NSMeshManager::~NSMeshManager()
-{
-}
+{}
 
 NSMesh* NSMeshManager::assimpLoadMeshFromScene(const aiScene * scene, const nsstring & pMeshName)
 {
@@ -274,9 +273,4 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			subMesh->allocateBuffers();
 		}
 	}
-}
-
-nsstring NSMeshManager::getTypeString()
-{
-	return MESH_MANAGER_TYPESTRING;
 }

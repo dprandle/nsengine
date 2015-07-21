@@ -12,7 +12,7 @@ This file contains all of the neccessary definitions for the NSInputSystem class
 
 #include <nsinputsystem.h>
 #include <nsevent.h>
-#include <nseventhandler.h>
+#include <nseventdispatcher.h>
 #include <nsinputcomp.h>
 #include <nsinputmap.h>
 #include <nsscene.h>

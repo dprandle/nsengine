@@ -23,10 +23,9 @@ NSAnimManager::NSAnimManager(): NSResManager()
 NSAnimManager::~NSAnimManager()
 {}
 
-
 NSAnimSet * NSAnimManager::assimpLoadAnimationSet(const aiScene * pScene, const nsstring & pSceneName)
 {
-	NSAnimSet * animSet = create<NSAnimSet>(pSceneName);
+	NSAnimSet * animSet = create(pSceneName);
 	for (nsuint i = 0; i < pScene->mNumAnimations; ++i)
 	{
 		nsstringstream ss;
@@ -69,9 +68,4 @@ NSAnimSet * NSAnimManager::assimpLoadAnimationSet(const aiScene * pScene, const 
 	}
 	add(animSet);
 	return animSet;
-}
-
-nsstring NSAnimManager::getTypeString()
-{
-	return ANIM_MANAGER_TYPESTRING;
 }

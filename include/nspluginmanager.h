@@ -24,19 +24,8 @@ public:
 	NSPluginManager();
 	~NSPluginManager();
 
-	NSPlugin * active();
-
-	nsbool add(NSResource * res);
-
-	template<class T>
-	nsbool bind(const T & name)
-	{
-		NSPlugin * plug = get(name);
-		if (plug == NULL)
-			return false;
-		return plug->bind();
-	}
-
+	virtual nsbool add(NSResource * res);
+	
 	template <class ResType>
 	ResType * create(const nsstring & resName)
 	{
@@ -45,12 +34,7 @@ public:
 
 	virtual NSPlugin * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSPlugin>(resName);
-	}
-
-	virtual NSPlugin * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSPlugin*>(NSResManager::create(resType, resName));
+		return create<NSPlugin>(resName); // Create 2d texture by default
 	}
 
 	template <class ResType, class T>
@@ -58,55 +42,47 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	template <class T>
-	NSPlugin * get(const T & rname)
+	
+	template<class T>
+	NSPlugin * get(const T & resname)
 	{
-		return NSResManager::get<NSPlugin>(rname);
-	}
-
-	virtual NSPlugin * get(nsuint resid)
-	{
-		return static_cast<NSPlugin*>(NSResManager::get(resid));
-	}
-
-	virtual NSPlugin * get(const nsstring & resName)
-	{
-		return static_cast<NSPlugin*>(NSResManager::get(resName));
+		return get<NSPlugin>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSPlugin * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSPlugin * load(const nsstring & fname)
 	{
-		return static_cast<NSPlugin*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSPlugin>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSPlugin * remove(const nsstring & name)
+	template<class T >
+	NSPlugin * remove(const T & rname)
 	{
-		return static_cast<NSPlugin*>(NSResManager::remove(name));
+		return remove<NSPlugin>(rname);
 	}
 
-	virtual NSPlugin * remove(nsuint id)
+	NSPlugin * active();
+	
+	template<class T>
+	nsbool bind(const T & name)
 	{
-		return static_cast<NSPlugin*>(NSResManager::remove(id));
+		NSPlugin * plug = get(name);
+		return bind(plug);
 	}
 
-	virtual NSPlugin * remove(NSResource * res)
-	{
-		return static_cast<NSPlugin*>(NSResManager::remove(res));
-	}
-
+	nsbool bind(NSPlugin * plg);
+		
 	void setPluginDirectory(const nsstring & dir);
 
 	const nsstring & pluginDirectory();
@@ -118,37 +94,21 @@ public:
 	template<class T>
 	nsbool unbind(const T & name)
 	{
-		NSPlugin * plug = get(name);
-		if (plug == NULL)
-			return false;
-		return plug->unbind();
+		NSPlugin * plg = get(name);
+		return unbind(plg);
 	}
 
-	/*!
-	\brief Set the active plugin for which new resources will be added to
-	Set the active plugin. The active plugin is used when adding resources and
-	saving resources with the engine. If the plugin is not bound, calling this
-	function will bing the plugin.
-	\param name Either name, id, or pointer of/to plugin
-	*/
+	nsbool unbind(NSPlugin * plg);
+
 	template<class T>
 	void setActive(const T & name)
 	{
-		NSPlugin * plug = get(name);
-		if (plug != NULL)
-		{
-			if (!plug->bound())
-				plug->bind();
-			mActivePlugin = plug->id();
-		}
-		else
-			mActivePlugin = 0;
+		NSPlugin * plg = get(name);
+		setActive(plg);
 	}
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
-
+	void setActive(NSPlugin * plg);
+	
 private:
 	nsuint mActivePlugin;
 	nsstring mResourceDirForOwnedPlugs;

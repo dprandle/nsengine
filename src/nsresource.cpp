@@ -22,6 +22,7 @@ mName(),
 mSubDir(),
 mID(0),
 mPlugID(0),
+mHashedType(0),
 mOwned(false)
 {}
 
@@ -98,6 +99,11 @@ void NSResource::nameChange(const uivec2 & oldid, const uivec2 newid)
 	// do nothing
 }
 
+nsuint NSResource::type()
+{
+	return mHashedType;
+}
+
 void NSResource::setExtension(const nsstring & pExt)
 {
 	mExtension = pExt;
@@ -108,7 +114,7 @@ void NSResource::rename(const nsstring & pRefName)
 	nsuint tmp = mID;
 
 	mName = pRefName;
-	mID = HashedStringID(pRefName);
+	mID = hash_id(pRefName);
 
 #ifdef NOTIFY_ENGINE_NAME_CHANGE
 	if (mOwned) // if a manager owns this resource - otherwise we dont care

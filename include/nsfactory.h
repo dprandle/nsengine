@@ -4,9 +4,8 @@
 #include <nsglobal.h>
 class NSComponent;
 class NSSystem;
-class NSResource;
 class NSResManager;
-
+class NSResource;
 
 class NSFactory
 {
@@ -33,25 +32,29 @@ private:
 
 class NSResFactory : public NSFactory
 {
-public:
-	NSResFactory() : NSFactory(Resource) {}
+	friend class NSEngine;
+  public:
+	NSResFactory():
+		NSFactory(Resource)
+	{}
 	virtual NSResource * create() = 0;
+	void setid(NSResource * res);	
+	nsuint type_id;
 };
 
 template<class T>
 class NSResFactoryType : public NSResFactory
 {
-	friend class NSEngine;
   public:
 	NSResFactoryType() :
-		mManagerID(0),
 		NSResFactory()
 	{}
 	
-	NSResource* create() { return new T(); }
-	nsuint managerID();
-  private:
-	nsuint mManagerID;
+	NSResource* create() {
+		NSResource * res = new T();
+		setid(res);
+		return res;
+	}
 };
 
 class NSResManagerFactory : public NSFactory
@@ -59,6 +62,8 @@ class NSResManagerFactory : public NSFactory
 public:
 	NSResManagerFactory() : NSFactory(ResManager) {}
 	virtual NSResManager * create() = 0;
+	void setid(NSResManager * manager);
+	nsuint type_id;
 };
 
 template<class T>
@@ -66,7 +71,11 @@ class NSResManagerFactoryType : public NSResManagerFactory
 {
 public:
 	NSResManagerFactoryType() :NSResManagerFactory() {}
-	NSResManager * create() { return new T(); }
+	NSResManager * create() {
+		NSResManager * rm = new T();
+		setid(rm);
+		return rm;
+	}
 };
 
 class NSCompFactory : public NSFactory
@@ -74,6 +83,8 @@ class NSCompFactory : public NSFactory
 public:
 	NSCompFactory() : NSFactory(Component) {}
 	virtual NSComponent * create() = 0;
+	void setid(NSComponent * comp);
+	nsuint type_id;
 };
 
 template<class T>
@@ -81,7 +92,11 @@ class NSCompFactoryType : public NSCompFactory
 {
 public:
 	NSCompFactoryType() :NSCompFactory() {}
-	NSComponent* create() { return new T(); }
+	NSComponent* create() {
+		NSComponent * cmp = new T();
+		setid(cmp);
+		return cmp;
+	}
 };
 
 class NSSysFactory : public NSFactory
@@ -89,6 +104,8 @@ class NSSysFactory : public NSFactory
 public:
 	NSSysFactory() : NSFactory(System) {}
 	virtual NSSystem * create() = 0;
+	void setid(NSSystem * sys);	
+	nsuint type_id;
 };
 
 template<class T>
@@ -96,7 +113,11 @@ class NSSysFactoryType : public NSSysFactory
 {
 public:
 	NSSysFactoryType() :NSSysFactory() {}
-	NSSystem* create() { return new T(); }
+	NSSystem* create() {
+		NSSystem * sys = new T();
+		setid(sys);
+		return sys;
+	}
 };
 
 #endif

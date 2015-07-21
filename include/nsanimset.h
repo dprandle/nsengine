@@ -84,14 +84,6 @@ public:
 
 	virtual void pup(NSFilePUPer * p);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return ANIM_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return ANIM_MANAGER_TYPESTRING; }
-
 private:
 	AnimMap mAnimationsMap;
 };

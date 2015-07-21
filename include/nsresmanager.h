@@ -13,16 +13,18 @@
 #ifndef NSRESOURCEMANAGER_H
 #define NSRESOURCEMANAGER_H
 
+#include <nsengine.h>
 #include <nsglobal.h>
-#include <nsresource.h>
 #include <unordered_map>
-#include <nscallback.h>
-#include <nsfileos.h>
-#include <hash/sha256.h>
+
+#include <nsresource.h>
 
 class NSResManager
 {
 public:
+	
+	friend class NSResManagerFactory;
+	
 	enum SaveMode
 	{
 		Binary,
@@ -40,54 +42,31 @@ public:
 	MapType::iterator begin();
 
 	template<class T>
-	nsbool changed(const T & resource, nsstring fname="")
+	nsbool changed(const T & resource, const nsstring & fname="")
 	{
 		NSResource * res = get(resource);
-		if (res == NULL)
-			return false;
-
-		if (fname == "")
-			fname = mResourceDirectory + mLocalDirectory + res->subDir() + res->name() + res->extension();
-
-		saveAs(res, ".tmp");
-
-		nschararray v1, v2;
-		nsfileio::read(".tmp",&v1);
-		nsfileio::read(fname, &v2);
-
-		if (v1.empty() || v2.empty())
-			return true;
-
-		SHA256 sha256;
-		std::string s1 = sha256(&v1[0], v1.size());
-		std::string s2 = sha256(&v2[0], v2.size());
-		nsfileio::remove_file(".tmp");
-		return (s1 != s2);
+		return changed(res,fname);
 	}
 	
-	bool contains(nsuint pResourceID);
-
-	bool contains(const nsstring & pResourceName);
-
-	nsuint count() const;
+	template<class T>
+	bool contains(const T & res_name)
+	{
+		return contains(get(res_name));
+	}
 
 	template <class ResType>
 	ResType * create(const nsstring & resName)
 	{
-		return static_cast<ResType*>(create(ResType::getTypeString(), resName));
+		nsuint res_type_id = type_to_hash(ResType);
+		return static_cast<ResType*>(create(res_type_id, resName));
 	}
 
-	virtual NSResource * create(const nsstring & resType, const nsstring & resName);
-
-	bool del(const nsstring & name);
-
-	virtual bool del(nsuint resID);
-
-	bool del(NSResource * res);
-
-	MapType::iterator end();
-
-	bool empty();
+	template<class T>
+	bool del(const T & res_name)
+	{
+		NSResource * res = get(res_name);
+		return del(res);
+	}
 
 	template <class ResType, class T>
 	ResType * get(const T & rname)
@@ -95,11 +74,59 @@ public:
 		return static_cast<ResType*>(get(rname));
 	}
 
-	virtual NSResource * get(NSResource * res);
+	template<class ResType>
+	ResType * load(const nsstring & fname)
+	{
+		nsuint res_type_id = type_to_hash(ResType);
+		return static_cast<ResType*>(load(res_type_id, fname));
+	}
+	
+	template<class ResType, class T >
+	ResType * remove(const T & rname)
+	{
+		NSResource * res = get(rname);
+		return static_cast<ResType*>(remove(res));
+	}
+
+	template<class T>
+	bool save(const T & res_name, nsstring path="")
+	{
+		NSResource * res = get(res_name);
+		return save(res, path);
+	}
+
+	template<class T>
+	bool saveAs(const T & resname, const nsstring & fname)
+	{
+		NSResource * res = get(resname);
+		return saveAs(res, fname);
+	}
+
+	virtual nsbool changed(NSResource * res, nsstring fname);
+
+	virtual bool contains(NSResource * res);
+
+	nsuint count() const;
+
+	virtual NSResource * create(const nsstring & resName)=0;
+
+	virtual NSResource * create(nsuint res_type_id, const nsstring & resName);
+
+	NSResource * create(const nsstring & guid_, const nsstring & resName);
+
+	virtual bool del(NSResource * res);
+
+	MapType::iterator end();
+
+	bool empty();
+
+	nsuint type();
 
 	virtual NSResource * get(nsuint resid);
 
 	virtual NSResource * get(const nsstring & resName);
+
+	virtual NSResource * get(NSResource * res);
 
 	virtual const nsstring & resourceDirectory();
 
@@ -107,60 +134,27 @@ public:
 
 	nsuint plugid();
 
-	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
-	{
-		return static_cast<ResType*>(load(ResType::getTypeString(), pFileName, pAppendDirectories));
-	}
-
-	virtual NSResource * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true);
-
-	/*!
-	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
-	is then it will update the handle
-	*/
+	virtual NSResource * load(const nsstring & fname) = 0;
+	
+	virtual NSResource * load(nsuint res_type_id, const nsstring & fname);
+	
+	NSResource * load(const nsstring & res_guid, const nsstring & fname);
+	
 	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
 
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
-	{
-		NSResource * res = remove(rname);
-		if (res != NULL)
-			return static_cast<ResType*>(res);
-		return NULL;
-	}
+	virtual NSResource * remove(nsuint res_type_id);
 
-	virtual NSResource * remove(const nsstring & name);
-
-	virtual NSResource * remove(nsuint id);
-
+	virtual NSResource * remove(const nsstring & resName);
+	
 	virtual NSResource * remove(NSResource * res);
 
-	/*
-	Rename the resource on file
-	*/
 	virtual bool rename(const nsstring & oldName, const nsstring & newName);
+	
+	virtual bool save(NSResource * res,const nsstring & path);
 
-	template<class T>
-	bool saveAs(const T & resource, const nsstring & filename, bool appenddirs = false)
-	{
-		NSResource * res = get(resource);
-		if (res == NULL)
-			return false;
-		nsstring origName = res->name();
-		res->rename(nameFromFilename(filename));
-		bool success = save(filename, appenddirs);
-		res->rename(origName);
-		return success;
-	}
+	virtual void saveAll(const nsstring & path="", NSSaveResCallback * scallback = NULL);
 
-	virtual void save(bool pAppendDirectories=true, NSSaveResCallback * scallback = NULL);
-
-	virtual bool save(const nsstring & resName, bool pAppendDirectories=true);
-
-	bool save(nsuint resid, bool pAppendDirectories=true);
-
-	bool save(NSResource * res, bool pAppendDirectories=true);
+	virtual bool saveAs(NSResource * res, const nsstring & fname);
 
 	void setPlugID(nsuint plugid);
 	
@@ -172,21 +166,23 @@ public:
 
 	void setSaveMode(SaveMode sm);
 
-	bool unload();
+	virtual void destroyAll();
 
-	bool unload(const nsstring & name);
+	template<class T>
+	bool destroy(const T & resname)
+	{
+		NSResource * res = get(resname);
+		return destroy(res);
+	}
+	
+	virtual bool destroy(NSResource * res);
 
-	virtual bool unload(nsuint resID);
+	static nsstring nameFromFilename(const nsstring & fname);
 
-	bool unload(NSResource * res);
-
-	virtual nsstring typeString() = 0;
-
-	static nsuint getHashedStringID(const nsstring & pString);
-
-	static nsstring nameFromFilename(const nsstring & pFName);
-
+	static nsstring pathFromFilename(const nsstring & fname);
+	
 protected:
+	nsuint mHashedType;
 	nsstring mResourceDirectory;
 	nsstring mLocalDirectory;
 	MapType mIDResourceMap;

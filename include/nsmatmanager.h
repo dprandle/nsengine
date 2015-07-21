@@ -13,11 +13,10 @@
 #ifndef NSMATERIALMANAGER_H
 #define NSMATERIALMANAGER_H
 
-#include <nsmaterial.h>
 #include <nsresmanager.h>
+#include <nsmaterial.h>
 
 struct aiMaterial;
-class NSTexManager;
 
 class NSMatManager : public NSResManager
 {
@@ -33,12 +32,7 @@ public:
 
 	virtual NSMaterial * create(const nsstring & resName)
 	{
-		return NSResManager::create<NSMaterial>(resName);
-	}
-
-	virtual NSMaterial * create(const nsstring & resType, const nsstring & resName)
-	{
-		return static_cast<NSMaterial*>(NSResManager::create(resType, resName));
+		return create<NSMaterial>(resName);
 	}
 
 	template <class ResType, class T>
@@ -46,54 +40,38 @@ public:
 	{
 		return NSResManager::get<ResType>(rname);
 	}
-
-	virtual NSMaterial * get(nsuint resid)
+	
+	template<class T>
+	NSMaterial * get(const T & resname)
 	{
-		return static_cast<NSMaterial*>(NSResManager::get(resid));
-	}
-
-	virtual NSMaterial * get(const nsstring & resName)
-	{
-		return static_cast<NSMaterial*>(NSResManager::get(resName));
+		return get<NSMaterial>(resname);
 	}
 
 	template<class ResType>
-	ResType * load(const nsstring & pFileName, bool pAppendDirectories = true)
+	ResType * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(pFileName, pAppendDirectories);
+		return NSResManager::load<ResType>(fname);
 	}
 
-	virtual NSMaterial * load(const nsstring & resType, const nsstring & pFileName, bool pAppendDirectories = true)
+	NSMaterial * load(const nsstring & fname)
 	{
-		return static_cast<NSMaterial*>(NSResManager::load(resType, pFileName, pAppendDirectories));
+		return load<NSMaterial>(fname);
 	}
-
+	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)
 	{
 		return NSResManager::remove<ResType>(rname);
 	}
 
-	virtual NSMaterial * remove(const nsstring & name)
+	template<class T >
+	NSMaterial * remove(const T & rname)
 	{
-		return static_cast<NSMaterial*>(NSResManager::remove(name));
-	}
-
-	virtual NSMaterial * remove(nsuint id)
-	{
-		return static_cast<NSMaterial*>(NSResManager::remove(id));
-	}
-
-	virtual NSMaterial * remove(NSResource * res)
-	{
-		return static_cast<NSMaterial*>(NSResManager::remove(res));
+		return remove<NSMaterial>(rname);
 	}
 
 	NSMaterial* assimpLoadMaterial(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir="");
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	static nsstring getTypeString();
 };
 
 #endif

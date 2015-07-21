@@ -43,11 +43,10 @@ nsbool NSEntity::add(NSComponent * pComp)
 	if (pComp == NULL)
 		return false;
 
-	std::type_index ti(typeid(*pComp));
-	nsuint hashed_type = nsengine.typeID(ti);
+	nsuint hashed_type = pComp->type();
 	if (hashed_type == 0)
 	{
-		dprint(nsstring("Cannot add component with type ") + ti.name() + nsstring(" to Entity ") + mName +
+		dprint(nsstring("Cannot add component with type ") + nsengine.guid(hashed_type) + nsstring(" to Entity ") + mName +
 			   nsstring(": No hash_id found"));
 		return false;
 	}
@@ -68,8 +67,7 @@ nsbool NSEntity::copy(NSComponent * toCopy, bool overwrite)
 
 	NSComponent * nc = NULL;
 	
-	std::type_index ti(typeid(*toCopy));
-	nsuint type_id = nsengine.typeID(ti);
+	nsuint type_id = toCopy->type();
 	if (has(type_id))
 	{
 		if (!overwrite)

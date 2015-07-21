@@ -340,6 +340,9 @@ Description:
 #define nullchkb(ptr) if(ptr == NULL) return false;
 
 #define nsengine NSEngine::inst()
+#define type_to_guid(type) nsengine.guid(std::type_index(typeid(type)))
+#define hash_to_guid(hash) nsengine.guid(hash)
+#define type_to_hash(type) nsengine.typeID(std::type_index(typeid(type)))
 
 #ifdef NSDEBUG
 #define dprint(str) nsengine.debugPrint(str)
@@ -1447,6 +1450,5 @@ typedef std::set<NSEntity*> nspentityset;
 
 GLEWContext * glewGetContext();
 bool GLError(nsstring errorMessage);
-nsuint HashedStringID(const nsstring & string);
 
 #endif

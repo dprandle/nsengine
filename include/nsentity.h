@@ -137,14 +137,6 @@ public:
 
 	nsbool updatePosted(const nsstring & compType);
 
-	virtual nsstring typeString() { return getTypeString(); }
-
-	nsstring managerTypeString() { return getManagerTypeString(); }
-
-	static nsstring getTypeString() { return ENTITY_TYPESTRING; }
-
-	static nsstring getManagerTypeString() { return ENTITY_MANAGER_TYPESTRING; }
-
 	NSEntity & operator=(NSEntity rhs);
 
 private:

@@ -54,7 +54,8 @@ nsbool NSPlugin::add(NSResource * res)
 	if (res == NULL)
 		return false;
 
-	return manager(res->managerTypeString())->add(res);
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->add(res);
 }
 
 void NSPlugin::addNameToResPath(nsbool add_)
@@ -80,7 +81,8 @@ nsbool NSPlugin::addManager(NSResManager * manag)
 {
 	if (manag == NULL)
 		return false;
-	auto iter = mManagers.emplace(manag->typeString(), manag);
+
+	auto iter = mManagers.emplace(manag->type(), manag);
 	if (iter.second)
 	{
 		manag->setPlugID(mID);
@@ -91,6 +93,12 @@ nsbool NSPlugin::addManager(NSResManager * manag)
 		return true;
 	}
 	return false;
+}
+
+NSResource * NSPlugin::create(nsuint res_typeid, const nsstring & resName)
+{
+	NSResManager * rm = manager(nsengine.managerID(res_typeid));
+	return rm->create(res_typeid, resName);
 }
 
 NSEntity * NSPlugin::createCamera(const nsstring & name, float fov, const uivec2 & screenDim, const fvec2 & clipnf)
@@ -120,7 +128,8 @@ NSEntity * NSPlugin::createCamera(const nsstring & name, float fov, const uivec2
 
 bool NSPlugin::contains(NSResource * res)
 {
-	return manager(res->managerTypeString())->contains(res->id());
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->contains(res);
 }
 
 NSEntity * NSPlugin::createCamera(const nsstring & name, const fvec2 & lrclip, const fvec2 & tbclip, const fvec2 & nfclip)
@@ -156,7 +165,7 @@ NSEntity * NSPlugin::createDirLight(const nsstring & name,
 	float shadowdarkness,
 	int shadowsamples)
 {
-	NSMesh * bounds = nsengine.engplug()->resource<NSMesh>(MESH_DIRLIGHT_BOUNDS);
+	NSMesh * bounds = nsengine.engplug()->get<NSMesh>(MESH_DIRLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	NSEntity * lt = create<NSEntity>(name);
@@ -165,7 +174,7 @@ NSEntity * NSPlugin::createDirLight(const nsstring & name,
 	NSLightComp * lc = lt->create<NSLightComp>();
 	if (lc == NULL)
 	{
-		unload(lt);
+		destroy(lt);
 		return NULL;
 	}
 	lc->setMeshID(bounds->plugid(), bounds->id());
@@ -188,7 +197,7 @@ NSEntity * NSPlugin::createPointLight(const nsstring & name,
 	float shadowdarkness,
 	int shadowsamples)
 {
-	NSMesh * bounds = nsengine.engplug()->resource<NSMesh>(MESH_POINTLIGHT_BOUNDS);
+	NSMesh * bounds = nsengine.engplug()->get<NSMesh>(MESH_POINTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	NSEntity * lt = create<NSEntity>(name);
@@ -197,7 +206,7 @@ NSEntity * NSPlugin::createPointLight(const nsstring & name,
 	NSLightComp * lc = lt->create<NSLightComp>();
 	if (lc == NULL)
 	{
-		unload(lt);
+		destroy(lt);
 		return NULL;
 	}
 	lc->setMeshID(bounds->plugid(), bounds->id());
@@ -238,7 +247,7 @@ bool castshadows,
 float shadowdarkness,
 int shadowsamples)
 {
-	NSMesh * bounds = nsengine.engplug()->resource<NSMesh>(MESH_SPOTLIGHT_BOUNDS);
+	NSMesh * bounds = nsengine.engplug()->get<NSMesh>(MESH_SPOTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	NSEntity * lt = create<NSEntity>(name);
@@ -247,7 +256,7 @@ int shadowsamples)
 	NSLightComp * lc = lt->create<NSLightComp>();
 	if (lc == NULL)
 	{
-		unload(lt);
+		destroy(lt);
 		return NULL;
 	}
 	lc->setMeshID(bounds->plugid(), bounds->id());
@@ -280,12 +289,14 @@ int shadowsamples)
 	return lt;
 }
 
-NSResManager *  NSPlugin::createManager(const nsstring & managertype)
+NSResManager * NSPlugin::createManager(const nsstring & manager_guid)
 {
-	NSResManagerFactory * factory = nsengine.factory<NSResManagerFactory>(managertype);
-	if (factory == NULL)
-		return NULL;
+	return createManager(hash_id(manager_guid));
+}
 
+NSResManager * NSPlugin::createManager(nsuint manager_typeid)
+{
+	NSResManagerFactory * factory = nsengine.factory<NSResManagerFactory>(manager_typeid);
 	NSResManager * man = factory->create();
 	if (!addManager(man))
 	{
@@ -302,7 +313,6 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 	float s_pwr,
 	float s_int,
 	fvec3 s_col,
-	bool appenddirs,
 	bool collides,
 	Tile_t type)
 {
@@ -316,8 +326,8 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 	mat->setColor(m_col);
 	mat->setSpecularPower(s_pwr);
 	mat->setSpecularIntensity(s_int);
-	NSTexture * tdiff = load<NSTex2D>(difftex, appenddirs);
-	NSTexture * tnorm = load<NSTex2D>(normtex, appenddirs);
+	NSTexture * tdiff = load<NSTex2D>(difftex);
+	NSTexture * tnorm = load<NSTex2D>(normtex);
 	if (tdiff != NULL)
 		mat->setMapTextureID(NSMaterial::Diffuse, tdiff->fullid());
 	if (tnorm != NULL)
@@ -340,15 +350,15 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 	NSTileComp * tc = ent->create<NSTileComp>();
 	if (rc == NULL || ic == NULL || sc == NULL || tc == NULL)
 	{
-		unload(ent);
+		destroy(ent);
 		return NULL;
 	}
 
 	NSMesh * msh = NULL;
 	if (type == Full)
-		msh = nsengine.resource<NSMesh>(ENGINE_PLUG, MESH_FULL_TILE);
+		msh = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
 	else
-		msh = nsengine.resource<NSMesh>(ENGINE_PLUG, MESH_HALF_TILE);
+		msh = nsengine.engplug()->get<NSMesh>(MESH_HALF_TILE);
 
 	if (collides)
 	{
@@ -378,13 +388,13 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 NSEntity * NSPlugin::createTile(const nsstring & name,
 	const nsstring & matname, bool collides, Tile_t type)
 {
-	return createTile(name, resource<NSMaterial>(matname), collides, type);
+	return createTile(name, get<NSMaterial>(matname), collides, type);
 }
 
 NSEntity * NSPlugin::createTile(const nsstring & name,
 	nsuint matid, bool collides, Tile_t type)
 {
-	return createTile(name, resource<NSMaterial>(matid), collides, type);
+	return createTile(name, get<NSMaterial>(matid), collides, type);
 }
 
 NSEntity * NSPlugin::createTerrain(const nsstring & name, 
@@ -401,12 +411,12 @@ NSEntity * NSPlugin::createTerrain(const nsstring & name,
 	tc->setHeightBounds(hmin, hmax);
 	NSRenderComp * rc = terr->create<NSRenderComp>();
 	rc->setCastShadow(true);
-	rc->setMeshID(nsengine.engplug()->resource<NSMesh>(MESH_TERRAIN)->fullid());
+	rc->setMeshID(nsengine.engplug()->get<NSMesh>(MESH_TERRAIN)->fullid());
 	
 	NSMaterial * termat = create<NSMaterial>(name);
 	if (termat == NULL)
 	{
-		unload(terr);
+		destroy(terr);
 		return NULL;
 	}
 	termat->enableCulling(false);
@@ -414,14 +424,14 @@ NSEntity * NSPlugin::createTerrain(const nsstring & name,
 
 	NSTex2D * hm = NULL, * dm = NULL, * nm = NULL;
 	if (importdir)
-		hm = load<NSTex2D>(mImportDir + hmfile, false);
+		hm = load<NSTex2D>(mImportDir + hmfile);
 	else
-		hm = load<NSTex2D>(hmfile, false);
+		hm = load<NSTex2D>(hmfile);
 
 	if (hm == NULL)
 	{
-		unload(termat);
-		unload(terr);
+		destroy(termat);
+		destroy(terr);
 		return NULL;
 	}
 
@@ -432,15 +442,15 @@ NSEntity * NSPlugin::createTerrain(const nsstring & name,
 	{
 		
 		if (importdir)
-			dm = load<NSTex2D>(mImportDir + dmfile, false);
+			dm = load<NSTex2D>(mImportDir + dmfile);
 		else
-			dm = load<NSTex2D>(dmfile, false);
+			dm = load<NSTex2D>(dmfile);
 
 		if (dm == NULL)
 		{
-			unload(hm);
-			unload(termat);
-			unload(terr);
+			destroy(hm);
+			destroy(termat);
+			destroy(terr);
 			return NULL;
 		}
 		dm->enableMipMaps();
@@ -449,16 +459,16 @@ NSEntity * NSPlugin::createTerrain(const nsstring & name,
 	if (!nmfile.empty())
 	{
 		if (importdir)
-			nm = load<NSTex2D>(mImportDir + nmfile, false);
+			nm = load<NSTex2D>(mImportDir + nmfile);
 		else
-			nm = load<NSTex2D>(nmfile, false);
+			nm = load<NSTex2D>(nmfile);
 
 		if (nm == NULL)
 		{
-			unload(dm);
-			unload(hm);
-			unload(termat);
-			unload(terr);
+			destroy(dm);
+			destroy(hm);
+			destroy(termat);
+			destroy(terr);
 			return NULL;
 		}
 	}
@@ -479,19 +489,22 @@ NSScene * NSPlugin::currentScene()
 	return sm->current();
 }
 
-bool NSPlugin::delManager(const nsstring & managerType)
+bool NSPlugin::destroyManager(const nsstring & manager_guid)
 {
-	NSResManager * resman = manager(managerType);
-	nullchkb(resman);
+	return destroyManager(hash_id(manager_guid));
+}
+
+bool NSPlugin::destroyManager(nsuint manager_typeid)
+{
+	NSResManager * resman = removeManager(manager_typeid);
 	delete resman;
-	mManagers.erase(managerType);
 	return true;
 }
 
 nsbool NSPlugin::del(NSResource * res)
 {
-	NSResManager * resMan = manager(res->managerTypeString());
-	return resMan->del(res);
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->del(res);
 }
 
 bool NSPlugin::hasParent(const nsstring & pname)
@@ -506,7 +519,7 @@ void NSPlugin::nameChange(const uivec2 & oldid, const uivec2 newid)
 	while (iter != mManagers.end())
 	{
 		// If the plugin part of id is zero it means the plugin itself had a name change.. therefor
-		// propagate a plugin name change through all resources using the resource id that was passed in
+		// propagate a plugin name change through all resources using the get id that was passed in
 		// Otherwise propagate name change like normal
 		if (oldid.x == 0)
 			iter->second->nameChange(uivec2(oldid.yx()), uivec2(newid.yx()));
@@ -515,6 +528,19 @@ void NSPlugin::nameChange(const uivec2 & oldid, const uivec2 newid)
 		++iter;
 	}
 }
+
+NSResource * NSPlugin::get(nsuint res_typeid, nsuint resid)
+{
+	NSResManager * rm = manager(nsengine.managerID(res_typeid));
+	return rm->get(resid);
+}
+
+NSResource * NSPlugin::get(nsuint res_typeid, const nsstring & resName)
+{
+	NSResManager * rm = manager(nsengine.managerID(res_typeid));
+	return rm->get(resName);
+}
+
 void NSPlugin::init()
 {
 	auto fiter = nsengine.beginFac();
@@ -536,10 +562,10 @@ void NSPlugin::init()
 	}
 }
 
-NSResource * NSPlugin::load(const nsstring & managerType, const nsstring & restype, const nsstring & fileName, bool appendDirs)
+NSResource * NSPlugin::load(nsuint res_typeid, const nsstring & fname)
 {
-	NSResManager * rm = manager(managerType);
-	return rm->load(restype, fileName, appendDirs);
+	NSResManager * rm = manager(nsengine.managerID(res_typeid));
+	return rm->load(res_typeid, fname);
 }
 
 NSEntity * NSPlugin::loadModel(const nsstring & entname, nsstring fname, bool prefixWithImportDir, const nsstring & meshname, bool flipuv)
@@ -697,17 +723,27 @@ bool NSPlugin::loadModelResources(nsstring fname,bool prefixWithImportDir, const
 	return true;
 }
 
-NSResManager * NSPlugin::manager(const nsstring & pManagerType)
+NSResManager * NSPlugin::manager(const nsstring & manager_guid)
 {
-	auto iter = mManagers.find(pManagerType);
-	if (iter == mManagers.end())
-		return NULL;
-	return iter->second;
+	return manager(hash_id(manager_guid));
 }
 
-nsbool NSPlugin::hasManager(const nsstring & pResType)
+NSResManager * NSPlugin::manager(nsuint manager_typeid)
 {
-	return (mManagers.find(pResType) != mManagers.end());
+	auto iter = mManagers.find(manager_typeid);
+	if (iter == mManagers.end())
+		return NULL;
+	return iter->second;	
+}
+
+nsbool NSPlugin::hasManager(nsuint manager_typeid)
+{
+	return (mManagers.find(manager_typeid) != mManagers.end());
+}
+
+nsbool NSPlugin::hasManager(const nsstring & manager_guid)
+{
+	return hasManager(hash_id(manager_guid));
 }
 
 nsbool NSPlugin::bound()
@@ -751,7 +787,7 @@ nsbool NSPlugin::bind()
 	while (liter != resmap.end())
 	{
 		NSResManager * rm = manager(liter->first);
-		NSResource * r = rm->load(liter->second.first,liter->second.second, true);
+		NSResource * r = rm->load(liter->second.first,liter->second.second);
 		if (r == NULL)
 			unloaded.emplace(liter->first, liter->second);
 		++liter;
@@ -770,14 +806,26 @@ nsbool NSPlugin::unbind()
 	return !mBound;
 }
 
-void NSPlugin::save( NSSaveResCallback * scallback)
+void NSPlugin::saveAll(const nsstring & path, NSSaveResCallback * scallback)
 {
 	auto iter = mManagers.begin();
 	while (iter != mManagers.end())
 	{
-		iter->second->save(true,scallback);
+		iter->second->saveAll(path, scallback);
 		++iter;
 	}
+}
+
+void NSPlugin::saveAll(nsuint res_typeid, const nsstring & path, NSSaveResCallback * scallback)
+{
+	NSResManager * rm = manager(nsengine.managerID(res_typeid));
+	return rm->saveAll(path, scallback);	
+}
+
+bool NSPlugin::saveAs(NSResource * res, const nsstring & fname)
+{
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->saveAs(res, fname);
 }
 
 nsstring NSPlugin::details()
@@ -805,13 +853,16 @@ void NSPlugin::setNotes(const nsstring & pNotes)
 	mNotes = pNotes;
 }
 
-NSResManager * NSPlugin::removeManager(const nsstring & managerType)
+NSResManager * NSPlugin::removeManager(nsuint manager_typeid)
 {
-	NSResManager * resman = manager(managerType);
-	if (resman == NULL)
-		return NULL;
-	mManagers.erase(managerType);
-	return resman;
+	NSResManager * resman = manager(manager_typeid);
+	auto iter = mManagers.erase(manager_typeid);
+	return resman;		
+}
+
+NSResManager * NSPlugin::removeManager(const nsstring & manager_guid)
+{
+	return removeManager(hash_id(manager_guid));
 }
 
 void NSPlugin::setEditDate(const nsstring & pEditDate)
@@ -819,11 +870,10 @@ void NSPlugin::setEditDate(const nsstring & pEditDate)
 	mEditDate = pEditDate;
 }
 
-nsbool NSPlugin::save(NSResource * res)
+nsbool NSPlugin::save(NSResource * res, const nsstring & path)
 {
-	if (res == NULL)
-		return false;
-	return manager(res->managerTypeString())->save(res);
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->save(res, path);
 }
 
 void NSPlugin::setCreationDate(const nsstring & pCreationDate)
@@ -838,7 +888,7 @@ const nsstring & NSPlugin::resourceDirectory()
 
 bool NSPlugin::resourceChanged(NSResource * res)
 {
-	NSResManager * rm = manager(res->managerTypeString());
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
 	return rm->changed(res);
 }
 
@@ -849,11 +899,10 @@ nsuint NSPlugin::resourceCount()
 	return resmap.size();
 }
 
-bool NSPlugin::unload(NSResource * res)
+bool NSPlugin::destroy(NSResource * res)
 {
-	if (res == NULL)
-		return false;
-	return manager(res->managerTypeString())->unload(res);
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->destroy(res);
 }
 
 void NSPlugin::setResourceDirectory(const nsstring & dir)
@@ -888,15 +937,13 @@ void NSPlugin::pup(NSFilePUPer * p)
 
 NSResource * NSPlugin::remove(NSResource * res)
 {
-	NSResManager * resMan = manager(res->managerTypeString());
-	if (resMan == NULL)
-		return NULL;
-	return resMan->remove(res);
+	NSResManager * rm = manager(nsengine.managerID(res->type()));
+	return rm->remove(res);
 }
 
 void NSPlugin::_updateParents()
 {
-	// Get all resource parents - only do immediate parents (not recursive)
+	// Get all get parents - only do immediate parents (not recursive)
 	uivec2array usedResources;
 	mParents.clear();
 
@@ -916,7 +963,7 @@ void NSPlugin::_updateParents()
 	auto resIter = usedResources.begin();
 	while (resIter != usedResources.end())
 	{
-		if (resIter->x != mID) // if the owning plugin of this resource is not us, then add it to parents
+		if (resIter->x != mID) // if the owning plugin of this get is not us, then add it to parents
 		{
 			NSPlugin * plug = nsengine.plugin(resIter->x);
 			if (plug != NULL && plug->id() != nsengine.engplug()->id())
@@ -936,8 +983,9 @@ void NSPlugin::_updateResMap()
 		while (resiter != miter->second->end())
 		{
 			std::pair<nsstring, nsstring> rpair;
-			rpair.first = resiter->second->typeString(); rpair.second = resiter->second->name() + resiter->second->extension();
-			resmap.emplace(miter->first, rpair);
+			rpair.first = type_to_guid(*resiter->second);
+			rpair.second = resiter->second->name() + resiter->second->extension();
+			resmap.emplace(hash_to_guid(miter->first), rpair);
 			++resiter;
 		}
 		++miter;
@@ -962,7 +1010,8 @@ void NSPlugin::_clear()
 	auto iter = mManagers.begin();
 	while (iter != mManagers.end())
 	{
-		iter->second->unload();
+		iter->second->destroyAll();
 		++iter;
 	}
 }
+
