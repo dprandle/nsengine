@@ -16,51 +16,95 @@ This file contains all of the neccessary declarations for the NSEventDispatcher 
 #include <vector>
 #include <nsglobal.h>
 #include <nsevent.h>
+#include <deque>
+#include <typeindex>
 
-class NSSystem;
+class NSEventHandler;
 
 class NSEventDispatcher
 {
 public:
-	typedef std::vector<NSEvent*> EventQueue;
-	typedef std::map<NSSystem*, EventQueue> ListenerQueue;
+	typedef std::deque<NSEvent*> EventQueue;
+	typedef std::unordered_map<NSEventHandler*, EventQueue> ListenerQueue;
 
-	typedef std::set<NSSystem *> ListenerSet;
-	typedef std::map<NSEvent::ID, ListenerSet> ListenerMap;
+	typedef std::unordered_set<NSEventHandler *> ListenerSet;
+	typedef std::unordered_map<std::type_index, ListenerSet> ListenerMap;
 
 	NSEventDispatcher();
 
 	~NSEventDispatcher();
 
-	void addListener(NSSystem * pSys, NSEvent::ID pEventID);
+	template<class EventType>
+	void registerListener(NSEventHandler * handler)
+	{
+		std::type_index eventT(typeid(EventType));
+		auto empIter = mListeners.emplace(eventT, ListenerSet());
+		empIter.first->second.emplace(handler);
+		mListenerEvents.emplace(handler, EventQueue());
+	}
 
 	void clear();
 
-	bool process(NSSystem * pSystem);
+	void clear(NSEventHandler * handler);
 
-	/*!
-	\return bool indicating whether event was pushed on to a listener stack
-	*/
-	template<class EventType>
-	bool push(EventType * pEvent)
+	NSEvent * next(NSEventHandler * handler);
+
+	void pop(NSEventHandler * handler);
+
+	void pop_back(NSEventHandler * handler);
+
+	void process(NSEventHandler * handler);
+	
+	template<class EventType, class ...Types>
+	EventType * push(Types... fargs)
 	{
-		auto listenerSetIter = mListeners.find(pEvent->mID);
-		if (listenerSetIter == mListeners.end())
-			return false;
+		std::type_index eventT(typeid(EventType));
+		auto listenerSetIter = mListeners.find(eventT);
+		if (listenerSetIter == mListeners.end() || listenerSetIter->second.empty())
+			return NULL;
 
-		// Go through all of the registered listeners under this event ID and add this event to their queue
+		// Go through all of the registered listeners under this evnt ID and add this evnt to their queue
+		EventType * evnt = new EventType(fargs...);
 		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
 		while (currentListener != listenerSetIter->second.end())
 		{
-			EventType * ev = new EventType(*pEvent);
-			mListenerEvents[*currentListener].push_back(ev);
+			mListenerEvents[*currentListener].push_back(evnt);
+			++evnt->refcount;
 			++currentListener;
 		}
-		delete pEvent;
-		return true;
+		return evnt;
 	}
 
-	bool removeListener(NSSystem * pSys, NSEvent::ID pEventID);
+	template<class EventType, class... U>
+	EventType * push_front(U&&... u)
+	{
+		std::type_index eventT(typeid(EventType));
+		auto listenerSetIter = mListeners.find(eventT);
+		if (listenerSetIter == mListeners.end() || listenerSetIter->second.empty())
+			return NULL;
+
+		// Go through all of the registered listeners under this evnt ID and add this evnt to their queue
+		EventType * evnt = new EventType(std::forward<U>(u));
+		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
+		while (currentListener != listenerSetIter->second.end())
+		{
+			mListenerEvents[*currentListener].push_front(evnt);
+			++evnt->refcount;
+			++currentListener;
+		}
+		return evnt;
+	}
+
+	template<class EventType>
+	bool unregisterListener(NSEventHandler * handler)
+	{
+		std::type_index eventT(typeid(EventType));
+		mListenerEvents.clear(handler); // Remove all events for this system
+		auto fiter = mListeners.find(eventT);
+		if (fiter != mListeners.end())
+			return fiter->second.erase(handler) == 1;
+		return false;
+	}
 
 	bool send(NSEvent * pEvent);
 

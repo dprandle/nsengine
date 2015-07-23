@@ -24,10 +24,10 @@ NSMovementSystem::~NSMovementSystem()
 void NSMovementSystem::init()
 {}
 
-bool NSMovementSystem::handleEvent(NSEvent * pEvent)
-{
-	return false;
-}
+// bool NSMovementSystem::handleEvent(NSEvent * pEvent)
+// {
+// 	return false;
+// }
 
 void NSMovementSystem::update()
 {

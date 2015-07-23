@@ -17,18 +17,47 @@ This file contains all of the neccessary definitions for the NSInputSystem class
 #include <nsinputmap.h>
 #include <nsscene.h>
 
-NSInputSystem::NSInputSystem() :NSSystem()
+NSInputSystem::NSInputSystem() :
+	mScrollDelta(0.0f),
+	NSSystem()
 {
 
 }
 
 NSInputSystem::~NSInputSystem()
 {
-
+ 
 }
 
+bool NSInputSystem::keyEvent(NSKeyEvent * evnt)
+{
+	if (evnt->mPressed)
+		_keyPress(evnt->mKey);
+	else
+		_keyRelease(evnt->mKey);
+	return true;
+}
 
-void NSInputSystem::keyPress(NSInputMap::Key pKey)
+bool NSInputSystem::mouseButtonEvent(NSMouseButtonEvent * evnt)
+{
+	if (evnt->mPressed)
+		_mousePress(evnt->mb, evnt->mNormMousePos);
+	else
+		_mouseRelease(evnt->mb, evnt->mNormMousePos);
+	return true;
+}
+
+bool NSInputSystem::mouseMoveEvent(NSMouseMoveEvent * evnt)
+{
+	return false;
+}
+
+bool NSInputSystem::mouseScrollEvent(NSMouseScrollEvent * evnt)
+{
+	return false;
+}
+
+void NSInputSystem::_keyPress(NSInputMap::Key pKey)
 {
 	// Search context at top of stack for trigger with key -
 	// create an event for every key that has matching modifiers
@@ -42,7 +71,7 @@ void NSInputSystem::keyPress(NSInputMap::Key pKey)
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_checkTriggerModifiers(keyIter.first->second))
 			{
-				nsengine.events()->push(new NSInputKeyEvent(keyIter.first->second.mName, NSInputKeyEvent::Pressed, mMLastPos));
+				
 				foundInContext = true;
 			}
 			++keyIter.first;
@@ -59,7 +88,7 @@ void NSInputSystem::keyPress(NSInputMap::Key pKey)
 		mMods.insert(pKey);
 }
 
-void NSInputSystem::keyRelease(NSInputMap::Key pKey)
+void NSInputSystem::_keyRelease(NSInputMap::Key pKey)
 {
 	// Remove the key from the modifier set..
 	mMods.erase(pKey);
@@ -76,7 +105,7 @@ void NSInputSystem::keyRelease(NSInputMap::Key pKey)
 		{
 			if (_checkTriggerModifiers(keyIter.first->second))
 			{
-				nsengine.events()->push(new NSInputKeyEvent(keyIter.first->second.mName, NSInputKeyEvent::Released, mMLastPos));
+				
 				foundInContext = true;
 			}
 			++keyIter.first;
@@ -87,16 +116,30 @@ void NSInputSystem::keyRelease(NSInputMap::Key pKey)
 	}
 }
 
-void NSInputSystem::setLastPos(const fvec2 & pLastPos)
+void NSInputSystem::setCursorPos(const fvec2 & cursorPos)
 {
-	mMLastPos = pLastPos;
+	mLastPos = mCurrentPos;
+	mCurrentPos = cursorPos;
 }
 
-void NSInputSystem::mouseMove(nsfloat pPosX, nsfloat pPosY)
+void NSInputSystem::_setAxesFromTrigger(NSInputMap::AxisMap & am, const NSInputMap::Trigger & t)
 {
-	nsfloat deltaX = mMLastPos.u - pPosX, deltaY = mMLastPos.v - pPosY;
-	mMLastPos.u = pPosX; mMLastPos.v = pPosY;
+	if ((t.mAxes & NSInputMap::MouseXPos) == NSInputMap::MouseXPos)
+		am[NSInputMap::MouseXPos] = mCurrentPos.x;
+	if ((t.mAxes & NSInputMap::MouseYPos) == NSInputMap::MouseYPos)
+		am[NSInputMap::MouseYPos] = mCurrentPos.y;
+	if ((t.mAxes & NSInputMap::MouseXDelta) == NSInputMap::MouseXDelta)
+		am[NSInputMap::MouseXDelta] = mCurrentPos.x - mLastPos.x;
+	if ((t.mAxes & NSInputMap::MouseYDelta) == NSInputMap::MouseYDelta)
+		am[NSInputMap::MouseYDelta] = mCurrentPos.y - mLastPos.y;
+	if ((t.mAxes & NSInputMap::ScrollDelta) == NSInputMap::ScrollDelta)
+		am[NSInputMap::ScrollDelta] = mScrollDelta;	
+}
 
+void NSInputSystem::_mouseMove(const fvec2 & cursorPos)
+{
+	setCursorPos(cursorPos);
+	
 	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
 	bool foundInContext = false;
 	while (rIter != mContextStack.rend())
@@ -107,7 +150,9 @@ void NSInputSystem::mouseMove(nsfloat pPosX, nsfloat pPosY)
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_checkTriggerModifiers(mouseIter.first->second))
 			{
-				nsengine.events()->push(new NSInputMouseMoveEvent(mouseIter.first->second.mName, fvec2(pPosX, pPosY), fvec2(deltaX, deltaY)));
+				NSActionEvent * av = nsengine.eventDispatch()->push<NSActionEvent>(mouseIter.first->second.mName);
+				if (av != NULL)
+					_setAxesFromTrigger(av->axes, mouseIter.first->second);
 				foundInContext = true;
 			}
 			++mouseIter.first;
@@ -118,9 +163,10 @@ void NSInputSystem::mouseMove(nsfloat pPosX, nsfloat pPosY)
 	}
 }
 
-void NSInputSystem::mousePress(	NSInputMap::MouseButton pButton, nsfloat pPosX, nsfloat pPosY)
+void NSInputSystem::_mousePress(NSInputMap::MouseButton pButton, const fvec2 & mousePos)
 {
-	mMLastPos.u = pPosX; mMLastPos.v = pPosY;
+	setCursorPos(mousePos);
+	
 	// Go check each context for the key starting from the last context on the stack
 	// if it is found there - then return
 	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
@@ -133,8 +179,6 @@ void NSInputSystem::mousePress(	NSInputMap::MouseButton pButton, nsfloat pPosX, 
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_checkTriggerModifiers(mouseIter.first->second))
 			{
-				nsengine.events()->push(new NSSelPickEvent(mouseIter.first->second.mName, fvec2(pPosX, pPosY)));
-				nsengine.events()->push(new NSInputMouseButtonEvent(mouseIter.first->second.mName, NSInputMouseButtonEvent::Pressed, fvec2(pPosX, pPosY)));
 				foundInContext = true;
 			}
 			++mouseIter.first;
@@ -148,10 +192,11 @@ void NSInputSystem::mousePress(	NSInputMap::MouseButton pButton, nsfloat pPosX, 
 	mMouseMods.insert(pButton);
 }
 
-void NSInputSystem::mouseRelease(	NSInputMap::MouseButton pButton, nsfloat pPosX, nsfloat pPosY)
+void NSInputSystem::_mouseRelease(NSInputMap::MouseButton pButton, const fvec2 & mousePos)
 {
+	setCursorPos(mousePos);
+	
 	mMouseMods.erase(pButton);
-
 	// Go check each context for the key starting from the last context on the stack
 	// if it is found there - then return
 	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
@@ -164,7 +209,7 @@ void NSInputSystem::mouseRelease(	NSInputMap::MouseButton pButton, nsfloat pPosX
 			if (_checkTriggerModifiers(mouseIter.first->second))
 			{
 				// Send input event to event system if modifiers match the trigger modifiers
-				nsengine.events()->push(new NSInputMouseButtonEvent(mouseIter.first->second.mName, NSInputMouseButtonEvent::Released, fvec2(pPosX, pPosY)));
+				
 				foundInContext = true;
 			}
 			++mouseIter.first;
@@ -175,8 +220,10 @@ void NSInputSystem::mouseRelease(	NSInputMap::MouseButton pButton, nsfloat pPosX
 	}
 }
 
-void NSInputSystem::mouseScroll(nsfloat pDelta, nsfloat pPosX, nsfloat pPosY)
+void NSInputSystem::_mouseScroll(nsfloat pDelta, const fvec2 & mousePos)
 {
+	setCursorPos(mousePos);
+	
 	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
 	bool foundInContext = false;
 	while (rIter != mContextStack.rend())
@@ -187,7 +234,6 @@ void NSInputSystem::mouseScroll(nsfloat pDelta, nsfloat pPosX, nsfloat pPosY)
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_checkTriggerModifiers(mouseIter.first->second))
 			{
-				nsengine.events()->push(new NSInputMouseScrollEvent(mouseIter.first->second.mName, fvec2(pPosX, pPosY), pDelta));
 				foundInContext = true;
 			}
 			++mouseIter.first;
@@ -219,10 +265,10 @@ void NSInputSystem::pushContext(const nsstring & pName)
 
 void NSInputSystem::init()
 {
-	nsengine.events()->addListener(this, NSEvent::InputKey);
-	nsengine.events()->addListener(this, NSEvent::InputMouseButton);
-	nsengine.events()->addListener(this, NSEvent::InputMouseMove);
-	nsengine.events()->addListener(this, NSEvent::InputMouseScroll);
+	nsengine.eventDispatch()->registerListener<NSKeyEvent>(this);
+	nsengine.eventDispatch()->registerListener<NSMouseButtonEvent>(this);
+	nsengine.eventDispatch()->registerListener<NSMouseMoveEvent>(this);
+	nsengine.eventDispatch()->registerListener<NSMouseScrollEvent>(this);
 }
 
 nsint NSInputSystem::updatePriority()
@@ -240,37 +286,13 @@ const uivec2 & NSInputSystem::inputMap()
 	return mInputMapID;
 }
 
-bool NSInputSystem::handleEvent(NSEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return false;
-
-	switch (pEvent->mID)
-	{
-	case (NSEvent::InputKey) :
-		_eventKey((NSInputKeyEvent*)pEvent);
-		return true;
-	case (NSEvent::InputMouseButton) :
-		_eventMouseButton((NSInputMouseButtonEvent*)pEvent);
-		return true;
-	case (NSEvent::InputMouseMove) :
-		_eventMouseMove((NSInputMouseMoveEvent*)pEvent);
-		return true;
-	case (NSEvent::InputMouseScroll) :
-		_eventMouseScroll((NSInputMouseScrollEvent*)pEvent);
-		return true;
-	}
-	return false;
-}
-
 void NSInputSystem::update()
 {
 	NSScene * scene = nsengine.currentScene();
 
 	if (scene == NULL)
 	{
-		nsengine.events()->process(this);
+		nsengine.eventDispatch()->process(this);
 		return;
 	}
 
@@ -285,7 +307,7 @@ void NSInputSystem::update()
 		++entIter;
 	}
 	// activate ones recieved
-	nsengine.events()->process(this);
+	nsengine.eventDispatch()->process(this);
 }
 
 bool NSInputSystem::_checkTriggerModifiers(const NSInputMap::Trigger & t)
@@ -338,94 +360,3 @@ bool NSInputSystem::_checkTriggerModifiers(const NSInputMap::Trigger & t)
 	return true;
 }
 
-
-void NSInputSystem::_eventKey(NSInputKeyEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return;
-
-	auto ents = scene->entities<NSInputComp>();
-	auto entIter = ents.begin();
-	while (entIter != ents.end())
-	{
-		NSInputComp * inComp = (*entIter)->get<NSInputComp>();
-		NSInputComp::Action * action = inComp->action(pEvent->mName);
-		if (action != NULL)
-		{
-			action->mPressed = pEvent->mPorR && 1;
-			action->mActivated = true;
-			action->mPos = pEvent->mMousePos;
-		}
-		++entIter;
-	}
-}
-
-void NSInputSystem::_eventMouseButton(NSInputMouseButtonEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return;
-
-	auto ents = scene->entities<NSInputComp>();
-	auto entIter = ents.begin();
-	while (entIter != ents.end())
-	{
-		NSInputComp * inComp = (*entIter)->get<NSInputComp>();
-		NSInputComp::Action * action = inComp->action(pEvent->mName);
-		if (action != NULL)
-		{
-			action->mPressed = pEvent->mPorR && 1;
-			action->mPos = pEvent->mPos;
-			action->mActivated = true;
-		}
-		++entIter;
-	}
-}
-
-void NSInputSystem::_eventMouseMove(NSInputMouseMoveEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return;
-
-	auto ents = scene->entities<NSInputComp>();
-	auto entIter = ents.begin();
-	while (entIter != ents.end())
-	{
-		NSInputComp * inComp = (*entIter)->get<NSInputComp>();
-		NSInputComp::Action * action = inComp->action(pEvent->mName);
-		if (action != NULL)
-		{
-			action->mPos = pEvent->mPos;
-			action->mDelta = pEvent->mDelta;
-			action->mActivated = true;
-		}
-		++entIter;
-	}
-}
-
-void NSInputSystem::_eventMouseScroll(NSInputMouseScrollEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return;
-
-	auto ents = scene->entities<NSInputComp>();
-	auto entIter = ents.begin();
-	while (entIter != ents.end())
-	{
-		NSInputComp * inComp = (*entIter)->get<NSInputComp>();
-		if (inComp->contains(pEvent->mName))
-		{
-			NSInputComp::Action * action = inComp->action(pEvent->mName);
-			if (action != NULL)
-			{
-				action->mPos = pEvent->mPos;
-				action->mScroll = pEvent->mScroll;
-				action->mActivated = true;
-			}
-		}
-		++entIter;
-	}
-}

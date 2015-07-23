@@ -333,7 +333,7 @@ void NSEngine::debugPrint(const nsstring & str)
 }
 #endif
 
-NSEventDispatcher * NSEngine::events()
+NSEventDispatcher * NSEngine::eventDispatch()
 {
 	return current()->mEvents;
 }

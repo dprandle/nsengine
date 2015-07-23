@@ -428,38 +428,38 @@ NSMaterial * NSRenderSystem::defaultMat()
 }
 
 
-bool NSRenderSystem::handleEvent(NSEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return false;
+// bool NSRenderSystem::handleEvent(NSEvent * pEvent)
+// {
+// 	NSScene * scene = nsengine.currentScene();
+// 	if (scene == NULL)
+// 		return false;
 	
-	if (pEvent == NULL)
-	{
-		dprint("NSRenderSystem::handleEvent Event is NULL - bad bad bad");
-		return false;
-	}
+// 	if (pEvent == NULL)
+// 	{
+// 		dprint("NSRenderSystem::handleEvent Event is NULL - bad bad bad");
+// 		return false;
+// 	}
 
-	bool handled = false;
+// 	bool handled = false;
 
-	if (pEvent->mName == RENDER_DEBUG)
-	{
-		NSInputKeyEvent * kEvent = static_cast<NSInputKeyEvent*>(pEvent);
+// 	if (pEvent->mName == RENDER_DEBUG)
+// 	{
+// 		NSInputKeyEvent * kEvent = static_cast<NSInputKeyEvent*>(pEvent);
 
-		// a lot of nonsense to get to this point - just put in debug mode if the debug
-		// mode event is received
-		if (kEvent->mPorR == 1)
-		{
-			toggleDebugDraw();
-			handled = true;
-		}
-	}
-	return handled;
-}
+// 		// a lot of nonsense to get to this point - just put in debug mode if the debug
+// 		// mode event is received
+// 		if (kEvent->mPorR == 1)
+// 		{
+// 			toggleDebugDraw();
+// 			handled = true;
+// 		}
+// 	}
+// 	return handled;
+// }
 
 void NSRenderSystem::init()
 {
-	nsengine.events()->addListener(this, NSEvent::InputKey);
+	//nsengine.events()->addListener(this, NSEvent::InputKey);
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
@@ -496,7 +496,7 @@ void NSRenderSystem::update()
 	static bool sceneerr = false;
 	static bool camerr = false;
 
-	nsengine.events()->process(this);
+	//nsengine.events()->process(this);
 
 	// Warning message switches (so they dont appear every frame)
 	NSScene * scene = nsengine.currentScene();

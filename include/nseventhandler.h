@@ -16,58 +16,77 @@ This file contains all of the neccessary declarations for the NSEventHandler cla
 #include <vector>
 #include <nsglobal.h>
 #include <nsevent.h>
+#include <typeindex>
 
-class NSSystem;
+class NSHandlerFunc
+{
+  public:
+	virtual ~NSHandlerFunc() {}
+	virtual bool exec(NSEvent * evnt)=0;
+};
+
+template<class ClassType, class EventType>
+class NSHandlerFuncType : public NSHandlerFunc
+{
+  public:
+	typedef bool (ClassType::*MemberFunc)(EventType *);
+
+	NSHandlerFuncType(ClassType * inst, MemberFunc mf):
+		class_instance(inst),
+		member(mf)
+	{}
+
+	bool exec(NSEvent * evnt)
+	{
+		EventType * cast_evnt = static_cast<EventType*>(evnt);
+		return class_instance->(*member)(cast_evnt);
+	}
+
+  private:
+	
+	ClassType * class_instance;
+	MemberFunc member;
+};
 
 class NSEventHandler
 {
-public:
-	typedef std::vector<NSEvent*> EventQueue;
-	typedef std::map<NSSystem*, EventQueue> ListenerQueue;
-
-	typedef std::set<NSSystem *> ListenerSet;
-	typedef std::map<NSEvent::ID, ListenerSet> ListenerMap;
-
+  public:
+	
+	typedef std::unordered_map<std::type_index, NSHandlerFunc*> HandlerMap;
+	
 	NSEventHandler();
-
 	~NSEventHandler();
+	
+	bool handleEvent(NSEvent * event);
 
-	void addListener(NSSystem * pSys, NSEvent::ID pEventID);
-
-	void clear();
-
-	bool process(NSSystem * pSystem);
-
-	/*!
-	\return bool indicating whether event was pushed on to a listener stack
-	*/
-	template<class EventType>
-	bool push(EventType * pEvent)
+	template<class ClassType,class EventType>
+	bool registerHandlerFunc(ClassType * inst, bool (ClassType::*memberFunc)(EventType*))
 	{
-		auto listenerSetIter = mListeners.find(pEvent->mID);
-		if (listenerSetIter == mListeners.end())
-			return false;
-
-		// Go through all of the registered listeners under this event ID and add this event to their queue
-		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
-		while (currentListener != listenerSetIter->second.end())
+		std::type_index ti(typeid(EventType));
+		NSHandlerFunc * hf = new NSHandlerFuncType<ClassType,EventType>(inst,memberFunc);
+		if (!mHandlers.emplace(ti, hf).second)
 		{
-			EventType * ev = new EventType(*pEvent);
-			mListenerEvents[*currentListener].push_back(ev);
-			++currentListener;
+			delete hf;
+			return false;
 		}
-		delete pEvent;
 		return true;
 	}
 
-	bool removeListener(NSSystem * pSys, NSEvent::ID pEventID);
+	template<class EventType>
+	bool unregisterHandlerFunc()
+	{
+		std::type_index ti(typeid(EventType));
+		auto fiter = mHandlers.find(ti);
+		if (fiter != mHandlers.end())
+		{
+			delete fiter->second;
+			mHandlers.erase(fiter);
+			return true;
+		}
+		return false;
+	}
 
-	bool send(NSEvent * pEvent);
-
-private:
-	ListenerQueue mListenerEvents;
-	ListenerMap mListeners;
+  private:
+	HandlerMap mHandlers;
 };
-
-
 #endif

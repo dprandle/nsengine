@@ -33,20 +33,20 @@ void NSAnimSystem::init()
 {
 }
 
-bool NSAnimSystem::handleEvent(NSEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return false;
+// bool NSAnimSystem::handleEvent(NSEvent * pEvent)
+// {
+// 	NSScene * scene = nsengine.currentScene();
+// 	if (scene == NULL)
+// 		return false;
 
-	if (pEvent == NULL)
-	{
-		dprint("NSAnimSystem::handleEvent Event is NULL - bad bad bad");
-		return false;
-	}
+// 	if (pEvent == NULL)
+// 	{
+// 		dprint("NSAnimSystem::handleEvent Event is NULL - bad bad bad");
+// 		return false;
+// 	}
 	
-	return false;
-}
+// 	return false;
+// }
 
 void NSAnimSystem::update()
 {

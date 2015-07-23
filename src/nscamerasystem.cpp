@@ -32,45 +32,45 @@ mView(Normal)
 NSCameraSystem::~NSCameraSystem()
 {}
 
-bool NSCameraSystem::handleEvent(NSEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return false;
+//bool NSCameraSystem::handleEvent(NSEvent * pEvent)
+//{
+	// NSScene * scene = nsengine.currentScene();
+	// if (scene == NULL)
+	// 	return false;
 
-	if (pEvent->mID == NSEvent::SelFocusChangeEvent)
-	{
-		if (nsengine.system<NSCameraSystem>()->mode() != NSCameraSystem::Focus)
-			return false;
+	// if (pEvent->mID == NSEvent::SelFocusChangeEvent)
+	// {
+	// 	if (nsengine.system<NSCameraSystem>()->mode() != NSCameraSystem::Focus)
+	// 		return false;
 
-		NSEntity * cam = scene->camera();
-		if (cam == NULL)
-			return false;
+	// 	NSEntity * cam = scene->camera();
+	// 	if (cam == NULL)
+	// 		return false;
 
-		NSCamComp * camComp = cam->get<NSCamComp>();
-		NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	// 	NSCamComp * camComp = cam->get<NSCamComp>();
+	// 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 
-		NSSelFocusChangeEvent * selEvent = (NSSelFocusChangeEvent*)pEvent;
-		uivec3 foc = selEvent->mNewSelCenter;
-		NSEntity * ent = scene->entity(foc.x, foc.y);
-		if (ent != NULL)
-		{
-			NSTFormComp * tC = ent->get<NSTFormComp>();
-			if (tC->count() > foc.z)
-			{
-				camTComp->setOrientation(camTComp->orientation() * camComp->focusOrientation());
-				camComp->setFocusRot(fquat());
-				camComp->setFocusPoint(tC->lpos(foc.z));
-				camTComp->setpos(camTComp->wpos() - camComp->focusPoint());
-			}
-		}
-	}
-	return true;
-}
+	// 	NSSelFocusChangeEvent * selEvent = (NSSelFocusChangeEvent*)pEvent;
+	// 	uivec3 foc = selEvent->mNewSelCenter;
+	// 	NSEntity * ent = scene->entity(foc.x, foc.y);
+	// 	if (ent != NULL)
+	// 	{
+	// 		NSTFormComp * tC = ent->get<NSTFormComp>();
+	// 		if (tC->count() > foc.z)
+	// 		{
+	// 			camTComp->setOrientation(camTComp->orientation() * camComp->focusOrientation());
+	// 			camComp->setFocusRot(fquat());
+	// 			camComp->setFocusPoint(tC->lpos(foc.z));
+	// 			camTComp->setpos(camTComp->wpos() - camComp->focusPoint());
+	// 		}
+	// 	}
+	// }
+	// return true;
+//}
 
 void NSCameraSystem::init()
 {
-	nsengine.events()->addListener(this, NSEvent::SelFocusChangeEvent);
+	//nsengine.events()->addListener(this, NSEvent::SelFocusChangeEvent);
 }
 
 void NSCameraSystem::onCamBackward(NSCamComp * pCam, nsbool pAnimate)
@@ -394,7 +394,7 @@ void NSCameraSystem::onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pS
 void NSCameraSystem::update()
 {
 	NSScene * scene = nsengine.currentScene();
-	nsengine.events()->process(this); // process all events for this system
+	//nsengine.events()->process(this); // process all events for this system
 
 	// Dont do anything if the scene is NULL
 	if (scene == NULL)

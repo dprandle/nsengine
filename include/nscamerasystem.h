@@ -50,7 +50,7 @@ public:
 
 	void changeSensitivity(float pAmount, const Sensitivity & pWhich);
 
-	virtual bool handleEvent(NSEvent * pEvent);
+	//virtual bool handleEvent(NSEvent * pEvent);
 
 	void init();
 

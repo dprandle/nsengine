@@ -27,13 +27,19 @@ class NSInputSystem : public NSSystem
 public:
 
 	typedef std::vector<NSInputMap::Context*> ContextStack;
-	
+
 	NSInputSystem();
 
 	~NSInputSystem();
 
-	virtual bool handleEvent(NSEvent * pEvent);
+	bool keyEvent(NSKeyEvent * evnt);
 
+	bool mouseButtonEvent(NSMouseButtonEvent * evnt);
+
+	bool mouseMoveEvent(NSMouseMoveEvent * evnt);
+
+	bool mouseScrollEvent(NSMouseScrollEvent * evnt);
+	
 	virtual void init();
 
 	void setInputMap(const uivec2 & resid);
@@ -44,37 +50,37 @@ public:
 
 	virtual nsint updatePriority();
 
-	void keyPress(NSInputMap::Key pKey);
-
-	void keyRelease(NSInputMap::Key pKey);
-
-	void mouseMove(nsfloat pPosX, nsfloat pPosY);
-
-	void mousePress(NSInputMap::MouseButton pButton, nsfloat pPosX, nsfloat pPosY);
-
-	void mouseRelease(NSInputMap::MouseButton pButton, nsfloat pPosX, nsfloat pPosY);
-
-	void mouseScroll(nsfloat pDelta, nsfloat pPosX, nsfloat pPosY);
-
 	void popContext();
 
 	void pushContext(const nsstring & pName);
 
-	void setLastPos(const fvec2 & pLastPos);
+	void setCursorPos(const fvec2 & cursorPos);
 	
 private:
 
+	void _keyPress(NSInputMap::Key pKey);
+
+	void _keyRelease(NSInputMap::Key pKey);
+
+	void _mouseMove(const fvec2 & cursorPos);
+
+	void _mousePress(NSInputMap::MouseButton pButton, const fvec2 & mousePos);
+
+	void _mouseRelease(NSInputMap::MouseButton pButton, const fvec2 & mousePos);
+
+	void _mouseScroll(nsfloat pDelta, const fvec2 & mousePos);
+
 	bool _checkTriggerModifiers(const NSInputMap::Trigger & t);
-	
-	void _eventKey(NSInputKeyEvent * pEvent);
-	void _eventMouseButton(NSInputMouseButtonEvent * pEvent);
-	void _eventMouseMove(NSInputMouseMoveEvent * pEvent);
-	void _eventMouseScroll(NSInputMouseScrollEvent * pEvent);
+
+	void _setAxesFromTrigger(NSInputMap::AxisMap & am, const NSInputMap::Trigger & t);
 	
 	ContextStack mContextStack;
 	NSInputMap::Modifiers mMods;
 	NSInputMap::MouseModifiers mMouseMods;
-	fvec2 mMLastPos;
+
+	fvec2 mCurrentPos;
+	fvec2 mLastPos;
+	float mScrollDelta;
 	uivec2 mInputMapID;
 };
 

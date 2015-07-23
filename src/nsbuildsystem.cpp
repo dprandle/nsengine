@@ -65,7 +65,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 	{
 		mEnabled = pEnable;
 		nsengine.system<NSInputSystem>()->pushContext("BuildMode");
-		nsengine.events()->send(new NSClearSelectionEvent("ClearSelection")); // process now
+		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
 		if (mCurrentBrushMode == Tile)
 		{
@@ -95,14 +95,14 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 				if (tmp)
 					mMirrorMode = false;
 
-				nsengine.events()->send(new NSSelAddEvent("AddToSel", uivec3(mTileBrush->plugid(), mTileBrush->id(), tFormID)));
+//				nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mTileBrush->plugid(), mTileBrush->id(), tFormID)));
 
 				if (tmp)
 				{
 					fvec3 mirrorPos = mMirrorCenter*2.0f - pos;
 					mirrorPos.z = pos.z;
 					nsuint tFormIDMirror = scene->add(mMirrorBrush, mirrorPos);
-					nsengine.events()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugid(), mMirrorBrush->id(), tFormIDMirror)));
+//					nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugid(), mMirrorBrush->id(), tFormIDMirror)));
 					mMirrorBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormIDMirror);
 				}
 				mMirrorMode = tmp;
@@ -113,7 +113,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 				mTileBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
 				++brushIter;
 			}
-			nsengine.events()->send(new NSSelSetEvent("Center", uivec3(mTileBrush->plugid(), mTileBrush->id(), mTBCenterTFormID)));
+//			nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mTileBrush->plugid(), mTileBrush->id(), mTBCenterTFormID)));
 			selComp->setSelected(true);
 			toCursor(pMousePos);
 
@@ -127,7 +127,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 			if (mBuildEnt == NULL)
 				return;
 
-			nsengine.events()->send(new NSSelSetEvent("Center", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), 0) ) );
+			//nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), 0) ) );
 
 			mObjectBrush->del<NSLightComp>();
 			mObjectBrush->del<NSOccupyComp>();
@@ -141,7 +141,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 
 			nsuint tFormID = scene->add(mObjectBrush);
 			mObjectBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
-			nsengine.events()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), tFormID)));
+//			nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), tFormID)));
 			selComp->setSelected(true);
 			toCursor(pMousePos);
 		}
@@ -162,7 +162,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 		if (mTileBrush != NULL)
 			scene->remove(mTileBrush);
 
-		nsengine.events()->send(new NSClearSelectionEvent("ClearSelection")); // process now
+		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
 		nsengine.engplug()->destroy<NSEntity>("MirrorBrush");
 		mMirrorBrush = NULL;
@@ -250,7 +250,7 @@ const NSBuildSystem::Mode & NSBuildSystem::mode() const
 
 void NSBuildSystem::init()
 {
-	nsengine.events()->addListener(this, NSEvent::InputKey);
+	//nsengine.eventDispatch()->addListener(this, NSEvent::InputKey);
 }
 
 bool NSBuildSystem::enabled() const
@@ -268,32 +268,32 @@ nsbool NSBuildSystem::mirror() const
 	return mMirrorMode;
 }
 
-bool NSBuildSystem::handleEvent(NSEvent * pEvent)
-{
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
-		return false;
+// bool NSBuildSystem::handleEvent(NSEvent * pEvent)
+// {
+// 	NSScene * scene = nsengine.currentScene();
+// 	if (scene == NULL)
+// 		return false;
 
-	if (pEvent == NULL)
-	{
-		dprint("NSBuildSystem::handleEvent Event is NULL - bad bad bad");
-		return false;
-	}
+// 	if (pEvent == NULL)
+// 	{
+// 		dprint("NSBuildSystem::handleEvent Event is NULL - bad bad bad");
+// 		return false;
+// 	}
 
-	if (pEvent->mID == NSEvent::InputKey)
-	{
-		NSInputKeyEvent * kEvent = (NSInputKeyEvent*)pEvent;
-		// a lot of nonsense to get to this point - just put in debug mode if the debug
-		// mode event is received
-		if (kEvent->mName == "BuildMode" && kEvent->mPorR == 1)
-		{
-			setBrushMode(Tile);
-			toggle(kEvent->mMousePos);
-			return true;
-		}
-	}
-	return false;
-}
+// 	if (pEvent->mID == NSEvent::InputKey)
+// 	{
+// 		NSInputKeyEvent * kEvent = (NSInputKeyEvent*)pEvent;
+// 		// a lot of nonsense to get to this point - just put in debug mode if the debug
+// 		// mode event is received
+// 		if (kEvent->mName == "BuildMode" && kEvent->mPorR == 1)
+// 		{
+// 			setBrushMode(Tile);
+// 			toggle(kEvent->mMousePos);
+// 			return true;
+// 		}
+// 	}
+// 	return false;
+// }
 
 void NSBuildSystem::toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 {
@@ -567,7 +567,7 @@ void NSBuildSystem::update()
 	if (scene == NULL)
 		return;
 
-	nsengine.events()->process(this);
+	nsengine.eventDispatch()->process(this);
 	if (scene == NULL)
 		return;
 

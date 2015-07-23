@@ -188,7 +188,7 @@ public:
 
 	NSPluginManager * plugins();
 
-	NSEventDispatcher * events();
+	NSEventDispatcher * eventDispatch();
 
 	template<class T>
 	bool hasPlugin(const T & name)

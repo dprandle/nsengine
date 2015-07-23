@@ -14,11 +14,13 @@ This file contains all of the neccessary declartations for the NSSystem class.
 #define NSSYSTEM_H
 
 #include <nsglobal.h>
+#include <nseventhandler.h>
+
 class NSTimer;
 class NSScene;
 struct NSEvent;
 
-class NSSystem
+class NSSystem : public NSEventHandler
 {
 public:
 
@@ -27,8 +29,6 @@ public:
 	NSSystem();
 
 	virtual ~NSSystem();
-
-	virtual bool handleEvent(NSEvent * pEvent)=0;
 
 	virtual void draw();
 

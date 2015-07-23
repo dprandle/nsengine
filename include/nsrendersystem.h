@@ -156,7 +156,7 @@ public:
 
 	uivec3 pick(nsfloat mousex, nsfloat mousey);
 
-	virtual bool handleEvent(NSEvent * pEvent);
+	//virtual bool handleEvent(NSEvent * pEvent);
 
 	virtual void init();
 

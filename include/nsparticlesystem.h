@@ -36,7 +36,7 @@ public:
 
 	virtual nsint updatePriority();
 
-	virtual bool handleEvent(NSEvent * pEvent);
+//	virtual bool handleEvent(NSEvent * pEvent);
 
 	virtual void init();
 

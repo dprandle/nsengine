@@ -146,45 +146,45 @@ bool NSSelectionSystem::contains(const uivec3 & itemid)
 	return false;
 }
 
-bool NSSelectionSystem::handleEvent(NSEvent * pEvent)
-{
-	if (pEvent->mID == NSEvent::SelPick)
-	{
-		NSSelPickEvent * selEvent = (NSSelPickEvent*)pEvent;
-		mPickPos = selEvent->mPickPos;
-		return true;
-	}
-	else if (pEvent->mID == NSEvent::ClearSelection)
-	{
-		clear();
-		return true;
-	}
-	else if (pEvent->mID == NSEvent::SelSet)
-	{
-		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent;
-		mFocusEnt = selEvent->mEntRefID;
-		//set(mScene->get(mFocusEnt.y)->get<NSSelComp>(), mFocusEnt.z);
-		return true;
-	}
-	else if (pEvent->mID == NSEvent::SelAdd)
-	{
-		// This will handle any add to selection events denoted as SelAdd
-		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent; // Get the specific event
+// bool NSSelectionSystem::handleEvent(NSEvent * pEvent)
+// {
+// 	if (pEvent->mID == NSEvent::SelPick)
+// 	{
+// 		NSSelPickEvent * selEvent = (NSSelPickEvent*)pEvent;
+// 		mPickPos = selEvent->mPickPos;
+// 		return true;
+// 	}
+// 	else if (pEvent->mID == NSEvent::ClearSelection)
+// 	{
+// 		clear();
+// 		return true;
+// 	}
+// 	else if (pEvent->mID == NSEvent::SelSet)
+// 	{
+// 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent;
+// 		mFocusEnt = selEvent->mEntRefID;
+// 		//set(mScene->get(mFocusEnt.y)->get<NSSelComp>(), mFocusEnt.z);
+// 		return true;
+// 	}
+// 	else if (pEvent->mID == NSEvent::SelAdd)
+// 	{
+// 		// This will handle any add to selection events denoted as SelAdd
+// 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent; // Get the specific event
 
-		// Get the selection entity and make sure it is valid
-		NSEntity * selEnt = nsengine.resource<NSEntity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
-		if (selEnt == NULL)
-		{
-			dprint("NSSelectionSystem::handleEvent Selection entity sent in event is NULL");
-			return false;
-		}
+// 		// Get the selection entity and make sure it is valid
+// 		NSEntity * selEnt = nsengine.resource<NSEntity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
+// 		if (selEnt == NULL)
+// 		{
+// 			dprint("NSSelectionSystem::handleEvent Selection entity sent in event is NULL");
+// 			return false;
+// 		}
 
-		// Add the selection to the current selection
-		add(selEnt, selEvent->mEntRefID.z);
-		return true;
-	}
-	return false;
-}
+// 		// Add the selection to the current selection
+// 		add(selEnt, selEvent->mEntRefID.z);
+// 		return true;
+// 	}
+// 	return false;
+// }
 
 void NSSelectionSystem::changeLayer(int pChange)
 {
@@ -233,7 +233,7 @@ void NSSelectionSystem::clear()
 	}
 	mSelectedEnts.clear();
 	mFocusEnt = uivec3();
-	nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+	//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 	mMoving = false;
 }
 
@@ -707,10 +707,10 @@ void NSSelectionSystem::enableLayerMode(const nsbool & pMode)
 
 void NSSelectionSystem::init()
 {
-	nsengine.events()->addListener(this, NSEvent::SelPick);
-	nsengine.events()->addListener(this, NSEvent::SelSet);
-	nsengine.events()->addListener(this, NSEvent::SelAdd);
-	nsengine.events()->addListener(this, NSEvent::ClearSelection);
+	//nsengine.events()->addListener(this, NSEvent::SelPick);
+	//nsengine.events()->addListener(this, NSEvent::SelSet);
+	//nsengine.events()->addListener(this, NSEvent::SelAdd);
+	//nsengine.events()->addListener(this, NSEvent::ClearSelection);
 }
 
 nsint NSSelectionSystem::drawPriority()
@@ -782,13 +782,13 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, nsbool pPressed, const uivec3 
 				mMoving = true;
 			}
 
-			nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+			//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 		else if (!contains(pID))
 		{
 			clear();
 			mFocusEnt = uivec3();
-			nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+			//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 	}
 	else
@@ -817,7 +817,7 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, nsbool pPressed, const uivec3 
 				if (!addToGrid())
 					dprint("NSSelectionSystem::onSelect Error in resetting tiles to original grid position");
 
-				nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
@@ -852,7 +852,7 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 	if (ent->plugid() == pi.x && ent->id() == pi.y) // needs the pointing thing
 	{
 		mFocusEnt = pi;
-		nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+		//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 
 		NSEntity * tileBrush = nsengine.system<NSBuildSystem>()->tilebrush();
 		if (tileBrush == NULL)
@@ -993,7 +993,7 @@ void NSSelectionSystem::_onMultiSelect(NSEntity * ent, nsbool pPressed, const ui
 			{
 				add(ent, pID.z);
 				mFocusEnt = pID;
-				nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
@@ -1033,7 +1033,7 @@ void NSSelectionSystem::_onMultiSelect(NSEntity * ent, nsbool pPressed, const ui
 						mFocusEnt.z = (*first);
 					}
 				}
-				nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 		}
 	}
@@ -1640,7 +1640,7 @@ void NSSelectionSystem::update()
 	if (scene == NULL)
 		return;
 
-	nsengine.events()->process(this); // process any events first
+	//nsengine.events()->process(this); // process any events first
 
 	if (scene == NULL) // if scene is null return
 		return;

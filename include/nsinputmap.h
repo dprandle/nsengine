@@ -114,7 +114,8 @@ class NSInputMap : public NSResource
 		Key_KP6,
 		Key_KP7,
 		Key_KP8,
-		Key_KP9
+		Key_KP9,
+		Key_Any
 	};
 
 	enum MouseButton {
@@ -127,17 +128,40 @@ class NSInputMap : public NSResource
 		AuxButton3,
 		AuxButton4,
 		Movement,
-		Scrolling
+		Scrolling,
+		AnyButton
+	};
+
+	enum Axis
+	{
+		None = 0x0000,
+		MouseXPos = 0x0001,
+		MouseYPos = 0x0002,
+		MouseXDelta = 0x0004,
+		MouseYDelta = 0x0008,
+		ScrollDelta = 0x0010
+	};
+
+	enum TState
+	{
+		Pressed,
+		Released,
+		Both
 	};
 
 	struct Trigger
 	{
 		Trigger(const nsstring & pName="",
-				Key pKMod1=Key_None,
-				Key pKMod2=Key_None,
-				MouseButton pMMod1=NoButton,
-				MouseButton pMMod2=NoButton):
+				TState triggerOn=Pressed,
+				Axis interestedAxis=None,
+				Key pKMod1=Key_Any,
+				Key pKMod2=Key_Any,
+				MouseButton pMMod1=AnyButton,
+				MouseButton pMMod2=AnyButton
+			):
 			mName(pName),
+			mTriggerOn(triggerOn),
+			mAxes(interestedAxis),
 			mKModifier1(pKMod1),
 			mKModifier2(pKMod2),
 			mMModifier1(pMMod1),
@@ -148,6 +172,8 @@ class NSInputMap : public NSResource
 		Key mKModifier2;
 		MouseButton mMModifier1;
 		MouseButton mMModifier2;
+		Axis mAxes;
+		TState mTriggerOn;
 
 		
 		const Trigger & operator=(const Trigger & pRhs)
@@ -157,6 +183,8 @@ class NSInputMap : public NSResource
 			mKModifier2 = pRhs.mKModifier2;
 			mMModifier1 = pRhs.mMModifier1;
 			mMModifier2 = pRhs.mMModifier2;
+			mAxes = pRhs.mAxes;
+			mTriggerOn = pRhs.mTriggerOn;
 			return *this;
 		}
 
@@ -176,7 +204,8 @@ class NSInputMap : public NSResource
 	typedef std::unordered_multimap<MouseButton, Trigger> MouseButtonMap;
 	typedef std::unordered_set<Key> Modifiers;
 	typedef std::unordered_set<MouseButton> MouseModifiers;
-
+	typedef std::unordered_map<Axis, float> AxisMap;
+	
 	struct Context
 	{
 		nsstring mName;
@@ -277,6 +306,22 @@ void pup(PUPer & p, NSInputMap::Context & c, const nsstring & varName)
 	pup(p, c.mMouseButtonMap, varName + ".mMouseButtonMap");
 }
 
+template<class PUPer>
+void pup(PUPer & p, NSInputMap::Axis & en, const nsstring & pString)
+{
+	nsuint in = static_cast<nsuint>(en);
+	pup(p, in, pString);
+	en = static_cast<NSInputMap::Axis>(in);
+}
+
+template<class PUPer>
+void pup(PUPer & p, NSInputMap::TState & en, const nsstring & pString)
+{
+	nsuint in = static_cast<nsuint>(en);
+	pup(p, in, pString);
+	en = static_cast<NSInputMap::TState>(in);
+}
+
 template <class PUPer>
 void pup(PUPer & p, NSInputMap::Trigger & t, const nsstring & varName)
 {
@@ -285,6 +330,8 @@ void pup(PUPer & p, NSInputMap::Trigger & t, const nsstring & varName)
 	pup(p, t.mKModifier2, varName + ".mKModifier2");
 	pup(p, t.mMModifier1, varName + ".mMModifier1");
 	pup(p, t.mMModifier2, varName + ".mMModifier2");
+	pup(p, t.mAxes, varName + ".mAxes");
+	pup(p, t.mTriggerOn, varName + ".mTriggerOn");
 }
 
 #endif

@@ -33,10 +33,10 @@ NSSystem()
 NSParticleSystem::~NSParticleSystem()
 {}
 
-bool NSParticleSystem::handleEvent(NSEvent * pEvent)
-{
-	return false;
-}
+// bool NSParticleSystem::handleEvent(NSEvent * pEvent)
+// {
+// 	return false;
+// }
 
 nsuint NSParticleSystem::finalfbo() { return mFinalBuf; }
 
@@ -180,7 +180,7 @@ void NSParticleSystem::update()
 	NSCamComp * compc = cam->get<NSCamComp>();
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 
-	nsengine.events()->process(this); // process any events first
+	//nsengine.events()->process(this); // process any events first
 
 	if (scene == NULL) // if scene is null return
 		return;

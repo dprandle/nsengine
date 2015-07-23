@@ -11,130 +11,86 @@ This file contains all of the neccessary declarations for the NSEvent class.
 */
 
 #include <nsmath.h>
+#include <nsinputmap.h>
 
 #ifndef NSEVENT_H
 #define NSEVENT_H
 
 struct NSEvent
 {
-	enum ID {
-		None,
-		InputKey,
-		InputMouseButton,
-		InputMouseMove,
-		InputMouseScroll,
-		SelPick,
-		SelSet,
-		SelAdd,
-		ClearSelection,
-		BuildModeEnable,
-		SelFocusChangeEvent,
-		Custom //! Used for extending events
-	};
-
-	NSEvent(ID pID, const nsstring & pName):
-		mID(pID),
-		mName(pName)
+	NSEvent():
+		refcount(0)
 	{}
 
-	nsstring mName;
-	ID mID;
+	nsuint refcount;
 };
 
-struct NSInputKeyEvent : NSEvent
+struct NSKeyEvent : public NSEvent
 {
-	enum PressOrRelease { Released, Pressed };
-	NSInputKeyEvent(const nsstring & pEventName, PressOrRelease pPorR, const fvec2 & pMousePos) :
-	mPorR(pPorR),
-	mMousePos(pMousePos),
-	NSEvent(InputKey, pEventName)
+	NSKeyEvent(NSInputMap::Key k, bool pressed) :
+		mKey(k),
+		mPressed(pressed),
+		NSEvent()
 	{}
 
-	PressOrRelease mPorR;
-	fvec2 mMousePos;
+	bool mPressed;
+	NSInputMap::Key mKey;
 };
 
-struct NSInputMouseEvent : NSEvent
+struct NSMouseButtonEvent : public NSEvent
 {
-	NSInputMouseEvent(ID pID, const nsstring & pEventName, const fvec2 & pPos) :
-	mPos(pPos),
-	NSEvent(pID, pEventName) {}
+	NSMouseButtonEvent(NSInputMap::MouseButton btn, bool pressed, const fvec2 & normalized_mpos) :
+		mb(btn),
+		mPressed(pressed),
+		mNormMousePos(normalized_mpos),
+		NSEvent()
+	{}
 
-	fvec2 mPos;
+	fvec2 mNormMousePos;
+	NSInputMap::MouseButton mb;
+	bool mPressed;
 };
 
-struct NSInputMouseButtonEvent : NSInputMouseEvent
+struct NSMouseMoveEvent : public NSEvent
 {
-	enum PressOrRelease { Released, Pressed };
-	NSInputMouseButtonEvent(const nsstring & pEventName, PressOrRelease pPorR, const fvec2 & pPos) :
-	mPorR(pPorR),
-	NSInputMouseEvent(InputMouseButton, pEventName, pPos) {}
+	NSMouseMoveEvent(const fvec2 & normalized_mpos) :
+		mNormMousePos(normalized_mpos),
+		NSEvent()
+	{}
 
-	PressOrRelease mPorR;
+	fvec2 mNormMousePos;
 };
 
-struct NSInputMouseMoveEvent : NSInputMouseEvent
+struct NSMouseScrollEvent : NSEvent
 {
-	NSInputMouseMoveEvent(const nsstring & pEventName, const fvec2 & pPos, const fvec2 & pDelta) :
-	mDelta(pDelta),
-	NSInputMouseEvent(InputMouseMove, pEventName, pPos) {}
-
-	fvec2 mDelta;
-};
-
-struct NSInputMouseScrollEvent : NSInputMouseEvent
-{
-	NSInputMouseScrollEvent(const nsstring & pEventName, const fvec2 & pPos, nsfloat pScroll) :
-	mScroll(pScroll),
-	NSInputMouseEvent(InputMouseScroll, pEventName, pPos) {}
-
+	NSMouseScrollEvent(nsfloat scrollDelta, const fvec2 & normalized_mpos) :
+		mScroll(scrollDelta),
+		mNormMousePos(normalized_mpos),
+		NSEvent()
+	{}
+	fvec2 mNormMousePos;
 	nsfloat mScroll;
 };
 
-struct NSSelPickEvent : NSEvent
+struct NSActionEvent : NSEvent
 {
-	NSSelPickEvent(const nsstring & pEventName, const fvec2 & pPickPos) :
-	mPickPos(pPickPos),
-	NSEvent(SelPick, pEventName)
+	NSActionEvent(const nsstring & triggerName):
+		mTriggerName(triggerName),
+		NSEvent()
 	{}
 
-	fvec2 mPickPos;
+	nsstring mTriggerName;
+	NSInputMap::AxisMap axes;
 };
 
-struct NSSelSetEvent : NSEvent
+struct NSStateEvent : NSActionEvent
 {
-	NSSelSetEvent(const nsstring & pEventName, const uivec3 & pEntRefID) :
-	mEntRefID(pEntRefID),
-	NSEvent(SelSet, pEventName)
+	NSStateEvent(const nsstring & triggerName, bool toggle):
+		mToggle(toggle),
+		NSActionEvent(triggerName)
 	{}
 
-	uivec3 mEntRefID;
-};
-
-struct NSSelAddEvent : NSEvent
-{
-	NSSelAddEvent(const nsstring & pEventName, const uivec3 & pEntRefID) :
-	mEntRefID(pEntRefID),
-	NSEvent(SelAdd, pEventName)
-	{}
-
-	uivec3 mEntRefID;
-};
-
-struct NSSelFocusChangeEvent : NSEvent
-{
-	NSSelFocusChangeEvent(const nsstring & pEventName, const uivec3 & pNewSelCenter) :
-	mNewSelCenter(pNewSelCenter),
-	NSEvent(SelFocusChangeEvent,pEventName)
-	{}
-	uivec3 mNewSelCenter;
-};
-
-struct NSClearSelectionEvent : NSEvent
-{
-	NSClearSelectionEvent(const nsstring & pEventName) :
-	NSEvent(ClearSelection, pEventName)
-	{}
+	bool mToggle;
 };
 
 #endif

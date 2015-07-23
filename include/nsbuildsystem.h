@@ -63,7 +63,7 @@ public:
 
 	const Mode & mode() const;
 
-	virtual bool handleEvent(NSEvent * pEvent);
+	//virtual bool handleEvent(NSEvent * pEvent);
 
 	virtual void init();
 
