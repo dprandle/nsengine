@@ -64,7 +64,7 @@ bool NSShaderManager::loadStage(NSShader * sh, const nsstring & fname, NSShader:
 	bool shouldPrefix = false;
 	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
-	nsuint pos = fname.find_last_of("/\\");
+	size_t pos = fname.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (fname[0] != '/' && fname[0] != '.' && fname.find(":") == nsstring::npos) // then subdir
@@ -125,7 +125,7 @@ bool NSShaderManager::saveStage(NSShader * sh, const nsstring & filename, NSShad
 	nsstring fName;
 	bool shouldPrefix = false;
 	
-	nsuint pos = filename.find_last_of("/\\");
+	size_t pos = filename.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (filename[0] != '/' && filename[0] != '.' && filename.find(":") == nsstring::npos) // then subdir
@@ -141,7 +141,9 @@ bool NSShaderManager::saveStage(NSShader * sh, const nsstring & filename, NSShad
 
 	bool fret = nsfileio::create_dir(fName);
 	if (fret)
+	{
 		dprint("NSShaderManager::save Created directory " + fName);
+	}
 
 	nsfstream file;
 	NSFilePUPer * p;

@@ -58,7 +58,7 @@ NSInputComp::Action * NSInputComp::action(const nsstring & pTriggerName)
 
 nsbool NSInputComp::remove(const nsstring & pTriggerName)
 {
-	nsuint erased = mActions.erase(pTriggerName);
+	size_t erased = mActions.erase(pTriggerName);
 	return erased && 1;
 }
 

@@ -61,7 +61,9 @@ void NSMeshManager::_assimpLoadNode(NSMesh* pMesh, NSMesh::Node * pMeshNode, con
 			id.boneIDs[0] = subMesh->mNode->mNodeID;
 			id.weights[0] = 1.0f;
 			subMesh->mBoneInfo.assign(subMesh->mPositions.size(), id);
-			subMesh->mBoneBuf.allocate(subMesh->mBoneInfo, NSBufferObject::MutableStaticDraw, subMesh->mBoneInfo.size());
+			subMesh->mBoneBuf.allocate(subMesh->mBoneInfo,
+									   NSBufferObject::MutableStaticDraw,
+									   static_cast<nsuint>(subMesh->mBoneInfo.size()));
 		}
 	}
 
@@ -165,7 +167,7 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 
 					if (nodeTree->boneNameMap.find(boneName) == nodeTree->boneNameMap.end() )
 					{
-						boneIndex = pMesh->nodetree()->boneNameMap.size();
+						boneIndex = static_cast<nsuint>(pMesh->nodetree()->boneNameMap.size());
 						NSMesh::Bone boneInfo;
 						const aiMatrix4x4 * mat = &currentBone->mOffsetMatrix;
 						boneInfo.boneID = boneIndex;

@@ -93,7 +93,7 @@ nsint NSTileGrid::minLayer()
 	nsint minVal = 0;
 	for (nsuint i = 3; i < 8; ++i)
 	{
-		nsint size = mMap[i].size();
+		nsint size = static_cast<int>(mMap[i].size());
 		size *= -1;
 		if (size < minVal)
 			minVal = size;
@@ -106,7 +106,7 @@ nsint NSTileGrid::maxLayer()
 	nsint maxVal = 0;
 	for (nsuint i = 0; i < 4; ++i)
 	{
-		nsint size = mMap[i].size();
+		nsint size = static_cast<int>(mMap[i].size());
 		size -= 1;
 		if (size > maxVal)
 			maxVal = size;
@@ -120,28 +120,28 @@ nsint NSTileGrid::minY()
 
 	for (nsuint i = 0; i < mMap[2].size(); ++i)
 	{
-		nsint lowestIndex = mMap[2][i].size() * -1;
+		nsint lowestIndex = static_cast<int>(mMap[2][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 
 	for (nsuint i = 0; i < mMap[3].size(); ++i)
 	{
-		nsint lowestIndex = mMap[3][i].size() * -1;
+		nsint lowestIndex = static_cast<int>(mMap[3][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 
 	for (nsuint i = 0; i < mMap[6].size(); ++i)
 	{
-		nsint lowestIndex = mMap[6][i].size() * -1;
+		nsint lowestIndex = static_cast<int>(mMap[6][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 
 	for (nsuint i = 0; i < mMap[7].size(); ++i)
 	{
-		nsint lowestIndex = mMap[7][i].size() * -1;
+		nsint lowestIndex = static_cast<int>(mMap[7][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
@@ -154,28 +154,28 @@ nsint NSTileGrid::maxY()
 
 	for (nsuint i = 0; i < mMap[0].size(); ++i)
 	{
-		nsint highestIndex = mMap[0][i].size() - 1;
+		nsint highestIndex = static_cast<int>(mMap[0][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 
 	for (nsuint i = 0; i < mMap[1].size(); ++i)
 	{
-		nsint highestIndex = mMap[1][i].size() - 1;
+		nsint highestIndex = static_cast<int>(mMap[1][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 
 	for (nsuint i = 0; i < mMap[4].size(); ++i)
 	{
-		nsint highestIndex = mMap[4][i].size() - 1;
+		nsint highestIndex = static_cast<int>(mMap[4][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 
 	for (nsuint i = 0; i < mMap[5].size(); ++i)
 	{
-		nsint highestIndex = mMap[5][i].size() - 1;
+		nsint highestIndex = static_cast<int>(mMap[5][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
@@ -190,7 +190,7 @@ nsint NSTileGrid::minX()
 	{
 		for (nsuint j = 0; j < mMap[1][i].size(); ++j)
 		{
-			nsint lowestIndex = mMap[1][i][j].size() * -1;
+			nsint lowestIndex = static_cast<int>(mMap[1][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
@@ -200,7 +200,7 @@ nsint NSTileGrid::minX()
 	{
 		for (nsuint j = 0; j < mMap[3][i].size(); ++j)
 		{
-			nsint lowestIndex = mMap[3][i][j].size() * -1;
+			nsint lowestIndex = static_cast<int>(mMap[3][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
@@ -210,7 +210,7 @@ nsint NSTileGrid::minX()
 	{
 		for (nsuint j = 0; j < mMap[5][i].size(); ++j)
 		{
-			nsint lowestIndex = mMap[5][i][j].size() * -1;
+			nsint lowestIndex = static_cast<int>(mMap[5][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
@@ -220,7 +220,7 @@ nsint NSTileGrid::minX()
 	{
 		for (nsuint j = 0; j < mMap[7][i].size(); ++j)
 		{
-			nsint lowestIndex = mMap[7][i][j].size() * -1;
+			nsint lowestIndex = static_cast<int>(mMap[7][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
@@ -236,7 +236,7 @@ nsint NSTileGrid::maxX()
 	{
 		for (nsuint j = 0; j < mMap[0][i].size(); ++j)
 		{
-			nsint highestIndex = mMap[0][i][j].size() - 1;
+			nsint highestIndex = static_cast<int>(mMap[0][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
@@ -246,7 +246,7 @@ nsint NSTileGrid::maxX()
 	{
 		for (nsuint j = 0; j < mMap[2][i].size(); ++j)
 		{
-			nsint highestIndex = mMap[2][i][j].size() - 1;
+			nsint highestIndex = static_cast<int>(mMap[2][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
@@ -256,7 +256,7 @@ nsint NSTileGrid::maxX()
 	{
 		for (nsuint j = 0; j < mMap[4][i].size(); ++j)
 		{
-			nsint highestIndex = mMap[4][i][j].size() - 1;
+			nsint highestIndex = static_cast<int>(mMap[4][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
@@ -266,7 +266,7 @@ nsint NSTileGrid::maxX()
 	{
 		for (nsuint j = 0; j < mMap[6][i].size(); ++j)
 		{
-			nsint highestIndex = mMap[6][i][j].size() - 1;
+			nsint highestIndex = static_cast<int>(mMap[6][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
@@ -612,7 +612,7 @@ void NSTileGrid::_resizeForSpace(const Index & pIndex)
 
 	if (pIndex.mIndex.z >= mMap[pIndex.mQuad].size())
 	{
-		lastIndex = mMap[pIndex.mQuad].size() - 1;
+		lastIndex = static_cast<int>(mMap[pIndex.mQuad].size()) - 1;
 		mMap[pIndex.mQuad].resize(pIndex.mIndex.z + TILE_GRID_RESIZE_PAD);
 
 		//resize the x and y dimensions for all new layers
@@ -626,7 +626,7 @@ void NSTileGrid::_resizeForSpace(const Index & pIndex)
 
 	if (pIndex.mIndex.y >= mMap[pIndex.mQuad][pIndex.mIndex.z].size())
 	{
-		lastIndex = mMap[pIndex.mQuad][pIndex.mIndex.z].size() - 1;
+		lastIndex = static_cast<int>(mMap[pIndex.mQuad][pIndex.mIndex.z].size()) - 1;
 		mMap[pIndex.mQuad][pIndex.mIndex.z].resize(pIndex.mIndex.y + TILE_GRID_RESIZE_PAD);
 
 		// resize all the x dimensions for the current layer/row

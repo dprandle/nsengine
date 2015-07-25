@@ -105,7 +105,7 @@ void pup(NSTextFilePUPer & p, nschar & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc-beg);
 		val = line[0];
 	}
@@ -124,7 +124,7 @@ void pup(NSTextFilePUPer & p, nswchar & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = line[0];
 	}
@@ -143,7 +143,7 @@ void pup(NSTextFilePUPer & p, nssint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = (nssint)std::stoi(line);
 	}
@@ -162,7 +162,7 @@ void pup(NSTextFilePUPer & p, nsint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stoi(line);
 	}
@@ -181,7 +181,7 @@ void pup(NSTextFilePUPer & p, nslint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stol(line);
 	}
@@ -200,7 +200,7 @@ void pup(NSTextFilePUPer & p, nsllint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = (nsllint)std::stol(line);
 	}
@@ -219,7 +219,7 @@ void pup(NSTextFilePUPer & p, nsuchar & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = (nsuchar)std::stoul(line);
 	}
@@ -238,7 +238,7 @@ void pup(NSTextFilePUPer & p, nsusint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = (nsusint)std::stoul(line);
 	}
@@ -257,7 +257,7 @@ void pup(NSTextFilePUPer & p, nsuint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = (nsuint)std::stoul(line);
 	}
@@ -276,7 +276,7 @@ void pup(NSTextFilePUPer & p, nsulint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stoul(line);
 	}
@@ -295,7 +295,7 @@ void pup(NSTextFilePUPer & p, nsullint & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stoull(line);
 	}
@@ -314,7 +314,7 @@ void pup(NSTextFilePUPer & p, nsfloat & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stof(line);
 	}
@@ -333,7 +333,7 @@ void pup(NSTextFilePUPer & p, nsdouble & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stod(line);
 	}
@@ -352,7 +352,7 @@ void pup(NSTextFilePUPer & p, nsldouble & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = std::stold(line);
 	}
@@ -374,7 +374,7 @@ void pup(NSTextFilePUPer & p, nsbool & val, const nsstring & varName)
 	{
 		nsstring line;
 		std::getline(p.fs, line);
-		nsuint beg = begtag.size(); nsuint loc = line.find(endtag);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
 		val = (line == "true");
 	}

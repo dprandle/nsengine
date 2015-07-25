@@ -111,7 +111,7 @@ void read(const nsstring & fname, nschararray * contents)
     file.seekg(0, std::ios::beg);
 
     // reserve capacity
-    contents->reserve(fileSize);
+    contents->reserve(static_cast<nschararray::size_type>(fileSize));
 
     // read the data:
     contents->insert(contents->begin(),

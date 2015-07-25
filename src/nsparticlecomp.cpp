@@ -245,7 +245,9 @@ void NSParticleComp::init()
 
 	mVAO[0]->bind();
 	mBackBuf->bind();
-	mBackBuf->allocate(mParticles,NSBufferObject::MutableDynamicDraw, mParticles.size());
+	mBackBuf->allocate(mParticles,
+					   NSBufferObject::MutableDynamicDraw,
+					   static_cast<nsuint>(mParticles.size()));
 	mVAO[0]->enable(0);
 	mVAO[0]->vertexAttribPtr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
 	mVAO[0]->enable(1);
@@ -258,7 +260,9 @@ void NSParticleComp::init()
 
 	mVAO[1]->bind();
 	mFrontBuf->bind();
-	mFrontBuf->allocate(mParticles, NSBufferObject::MutableDynamicDraw, mParticles.size());
+	mFrontBuf->allocate(mParticles,
+						NSBufferObject::MutableDynamicDraw,
+						static_cast<nsuint>(mParticles.size()));
 	mVAO[1]->enable(0);
 	mVAO[1]->vertexAttribPtr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
 	mVAO[1]->enable(1);
@@ -465,12 +469,12 @@ void NSParticleComp::setInitVelocityMult(const fvec3 & pMult)
 
 nsuint NSParticleComp::motionKeyCount()
 {
-	return mMotionKeys.size();
+	return static_cast<nsuint>(mMotionKeys.size());
 }
 
 nsuint NSParticleComp::visualKeyCount()
 {
-	return mVisualKeys.size();
+	return static_cast<nsuint>(mVisualKeys.size());
 }
 
 fvec3uimap::iterator NSParticleComp::beginMotionKey()
@@ -545,10 +549,13 @@ void NSParticleComp::allocateBuffers()
 	mBackBuf->setTarget(NSBufferObject::Array);
 
 	mBackBuf->bind();
-	mBackBuf->allocate(mParticles, NSBufferObject::MutableDynamicDraw, mParticles.size());
-
+	mBackBuf->allocate(mParticles,
+					   NSBufferObject::MutableDynamicDraw,
+					   static_cast<nsuint>(mParticles.size()));
 	mFrontBuf->bind();
-	mBackBuf->allocate(mParticles, NSBufferObject::MutableDynamicDraw, mParticles.size());
+	mBackBuf->allocate(mParticles,
+					   NSBufferObject::MutableDynamicDraw,
+					   static_cast<nsuint>(mParticles.size()));
 	mFrontBuf->unbind();
 }
 

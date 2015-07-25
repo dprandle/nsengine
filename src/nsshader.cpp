@@ -45,7 +45,10 @@ bool NSShader::compile()
 		ret = compile(Geometry) && ret;
 
 	if (ret)
+	{
 		dprint("NSShader::compile - Succesfully compiled shader " + mName);
+	}
+	
 	return ret;
 }
 

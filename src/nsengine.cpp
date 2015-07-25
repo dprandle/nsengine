@@ -959,5 +959,5 @@ bool GLError(nsstring errorMessage)
 
 nsuint hash_id(const nsstring & str)
 {
-	return crc32(str.c_str(),str.size(),0);
+	return crc32(str.c_str(),static_cast<int>(str.size()),0);
 }

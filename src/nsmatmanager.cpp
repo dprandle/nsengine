@@ -65,7 +65,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -90,7 +90,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -115,7 +115,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -140,7 +140,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -165,7 +165,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -190,7 +190,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -215,7 +215,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -240,7 +240,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -265,7 +265,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -290,7 +290,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{
@@ -315,7 +315,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			nsstring filename = path.C_Str();
 			nsstring texName = filename.substr(filename.find_last_of("/\\") + 1);
 			nsstring lookName = "";
-			nsuint extPos = texName.find_last_of(".");
+			size_t extPos = texName.find_last_of(".");
 
 			if (extPos != nsstring::npos)
 			{

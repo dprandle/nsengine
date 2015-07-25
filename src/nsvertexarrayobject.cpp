@@ -78,7 +78,7 @@ void NSVertexArrayObject::remove(NSBufferObject * mBuffer, nsuint pAttLoc)
 	auto item = mOwnedBuffers.find(mBuffer->glid());
 	if (item != mOwnedBuffers.end())
 	{
-		nsuint i = item->second.erase(pAttLoc);
+		size_t i = item->second.erase(pAttLoc);
 		if (i != 0)
 		{
 			disable(pAttLoc);

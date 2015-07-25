@@ -39,7 +39,7 @@ NSTexture * NSTexManager::load(nsuint res_type_id, const nsstring & fname)
 	{
 		nsstring texExtension = "";
 		nsstring texName = nameFromFilename(fname);
-		nsuint extPos = fname.find_last_of(".");
+		size_t extPos = fname.find_last_of(".");
 
 		if (extPos != nsstring::npos)
 			texExtension = fname.substr(extPos);
@@ -74,7 +74,7 @@ NSTex2D * NSTexManager::loadImage(const nsstring & fname)
 	
 	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
-	nsuint pos = resName.find_last_of("/\\");
+	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
@@ -87,7 +87,7 @@ NSTex2D * NSTexManager::loadImage(const nsstring & fname)
 	else
 		shouldPrefix = true;
 
-	nsuint extPos = resName.find_last_of(".");
+	size_t extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
@@ -165,7 +165,7 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & pXPlus,
 	
 	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
-	nsuint pos = resName.find_last_of("/\\");
+	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
@@ -178,7 +178,7 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & pXPlus,
 	else
 		shouldPrefix = true;
 
-	nsuint extPos = resName.find_last_of(".");
+	size_t extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
@@ -262,7 +262,7 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & fname)
 	
 	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
-	nsuint pos = resName.find_last_of("/\\");
+	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
@@ -275,7 +275,7 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & fname)
 	else
 		shouldPrefix = true;
 
-	nsuint extPos = resName.find_last_of(".");
+	size_t extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
@@ -467,9 +467,13 @@ bool NSTexManager::save(NSTexCubeMap * cubemap, const nsstring & path)
 	cubemap->unbind();
 
 	if (ret == 0)
+	{
 		dprint("NSTexManager::loadCubemap Could not save NSTexCubemap to file " + fName + " Error: " + nsstring(SOIL_last_result()));
+	}
 	else
+	{
 		dprint("NSTexManager::loadCubemap Successfully saved NSTexCubemap to file " + fName);
+	}
 
 	return (ret == 0);
 }
@@ -527,9 +531,13 @@ bool NSTexManager::save(NSTex2D * image, const nsstring & path)
 	}
 
 	if (ret)
+	{
 		dprint("NSTexManager::saveImage Successfully saved NSTex2D to file " + fName);
+	}
 	else
+	{
 		dprint("NSTexManager::saveImage Could not save NSTex2D to file " + fName);
+	}
 
 	return ret;
 }

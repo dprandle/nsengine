@@ -158,7 +158,7 @@ void NSEntity::pup(NSFilePUPer * p)
 
 nsuint NSEntity::count()
 {
-	return mComponents.size();
+	return static_cast<nsuint>(mComponents.size());
 }
 
 NSComponent * NSEntity::get(const nsstring & guid)
@@ -231,7 +231,9 @@ NSComponent * NSEntity::remove(nsuint type_id)
 		dprint("NSEntity::remove - Removing \"" + nsengine.guid(type_id) + "\" from Entity " + mName + "\"");
 	}
 	else
+	{
 		dprint("NSEntity::remove - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + mName + "\"");
+	}
 
 	return comp_t;
 	
@@ -276,11 +278,6 @@ void NSEntity::updateScene()
 
 NSEntity & NSEntity::operator=(NSEntity rhs)
 {
-	swap(*this, rhs);
+	std::swap(mComponents, rhs.mComponents);
 	return *this;
-}
-
-void swap(NSEntity & first, NSEntity & second)
-{
-	std::swap(first, second);
 }

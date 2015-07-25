@@ -630,7 +630,10 @@ void NSRenderSystem::_blendDirectionLight(NSLightComp * pLight)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(cSub->mPrimType,
+					   static_cast<GLsizei>(cSub->mIndices.size()),
+					   GL_UNSIGNED_INT,
+					   0);
 		cSub->mVAO.unbind();
 	}
 }
@@ -661,7 +664,10 @@ void NSRenderSystem::_blendPointLight(NSLightComp * pLight)
 			mShaders.mPointLightShader->setUniform("nodeTransform", fmat4());
 
 		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(cSub->mPrimType,
+					   static_cast<GLsizei>(cSub->mIndices.size()),
+					   GL_UNSIGNED_INT,
+					   0);
 		cSub->mVAO.unbind();
 	}
 }
@@ -674,8 +680,11 @@ void NSRenderSystem::_blendSpotLight(NSLightComp * pLight)
 	mShaders.mSpotLightShader->setLightColor(pLight->color());
 	mShaders.mSpotLightShader->setShadowSamples(pLight->shadowSamples());
 	mShaders.mSpotLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mSpotLightShader->setScreenSize(fvec2(static_cast<nsfloat>(mFinalBuf->dim().x), static_cast<nsfloat>(mFinalBuf->dim().y)));
-	mShaders.mSpotLightShader->setShadowTexSize(fvec2(static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
+	mShaders.mSpotLightShader->setScreenSize(fvec2(static_cast<nsfloat>(mFinalBuf->dim().x),
+												   static_cast<nsfloat>(mFinalBuf->dim().y)));
+	mShaders.mSpotLightShader->setShadowTexSize(
+		fvec2(static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).w),
+			  static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
 	mShaders.mSpotLightShader->setConstAtten(pLight->atten().x);
 	mShaders.mSpotLightShader->setLinAtten(pLight->atten().y);
 	mShaders.mSpotLightShader->setExpAtten(pLight->atten().z);
@@ -692,7 +701,10 @@ void NSRenderSystem::_blendSpotLight(NSLightComp * pLight)
 			mShaders.mSpotLightShader->setUniform("nodeTransform", fmat4());
 
 		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(cSub->mPrimType,
+					   static_cast<GLsizei>(cSub->mIndices.size()),
+					   GL_UNSIGNED_INT,
+					   0);
 		cSub->mVAO.unbind();
 	}
 }
@@ -818,7 +830,12 @@ void NSRenderSystem::_drawTransformFeedbacks()
 					subMesh->mVAO.vertexAttribDiv(NSShader::RefID, 1);
 
 					// Draw the stuff without sending the stuff to be rasterized
-					glDrawElementsInstanced(subMesh->mPrimType, subMesh->mIndices.size(), GL_UNSIGNED_INT, 0, bufIter->mInstanceCount);
+					glDrawElementsInstanced(subMesh->mPrimType,
+											static_cast<GLsizei>(subMesh->mIndices.size()),
+											GL_UNSIGNED_INT,
+											0,
+											bufIter->mInstanceCount);
+					
 					GLError("NSRenderSystem::_drawTransformFeedbacks glDrawElementsInstanced");
 
 					tComp->transformBuffer()->bind();
@@ -936,7 +953,13 @@ void NSRenderSystem::_drawCall(DCSet::iterator pDCIter)
 	pDCIter->mSubMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(nsuint), 0);
 	pDCIter->mSubMesh->mVAO.vertexAttribDiv(NSShader::RefID, 1);
 	GLError("NSRenderSystem::_drawCall 1");
-	glDrawElementsInstanced(pDCIter->mSubMesh->mPrimType, pDCIter->mSubMesh->mIndices.size(), GL_UNSIGNED_INT, 0, pDCIter->mNumTransforms);
+	
+	glDrawElementsInstanced(pDCIter->mSubMesh->mPrimType,
+							static_cast<GLsizei>(pDCIter->mSubMesh->mIndices.size()),
+							GL_UNSIGNED_INT,
+							0,
+							pDCIter->mNumTransforms);
+	
 	GLError("NSRenderSystem::_drawCall 2");
 
 	pDCIter->mTransformBuffer->bind();
@@ -1152,7 +1175,10 @@ void NSRenderSystem::_stencilPointLight(NSLightComp * pLight)
 			mShaders.mLightStencilShader->setNodeTransform(fmat4());
 
 		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(cSub->mPrimType,
+					   static_cast<GLsizei>(cSub->mIndices.size()),
+					   GL_UNSIGNED_INT,
+					   0);
 		cSub->mVAO.unbind();
 	}
 }
@@ -1170,7 +1196,10 @@ void NSRenderSystem::_stencilSpotLight(NSLightComp * pLight)
 			mShaders.mLightStencilShader->setNodeTransform(fmat4());
 
 		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(cSub->mPrimType,
+					   static_cast<GLsizei>(cSub->mIndices.size()),
+					   GL_UNSIGNED_INT,
+					   0);
 		cSub->mVAO.unbind();
 	}
 }

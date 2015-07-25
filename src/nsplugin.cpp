@@ -896,7 +896,7 @@ nsuint NSPlugin::resourceCount()
 {
 	if (mBound)
 		_updateResMap();
-	return resmap.size();
+	return static_cast<nsuint>(resmap.size());
 }
 
 bool NSPlugin::destroy(NSResource * res)

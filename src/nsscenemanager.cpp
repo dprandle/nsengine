@@ -43,7 +43,7 @@ NSScene * NSSceneManager::load(nsuint res_type_id, const nsstring & fname)
 	
 	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
-	nsuint pos = resName.find_last_of("/\\");
+	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
@@ -56,7 +56,7 @@ NSScene * NSSceneManager::load(nsuint res_type_id, const nsstring & fname)
 	else
 		shouldPrefix = true;
 
-	nsuint extPos = resName.find_last_of(".");
+	size_t extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 

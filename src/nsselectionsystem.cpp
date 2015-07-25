@@ -358,7 +358,10 @@ void NSSelectionSystem::draw()
 						selShader->setHeightMinMax(terComp->heightBounds());
 
 					cSub->mVAO.bind();
-					glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+					glDrawElements(cSub->mPrimType,
+								   static_cast<GLsizei>(cSub->mIndices.size()),
+								   GL_UNSIGNED_INT,
+								   0);
 					cSub->mVAO.unbind();
 				}
 				++selIter;
@@ -432,7 +435,10 @@ void NSSelectionSystem::draw()
 
 					fvec4 selCol = selComp->color();
 					selShader->setFragOutColor(selCol);
-					glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+					glDrawElements(cSub->mPrimType,
+								   static_cast<GLsizei>(cSub->mIndices.size()),
+								   GL_UNSIGNED_INT,
+								   0);
 
 					glPolygonMode(GL_FRONT, GL_FILL);
 					glEnable(GL_DEPTH_TEST);
@@ -443,7 +449,10 @@ void NSSelectionSystem::draw()
 						selCol.w = 0.4f;
 
 					selShader->setUniform("fragColOut", selCol);
-					glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+					glDrawElements(cSub->mPrimType,
+								   static_cast<GLsizei>(cSub->mIndices.size()),
+								   GL_UNSIGNED_INT,
+								   0);
 					cSub->mVAO.unbind();
 				}
 				++selIter;
@@ -480,7 +489,10 @@ void NSSelectionSystem::draw()
 			cSub->mVAO.bind();
 			fvec4 col(1.0f, 0.0f, 1.0f, 0.7f);
 			selShader->setFragOutColor(col);
-			glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+			glDrawElements(cSub->mPrimType,
+						   static_cast<GLsizei>(cSub->mIndices.size()),
+						   GL_UNSIGNED_INT,
+						   0);
 			cSub->mVAO.unbind();
 		}
 	}
@@ -527,7 +539,10 @@ void NSSelectionSystem::_drawEntOcc(NSEntity * ent)
 					while (spaceIter != occComp->end())
 					{
 						selShader->setTransform(translationMat4(NSTileGrid::world(*spaceIter, tComp->wpos(*selIter))));
-						glDrawElements(occSub->mPrimType, occSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+						glDrawElements(occSub->mPrimType,
+									   static_cast<GLsizei>(occSub->mIndices.size()),
+									   GL_UNSIGNED_INT,
+									   0);
 						++spaceIter;
 					}
 					occSub->mVAO.unbind();
@@ -579,7 +594,10 @@ void NSSelectionSystem::_drawOcc()
 					{
 						trans.setColumn(3,fvec4(ent->get<NSTFormComp>()->lpos(id.z),1.0f));
 						selShader->setTransform(trans);
-						glDrawElements(occSub->mPrimType, occSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+						glDrawElements(occSub->mPrimType,
+									   static_cast<GLsizei>(occSub->mIndices.size()),
+									   GL_UNSIGNED_INT,
+									   0);
 					}
 				}
 			}
@@ -654,7 +672,10 @@ void NSSelectionSystem::_drawHidden()
 					cSub->mVAO.bind();
 					fvec4 col(1.0f, 1.0f, 1.0f, 0.04f);
 					selShader->setFragOutColor(col);
-					glDrawElements(cSub->mPrimType, cSub->mIndices.size(), GL_UNSIGNED_INT, 0);
+					glDrawElements(cSub->mPrimType,
+								   static_cast<GLsizei>(cSub->mIndices.size()),
+								   GL_UNSIGNED_INT,
+								   0);
 					cSub->mVAO.unbind();
 				}
 			}
@@ -815,7 +836,9 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, nsbool pPressed, const uivec3 
 				setColor(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 
 				if (!addToGrid())
+				{
 					dprint("NSSelectionSystem::onSelect Error in resetting tiles to original grid position");
+				}
 
 				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}

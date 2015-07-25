@@ -173,7 +173,7 @@ void NSSelComp::setColor(const fvec4 & pColor)
 
 nsuint NSSelComp::count()
 {
-	return mSelection.size();
+	return static_cast<nsuint>(mSelection.size());
 }
 
 bool NSSelComp::empty()

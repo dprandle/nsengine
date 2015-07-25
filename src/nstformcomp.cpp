@@ -51,13 +51,13 @@ nsuint NSTFormComp::add(const InstTrans & trans)
 		enableTransformFeedback(true);
 	}
 
-	return mTransforms.size() - 1;
+	return static_cast<nsuint>(mTransforms.size()) - 1;
 }
 
 nsuint NSTFormComp::add(nsuint pHowMany)
 {
 	// Get the transformID of the last transform before adding pHowMany and return it
-	nsuint ret = mTransforms.size() - 1;
+	nsuint ret = static_cast<nsuint>(mTransforms.size()) - 1;
 	mTransforms.resize(mTransforms.size() + pHowMany);
 	postUpdate(true);
 	mBufferResize = true;
@@ -158,9 +158,9 @@ bool NSTFormComp::enableTransformFeedback(nsbool pEnable)
 			return false;
 
 		// Figure out how much memory to allocate in the buffers.. this should be number of tranforms times number of verts
-		nsuint allocAmount = mesh->vertcount() * mTransforms.size();
-		nsuint instancePerDraw = mTransforms.size();
-		nsuint totalIntanceCount = mTransforms.size();
+		nsuint allocAmount = mesh->vertcount() * static_cast<nsuint>(mTransforms.size());
+		nsuint instancePerDraw = static_cast<nsuint>(mTransforms.size());
+		nsuint totalIntanceCount = static_cast<nsuint>(mTransforms.size());
 
 		// If the total is larger than 4mB, then find out how many 4 mB buffers are needed
 		nsuint bufCount = 1;
@@ -367,7 +367,7 @@ NSBufferObject * NSTFormComp::transformIDBuffer()
 
 nsuint NSTFormComp::count() const
 {
-	return mTransforms.size();
+	return static_cast<nsuint>(mTransforms.size());
 }
 
 nsuint NSTFormComp::visibleCount() const
@@ -421,7 +421,7 @@ nsuint NSTFormComp::remove(nsuint pTransformID)
 	if (pTransformID >= mTransforms.size())
 	{
 		dprint("NSTFormComp::removeTransform - Invalid TransformID or Invalid Operation; Transform ID: " + std::to_string(pTransformID));
-		return mTransforms.size();
+		return count();
 	}
 	else if (mTransforms.size() == 1)
 	{
@@ -441,7 +441,7 @@ nsuint NSTFormComp::remove(nsuint pTransformID)
 		enableTransformFeedback(true);
 	}
 
-	return mTransforms.size();
+	return count();
 }
 
 nsuint NSTFormComp::remove(nsuint pFirst, nsuint pLast)
@@ -449,9 +449,9 @@ nsuint NSTFormComp::remove(nsuint pFirst, nsuint pLast)
 	if (pFirst >= mTransforms.size() || pLast >= mTransforms.size() || pFirst >= pLast || (pLast - pFirst + 1) == mTransforms.size())
 	{
 		dprint("NSTFormComp::removeTransforms - Invalid TransformID or Invalid operation");
-		return mTransforms.size();
+		return count();
 	}
-	nsuint resizeNum = mTransforms.size() - (pLast - pFirst + 1);
+	nsuint resizeNum = count() - (pLast - pFirst + 1);
 
 	// Move all the elements in the back of the last that arent part of the erase
 	// range to the first index that the erase begins.. increasing the index and
@@ -478,7 +478,7 @@ nsuint NSTFormComp::remove(nsuint pFirst, nsuint pLast)
 		enableTransformFeedback(true);
 	}
 
-	return mTransforms.size();
+	return count();
 }
 
 void NSTFormComp::rotate(const fvec4 & axisAngle, nsuint tformid)

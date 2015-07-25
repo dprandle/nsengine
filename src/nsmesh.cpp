@@ -220,7 +220,9 @@ void NSMesh::flipuv(nsuint pSubIndex)
 		sub->mTexCoords[i].v = 1 - sub->mTexCoords[i].v;
 
 	sub->mTexBuf.bind();
-	sub->mTexBuf.setData(sub->mTexCoords, 0, sub->mTexCoords.size());
+	sub->mTexBuf.setData(sub->mTexCoords,
+						 0,
+						 static_cast<nsuint>(sub->mTexCoords.size()));
 	sub->mTexBuf.unbind();
 }
 
@@ -314,9 +316,13 @@ void NSMesh::flipnorm(nsuint pSubIndex)
 	}
 
 	sub->mNormBuf.bind();
-	sub->mNormBuf.setData(sub->mNormals, 0, sub->mNormals.size());
+	sub->mNormBuf.setData(sub->mNormals,
+						  0,
+						  static_cast<nsuint>(sub->mNormals.size()));
 	sub->mTangBuf.bind();
-	sub->mTangBuf.setData(sub->mTangents, 0, sub->mTangents.size());
+	sub->mTangBuf.setData(sub->mTangents,
+						  0,
+						  static_cast<nsuint>(sub->mTangents.size()));
 	sub->mNormBuf.unbind();
 }
 
@@ -394,7 +400,7 @@ nsfloat NSMesh::volume()
 
 nsuint NSMesh::count()
 {
-	return subMeshes.size();
+	return static_cast<nsuint>(subMeshes.size());
 }
 
 NSMesh::NodeTree * NSMesh::nodetree()
@@ -460,13 +466,13 @@ nsuint NSMesh::vertcount()
 {
 	nsuint total = 0;
 	for (nsuint i = 0; i < subMeshes.size(); ++i)
-		total += subMeshes[i]->mIndices.size();
+		total += static_cast<nsuint>(subMeshes[i]->mIndices.size());
 	return total;
 }
 
 nsuint NSMesh::vertcount(nsuint pIndex)
 {
-	return subMeshes[pIndex]->mIndices.size();
+	return static_cast<nsuint>(subMeshes[pIndex]->mIndices.size());
 }
 
 void NSMesh::transformNode(Node * pNode, const fmat4 & pTransform)
@@ -549,17 +555,29 @@ NSMesh::SubMesh::~SubMesh()
 void NSMesh::SubMesh::allocateBuffers()
 {
 	mPosBuf.bind();
-	mPosBuf.allocate(mPositions, NSBufferObject::MutableStaticDraw, mPositions.size());
+	mPosBuf.allocate(mPositions,
+					 NSBufferObject::MutableStaticDraw,
+					 static_cast<nsuint>(mPositions.size()));
 	mTexBuf.bind();
-	mTexBuf.allocate(mTexCoords, NSBufferObject::MutableStaticDraw, mTexCoords.size());
+	mTexBuf.allocate(mTexCoords,
+					 NSBufferObject::MutableStaticDraw,
+					 static_cast<nsuint>(mTexCoords.size()));
 	mNormBuf.bind();
-	mNormBuf.allocate(mNormals, NSBufferObject::MutableStaticDraw, mNormals.size());
+	mNormBuf.allocate(mNormals,
+					  NSBufferObject::MutableStaticDraw,
+					  static_cast<nsuint>(mNormals.size()));
 	mTangBuf.bind();
-	mTangBuf.allocate(mTangents, NSBufferObject::MutableStaticDraw, mTangents.size());
+	mTangBuf.allocate(mTangents,
+					  NSBufferObject::MutableStaticDraw,
+					  static_cast<nsuint>(mTangents.size()));
 	mBoneBuf.bind();
-	mBoneBuf.allocate(mBoneInfo, NSBufferObject::MutableStaticDraw, mBoneInfo.size());
+	mBoneBuf.allocate(mBoneInfo,
+					  NSBufferObject::MutableStaticDraw,
+					  static_cast<nsuint>(mBoneInfo.size()));
 	mIndiceBuf.bind();
-	mIndiceBuf.allocate(mIndices, NSBufferObject::MutableStaticDraw, mIndices.size());
+	mIndiceBuf.allocate(mIndices,
+						NSBufferObject::MutableStaticDraw,
+						static_cast<nsuint>(mIndices.size()));
 	updateVAO();
 }
 

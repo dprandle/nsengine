@@ -615,7 +615,9 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 				setCamera(cam);
 			}
 			else
+			{
 				dprint("NSScene::setCamera - Camera " + cam->name() + " could not be loaded in to the scene");
+			}
 		}
 	}
 }

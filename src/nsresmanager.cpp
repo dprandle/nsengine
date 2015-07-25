@@ -51,7 +51,9 @@ nsbool NSResManager::add(NSResource * res)
 		res->mOwned = true;
 	}
 	else
+	{
 		dprint("NSResManager::add Could not add resource with name " + res->name() + " because resource with that name already exists");
+	}
 	return check.second;
 	
 }
@@ -117,7 +119,7 @@ bool NSResManager::contains(NSResource * res)
 
 nsuint NSResManager::count() const
 {
-	return mIDResourceMap.size();
+	return static_cast<nsuint>(mIDResourceMap.size());
 }
 
 bool NSResManager::del(NSResource * res)
@@ -193,7 +195,7 @@ NSResource * NSResManager::load(nsuint res_type_id, const nsstring & fname)
 	
 	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
 
-	nsuint pos = resName.find_last_of("/\\");
+	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
@@ -206,7 +208,7 @@ NSResource * NSResManager::load(nsuint res_type_id, const nsstring & fname)
 	else
 		shouldPrefix = true;
 
-	nsuint extPos = resName.find_last_of(".");
+	size_t extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
@@ -352,9 +354,13 @@ bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
 	int ret = rename_file(fNameOld.c_str(), fNameNew.c_str());
 			
 	if (ret == 0)
+	{
 		dprint("NSResManager::rename - Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
+	}
 	else
+	{
 		dprint("NSResManager::rename - Could not rename file with old name: " + oldName + " to file with new name: " + newName);
+	}
 	
 	return (ret == 0);
 }
@@ -395,7 +401,9 @@ bool NSResManager::save(NSResource * res,const nsstring & path)
 
 	bool fret = create_dir(fName);
 	if (fret)
+	{
 		dprint("NSResManager::save Created directory " + fName);
+	}
 
 	nsfstream file;
 	NSFilePUPer * p;
@@ -488,7 +496,7 @@ nsstring NSResManager::nameFromFilename(const nsstring & fname)
 	nsstring resName(fname);
 
 	// After last / or \\ (ie if bla/blabla/blablabla/name.ext this will get position before name.ext)
-	nsuint pos = resName.find_last_of("/\\");
+	size_t pos = resName.find_last_of("/\\");
 
 	// If position is valid, the extract name.ext. If it is not then means there was likely not a path in the first
 	// place and so we leave resName alone.
@@ -496,7 +504,7 @@ nsstring NSResManager::nameFromFilename(const nsstring & fname)
 		resName = resName.substr(pos + 1);
 
 	// Find the position before the period
-	nsuint extPos = resName.find_last_of(".");
+	size_t extPos = resName.find_last_of(".");
 
 	// If valid position was found, extract name without characters after the period (name.ext) becomes (name)
 	if (extPos != nsstring::npos)
@@ -509,7 +517,7 @@ nsstring NSResManager::pathFromFilename(const nsstring & fname)
 {
 	nsstring path = "";
 
-	nsuint pos = fname.find_last_of("/\\");
+	size_t pos = fname.find_last_of("/\\");
 	if (pos != nsstring::npos && (pos + 1) < fname.size())
 		path = fname.substr(0, pos + 1);
 

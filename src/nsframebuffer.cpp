@@ -298,7 +298,7 @@ void NSFrameBuffer::setDrawBuffers(AttachmentPointArray * pAttArray)
 		return;
 	}
 
-	glDrawBuffers(pAttArray->size(), &(*pAttArray)[0]);
+	glDrawBuffers(static_cast<GLsizei>(pAttArray->size()), &(*pAttArray)[0]);
 	GLError("NSFrameBuffer::setDrawBuffers");
 }
 
@@ -758,7 +758,9 @@ void NSGBuffer::init()
 
 	// Bind the resource - only in this subclass will we bind in an init function
 	if (!_createTextureAttachments())
+	{
 		dprint("NSGFrameBuffer::init - Error in adding a color attachment - see previous error message - not updating draw buffers");
+	}
 }
 
 void NSGBuffer::unbind()

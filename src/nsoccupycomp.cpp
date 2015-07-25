@@ -23,9 +23,13 @@ NSComponent()
 {
 	NSMesh * occ = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
 	if (occ == NULL)
+	{
 		dprint("NSOccupyComp::NSOccupyComp Could not get occupy mesh");
+	}
 	else
+	{
 		mMeshID = occ->fullid();
+	}
 }
 
 NSOccupyComp::~NSOccupyComp()
