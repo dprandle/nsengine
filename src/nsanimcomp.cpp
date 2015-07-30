@@ -33,8 +33,8 @@ NSAnimComp* NSAnimComp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSAnimComp * comp = (const NSAnimComp*)pToCopy;
-	(*this) = (*comp);
+	const NSAnimComp * cmp = (const NSAnimComp*)pToCopy;
+	(*this) = (*cmp);
 	return this;
 }
 

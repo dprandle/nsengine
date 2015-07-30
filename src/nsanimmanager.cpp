@@ -33,6 +33,7 @@ NSAnimSet * NSAnimManager::assimpLoadAnimationSet(const aiScene * pScene, const 
 		ss << currentAnim->mName.C_Str();
 		NSAnimSet::AnimationData * animData = animSet->createAnimationData(ss.str());
 
+
 		animData->mTicksPerSecond = nsfloat(currentAnim->mTicksPerSecond);
 		if (!animData->mTicksPerSecond)
 			animData->mTicksPerSecond = DEFAULT_TICKS_PER_SECOND;

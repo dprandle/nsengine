@@ -29,9 +29,6 @@ mOwned(false)
 NSResource::~NSResource()
 {}
 
-void NSResource::init()
-{}
-
 const nsstring & NSResource::extension() const
 {
 	return mExtension;

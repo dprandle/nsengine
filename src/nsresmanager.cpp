@@ -461,14 +461,10 @@ void NSResManager::setPlugID(nsuint plugid)
 
 void NSResManager::destroyAll()
 {
-	MapType::iterator iter = begin();
-	while (iter != end())
+	while (begin() != end())
 	{
-		if (destroy(iter->second))
-			iter->second = NULL;
-		else
+		if (!destroy(begin()->second))
 			return;
-		++iter;
 	}
 	mIDResourceMap.clear();
 }

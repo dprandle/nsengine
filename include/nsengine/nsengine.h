@@ -16,7 +16,6 @@ This file contains all of the neccessary declartations for the NSEngine class.
 #include <map>
 #include <nsglobal.h>
 #include <nsfactory.h>
-#include <mutex>
 #include <typeindex>
 #include <nsmath.h>
 
@@ -534,6 +533,8 @@ public:
 
 	void update();
 
+	const nsstring & cwd();
+
 #ifdef NSDEBUG
 	NSDebug * debug();
 #endif
@@ -626,8 +627,7 @@ private:
 	
 	ContextMap mContexts;
 	nsuint mCurrentContext;
-	nsstring cwd;
-	std::mutex mt;
+	nsstring mCwd;
 };
 
 struct GLContext

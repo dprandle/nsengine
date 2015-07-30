@@ -54,6 +54,7 @@ public:
 	void setConsoleOpen(bool pConsoleOpen);
 	void setDebugLevel(DebugLevel pLevel);
 	void setLogFile(const nsstring & pFileName);
+	void setLogDir(const nsstring & directory);
 	void setLogMessages(bool pLogMessages);
 	void setMessageCallback(MessageCallback pMessageCallback, ClassInstancePointer pMessageClassInstance=NULL);
 	void setRenderMessages(bool pRenderMessages);

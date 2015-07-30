@@ -14,13 +14,14 @@
 #define NSANIMCOMP_H
 
 #include <vector>
-#include <nsmesh.h>
 #include <nsmath.h>
-#include <nsanimset.h>
 #include <nscomponent.h>
 #include <nspupper.h>
+#include <nsanimset.h>
+#include <nsmesh.h>
 
 class NSTimer;
+
 
 class NSAnimComp : public NSComponent
 {

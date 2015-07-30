@@ -35,8 +35,6 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsinputcomp.h>
 #include <IL/il.h>
 #include <nsinputsystem.h>
-#include <IL/ilu.h>
-#include <IL/ilut.h>
 #include <nsparticlecomp.h>
 #include <nstimer.h>
 #include <nsentity.h>
@@ -63,10 +61,8 @@ NSEngine::NSEngine()
 {
 	srand(static_cast <unsigned> (time(0)));
     ilInit();
-	iluInit();
-	ilutInit();
 
-	cwd = nsfileio::cwd() + nsstring("/");	
+	mCwd = nsfileio::cwd() + nsstring("/");	
 }
 
 NSEngine::~NSEngine()
@@ -465,7 +461,7 @@ void NSEngine::start()
 	if (current() == NULL)
 		return;
 
-	glewExperimental = TRUE;
+    glewExperimental = true;
 
 	// Initialize the glew extensions - if this fails we want a crash because there is nothing
 	// useful the program can do without these initialized
@@ -476,22 +472,24 @@ void NSEngine::start()
 		return;
 	}
 
-	setResourceDir(cwd + nsstring(DEFAULT_RESOURCE_DIR));
-	setImportDir(cwd + nsstring(DEFAULT_IMPORT_DIR));
-	setPluginDirectory(cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
+	setResourceDir(mCwd + nsstring(DEFAULT_RESOURCE_DIR));
+	setImportDir(mCwd + nsstring(DEFAULT_IMPORT_DIR));
+	setPluginDirectory(mCwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
 
-	engplug()->init();
-	engplug()->bind();
-	engplug()->setResourceDirectory(cwd + nsstring("core/"));
-	engplug()->addNameToResPath(false);
-
+	NSPlugin * plg = engplug();
+	
+	plg->init();
+	plg->bind();
+	plg->setResourceDirectory(mCwd + nsstring("core/"));
+	plg->addNameToResPath(false);
+	
 	current()->compositeBuf = createFramebuffer();
 	_initSystems();
 	_initShaders();
 	_initMaterials();
 	_initMeshes();
 	_initEntities();
-	_initInputMaps();
+	//_initInputMaps();
 	timer()->start();
 }
 
@@ -583,7 +581,6 @@ NSFactory * NSEngine::removeFactory(nsuint hash_id)
 
 void NSEngine::update()
 {
-	mt.lock();
 	timer()->update();
 	
 //	while (timer()->lag() >= timer()->fixed())
@@ -608,7 +605,6 @@ void NSEngine::update()
 		++sysDrawIter;
 	}
 	system<NSRenderSystem>()->blitFinalFrame();
-	mt.unlock();
 }
 
 void NSEngine::_initInputMaps()
@@ -806,6 +802,11 @@ nsuint NSEngine::managerID(const nsstring & res_guid)
 	return managerID(hash_id(res_guid));
 }
 
+const nsstring & NSEngine::cwd()
+{
+	return mCwd;
+}
+
 NSPlugin * NSEngine::removePlugin(NSPlugin * plg)
 {
 	return current()->plugins->remove(plg);
@@ -915,6 +916,8 @@ GLContext::GLContext(nsuint id) :
 	engplug->rename(ENGINE_PLUG);
 #ifdef NSDEBUG
 	mDebug->setLogFile("engine_ctxt" + std::to_string(context_id) + ".log");
+	mDebug->setLogDir(nsengine.cwd() + "logs");
+	mDebug->clearLog();
 #endif
 }
 

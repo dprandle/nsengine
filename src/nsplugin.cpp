@@ -27,13 +27,14 @@ This file contains all of the neccessary definitions for the NSPlugin class.
 #include <nstilecomp.h>
 
 NSPlugin::NSPlugin() : 
-mNotes(),
-mCreator(),
-mCreationDate(),
-mEditDate(),
-mBound(false),
-mManagers(),
-mAddname(true)
+	mNotes(),
+	mCreator(),
+	mCreationDate(),
+	mEditDate(),
+	mBound(false),
+	mManagers(),
+	mAddname(true),
+	NSResource()
 {
 	setExtension(DEFAULT_PLUGIN_EXTENSION);
 }

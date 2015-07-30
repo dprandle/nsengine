@@ -26,8 +26,8 @@ public:
 	enum WriteMode {APPEND,OVERWRITE};
 
 	// Ctors
-	NSLogFile(const nsstring & text="", const nsstring & fileName="enginedebug.log", const nsstring & directory="Logs");
-	NSLogFile(const nsstringstream & stream, const nsstring & fileName="enginedebug.log", const nsstring & directory="Logs");
+	NSLogFile(const nsstring & text="", const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
+	NSLogFile(const nsstringstream & stream, const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
 
 	// Dtor
 	~NSLogFile();

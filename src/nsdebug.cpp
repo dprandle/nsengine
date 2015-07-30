@@ -53,6 +53,11 @@ bool NSDebug::isConsoleOpen() const
 	return mConsoleOpen;
 }
 
+void NSDebug::setLogDir(const nsstring & directory)
+{
+	mLogFile->setDirectory(directory);
+}
+
 bool NSDebug::isLogMessages() const
 {
 	return mLogMessages;

@@ -12,10 +12,8 @@
 #include <nstexmanager.h>
 #include <nstexture.h>
 #include <nsengine.h>
-#include <IL/ilut.h>
 #include <IL/il.h>
 #include <soil/SOIL.h>
-#include <IL/ilu.h>
 #include <nsfileos.h>
 
 using namespace nsfileio;
@@ -428,8 +426,7 @@ bool NSTexManager::save(NSTexCubeMap * cubemap, const nsstring & path)
 			ILenum err = ilGetError();
 			while (err != IL_NO_ERROR)
 			{
-				const char * errStr = iluErrorString(err);
-				dprint("NSTexManager::saveCubemap : Error saving NSTexCubemap to file " + localFname + " Error: " + std::string(errStr));
+				dprint("NSTexManager::saveCubemap : Error saving NSTexCubemap to file " + localFname);
 				err = ilGetError();
 			}
 		}
@@ -525,8 +522,7 @@ bool NSTexManager::save(NSTex2D * image, const nsstring & path)
 	ILenum err = ilGetError();
 	while (err != IL_NO_ERROR)
 	{
-		const char * errStr = iluErrorString(err);
-		dprint("NSTexManager::saveImage : Error saving NSTex2D to file " + fName + " Error: " + std::string(errStr));
+		dprint("NSTexManager::saveImage : Error saving NSTex2D to file " + fName);
 		err = ilGetError();
 	}
 
