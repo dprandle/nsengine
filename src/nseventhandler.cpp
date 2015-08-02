@@ -27,7 +27,8 @@ NSEventHandler::~NSEventHandler()
 	
 bool NSEventHandler::handleEvent(NSEvent * event)
 {
-	auto fiter = mHandlers.find(std::type_index(typeid(event)));
+    std::type_index ti(typeid(*event));
+    auto fiter = mHandlers.find(ti);
 	if (fiter != mHandlers.end())
 		return fiter->second->exec(event);
 	return false;

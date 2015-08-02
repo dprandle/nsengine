@@ -9,6 +9,8 @@ This file contains all of the neccessary definitions for the NSEventDispatcher c
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
+#include <iostream>
+#include <typeinfo>
 
 #include <nseventdispatcher.h>
 #include <nsselcomp.h>
@@ -91,6 +93,7 @@ void NSEventDispatcher::process(NSEventHandler * handler)
 	auto iter = events->second.begin();
 	while (iter != events->second.end())
 	{
+        std::type_index ti(typeid(*(*iter)));
 		if (events->first->handleEvent(*iter))
 		{
 			--((*iter)->refcount);

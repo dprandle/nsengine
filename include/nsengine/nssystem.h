@@ -18,7 +18,7 @@ This file contains all of the neccessary declartations for the NSSystem class.
 
 class NSTimer;
 class NSScene;
-struct NSEvent;
+class NSEvent;
 
 class NSSystem : public NSEventHandler
 {

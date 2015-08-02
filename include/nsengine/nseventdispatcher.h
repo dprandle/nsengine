@@ -28,7 +28,7 @@ public:
 	typedef std::unordered_map<NSEventHandler*, EventQueue> ListenerQueue;
 
 	typedef std::unordered_set<NSEventHandler *> ListenerSet;
-	typedef std::unordered_map<std::type_index, ListenerSet> ListenerMap;
+    typedef std::unordered_map<std::type_index, ListenerSet> ListenerMap;
 
 	NSEventDispatcher();
 
@@ -72,11 +72,14 @@ public:
 			++evnt->refcount;
 			++currentListener;
 		}
+        NSEvent * ev = evnt;
+        std::type_index eventT1(typeid(*evnt));
+        std::type_index eventT2(typeid(*ev));
 		return evnt;
 	}
 
-	template<class EventType, class... U>
-	EventType * push_front(U&&... u)
+    template<class EventType, class ...Types>
+    EventType * push_front(Types... fargs)
 	{
 		std::type_index eventT(typeid(EventType));
 		auto listenerSetIter = mListeners.find(eventT);
@@ -84,7 +87,7 @@ public:
 			return NULL;
 
 		// Go through all of the registered listeners under this evnt ID and add this evnt to their queue
-		EventType * evnt = new EventType(std::forward<U>(u));
+        EventType * evnt = new EventType(fargs);
 		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
 		while (currentListener != listenerSetIter->second.end())
 		{

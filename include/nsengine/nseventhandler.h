@@ -39,7 +39,7 @@ class NSHandlerFuncType : public NSHandlerFunc
 	bool exec(NSEvent * evnt)
 	{
 		EventType * cast_evnt = static_cast<EventType*>(evnt);
-		return class_instance->(*member)(cast_evnt);
+        return (class_instance->*member)(cast_evnt);
 	}
 
   private:
