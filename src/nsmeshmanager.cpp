@@ -103,7 +103,7 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			else if (currentSubMesh->mPrimitiveTypes == aiPrimitiveType_LINE)
 				subMesh->mPrimType = GL_LINES;
 			else
-				throw std::exception("Bad Primitive Type");
+				throw std::exception();
 
 			// Load all of the vertices per vertex information in to the submesh buffers
 			// Should have normals, tangents, bit-tangents, and positions always because of processing
@@ -270,7 +270,7 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 				}
 			}
 			else
-				throw std::exception("Bad primitive type");
+				throw std::exception();
 
 			subMesh->allocateBuffers();
 		}

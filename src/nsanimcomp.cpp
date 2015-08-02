@@ -10,7 +10,6 @@
 	\copywrite Earth Banana Games 2013
 */
 
-
 #include <nsanimcomp.h>
 #include <nstimer.h>
 #include <nsengine.h>

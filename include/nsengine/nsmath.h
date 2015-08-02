@@ -4,6 +4,7 @@
 #define PI 3.14159265359f
 #define EPS 0.0001f
 
+#include <cmath>
 #include <nsglobal.h>
 
 nsfloat clampf(nsfloat pVal, const nsfloat & pMin, const nsfloat & pMax);
@@ -1262,7 +1263,7 @@ void pup(PUPer & p, NSBoundingBox & box, const nsstring & varName)
 	pup(p, box.mMin, varName + ".mMin");
 	pup(p, box.mMax, varName + ".mMax");
 	for (nsuint i = 0; i < 8; ++i)
-		pup(p, mVerts[i], varName + "vert[" + std::to_string(i) + "]");
+		pup(p, box.mVerts[i], varName + "vert[" + std::to_string(i) + "]");
 }
 
 #endif

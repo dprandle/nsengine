@@ -317,7 +317,7 @@ struct NSVec3
 
 	NSVec3<T> & eulerFrom(const NSVec3<T> & vec, const NSVec3<T> & toVec, EulerOrder order = XYZ, bool pRads = false)
 	{
-		return eulerFrom(NSQuat<T>().from(vec, toVec), order, rads);
+		return eulerFrom(NSQuat<T>().from(vec, toVec), order, pRads);
 	}
 
 	NSVec3<T> & floor()
@@ -1008,7 +1008,7 @@ NSVec3<T> euler(const NSMat4<T> & transform, typename NSVec3<T>::EulerOrder orde
 template <class T>
 NSVec3<T> euler(const NSVec3<T> & vec, const NSVec3<T> & toVec, typename NSVec3<T>::EulerOrder order, bool pRads)
 {
-	return NSVec3<T>().eulerFrom(NSQuat<T>().from(vec, toVec), order, rads);
+	return NSVec3<T>().eulerFrom(NSQuat<T>().from(vec, toVec), order, pRads);
 }
 
 template <class T>

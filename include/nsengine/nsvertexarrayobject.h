@@ -14,7 +14,7 @@ This file contains all of the neccessary declarations for the NSVertexArrayObjec
 #define NSVERTARRAY_H
 
 #include <nsglobject.h>
-#include <myGL\glew.h>
+#include <myGL/glew.h>
 #include <vector>
 #include <nstexture.h>
 #include <nsglobal.h>

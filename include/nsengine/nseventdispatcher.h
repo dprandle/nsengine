@@ -75,8 +75,8 @@ public:
 		return evnt;
 	}
 
-	template<class EventType, class... U>
-	EventType * push_front(U&&... u)
+	template<class EventType, class ...Types>
+	EventType * push_front(Types... fargs)
 	{
 		std::type_index eventT(typeid(EventType));
 		auto listenerSetIter = mListeners.find(eventT);
@@ -84,7 +84,7 @@ public:
 			return NULL;
 
 		// Go through all of the registered listeners under this evnt ID and add this evnt to their queue
-		EventType * evnt = new EventType(std::forward<U>(u));
+		EventType * evnt = new EventType(fargs...);
 		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
 		while (currentListener != listenerSetIter->second.end())
 		{
@@ -99,7 +99,7 @@ public:
 	bool unregisterListener(NSEventHandler * handler)
 	{
 		std::type_index eventT(typeid(EventType));
-		mListenerEvents.clear(handler); // Remove all events for this system
+		this->clear(handler); // Remove all events for this system
 		auto fiter = mListeners.find(eventT);
 		if (fiter != mListeners.end())
 			return fiter->second.erase(handler) == 1;

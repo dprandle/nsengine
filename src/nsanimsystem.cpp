@@ -22,9 +22,15 @@ This file contains all of the neccessary definitions for the NSAnimSystem class.
 #include <nsevent.h>
 #include <nseventhandler.h>
 #include <nsentitymanager.h>
+#include <nsplugin.h>
+#include <nsresmanager.h>
 
 NSAnimSystem::NSAnimSystem() :NSSystem()
-{}
+{
+	nsengine.active()->addManager(new NSMeshManager());
+	nseng
+		
+}
 
 NSAnimSystem::~NSAnimSystem()
 {}

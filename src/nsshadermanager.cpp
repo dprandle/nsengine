@@ -166,10 +166,11 @@ bool NSShaderManager::saveStage(NSShader * sh, const nsstring & filename, NSShad
 	}
 
 	nsstring guid_ = nsengine.guid(sh->type());
+    std::string savestr = guid_ + "_stage:" + sh->stagename(stagetype);
 	if (mSaveMode == Binary)
-		pup(*(static_cast<NSBinFilePUPer*>(p)), guid_ + "_stage:" + sh->stagename(stagetype), "type");
+        pup(*(static_cast<NSBinFilePUPer*>(p)), savestr, "type");
 	else
-		pup(*(static_cast<NSTextFilePUPer*>(p)), guid_ + "_stage:" + sh->stagename(stagetype), "type");
+        pup(*(static_cast<NSTextFilePUPer*>(p)), savestr, std::string("type"));
 
 	sh->pup(p, stagetype);
 	dprint("NSShaderManager::saveStage - Succesfully saved stage " + sh->stagename(stagetype) + " to file " + fName);

@@ -14,7 +14,7 @@
 #define NSBUFFEROBJECT_H
 
 #include <nsglobal.h>
-#include <myGL\glew.h>
+#include <myGL/glew.h>
 #include <vector>
 #include <nsglobject.h>
 

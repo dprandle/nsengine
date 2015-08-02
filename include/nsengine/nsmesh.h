@@ -14,7 +14,7 @@ Description:
 #define NSMESH_H
 
 
-#include <myGL\glew.h>
+#include <myGL/glew.h>
 #include <nsglobal.h>
 #include <vector>
 #include <nsmaterial.h>

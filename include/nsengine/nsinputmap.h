@@ -2,6 +2,8 @@
 #define NSINPUTMAP_H
 
 #include <nsresource.h>
+#include <nsglobal.h>
+#include <nspupper.h>
 
 class NSInputMap : public NSResource
 {
@@ -200,11 +202,11 @@ class NSInputMap : public NSResource
 		}
 	};
 
-	typedef std::unordered_multimap<Key, Trigger> KeyMap;
-	typedef std::unordered_multimap<MouseButton, Trigger> MouseButtonMap;
-	typedef std::unordered_set<Key> Modifiers;
-	typedef std::unordered_set<MouseButton> MouseModifiers;
-	typedef std::unordered_map<Axis, float> AxisMap;
+    typedef std::unordered_multimap<Key, Trigger, EnumHash> KeyMap;
+    typedef std::unordered_multimap<MouseButton, Trigger, EnumHash> MouseButtonMap;
+    typedef std::unordered_set<Key, EnumHash> Modifiers;
+    typedef std::unordered_set<MouseButton, EnumHash> MouseModifiers;
+    typedef std::unordered_map<Axis, float, EnumHash> AxisMap;
 	
 	struct Context
 	{
@@ -291,19 +293,19 @@ void pup(PUPer & p, NSInputMap::MouseButton & en, const nsstring & pString)
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputMap::Context * & c, const nsstring & varName)
-{
-	if (p.mode() == PUP_IN)
-		c = new NSInputMap::Context();
-	pup(p, *c, varName);
-}
-
-template <class PUPer>
 void pup(PUPer & p, NSInputMap::Context & c, const nsstring & varName)
 {
 	pup(p, c.mName, varName + ".mName");
 	pup(p, c.mKeyMap, varName + ".mKeyMap");
 	pup(p, c.mMouseButtonMap, varName + ".mMouseButtonMap");
+}
+
+template <class PUPer>
+void pup(PUPer & p, NSInputMap::Context * & c, const nsstring & varName)
+{
+	if (p.mode() == PUP_IN)
+		c = new NSInputMap::Context();
+	pup(p, *c, varName);
 }
 
 template<class PUPer>

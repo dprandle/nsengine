@@ -12,6 +12,7 @@ who is responsible for the entire pup design concept
 
 #include <nsglobal.h>
 
+
 class NSFilePUPer
 {
 public:
@@ -81,6 +82,38 @@ public:
 	friend void pup(PUPer & p, nsstring & str, const nsstring & varName);
 };
 
+void pup(NSBinFilePUPer & p, nschar & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nswchar & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nssint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nslint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsllint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsuchar & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsusint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsuint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsulint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsullint & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsfloat & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsdouble & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsldouble & val, const nsstring & varName);
+void pup(NSBinFilePUPer & p, nsbool & val, const nsstring & varName);
+
+void pup(NSTextFilePUPer & p, nschar & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nswchar & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nssint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nslint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsllint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsuchar & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsusint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsuint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsulint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsullint & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsfloat & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsdouble & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsldouble & val, const nsstring & varName);
+void pup(NSTextFilePUPer & p, nsbool & val, const nsstring & varName);
+
 template <class T>
 void pupbytes(NSBinFilePUPer & p, T & val)
 {
@@ -136,8 +169,8 @@ void pup(PUPer & p, std::map<Key, Val> & m, const nsstring & varName)
 	}
 }
 
-template<class PUPer, class Key, class Val>
-void pup(PUPer & p, std::unordered_map<Key, Val> & m, const nsstring & varName = "")
+template<class PUPer, class Key, class Val, class EH>
+void pup(PUPer & p, std::unordered_map<Key, Val, EH> & m, const nsstring & varName = "")
 {
 	nsuint size = static_cast<nsuint>(m.size());
 	pup(p, size, varName + ".size");
@@ -192,8 +225,8 @@ void pup(PUPer & p, std::multimap<Key, Val> & m, const nsstring & varName = "")
 	}
 }
 
-template<class PUPer, class Key, class Val>
-void pup(PUPer & p, std::unordered_multimap<Key, Val> & m, const nsstring & varName = "")
+template<class PUPer, class Key, class Val, class EH>
+void pup(PUPer & p, std::unordered_multimap<Key, Val, EH> & m, const nsstring & varName = "")
 {
 	nsuint size = static_cast<nsuint>(m.size());
 	pup(p, size, varName + ".size");
@@ -309,8 +342,8 @@ void pup(PUPer & p, std::set<T> & s, const nsstring & varName)
 	}
 }
 
-template<class PUPer, class T>
-void pup(PUPer & p, std::unordered_set<T> & s, const nsstring & varName)
+template<class PUPer, class T, class EH>
+void pup(PUPer & p, std::unordered_set<T, EH> & s, const nsstring & varName)
 {
 	nsuint size = static_cast<nsuint>(s.size());
 	pup(p, size, varName + ".size");

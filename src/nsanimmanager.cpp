@@ -10,10 +10,13 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsanimmanager.h>
+#include <nsengine.h>
 #include <nsanimset.h>
 #include <assimp/scene.h>
-#include <nsengine.h>
+#include <nsanimmanager.h>
+#include <nsplugin.h>
+#include <vector>
+#include <map>
 
 NSAnimManager::NSAnimManager(): NSResManager()
 {

@@ -66,7 +66,7 @@ bool NSTileGrid::add(const uivec3 pItem, const ivec3array & pSpaces, const fvec3
 const uivec3 & NSTileGrid::at(const Index & pSpace) const
 {
 	if (!_checkBounds(pSpace))
-		throw(std::exception("Grid space out of bounds"));
+		throw(std::exception());
 
 	return mMap[pSpace.mQuad][pSpace.mIndex.z][pSpace.mIndex.y][pSpace.mIndex.x];
 }

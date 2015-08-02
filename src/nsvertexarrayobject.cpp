@@ -110,18 +110,21 @@ void NSVertexArrayObject::vertexAttribDiv(nsuint pAttLoc, nsuint pDivisor)
 
 void NSVertexArrayObject::vertexAttribPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsbool pNormalized, nsuint pAttributeStride, nsuint pByteOffset)
 {
-	glVertexAttribPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pNormalized, pAttributeStride, (const GLvoid*)pByteOffset);
+	nsllint cst = pByteOffset;
+	glVertexAttribPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pNormalized, pAttributeStride, (const GLvoid*)cst);
 	GLError("NSVertexArrayObject::vertexAttribPtr()");
 }
 
 void NSVertexArrayObject::vertexAttribIPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsuint pAttributeStride, nsuint pByteOffset)
 {
-	glVertexAttribIPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)pByteOffset);
+	nsllint cst = pByteOffset;
+	glVertexAttribIPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)cst);
 	GLError("NSVertexArrayObject::vertexAttribIPtr()");
 }
 
 void NSVertexArrayObject::vertexAttribLPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsuint pAttributeStride, nsuint pByteOffset)
 {
-	glVertexAttribLPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)pByteOffset);
+	nsllint cst = pByteOffset;
+	glVertexAttribLPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)cst);
 	GLError("NSVertexArrayObject::vertexAttribLPtr()");
 }

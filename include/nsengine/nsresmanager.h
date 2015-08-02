@@ -16,12 +16,15 @@
 #include <nsengine.h>
 #include <nsglobal.h>
 #include <unordered_map>
-
 #include <nsresource.h>
 
 class NSResManager
 {
 public:
+
+	NSResManager();
+
+	virtual ~NSResManager();
 	
 	friend class NSResManagerFactory;
 	
@@ -32,10 +35,6 @@ public:
 	};
 
 	typedef std::unordered_map<nsuint, NSResource*> MapType;
-
-	NSResManager();
-
-	virtual ~NSResManager();
 
 	virtual nsbool add(NSResource * res);
 

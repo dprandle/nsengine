@@ -39,7 +39,7 @@ public:
 		Reflection
 	};
 
-	typedef std::unordered_map<MapType, uivec2> TexMap;
+	typedef std::unordered_map<MapType, uivec2, EnumHash> TexMap;
 	typedef TexMap::iterator MapIter;
 	typedef TexMap::const_iterator ConstMapIter;
 

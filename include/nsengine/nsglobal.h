@@ -12,10 +12,10 @@ Description:
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define NSDEBUG
 #define NSDEBUG_RT
-#endif
+//#endif
 
 #define NOTIFY_ENGINE_NAME_CHANGE
 
@@ -336,22 +336,12 @@ Description:
 #define DEFAULT_PART_LIFETIME 5000
 #define DEFAULT_PART_EMISSION 180
 
+
 #define nullchkn(ptr) if(ptr == NULL) return NULL;
 #define nullchkb(ptr) if(ptr == NULL) return false;
 
-#define nsengine NSEngine::inst()
-#define type_to_guid(type) nsengine.guid(std::type_index(typeid(type)))
-#define hash_to_guid(hash) nsengine.guid(hash)
-#define type_to_hash(type) nsengine.typeID(std::type_index(typeid(type)))
-
 #define COMMENT SLASH(/)
 #define SLASH(s) /##s
-
-#ifdef NSDEBUG
-#define dprint(str) nsengine.debugPrint(str)
-#else
-#define dprint(str) COMMENT
-#endif
 
 #include <myGL/glew.h>
 #include <string>
@@ -363,6 +353,15 @@ Description:
 #include <map>
 #include <unordered_map>
 #include <fstream>
+
+struct EnumHash
+{
+    template <typename T>
+    std::size_t operator()(T t) const
+    {
+        return static_cast<std::size_t>(t);
+    }
+};
 
 // Basic type typedefs
 typedef char nschar;

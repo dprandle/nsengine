@@ -248,8 +248,8 @@ bool NSLogFile::write(const nsstring & text)
 
 	auto now = std::chrono::system_clock::now();
 	auto tt = std::chrono::system_clock::to_time_t(now);
-	if (timeStampEnabled)
-		outFile << std::put_time(std::localtime(&tt),"%T") << "    ";
+	//if (timeStampEnabled)
+		//outFile << std::put_time(std::localtime(&tt),"%T") << "    ";
 	outFile << text << "\n";
 
 	outFile.close();
@@ -317,7 +317,7 @@ bool NSLogFile::writeDate()
 
 	auto now = std::chrono::system_clock::now();
 	auto tt = std::chrono::system_clock::to_time_t(now);
-	outFile << std::put_time(std::localtime(&tt), "%c") << std::endl;
+	//outFile << std::put_time(std::localtime(&tt), "%c") << std::endl;
 
 	outFile.close();
 	return true;
@@ -359,7 +359,7 @@ bool NSLogFile::writeTo(const nsstring & text, const nsstring &fname, WriteMode 
 
 	auto now = std::chrono::system_clock::now();
 	auto tt = std::chrono::system_clock::to_time_t(now);
-	outFile << std::put_time(std::localtime(&tt), "%c") << "    ";
+	//outFile << std::put_time(std::localtime(&tt), "%c") << "    ";
 	outFile.close();
 	return true;
 }
@@ -393,7 +393,7 @@ bool NSLogFile::writeDate(const nsstring & fname, WriteMode mode)
 
 	auto now = std::chrono::system_clock::now();
 	auto tt = std::chrono::system_clock::to_time_t(now);
-	outFile << std::put_time(std::localtime(&tt), "%c") << std::endl;
+	//outFile << std::put_time(std::localtime(&tt), "%c") << std::endl;
 
 	outFile.close();
 	return true;

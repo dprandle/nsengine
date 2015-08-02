@@ -269,7 +269,7 @@ nsuint NSScene::maxPlayers() const
 	return mMaxPlayers;
 }
 
-const uivec3 & NSScene::refid(const fvec3 & pWorldPos) const
+uivec3 NSScene::refid(const fvec3 & pWorldPos) const
 {
 	return mTileGrid->get(pWorldPos);
 }

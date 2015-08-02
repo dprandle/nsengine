@@ -18,7 +18,6 @@ set(EXT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(CMAKE_DEBUG_POSTFIX d)
 
 set(PLATFORM "x86" CACHE STRING "Platform for which to run cmake (run for each build type)")
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/${PLATFORM})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/${PLATFORM})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
@@ -35,19 +34,20 @@ file(GLOB HEADER_FILES
 
 # Set project includes dir
 include_directories(
+"${EXT_INCLUDE_DIR}"
 "${NSENGINE_INCLUDE_DIR}"
-"${EXT_INCLUDE_DIR}")
+)
 
 # Preprocessor definitions
-add_definitions(-DGLEW_MX -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS)
-
+add_definitions(-DGLEW_MX -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS -std=c++11)
+ 
 # Linker flags
 set(LINKER_ARGS "/WX /NODEFAULTLIB:LIBCMT")
 set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LINKER_ARGS}" )
 
 # Compiler flags (none right now)
-#set(MY_COMPILER_FLAGS "/")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_COMPILER_FLAGS}" )
+set(MY_COMPILER_FLAGS "-fms-extensions -fpermissive")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_COMPILER_FLAGS}" )
 
 # Adding executable
 add_library(nsengines STATIC ${SRC_FILES} ${HEADER_FILES})

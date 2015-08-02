@@ -16,6 +16,8 @@ Description:
 #include <nslightcomp.h>
 #include <nsengine.h>
 #include <nsengine.h>
+#include <exception>
+#include <string.h>
 
 NSShader::NSShader():
 	mErrorState(None),
@@ -250,7 +252,7 @@ NSShader::ShaderStage & NSShader::_stage(ShaderType type)
 	case(Fragment) :
 		return mFragment;
 	default:
-		throw std::exception("Called non stage");
+		throw std::exception();
 	}
 }
 
@@ -293,7 +295,7 @@ void NSShader::bind()
 
 void NSShader::unbind()
 {
-	glUseProgram(NULL);
+	glUseProgram(0);
 	GLError("NSShader::bind");
 }
 

@@ -19,8 +19,9 @@
 #include <nsentity.h>
 #include <nsentitymanager.h>
 #include <nsglobal.h>
+#include <nsoccupycomp.h>
+#include <nstilegrid.h>
 
-class NSTileGrid;
 class NSRenderComp;
 class NSRenderSystem;
 
@@ -92,7 +93,7 @@ public:
 
 	NSEntity * entity(const uivec2 & id) const { return entity(id.x, id.y); }
 
-	const uivec3 & refid(const fvec3 & pWorldPos) const;
+	uivec3 refid(const fvec3 & pWorldPos) const;
 
 	const fvec3 & backgroundColor() const;
 

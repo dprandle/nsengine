@@ -14,9 +14,10 @@
 #define NSFRAMEBUFFER_H
 
 #include <nsglobject.h>
-#include <myGL\glew.h>
+#include <myGL/glew.h>
 #include <vector>
 #include <nstexture.h>
+#include <nsengine.h>
 
 class NSFrameBuffer : public NSGLObject
 {

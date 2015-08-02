@@ -225,7 +225,7 @@ struct NSMat4
 
 		T angle = axisAngle.a;
 
-		if (!pRads)
+		if (!rads)
 			angle = radians(angle);
 
 		T c = static_cast<T>(std::cos(angle));

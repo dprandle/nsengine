@@ -19,7 +19,7 @@
 #define NSTEXTURE_H
 
 // Includes
-#include <myGL\glew.h>
+#include <myGL/glew.h>
 #include <vector>
 #include <nsresource.h>
 #include <nsglobject.h>

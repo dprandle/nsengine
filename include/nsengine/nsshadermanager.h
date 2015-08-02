@@ -106,7 +106,7 @@ public:
 	bool loadStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype)
 	{
 		NSShader * sh = get(shader);
-		return loadStage(shader, filename, stagetype, pAppendDirectories);
+        return loadStage(shader, filename, stagetype);
 	}
 
 	bool loadStage(NSShader * shader, const nsstring & fname, NSShader::ShaderType stagetype);
@@ -115,7 +115,7 @@ public:
 	bool saveStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype)
 	{
 		NSShader * sh = get(shader);
-		return saveStage(sh, filename, stagetype, pAppendDirectories);
+        return saveStage(sh, filename, stagetype);
 	}
 
 	bool saveStage(NSShader * sh, const nsstring & filename, NSShader::ShaderType stagetype);

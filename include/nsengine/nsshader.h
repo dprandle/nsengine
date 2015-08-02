@@ -14,7 +14,7 @@ Description:
 #define NSSHADER_H
 
 
-#include <myGL\glew.h>
+#include <myGL/glew.h>
 #include <nsglobal.h>
 #include <nsglobject.h>
 #include <nsmath.h>

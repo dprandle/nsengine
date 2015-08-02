@@ -53,6 +53,20 @@ typedef std::unordered_map<nsuint, NSFactory*> FactoryMap;
 typedef std::unordered_map<nsuint, GLContext*> ContextMap;
 typedef std::unordered_map<nsuint, NSFrameBuffer*> FramebufferMap;
 
+nsuint hash_id(const nsstring & str);
+
+
+#define nsengine NSEngine::inst()
+#define type_to_guid(type) nsengine.guid(std::type_index(typeid(type)))
+#define hash_to_guid(hash) nsengine.guid(hash)
+#define type_to_hash(type) nsengine.typeID(std::type_index(typeid(type)))
+
+#ifdef NSDEBUG
+#define dprint(str) nsengine.debugPrint(str)
+#else
+#define dprint(str) COMMENT
+#endif
+
 // make sure all directories end with "/"
 
 /*!
@@ -583,7 +597,7 @@ private:
 		if (iter == mObjTypeHashes.end())
 			return false;
 
-		return destroyFactory(iter.second);
+        return destroyFactory(iter->second);
 	}
 
 	bool destroyFactory(nsuint hashid);
@@ -599,7 +613,7 @@ private:
 		if (iter == mObjTypeHashes.end())
 			return false;
 
-		return static_cast<BaseFacType*>(removeFactory(iter.second));
+        return static_cast<BaseFacType*>(removeFactory(iter->second));
 	}
 
 
@@ -649,6 +663,5 @@ struct GLContext
 	
 };
 
-nsuint hash_id(const nsstring & str);
 
 #endif

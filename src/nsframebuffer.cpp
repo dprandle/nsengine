@@ -542,7 +542,7 @@ const uivec2 & NSShadowBuffer::dim(const MapType & pMap)
 	case (Point) :
 		return mPointBuf->dim();
 	default:
-		throw(std::exception("nonrecognized map type"));
+		throw(std::exception());
 	}
 }
 
