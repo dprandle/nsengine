@@ -269,6 +269,7 @@ void NSInputSystem::init()
 	nsengine.eventDispatch()->registerListener<NSMouseButtonEvent>(this);
 	nsengine.eventDispatch()->registerListener<NSMouseMoveEvent>(this);
 	nsengine.eventDispatch()->registerListener<NSMouseScrollEvent>(this);
+    registerHandlerFunc(this, &NSInputSystem::keyEvent);
 }
 
 nsint NSInputSystem::updatePriority()

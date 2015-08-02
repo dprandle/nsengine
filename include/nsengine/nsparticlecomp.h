@@ -20,7 +20,7 @@ class NSEntity;
 class NSTransformFeedbackObject;
 class NSVertexArrayObject;
 class NSBufferObject;
-struct NSEvent;
+class NSEvent;
 
 class NSParticleComp : public NSComponent
 {

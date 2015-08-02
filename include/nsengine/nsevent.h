@@ -16,17 +16,20 @@ This file contains all of the neccessary declarations for the NSEvent class.
 #ifndef NSEVENT_H
 #define NSEVENT_H
 
-struct NSEvent
+class NSEvent
 {
+public:
 	NSEvent():
 		refcount(0)
 	{}
+    virtual ~NSEvent() {}
 
 	nsuint refcount;
 };
 
-struct NSKeyEvent : public NSEvent
+class NSKeyEvent : public NSEvent
 {
+public:
 	NSKeyEvent(NSInputMap::Key k, bool pressed) :
 		mKey(k),
 		mPressed(pressed),
@@ -37,8 +40,9 @@ struct NSKeyEvent : public NSEvent
 	NSInputMap::Key mKey;
 };
 
-struct NSMouseButtonEvent : public NSEvent
+class NSMouseButtonEvent : public NSEvent
 {
+public:
 	NSMouseButtonEvent(NSInputMap::MouseButton btn, bool pressed, const fvec2 & normalized_mpos) :
 		mb(btn),
 		mPressed(pressed),
@@ -51,8 +55,9 @@ struct NSMouseButtonEvent : public NSEvent
 	bool mPressed;
 };
 
-struct NSMouseMoveEvent : public NSEvent
+class NSMouseMoveEvent : public NSEvent
 {
+public:
 	NSMouseMoveEvent(const fvec2 & normalized_mpos) :
 		mNormMousePos(normalized_mpos),
 		NSEvent()
@@ -61,8 +66,9 @@ struct NSMouseMoveEvent : public NSEvent
 	fvec2 mNormMousePos;
 };
 
-struct NSMouseScrollEvent : NSEvent
+class NSMouseScrollEvent : public NSEvent
 {
+public:
 	NSMouseScrollEvent(nsfloat scrollDelta, const fvec2 & normalized_mpos) :
 		mScroll(scrollDelta),
 		mNormMousePos(normalized_mpos),
@@ -72,8 +78,9 @@ struct NSMouseScrollEvent : NSEvent
 	nsfloat mScroll;
 };
 
-struct NSActionEvent : NSEvent
+class NSActionEvent : public NSEvent
 {
+public:
 	NSActionEvent(const nsstring & triggerName):
 		mTriggerName(triggerName),
 		NSEvent()
@@ -83,8 +90,9 @@ struct NSActionEvent : NSEvent
 	NSInputMap::AxisMap axes;
 };
 
-struct NSStateEvent : NSActionEvent
+class NSStateEvent : public NSActionEvent
 {
+public:
 	NSStateEvent(const nsstring & triggerName, bool toggle):
 		mToggle(toggle),
 		NSActionEvent(triggerName)

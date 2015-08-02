@@ -18,7 +18,7 @@
 #include <nspupper.h>
 
 class NSEntity;
-struct NSEvent;
+class NSEvent;
 class NSTimer;
 
 class NSComponent
