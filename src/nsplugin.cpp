@@ -25,6 +25,7 @@ This file contains all of the neccessary definitions for the NSPlugin class.
 #include <nsmeshmanager.h>
 #include <nsselcomp.h>
 #include <nstilecomp.h>
+#include <nspluginmanager.h>
 
 NSPlugin::NSPlugin() : 
 	mNotes(),

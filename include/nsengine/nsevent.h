@@ -81,24 +81,34 @@ public:
 class NSActionEvent : public NSEvent
 {
 public:
-	NSActionEvent(const nsstring & triggerName):
-		mTriggerName(triggerName),
+	NSActionEvent(nsuint trigger_hashid):
+		mTriggerHashName(trigger_hashid),
 		NSEvent()
 	{}
 
-	nsstring mTriggerName;
+	nsuint mTriggerHashName;
 	NSInputMap::AxisMap axes;
 };
 
 class NSStateEvent : public NSActionEvent
 {
 public:
-	NSStateEvent(const nsstring & triggerName, bool toggle):
+	NSStateEvent(nsuint trigger_hashid, bool toggle):
 		mToggle(toggle),
-		NSActionEvent(triggerName)
+		NSActionEvent(trigger_hashid)
 	{}
 
 	bool mToggle;
+};
+
+class NSSelFocusEvent : public NSEvent
+{
+  public:
+	
+	NSSelFocusEvent(const uivec3 & focid):
+		mFocID(focid)
+	{}
+	uivec3 mFocID;
 };
 
 #endif

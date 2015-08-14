@@ -19,18 +19,33 @@ This file contains all of the neccessary declarations for the NSSelectionSystem 
 #include <nstformcomp.h>
 #include <nsmath.h>
 
+#define NSSEL_SELECT "SelectEntity"
+#define NSSEL_MULTISELECT "MultiSelect"
+#define NSSEL_SHIFTSELECT "ShiftSelect"
+#define NSSEL_MOVE "MoveSelection"
+#define NSSEL_MOVE_XY "MoveSelectionXY"
+#define NSSEL_MOVE_ZY "MoveSelectionZY"
+#define NSSEL_MOVE_ZX "MoveSelectionZX"
+#define NSSEL_MOVE_X "MoveSelectionX"
+#define NSSEL_MOVE_Y "MoveSelectionY"
+#define NSSEL_MOVE_Z "MoveSelectionZ"
+#define NSSEL_MOVE_TOGGLE "MoveSelectionToggle"
+
 class NSScene;
 class NSSelComp;
 class NSSelectionShader;
+class NSActionEvent;
+class NSStateEvent;
 
 class NSSelectionSystem : public NSSystem
 {
 public:
-	enum Plane 
+	
+	enum Axis
 	{
-		XY,
-		XZ,
-		YZ
+		XAxis=0x0001,
+		YAxis=0x0010,
+		ZAxis=0x0100
 	};
 
 	NSSelectionSystem();
@@ -68,6 +83,8 @@ public:
 //	virtual bool handleEvent(NSEvent * pEvent);
 
 	uivec3 pick(nsfloat mousex, nsfloat mousey);
+
+	uivec3 pick(const fvec2 & mpos);
 
 	virtual void init();
 
@@ -165,6 +182,26 @@ public:
 
 protected:
 
+	enum InputTriggers
+	{
+		SelectEntity,
+		MultiSelect,
+		ShiftSelect,
+		MoveSelection,
+		MoveSelectionXY,
+		MoveSelectionZY,
+		MoveSelectionZX,
+		MoveSelectionX,
+		MoveSelectionY,
+		MoveSelectionZ,
+		MoveSelectionToggle
+	};
+   	
+	bool _handleActionEvent(NSActionEvent * evnt);
+	bool _handleStateEvent(NSStateEvent * evnt);
+
+	void _reset_focus(const uivec3 & pickid);
+
 	virtual void _onRotateX(
 		NSEntity * ent,
 		bool pPressed
@@ -201,7 +238,7 @@ protected:
 	virtual void _onDragObject(
 		NSEntity * ent,
 		const fvec2 & pDelta,
-		const Plane & pPlane
+		nsusint _axis
 		);
 
 	void _drawOcc();
@@ -209,11 +246,15 @@ protected:
 	void _drawHidden();
 
 	uivec3 mFocusEnt; //!< The entity/tform ID that the selection is focused on (the center of rotation)
-	fvec2 mPickPos;
 	nspentityset mSelectedEnts;
 	NSSelectionShader * selShader;
-	fvec3 mCachedPoint;
+	fvec3 mTotalFrameTranslation;
 	bool mMoving;
+	bool mToggleMove;
+	bool mSendFocEvent;
+	
+	fvec2 mPickPos;
+	fvec3 mCachedPoint;
 	bool mLayerMode;
 	bool drawOcc;
 	nsint mLayer;

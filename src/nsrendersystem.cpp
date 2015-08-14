@@ -417,6 +417,26 @@ nsuint NSRenderSystem::boundfbo()
 	return params;
 }
 
+void NSRenderSystem::resizeScreen(const ivec2 & size)
+{
+	mScreenSize = size;
+	NSScene * scn = nsengine.currentScene();
+	if (scn != NULL)
+	{
+		NSEntity * cam = scn->camera();
+		if (cam != NULL)
+		{
+			NSCamComp * cc = cam->get<NSCamComp>();
+			cc->resize(mScreenSize);
+		}
+	}
+}
+
+const ivec2 & NSRenderSystem::screenSize()
+{
+	return mScreenSize;	
+}
+
 bool NSRenderSystem::debugDraw()
 {
 	return mDebugDraw;
@@ -630,10 +650,12 @@ void NSRenderSystem::_blendDirectionLight(NSLightComp * pLight)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 		cSub->mVAO.bind();
+		GLsizei sz = static_cast<GLsizei>(cSub->mIndices.size());
 		glDrawElements(cSub->mPrimType,
-					   static_cast<GLsizei>(cSub->mIndices.size()),
+					   sz,
 					   GL_UNSIGNED_INT,
-					   0);
+					   nullptr);
+        GLError("_blendDirectionLight: Draw Error");
 		cSub->mVAO.unbind();
 	}
 }

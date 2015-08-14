@@ -13,12 +13,26 @@ This file contains all of the neccessary declarations for the NSCameraSystem cla
 #ifndef NSCAMERASYSTEM_H
 #define NSCAMERASYSTEM_H
 
+#define NSCAM_FORWARD "CameraForward"
+#define NSCAM_BACKWARD "CameraBackward"
+#define NSCAM_LEFT "CameraLeft"
+#define NSCAM_RIGHT "CameraRight"
+#define NSCAM_TILTPAN "CameraTiltPan"
+#define NSCAM_MOVE "CameraMove"
+#define NSCAM_ZOOM "CameraZoom"
+#define NSCAM_TOPVIEW "CameraTopView"
+#define NSCAM_ISOVIEW "CameraIsoView"
+#define NSCAM_FRONTVIEW "CameraFrontView"
+#define NSCAM_TOGGLEMODE "CameraToggleMode"
+
 #include <nssystem.h>
 #include <nsglobal.h>
 #include <nsmath.h>
 
 class NSCamComp;
 class NSTFormComp;
+class NSActionEvent;
+class NSStateEvent;
 
 class NSCameraSystem : public NSSystem
 {
@@ -39,7 +53,6 @@ public:
 	Enum holds 3 different pre-set camera view identifiers
 	*/
 	enum CameraView {
-		Normal,
 		Top, /*!< Top down camera view */
 		Iso, /*!< Isometric camera view */
 		Front /*!< Front on camera view */
@@ -54,27 +67,11 @@ public:
 
 	void init();
 
-	virtual void onCamBackward(NSCamComp * pCam, nsbool pAnimate);
-
-	virtual void onCamForward(NSCamComp * pCam, nsbool pAnimate);
-
-	virtual void onCamLeft(NSCamComp * pCam, nsbool pAnimate);
-
-	virtual void onCamMove(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta, const fvec2 & pPos);
-
-	virtual void onCamRight(NSCamComp * pCam, nsbool pAnimate);
-
-	virtual void onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta, const fvec2 & pPos);
-
-	virtual void onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pScroll);
-
 	virtual void update();
 
 	const CameraMode & mode() const;
 
 	const nsfloat & sensitivity(const Sensitivity & pWhich) const;
-
-	const CameraView & view() const;
 
 	nsfloat zoom() const;
 
@@ -99,15 +96,46 @@ public:
 	virtual nsint updatePriority();
 
 private:
+
+	enum InputTriggers
+	{
+		CameraForward,
+		CameraBackward,
+		CameraLeft,
+		CameraRight,
+		CameraTiltPan,
+		CameraMove,
+		CameraZoom,
+		CameraTopView,
+		CameraIsoView,
+		CameraFrontView,
+		CameraToggleMode
+	};
+
+    void _onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
+	void _onCamMove(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
+	void _onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pScroll);
+	
+	bool _handleActionEvent(NSActionEvent * evnt);
+	bool _handleStateEvent(NSStateEvent * evnt);
+	bool _handleSelFocusEvent(NSSelFocusEvent * evnt);
+	
 	nsfloat mZoomFactor;
 	nsfloat mTurnSensitivity;
 	nsfloat mStrafeSensitivity;
 
+	float animTime;
+	float anim_elapsed;
+	fquat startOrient, finalOrient;
+	fvec3 startPos, finalPos;
+	bool anim_view, switch_back;
+
 	ivec2 mFreeModeInverted;
 	ivec2 mFocusModeInverted;
 
+	uivec3 mFocusEnt;
+
 	CameraMode mMode;
-	CameraView mView;
 };
 
 #endif

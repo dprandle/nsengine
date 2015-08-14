@@ -2,6 +2,7 @@
 #define NSQUAT_H
 
 #include "nsvec4.h"
+#include <cmath>
 
 template <class T>
 NSQuat<T> operator*(const nsint & pLHS, const NSQuat<T> & pRHS);
@@ -211,9 +212,9 @@ struct NSQuat
 	NSQuat<T> & from(const NSVec3<T> & vec, const NSVec3<T> & toVec)
 	{
 		/* http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm */
-		T real = static_cast<T>(1) + vec * toVec;
+		T real = 1 + vec * toVec;
 		NSVec3<T> imag = cross(vec, toVec);
-		if (real < EPS)
+		if (real < 0.0000001)
 		{
 			w = 0; x = -vec.z; y = vec.y; z = vec.x;
 			return (*this).normalize();
@@ -247,9 +248,7 @@ struct NSQuat
 
 	NSVec3<T> right() const
 	{
-		NSMat3<T> rot = rotationMat3(*this);
-		return rot.transpose().right();
-		//return NSVec3<T>(1.0f - 2.0f*y*y - 2.0f*z*z, 2.0f*x*y - 2.0f*w*z, 2.0f*x*z + 2.0f*w*y);
+		return NSVec3<T>(1 - 2*(y*y + z*z), 2*(x*y + z*w), 2*(x*z - y*w));
 	}
 
 	NSQuat<T> & roundToZero()
@@ -273,51 +272,52 @@ struct NSQuat
 
 	NSQuat<T> & setIdentity()
 	{
-		x = static_cast<T>(0); y = static_cast<T>(0); z = static_cast<T>(0); z = static_cast<T>(1);
+		x = 0; y = 0; z = 0; z = 1;
 		return *this;
 	}
 
-	NSQuat<T> & slerp(const NSQuat<T> & second, const T & scalingFactor)
+	NSQuat<T> & slerp(NSQuat<T> second, const T & scalingFactor)
 	{
-		T cosHalfTheta = dot(*this, second);
+		if (scalingFactor == 0 )
+			return *this;
+		
+		if ( scalingFactor == 1 )
+			return (*this = second);
+		
+		T cosHalfTheta = w * second.w + x * second.x + y * second.y + z * second.z;
 
-		if (cosHalfTheta < 0)
+		if ( cosHalfTheta < 0 )
 		{
-			*this = second * static_cast<T>(-1.0f);
+			second *= -1;
 			cosHalfTheta = -cosHalfTheta;
 		}
-		else
-		{
-			*this = second;
-		}
-
-		// make sure we dont go out of acos domain
-		if (cosHalfTheta >= static_cast<T>(1))
+		
+		if ( cosHalfTheta >= 1.0 )
 			return *this;
+		
+		T halfTheta = acos(cosHalfTheta);
+		T sinHalfTheta = sqrt( 1.0 - cosHalfTheta * cosHalfTheta );
 
-		// Calculate more expensive values.
-		T halfTheta = static_cast<T>(std::acos(cosHalfTheta));
-		T sinHalfTheta = static_cast<T>(sqrt(static_cast<T>(1) - cosHalfTheta*cosHalfTheta));
+		if (std::abs(sinHalfTheta) < EPS)
+		{
+			*this = 0.5 * (*this + second);
+			return *this;
+		}
+		
+		T ratioA = sin((1 - scalingFactor) * halfTheta) / sinHalfTheta;
+		T ratioB = sin(scalingFactor * halfTheta) / sinHalfTheta;
 
-		// if sin of theta = 0 (or something close) then just
-		// take  point exactly between the two quats
-		if (abs(sinHalfTheta) < EPS)
-			return *this = static_cast<T>(0.5) * (*this + second);
-
-		T ratioA = static_cast<T>(std::sin((static_cast<T>(1) - scalingFactor) * halfTheta)) / sinHalfTheta;
-		T ratioB = static_cast<T>(std::sin(scalingFactor * halfTheta)) / sinHalfTheta;
 		*this = *this * ratioA + second * ratioB;
-		return normalize();
+		normalize();
+		return *this;
 	}
 
 	NSVec3<T> target() const
 	{
-		NSMat3<T> rot = rotationMat3(*this);
-		return rot.transpose().target();
-		//return NSVec3<T>(2.0f*x*z - 2.0f*w*y, 2.0f*y*z + 2.0f*w*x, 1.0f - 2.0f*x*x - 2.0f*y*y);
+		return NSVec3<T>(2*(x*z + y*w), 2*(y*z - x*w), 1 - 2*(x*x + y*y));
 	}
 
-	nsstring toString()
+	nsstring toString() const
 	{
 		nsstringstream ss;
 		ss << "[" << w << " " << x << "i " << y << "j " << z << "k]";
@@ -326,9 +326,7 @@ struct NSQuat
 
 	NSVec3<T> up() const
 	{
-		NSMat3<T> rot = rotationMat3(*this);
-		return rot.transpose().up();
-		//return NSVec3<T>(2.0f*x*y + 2.0f*w*z, 1.0f - 2.0f*x*x - 2.0f*z*z, 2.0f*y*z - 2.0f*w*x);
+		return NSVec3<T>(2*(x*y - z*w), 1 - 2*(x*x + z*z), 2*(y*z + x*w));
 	}
 
 	// overloaded operators
@@ -517,6 +515,15 @@ struct NSQuat
 			T d;
 			T a;
 		};
+
+		struct
+		{
+			T i;
+			T j;
+			T k;
+			T alpha;
+		};
+
 	};
 };
 
@@ -613,7 +620,9 @@ NSQuat<T> orientation(const NSMat4<T> & transform)
 template <class T>
 NSQuat<T> slerp(const NSQuat<T> & lhs, const NSQuat<T> & rhs, const T & scalingFactor)
 {
-	return NSQuat<T>(lhs).slerp(rhs, scalingFactor);
+	NSQuat<T> ret(lhs);
+	ret.slerp(rhs, scalingFactor);
+	return ret;
 }
 
 template<class PUPer, class T>

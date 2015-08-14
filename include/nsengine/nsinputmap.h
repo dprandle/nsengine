@@ -10,7 +10,6 @@ class NSInputMap : public NSResource
   public:
 
 	enum Key {
-		Key_None,
 		Key_A,
 		Key_B,
 		Key_C,
@@ -121,7 +120,6 @@ class NSInputMap : public NSResource
 	};
 
 	enum MouseButton {
-		NoButton,
 		LeftButton,
 		RightButton,
 		MiddleButton,
@@ -148,65 +146,43 @@ class NSInputMap : public NSResource
 	{
 		Pressed,
 		Released,
-		Both
+		Both,
+		Toggle
 	};
+
+	
+    typedef std::unordered_set<Key, EnumHash> KeyModifiers;
+    typedef std::unordered_set<MouseButton, EnumHash> MouseModifiers;
+    typedef std::unordered_map<Axis, float, EnumHash> AxisMap;
 
 	struct Trigger
 	{
-		Trigger(const nsstring & pName="",
-				TState triggerOn=Pressed,
-				Axis interestedAxis=None,
-				Key pKMod1=Key_Any,
-				Key pKMod2=Key_Any,
-				MouseButton pMMod1=AnyButton,
-				MouseButton pMMod2=AnyButton
-			):
-			mName(pName),
-			mTriggerOn(triggerOn),
-			mAxes(interestedAxis),
-			mKModifier1(pKMod1),
-			mKModifier2(pKMod2),
-			mMModifier1(pMMod1),
-			mMModifier2(pMMod2)
-		{}
-		nsstring mName;
-		Key mKModifier1;
-		Key mKModifier2;
-		MouseButton mMModifier1;
-		MouseButton mMModifier2;
-		Axis mAxes;
-		TState mTriggerOn;
+		Trigger(
+			const nsstring & pName="",
+			TState triggerOn=Pressed,
+			uint interestedAxis=0
+			);
 
+		void addKeyModifier(Key mod);
+		void removeKeyModifier(Key mod);
+
+		void addMouseModifier(MouseButton mod);
+		void removeMouseModifier(MouseButton mod);
+
+		const Trigger & operator=(const Trigger & pRhs);
+		bool operator==(const Trigger & pRhs);
 		
-		const Trigger & operator=(const Trigger & pRhs)
-		{
-			mName = pRhs.mName;
-			mKModifier1 = pRhs.mKModifier1;
-			mKModifier2 = pRhs.mKModifier2;
-			mMModifier1 = pRhs.mMModifier1;
-			mMModifier2 = pRhs.mMModifier2;
-			mAxes = pRhs.mAxes;
-			mTriggerOn = pRhs.mTriggerOn;
-			return *this;
-		}
-
-		bool operator==(const Trigger & pRhs)
-		{
-			return (
-				mName == pRhs.mName &&
-				mKModifier1 == pRhs.mKModifier1 &&
-				mKModifier2 == pRhs.mKModifier2 &&
-				mMModifier1 == pRhs.mMModifier1 &&
-				mMModifier2 == pRhs.mMModifier2
-				);
-		}
+		nsstring mName;
+		uint mHashName;
+		uint mAxes;
+		TState mTriggerOn;
+		KeyModifiers mKeyMods;
+		MouseModifiers mMouseMods;
+		
 	};
 
-    typedef std::unordered_multimap<Key, Trigger, EnumHash> KeyMap;
+	typedef std::unordered_multimap<Key, Trigger, EnumHash> KeyMap;
     typedef std::unordered_multimap<MouseButton, Trigger, EnumHash> MouseButtonMap;
-    typedef std::unordered_set<Key, EnumHash> Modifiers;
-    typedef std::unordered_set<MouseButton, EnumHash> MouseModifiers;
-    typedef std::unordered_map<Axis, float, EnumHash> AxisMap;
 	
 	struct Context
 	{
@@ -227,9 +203,9 @@ class NSInputMap : public NSResource
 	// In adding the context InputManager takes ownership
 	bool addContext(Context * toAdd);
 
-	bool addKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger);
+	bool addKeyTrigger(const nsstring & pContextName, Key pKey, Trigger & pTrigger);
 
-	bool addMouseButtonTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger);
+	bool addMouseTrigger(const nsstring & pContextName, MouseButton pButton, Trigger & pTrigger);
 
 	bool allowedModifier(Key mod);
 	
@@ -265,7 +241,7 @@ class NSInputMap : public NSResource
 
   private:	
 	ContextCollection mContexts;
-	Modifiers mAllowedModifiers;
+	KeyModifiers mAllowedModifiers;
 };
 
 
@@ -328,12 +304,11 @@ template <class PUPer>
 void pup(PUPer & p, NSInputMap::Trigger & t, const nsstring & varName)
 {
 	pup(p, t.mName, varName + ".mName");
-	pup(p, t.mKModifier1, varName + ".mKModifier1");
-	pup(p, t.mKModifier2, varName + ".mKModifier2");
-	pup(p, t.mMModifier1, varName + ".mMModifier1");
-	pup(p, t.mMModifier2, varName + ".mMModifier2");
-	pup(p, t.mAxes, varName + ".mAxes");
+	t.mHashName = hash_id(t.mName);
 	pup(p, t.mTriggerOn, varName + ".mTriggerOn");
+	pup(p, t.mAxes, varName + ".mAxes");
+	pup(p, t.mKeyMods, varName + ".mKeyModifiers");
+	pup(p, t.mMouseMods, varName + ".mMouseModifiers");
 }
 
 #endif

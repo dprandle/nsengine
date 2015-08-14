@@ -175,7 +175,7 @@ struct NSMat3
 
 	NSVec3<T> right() const
 	{
-		return normalize(data[0]);
+		return normalize((*this)(0));
 	}
 
 	NSMat3<T> & rotation2dFrom(const T angle, bool rads = false)
@@ -361,24 +361,19 @@ struct NSMat3
 		return roundToZero();
 	}
 
-	NSMat3<T> & rotationFrom(const NSQuat<T> & orientation)
+	NSMat3<T> & rotationFrom(const NSQuat<T> & ornt)
 	{
-		T x2 = orientation.x + orientation.x, y2 = orientation.y + orientation.y, z2 = orientation.z + orientation.z;
-		T xx = orientation.x * x2, xy = orientation.x * y2, xz = orientation.x * z2;
-		T yy = orientation.y * y2, yz = orientation.y * z2, zz = orientation.z * z2;
-		T wx = orientation.w * x2, wy = orientation.w * y2, wz = orientation.w * z2;
+		data[0][0] = 1 - 2*(ornt.y*ornt.y + ornt.z*ornt.z);
+		data[0][1] = 2*(ornt.x*ornt.y - ornt.z*ornt.w);
+		data[0][2] = 2*(ornt.x*ornt.z + ornt.y*ornt.w);
 
-		data[0][0] = 1 - (yy + zz);
-		data[0][1] = xy - wz;
-		data[0][2] = xz + wy;
+		data[1][0] = 2*(ornt.x*ornt.y + ornt.z*ornt.w);
+		data[1][1] = 1 - 2*(ornt.x*ornt.x + ornt.z*ornt.z);
+		data[1][2] = 2*(ornt.y*ornt.z - ornt.x*ornt.w);
 
-		data[1][0] = xy + wz;
-		data[1][1] = 1 - (xx + zz);
-		data[1][2] = yz - wx;
-
-		data[2][0] = xz - wy;
-		data[2][1] = yz + wx;
-		data[2][2] = 1 - (xx + yy);
+		data[2][0] = 2*(ornt.x*ornt.z - ornt.y*ornt.w);
+		data[2][1] = 2*(ornt.y*ornt.z + ornt.x*ornt.w);
+		data[2][2] = 1 - 2*(ornt.x*ornt.x + ornt.y*ornt.y);
 		return *this;
 	}
 
@@ -530,7 +525,7 @@ struct NSMat3
 
 	NSVec3<T> target() const
 	{
-		return normalize(data[2]);
+		return normalize((*this)(2));			
 	}
 
 	NSMat3<T> & translation2dFrom(const NSVec3<T> & v3)
@@ -570,7 +565,7 @@ struct NSMat3
 
 	NSVec3<T> up() const
 	{
-		return normalize(data[1]);
+		return normalize((*this)(1));
 	}
 
 	// Overloaded operators

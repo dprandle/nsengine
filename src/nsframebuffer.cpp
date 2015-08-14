@@ -371,6 +371,7 @@ void NSFrameBuffer::NSRenderBuffer::release()
 {
 	glDeleteRenderbuffers(1, &mGLName);
 	GLError("NSFrameBuffer::NSRenderBuffer::release");
+	mGLName = 0;
 	mAllocated = false;
 }
 
@@ -640,9 +641,9 @@ void NSGBuffer::bind()
 	mTexFrameBuffer->bind();
 }
 
-void NSGBuffer::debugBlit(const uivec2 & scrn)
+void NSGBuffer::debugBlit(const ivec2 & scrn)
 {
-	uivec2 hlf = scrn / 2;
+	ivec2 hlf = scrn / 2;
 
 	mTexFrameBuffer->setTarget(NSFrameBuffer::Read);
 	mTexFrameBuffer->bind();

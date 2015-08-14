@@ -160,6 +160,10 @@ public:
 
 	virtual void init();
 
+	void resizeScreen(const ivec2 & size);
+
+	const ivec2 & screenSize();
+
 	uivec3 shadowfbo();
 
 	nsuint finalfbo();
@@ -208,6 +212,8 @@ private:
 	bool mDebugDraw;
 	bool mEarlyZEnabled;
 	bool mLightingEnabled;
+
+	ivec2 mScreenSize;
 
 
 	MatDCMap mDrawCallMap;

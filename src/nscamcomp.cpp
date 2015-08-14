@@ -179,7 +179,7 @@ void NSCamComp::rotateFocus(nsfloat pX, nsfloat pY, nsfloat pZ, nsfloat pAngle)
 
 void NSCamComp::rotateFocus(const fvec3 & pAxis, nsfloat pAngle)
 {
-	mFocRot *= orientation(fvec4(pAxis, pAngle));
+	mFocRot = orientation(fvec4(pAxis, pAngle)) * mFocRot;
 	computeFocusTransform();
 }
 
@@ -199,9 +199,15 @@ fmat4 NSCamComp::camFocusTForm()
 	return mFocTForm;
 }
 
-void NSCamComp::resize(nsuint w, nsuint h)
+void NSCamComp::resize(nsint w, nsint h)
 {
-	mDim.set(w, h);
+	mDim.set(w,h);
+	_updateProj();
+}
+
+void NSCamComp::resize(const ivec2 & dim)
+{
+	mDim = dim;
 	_updateProj();
 }
 
@@ -212,6 +218,10 @@ void NSCamComp::computeFocusTransform()
 	mFocTForm[3].x = 0; mFocTForm[3].y = 0; mFocTForm[3].z = 0;
 }
 
+const ivec2 & NSCamComp::dim()
+{
+	return mDim;
+}
 
 const NSCamComp::Movement & NSCamComp::elevate() const
 {

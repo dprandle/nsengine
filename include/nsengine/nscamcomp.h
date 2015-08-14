@@ -159,8 +159,8 @@ public:
 
 	ProjectionMode projectionMode();
 
-	const uivec2 & dim() { return mDim; }
-
+	const ivec2 & dim();
+	
 	virtual void pup(NSFilePUPer * p);
 
 	/*!
@@ -243,7 +243,9 @@ public:
 	*/
 	void setStrafe(Direction pDir, bool pAnimate);
 
-	void resize(nsuint w, nsuint h);
+	void resize(nsint w, nsint h);
+
+	void resize(const ivec2 & dimen);
 
 	void rotateFocus(const fquat & pQuat);
 
@@ -269,7 +271,7 @@ private:
 
 	nsfloat mFovAngle;
 	fvec2 mPersNFClip;
-	uivec2 mDim;
+	ivec2 mDim;
 
 	fvec2 mTBClip;
 	fvec2 mLRClip;

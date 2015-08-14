@@ -33,3 +33,21 @@ nsint NSSystem::drawPriority()
 {
 	return NO_DRAW_PR;
 }
+
+void NSSystem::addTriggerHash(nsuint key, const nsstring & trigname)
+{
+	mHashedInputTriggers.emplace(key,hash_id(trigname));
+}
+
+void NSSystem::removeTriggerHash(nsuint key)
+{
+	mHashedInputTriggers.erase(key);
+}
+
+nsuint NSSystem::triggerHash(nsuint key)
+{
+	auto fiter = mHashedInputTriggers.find(key);
+	if (fiter != mHashedInputTriggers.end())
+		return fiter->second;
+	return 0;
+}

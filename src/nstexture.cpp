@@ -37,7 +37,7 @@ NSTexture::~NSTexture()
 
 void NSTexture::initGL()
 {
-	glCreateTextures(mTexType, 1, &mGLName);
+	glGenTextures(1, &mGLName);
 	GLError("NSTexture::initGL");
 }
 

@@ -1,18 +1,57 @@
 #include <iostream>
-#include <nsglfw.h>
 #include <nsevent.h>
 #include <nseventdispatcher.h>
 #include <nsengine.h>
-#include <GLFW/glfw3.h>
+#include <nsglfw.h>
+#include <nsrendersystem.h>
 
-void GLFWKeyCallback(GLFWwindow * pWindow, int pKey, int pScancode, int pAction, int pMods)
+GLFWwindow * win;
+
+bool glfw_setup(const ivec2 & screendim, nsbool fullscreen, const nsstring & title)
 {
+    if (!glfwInit())
+        return false;
+
+	GLFWmonitor * mon = NULL;
+	if (fullscreen)
+		mon = glfwGetPrimaryMonitor();		
+	win = glfwCreateWindow(screendim.x, screendim.y, title.c_str(), mon, NULL);
+		
+    if (!win)
+    {
+        glfwTerminate();
+        return false;
+    }
+
+    glfwMakeContextCurrent(win);
+    glfwSetKeyCallback(win, glfw_keypress_callback);
+	glfwSetMouseButtonCallback(win, glfw_mousebutton_callback);
+	glfwSetCursorPosCallback(win, glfw_cursorpos_callback);
+	glfwSetScrollCallback(win, glfw_scroll_callback);
+	glfwSetWindowSizeCallback(win, glfw_resizewindow_callback); 
+    return true;
+}
+
+bool glfw_window_open()
+{
+	return !glfwWindowShouldClose(win);
+}
+
+void glfw_update()
+{
+	glfwSwapBuffers(win);
+	glfwPollEvents();
+}
+
+void glfw_keypress_callback(GLFWwindow * pWindow, int pKey, int pScancode, int pAction, int pMods)
+{
+	if (pAction == GLFW_REPEAT)
+		return;
+	
     bool pressed = pAction == 1;
     switch (pKey)
     {
     case (GLFW_KEY_A) :
-        //nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_A, pressed);
-        std::cout << "A Press" << std::endl;
         nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_A, pressed);
         break;
     case (GLFW_KEY_B) :
@@ -335,8 +374,11 @@ void GLFWKeyCallback(GLFWwindow * pWindow, int pKey, int pScancode, int pAction,
     }
 }
 
-void GLFWMouseButtonCallback(GLFWwindow * pWindow, int pButton, int pAction, int pMods)
+void glfw_mousebutton_callback(GLFWwindow * pWindow, int pButton, int pAction, int pMods)
 {
+	if (pAction == GLFW_REPEAT)
+		return;
+
     double xPos = 0.0, yPos = 0.0; int frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
     glfwGetCursorPos(pWindow, &xPos, &yPos);
     glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
@@ -382,7 +424,7 @@ void GLFWMouseButtonCallback(GLFWwindow * pWindow, int pButton, int pAction, int
     }
 }
 
-void GLFWCursorPosCallback(GLFWwindow * pWindow, double pPosX, double pPosY)
+void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 {
     int frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
     glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
@@ -398,7 +440,7 @@ void GLFWCursorPosCallback(GLFWwindow * pWindow, double pPosX, double pPosY)
     nsengine.eventDispatch()->push<NSMouseMoveEvent>(fvec2(float(pPosX),float(pPosY)));
 }
 
-void GLFWScrollCallback(GLFWwindow * pWindow, double pXOffset, double pYOffset)
+void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset)
 {
     double xPos = 0.0, yPos = 0.0;
     glfwGetCursorPos(pWindow, &xPos, &yPos);
@@ -414,4 +456,11 @@ void GLFWScrollCallback(GLFWwindow * pWindow, double pXOffset, double pYOffset)
     xPos /= double(frameBufX);
 
     nsengine.eventDispatch()->push<NSMouseScrollEvent>(float(pYOffset), fvec2(float(yPos),float(xPos)));
+}
+
+void glfw_resizewindow_callback(GLFWwindow* window, int width, int height)
+{
+	NSRenderSystem * rs = nsengine.system<NSRenderSystem>();
+	if (rs != NULL)
+		rs->resizeScreen(ivec2(width,height));
 }

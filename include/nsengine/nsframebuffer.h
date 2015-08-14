@@ -239,7 +239,7 @@ public:
 
 	void bind();
 
-	void debugBlit(const uivec2 & scrn);
+	void debugBlit(const ivec2 & scrn);
 
 	void disableTextures();
 

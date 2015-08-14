@@ -1068,6 +1068,6 @@ void NSTFormComp::InstTrans::compute()
 	if (mParentEnabled)
 	{
 		mTransform = mParentTransform * mTransform;
-		mPOVTransform = mPOVTransform *inverse(mParentTransform);
+		mPOVTransform = inverse(mTransform);
 	}
 }

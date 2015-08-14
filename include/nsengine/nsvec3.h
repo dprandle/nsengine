@@ -449,9 +449,9 @@ struct NSVec3
 	NSVec3<T> & normalize()
 	{
 		T l = length();
-		if (::abs(l) <= static_cast<T>(EPS))
+		if (l <= EPS)
 			return *this;
-		return *this *= static_cast<T>(1) / l;
+		return *this *= (1 / l);
 	}
 
 	NSVec3<T> & projectOn(const NSVec3<T> & vec)
@@ -1067,7 +1067,7 @@ template <class T>
 NSVec3<T> project(const NSVec3<T> & a, const NSVec3<T> & b)
 {
 	NSVec3<T> ret(a);
-	a.projectOn(b);
+	ret.projectOn(b);
 	return ret;
 }
 
@@ -1075,7 +1075,7 @@ template <class T>
 NSVec3<T> projectPlane(const NSVec3<T> & a, const NSVec3<T> & normal)
 {
 	NSVec3<T> ret(a);
-	a.projectOnPlane(normal);
+	ret.projectOnPlane(normal);
 	return ret;
 }
 

@@ -1,4 +1,4 @@
-/*!
+ /*!
 \file nscontrollersystem.h
 
 \brief Definition file for NSControllerSystem class
@@ -9,6 +9,8 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 \date March 8 2014
 \copywrite Earth Banana Games 2013
 */
+
+#include <iostream>
 
 #include <nsselectionsystem.h>
 #include <nsscenemanager.h>
@@ -30,7 +32,8 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nscamcomp.h>
 #include <nsterraincomp.h>
 #include <nsplugin.h>
-
+#include <nsevent.h>
+#include <nsmath.h>
 /*
 Notes:
 
@@ -53,6 +56,8 @@ NSSelectionSystem::NSSelectionSystem() :
 	finalBuf(0),
 	pickBuf(0),
 	trans(),
+	mToggleMove(false),
+	mSendFocEvent(false),
 	NSSystem()
 {}
 
@@ -61,11 +66,6 @@ NSSelectionSystem::~NSSelectionSystem()
 
 bool NSSelectionSystem::add(NSEntity * ent, nsuint tformid)
 {
-	NSScene * scene = nsengine.currentScene();
-
-	if (scene == NULL)
-		return false;
-
 	if (ent == NULL)
 		return false;
 
@@ -73,8 +73,13 @@ bool NSSelectionSystem::add(NSEntity * ent, nsuint tformid)
 	if (selComp == NULL)
 		return false;
 
+	// TODO: Make this an event - that is a mirror mode event to put build and sel system in mirror mode
 	if (nsengine.system<NSBuildSystem>()->mirror())
 	{
+		NSScene * scn = nsengine.currentScene();
+		if (scn == NULL)
+			return false;
+		
 		NSTFormComp * tForm = ent->get<NSTFormComp>();
 		if (tForm == NULL)
 		{
@@ -86,10 +91,10 @@ bool NSSelectionSystem::add(NSEntity * ent, nsuint tformid)
 		fvec3 newPos = nsengine.system<NSBuildSystem>()->center()*2.0f - wp;
 		newPos.z = wp.z;
 
-		uivec3 id = scene->grid().get(newPos);
+		uivec3 id = scn->grid().get(newPos);
 		if (id != 0)
 		{
-			NSEntity * entAdd = scene->entity(id.x,id.y);
+			NSEntity * entAdd = scn->entity(id.x,id.y);
 			mSelectedEnts.insert(entAdd);
 			entAdd->get<NSSelComp>()->setSelected(true);
 			entAdd->get<NSSelComp>()->add(id.y);
@@ -234,7 +239,6 @@ void NSSelectionSystem::clear()
 	mSelectedEnts.clear();
 	mFocusEnt = uivec3();
 	//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
-	mMoving = false;
 }
 
 void NSSelectionSystem::setPickfbo(nsuint fbo)
@@ -245,6 +249,11 @@ void NSSelectionSystem::setPickfbo(nsuint fbo)
 void NSSelectionSystem::setFinalfbo(nsuint fbo)
 {
 	finalBuf = fbo;
+}
+
+uivec3 NSSelectionSystem::pick(const fvec2 & mpos)
+{
+	return pick(mpos.x, mpos.y);
 }
 
 uivec3 NSSelectionSystem::pick(nsfloat mousex, nsfloat mousey)
@@ -262,7 +271,7 @@ uivec3 NSSelectionSystem::pick(nsfloat mousex, nsfloat mousey)
 		return uivec3();
 
 	NSCamComp * cc = cam->get<NSCamComp>();
-	uivec2 dim = cc->dim();
+	ivec2 dim = cc->dim();
 	nsfloat mouseX = mousex * nsfloat(dim.w);
 	nsfloat mouseY = mousey * nsfloat(dim.h);
 
@@ -732,6 +741,20 @@ void NSSelectionSystem::init()
 	//nsengine.events()->addListener(this, NSEvent::SelSet);
 	//nsengine.events()->addListener(this, NSEvent::SelAdd);
 	//nsengine.events()->addListener(this, NSEvent::ClearSelection);
+	registerHandlerFunc(this, &NSSelectionSystem::_handleActionEvent);
+	registerHandlerFunc(this, &NSSelectionSystem::_handleStateEvent);
+
+	addTriggerHash(SelectEntity, NSSEL_SELECT);
+	addTriggerHash(MultiSelect, NSSEL_MULTISELECT);
+	addTriggerHash(ShiftSelect, NSSEL_SHIFTSELECT);
+	addTriggerHash(MoveSelection, NSSEL_MOVE);
+	addTriggerHash(MoveSelectionXY, NSSEL_MOVE_XY);
+	addTriggerHash(MoveSelectionZY, NSSEL_MOVE_ZY);
+	addTriggerHash(MoveSelectionZX, NSSEL_MOVE_ZX);
+	addTriggerHash(MoveSelectionX, NSSEL_MOVE_X);
+	addTriggerHash(MoveSelectionY, NSSEL_MOVE_Y);
+	addTriggerHash(MoveSelectionZ, NSSEL_MOVE_Z);
+	addTriggerHash(MoveSelectionToggle, NSSEL_MOVE_TOGGLE);
 }
 
 nsint NSSelectionSystem::drawPriority()
@@ -917,7 +940,7 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 	}
 }
 
-void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, const Plane & pPlane)
+void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, nsusint axis_)
 {
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -931,58 +954,62 @@ void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, cons
 		return;
 
 	NSSelComp * sc = ent->get<NSSelComp>();
+	NSTFormComp * camTForm = cam->get<NSTFormComp>();
+	NSCamComp * camc = cam->get<NSCamComp>();
+	NSTFormComp * tComp = ent->get<NSTFormComp>();
 
-	if (sc->selected() && ent->plugid() == mFocusEnt.x && ent->id() == mFocusEnt.y)
+	// get change in terms of NDC
+	fvec2 delta(pDelta * 2.0f);
+
+	fvec3 originalPos = tComp->wpos(mFocusEnt.z);
+	fvec4 screenSpace = camc->projCam() * fvec4(originalPos, 1.0f);
+	screenSpace /= screenSpace.w;
+	screenSpace.x += delta.u;
+	screenSpace.y += delta.v;
+
+	fvec4 newPos = camc->invProjCam() * screenSpace;
+	newPos /= newPos.w;
+
+	fvec3 fpos(newPos.xyz());
+	fvec3 castVec = fpos - camTForm->wpos();
+	castVec.normalize();
+	float depth = 0.0f;
+	fvec3 normal;
+
+	fvec3 targetVec = (camc->focusOrientation() * camTForm->orientation()).target();
+	fvec3 projVec = projectPlane(targetVec, fvec3(0.0f,0.0f,-1.0f));
+	fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
+	
+	float angle = targetVec.angleTo(projVec);
+	float angleX = projVec.xy().angleTo(projVecX);
+
+
+	// Set normal if not moving in a single plane
+	if ((axis_ == (XAxis | YAxis | ZAxis) && angle > 35.0f) || (axis_ & ZAxis) != ZAxis)
+		normal.set(0.0f,0.0f,-1.0f);
+	else
 	{
-		// camera should never be null - cannot have a selected entity if they arent on screen
-		NSTFormComp * camTForm = cam->get<NSTFormComp>();
-		NSCamComp * camc = cam->get<NSCamComp>();
-		NSTFormComp * tComp = ent->get<NSTFormComp>();
-
-		// get change in terms of NDC
-		fvec2 delta(pDelta * 2.0f);
-
-		fvec3 originalPos = tComp->wpos(mFocusEnt.z);
-		fvec4 screenSpace = camc->projCam() * fvec4(originalPos, 1.0f);
-		screenSpace /= screenSpace.w;
-		screenSpace.x -= delta.u;
-		screenSpace.y -= delta.v;
-
-		fvec4 newPos = camc->invProjCam() * screenSpace;
-		newPos /= newPos.w;
-
-		fvec3 fpos(newPos.xyz());
-		fvec3 castVec = fpos - camTForm->wpos();
-		castVec.normalize();
-		float depth = 0.0f;
-		fvec3 normal;
-
-		if (mMoving)
+		if (axis_ == ZAxis || axis_ == (XAxis | YAxis | ZAxis))
 		{
-			if (!collision())
-				setColor(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+			if (angleX < 45.0f)
+				normal.set(-1.0f,0.0f,0.0f);
 			else
-				resetColor();
+				normal.set(0.0f,-1.0f,0.0f);
 		}
-
-		switch (pPlane)
+		else
 		{
-		case(XY) :
-			normal.set(0.0f, 0.0f, -1.0f);
-			break;
-		case(XZ) :
-			normal.set(0.0f, -1.0f, 0.0f);
-			break;
-		case(YZ) :
-			normal.set(-1.0f, 0.0f, 0.0f);
-			break;
+			if ((axis_ & XAxis) != XAxis)
+				normal.set(-1.0f,0.0f,0.0f);
+			else
+				normal.set(0.0f,-1.0f,0.0f);
 		}
-
-		depth = (normal * (originalPos - fpos)) / (normal * castVec);
-		fpos += castVec*depth;
-		fpos -= originalPos;
-		translate(fpos);
 	}
+	
+	depth = (normal * (originalPos - fpos)) / (normal * castVec);
+	fpos += castVec*depth;
+	fpos -= originalPos;	
+	fpos %= fvec3(float((axis_ & XAxis) == XAxis), float((axis_ & YAxis) == YAxis), float((axis_ & ZAxis) == ZAxis));
+	mTotalFrameTranslation += fpos;
 }
 
 nsint NSSelectionSystem::layer() const
@@ -1060,6 +1087,58 @@ void NSSelectionSystem::_onMultiSelect(NSEntity * ent, nsbool pPressed, const ui
 			}
 		}
 	}
+}
+
+void NSSelectionSystem::_reset_focus(const uivec3 & pickid)
+{	
+	if (mSelectedEnts.empty())
+	{
+		mFocusEnt = uivec3();
+		mSendFocEvent = true;
+		return;
+	}
+	
+
+	if (contains(pickid))
+	{
+		mFocusEnt = pickid;
+		mSendFocEvent = true;
+		return;
+	}
+
+	if (contains(mFocusEnt))
+		return;
+
+	NSEntity * ent = nsengine.resource<NSEntity>(pickid.xy());
+	NSSelComp * sc;
+	if (ent == NULL || (sc = ent->get<NSSelComp>()) == NULL)
+		return;
+
+	NSTFormComp * tc = ent->get<NSTFormComp>();
+	fvec3 original_pos = tc->wpos(pickid.z);
+	
+	auto iter = mSelectedEnts.find(ent);
+	if (iter != mSelectedEnts.end())
+	{
+		auto sel_iter = sc->begin();
+		uint closest_tformid = *sel_iter;
+		while (sel_iter != sc->end())
+		{
+			if ( (original_pos - tc->wpos(*sel_iter)).lengthSq() <
+				 (original_pos - tc->wpos(closest_tformid)).lengthSq() )
+				closest_tformid = *sel_iter;
+			++sel_iter;
+		}
+		mFocusEnt.set(pickid.xy(),closest_tformid);
+	}
+	else
+	{
+		auto entFirst = mSelectedEnts.begin();
+		NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
+		auto first = selComp->begin();
+		mFocusEnt.set((*entFirst)->fullid(), *first);
+	}
+	mSendFocEvent = true;
 }
 
 void NSSelectionSystem::remove(NSEntity * ent, nsuint pTFormID)
@@ -1659,93 +1738,233 @@ bool NSSelectionSystem::tileSwapValid()
 
 void NSSelectionSystem::update()
 {
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL)
+
+	NSScene * scn = nsengine.currentScene();
+	if (scn == NULL)
 		return;
-
-	//nsengine.events()->process(this); // process any events first
-
-	if (scene == NULL) // if scene is null return
+	NSEntity * ent = scn->entity(mFocusEnt.xy());
+	if (ent == NULL)
 		return;
+	NSTFormComp * foc_tform = ent->get<NSTFormComp>();
 
-	auto entIter = scene->entities<NSSelComp>().begin();
-	uivec3 pickIndex;
-
-	if (mPickPos != fvec2())
+	if (mSendFocEvent)
 	{
-		pickIndex = pick(mPickPos.u, mPickPos.v);
-		if (mLayerMode)
-		{
-
-		}
-		mPickPos = fvec2();
+		nsengine.eventDispatch()->push<NSSelFocusEvent>(mFocusEnt);
+		mSendFocEvent = false;
 	}
 
-	while (entIter != scene->entities<NSSelComp>().end())
+	if (mToggleMove)
 	{
-		NSInputComp * inComp = (*entIter)->get<NSInputComp>();
-
-		// Do not do anything with things without input comp
-		if (inComp == NULL)
+		if (mMoving)
 		{
-			++entIter;
-			continue;
+			fvec3 originalPos = foc_tform->wpos(mFocusEnt.z);
+			mCachedPoint = originalPos;
+			removeFromGrid();
 		}
-
-		NSInputComp::Action * act = inComp->action(ROTATE_X);
-		if (act != NULL && act->mActivated)
-			_onRotateX(*entIter, act->mPressed);
-
-		act = inComp->action(ROTATE_Y);
-		if (act != NULL && act->mActivated)
-			_onRotateY(*entIter, act->mPressed);
-
-		act = inComp->action(ROTATE_Z);
-		if (act != NULL && act->mActivated)
-			_onRotateZ(*entIter, act->mPressed);
-
-		act = inComp->action(SELECT);
-		if (act != NULL && act->mActivated)
-			_onSelect(*entIter, act->mPressed, pickIndex);
-
-		act = inComp->action(MULTI_SELECT);
-		if (act != NULL && act->mActivated)
-			_onMultiSelect(*entIter, act->mPressed, pickIndex);
-
-		act = inComp->action(PAINT_SELECT);
-		if (act != NULL && act->mActivated)
-			_onPaintSelect(*entIter, act->mPos);
-
-		act = inComp->action(DRAG_OBJECT_XY);
-		if (act != NULL && act->mActivated)
-			_onDragObject(*entIter, act->mDelta, XY);
-
-		act = inComp->action(DRAG_OBJECT_XZ);
-		if (act != NULL && act->mActivated)
-			_onDragObject(*entIter, act->mDelta, XZ);
-
-		act = inComp->action(DRAG_OBJECT_YZ);
-		if (act != NULL && act->mActivated)
-			_onDragObject(*entIter, act->mDelta, YZ);
-
-		act = inComp->action(XZ_MOVE_END);
-		if (act != NULL && act->mActivated && !act->mPressed)
+		else
 		{
-			if (mMoving)
-				snapZ();
+			snap();
+			if (!collision())
+			{
+				foc_tform->computeTransform(mFocusEnt.z);
+				fvec3 pTranslate = mCachedPoint - foc_tform->wpos(mFocusEnt.z);
+				translate(pTranslate);
+				setColor(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
+
+				if (!addToGrid())
+				{
+					dprint("NSSelectionSystem::onSelect Error in resetting tiles to original grid position");
+				}
+			}
 			else
-				_onSelect(*entIter, act->mPressed, pickIndex, true);
+			{
+				fvec3 pos = foc_tform->wpos(mFocusEnt.z);
+				scn->grid().snap(pos);
+				addToGrid();
+				nsengine.eventDispatch()->push<NSSelFocusEvent>(mFocusEnt);
+			}
+			mCachedPoint = fvec3();
 		}
-
-		act = inComp->action(YZ_MOVE_END);
-		if (act != NULL && act->mActivated && !act->mPressed)
-		{
-			if (mMoving)
-				snapZ();
-			else
-				_onSelect(*entIter, act->mPressed, pickIndex, true);
-		}
-
-		++entIter;
+		mToggleMove = false;
 	}
+
+	if (mMoving)
+	{		
+		if (!collision())
+			setColor(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+		else
+			resetColor();
+		translate(mTotalFrameTranslation);
+		mTotalFrameTranslation = 0.0f;
+	}
+}
+
+bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
+{
+	if (evnt->mTriggerHashName == triggerHash(SelectEntity))
+	{
+		auto xpos_iter = evnt->axes.find(NSInputMap::MouseXPos);
+		auto ypos_iter = evnt->axes.find(NSInputMap::MouseYPos);
+		fvec2 mpos;
+		
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		
+		uivec3 pickid = pick(mpos);
+		if (!contains(pickid))
+			clear();
+		
+		NSEntity * selectedEnt = nsengine.resource<NSEntity>(pickid.xy());
+        add(selectedEnt, pickid.z);
+		_reset_focus(pickid);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MultiSelect))
+	{
+		auto xpos_iter = evnt->axes.find(NSInputMap::MouseXPos);
+		auto ypos_iter = evnt->axes.find(NSInputMap::MouseYPos);
+		fvec2 mpos;
+		
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		
+		uivec3 pickid = pick(mpos);
+		NSEntity * selectedEnt = nsengine.resource<NSEntity>(pickid.xy());
+		NSTFormComp * tc;
+			
+		if (contains(pickid))
+			remove(selectedEnt,pickid.z);
+		else
+			add(selectedEnt, pickid.z);
+
+		_reset_focus(pickid);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(ShiftSelect))
+	{
+		auto xpos_iter = evnt->axes.find(NSInputMap::MouseXPos);
+		auto ypos_iter = evnt->axes.find(NSInputMap::MouseYPos);
+		fvec2 mpos;
+		
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		
+		uivec3 pickid = pick(mpos);
+		NSEntity * selectedEnt = nsengine.resource<NSEntity>(pickid.xy());
+		add(selectedEnt, pickid.z);
+		_reset_focus(pickid);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelection))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, XAxis | YAxis | ZAxis);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionXY))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, XAxis | YAxis);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionZY))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+		
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, YAxis | ZAxis);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionZX))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, XAxis | ZAxis);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionX))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, XAxis);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionY))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, YAxis);
+	}
+	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionZ))
+	{
+		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
+		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
+		_onDragObject(ent, mdelta, ZAxis);
+	}
+	return true;	
+}
+
+bool NSSelectionSystem::_handleStateEvent(NSStateEvent * evnt)
+{
+	if (evnt->mTriggerHashName == triggerHash(MoveSelectionToggle))
+	{
+		mToggleMove = true;
+		mMoving = evnt->mToggle;
+	}
+	return true;
 }

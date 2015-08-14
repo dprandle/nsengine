@@ -1,0 +1,238 @@
+type:<nsstring>NSParticleProcessShader</nsstring>
+vertex.type:<nsuint>35633</nsuint>
+vertex.source:<nsstring>#version 440
+
+layout (location = 0) in vec4 position;
+layout (location = 1) in vec4 velocity;
+layout (location = 2) in vec4 scaleAndAngle;
+layout (location = 3) in vec4 age;
+
+out vec4 posOut;
+out vec4 velOut;
+out vec4 scaleAndAngleOut;
+out vec4 ageOut;
+
+void main()
+{
+	posOut = position;
+	velOut = velocity;
+	scaleAndAngleOut = scaleAndAngle;
+	ageOut = age;
+} 
+
+
+</nsstring>
+geometry.type:<nsuint>36313</nsuint>
+geometry.source:<nsstring>#version 440
+
+layout (points) in;
+layout (points, max_vertices = 64) out;
+
+#define MOTION_KEY 50
+#define VISUAL_KEY 50
+
+in vec4 posOut[];
+in vec4 velOut[];
+in vec4 scaleAndAngleOut[];
+in vec4 ageOut[];
+
+struct ForceKey
+{
+	float time;
+	vec3 force;
+};
+
+struct SizeKey
+{
+	float time;
+	vec2 sizeVel;
+	float alpha;
+};
+
+uniform ForceKey forceKeys[MOTION_KEY];
+uniform SizeKey sizeKeys[VISUAL_KEY];
+
+uniform float timeElapsed;
+uniform float dt;
+uniform uint lifetime;
+uniform float launchFrequency;
+uniform int angVelocity;
+uniform sampler1D randomTex;
+
+
+uniform bool motionGlobal;
+uniform bool interpolateMotion;
+uniform bool visualGlobal;
+uniform bool interpolateVisual;
+uniform uint motionKeyType;
+uniform vec2 startingSize;
+uniform vec3 emitterSize;
+uniform uint emitterShape;
+uniform vec3 initVelocityMult;
+
+out vec4 gPosOut;
+out vec4 gVelOut;
+out vec4 gScaleAndAngleOut;
+out vec4 gAgeOut;
+
+vec3 posAv;
+
+vec3 GetRandomDir(float texCoord)
+{
+    vec3 dir = texture(randomTex, texCoord).xyz;
+    dir -= vec3(0.5, 0.5, 0.5);
+    return dir;
+}
+
+vec3 posForShape(vec3 randPos)
+{
+	if (emitterShape == 0)
+	{
+		randPos.x *= emitterSize.x;
+		randPos.y *= emitterSize.y;
+		randPos.z *= emitterSize.z;
+		return randPos;
+	}
+	else
+	{
+		randPos.x = emitterSize.x*sqrt(randPos.x);
+		randPos.y = emitterSize.y*sqrt(randPos.y);
+		randPos.z = emitterSize.z*sqrt(randPos.z);
+		return randPos;
+	}
+}
+
+
+void main()
+{
+
+	float launchPeriod = 1.0 / launchFrequency;
+	float launchTime = ageOut[0].z;
+	
+
+	if (ageOut[0].y == 1.0f)
+	{
+		while (launchTime > launchPeriod)
+		{
+			vec3 vel = GetRandomDir(timeElapsed);
+			gVelOut = vec4(vel.x*initVelocityMult.x,vel.y*initVelocityMult.y,vel.z*initVelocityMult.z,0.0);
+			vec3 pos = GetRandomDir(timeElapsed + launchTime);
+			gPosOut = vec4(posForShape(pos),0.0);
+			gScaleAndAngleOut = vec4(startingSize.x*sizeKeys[0].sizeVel.x,startingSize.y*sizeKeys[0].sizeVel.y,0.0,sizeKeys[0].alpha);
+			gAgeOut = vec4(0.0,0.0,0.0,0.0);
+			EmitVertex();
+			launchTime -= launchPeriod;
+		}
+		launchTime += dt;
+	}
+
+	if (ageOut[0].x * 1000 <= lifetime || ageOut[0].y == 1.0f)
+	{
+		if (ageOut[0].y != 1.0f)
+		{
+			float ageM = ageOut[0].x;
+			float ageV = ageOut[0].x;
+			vec3 force = vec3(0.0);
+			vec2 sizeVel = vec2(1.0);
+			float alphaOut = 1.0;
+
+			if (motionGlobal)
+			{
+				ageM = timeElapsed;
+				float maxTime = float(lifetime)/1000.0;
+				if (ageM > maxTime)
+					ageM = maxTime;
+			}
+
+			if (visualGlobal)
+			{
+				ageV = timeElapsed;
+				float maxTime = float(lifetime)/1000.0;
+				if (ageV > maxTime)
+					ageV = maxTime;
+			}
+
+			for (uint index = 1; index < MOTION_KEY; ++index)
+			{
+				if (ageM == forceKeys[index].time)
+				{
+					force = forceKeys[index].force;
+					break;
+				}
+
+				if (ageM < forceKeys[index].time)
+				{
+					if (interpolateMotion)
+					{
+						float interp = (ageM - forceKeys[index-1].time) / (forceKeys[index].time - forceKeys[index-1].time);
+						vec3 diff = forceKeys[index].force - forceKeys[index-1].force;
+						force = forceKeys[index-1].force + interp*diff;
+						break;
+					}
+					else
+					{
+						force = forceKeys[index-1].force;
+						break;
+					}
+				}
+			}
+
+			for (uint sIndex = 1; sIndex < VISUAL_KEY; ++sIndex)
+			{
+				if (ageV == sizeKeys[sIndex].time)
+				{
+					sizeVel = sizeKeys[sIndex].sizeVel;
+					break;
+				}
+				if (ageV < sizeKeys[sIndex].time)
+				{
+					if (interpolateVisual)
+					{
+						float interp = (ageV - sizeKeys[sIndex-1].time) / (sizeKeys[sIndex].time - sizeKeys[sIndex-1].time);
+						vec2 diff = sizeKeys[sIndex].sizeVel - sizeKeys[sIndex-1].sizeVel;
+						float alphaDiff = sizeKeys[sIndex].alpha - sizeKeys[sIndex-1].alpha;
+						sizeVel = sizeKeys[sIndex-1].sizeVel + interp*diff;
+						alphaOut = sizeKeys[sIndex-1].alpha + interp*alphaDiff;
+						break;
+					}
+					else
+					{
+						sizeVel = sizeKeys[sIndex-1].sizeVel;
+						alphaOut = sizeKeys[sIndex-1].alpha;
+						break;
+					}
+				}
+			}
+
+			posAv = posOut[0].xyz + (0.5 * dt ) * velOut[0].xyz;
+			
+			if (motionKeyType == 1)
+				gVelOut = vec4(velOut[0].xyz + force * dt,0.0);
+			else
+				gVelOut = vec4(force,0.0);
+
+			gPosOut = vec4(posAv + (0.5 * dt) * gVelOut.xyz,0.0);
+			vec2 size = vec2(startingSize.x*sizeVel.x,startingSize.y*sizeVel.y);
+			float angle = scaleAndAngleOut[0].z + angVelocity*dt;
+			gScaleAndAngleOut = vec4(size,angle,alphaOut);
+			gAgeOut = vec4(ageOut[0].x + dt, ageOut[0].y, launchTime,0.0);
+			EmitVertex();
+			EndPrimitive();
+		}
+		else
+		{
+			gVelOut = vec4(0.0,0.0,0.0,0.0);
+			gPosOut = vec4(0.0,0.0,0.0,0.0);
+			gScaleAndAngleOut = vec4(0.0,0.0,0.0,0.0);
+			gAgeOut = vec4(0.0, 1.0, launchTime,0.0);
+			EmitVertex();
+			EndPrimitive();
+		}
+	}
+}
+
+
+
+</nsstring>
+fragment.type:<nsuint>35632</nsuint>
+fragment.source:<nsstring></nsstring>

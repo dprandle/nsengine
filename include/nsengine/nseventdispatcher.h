@@ -11,7 +11,7 @@ This file contains all of the neccessary declarations for the NSEventDispatcher 
 */
 
 #ifndef NSEVENTDISPATCHER_H
-#define NSEVENTDISPTACHER_H
+#define NSEVENTDISPATCHER_H
 
 #include <vector>
 #include <nsglobal.h>

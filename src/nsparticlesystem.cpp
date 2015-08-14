@@ -261,6 +261,5 @@ void NSParticleSystem::update()
 		++count;
 	}
 
-	glDisable(GL_RASTERIZER_DISCARD);
-	
+	glDisable(GL_RASTERIZER_DISCARD);	
 }

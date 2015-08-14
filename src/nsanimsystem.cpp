@@ -27,9 +27,6 @@ This file contains all of the neccessary definitions for the NSAnimSystem class.
 
 NSAnimSystem::NSAnimSystem() :NSSystem()
 {
-	nsengine.active()->addManager(new NSMeshManager());
-	nseng
-		
 }
 
 NSAnimSystem::~NSAnimSystem()

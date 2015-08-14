@@ -41,8 +41,15 @@ public:
 	virtual nsint updatePriority() = 0;
 
 	nsuint type();
+
+  protected:
+	
+	void addTriggerHash(nsuint key, const nsstring & trigname);
+	void removeTriggerHash(nsuint key);
+	nsuint triggerHash(nsuint key);
 	
   private:
+	nsuintuintu_map mHashedInputTriggers;
 	nsuint mHashedType;
 };
 

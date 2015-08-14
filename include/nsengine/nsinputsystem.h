@@ -72,10 +72,14 @@ private:
 
 	bool _checkTriggerModifiers(const NSInputMap::Trigger & t);
 
+	void _createActionEvent(NSInputMap::Trigger & trigger);
+
+	void _createStateEvent(NSInputMap::Trigger & trigger, bool toggle);
+
 	void _setAxesFromTrigger(NSInputMap::AxisMap & am, const NSInputMap::Trigger & t);
 	
 	ContextStack mContextStack;
-	NSInputMap::Modifiers mMods;
+	NSInputMap::KeyModifiers mKeyMods;
 	NSInputMap::MouseModifiers mMouseMods;
 
 	fvec2 mCurrentPos;

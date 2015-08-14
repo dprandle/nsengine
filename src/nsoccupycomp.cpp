@@ -14,6 +14,7 @@ This file contains all of the neccessary definitions for the NSOccupyComp class.
 #include <nsoccupycomp.h>
 #include <nsentity.h>
 #include <nsplugin.h>
+#include <cmath>
 
 NSOccupyComp::NSOccupyComp() :
 mDrawEnabled(false),
@@ -21,6 +22,7 @@ mMeshID(),
 mMatID(),
 NSComponent()
 {
+	add(0, 0, 0);
 	NSMesh * occ = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
 	if (occ == NULL)
 	{

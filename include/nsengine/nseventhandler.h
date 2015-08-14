@@ -17,6 +17,8 @@ This file contains all of the neccessary declarations for the NSEventHandler cla
 #include <nsglobal.h>
 #include <nsevent.h>
 #include <typeindex>
+#include <nsengine.h>
+#include <nseventdispatcher.h>
 
 class NSHandlerFunc
 {
@@ -39,7 +41,7 @@ class NSHandlerFuncType : public NSHandlerFunc
 	bool exec(NSEvent * evnt)
 	{
 		EventType * cast_evnt = static_cast<EventType*>(evnt);
-		return class_instance->*member(cast_evnt);
+        return (class_instance->*member)(cast_evnt);
 	}
 
   private:
@@ -69,6 +71,7 @@ class NSEventHandler
 			delete hf;
 			return false;
 		}
+		nsengine.eventDispatch()->registerListener<EventType>(inst);
 		return true;
 	}
 

@@ -1,0 +1,34 @@
+type:<nsstring>NSEarlyZXFBShader</nsstring>
+vertex.type:<nsuint>35633</nsuint>
+vertex.source:<nsstring>#version 440
+
+layout (location = 0) in vec3 worldPosIn;
+layout (location = 1) in vec3 texIn;
+layout (location = 2) in vec3 normIn;
+layout (location = 3) in vec3 tangIn;
+
+uniform mat4 projCamMat;
+
+out vec4 worldPos;
+out vec2 texCoords;
+out vec3 normal;
+out vec3 tangent;
+flat out uint refID;
+
+void main()
+{
+
+	worldPos = vec4(worldPosIn, 1.0);
+	texCoords = texIn.xy;
+	normal = normIn;
+	tangent = tangIn;
+	refID = uint(texIn.z);
+	gl_Position = projCamMat * worldPos;
+} 
+
+
+</nsstring>
+geometry.type:<nsuint>36313</nsuint>
+geometry.source:<nsstring></nsstring>
+fragment.type:<nsuint>35632</nsuint>
+fragment.source:<nsstring></nsstring>

@@ -10,82 +10,52 @@ This file contains all of the neccessary definitions for the NSCamController cla
 \copywrite Earth Banana Games 2013
 */
 
+#include <iostream>
+
 #include <nscamerasystem.h>
 #include <nsentity.h>
 #include <nsselectionsystem.h>
 #include <nseventdispatcher.h>
+#include <nsevent.h>
 #include <nscamcomp.h>
 #include <nstimer.h>
 #include <nsscene.h>
 #include <nsinputcomp.h>
 
-NSCameraSystem::NSCameraSystem() : NSSystem(),
-mZoomFactor(DEFAULT_CAM_ZOOM_FACTOR),
-mTurnSensitivity(DEFAULT_CAM_SENSITIVITY),
-mStrafeSensitivity(DEFAULT_CAM_SENSITIVITY),
-mFreeModeInverted(1, 1),
-mFocusModeInverted(1 ,1),
-mMode(Free),
-mView(Normal)
+NSCameraSystem::NSCameraSystem() :
+	NSSystem(),
+	mZoomFactor(DEFAULT_CAM_ZOOM_FACTOR),
+	mTurnSensitivity(DEFAULT_CAM_SENSITIVITY),
+	mStrafeSensitivity(DEFAULT_CAM_SENSITIVITY),
+	animTime(0.300f),
+	anim_elapsed(0.0f),
+	anim_view(false),
+	switch_back(false),
+	mFreeModeInverted(-1, -1),
+	mFocusModeInverted(-1 ,-1),
+	mMode(Free)
 {}
 
 NSCameraSystem::~NSCameraSystem()
 {}
 
-//bool NSCameraSystem::handleEvent(NSEvent * pEvent)
-//{
-	// NSScene * scene = nsengine.currentScene();
-	// if (scene == NULL)
-	// 	return false;
-
-	// if (pEvent->mID == NSEvent::SelFocusChangeEvent)
-	// {
-	// 	if (nsengine.system<NSCameraSystem>()->mode() != NSCameraSystem::Focus)
-	// 		return false;
-
-	// 	NSEntity * cam = scene->camera();
-	// 	if (cam == NULL)
-	// 		return false;
-
-	// 	NSCamComp * camComp = cam->get<NSCamComp>();
-	// 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
-
-	// 	NSSelFocusChangeEvent * selEvent = (NSSelFocusChangeEvent*)pEvent;
-	// 	uivec3 foc = selEvent->mNewSelCenter;
-	// 	NSEntity * ent = scene->entity(foc.x, foc.y);
-	// 	if (ent != NULL)
-	// 	{
-	// 		NSTFormComp * tC = ent->get<NSTFormComp>();
-	// 		if (tC->count() > foc.z)
-	// 		{
-	// 			camTComp->setOrientation(camTComp->orientation() * camComp->focusOrientation());
-	// 			camComp->setFocusRot(fquat());
-	// 			camComp->setFocusPoint(tC->lpos(foc.z));
-	// 			camTComp->setpos(camTComp->wpos() - camComp->focusPoint());
-	// 		}
-	// 	}
-	// }
-	// return true;
-//}
-
 void NSCameraSystem::init()
 {
-	//nsengine.events()->addListener(this, NSEvent::SelFocusChangeEvent);
-}
+	registerHandlerFunc(this, &NSCameraSystem::_handleStateEvent);
+	registerHandlerFunc(this, &NSCameraSystem::_handleActionEvent);
+	registerHandlerFunc(this, &NSCameraSystem::_handleSelFocusEvent);
 
-void NSCameraSystem::onCamBackward(NSCamComp * pCam, nsbool pAnimate)
-{
-	pCam->setFly(NSCamComp::DirNeg, pAnimate);
-}
-
-void NSCameraSystem::onCamForward(NSCamComp * pCam, nsbool pAnimate)
-{
-	pCam->setFly(NSCamComp::DirPos, pAnimate);
-}
-
-void NSCameraSystem::onCamLeft(NSCamComp * pCam, nsbool pAnimate)
-{
-	pCam->setStrafe(NSCamComp::DirNeg, pAnimate);
+	addTriggerHash(CameraForward, NSCAM_FORWARD);
+	addTriggerHash(CameraBackward, NSCAM_BACKWARD);
+	addTriggerHash(CameraLeft, NSCAM_LEFT);
+	addTriggerHash(CameraRight, NSCAM_RIGHT);
+	addTriggerHash(CameraTiltPan, NSCAM_TILTPAN);
+	addTriggerHash(CameraZoom, NSCAM_ZOOM);
+	addTriggerHash(CameraMove, NSCAM_MOVE);
+	addTriggerHash(CameraTopView, NSCAM_TOPVIEW);
+	addTriggerHash(CameraIsoView, NSCAM_ISOVIEW);
+	addTriggerHash(CameraFrontView, NSCAM_FRONTVIEW);
+	addTriggerHash(CameraToggleMode, NSCAM_TOGGLEMODE);
 }
 
 void NSCameraSystem::changeSensitivity(float pAmount, const Sensitivity & pWhich)
@@ -106,11 +76,6 @@ const nsfloat & NSCameraSystem::sensitivity(const Sensitivity & pWhich) const
 	if (pWhich == Turn)
 		return mTurnSensitivity;
 	return mStrafeSensitivity;
-}
-
-const NSCameraSystem::CameraView & NSCameraSystem::view() const
-{
-	return mView;
 }
 
 nsfloat NSCameraSystem::zoom() const
@@ -167,8 +132,6 @@ selected.
 */
 void NSCameraSystem::setView(CameraView pView)
 {	
-	mView = pView;
-
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
@@ -179,93 +142,56 @@ void NSCameraSystem::setView(CameraView pView)
 
 	NSCamComp * camComp = cam->get<NSCamComp>();
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
-	bool switchMode = (mMode == Free);
+	switch_back = (mMode == Free);
+	anim_view = true;
 
-	fquat quat;
-	fvec3 rightV;
-	fvec3 targetV;
-	fvec3 upVec;
-	nsfloat ang = 0.0f;
+	startOrient = camTComp->orientation();// * camComp->focusOrientation();
+	startPos = camTComp->wpos() - camComp->focusPoint();
+
+	if (switch_back)
+	{
+		setMode(Focus);
+		startOrient = camTComp->orientation();				
+		startPos = camTComp->wpos();
+	}
+
+	finalPos = fvec3(0.0f, 0.0f, DEFAULT_CAM_VIEW_Z);
+	
+	fvec3 target = startOrient.target();
+	fvec2 projectedXY = projectPlane(target, fvec3(0.0f,0.0f,1.0f)).xy();
+	fvec2 projectX = project(projectedXY,fvec2(1.0f,0.0f));
+	fvec2 projectY = project(projectedXY,fvec2(0.0f,1.0f));
+
+	fvec3 finalvec(projectX,0.0);
+	if (projectX.length() < projectY.length())
+		finalvec = fvec3(projectY,0.0f);
+	finalvec.normalize();
+
 
 	// Find which view we are switching too and change to angle about the horizontal axis accordingly
 	// For each view we have to set the mode to focus if it is in free mode and then set it back to free
 	// after doing the rotation. This is because in focus mode it will rotate about the selected object, which
 	// is what we want.
-	switch (mView)
+	switch (pView)
 	{
 	case (Top) :
-		{
-			fvec3 focPos;
-
-			uivec3 selCenter = nsengine.system<NSSelectionSystem>()->center();
-			NSEntity * ent = scene->entity(selCenter.x,selCenter.y);
-			if (ent != NULL)
-				focPos = ent->get<NSTFormComp>()->wpos(selCenter.y);
-
-			//// If mode is Free then switch to focus
-			if (switchMode)
-				setMode(Focus);
-
-			camComp->setFocusPoint(focPos);
-			camComp->setFocusRot(fquat());
-			camTComp->setpos(fvec3(0.0f, 0.0f, DEFAULT_CAM_VIEW_Z));
-			camTComp->setOrientation(fquat());
-			if (switchMode)
-			{
-				camTComp->setParent(camComp->camFocusTForm());
-				setMode(Free);
-			}
+		{		
+			finalOrient = orientation(fquat().up(), finalvec);
+			//if (finalOrient.c == 1) // Special case for 180 degree rotation
+			//	finalOrient.set(0, 0,-1,0);
 			break;
 		}
 	case (Iso) :
 		{
-			fvec3 focPos;
-
-			uivec3 selCenter = nsengine.system<NSSelectionSystem>()->center();
-			NSEntity * ent = scene->entity(selCenter.x, selCenter.y);
-			if (ent != NULL)
-				focPos = ent->get<NSTFormComp>()->wpos(selCenter.y);
-
-			//// If mode is Free then switch to focus
-			if (switchMode)
-				setMode(Focus);
-
-			camComp->setFocusRot(fquat());
-			camComp->setFocusPoint(focPos);
-			camComp->rotateFocus(1.0f, 0.0f, 0.0f, 45);
-			camTComp->setpos(fvec3(0.0f, 0.0f, DEFAULT_CAM_VIEW_Z));
-			camTComp->setOrientation(fquat());
-			if (switchMode)
-			{
-				camTComp->setParent(camComp->camFocusTForm());
-				setMode(Free);
-			}
-			break;
+			finalOrient = orientation(fquat().up(), finalvec);
+			//if (finalOrient.c == 1) // Special case for 180 degree rotation
+			//.	finalOrient.set(0, 0,-1,0);
 		}
 	case (Front) :
 		{
-			fvec3 focPos;
-
-			uivec3 selCenter = nsengine.system<NSSelectionSystem>()->center();
-			NSEntity * ent = scene->entity(selCenter.x, selCenter.y);
-			if (ent != NULL)
-				focPos = ent->get<NSTFormComp>()->wpos(selCenter.y);
-
-			//// If mode is Free then switch to focus
-			if (switchMode)
-				setMode(Focus);
-
-			camComp->setFocusRot(fquat());
-			camComp->setFocusPoint(focPos);
-			camComp->rotateFocus(1.0f, 0.0f, 0.0f, 90);
-			camTComp->setpos(fvec3(0.0f, 0.0f, DEFAULT_CAM_VIEW_Z));
-			camTComp->setOrientation(fquat());
-			if (switchMode)
-			{
-				camTComp->setParent(camComp->camFocusTForm());
-				setMode(Free);
-			}
-			break;
+			finalOrient = orientation(fquat().target(), finalvec);
+			if (finalOrient.c == 1) // Special case for 180 degree rotation
+				finalOrient.set(0, 0,-1,0);
 		}
 	}
 	camComp->postUpdate(true);
@@ -292,7 +218,7 @@ void NSCameraSystem::setMode(CameraMode pMode)
 		NSCamComp * camComp = cam->get<NSCamComp>();
 		NSTFormComp * camTComp = cam->get<NSTFormComp>();
 
-		camTComp->setOrientation(camTComp->orientation() * camComp->focusOrientation());
+		camTComp->setOrientation(camComp->focusOrientation() * camTComp->orientation());
 		camComp->setFocusRot(fquat());
 		camComp->setFocusPoint(fvec3());
 		camTComp->setpos(camTComp->wpos() - camComp->focusPoint());
@@ -305,17 +231,15 @@ void NSCameraSystem::setMode(CameraMode pMode)
 
 		NSCamComp * camComp = cam->get<NSCamComp>();
 		NSTFormComp * camTComp = cam->get<NSTFormComp>();
-		uivec3 foc = nsengine.system<NSSelectionSystem>()->center();
-
-		NSEntity * ent = scene->entity(foc.x, foc.y);
+		NSEntity * ent = scene->entity(mFocusEnt.xy());
 		if (ent != NULL)
 		{
 			NSTFormComp * tC = ent->get<NSTFormComp>();
-			if (tC->count() > foc.z)
+			if (tC->count() > mFocusEnt.z)
 			{
 				camTComp->setOrientation(camTComp->orientation() * camComp->focusOrientation());
 				camComp->setFocusRot(fquat());
-				camComp->setFocusPoint(tC->lpos(foc.z));
+				camComp->setFocusPoint(tC->wpos(mFocusEnt.z));
 				camTComp->setpos(camTComp->wpos() - camComp->focusPoint());
 			}
 		}
@@ -330,19 +254,14 @@ void NSCameraSystem::toggleMode()
 		setMode(Free);
 }
 
-void NSCameraSystem::onCamMove(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta, const fvec2 & pPos)
+void NSCameraSystem::_onCamMove(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta)
 {
 	tComp->translate(NSTFormComp::Right, pDelta.u*mStrafeSensitivity * mFreeModeInverted.x);
 	tComp->translate(NSTFormComp::Up, pDelta.v*mStrafeSensitivity * mFreeModeInverted.y);
 	pCam->postUpdate(true);
 }
 
-void NSCameraSystem::onCamRight(NSCamComp * pCam, nsbool pAnimate)
-{
-	pCam->setStrafe(NSCamComp::DirPos, pAnimate);
-}
-
-void NSCameraSystem::onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta, const fvec2 & pPos)
+void NSCameraSystem::_onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta)
 {
 	// The negatives here are a preference thing.. basically Alex that pain in the ass
 	// wants rotation by default to be opposite of the normal for focus mode
@@ -365,13 +284,12 @@ void NSCameraSystem::onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec
 			tFac = -1.0f;
 
 		pCam->rotateFocus(0.0f, 0.0f, 1.0f, pDelta.u * mTurnSensitivity * tFac * mFocusModeInverted.x);
-		if (mView == Normal)
-			pCam->rotateFocus((tComp->orientation() * pCam->focusOrientation()).right(), pDelta.v * -1.0f * mTurnSensitivity * mFocusModeInverted.y);
+		pCam->rotateFocus((pCam->focusOrientation()*tComp->orientation()).right(), pDelta.v * mTurnSensitivity * mFocusModeInverted.y);
 	}
 	pCam->postUpdate(true);
 }
 
-void NSCameraSystem::onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pScroll)
+void NSCameraSystem::_onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pScroll)
 {
 	NSCamComp::Direction dir = NSCamComp::DirPos;
 	if (pScroll < 0)
@@ -394,8 +312,6 @@ void NSCameraSystem::onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pS
 void NSCameraSystem::update()
 {
 	NSScene * scene = nsengine.currentScene();
-	//nsengine.events()->process(this); // process all events for this system
-
 	// Dont do anything if the scene is NULL
 	if (scene == NULL)
 		return;
@@ -408,38 +324,39 @@ void NSCameraSystem::update()
 		NSInputComp * inComp = (*iter)->get<NSInputComp>();
 		NSTFormComp * camTComp = (*iter)->get<NSTFormComp>();
 
-		// Only process input if the camera is the current camera
-		if (inComp != NULL && (*iter) == scene->camera())
+		if ((*iter) == scene->camera())
 		{
-			NSInputComp::Action * act = inComp->action(CAM_ZOOM);
-			if (act != NULL && act->mActivated)
-				onCamZoom(camComp, camTComp, act->mScroll);
+			if (anim_view)
+			{
+				fvec3 toset = lerp(startPos, finalPos, anim_elapsed/animTime);
+				fquat tosetrot = slerp(startOrient, finalOrient, anim_elapsed/animTime);
 
-			act = inComp->action(CAM_MOVE);
-			if (act != NULL && act->mActivated)
-				onCamMove(camComp, camTComp, act->mDelta, act->mPos);
+				camTComp->setpos(toset);
+				camTComp->setOrientation(tosetrot);
+				anim_elapsed += nsengine.timer()->fixed();
+		
+				if (anim_elapsed >= animTime)
+				{
+					camTComp->setpos(finalPos);
+					camTComp->setOrientation(finalOrient);
+					if (switch_back)
+					{
+						camTComp->setParent(camComp->camFocusTForm());
+						setMode(Free);
+					}
+					anim_view = false;
+					anim_elapsed = 0.0f;
+				}
+			}
 
-			act = inComp->action(CAM_TURN);
-			if (act != NULL && act->mActivated)
-				onCamTurn(camComp, camTComp, act->mDelta, act->mPos);
-
-			act = inComp->action(CAM_FORWARD);
-			if (act != NULL && act->mActivated)
-				onCamForward(camComp, act->mPressed);
-
-			act = inComp->action(CAM_BACKWARD);
-			if (act != NULL && act->mActivated)
-				onCamBackward(camComp, act->mPressed);
-
-			act = inComp->action(CAM_LEFT);
-			if (act != NULL && act->mActivated)
-				onCamLeft(camComp, act->mPressed);
-
-			act = inComp->action(CAM_RIGHT);
-			if (act != NULL && act->mActivated)
-				onCamRight(camComp, act->mPressed);
+			// Update the skybox!
+			NSEntity * skyDome = scene->skydome();
+			if (skyDome != NULL)
+			{
+				NSTFormComp * tComp = skyDome->get<NSTFormComp>();
+				tComp->setpos(camTComp->wpos());
+			}
 		}
-
 
 		if (camComp->updatePosted())
 		{
@@ -451,28 +368,135 @@ void NSCameraSystem::update()
 			if (camComp->fly().mAnimate)
 				camTComp->translate(NSTFormComp::Target, camComp->fly().mDir * camComp->speed() * nsengine.timer()->fixed());
 
-			if (!(camComp->strafe().mAnimate || camComp->elevate().mAnimate || camComp->fly().mAnimate))
-				camComp->postUpdate(false);
-
 			if (mMode == Focus)
 				camTComp->setParent(camComp->camFocusTForm());
 			else
 				camTComp->setParent(fmat4());
 
+			camTComp->computeTransform();
 			camComp->mProjCam = camComp->proj() * camTComp->pov();
 			camComp->mInvProjCam = camTComp->transform() * camComp->invproj();
-		}
+
+			camComp->postUpdate(
+				(camComp->strafe().mAnimate ||
+				 camComp->elevate().mAnimate ||
+				 camComp->fly().mAnimate) ||
+				anim_view);
+
+		}	   
 		++iter;
 	}
+}
 
-	// Update the skybox!
-	NSEntity * skyDome = scene->skydome();
-	if (skyDome != NULL)
+bool NSCameraSystem::_handleActionEvent(NSActionEvent * evnt)
+{
+	NSScene * scene = nsengine.currentScene();
+
+	if (scene == NULL)
+		return true;
+
+	NSEntity * camera = scene->camera();
+	if (camera == NULL)
+		return true;
+
+	NSCamComp * camc = camera->get<NSCamComp>();
+	NSTFormComp * tcomp = camera->get<NSTFormComp>();
+
+	fvec2 mouseDelta;
+	float scroll;
+	auto xpos_iter = evnt->axes.find(NSInputMap::MouseXDelta),
+		ypos_iter = evnt->axes.find(NSInputMap::MouseYDelta),
+		scroll_iter = evnt->axes.find(NSInputMap::ScrollDelta);
+
+	if (xpos_iter != evnt->axes.end())
+		mouseDelta.x = xpos_iter->second;
+
+	if (ypos_iter != evnt->axes.end())
+		mouseDelta.y = ypos_iter->second;
+
+	if (scroll_iter != evnt->axes.end())
+		scroll = scroll_iter->second;
+
+	if (evnt->mTriggerHashName == triggerHash(CameraTiltPan))
+		_onCamTurn(camc, tcomp, mouseDelta);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraMove))
+		_onCamMove(camc, tcomp, mouseDelta);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraZoom))
+		_onCamZoom(camc, tcomp, scroll);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraTopView))
+		setView(Top);
+		
+	if (evnt->mTriggerHashName == triggerHash(CameraIsoView))
+		setView(Iso);
+	
+	if (evnt->mTriggerHashName == triggerHash(CameraFrontView))
+		setView(Front);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraToggleMode))
+		toggleMode();
+
+	return true;
+}
+
+bool NSCameraSystem::_handleStateEvent(NSStateEvent * evnt)
+{
+	NSScene * scene = nsengine.currentScene();
+
+	if (scene == NULL)
+		return true;
+	
+	NSEntity * camera = scene->camera();
+	if (camera == NULL)
+		return true;
+
+	NSCamComp * camc = camera->get<NSCamComp>();
+
+	if (evnt->mTriggerHashName == triggerHash(CameraForward))
+		camc->setFly(NSCamComp::DirPos, evnt->mToggle);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraBackward))
+		camc->setFly(NSCamComp::DirNeg, evnt->mToggle);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraLeft))
+		camc->setStrafe(NSCamComp::DirNeg, evnt->mToggle);
+
+	if (evnt->mTriggerHashName == triggerHash(CameraRight))
+		camc->setStrafe(NSCamComp::DirPos, evnt->mToggle);
+	return true;
+}
+
+bool NSCameraSystem::_handleSelFocusEvent(NSSelFocusEvent * evnt)
+{
+	mFocusEnt = evnt->mFocID;
+
+	if (mMode == Free)
+		return true;
+	NSScene * scn = nsengine.currentScene();
+	if (scn == NULL)
+		return true;
+	NSEntity * cam = scn->camera();
+	if (cam == NULL)
+		return true;
+	
+	NSEntity * ent = scn->entity(evnt->mFocID.xy());
+	if (ent != NULL)
 	{
-		NSTFormComp * camTComp = scene->camera()->get<NSTFormComp>();
-		NSTFormComp * tComp = skyDome->get<NSTFormComp>();
-		tComp->setpos(camTComp->wpos());
+		NSTFormComp * tC = ent->get<NSTFormComp>();
+		NSCamComp * camc = cam->get<NSCamComp>();
+		NSTFormComp * camtc = cam->get<NSTFormComp>();
+		
+		if (evnt->mFocID.z < tC->count())
+		{
+			camtc->setOrientation(camc->focusOrientation() * camtc->orientation());
+			camc->setFocusRot(fquat());
+			camc->setFocusPoint(tC->wpos(evnt->mFocID.z));
+			camtc->setpos(camtc->wpos() - camc->focusPoint());
+		}
 	}
+	return true;
 }
 
 nsint NSCameraSystem::updatePriority()

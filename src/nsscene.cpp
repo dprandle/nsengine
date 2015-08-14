@@ -610,7 +610,7 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 		// on whether or not pAddToSceneIfNeeded is true or false
 		if (addToSceneIfNeeded)
 		{
-			if (add(cam->plugid(),cam->id()) != -1) // -1 indicates failure
+			if (add(cam,fvec3(0.0f,0.0f,-10.0f)) != -1) // -1 indicates failure
 			{
 				setCamera(cam);
 			}

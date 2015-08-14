@@ -1,6 +1,8 @@
 #ifndef NSVEC2_H
 #define NSVEC2_H
 
+#include <cmath>
+
 template <class T>
 struct NSVec3;
 
@@ -231,9 +233,9 @@ struct NSVec2
 	NSVec2<T> & normalize()
 	{
 		T l = length();
-		if (l == static_cast<T>(0))
+		if (l == 0)
 			return *this;
-		return *this *= static_cast<T>(1) / l;
+		return *this *= (1 / l);
 	}
 
 	NSVec2<T> polar(bool pRads = false) const
@@ -686,7 +688,7 @@ template <class T>
 NSVec2<T> project(const NSVec2<T> & a, const NSVec2<T> & b)
 {
 	NSVec2<T> ret(a);
-	a.projectOn(b);
+	ret.projectOn(b);
 	return ret;
 }
 
@@ -694,7 +696,7 @@ template <class T>
 NSVec2<T> projectPlane(const NSVec2<T> & a, const NSVec2<T> & normal)
 {
 	NSVec2<T> ret(a);
-	a.projectOnPlane(normal);
+	ret.projectOnPlane(normal);
 	return ret;
 }
 

@@ -395,13 +395,25 @@ void NSShader::setUniform(const nsstring & pVariableName, unsigned int pData)
 void NSShader::release()
 {
 	if (mGLName)
+	{
 		glDeleteProgram(mGLName);
+		mGLName = 0;
+	}
 	if (mFragment.mStageID)
+	{
 		glDeleteShader(mFragment.mStageID);
+		mFragment.mStageID = 0;
+	}
 	if (mVertex.mStageID)
+	{
 		glDeleteShader(mVertex.mStageID);
+		mVertex.mStageID = 0;
+	}
 	if (mGeometry.mStageID)
+	{
 		glDeleteShader(mGeometry.mStageID);
+		mGeometry.mStageID = 0;
+	}
 	GLError("NSShader::release");
 }
 

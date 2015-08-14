@@ -34,6 +34,8 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsanimsystem.h>
 #include <nsinputcomp.h>
 #include <IL/il.h>
+#include <IL/ilu.h>
+#include <IL/ilut.h>
 #include <nsinputsystem.h>
 #include <nsparticlecomp.h>
 #include <nstimer.h>
@@ -57,11 +59,12 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsdebug.h>
 #endif
 
+
 NSEngine::NSEngine()
 {
 	srand(static_cast <unsigned> (time(0)));
     ilInit();
-
+	GL_INVALID_ENUM;
 	mCwd = nsfileio::cwd() + nsstring("/");	
 }
 
@@ -583,18 +586,19 @@ void NSEngine::update()
 {
 	timer()->update();
 	
-//	while (timer()->lag() >= timer()->fixed())
-//	{
+	while (timer()->lag() >= timer()->fixed())
+	{
 		// Go through each system and update
 		auto sysUpdateIter = mSystemUpdateOrder.begin();
 		while (sysUpdateIter != mSystemUpdateOrder.end())
 		{
 			NSSystem * sys = system(sysUpdateIter->second);
+			eventDispatch()->process(sys);
 			sys->update();
 			++sysUpdateIter;
 		}
-//		timer()->lag() -= timer()->fixed();
-//	}
+		timer()->lag() -= timer()->fixed();
+	}
 
 	// Go through each system and draw
 	auto sysDrawIter = mSystemDrawOrder.begin();

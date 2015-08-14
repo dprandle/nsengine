@@ -11,7 +11,7 @@
 */
 
 #include <nsmatmanager.h>
-#include <assimp\material.h>
+#include <assimp/material.h>
 #include <nstexmanager.h>
 #include <nsengine.h>
 

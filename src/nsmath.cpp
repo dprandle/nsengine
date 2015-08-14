@@ -21,7 +21,7 @@ nsdouble clamp(nsdouble pVal, const nsdouble & pMin, const nsdouble & pMax)
 
 nsfloat fractf(const nsfloat & num)
 {
-	nsfloat flr = std::floorf(num);
+	nsfloat flr = std::floor(num);
 	return num - flr;
 }
 

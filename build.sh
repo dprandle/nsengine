@@ -55,3 +55,26 @@ else
     PLATFORM=x86
     build
 fi
+
+if [ $CONFIG = debug ]; then
+    NSENGINE_NAME=libnsengined
+    GLEWLIB=libGLEWmxd
+    HASHLIB=libhashlibd
+    SOILLIB=libsoild
+else
+    NSENGINE_NAME=libnsengine
+    GLEWLIB=libGLEWmx
+    HASHLIB=libhashlib
+    SOILLIB=libsoil
+fi
+
+ar -M <<EOM
+    CREATE ./lib/${PLATFORM}/${NSENGINE_NAME}_wdep.a
+    ADDLIB ./lib/${PLATFORM}/${NSENGINE_NAME}.a
+    ADDLIB ./deps/hashlib-1.0.0/lib/${PLATFORM}/${HASHLIB}.a
+    ADDLIB ./deps/soil-1.16.0/lib/${PLATFORM}/${SOILLIB}.a
+    ADDLIB ./deps/glew-1.12.0/lib/${PLATFORM}/${GLEWLIB}.a
+    SAVE
+    END
+EOM
+ranlib ./lib/${PLATFORM}/${NSENGINE_NAME}_wdep.a

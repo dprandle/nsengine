@@ -336,9 +336,9 @@ Description:
 #define DEFAULT_PART_LIFETIME 5000
 #define DEFAULT_PART_EMISSION 180
 
-
 #define nullchkn(ptr) if(ptr == NULL) return NULL;
 #define nullchkb(ptr) if(ptr == NULL) return false;
+
 
 #define COMMENT SLASH(/)
 #define SLASH(s) /##s
@@ -391,6 +391,8 @@ typedef void nsvoid;
 typedef std::string nsstring;
 typedef std::stringstream nsstringstream;
 typedef std::fstream nsfstream;
+
+extern nsuint hash_id(const nsstring &);
 
 typedef std::vector<nschar> nschararray;
 typedef std::vector<nschar16> nschar16array;

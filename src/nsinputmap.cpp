@@ -37,12 +37,14 @@ bool NSInputMap::addContext(Context * toAdd)
 	return true;
 }
 
-bool NSInputMap::addKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger)
+bool NSInputMap::addKeyTrigger(const nsstring & pContextName, Key pKey, Trigger & pTrigger)
 {
 	Context * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
+	pTrigger.mHashName = hash_id(pTrigger.mName);
+	
 	// Allow for multiple trigger entrees, but all of the triggers must be unique - they
 	// can have the same name but if they do then the key modifiers must be different, for example.
 	auto iterPair = ctxt->mKeyMap.equal_range(pKey);
@@ -60,12 +62,13 @@ bool NSInputMap::addKeyTrigger(const nsstring & pContextName, Key pKey, const Tr
 	return true;
 }
 
-bool NSInputMap::addMouseButtonTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger)
+bool NSInputMap::addMouseTrigger(const nsstring & pContextName, MouseButton pButton, Trigger & pTrigger)
 {
 	Context * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
+	pTrigger.mHashName = hash_id(pTrigger.mName);
 	// Allow for multiple trigger entrees, but all of the triggers must be unique - they
 	// can have the same name but if they do then the key modifiers must be different, for example.
 	// Or, if the key modifiers are the same then the names must be different.
@@ -74,7 +77,7 @@ bool NSInputMap::addMouseButtonTrigger(const nsstring & pContextName, MouseButto
 	{
 		if (iterPair.first->second == pTrigger)
 		{
-			dprint("NSInputMap::addMouseButtonTrigger Cannot add trigger \"" + pTrigger.mName + "\" as an exact copy already exists in context");
+			dprint("NSInputMap::addMouseTrigger Cannot add trigger \"" + pTrigger.mName + "\" as an exact copy already exists in context");
 			return false;
 		}
 		++iterPair.first;
@@ -140,7 +143,6 @@ bool NSInputMap::removeKey(const nsstring & context_name, Key key)
 	ctxt->mKeyMap.erase(keyIterPair.first, keyIterPair.second);
 	return true;
 }
-
 
 bool NSInputMap::removeKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger)
 {
@@ -262,7 +264,14 @@ bool NSInputMap::renameContext(const nsstring & pOldContextName, const nsstring 
 
 void NSInputMap::init()
 {
-
+	mAllowedModifiers.insert(Key_Any);
+	mAllowedModifiers.insert(Key_LCtrl);
+	mAllowedModifiers.insert(Key_LShift);
+	mAllowedModifiers.insert(Key_LAlt);
+	mAllowedModifiers.insert(Key_LSuper);
+	mAllowedModifiers.insert(Key_Z);
+	mAllowedModifiers.insert(Key_X);
+	mAllowedModifiers.insert(Key_Y);
 }
 
 uivec2array NSInputMap::resources()
@@ -287,4 +296,53 @@ void NSInputMap::pup(NSFilePUPer * p)
 		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
 		::pup(*tf, *this);
 	}
+}
+
+
+NSInputMap::Trigger::Trigger(
+	const nsstring & pName,
+	TState triggerOn,
+	uint interestedAxis):
+	mName(pName),
+	mHashName(0),
+	mTriggerOn(triggerOn),
+	mAxes(interestedAxis)
+	{}
+
+void NSInputMap::Trigger::addKeyModifier(Key mod)
+{
+	mKeyMods.insert(mod);
+}
+
+void NSInputMap::Trigger::removeKeyModifier(Key mod)
+{
+	mKeyMods.erase(mod);
+}
+
+void NSInputMap::Trigger::addMouseModifier(MouseButton mod)
+{
+	mMouseMods.insert(mod);	
+}
+void NSInputMap::Trigger::removeMouseModifier(MouseButton mod)
+{
+	mMouseMods.erase(mod);
+}
+		
+const NSInputMap::Trigger & NSInputMap::Trigger::operator=(const Trigger & pRhs)
+{
+	mName = pRhs.mName;
+	mTriggerOn = pRhs.mTriggerOn;
+	mAxes = pRhs.mAxes;
+	mKeyMods = pRhs.mKeyMods;
+	mMouseMods = pRhs.mMouseMods;
+	return *this;
+}
+
+bool NSInputMap::Trigger::operator==(const Trigger & pRhs)
+{
+	return (
+		mHashName == pRhs.mHashName &&
+		mKeyMods == pRhs.mKeyMods &&
+		mMouseMods == pRhs.mMouseMods
+		);
 }

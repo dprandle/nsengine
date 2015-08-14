@@ -262,9 +262,9 @@ struct NSVec4
 	NSVec4<T> & normalize()
 	{
 		T l = length();
-		if (l == static_cast<T>(0))
+		if (l == 0)
 			return *this;
-		return *this *= static_cast<T>(1) / l;
+		return *this *= (1 / l);
 	}
 
 	NSVec4<T> & round()

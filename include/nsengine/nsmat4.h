@@ -379,27 +379,22 @@ struct NSMat4
 		return roundToZero();
 	}
 
-	NSMat4<T> & rotationFrom(const NSQuat<T> & orientation)
+	NSMat4<T> & rotationFrom(const NSQuat<T> & ornt)
 	{
-		T x2 = orientation.x + orientation.x, y2 = orientation.y + orientation.y, z2 = orientation.z + orientation.z;
-		T xx = orientation.x * x2, xy = orientation.x * y2, xz = orientation.x * z2;
-		T yy = orientation.y * y2, yz = orientation.y * z2, zz = orientation.z * z2;
-		T wx = orientation.w * x2, wy = orientation.w * y2, wz = orientation.w * z2;
+		data[0][0] = 1 - 2*(ornt.y*ornt.y + ornt.z*ornt.z);
+		data[0][1] = 2*(ornt.x*ornt.y - ornt.z*ornt.w);
+		data[0][2] = 2*(ornt.x*ornt.z + ornt.y*ornt.w);
 
-		data[0][0] = 1 - (yy + zz);
-		data[0][1] = xy - wz;
-		data[0][2] = xz + wy;
+		data[1][0] = 2*(ornt.x*ornt.y + ornt.z*ornt.w);
+		data[1][1] = 1 - 2*(ornt.x*ornt.x + ornt.z*ornt.z);
+		data[1][2] = 2*(ornt.y*ornt.z - ornt.x*ornt.w);
 
-		data[1][0] = xy + wz;
-		data[1][1] = 1 - (xx + zz);
-		data[1][2] = yz - wx;
+		data[2][0] = 2*(ornt.x*ornt.z - ornt.y*ornt.w);
+		data[2][1] = 2*(ornt.y*ornt.z + ornt.x*ornt.w);
+		data[2][2] = 1 - 2*(ornt.x*ornt.x + ornt.y*ornt.y);
 
-		data[2][0] = xz - wy;
-		data[2][1] = yz + wx;
-		data[2][2] = 1 - (xx + yy);
-
-		data[0][3] = static_cast<T>(0); data[1][3] = static_cast<T>(0); data[2][3] = static_cast<T>(0);
-		data[3][0] = static_cast<T>(0); data[3][1] = static_cast<T>(0); data[3][2] = static_cast<T>(0); data[3][3] = static_cast<T>(1);
+		data[0][3] = 0; data[1][3] = 0; data[2][3] = 0;
+		data[3][0] = 0; data[3][1] = 0; data[3][2] = 0; data[3][3] = 1;
 		return *this;
 	}
 

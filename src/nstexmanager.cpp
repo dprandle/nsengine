@@ -13,6 +13,7 @@
 #include <nstexture.h>
 #include <nsengine.h>
 #include <IL/il.h>
+#include <IL/ilu.h>
 #include <soil/SOIL.h>
 #include <nsfileos.h>
 
@@ -25,9 +26,6 @@ NSTexManager::NSTexManager(): NSResManager()
 
 NSTexManager::~NSTexManager()
 {}
-
-
-
 
 NSTexture * NSTexManager::load(nsuint res_type_id, const nsstring & fname)
 {
@@ -109,6 +107,7 @@ NSTex2D * NSTexManager::loadImage(const nsstring & fname)
 	ilBindImage(imageID);
 
 	// Make sure worked - if not send error message to log file
+	
 	int worked = ilLoadImage(fName.c_str());
 	int converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 	if (!worked || !converted)
@@ -117,6 +116,7 @@ NSTex2D * NSTexManager::loadImage(const nsstring & fname)
 		{
 			dprint("NSTexManager::loadImage Could not load NSTex2D from file " + fName);
 			ilDeleteImages(1, &imageID);
+			nsuint err = ilGetError();
 			destroy(resName);
 			return NULL;
 		}
@@ -210,7 +210,7 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & pXPlus,
 		ilGenImages(1, &imageID);
 		ilBindImage(imageID);
 
-		int worked = ilLoadImage(fNames[i].c_str());
+		int worked = ilLoadImage((const ILstring)fNames[i].c_str());
 		int converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 		if (!worked || !converted)
 		{
@@ -417,7 +417,7 @@ bool NSTexManager::save(NSTexCubeMap * cubemap, const nsstring & path)
 					   cubemap->format(),
 					   cubemap->pixelDataType(),
 					   cubemap->data().data);
-			ret = true && ilSaveImage(localFname.c_str());
+			ret = true && ilSaveImage((const ILstring)localFname.c_str());
 			ilDeleteImages(1, &imageID);
 			imageID = 0;
 			cubemap->bind();
@@ -513,7 +513,7 @@ bool NSTexManager::save(NSTex2D * image, const nsstring & path)
 			   image->pixelDataType(),
 			   image->data().data);
 
-	bool ret = ilSaveImage(fName.c_str()) && true;
+	bool ret = ilSaveImage((const ILstring)fName.c_str()) && true;
 	ilDeleteImages(1, &imageID);
 	image->bind();
 	image->unlock();
