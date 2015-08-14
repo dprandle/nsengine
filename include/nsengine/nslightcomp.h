@@ -50,21 +50,21 @@ public:
 
 	bool castShadows() const;
 
-	void changeAtten(nsfloat constant, nsfloat lin, nsfloat exp);
+	void changeAtten(float constant, float lin, float exp);
 
-	void changeColor(nsfloat pRedAmount, nsfloat pGreenAmount, nsfloat pBlueAmount);
+	void changeColor(float pRedAmount, float pGreenAmount, float pBlueAmount);
 
-	void changeAngle(nsfloat pAmount);
+	void changeAngle(float pAmount);
 
-	void changeCutoff(nsfloat pAmount);
+	void changeCutoff(float pAmount);
 
-	void changeDistance(nsfloat pAmount, Adjustment pAdjustment = Exponential);
+	void changeDistance(float pAmount, Adjustment pAdjustment = Exponential);
 
-	void changeIntensity(nsfloat diffuse, nsfloat ambient, Adjustment pAdjustment=Exponential);
+	void changeIntensity(float diffuse, float ambient, Adjustment pAdjustment=Exponential);
 
-	void changeShadowDarkness(nsfloat pAmount);
+	void changeShadowDarkness(float pAmount);
 
-	void changeRadius(nsfloat pAmount);
+	void changeRadius(float pAmount);
 
 	NSLightComp* copy(const NSComponent* pToCopy);
 
@@ -74,31 +74,31 @@ public:
 
 	const fvec3 & color() const;
 
-	nsfloat angle() const;
+	float angle() const;
 
-	nsfloat cutoff() const;
+	float cutoff() const;
 
-	nsfloat distance();
+	float distance();
 
 	LightType type() const;
 
 	const fvec2 & intensity() const;
 
-	const fmat4 & pov(nsuint pIndex) const;
+	const fmat4 & pov(uint32 pIndex) const;
 
-	nsfloat radius() const;
+	float radius() const;
 
 	const fvec3 & scaling() const;
 
 	virtual void pup(NSFilePUPer * p);
 
-	nsfloat shadowDarkness() const;
+	float shadowDarkness() const;
 
-	const nsint & shadowSamples() const;
+	const int32 & shadowSamples() const;
 
 	const fvec2 & shadowClipping() const { return mshadowclip; }
 
-	const fmat4 & transform(nsuint pIndex);
+	const fmat4 & transform(uint32 pIndex);
 
 	fmat4array & transforms();
 
@@ -112,9 +112,9 @@ public:
 
 	void setAtten(const fvec3 & pAttComp);
 
-	void setAtten(nsfloat pConst, nsfloat pLin, nsfloat pExp);
+	void setAtten(float pConst, float pLin, float pExp);
 
-	void setMeshID(nsuint plugid, nsuint resid)
+	void setMeshID(uint32 plugid, uint32 resid)
 	{
 		mBoundingMeshID.x = plugid; mBoundingMeshID.y = resid;
 		postUpdate(true);
@@ -128,25 +128,25 @@ public:
 
 	void setColor(const fvec3 & pColor);
 
-	void setColor(nsfloat pRed, nsfloat pGreen, nsfloat pBlue);
+	void setColor(float pRed, float pGreen, float pBlue);
 
-	void setCutoff(nsfloat cutoff);
+	void setCutoff(float cutoff);
 
-	void setAngle(nsfloat angle);
+	void setAngle(float angle);
 
-	void setDistance(nsfloat pDistance, Adjustment pAdjustment = Exponential);
+	void setDistance(float pDistance, Adjustment pAdjustment = Exponential);
 
 	void setType(LightType pType);
 
 	void setIntensity(const fvec2 & intensity, Adjustment pAdjustment = Exponential);
 
-	void setIntensity(nsfloat pDiffuse, nsfloat pAmbient, Adjustment pAdjustment = Exponential);
+	void setIntensity(float pDiffuse, float pAmbient, Adjustment pAdjustment = Exponential);
 
-	void setRadius(nsfloat pRandius);
+	void setRadius(float pRandius);
 
-	void setShadowDarkness(nsfloat pVal);
+	void setShadowDarkness(float pVal);
 
-	void setShadowSamples(nsint pNumSamples);
+	void setShadowSamples(int32 pNumSamples);
 
 	NSLightComp & operator=(const NSLightComp & pRHSComp);
 
@@ -159,10 +159,10 @@ private:
 	fvec3 mAttComp;
 	fvec2 mIntensityComp;
 	float mShadowDarkness;
-	nsfloat mAngle;
+	float mAngle;
 	fvec3 mColor;
 	bool mCastShadows;
-	nsint mShadowSamples;
+	int32 mShadowSamples;
 	uivec2 mBoundingMeshID;
 	fvec3 mScaling;
 	fvec2 mshadowclip;
@@ -187,7 +187,7 @@ void pup(PUPer & p, NSLightComp & lc)
 template<class PUPer>
 void pup(PUPer & p, NSLightComp::LightType & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSLightComp::LightType>(in);
 }

@@ -13,22 +13,22 @@ template <class T>
 NSMat3<T> operator%(const NSVec3<T> & lhs, const NSMat3<T> & rhs);
 
 template <class T>
-NSMat3<T> operator*(const nsint & pLHS, const NSMat3<T> & pRHS);
+NSMat3<T> operator*(const int32 & pLHS, const NSMat3<T> & pRHS);
 
 template <class T>
-NSMat3<T> operator*(const nsfloat & pLHS, const NSMat3<T> & pRHS);
+NSMat3<T> operator*(const float & pLHS, const NSMat3<T> & pRHS);
 
 template <class T>
-NSMat3<T> operator*(const nsdouble & pLHS, const NSMat3<T> & pRHS);
+NSMat3<T> operator*(const double & pLHS, const NSMat3<T> & pRHS);
 
 template<class T>
-NSMat3<T> operator/(const nsint & pLHS, const NSMat3<T> & pRHS);
+NSMat3<T> operator/(const int32 & pLHS, const NSMat3<T> & pRHS);
 
 template <class T>
-NSMat3<T> operator/(const nsfloat & pLHS, const NSMat3<T> & pRHS);
+NSMat3<T> operator/(const float & pLHS, const NSMat3<T> & pRHS);
 
 template <class T>
-NSMat3<T> operator/(const nsdouble & pLHS, const NSMat3<T> & pRHS);
+NSMat3<T> operator/(const double & pLHS, const NSMat3<T> & pRHS);
 
 template <class T>
 T determinant(const NSMat3<T> & mat);
@@ -207,7 +207,7 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSVec4<T> & axisAngle, nsbool rads = false)
+	NSMat3<T> & rotationFrom(const NSVec4<T> & axisAngle, bool rads = false)
 	{
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToMatrix/index.htm
 
@@ -242,7 +242,7 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order , nsbool rads = false)
+	NSMat3<T> & rotationFrom(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order , bool rads = false)
 	{
 		T cb, sb, ch, sh, ca, sa;
 		if (!rads)
@@ -503,13 +503,13 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & setColumn(const nsuint & i, const T & x, const T & y,const T & z)
+	NSMat3<T> & setColumn(const uint32 & i, const T & x, const T & y,const T & z)
 	{
 		(*this)[0][i] = x; (*this)[1][i] = y; (*this)[2][i] = z;
 		return *this;
 	}
 
-	NSMat3<T> & setColumn(const nsuint & i, const NSVec3<T> & col)
+	NSMat3<T> & setColumn(const uint32 & i, const NSVec3<T> & col)
 	{
 		(*this)[0][i] = col.x; (*this)[1][i] = col.y; (*this)[2][i] = col.z;
 		return *this;
@@ -720,14 +720,14 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> operator++(nsint)
+	NSMat3<T> operator++(int32)
 	{
 		NSMat3<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSMat3<T> operator--(nsint)
+	NSMat3<T> operator--(int32)
 	{
 		NSMat3<T> ret(*this);
 		--(*this);
@@ -758,21 +758,21 @@ struct NSMat3
 		return *this;
 	}
 
-	const NSVec3<T> & operator[](const nsuint & pVal) const
+	const NSVec3<T> & operator[](const uint32 & pVal) const
 	{
 		if (pVal > 2)
 			throw(std::out_of_range("mat3 index out of range"));
 		return data[pVal];
 	}
 
-	NSVec3<T> & operator[](const nsuint & pVal)
+	NSVec3<T> & operator[](const uint32 & pVal)
 	{
 		if (pVal > 2)
 			throw(std::out_of_range("mat3 index out of range"));
 		return data[pVal];
 	}
 
-	NSVec3<T> operator()(nsuint pVal) const
+	NSVec3<T> operator()(uint32 pVal) const
 	{
 		return NSVec3<T>(data[0][pVal], data[1][pVal], data[2][pVal]);
 	}
@@ -782,37 +782,37 @@ private:
 };
 
 template <class T>
-NSMat3<T> operator*(const nsint & pLHS, const NSMat3<T> & pRHS)
+NSMat3<T> operator*(const int32 & pLHS, const NSMat3<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSMat3<T> operator*(const nsfloat & pLHS, const NSMat3<T> & pRHS)
+NSMat3<T> operator*(const float & pLHS, const NSMat3<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSMat3<T> operator*(const nsdouble & pLHS, const NSMat3<T> & pRHS)
+NSMat3<T> operator*(const double & pLHS, const NSMat3<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template<class T>
-NSMat3<T> operator/(const nsint & pLHS, const NSMat3<T> & pRHS)
+NSMat3<T> operator/(const int32 & pLHS, const NSMat3<T> & pRHS)
 {
 	return NSMat3<T>(pLHS / pRHS[0], pLHS / pRHS[1], pLHS / pRHS[2]);
 }
 
 template <class T>
-NSMat3<T> operator/(const nsfloat & pLHS, const NSMat3<T> & pRHS)
+NSMat3<T> operator/(const float & pLHS, const NSMat3<T> & pRHS)
 {
 	return NSMat3<T>(pLHS / pRHS[0], pLHS / pRHS[1], pLHS / pRHS[2]);
 }
 
 template <class T>
-NSMat3<T> operator/(const nsdouble & pLHS, const NSMat3<T> & pRHS)
+NSMat3<T> operator/(const double & pLHS, const NSMat3<T> & pRHS)
 {
 	return NSMat3<T>(pLHS / pRHS[0], pLHS / pRHS[1], pLHS / pRHS[2]);
 }

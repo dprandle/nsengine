@@ -30,15 +30,15 @@ public:
 	NSSelComp();
 	~NSSelComp();
 
-	bool add(nsuint pTransformID);
+	bool add(uint32 pTransformID);
 
-	nsuintu_set::iterator begin();
+	uint32u_set::iterator begin();
 
-	bool contains(nsuint pTransformID);
+	bool contains(uint32 pTransformID);
 
 	NSSelComp * copy(const NSComponent* pToCopy);
 
-	nsuint count();
+	uint32 count();
 
 	void clear();
 
@@ -46,13 +46,13 @@ public:
 
 	void enableMove(const bool & pEnable);
 
-	nsuintu_set::iterator end();
+	uint32u_set::iterator end();
 
 	bool empty();
 
 	const fvec4 & defaultColor();
 
-	const nsfloat & maskAlpha();
+	const float & maskAlpha();
 
 	const fvec4 & color();
 
@@ -64,15 +64,15 @@ public:
 
 	bool selected();
 
-	bool remove(nsuint pTransformID);
+	bool remove(uint32 pTransformID);
 
-	bool set(nsuint pTransformID);
+	bool set(uint32 pTransformID);
 
 	virtual void pup(NSFilePUPer * p);
 
 	void setDefaultColor(const fvec4 & pColor);
 
-	void setMaskAlpha(const nsfloat & pAlpha);
+	void setMaskAlpha(const float & pAlpha);
 
 	void setSelected(bool pSelected);
 
@@ -83,11 +83,11 @@ public:
 private:
 	fvec4 mDefaultSelColor;
 	fvec4 mSelColor;
-	nsfloat mMaskAlpha;
+	float mMaskAlpha;
 	bool mSelected;
 	bool mDrawEnabled;
 	bool mMoveWithInput;
-	nsuintu_set mSelection;
+	uint32u_set mSelection;
 };
 
 template <class PUPer>

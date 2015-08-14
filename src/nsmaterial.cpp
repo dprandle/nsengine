@@ -45,18 +45,18 @@ NSMaterial::ConstMapIter NSMaterial::begin() const
 	return mTextureMaps.begin();
 }
 
-void NSMaterial::changeSpecular(nsfloat pPowAmount, nsfloat pIntensityAmount)
+void NSMaterial::changeSpecular(float pPowAmount, float pIntensityAmount)
 {
 	changeSpecularPower(pPowAmount);
 	changeSpecularIntensity(pIntensityAmount);
 }
 
-void NSMaterial::changeSpecularIntensity(nsfloat pAmount)
+void NSMaterial::changeSpecularIntensity(float pAmount)
 {
 	mSpecComp.mIntensity += pAmount;
 }
 
-void NSMaterial::changeSpecularPower(nsfloat pAmount)
+void NSMaterial::changeSpecularPower(float pAmount)
 {
 	mSpecComp.mPower += pAmount;
 }
@@ -72,12 +72,12 @@ bool NSMaterial::contains(const MapType & pMType)
 	return (iter != mTextureMaps.end());
 }
 
-void NSMaterial::enableCulling(nsbool pEnable)
+void NSMaterial::enableCulling(bool pEnable)
 {
 	mCullEnabled = pEnable;
 }
 
-void NSMaterial::enableWireframe(nsbool pEnable)
+void NSMaterial::enableWireframe(bool pEnable)
 {
 	mWireframe = pEnable;
 }
@@ -102,7 +102,7 @@ const GLenum & NSMaterial::cullMode() const
 	return mCullMode;
 }
 
-nsbool NSMaterial::colorMode()
+bool NSMaterial::colorMode()
 {
 	return mColorMode;
 }
@@ -144,12 +144,12 @@ const fvec3 & NSMaterial::specularColor() const
 	return mSpecComp.mColor;
 }
 
-nsfloat NSMaterial::specularPower() const
+float NSMaterial::specularPower() const
 {
 	return mSpecComp.mPower;
 }
 
-nsfloat NSMaterial::specularIntensity() const
+float NSMaterial::specularIntensity() const
 {
 	return mSpecComp.mIntensity;
 }
@@ -187,17 +187,17 @@ void NSMaterial::init()
 	// do nothing
 }
 
-nsbool NSMaterial::alphaBlend()
+bool NSMaterial::alphaBlend()
 {
 	return mAlphaBlend;
 }
 
-nsbool NSMaterial::culling() const
+bool NSMaterial::culling() const
 {
 	return mCullEnabled;
 }
 
-nsbool NSMaterial::wireframe() const
+bool NSMaterial::wireframe() const
 {
 	return mWireframe;
 }
@@ -233,7 +233,7 @@ bool NSMaterial::removeTextureMap(MapType pMapType)
 	return mTextureMaps.erase(pMapType) && 1;
 }
 
-void NSMaterial::setAlphaBlend(nsbool pBlend)
+void NSMaterial::setAlphaBlend(bool pBlend)
 {
 	mAlphaBlend = pBlend;
 }
@@ -248,7 +248,7 @@ void NSMaterial::setColor(const fvec4 & pColor)
 	mColor = pColor;
 }
 
-void NSMaterial::setColorMode(nsbool pColorMode)
+void NSMaterial::setColorMode(bool pColorMode)
 {
 	mColorMode = pColorMode;
 }
@@ -263,7 +263,7 @@ void NSMaterial::setSpecular(const SpecularComp & pSpecComp)
 	mSpecComp = pSpecComp;
 }
 
-void NSMaterial::setSpecular(nsfloat pPower, nsfloat pIntensity,const fvec3 & pColor)
+void NSMaterial::setSpecular(float pPower, float pIntensity,const fvec3 & pColor)
 {
 	setSpecularPower(pPower);
 	setSpecularIntensity(pIntensity);
@@ -275,17 +275,17 @@ void NSMaterial::setSpecularColor(const fvec3 & pColor)
 	mSpecComp.mColor = pColor;
 }
 
-void NSMaterial::setSpecularPower(nsfloat pPower)
+void NSMaterial::setSpecularPower(float pPower)
 {
 	mSpecComp.mPower = pPower;
 }
 
-void NSMaterial::setSpecularIntensity(nsfloat pIntensity)
+void NSMaterial::setSpecularIntensity(float pIntensity)
 {
 	mSpecComp.mIntensity = pIntensity;
 }
 
-nsbool NSMaterial::setMapTextureID(MapType pMapType, const uivec2 & pID, nsbool pOverwrite)
+bool NSMaterial::setMapTextureID(MapType pMapType, const uivec2 & pID, bool pOverwrite)
 {
 	TexMap::iterator iter = mTextureMaps.find(pMapType);
 	if (iter != mTextureMaps.end())

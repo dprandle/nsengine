@@ -64,8 +64,8 @@ public:
 		NSBufferObject * mXBTexCoordBuf;
 		NSBufferObject * mXBNormalBuf;
 		NSBufferObject * mXBTangentBuf;
-		nsuint mAllocAmount;
-		nsuint mInstanceCount;
+		uint32 mAllocAmount;
+		uint32 mInstanceCount;
 	};
 
 	typedef std::vector<XFBBuffer> XFBBufferArray;
@@ -78,7 +78,7 @@ public:
 		{}
 
 		XFBBufferArray mXFBBuffers;
-		nsbool mUpdate;
+		bool mUpdate;
 	};
 
 	struct InstTrans
@@ -100,17 +100,17 @@ public:
 
 		void compute();
 
-		int mHiddenState;
+		int32 mHiddenState;
 		fquat mOrientation;
 		fvec3 mPosition;
 		fvec3 mScaling;
 		fmat4 mParentTransform;
 		fmat4 mPOVTransform;
 		fmat4 mTransform;
-		nsbool mUpdate;
-		nsuint mRenderID;
-		nsbool mSnapToGrid;
-		nsbool mParentEnabled;
+		bool mUpdate;
+		uint32 mRenderID;
+		bool mSnapToGrid;
+		bool mParentEnabled;
 		uivec3 mParentID;
 	};
 
@@ -123,27 +123,27 @@ public:
 
 	~NSTFormComp();
 
-	nsuint add();
+	uint32 add();
 
-	nsuint add(const InstTrans & trans);
+	uint32 add(const InstTrans & trans);
 
-	nsuint add(nsuint pHowMany);
+	uint32 add(uint32 pHowMany);
 
 	bool bufferResize() const;
 
-	void changeScale(const fvec3 & pAmount, nsuint pTransformID=0);
+	void changeScale(const fvec3 & pAmount, uint32 pTransformID=0);
 
-	void changeScale(nsfloat pX, nsfloat pY, nsfloat pZ, nsuint pTransformID = 0);
+	void changeScale(float pX, float pY, float pZ, uint32 pTransformID = 0);
 
-	void computeTransform(nsuint pTransformID = 0);
+	void computeTransform(uint32 pTransformID = 0);
 
 	NSTFormComp * copy(const NSComponent* pToCopy);
 
-	void enableParent(nsbool pEnable, nsuint pTransformID = 0);
+	void enableParent(bool pEnable, uint32 pTransformID = 0);
 
-	bool enableTransformFeedback(nsbool pEnable);
+	bool enableTransformFeedback(bool pEnable);
 
-	const fvec3 dirVec(DirVec pDirection, nsuint pTransformID = 0) const;
+	const fvec3 dirVec(DirVec pDirection, uint32 pTransformID = 0) const;
 
 	NSBufferObject * transformBuffer();
 
@@ -151,179 +151,179 @@ public:
 
 	const InstanceVec & transformVec() const;
 
-	const fquat & orientation(nsuint pTransformID = 0) const;
+	const fquat & orientation(uint32 pTransformID = 0) const;
 
-	const uivec3 & parentid(nsuint pTransformID = 0) const;
+	const uivec3 & parentid(uint32 pTransformID = 0) const;
 
-	const fmat4 & parent(nsuint pTransformID = 0) const;
+	const fmat4 & parent(uint32 pTransformID = 0) const;
 
-	const fvec3 & lpos(nsuint pTransformID = 0) const;
+	const fvec3 & lpos(uint32 pTransformID = 0) const;
 
-	const fmat4 & pov(nsuint pTransformID = 0) const;
+	const fmat4 & pov(uint32 pTransformID = 0) const;
 
-	nsuint renderID(nsuint pTransformID) const;
+	uint32 renderID(uint32 pTransformID) const;
 
-	const fvec3 & scaling(nsuint pTransformID = 0) const;
+	const fvec3 & scaling(uint32 pTransformID = 0) const;
 
-	const fmat4 & transform(nsuint pTransformID = 0) const;
+	const fmat4 & transform(uint32 pTransformID = 0) const;
 
-	int hiddenState(nsuint pTransformID = 0) const;
+	int32 hiddenState(uint32 pTransformID = 0) const;
 
-	InstTrans & instTrans(nsuint pTransformID = 0);
+	InstTrans & instTrans(uint32 pTransformID = 0);
 
-	nsuint count() const;
+	uint32 count() const;
 
 	XFBData * xfbData();
 
-	nsuint visibleCount() const;
+	uint32 visibleCount() const;
 
-	fvec3 wpos(nsuint pTransformID = 0);
+	fvec3 wpos(uint32 pTransformID = 0);
 
 	void init();
 
-	nsbool snapped(nsuint pTransformID = 0) const;
+	bool snapped(uint32 pTransformID = 0) const;
 
-	nsbool calcLocalTForm(nsuint pTransformID = 0) const;
+	bool calcLocalTForm(uint32 pTransformID = 0) const;
 
-	nsbool parentEnabled(nsuint pTransformID = 0) const;
+	bool parentEnabled(uint32 pTransformID = 0) const;
 
-	nsbool transformFeedback();
+	bool transformFeedback();
 
-	const nsbool transUpdate(nsuint pTransformID = 0) const;
+	const bool transUpdate(uint32 pTransformID = 0) const;
 
 	virtual void pup(NSFilePUPer * p);
 
 	void release();
 
-	nsuint remove(nsuint pTransformID);
+	uint32 remove(uint32 pTransformID);
 
-	nsuint remove(nsuint pFirst, nsuint pLast);
+	uint32 remove(uint32 pFirst, uint32 pLast);
 
-	void rotate(Axis pAxis, float pAngle, nsuint pTransformID);
+	void rotate(Axis pAxis, float pAngle, uint32 pTransformID);
 
 	void rotate(Axis pAxis, float pAngle);
 
-	void rotate(const fvec4 & axisAngle, nsuint pTransformID);
+	void rotate(const fvec4 & axisAngle, uint32 pTransformID);
 
 	void rotate(const fvec4 & axisAngle);
 
 	void rotate(const fvec3 & euler);
 
-	void rotate(const fvec3 & euler, nsuint pTransformID);
+	void rotate(const fvec3 & euler, uint32 pTransformID);
 
-	void rotate(const fquat & pQuat, nsuint pTransformID);
+	void rotate(const fquat & pQuat, uint32 pTransformID);
 
 	void rotate(const fquat & pQuat);
 
-	void rotate(DirVec dir, nsfloat angle, nsuint tformid);
+	void rotate(DirVec dir, float angle, uint32 tformid);
 
-	void rotate(DirVec dir, nsfloat angle);
+	void rotate(DirVec dir, float angle);
 
-	void scale(const fvec3 & pAmount, nsuint pTransformID);
+	void scale(const fvec3 & pAmount, uint32 pTransformID);
 
 	void scale(const fvec3 & pAmount);
 
-	void scale(nsfloat pX, nsfloat pY, nsfloat pZ, nsuint pTransformID);
+	void scale(float pX, float pY, float pZ, uint32 pTransformID);
 
-	void scale(nsfloat pX, nsfloat pY, nsfloat pZ);
+	void scale(float pX, float pY, float pZ);
 
-	void setBufferResize(nsbool pResize);
+	void setBufferResize(bool pResize);
 
-	void enableSnap(nsbool pSnap, nsuint pTransformID = 0);
+	void enableSnap(bool pSnap, uint32 pTransformID = 0);
 
-	void enableSnap(nsbool pSnap);
+	void enableSnap(bool pSnap);
 
-	void setHiddenState(HiddenState pState, bool pEnable, nsuint pTransformID);
+	void setHiddenState(HiddenState pState, bool pEnable, uint32 pTransformID);
 
-	void setHiddenState(HiddenState pState, nsbool pEnable);
+	void setHiddenState(HiddenState pState, bool pEnable);
 
-	void setInstTrans(const InstTrans & pInsT, nsuint pTransformID);
+	void setInstTrans(const InstTrans & pInsT, uint32 pTransformID);
 
 	void setInstTrans(const InstTrans & pInsT);
 
-	void setOrientation(const fquat & pOrientation, nsuint pTransformID);
+	void setOrientation(const fquat & pOrientation, uint32 pTransformID);
 
 	void setOrientation(const fquat & pOrientation);
 
-	void setParent(const fmat4 & pTransform, nsuint pTransformID);
+	void setParent(const fmat4 & pTransform, uint32 pTransformID);
 
 	void setParent(const fmat4 & pTransform);
 
-	void setParentID(const uivec3 & pParentID, nsuint pTransformID);
+	void setParentID(const uivec3 & pParentID, uint32 pTransformID);
 
 	void setParentID(const uivec3 & pParentID);
 
-	void setpos(const fvec3 & pPosition, nsuint pTransformID);
+	void setpos(const fvec3 & pPosition, uint32 pTransformID);
 
 	void setpos(const fvec3 & pPosition);
 
-	void setRenderID(nsuint pRenderID, nsuint pTransformID);
+	void setRenderID(uint32 pRenderID, uint32 pTransformID);
 
-	void setRenderID(nsuint pRenderID);
+	void setRenderID(uint32 pRenderID);
 
-	void setScale(const fvec3 & pScaling, nsuint pTransformID);
+	void setScale(const fvec3 & pScaling, uint32 pTransformID);
 
 	void setScale(const fvec3 & pScaling);
 
-	void setTransUpdate(bool pUpdate, nsuint pTransformID);
+	void setTransUpdate(bool pUpdate, uint32 pTransformID);
 
 	void setTransUpdate(bool pUpdate);
 
 	void postUpdate(bool pUpdate);
 
-	void setVisibleTransformCount(nsuint pCount);
+	void setVisibleTransformCount(uint32 pCount);
 
-	void snap(nsuint pTransformID);
+	void snap(uint32 pTransformID);
 
 	void snap();
 
-	void snapX(nsuint pTransformID);
+	void snapX(uint32 pTransformID);
 
 	void snapX();
 
-	void snapY(nsuint pTransformID);
+	void snapY(uint32 pTransformID);
 
 	void snapY();
 
-	void snapZ(nsuint pTransformID);
+	void snapZ(uint32 pTransformID);
 
 	void snapZ();
 
-	void toggleGridSnap(nsuint pTransformID);
+	void toggleGridSnap(uint32 pTransformID);
 
 	void toggleGridSnap();
 
-	void toggleHiddenState(HiddenState pState, nsuint pTransformID);
+	void toggleHiddenState(HiddenState pState, uint32 pTransformID);
 
 	void toggleHiddenState(HiddenState pState);
 
-	void translate(const fvec3 & pAmount, nsuint pTransformID);
+	void translate(const fvec3 & pAmount, uint32 pTransformID);
 
 	void translate(const fvec3 & pAmount);
 
-	void translate(nsfloat pX, nsfloat pY, nsfloat pZ, nsuint pTransformID);
+	void translate(float pX, float pY, float pZ, uint32 pTransformID);
 
-	void translate(nsfloat pX, nsfloat pY, nsfloat pZ);
+	void translate(float pX, float pY, float pZ);
 
-	void translate(DirVec pDirection, nsfloat pAmount, nsuint pTransformID);
+	void translate(DirVec pDirection, float pAmount, uint32 pTransformID);
 
-	void translate(DirVec pDirection, nsfloat pAmount);
+	void translate(DirVec pDirection, float pAmount);
 
-	void translate(Axis pDirection, nsfloat pAmount, nsuint pTransformID);
+	void translate(Axis pDirection, float pAmount, uint32 pTransformID);
 
-	void translate(Axis pDirection, nsfloat pAmount);
+	void translate(Axis pDirection, float pAmount);
 
-	void translateX(nsfloat pAmount, nsuint pTransformID);
+	void translateX(float pAmount, uint32 pTransformID);
 
-	void translateX(nsfloat pAmount);
+	void translateX(float pAmount);
 
-	void translateY(nsfloat pAmount, nsuint pTransformID);
+	void translateY(float pAmount, uint32 pTransformID);
 
-	void translateY(nsfloat pAmount);
+	void translateY(float pAmount);
 
-	void translateZ(nsfloat pAmount, nsuint pTransformID );
+	void translateZ(float pAmount, uint32 pTransformID );
 
-	void translateZ(nsfloat pAmount);
+	void translateZ(float pAmount);
 
 	NSTFormComp & operator=(const NSTFormComp & pRHSComp);
 
@@ -336,7 +336,7 @@ private:
 	
 	bool mBufferResize;
 	bool mTransformFB;
-	nsuint mVisibleCount;
+	uint32 mVisibleCount;
 };
 
 template <class PUPer>

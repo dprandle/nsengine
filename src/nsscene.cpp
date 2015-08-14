@@ -65,7 +65,7 @@ If the entity contains an occupy comp, then only insert in to the scene if the s
 occupy component tile set can be inserted in to the tile grid. If adding to the scene fails, this will return -1 and if it
 succeeds it will return the transform ID of the newly inserted entity instance.
 */
-nsuint NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, const fvec3 & pScale)
+uint32 NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, const fvec3 & pScale)
 {
 	if (pEnt == NULL)
 		return -1;
@@ -98,7 +98,7 @@ nsuint NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 	{
 		// Get the transform ID that would result if we inserted it in to the scene
 		// We don't want to insert it yet because we first want to check if the space is open
-		nsuint pID = tComp->count();
+		uint32 pID = tComp->count();
 
 		if (!mTileGrid->add(uivec3(pEnt->plugid(), pEnt->id(), pID), occComp->spaces(), pPos))
 		{
@@ -115,7 +115,7 @@ nsuint NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 	
 	// Adding transform will never fail unless out of memory
 
-	nsuint index = tComp->add(t);
+	uint32 index = tComp->add(t);
 	tComp->setHiddenState(NSTFormComp::Show, mShowBit, index);
 	return index;
 }
@@ -126,7 +126,7 @@ The grid settings are located in the global variables X_GRID, Y_GRID, and Z_GRID
 The tile grid also uses these grid variables, so changing them should change the overall
 behavior of grid snap and tile occupation etc.
 */
-nsuint NSScene::addGridded(
+uint32 NSScene::addGridded(
 	NSEntity * pEnt,
 	const ivec3 & pBounds,
 	const fvec3 & pStartingPos,
@@ -150,16 +150,16 @@ nsuint NSScene::addGridded(
 
 	// Figure out the total number of transforms needed and allocate that 
 	// much memory (addTransforms does this)
-	nsuint addSize = pBounds.x * pBounds.y * pBounds.z;
+	uint32 addSize = pBounds.x * pBounds.y * pBounds.z;
 	tComp->add(addSize);
 	
 	// Now get the size and go through and attempt to add each transform
-	nsuint count = tComp->count() - addSize;
-	for (nsint z = 0; z < pBounds.z; ++z)
+	uint32 count = tComp->count() - addSize;
+	for (int32 z = 0; z < pBounds.z; ++z)
 	{
-		for (nsint y = 0; y < pBounds.y; ++y)
+		for (int32 y = 0; y < pBounds.y; ++y)
 		{
-			for (nsint x = 0; x < pBounds.x; ++x)
+			for (int32 x = 0; x < pBounds.x; ++x)
 			{
 				float xP = X_GRID * x * 2.0f;
 				float yP = Y_GRID * y;
@@ -202,7 +202,7 @@ nsuint NSScene::addGridded(
 /*!
 Change the aximum number of players allowable on this scene - pAmount can be positive or negative
 */
-void NSScene::changeMaxPlayers(nsint pAmount)
+void NSScene::changeMaxPlayers(int32 pAmount)
 {
 	if ((mMaxPlayers + pAmount) > SCENE_MAX_PLAYERS || (mMaxPlayers + pAmount) < 2)
 	{
@@ -213,7 +213,7 @@ void NSScene::changeMaxPlayers(nsint pAmount)
 	mMaxPlayers += pAmount;
 }
 
-void NSScene::enableShowBit(nsbool pEnable)
+void NSScene::enableShowBit(bool pEnable)
 {
 	mShowBit = pEnable;
 }
@@ -264,7 +264,7 @@ NSEntity * NSScene::camera() const
 	return entity(mCamID.x, mCamID.y);
 }
 
-nsuint NSScene::maxPlayers() const
+uint32 NSScene::maxPlayers() const
 {
 	return mMaxPlayers;
 }
@@ -274,9 +274,9 @@ uivec3 NSScene::refid(const fvec3 & pWorldPos) const
 	return mTileGrid->get(pWorldPos);
 }
 
-const nsuint NSScene::referenceCount() const
+const uint32 NSScene::referenceCount() const
 {
-	nsuint count = 0;
+	uint32 count = 0;
 
 	auto iter = entities().begin();
 	while (iter != entities().end())
@@ -325,12 +325,12 @@ NSTileGrid & NSScene::grid()
 	return *mTileGrid;
 }
 
-void NSScene::hideLayer(nsint pLayer, nsbool pHide)
+void NSScene::hideLayer(int32 pLayer, bool pHide)
 {
 	NSTileGrid::GridBounds g = mTileGrid->occupiedGridBounds();
-	for (nsint y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+	for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 	{
-		for (nsint x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+		for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 		{
 			uivec3 id = mTileGrid->get(ivec3(x, y, -pLayer));
 			if (id != uivec3())
@@ -345,16 +345,16 @@ void NSScene::hideLayer(nsint pLayer, nsbool pHide)
 	}
 }
 
-void NSScene::hideLayersAbove(nsint pBaseLayer, nsbool pHide)
+void NSScene::hideLayersAbove(int32 pBaseLayer, bool pHide)
 {
 	NSTileGrid::GridBounds g = mTileGrid->occupiedGridBounds();
 	pBaseLayer *= -1;
 
-	for (nsint z = pBaseLayer-1; z >= g.minSpace.z; --z)
+	for (int32 z = pBaseLayer-1; z >= g.minSpace.z; --z)
 	{
-		for (nsint y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 		{
-			for (nsint x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
 				uivec3 id = mTileGrid->get(ivec3(x, y, z));
 				if (id != uivec3())
@@ -371,9 +371,9 @@ void NSScene::hideLayersAbove(nsint pBaseLayer, nsbool pHide)
 
 	if (pHide)
 	{
-		for (nsint y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 		{
-			for (nsint x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
 				uivec3 id = mTileGrid->get(ivec3(x, y, pBaseLayer));
 				if (id != uivec3())
@@ -389,16 +389,16 @@ void NSScene::hideLayersAbove(nsint pBaseLayer, nsbool pHide)
 	}
 }
 
-void NSScene::hideLayersBelow(nsint pTopLayer, nsbool pHide)
+void NSScene::hideLayersBelow(int32 pTopLayer, bool pHide)
 {
 	NSTileGrid::GridBounds g = mTileGrid->occupiedGridBounds();
 	pTopLayer *= -1;
 
-	for (nsint z = pTopLayer+1; z <= g.maxSpace.z; ++z)
+	for (int32 z = pTopLayer+1; z <= g.maxSpace.z; ++z)
 	{
-		for (nsint y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 		{
-			for (nsint x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
 				uivec3 id = mTileGrid->get(ivec3(x, y, z));
 				if (id != uivec3())
@@ -415,9 +415,9 @@ void NSScene::hideLayersBelow(nsint pTopLayer, nsbool pHide)
 
 	if (pHide)
 	{
-		for (nsint y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 		{
-			for (nsint x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
 				uivec3 id = mTileGrid->get(ivec3(x, y, pTopLayer));
 				if (id != uivec3())
@@ -437,7 +437,7 @@ void NSScene::init()
 {
 }
 
-nsbool NSScene::showBit() const
+bool NSScene::showBit() const
 {
 	return mShowBit;
 }
@@ -464,7 +464,7 @@ void NSScene::nameChange(const uivec2 & oldid, const uivec2 newid)
 	mTileGrid->nameChange(oldid, newid);
 }
 
-nsuint NSScene::replace(NSEntity * oldent, nsuint tformID, NSEntity * newent)
+uint32 NSScene::replace(NSEntity * oldent, uint32 tformID, NSEntity * newent)
 {
 	if (oldent == NULL || newent == NULL)
 		return false;
@@ -479,7 +479,7 @@ nsuint NSScene::replace(NSEntity * oldent, nsuint tformID, NSEntity * newent)
 	return add(newent, pos);
 }
 
-nsbool NSScene::replace(NSEntity * oldent, NSEntity * newent)
+bool NSScene::replace(NSEntity * oldent, NSEntity * newent)
 {
 	if (oldent == NULL || newent == NULL)
 		return false;
@@ -489,7 +489,7 @@ nsbool NSScene::replace(NSEntity * oldent, NSEntity * newent)
 		return false;
 
 	bool ret = true;
-	for (nsuint i = 0; i < tComp->count(); ++i)
+	for (uint32 i = 0; i < tComp->count(); ++i)
 		ret = replace(oldent, i, newent) && ret;
 
 	return ret;
@@ -499,7 +499,7 @@ nsbool NSScene::replace(NSEntity * oldent, NSEntity * newent)
 Removes the entity from the scene - if the entity is not part of the scene then will do nothing
 This is true for all overloaded functions as well
 */
-nsbool NSScene::remove(NSEntity * entity, nsuint tformid)
+bool NSScene::remove(NSEntity * entity, uint32 tformid)
 {
 	if (entity == NULL)
 		return false;
@@ -508,12 +508,12 @@ nsbool NSScene::remove(NSEntity * entity, nsuint tformid)
 	if (tComp == NULL)
 		return false;
 
-	nsuint size = tComp->count();
+	uint32 size = tComp->count();
 	fvec3 pos = tComp->wpos(tformid);
 	NSOccupyComp * occComp = entity->get<NSOccupyComp>();
 
 
-	nsuint newSize = tComp->remove(tformid);
+	uint32 newSize = tComp->remove(tformid);
 	bool ret = (newSize == (size - 1));
 
 	if (occComp != NULL)
@@ -552,7 +552,7 @@ If there is nothing in that position then returns false.
 Note that in order for this function to work the entity that is being removed must have an occupy component or else
 it will not be included in the tile grid.
 */
-nsbool NSScene::remove(fvec3 & pWorldPos)
+bool NSScene::remove(fvec3 & pWorldPos)
 {
 	uivec3 refid = mTileGrid->get(pWorldPos);
 	if (refid == 0)
@@ -566,14 +566,14 @@ Remove all instances of the entity with name pEntName from the scene
 Does so by entering a while loop that will become false once the entity
 runs out of transforms
 */
-nsbool NSScene::remove(NSEntity * ent)
+bool NSScene::remove(NSEntity * ent)
 {
 	if (ent == NULL)
 		return false;
 
 	bool ret = true;
 	while (ret)
-		ret = remove(ent, nsuint(0)) && ret;
+		ret = remove(ent, uint32(0)) && ret;
 
 	return ret;
 }
@@ -622,7 +622,7 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 	}
 }
 
-void NSScene::setMaxPlayers(nsuint pMaxPlayers)
+void NSScene::setMaxPlayers(uint32 pMaxPlayers)
 {
 	if (pMaxPlayers > SCENE_MAX_PLAYERS || pMaxPlayers < 2)
 	{
@@ -670,7 +670,7 @@ uivec2array & NSScene::unloaded()
 /*!
 Go through all entities and add only entities here that are part of the scene
 */
-void NSScene::updateCompMaps(nsuint plugid, nsuint entid)
+void NSScene::updateCompMaps(uint32 plugid, uint32 entid)
 {
 	NSEntity * ent = nsengine.resource<NSEntity>(plugid, entid);
 	if (ent == NULL)

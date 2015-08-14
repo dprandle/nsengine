@@ -1,7 +1,7 @@
 #include <nsglobal.h>
 #include <nsmath.h>
 
-nsfloat clampf(nsfloat pVal, const nsfloat & pMin, const nsfloat & pMax)
+float clampf(float pVal, const float & pMin, const float & pMax)
 {
 	if (pVal < pMin)
 		pVal = pMin;
@@ -10,7 +10,7 @@ nsfloat clampf(nsfloat pVal, const nsfloat & pMin, const nsfloat & pMax)
 	return pVal;
 }
 
-nsdouble clamp(nsdouble pVal, const nsdouble & pMin, const nsdouble & pMax)
+double clamp(double pVal, const double & pMin, const double & pMax)
 {
 	if (pVal < pMin)
 		pVal = pMin;
@@ -19,37 +19,37 @@ nsdouble clamp(nsdouble pVal, const nsdouble & pMin, const nsdouble & pMax)
 	return pVal;
 }
 
-nsfloat fractf(const nsfloat & num)
+float fractf(const float & num)
 {
-	nsfloat flr = std::floor(num);
+	float flr = std::floor(num);
 	return num - flr;
 }
 
-nsdouble fract(const nsdouble & num)
+double fract(const double & num)
 {
-	nsdouble flr = std::floor(num);
+	double flr = std::floor(num);
 	return num - flr;
 }
 
-nsfloat lerp(nsfloat low, nsfloat high, nsfloat middle)
+float lerp(float low, float high, float middle)
 {
 	return (middle - low) / (high - low);
 }
 
 
-nsdouble lerp(nsdouble low, nsdouble high, nsdouble middle)
+double lerp(double low, double high, double middle)
 {
 	return (middle - low) / (high - low);
 }
 
-nsfloat lerp(nsint low, nsint high, nsint middle)
+float lerp(int32 low, int32 high, int32 middle)
 {
-	return nsfloat(middle - low) / nsfloat(high - low);
+	return float(middle - low) / float(high - low);
 }
 
-nsfloat lerp(nsuint low, nsuint high, nsuint middle)
+float lerp(uint32 low, uint32 high, uint32 middle)
 {
-	return nsfloat(middle - low) / nsfloat(high - low);
+	return float(middle - low) / float(high - low);
 }
 
 #define FLOAT_EPS 0.00001
@@ -117,14 +117,14 @@ void NSBoundingBox::clear()
 {
 	mMin = fvec3();
 	mMax = fvec3();
-	for (nsuint i = 0; i < 8; ++i)
+	for (uint32 i = 0; i < 8; ++i)
 		mVerts[i] = fvec3();
 }
 
 /*!
 Length of box in x direction.
 */
-nsfloat NSBoundingBox::dx()
+float NSBoundingBox::dx()
 {
 	return mMax.x - mMin.x;
 }
@@ -132,7 +132,7 @@ nsfloat NSBoundingBox::dx()
 /*!
 Length of box in y direction.
 */
-nsfloat NSBoundingBox::dy()
+float NSBoundingBox::dy()
 {
 	return mMax.y - mMin.y;
 }
@@ -140,7 +140,7 @@ nsfloat NSBoundingBox::dy()
 /*!
 Length of box in z direction.
 */
-nsfloat NSBoundingBox::dz()
+float NSBoundingBox::dz()
 {
 	return mMax.z - mMin.z;
 }
@@ -150,7 +150,7 @@ void NSBoundingBox::extend(
 	const fmat4 & pTransform
 	)
 {
-	for (nsuint i = 0; i < pVertices.size(); ++i)
+	for (uint32 i = 0; i < pVertices.size(); ++i)
 	{
 		fvec3 tVert = (pTransform * fvec4(pVertices[i], 1.0f)).xyz();
 		// Find maximum of each dimension
@@ -189,7 +189,7 @@ void NSBoundingBox::set(
 The volume in whatever units the world is represented in. The cartesian coordinate x = 1, y = 1, z = 1 would
 represent a point that is 1 unit away from each axis and 1.41 units away from the origin.
 */
-nsfloat NSBoundingBox::volume()
+float NSBoundingBox::volume()
 {
 	return (dx() * dy() * dz());
 }

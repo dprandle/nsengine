@@ -34,7 +34,7 @@ public:
 
 	virtual NSAnimComp* copy(const NSComponent* pToCopy);
 
-	nsfloat & elapsed();
+	float & elapsed();
 
 	void fillBones(NSMesh::NodeTree * pNodeTree, NSAnimSet::AnimationData * pCurrentAnim);
 
@@ -60,7 +60,7 @@ public:
 
 	virtual void pup(NSFilePUPer * p);
 
-	void setAnimationSetID(nsuint plugid, nsuint resid)
+	void setAnimationSetID(uint32 plugid, uint32 resid)
 	{
 		mAnimSetID.x = plugid; mAnimSetID.y = resid;
 		postUpdate(true);
@@ -79,7 +79,7 @@ public:
 private:
 	void _fillBoneTransform(NSMesh::NodeTree * pNodeTree, NSMesh::Node * pNode, NSAnimSet::AnimationData * pCurrentAnim, fmat4 & pParentTransform);
 
-	nsfloat mElapsedTime;
+	float mElapsedTime;
 	
 	bool mAnimating;
 	bool mLooping;

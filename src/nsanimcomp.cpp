@@ -51,7 +51,7 @@ void NSAnimComp::pup(NSFilePUPer * p)
 	}
 }
 
-nsfloat & NSAnimComp::elapsed()
+float & NSAnimComp::elapsed()
 {
 	return mElapsedTime;
 }
@@ -168,7 +168,7 @@ void NSAnimComp::_fillBoneTransform(NSMesh::NodeTree * pNodeTree, NSMesh::Node *
 	if (iter != pNodeTree->boneNameMap.end())
 		mFinalTransforms[iter->second.boneID] = globalTransform * iter->second.mOffsetTransform;
 
-	for (nsuint i = 0; i < pNode->mChildNodes.size(); ++i)
+	for (uint32 i = 0; i < pNode->mChildNodes.size(); ++i)
 		_fillBoneTransform(pNodeTree, pNode->mChildNodes[i], pCurrentAnim, globalTransform);
 }
 

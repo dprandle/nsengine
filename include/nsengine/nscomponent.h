@@ -39,7 +39,7 @@ public:
 
 	virtual void init()=0;
 
-	nsuint type();
+	uint32 type();
 
 	virtual void nameChange(const uivec2 &, const uivec2);
 
@@ -59,7 +59,7 @@ public:
 
 protected:
 	NSEntity * mOwner;
-	nsuint mHashedType;
+	uint32 mHashedType;
 	bool mUpdate;
 };
 

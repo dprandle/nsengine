@@ -32,11 +32,11 @@ class NSTexture : public NSResource, public NSGLObject
 public:
 	struct ImageData
 	{
-		ImageData(nschar * data_, nsuint size_, nsuint bpp_) :data(data_), size(size_), bpp(bpp_){}
+		ImageData(char * data_, uint32 size_, uint32 bpp_) :data(data_), size(size_), bpp(bpp_){}
 
-		nschar * data;
-		nsuint size;
-		nsuint bpp;
+		char * data;
+		uint32 size;
+		uint32 bpp;
 	};
 
 	enum TexType {
@@ -103,13 +103,13 @@ public:
 	/*
 	Get the number of bytes per pixel using opengl format and type parameters
 	*/
-	nsuint bpp();
+	uint32 bpp();
 
-	nsuint channels();
+	uint32 channels();
 
-	void disable(nsuint pTexUnit);
+	void disable(uint32 pTexUnit);
 
-	virtual bool allocate(const nsvoid * data) = 0;
+	virtual bool allocate(const void * data) = 0;
 
 	void setAllocated(bool alloc);
 
@@ -117,25 +117,25 @@ public:
 
 	virtual ImageData data();
 
-	nsint format() const;
+	int32 format() const;
 
-	nsint pixelDataType() const;
+	int32 pixelDataType() const;
 
-	virtual nsbool lock() = 0;
+	virtual bool lock() = 0;
 
-	nsbool locked() const;
+	bool locked() const;
 
-	virtual nsbool unlock() = 0;
+	virtual bool unlock() = 0;
 
-	nsint internalFormat() const;
+	int32 internalFormat() const;
 
-	void enable(nsuint pTexUnit);
+	void enable(uint32 pTexUnit);
 
-	nsuint border() const;
+	uint32 border() const;
 
-	nsfloat getParameterf(GetTexParam p);
+	float getParameterf(GetTexParam p);
 
-	nsint getParameteri(GetTexParam p);
+	int32 getParameteri(GetTexParam p);
 
 	/*!
 	Enable mipmaps for this texture - level of 0 means use the default max mip map level
@@ -144,7 +144,7 @@ public:
 	If it has not, it will call generate mip map function when it is allocated
 	\param level how many mip map levels to include
 	*/
-	void enableMipMaps(nsint level = 0);
+	void enableMipMaps(int32 level = 0);
 
 	virtual void pup(NSFilePUPer * p);
 
@@ -153,7 +153,7 @@ public:
 	*/
 	void release();
 
-	void setBorder(nsuint border);
+	void setBorder(uint32 border);
 
 	TexType textureType() const;
 
@@ -163,15 +163,15 @@ public:
 
 	\param OpenGL format used when uploading or downloading pixel data from a stored image on the GPU
 	*/
-	void setFormat(nsint format);
+	void setFormat(int32 format);
 
 	/*
 	Set the texture internal format - it is not gaurenteed however that the image will be stored in this format - but it
 	has a good inlfuence on what the driver will do.
 
 	As per the specs, image data can be stored internally as unsigned or signed integers, floats, or unsigned/signed normalized integers.
-	Floats resolve in the shader to a vector of floats, matching exactly what they are internally. Unsigned integers will resolve in to a vector of unsigned integers
-	in the shader, and signed integers will resolve in to a vector of signed integers. Normalized unsigned integers will resolve in to a vector of floats
+	Floats resolve in the shader to a vector of floats, matching exactly what they are internally. uint32egers will resolve in to a vector of uint32egers
+	in the shader, and signed integers will resolve in to a vector of signed integers. Normalized uint32egers will resolve in to a vector of floats
 	between 0.0 and 1.0 in the shader. Each integer value is divided by the max possible integer value for that component's bitdepth. For signed normalized,
 	it will resolve to a vector of floats between -1.0 and 1.0 with each positive value being divided my the max signed integer value, and each negative value
 	being divided by the most negative integer value for that component's bitdepth. Usually the ditdepth is the same for all components (where r g b and a are considered
@@ -187,11 +187,11 @@ public:
 
 	\param internalFormat The opengl acceptable image format
 	*/
-	void setInternalFormat(nsint intformat);
+	void setInternalFormat(int32 intformat);
 
-	void setParameterf(TexParameter param, nsfloat pValue);
+	void setParameterf(TexParameter param, float pValue);
 
-	void setParameteri(TexParameter param, nsint pValue);
+	void setParameteri(TexParameter param, int32 pValue);
 
 	void setParameterfv(TexParameter param, const fvec4 & val);
 
@@ -201,7 +201,7 @@ public:
 
 	void setParameterIiuv(TexParameter param, const uivec4 & val);
 
-	void setGLName(nsuint glid);
+	void setGLName(uint32 glid);
 
 	/*
 	Set the pixel data type - see opengl doc for what types are acceptable
@@ -217,7 +217,7 @@ public:
 
 	The base type must be some type that is large enough to store all of the 4 components
 	*/
-	void setPixelDataType(nsint pType);
+	void setPixelDataType(int32 pType);
 
 	void unbind();
 
@@ -233,9 +233,9 @@ protected:
 	GLint mFormat;
 	GLint mInternalFormat;
 	GLint mPixelDataType;
-	nsint mMipMapLevel;
-	nsbool mGenMipmaps;
-	nsuint mBorder;
+	int32 mMipMapLevel;
+	bool mGenMipmaps;
+	uint32 mBorder;
 	ImageData mData;
 };
 
@@ -244,14 +244,14 @@ void pup(PUPer & p, NSTexture::ImageData & dat, const nsstring & varName)
 {
 	pup(p, dat.bpp, varName + ".bpp");
 	pup(p, dat.size, varName + ".size");
-	for (nsuint i = 0; i < dat.size; ++i)
+	for (uint32 i = 0; i < dat.size; ++i)
 		pup(p, dat.data[i], ".data[" + std::to_string(i) + "]");
 }
 
 template<class PUPer>
 void pup(PUPer & p, NSTexture::TexType & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSTexture::TexType>(in);
 }
@@ -300,7 +300,7 @@ public:
 	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 	before calling allocate.
 	*/
-	bool allocate(const nsvoid * data);
+	bool allocate(const void * data);
 
 	/*
 	Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
@@ -310,30 +310,30 @@ public:
 	*/
 	bool allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions);
 
-	nsbool compressed() const;
+	bool compressed() const;
 
 	void init();
 
-	nsbool immutable() const;
+	bool immutable() const;
 
 	/*!
 	Lock the texture from other operations and download the pixel data for editing...
 	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
 	Returns true if the texture is already locked
 	*/
-	nsbool lock();
+	bool lock();
 
 	virtual void pup(NSFilePUPer * p);
 
-	virtual void resize(nsuint w);
+	virtual void resize(uint32 w);
 
 	/*!
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
 	or else it returns false. It also returns 
 	*/
-	nsbool unlock();
+	bool unlock();
 
-	nsbool setCompressed(nsuint byteSize);
+	bool setCompressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -343,24 +343,24 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	nsbool setData(const nsvoid * data, nsuint xoffset, nsuint width);
+	bool setData(const void * data, uint32 xoffset, uint32 width);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements 
 	*/
-	nsbool setDataFromScreen(nsuint xoffset, const uivec2 & lowerLeft, nsuint width);
+	bool setDataFromScreen(uint32 xoffset, const uivec2 & lowerLeft, uint32 width);
 
-	void setImmutable(nsbool immutable);
+	void setImmutable(bool immutable);
 
-	void setWidth(nsuint width);
+	void setWidth(uint32 width);
 
-	nsuint width();
+	uint32 width();
 
 private:
-	nsuint mWidth;
-	nsuint mCompByteSize;
-	nsbool mImmutable;
+	uint32 mWidth;
+	uint32 mCompByteSize;
+	bool mImmutable;
 };
 
 template <class PUPer>
@@ -391,7 +391,7 @@ public:
 	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 	before calling allocate.
 	*/
-	bool allocate(const nsvoid * data);
+	bool allocate(const void * data);
 
 	/*
 	Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
@@ -401,11 +401,11 @@ public:
 	*/
 	bool allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions);
 
-	nsbool compressed() const;
+	bool compressed() const;
 
 	const uivec2 & dim() const;
 
-	nsbool immutable() const;
+	bool immutable() const;
 
 	void init();
 
@@ -414,19 +414,19 @@ public:
 	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
 	Returns true if the texture is already locked
 	*/
-	nsbool lock();
+	bool lock();
 
 	virtual void pup(NSFilePUPer * p);
 
-	virtual void resize(nsuint w, nsuint h);
+	virtual void resize(uint32 w, uint32 h);
 
 	/*!
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
 	or else it returns false. It also returns
 	*/
-	nsbool unlock();
+	bool unlock();
 
-	nsbool setCompressed(nsuint byteSize);
+	bool setCompressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -436,24 +436,24 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	nsbool setData(const nsvoid * data, const uivec2 & offset, const uivec2 & dimensions);
+	bool setData(const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
 	void setdim(const uivec2 & dim);
 
-	void setdim(nsuint w, nsuint h);
+	void setdim(uint32 w, uint32 h);
 
-	void setImmutable(nsbool immutable);
+	void setImmutable(bool immutable);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements
 	*/
-	nsbool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
 private:
 	uivec2 mDim;
-	nsuint mCompByteSize;
-	nsbool mImmutable;
+	uint32 mCompByteSize;
+	bool mImmutable;
 };
 
 template <class PUPer>
@@ -491,13 +491,13 @@ public:
 	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 	before calling allocate.
 	*/
-	bool allocate(const nsvoid * data);
+	bool allocate(const void * data);
 
-	nsbool compressed() const;
+	bool compressed() const;
 
 	const uivec3 & dim() const;
 
-	nsbool immutable() const;
+	bool immutable() const;
 
 	void init();
 
@@ -506,7 +506,7 @@ public:
 	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
 	Returns true if the texture is already locked
 	*/
-	nsbool lock();
+	bool lock();
 
 	virtual void pup(NSFilePUPer * p);
 
@@ -514,11 +514,11 @@ public:
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
 	or else it returns false. It also returns
 	*/
-	nsbool unlock();
+	bool unlock();
 
-	virtual void resize(nsuint w, nsuint h, nsuint layers);
+	virtual void resize(uint32 w, uint32 h, uint32 layers);
 
-	nsbool setCompressed(nsuint byteSize);
+	bool setCompressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -528,24 +528,24 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	nsbool setData(const nsvoid * data, const uivec3 & offset, const uivec3 & dimensions);
+	bool setData(const void * data, const uivec3 & offset, const uivec3 & dimensions);
 
 	void setdim(const uivec3 & dim);
 
-	void setdim(nsuint w, nsuint h, nsuint layers);
+	void setdim(uint32 w, uint32 h, uint32 layers);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements
 	*/
-	nsbool setDataFromScreen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool setDataFromScreen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-	void setImmutable(nsbool immutable);
+	void setImmutable(bool immutable);
 
 private:
 	uivec3 mDim;
-	nsuint mCompByteSize;
-	nsbool mImmutable;
+	uint32 mCompByteSize;
+	bool mImmutable;
 };
 
 template <class PUPer>
@@ -594,9 +594,9 @@ public:
 	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 	before calling allocate.
 	*/
-	bool allocate(const nsvoid * data);
+	bool allocate(const void * data);
 
-	bool allocate(CubeFace f, const nsvoid * data);
+	bool allocate(CubeFace f, const void * data);
 
 
 	bool allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dim);
@@ -608,35 +608,35 @@ public:
 	*/
 	bool allocateFromScreen(CubeFace f, const uivec2 & lowerLeft, const uivec2 dimensions);
 
-	nsbool compressed() const;
+	bool compressed() const;
 
 	const uivec2 & dim() const;
 
 	void init();
 
-	nsbool lock();
+	bool lock();
 
 	/*!
 	Lock the texture from other operations and download the pixel data for editing...
 	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
 	Returns true if the texture is already locked
 	*/
-	nsbool lock(CubeFace f);
+	bool lock(CubeFace f);
 
 	virtual void pup(NSFilePUPer * p);
 
-	virtual void resize(nsuint w, nsuint h);
+	virtual void resize(uint32 w, uint32 h);
 
 
-	nsbool unlock();
+	bool unlock();
 
 	/*!
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
 	or else it returns false. It also returns
 	*/
-	nsbool unlock(CubeFace f);
+	bool unlock(CubeFace f);
 
-	nsbool setCompressed(nsuint byteSize);
+	bool setCompressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -646,25 +646,25 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	nsbool setData(const nsvoid * data, const uivec2 & offset, const uivec2 & dimensions);
+	bool setData(const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
-	nsbool setData(CubeFace f, const nsvoid * data, const uivec2 & offset, const uivec2 & dimensions);
+	bool setData(CubeFace f, const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
 	void setdim(const uivec2 & dim);
 
-	void setdim(nsuint w, nsuint h);
+	void setdim(uint32 w, uint32 h);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements
 	*/
-	nsbool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-	nsbool setDataFromScreen(CubeFace f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool setDataFromScreen(CubeFace f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
 private:
 	uivec2 mDim;
-	nsuint mCompByteSize;
+	uint32 mCompByteSize;
 };
 
 template <class PUPer>
@@ -716,13 +716,13 @@ public:
 	NSTexBuffer();
 	~NSTexBuffer();
 
-	bool allocate(const nsvoid * data);
+	bool allocate(const void * data);
 
 	void init();
 
-	nsbool lock();
+	bool lock();
 
-	nsbool unlock();
+	bool unlock();
 };
 
 #endif

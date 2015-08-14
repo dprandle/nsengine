@@ -25,10 +25,10 @@ public:
 	virtual void release()=0;
 	virtual void unbind()=0;
 
-	nsuint glid();
+	uint32 glid();
 
 protected:
-	nsuint mGLName;
+	uint32 mGLName;
 };
 
 #endif

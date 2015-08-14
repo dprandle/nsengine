@@ -29,7 +29,7 @@ NSResManager()
 NSPluginManager::~NSPluginManager()
 {}
 
-nsbool NSPluginManager::add(NSResource * res)
+bool NSPluginManager::add(NSResource * res)
 {
 	if (NSResManager::add(res))
 	{
@@ -41,7 +41,7 @@ nsbool NSPluginManager::add(NSResource * res)
 	return false;
 }
 
-nsbool NSPluginManager::bind(NSPlugin * plg)
+bool NSPluginManager::bind(NSPlugin * plg)
 {
 	return plg->bind();
 }
@@ -90,7 +90,7 @@ void NSPluginManager::setActive(NSPlugin * plg)
 		mActivePlugin = 0;
 }
 
-nsbool NSPluginManager::unbind(NSPlugin * plg)
+bool NSPluginManager::unbind(NSPlugin * plg)
 {
 	return plg->unbind();
 }

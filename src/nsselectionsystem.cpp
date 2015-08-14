@@ -64,7 +64,7 @@ NSSelectionSystem::NSSelectionSystem() :
 NSSelectionSystem::~NSSelectionSystem()
 {}
 
-bool NSSelectionSystem::add(NSEntity * ent, nsuint tformid)
+bool NSSelectionSystem::add(NSEntity * ent, uint32 tformid)
 {
 	if (ent == NULL)
 		return false;
@@ -191,7 +191,7 @@ bool NSSelectionSystem::contains(const uivec3 & itemid)
 // 	return false;
 // }
 
-void NSSelectionSystem::changeLayer(int pChange)
+void NSSelectionSystem::changeLayer(int32 pChange)
 {
 	removeFromGrid();
 	translate(fvec3(0, 0, pChange*-Z_GRID));
@@ -241,12 +241,12 @@ void NSSelectionSystem::clear()
 	//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 }
 
-void NSSelectionSystem::setPickfbo(nsuint fbo)
+void NSSelectionSystem::setPickfbo(uint32 fbo)
 {
 	pickBuf = fbo;
 }
 
-void NSSelectionSystem::setFinalfbo(nsuint fbo)
+void NSSelectionSystem::setFinalfbo(uint32 fbo)
 {
 	finalBuf = fbo;
 }
@@ -256,7 +256,7 @@ uivec3 NSSelectionSystem::pick(const fvec2 & mpos)
 	return pick(mpos.x, mpos.y);
 }
 
-uivec3 NSSelectionSystem::pick(nsfloat mousex, nsfloat mousey)
+uivec3 NSSelectionSystem::pick(float mousex, float mousey)
 {
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -272,15 +272,15 @@ uivec3 NSSelectionSystem::pick(nsfloat mousex, nsfloat mousey)
 
 	NSCamComp * cc = cam->get<NSCamComp>();
 	ivec2 dim = cc->dim();
-	nsfloat mouseX = mousex * nsfloat(dim.w);
-	nsfloat mouseY = mousey * nsfloat(dim.h);
+	float mouseX = mousex * float(dim.w);
+	float mouseY = mousey * float(dim.h);
 
 	pickingBuf->setTarget(NSFrameBuffer::Read);
 	pickingBuf->bind();
 	pickingBuf->setReadBuffer(NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + NSGBuffer::Picking));
 
 	uivec3 index;
-	glReadPixels(int(mouseX), int(mouseY), 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
+	glReadPixels(int32(mouseX), int32(mouseY), 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
 	GLError("NSSelectionSystem::pick");
 
 	pickingBuf->setReadBuffer(NSFrameBuffer::None);
@@ -334,7 +334,7 @@ void NSSelectionSystem::draw()
 			{
 				selShader->setTransform(tComp->transform(*selIter));
 				NSMesh * rMesh = nsengine.resource<NSMesh>(renComp->meshID());
-				for (nsuint i = 0; i < rMesh->count(); ++i)
+				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					NSMesh::SubMesh * cSub = rMesh->submesh(i);
 
@@ -403,7 +403,7 @@ void NSSelectionSystem::draw()
 			{
 				selShader->setTransform(tComp->transform(*selIter));
 				NSMesh * rMesh = nsengine.resource<NSMesh>(renComp->meshID());
-				for (nsuint i = 0; i < rMesh->count(); ++i)
+				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					NSMesh::SubMesh * cSub = rMesh->submesh(i);
 
@@ -484,7 +484,7 @@ void NSSelectionSystem::draw()
 		fvec3 mypos = nsengine.system<NSBuildSystem>()->mirror();
 		mypos.z = nsengine.system<NSBuildSystem>()->layer() * Z_GRID;
 		selShader->setTransform(translationMat4(mypos));
-		for (nsuint i = 0; i < tileM->count(); ++i)
+		for (uint32 i = 0; i < tileM->count(); ++i)
 		{
 			NSMesh::SubMesh * cSub = tileM->submesh(i);
 
@@ -525,7 +525,7 @@ void NSSelectionSystem::_drawEntOcc(NSEntity * ent)
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
-				for (nsuint i = 0; i < occMesh->count(); ++i)
+				for (uint32 i = 0; i < occMesh->count(); ++i)
 				{
 					NSMesh::SubMesh * occSub = occMesh->submesh(i);
 
@@ -572,7 +572,7 @@ void NSSelectionSystem::_drawOcc()
 		return;
 
 	NSMesh * occMesh = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
-	for (nsuint i = 0; i < occMesh->count(); ++i)
+	for (uint32 i = 0; i < occMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * occSub = occMesh->submesh(i);
 
@@ -591,11 +591,11 @@ void NSSelectionSystem::_drawOcc()
 		NSTileGrid::GridBounds g = scene->grid().occupiedGridBounds();
 
 
-		for (nsint z = g.minSpace.z; z <= g.maxSpace.z; ++z)
+		for (int32 z = g.minSpace.z; z <= g.maxSpace.z; ++z)
 		{
-			for (nsint y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+			for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 			{
-				for (nsint x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+				for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 				{
 					uivec3 id = scene->grid().get(ivec3(x, y, z));
 					NSEntity * ent = nsengine.resource<NSEntity>(id.x, id.y);
@@ -649,9 +649,9 @@ void NSSelectionSystem::_drawHidden()
 			continue;
 		}
 
-		for (nsuint index = 0; index < tComp->count(); ++index)
+		for (uint32 index = 0; index < tComp->count(); ++index)
 		{
-			int state = tComp->hiddenState(index);
+			int32 state = tComp->hiddenState(index);
 
 			bool layerBit = state & NSTFormComp::LayerHide && true;
 			bool objectBit = state & NSTFormComp::ObjectHide && true;
@@ -661,7 +661,7 @@ void NSSelectionSystem::_drawHidden()
 			if (!hideBit && (!layerBit && objectBit))
 			{
 				selShader->setTransform(tComp->transform(index));
-				for (nsuint i = 0; i < rMesh->count(); ++i)
+				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					NSMesh::SubMesh * cSub = rMesh->submesh(i);
 
@@ -708,7 +708,7 @@ void NSSelectionSystem::del()
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
 
 		posVec.resize(selC->count());
-		nsuint i = 0;
+		uint32 i = 0;
 		auto iter2 = selC->begin();
 		while (iter2 != selC->end())
 		{
@@ -717,7 +717,7 @@ void NSSelectionSystem::del()
 			++i;
 		}
 
-		for (nsuint cur = 0; cur < posVec.size(); ++cur)
+		for (uint32 cur = 0; cur < posVec.size(); ++cur)
 			scene->remove(posVec[cur]);
 
 		++iter;
@@ -730,7 +730,7 @@ bool NSSelectionSystem::empty()
 	return mSelectedEnts.empty();
 }
 
-void NSSelectionSystem::enableLayerMode(const nsbool & pMode)
+void NSSelectionSystem::enableLayerMode(const bool & pMode)
 {
 	mLayerMode = pMode;
 }
@@ -757,12 +757,12 @@ void NSSelectionSystem::init()
 	addTriggerHash(MoveSelectionToggle, NSSEL_MOVE_TOGGLE);
 }
 
-nsint NSSelectionSystem::drawPriority()
+int32 NSSelectionSystem::drawPriority()
 {
 	return SEL_SYS_DRAW_PR;
 }
 
-nsint NSSelectionSystem::updatePriority()
+int32 NSSelectionSystem::updatePriority()
 {
 	return SEL_SYS_UPDATE_PR;
 }
@@ -794,7 +794,7 @@ void NSSelectionSystem::_onRotateZ(NSEntity * ent, bool pPressed)
 		rotate(ent, NSTFormComp::Up, 45.0f);
 }
 
-void NSSelectionSystem::_onSelect(NSEntity * ent, nsbool pPressed, const uivec3 & pID, bool pSnapZOnly)
+void NSSelectionSystem::_onSelect(NSEntity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
 {
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -916,7 +916,7 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 		auto brushIter = brushComp->begin();
 		while (brushIter != brushComp->end())
 		{
-			for (nsint i = 0; i < brushComp->height(); ++i)
+			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
 				NSEntity * focEnt = scene->entity(mFocusEnt.x, mFocusEnt.y);
 				if (focEnt == NULL)
@@ -940,7 +940,7 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 	}
 }
 
-void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, nsusint axis_)
+void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, uint16 axis_)
 {
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -1012,7 +1012,7 @@ void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, nsus
 	mTotalFrameTranslation += fpos;
 }
 
-nsint NSSelectionSystem::layer() const
+int32 NSSelectionSystem::layer() const
 {
 	return mLayer;
 }
@@ -1022,7 +1022,7 @@ const uivec3 & NSSelectionSystem::center()
 	return mFocusEnt;
 }
 
-void NSSelectionSystem::_onMultiSelect(NSEntity * ent, nsbool pPressed, const uivec3 & pID)
+void NSSelectionSystem::_onMultiSelect(NSEntity * ent, bool pPressed, const uivec3 & pID)
 {
 	NSScene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -1141,7 +1141,7 @@ void NSSelectionSystem::_reset_focus(const uivec3 & pickid)
 	mSendFocEvent = true;
 }
 
-void NSSelectionSystem::remove(NSEntity * ent, nsuint pTFormID)
+void NSSelectionSystem::remove(NSEntity * ent, uint32 pTFormID)
 {
 	if (ent == NULL)
 		return;
@@ -1228,7 +1228,7 @@ void NSSelectionSystem::rotate(const fvec4 & axisangle)
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::DirVec axis, nsfloat angle)
+void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::DirVec axis, float angle)
 {
 	if (ent == NULL)
 		return;
@@ -1246,7 +1246,7 @@ void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::DirVec axis, nsfloat
 	}
 }
 
-void NSSelectionSystem::rotate(NSTFormComp::DirVec axis, nsfloat angle)
+void NSSelectionSystem::rotate(NSTFormComp::DirVec axis, float angle)
 {
 	auto iter = mSelectedEnts.begin();
 	while (iter != mSelectedEnts.end())
@@ -1256,7 +1256,7 @@ void NSSelectionSystem::rotate(NSTFormComp::DirVec axis, nsfloat angle)
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::Axis axis, nsfloat angle)
+void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::Axis axis, float angle)
 {
 	if (ent == NULL)
 		return;
@@ -1274,7 +1274,7 @@ void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::Axis axis, nsfloat a
 	}
 }
 
-void NSSelectionSystem::rotate(NSTFormComp::Axis axis, nsfloat angle)
+void NSSelectionSystem::rotate(NSTFormComp::Axis axis, float angle)
 {
 	auto iter = mSelectedEnts.begin();
 	while (iter != mSelectedEnts.end())
@@ -1368,17 +1368,17 @@ void NSSelectionSystem::scale(const fvec3 & pAmount)
 	}
 }
 
-void NSSelectionSystem::scale(NSEntity * ent, nsfloat x, nsfloat y, nsfloat z)
+void NSSelectionSystem::scale(NSEntity * ent, float x, float y, float z)
 {
 	scale(ent, fvec3(x, y, z));
 }
 
-void NSSelectionSystem::scale(nsfloat x, nsfloat y, nsfloat z)
+void NSSelectionSystem::scale(float x, float y, float z)
 {
 	scale(fvec3(x, y, z));
 }
 
-bool NSSelectionSystem::set(NSEntity * ent, nsuint tformid)
+bool NSSelectionSystem::set(NSEntity * ent, uint32 tformid)
 {
 	clear();
 	return add(ent, tformid);
@@ -1400,7 +1400,7 @@ void NSSelectionSystem::setColor(const fvec4 & pColor)
 	}
 }
 
-void NSSelectionSystem::setHiddenState(NSTFormComp::HiddenState pState, nsbool pSet)
+void NSSelectionSystem::setHiddenState(NSTFormComp::HiddenState pState, bool pSet)
 {
 	auto iter = mSelectedEnts.begin();
 	while (iter != mSelectedEnts.end())
@@ -1418,7 +1418,7 @@ void NSSelectionSystem::setHiddenState(NSTFormComp::HiddenState pState, nsbool p
 	}
 }
 
-void NSSelectionSystem::setLayer(nsint pLayer)
+void NSSelectionSystem::setLayer(int32 pLayer)
 {
 	mLayer = pLayer;
 }
@@ -1564,7 +1564,7 @@ void NSSelectionSystem::tileswap(NSEntity * pNewTile)
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
 
 		posVec.resize(selC->count());
-		nsuint i = 0;
+		uint32 i = 0;
 		auto iter2 = selC->begin();
 		while (iter2 != selC->end())
 		{
@@ -1573,7 +1573,7 @@ void NSSelectionSystem::tileswap(NSEntity * pNewTile)
 			++i;
 		}
 
-		for (nsuint cur = 0; cur < posVec.size(); ++cur)
+		for (uint32 cur = 0; cur < posVec.size(); ++cur)
 		{
 			uivec3 id = scene->refid(posVec[cur]);
 			scene->replace(id.x, id.y, id.z, pNewTile);
@@ -1612,17 +1612,17 @@ void NSSelectionSystem::translate(const fvec3 & pAmount)
 	}
 }
 
-void NSSelectionSystem::translate(nsfloat x, nsfloat y, nsfloat z)
+void NSSelectionSystem::translate(float x, float y, float z)
 {
 	translate(fvec3(x, y, z));
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, nsfloat x, nsfloat y, nsfloat z)
+void NSSelectionSystem::translate(NSEntity * ent, float x, float y, float z)
 {
 	translate(ent, fvec3(x, y, z));
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::DirVec pDir, nsfloat pAmount)
+void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::DirVec pDir, float pAmount)
 {
 	if (ent == NULL)
 		return;
@@ -1640,7 +1640,7 @@ void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::DirVec pDir, nsfl
 	}
 }
 
-void NSSelectionSystem::translate(NSTFormComp::DirVec pDir, nsfloat pAmount)
+void NSSelectionSystem::translate(NSTFormComp::DirVec pDir, float pAmount)
 {
 	auto iter = mSelectedEnts.begin();
 	while (iter != mSelectedEnts.end())
@@ -1650,7 +1650,7 @@ void NSSelectionSystem::translate(NSTFormComp::DirVec pDir, nsfloat pAmount)
 	}
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::Axis pDir, nsfloat pAmount)
+void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::Axis pDir, float pAmount)
 {
 	if (ent == NULL)
 		return;
@@ -1668,7 +1668,7 @@ void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::Axis pDir, nsfloa
 	}
 }
 
-void NSSelectionSystem::translate(NSTFormComp::Axis pDir, nsfloat pAmount)
+void NSSelectionSystem::translate(NSTFormComp::Axis pDir, float pAmount)
 {
 	auto iter = mSelectedEnts.begin();
 	while (iter != mSelectedEnts.end())
@@ -1678,7 +1678,7 @@ void NSSelectionSystem::translate(NSTFormComp::Axis pDir, nsfloat pAmount)
 	}
 }
 
-nsbool NSSelectionSystem::layerMode() const
+bool NSSelectionSystem::layerMode() const
 {
 	return mLayerMode;
 }
@@ -1697,10 +1697,10 @@ bool NSSelectionSystem::brushValid()
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
 
-		nsint newZ = NSTileGrid::indexZ(tComp->wpos().z);
+		int32 newZ = NSTileGrid::indexZ(tComp->wpos().z);
 
 		auto selIter = selComp->begin();
-		nsint z = 0;
+		int32 z = 0;
 
 		if (selIter != selComp->end())
 			z = NSTileGrid::indexZ(tComp->wpos(*selIter).z);
@@ -1709,7 +1709,7 @@ bool NSSelectionSystem::brushValid()
 
 		while (selIter != selComp->end())
 		{
-			nsint newZ = NSTileGrid::indexZ(tComp->wpos(*selIter).z);
+			int32 newZ = NSTileGrid::indexZ(tComp->wpos(*selIter).z);
 			if (newZ != z)
 				return false;
 			++selIter;

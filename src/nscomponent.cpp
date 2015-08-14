@@ -43,7 +43,7 @@ void NSComponent::postUpdate(bool pUpdate)
 	mUpdate = pUpdate;
 }
 
-nsuint NSComponent::type()
+uint32 NSComponent::type()
 {
 	return mHashedType;
 }

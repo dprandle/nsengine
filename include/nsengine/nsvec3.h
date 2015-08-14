@@ -4,22 +4,22 @@
 #include "nsvec2.h"
 
 template <class T>
-NSVec3<T> operator*(const nsint & pLHS, const NSVec3<T> & pRHS);
+NSVec3<T> operator*(const int32 & pLHS, const NSVec3<T> & pRHS);
 
 template <class T>
-NSVec3<T> operator*(const nsfloat & pLHS, const NSVec3<T> & pRHS);
+NSVec3<T> operator*(const float & pLHS, const NSVec3<T> & pRHS);
 
 template <class T>
-NSVec3<T> operator*(const nsdouble & pLHS, const NSVec3<T> & pRHS);
+NSVec3<T> operator*(const double & pLHS, const NSVec3<T> & pRHS);
 
 template <class T>
-NSVec3<T> operator/(const nsint & pLHS, const NSVec3<T> & pRHS);
+NSVec3<T> operator/(const int32 & pLHS, const NSVec3<T> & pRHS);
 
 template <class T>
-NSVec3<T> operator/(const nsfloat & pLHS, const NSVec3<T> & pRHS);
+NSVec3<T> operator/(const float & pLHS, const NSVec3<T> & pRHS);
 
 template <class T>
-NSVec3<T> operator/(const nsdouble & pLHS, const NSVec3<T> & pRHS);
+NSVec3<T> operator/(const double & pLHS, const NSVec3<T> & pRHS);
 
 template <class T>
 NSVec3<T> abs(const NSVec3<T> & pVec);
@@ -655,14 +655,14 @@ struct NSVec3
 		return *this;
 	}
 
-	NSVec3<T> operator++(nsint)
+	NSVec3<T> operator++(int32)
 	{
 		NSVec3<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSVec3<T> operator--(nsint)
+	NSVec3<T> operator--(int32)
 	{
 		NSVec3<T> ret(*this);
 		--(*this);
@@ -717,34 +717,34 @@ struct NSVec3
 		return *this;
 	}
 
-	nsbool operator==(const NSVec3<T> & rhs) const
+	bool operator==(const NSVec3<T> & rhs) const
 	{
 		return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z));
 	}
 
-	nsbool operator!=(const NSVec3<T> & rhs) const
+	bool operator!=(const NSVec3<T> & rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	nsbool operator==(const T & rhs) const
+	bool operator==(const T & rhs) const
 	{
 		return ((x == rhs) && (y == rhs) && (z == rhs));
 	}
 
-	nsbool operator!=(const T & rhs) const
+	bool operator!=(const T & rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	const T & operator[](const nsuint & pVal) const
+	const T & operator[](const uint32 & pVal) const
 	{
 		if (pVal > 2)
 			throw(std::out_of_range("vec3 index out of range"));
 		return data[pVal];
 	}
 
-	T & operator[](const nsuint & pVal)
+	T & operator[](const uint32 & pVal)
 	{
 		if (pVal > 2)
 			throw(std::out_of_range("vec3 index out of range"));
@@ -902,37 +902,37 @@ struct NSVec3
 };
 
 template <class T>
-NSVec3<T> operator*(const nsint & pLHS, const NSVec3<T> & pRHS)
+NSVec3<T> operator*(const int32 & pLHS, const NSVec3<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSVec3<T> operator*(const nsfloat & pLHS, const NSVec3<T> & pRHS)
+NSVec3<T> operator*(const float & pLHS, const NSVec3<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSVec3<T> operator*(const nsdouble & pLHS, const NSVec3<T> & pRHS)
+NSVec3<T> operator*(const double & pLHS, const NSVec3<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSVec3<T> operator/(const nsint & pLHS, const NSVec3<T> & pRHS)
+NSVec3<T> operator/(const int32 & pLHS, const NSVec3<T> & pRHS)
 {
 	return NSVec3<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z);
 }
 
 template <class T>
-NSVec3<T> operator/(const nsfloat & pLHS, const NSVec3<T> & pRHS)
+NSVec3<T> operator/(const float & pLHS, const NSVec3<T> & pRHS)
 {
 	return NSVec3<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z);
 }
 
 template <class T>
-NSVec3<T> operator/(const nsdouble & pLHS, const NSVec3<T> & pRHS)
+NSVec3<T> operator/(const double & pLHS, const NSVec3<T> & pRHS)
 {
 	return NSVec3<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z);
 }

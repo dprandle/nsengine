@@ -27,7 +27,7 @@ NSTexManager::NSTexManager(): NSResManager()
 NSTexManager::~NSTexManager()
 {}
 
-NSTexture * NSTexManager::load(nsuint res_type_id, const nsstring & fname)
+NSTexture * NSTexManager::load(uint32 res_type_id, const nsstring & fname)
 {
 	if (res_type_id == type_to_hash(NSTex2D))
 		return loadImage(fname);
@@ -108,15 +108,15 @@ NSTex2D * NSTexManager::loadImage(const nsstring & fname)
 
 	// Make sure worked - if not send error message to log file
 	
-	int worked = ilLoadImage(fName.c_str());
-	int converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	int32 worked = ilLoadImage(fName.c_str());
+	int32 converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 	if (!worked || !converted)
 	{
 		if (!worked)
 		{
 			dprint("NSTexManager::loadImage Could not load NSTex2D from file " + fName);
 			ilDeleteImages(1, &imageID);
-			nsuint err = ilGetError();
+			uint32 err = ilGetError();
 			destroy(resName);
 			return NULL;
 		}
@@ -204,14 +204,14 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & pXPlus,
 	tex->initGL();
 	tex->bind();
 
-	for (nsuint i = 0; i < fNames.size(); ++i)
+	for (uint32 i = 0; i < fNames.size(); ++i)
 	{
 		ILuint imageID;
 		ilGenImages(1, &imageID);
 		ilBindImage(imageID);
 
-		int worked = ilLoadImage((const ILstring)fNames[i].c_str());
-		int converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+		int32 worked = ilLoadImage((const ILstring)fNames[i].c_str());
+		int32 converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 		if (!worked || !converted)
 		{
 			if (!worked)
@@ -291,7 +291,7 @@ NSTexCubeMap * NSTexManager::loadCubemap(const nsstring & fname)
 	tex->setSubDir(subDir); // should be "" for false appendDirectories
 	tex->setExtension(resExtension);
 
-	nsuint glid = 0;
+	uint32 glid = 0;
 
 	if (tex->extension() == ".dds")
 		glid = SOIL_load_OGL_single_cubemap(
@@ -347,7 +347,7 @@ bool NSTexManager::save(NSResource * res, const nsstring & path)
 bool NSTexManager::save(NSTexCubeMap * cubemap, const nsstring & path)
 {
 	ILuint imageID = 0;
-	int savetype = 0;
+	int32 savetype = 0;
 
 	if (cubemap == NULL)
 	{
@@ -373,7 +373,7 @@ bool NSTexManager::save(NSTexCubeMap * cubemap, const nsstring & path)
 	    fName = pathFromFilename(fName);
 		nsstring localFname;
 		bool ret = true;
-		for (nsuint curFace = 0; curFace < 6; ++curFace)
+		for (uint32 curFace = 0; curFace < 6; ++curFace)
 		{
 			switch (curFace)
 			{
@@ -458,7 +458,7 @@ bool NSTexManager::save(NSTexCubeMap * cubemap, const nsstring & path)
 	if (cubemap->data().data == NULL)
 		return false;
 
-	nsuint ret = SOIL_save_image(fName.c_str(), savetype, cubemap->dim().w, cubemap->dim().h*6, cubemap->channels(), (nsuchar*)cubemap->data().data);
+	uint32 ret = SOIL_save_image(fName.c_str(), savetype, cubemap->dim().w, cubemap->dim().h*6, cubemap->channels(), (uint8*)cubemap->data().data);
 	cubemap->bind();
 	cubemap->unlock();
 	cubemap->unbind();

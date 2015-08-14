@@ -24,36 +24,36 @@ class NSBufferObject;
 class NSVertexArrayObject : public NSGLObject
 {
 public:
-	typedef std::map<nsuint,std::set<nsuint>> BufferMap;
+	typedef std::map<uint32,std::set<uint32>> BufferMap;
 	NSVertexArrayObject();
 
-	void add(NSBufferObject * mBuffer, nsuint pAttLoc);
+	void add(NSBufferObject * mBuffer, uint32 pAttLoc);
 
 	void bind();
 
 	bool contains(NSBufferObject * mBuffer);
 
-	void enable(nsuint pAttLoc);
+	void enable(uint32 pAttLoc);
 
-	void disable(nsuint pAttLoc);
+	void disable(uint32 pAttLoc);
 
 	void initGL();
 
 	void remove(NSBufferObject * mBuffer);
 
-	void remove(NSBufferObject * mBuffer, nsuint pAttLoc);
+	void remove(NSBufferObject * mBuffer, uint32 pAttLoc);
 
 	void release();
 
 	void unbind();
 
-	void vertexAttribDiv(nsuint pAttLoc, nsuint pDivisor);
+	void vertexAttribDiv(uint32 pAttLoc, uint32 pDivisor);
 
-	void vertexAttribPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsbool pNormalized, nsuint pAttributeStride, nsuint pByteOffset = 0);
+	void vertexAttribPtr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, bool pNormalized, uint32 pAttributeStride, uint32 pByteOffset = 0);
 
-	void vertexAttribIPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsuint pAttributeStride, nsuint pByteOffset = 0);
+	void vertexAttribIPtr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, uint32 pAttributeStride, uint32 pByteOffset = 0);
 
-	void vertexAttribLPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsuint pAttributeStride, nsuint pByteOffset = 0);
+	void vertexAttribLPtr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, uint32 pAttributeStride, uint32 pByteOffset = 0);
 
 private:
 	BufferMap mOwnedBuffers;

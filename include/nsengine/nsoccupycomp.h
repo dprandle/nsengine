@@ -27,7 +27,7 @@ public:
 
 	virtual ~NSOccupyComp();
 
-	bool add(int x, int y, int z);
+	bool add(int32 x, int32 y, int32 z);
 
 	bool add(const ivec3 & pGridPos);
 
@@ -35,7 +35,7 @@ public:
 
 	void build(const NSBoundingBox & pBox);
 
-	bool contains(int x, int y, int z);
+	bool contains(int32 x, int32 y, int32 z);
 
 	bool contains(const ivec3 & pGridPos);
 
@@ -57,11 +57,11 @@ public:
 
 	const uivec2 & meshid();
 
-	virtual void nameChange(nsuint plugID, nsuint oldID, nsuint newID);
+	virtual void nameChange(uint32 plugID, uint32 oldID, uint32 newID);
 
 	virtual void pup(NSFilePUPer * p);
 
-	bool remove(int x, int y, int z);
+	bool remove(int32 x, int32 y, int32 z);
 
 	bool remove(const ivec3 & pGridPos);
 

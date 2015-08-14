@@ -21,7 +21,7 @@ NSGLObject()
 /*!
 Add the buffer to the VAO - the buffer must be bound before adding
 */
-void NSVertexArrayObject::add(NSBufferObject * mBuffer, nsuint pAttLoc)
+void NSVertexArrayObject::add(NSBufferObject * mBuffer, uint32 pAttLoc)
 {
 	mOwnedBuffers[mBuffer->glid()].emplace(pAttLoc);
 	enable(pAttLoc);
@@ -38,13 +38,13 @@ bool NSVertexArrayObject::contains(NSBufferObject * pBuffer)
 	return (mOwnedBuffers.find(pBuffer->glid()) != mOwnedBuffers.end());
 }
 
-void NSVertexArrayObject::enable(nsuint pAttLoc)
+void NSVertexArrayObject::enable(uint32 pAttLoc)
 {
 	glEnableVertexAttribArray(pAttLoc);
 	GLError("NSVertexArrayObject::enableAttribute()");
 }
 
-void NSVertexArrayObject::disable(nsuint pAttLoc)
+void NSVertexArrayObject::disable(uint32 pAttLoc)
 {
 	glDisableVertexAttribArray(pAttLoc);
 	GLError("NSVertexArrayObject::disableAttribute()");
@@ -73,7 +73,7 @@ void NSVertexArrayObject::remove(NSBufferObject * mBuffer)
 /*!
 Remove the buffer from the VAO - the buffer must be bound before removing
 */
-void NSVertexArrayObject::remove(NSBufferObject * mBuffer, nsuint pAttLoc)
+void NSVertexArrayObject::remove(NSBufferObject * mBuffer, uint32 pAttLoc)
 {
 	auto item = mOwnedBuffers.find(mBuffer->glid());
 	if (item != mOwnedBuffers.end())
@@ -102,29 +102,29 @@ void NSVertexArrayObject::unbind()
 	GLError("NSVertexArrayObject::unbind()");
 }
 
-void NSVertexArrayObject::vertexAttribDiv(nsuint pAttLoc, nsuint pDivisor)
+void NSVertexArrayObject::vertexAttribDiv(uint32 pAttLoc, uint32 pDivisor)
 {
 	glVertexAttribDivisor(pAttLoc, pDivisor);
 	GLError("NSVertexArrayObject::vertexAttribDiv()");
 }
 
-void NSVertexArrayObject::vertexAttribPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsbool pNormalized, nsuint pAttributeStride, nsuint pByteOffset)
+void NSVertexArrayObject::vertexAttribPtr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, bool pNormalized, uint32 pAttributeStride, uint32 pByteOffset)
 {
-	nsllint cst = pByteOffset;
+	int64 cst = pByteOffset;
 	glVertexAttribPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pNormalized, pAttributeStride, (const GLvoid*)cst);
 	GLError("NSVertexArrayObject::vertexAttribPtr()");
 }
 
-void NSVertexArrayObject::vertexAttribIPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsuint pAttributeStride, nsuint pByteOffset)
+void NSVertexArrayObject::vertexAttribIPtr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, uint32 pAttributeStride, uint32 pByteOffset)
 {
-	nsllint cst = pByteOffset;
+	int64 cst = pByteOffset;
 	glVertexAttribIPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)cst);
 	GLError("NSVertexArrayObject::vertexAttribIPtr()");
 }
 
-void NSVertexArrayObject::vertexAttribLPtr(nsuint pAttLoc, nsuint pElementsPerAttribute, nsuint pGLElementType, nsuint pAttributeStride, nsuint pByteOffset)
+void NSVertexArrayObject::vertexAttribLPtr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, uint32 pAttributeStride, uint32 pByteOffset)
 {
-	nsllint cst = pByteOffset;
+	int64 cst = pByteOffset;
 	glVertexAttribLPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)cst);
 	GLError("NSVertexArrayObject::vertexAttribLPtr()");
 }

@@ -31,11 +31,11 @@ public:
 
 	const nsstring & name() const;
 
-	nsuint plugid() const;
+	uint32 plugid() const;
 
-	nsuint id() const;
+	uint32 id() const;
 
-	nsuint type();
+	uint32 type();
 
 	const nsstring & subDir() const;
 
@@ -57,7 +57,7 @@ public:
 
 	virtual void pup(NSFilePUPer * p) = 0;
 
-	nsbool owned() { return mOwned; }
+	bool owned() { return mOwned; }
 
 	void setExtension( const nsstring & pExt);
 
@@ -72,15 +72,15 @@ public:
 	void setSubDir(const nsstring & pDir);
 
 protected:
-	nsuint mHashedType;
+	uint32 mHashedType;
 	nsstring mIconPath;
 	uivec2 mIconTexID;
 	nsstring mName;
 	nsstring mSubDir;
 	nsstring mExtension;
-	nsuint mID;
-	nsuint mPlugID;
-	nsbool mOwned;
+	uint32 mID;
+	uint32 mPlugID;
+	bool mOwned;
 };
 
 #endif

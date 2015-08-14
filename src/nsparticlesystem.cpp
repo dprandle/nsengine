@@ -38,9 +38,9 @@ NSParticleSystem::~NSParticleSystem()
 // 	return false;
 // }
 
-nsuint NSParticleSystem::finalfbo() { return mFinalBuf; }
+uint32 NSParticleSystem::finalfbo() { return mFinalBuf; }
 
-void NSParticleSystem::setFinalfbo(nsuint fbo) { mFinalBuf = fbo; }
+void NSParticleSystem::setFinalfbo(uint32 fbo) { mFinalBuf = fbo; }
 
 void NSParticleSystem::draw()
 {
@@ -126,14 +126,14 @@ void NSParticleSystem::draw()
 		renderShader->setColorMode(mat->colorMode());
 		renderShader->setFragOutColor(mat->color());
 		renderShader->setLifetime(float(comp->lifetime()) / 1000.0f);
-		renderShader->setBlendMode(nsuint(comp->blendMode()));
+		renderShader->setBlendMode(uint32(comp->blendMode()));
 
 		
 		comp->vertexArrayObject()->bind();
 
 
 		tComp->transformBuffer()->bind();
-		for (nsuint tfInd = 0; tfInd < 4; ++tfInd)
+		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 		{
 			comp->vertexArrayObject()->add(tComp->transformBuffer(), 4 + tfInd);
 			comp->vertexArrayObject()->vertexAttribPtr(4 + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
@@ -159,12 +159,12 @@ void NSParticleSystem::init()
 {
 }
 
-nsint NSParticleSystem::drawPriority()
+int32 NSParticleSystem::drawPriority()
 {
 	return PARTICLE_SYS_DRAW_PR;
 }
 
-nsint NSParticleSystem::updatePriority()
+int32 NSParticleSystem::updatePriority()
 {
 	return PARTICLE_SYS_UPDATE_PR;
 }
@@ -186,7 +186,7 @@ void NSParticleSystem::update()
 		return;
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	static nsuint count = 1;
+	static uint32 count = 1;
 	auto comps = scene->entities<NSParticleComp>();
 	auto entIter = comps.begin();
 	while (entIter != comps.end())
@@ -225,7 +225,7 @@ void NSParticleSystem::update()
 		particleShader->setLaunchFreq(float(comp->emissionRate())); // for now
 		particleShader->setMotionKeyGlobal(comp->motionGlobalTime());
 		particleShader->setInterpolateMotionKeys(comp->motionKeyInterpolation());
-		particleShader->setUniform("motionKeyType", nsuint(comp->motionKeyType()));
+		particleShader->setUniform("motionKeyType", uint32(comp->motionKeyType()));
 		particleShader->setStartingSize(comp->startingSize());
 		particleShader->setEmitterSize(comp->emitterSize());
 		particleShader->setEmitterShape(comp->emitterShape());
@@ -254,7 +254,7 @@ void NSParticleSystem::update()
 		comp->transformFeedbackObject()->unbind();
 		comp->swap();
 
-		std::vector<nsfloat> f;
+		std::vector<float> f;
 		f.resize(10 * count);
 
 		++entIter;

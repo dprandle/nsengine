@@ -29,21 +29,21 @@ NSMesh::~NSMesh()
 
 void NSMesh::allocate()
 {
-	for (nsuint i = 0; i < count(); ++i)
+	for (uint32 i = 0; i < count(); ++i)
 		allocate(i);
 }
 
-void NSMesh::allocate(nsuint subindex)
+void NSMesh::allocate(uint32 subindex)
 {
 	submesh(subindex)->allocateBuffers();
 }
 
-void NSMesh::bakeRotation(nsuint subindex, const fquat & pRot)
+void NSMesh::bakeRotation(uint32 subindex, const fquat & pRot)
 {
 	SubMesh * sub = submesh(subindex);
 	if (sub == NULL)
 		return;
-	for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+	for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 	{
 		sub->mPositions[i] = rotationMat3(pRot) * sub->mPositions[i];
 		if (sub->mNormals.size() == sub->mPositions.size())
@@ -55,12 +55,12 @@ void NSMesh::bakeRotation(nsuint subindex, const fquat & pRot)
 	calcaabb();
 }
 
-void NSMesh::bakeScaling(nsuint subindex, const fvec3 & pScaling)
+void NSMesh::bakeScaling(uint32 subindex, const fvec3 & pScaling)
 {
 	SubMesh * sub = submesh(subindex);
 	if (sub == NULL)
 		return;
-	for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+	for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 	{
 		sub->mPositions[i] %= pScaling;
 		if (sub->mNormals.size() == sub->mPositions.size())
@@ -72,12 +72,12 @@ void NSMesh::bakeScaling(nsuint subindex, const fvec3 & pScaling)
 	calcaabb();
 }
 
-void NSMesh::bakeTranslation(nsuint subindex, const fvec3 & pTrans)
+void NSMesh::bakeTranslation(uint32 subindex, const fvec3 & pTrans)
 {
 	SubMesh * sub = submesh(subindex);
 	if (sub == NULL)
 		return;
-	for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+	for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 	{
 		sub->mPositions[i] += pTrans;
 		if (sub->mNormals.size() == sub->mPositions.size())
@@ -91,12 +91,12 @@ void NSMesh::bakeTranslation(nsuint subindex, const fvec3 & pTrans)
 
 void NSMesh::bake()
 {
-	for (nsuint subindex = 0; subindex < count(); ++subindex)
+	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
 		SubMesh * sub = submesh(subindex);
 		if (sub == NULL || sub->mNode == NULL)
 			return;
-		for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 		{
 			sub->mPositions[i] = (sub->mNode->mWorldTransform * sub->mPositions[i]).xyz();
 			if (sub->mNormals.size() == sub->mPositions.size())
@@ -111,12 +111,12 @@ void NSMesh::bake()
 
 void NSMesh::bakeRotation(const fquat & pRot)
 {
-	for (nsuint subindex = 0; subindex < count(); ++subindex)
+	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
 		SubMesh * sub = submesh(subindex);
 		if (sub == NULL)
 			return;
-		for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 		{
 			sub->mPositions[i] = rotationMat3(pRot) * sub->mPositions[i];
 			if (sub->mNormals.size() == sub->mPositions.size())
@@ -131,12 +131,12 @@ void NSMesh::bakeRotation(const fquat & pRot)
 
 void NSMesh::bakeScaling(const fvec3 & pScaling)
 {
-	for (nsuint subindex = 0; subindex < count(); ++subindex)
+	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
 		SubMesh * sub = submesh(subindex);
 		if (sub == NULL)
 			return;
-		for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 		{
 			sub->mPositions[i] %= pScaling;
 			if (sub->mNormals.size() == sub->mPositions.size())
@@ -151,12 +151,12 @@ void NSMesh::bakeScaling(const fvec3 & pScaling)
 
 void NSMesh::bakeTranslation(const fvec3 & pTrans)
 {
-	for (nsuint subindex = 0; subindex < count(); ++subindex)
+	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
 		SubMesh * sub = submesh(subindex);
 		if (sub == NULL)
 			return;
-		for (nsuint i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
 		{
 			sub->mPositions[i] += pTrans;
 			if (sub->mNormals.size() == sub->mPositions.size())
@@ -204,11 +204,11 @@ void NSMesh::calcaabb()
 
 void NSMesh::flipuv()
 {
-	for (nsuint i = 0; i < subMeshes.size(); ++i)
+	for (uint32 i = 0; i < subMeshes.size(); ++i)
 		flipuv(i);
 }
 
-void NSMesh::flipuv(nsuint pSubIndex)
+void NSMesh::flipuv(uint32 pSubIndex)
 {
 	if (pSubIndex >= subMeshes.size())
 	{
@@ -216,13 +216,13 @@ void NSMesh::flipuv(nsuint pSubIndex)
 		return;
 	}
 	SubMesh * sub = submesh(pSubIndex);
-	for (nsuint i = 0; i < sub->mTexCoords.size(); ++i)
+	for (uint32 i = 0; i < sub->mTexCoords.size(); ++i)
 		sub->mTexCoords[i].v = 1 - sub->mTexCoords[i].v;
 
 	sub->mTexBuf.bind();
 	sub->mTexBuf.setData(sub->mTexCoords,
 						 0,
-						 static_cast<nsuint>(sub->mTexCoords.size()));
+						 static_cast<uint32>(sub->mTexCoords.size()));
 	sub->mTexBuf.unbind();
 }
 
@@ -242,7 +242,7 @@ void NSMesh::pup(NSFilePUPer * p)
 
 bool NSMesh::contains(SubMesh * submesh)
 {
-	for (nsuint i = 0; i < subMeshes.size(); ++i)
+	for (uint32 i = 0; i < subMeshes.size(); ++i)
 	{
 		if (subMeshes[i] == submesh)
 			return true;
@@ -250,7 +250,7 @@ bool NSMesh::contains(SubMesh * submesh)
 	return false;
 }
 
-bool NSMesh::contains(nsuint subindex)
+bool NSMesh::contains(uint32 subindex)
 {
 	return (submesh(subindex) != NULL);
 }
@@ -296,11 +296,11 @@ NSMesh::SubMesh * NSMesh::create()
 
 void NSMesh::flipnorm()
 {
-	for (nsuint i = 0; i < subMeshes.size(); ++i)
+	for (uint32 i = 0; i < subMeshes.size(); ++i)
 		flipnorm(i);
 }
 
-void NSMesh::flipnorm(nsuint pSubIndex)
+void NSMesh::flipnorm(uint32 pSubIndex)
 {
 	if (pSubIndex >= subMeshes.size())
 	{
@@ -309,7 +309,7 @@ void NSMesh::flipnorm(nsuint pSubIndex)
 	}
 
 	SubMesh * sub = submesh(pSubIndex);
-	for (nsuint i = 0; i < sub->mNormals.size(); ++i)
+	for (uint32 i = 0; i < sub->mNormals.size(); ++i)
 	{
 		sub->mNormals[i] *= -1.0f;
 		sub->mTangents[i] *= -1.0f;
@@ -318,21 +318,21 @@ void NSMesh::flipnorm(nsuint pSubIndex)
 	sub->mNormBuf.bind();
 	sub->mNormBuf.setData(sub->mNormals,
 						  0,
-						  static_cast<nsuint>(sub->mNormals.size()));
+						  static_cast<uint32>(sub->mNormals.size()));
 	sub->mTangBuf.bind();
 	sub->mTangBuf.setData(sub->mTangents,
 						  0,
-						  static_cast<nsuint>(sub->mTangents.size()));
+						  static_cast<uint32>(sub->mTangents.size()));
 	sub->mNormBuf.unbind();
 }
 
 void NSMesh::initGL()
 {
-	for (nsuint i = 0; i < count(); ++i)
+	for (uint32 i = 0; i < count(); ++i)
 		initGL(i);
 }
 
-void NSMesh::initGL(nsuint subindex)
+void NSMesh::initGL(uint32 subindex)
 {
 	submesh(subindex)->initGL();
 }
@@ -354,7 +354,7 @@ NSMesh::SubMesh * NSMesh::submesh(const nsstring & pName)
 	return NULL;
 }
 
-NSMesh::SubMesh * NSMesh::submesh(nsuint pIndex)
+NSMesh::SubMesh * NSMesh::submesh(uint32 pIndex)
 {
 	if (pIndex >= subMeshes.size())
 		return NULL;
@@ -366,7 +366,7 @@ void NSMesh::init()
 {
 }
 
-nsfloat NSMesh::volume()
+float NSMesh::volume()
 {
 	float K1 = 1.0f;
 	float K2 = 1.0f;
@@ -376,10 +376,10 @@ nsfloat NSMesh::volume()
 
 	float sum = 0.0f;
 
-	for (nsuint subI = 0; subI < subMeshes.size(); ++subI)
+	for (uint32 subI = 0; subI < subMeshes.size(); ++subI)
 	{
 		NSMesh::SubMesh * sub = submesh(subI);
-		for (nsuint triI = 0; triI < sub->mTriangles.size(); ++triI)
+		for (uint32 triI = 0; triI < sub->mTriangles.size(); ++triI)
 		{
 			fvec3 Ai = sub->mPositions[sub->mTriangles[triI][0]];
 			fvec3 Bi = sub->mPositions[sub->mTriangles[triI][1]];
@@ -398,9 +398,9 @@ nsfloat NSMesh::volume()
 	return sum;
 }
 
-nsuint NSMesh::count()
+uint32 NSMesh::count()
 {
-	return static_cast<nsuint>(subMeshes.size());
+	return static_cast<uint32>(subMeshes.size());
 }
 
 NSMesh::NodeTree * NSMesh::nodetree()
@@ -408,7 +408,7 @@ NSMesh::NodeTree * NSMesh::nodetree()
 	return mNodeTree;
 }
 
-nsbool NSMesh::del(SubMesh * submesh)
+bool NSMesh::del(SubMesh * submesh)
 {
 	SubMesh * sub = remove(submesh);
 	if (sub == NULL)
@@ -417,9 +417,9 @@ nsbool NSMesh::del(SubMesh * submesh)
 	return true;
 }
 
-nsuint NSMesh::find(SubMesh * sub)
+uint32 NSMesh::find(SubMesh * sub)
 {
-	for (nsuint i = 0; i < subMeshes.size(); ++i)
+	for (uint32 i = 0; i < subMeshes.size(); ++i)
 	{
 		if (subMeshes[i] == sub)
 			return i;
@@ -427,24 +427,24 @@ nsuint NSMesh::find(SubMesh * sub)
 	return -1;
 }
 
-nsuint NSMesh::find(const nsstring & subname)
+uint32 NSMesh::find(const nsstring & subname)
 {
 	return find(submesh(subname));
 }
 
-nsbool NSMesh::del(nsuint pIndex)
+bool NSMesh::del(uint32 pIndex)
 {
 	return del(submesh(pIndex));
 }
 
-nsbool NSMesh::del(const nsstring & subname)
+bool NSMesh::del(const nsstring & subname)
 {
 	return del(submesh(subname));
 }
 
 NSMesh::SubMesh * NSMesh::remove(SubMesh * sub)
 {
-	nsuint cnt = find(sub);
+	uint32 cnt = find(sub);
 	if (cnt == -1)
 		return NULL;
 	auto iter = subMeshes.begin() + cnt;
@@ -452,7 +452,7 @@ NSMesh::SubMesh * NSMesh::remove(SubMesh * sub)
 	return sub;
 }
 
-NSMesh::SubMesh * NSMesh::remove(nsuint index)
+NSMesh::SubMesh * NSMesh::remove(uint32 index)
 {
 	return remove(submesh(index));
 }
@@ -462,17 +462,17 @@ NSMesh::SubMesh * NSMesh::remove(const nsstring & name)
 	return remove(submesh(name));
 }
 
-nsuint NSMesh::vertcount()
+uint32 NSMesh::vertcount()
 {
-	nsuint total = 0;
-	for (nsuint i = 0; i < subMeshes.size(); ++i)
-		total += static_cast<nsuint>(subMeshes[i]->mIndices.size());
+	uint32 total = 0;
+	for (uint32 i = 0; i < subMeshes.size(); ++i)
+		total += static_cast<uint32>(subMeshes[i]->mIndices.size());
 	return total;
 }
 
-nsuint NSMesh::vertcount(nsuint pIndex)
+uint32 NSMesh::vertcount(uint32 pIndex)
 {
-	return static_cast<nsuint>(subMeshes[pIndex]->mIndices.size());
+	return static_cast<uint32>(subMeshes[pIndex]->mIndices.size());
 }
 
 void NSMesh::transformNode(Node * pNode, const fmat4 & pTransform)
@@ -484,7 +484,7 @@ void NSMesh::transformNode(Node * pNode, const fmat4 & pTransform)
 	else
 		pNode->mWorldTransform = pNode->mNodeTransform;
 
-	for (nsuint i = 0; i < pNode->mChildNodes.size(); ++i)
+	for (uint32 i = 0; i < pNode->mChildNodes.size(); ++i)
 		_propagateWorldTransform(pNode->mChildNodes[i]);
 }
 
@@ -495,22 +495,22 @@ void NSMesh::_propagateWorldTransform(Node * pChildNode)
 	else
 		pChildNode->mWorldTransform = pChildNode->mNodeTransform;
 
-	for (nsuint i = 0; i < pChildNode->mChildNodes.size(); ++i)
+	for (uint32 i = 0; i < pChildNode->mChildNodes.size(); ++i)
 		_propagateWorldTransform(pChildNode->mChildNodes[i]);
 }
 
 NSMesh::SubMesh::BoneWeightIDs::BoneWeightIDs()
 {
-	for (int i = 0; i < BONES_PER_VERTEX; ++i)
+	for (int32 i = 0; i < BONES_PER_VERTEX; ++i)
 	{
 		boneIDs[i] = 0;
 		weights[i] = 0.0f;
 	}
 }
 
-void NSMesh::SubMesh::BoneWeightIDs::addBoneInfo(nsuint pBoneID, nsfloat pWeight)
+void NSMesh::SubMesh::BoneWeightIDs::addBoneInfo(uint32 pBoneID, float pWeight)
 {
-	for (int i = 0; i < BONES_PER_VERTEX; ++i)
+	for (int32 i = 0; i < BONES_PER_VERTEX; ++i)
 	{
 		if (weights[i] == 0.0f)
 		{
@@ -557,27 +557,27 @@ void NSMesh::SubMesh::allocateBuffers()
 	mPosBuf.bind();
 	mPosBuf.allocate(mPositions,
 					 NSBufferObject::MutableStaticDraw,
-					 static_cast<nsuint>(mPositions.size()));
+					 static_cast<uint32>(mPositions.size()));
 	mTexBuf.bind();
 	mTexBuf.allocate(mTexCoords,
 					 NSBufferObject::MutableStaticDraw,
-					 static_cast<nsuint>(mTexCoords.size()));
+					 static_cast<uint32>(mTexCoords.size()));
 	mNormBuf.bind();
 	mNormBuf.allocate(mNormals,
 					  NSBufferObject::MutableStaticDraw,
-					  static_cast<nsuint>(mNormals.size()));
+					  static_cast<uint32>(mNormals.size()));
 	mTangBuf.bind();
 	mTangBuf.allocate(mTangents,
 					  NSBufferObject::MutableStaticDraw,
-					  static_cast<nsuint>(mTangents.size()));
+					  static_cast<uint32>(mTangents.size()));
 	mBoneBuf.bind();
 	mBoneBuf.allocate(mBoneInfo,
 					  NSBufferObject::MutableStaticDraw,
-					  static_cast<nsuint>(mBoneInfo.size()));
+					  static_cast<uint32>(mBoneInfo.size()));
 	mIndiceBuf.bind();
 	mIndiceBuf.allocate(mIndices,
 						NSBufferObject::MutableStaticDraw,
-						static_cast<nsuint>(mIndices.size()));
+						static_cast<uint32>(mIndices.size()));
 	updateVAO();
 }
 
@@ -599,7 +599,7 @@ void NSMesh::SubMesh::calcaabb()
 	mSubBoundingBox.calculate(mPositions,mNode->mWorldTransform);
 }
 
-void NSMesh::SubMesh::resize(nsuint pNewSize)
+void NSMesh::SubMesh::resize(uint32 pNewSize)
 {
 	mPositions.resize(pNewSize);
 	mTexCoords.resize(pNewSize);
@@ -632,7 +632,7 @@ void NSMesh::SubMesh::updateVAO()
 	mVAO.add(&mBoneBuf, NSShader::BoneID);
 	mVAO.add(&mBoneBuf, NSShader::BoneWeight);
 	mVAO.vertexAttribIPtr(NSShader::BoneID, 4, GL_INT, sizeof(NSMesh::SubMesh::BoneWeightIDs), 0);
-	mVAO.vertexAttribPtr(NSShader::BoneWeight, 4, GL_FLOAT, GL_FALSE, sizeof(NSMesh::SubMesh::BoneWeightIDs), 4 * sizeof(nsuint));
+	mVAO.vertexAttribPtr(NSShader::BoneWeight, 4, GL_FLOAT, GL_FALSE, sizeof(NSMesh::SubMesh::BoneWeightIDs), 4 * sizeof(uint32));
 
 	mIndiceBuf.bind();
 

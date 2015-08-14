@@ -30,7 +30,7 @@ public:
 		bool pPressed = false, 
 		const fvec2 & pPos = fvec2(), 
 		const fvec2 & pDelta = fvec2(),
-		nsfloat pScroll=0.0f):
+		float pScroll=0.0f):
 		mPressed(pPressed),
 		mPos(pPos),
 		mDelta(pDelta),
@@ -42,7 +42,7 @@ public:
 		bool mPressed;
 		fvec2 mPos;
 		fvec2 mDelta;
-		nsfloat mScroll;
+		float mScroll;
 	};
 
 	typedef std::map<nsstring, Action> ActionMap;
@@ -51,13 +51,13 @@ public:
 
 	virtual ~NSInputComp();
 
-	nsbool add(const nsstring & pTriggerName);
+	bool add(const nsstring & pTriggerName);
 
 	void clear();
 
 	virtual void pup(NSFilePUPer * p);
 
-	nsbool contains(const nsstring & pTriggerName);
+	bool contains(const nsstring & pTriggerName);
 
 	virtual NSInputComp * copy(const NSComponent * pComp);
 
@@ -65,11 +65,11 @@ public:
 
 	Action * action(const nsstring & pTriggerName);
 
-	nsbool remove(const nsstring & pTriggerName);
+	bool remove(const nsstring & pTriggerName);
 
-	void setActivated(const nsstring & pTriggerName, nsbool pActivate);
+	void setActivated(const nsstring & pTriggerName, bool pActivate);
 
-	void setActivated(nsbool pActivate);
+	void setActivated(bool pActivate);
 
 	NSInputComp & operator=(const NSInputComp & pRHSComp);
 

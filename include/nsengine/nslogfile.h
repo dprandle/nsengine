@@ -50,7 +50,7 @@ public:
 	bool write(const nsstring & text);
 	bool write(const nsstringstream & num);
 	bool write(float num);
-	bool write(int num);
+	bool write(int32 num);
 
 	bool writeDate();
 

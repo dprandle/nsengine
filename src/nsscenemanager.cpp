@@ -33,7 +33,7 @@ NSScene * NSSceneManager::current()
 	return mCurrentScene;
 }
 
-NSScene * NSSceneManager::load(nsuint res_type_id, const nsstring & fname)
+NSScene * NSSceneManager::load(uint32 res_type_id, const nsstring & fname)
 {
 	nsstring resName(fname);
 	nsstring resExtension;

@@ -33,10 +33,10 @@ public:
 			NSBufferObject * pTransformBuffer,
 			NSBufferObject * pTransformIDBuffer,
 			const fvec2 & heightMinMax,
-			nsuint pEntID,
-			nsuint plugID,
-			nsuint pNumTransforms,
-			nsbool pCastShadows);
+			uint32 pEntID,
+			uint32 plugID,
+			uint32 pNumTransforms,
+			bool pCastShadows);
 		~DrawCall();
 
 		NSMesh::SubMesh * mSubMesh;
@@ -44,10 +44,10 @@ public:
 		NSBufferObject * mTransformBuffer;
 		NSBufferObject * mTransformIDBuffer;
 		fvec2 mHeightMinMax;
-		nsuint mEntID;
-		nsuint mPlugID;
-		nsuint mNumTransforms;
-		nsbool mCastShadows;
+		uint32 mEntID;
+		uint32 mPlugID;
+		uint32 mNumTransforms;
+		bool mCastShadows;
 
 		bool operator<(const DrawCall & rhs) const;
 		bool operator<=(const DrawCall & rhs) const;
@@ -154,7 +154,7 @@ public:
 
 	NSMaterial * defaultMat();
 
-	uivec3 pick(nsfloat mousex, nsfloat mousey);
+	uivec3 pick(float mousex, float mousey);
 
 	//virtual bool handleEvent(NSEvent * pEvent);
 
@@ -166,15 +166,15 @@ public:
 
 	uivec3 shadowfbo();
 
-	nsuint finalfbo();
+	uint32 finalfbo();
 
-	nsuint gbufferfbo();
+	uint32 gbufferfbo();
 
-	nsuint boundfbo();
+	uint32 boundfbo();
 
-	nsuint screenfbo();
+	uint32 screenfbo();
 
-	void setScreenfbo(nsuint fbo);
+	void setScreenfbo(uint32 fbo);
 
 	bool debugDraw();
 
@@ -182,19 +182,19 @@ public:
 
 	void setShaders(const RenderShaders & pShaders);
 
-	void setGBufferfbo(nsuint fbo);
+	void setGBufferfbo(uint32 fbo);
 
-	void setFinalfbo(nsuint fbo);
+	void setFinalfbo(uint32 fbo);
 
-	void setShadowfbo(nsuint fbo1, nsuint fbo2, nsuint fbo3);
+	void setShadowfbo(uint32 fbo1, uint32 fbo2, uint32 fbo3);
 
 	void toggleDebugDraw();
 
 	void update();
 
-	virtual nsint drawPriority();
+	virtual int32 drawPriority();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 private:
 	void _blendDirectionLight(NSLightComp * pLight);
@@ -221,7 +221,7 @@ private:
 	ShaderMaterialMap mShaderMatMap;
 	//ShaderMaterialMap mTransparentShaderMatMap;
 	XFBDrawSet mXFBDraws;
-	nsuint mScreenfbo;
+	uint32 mScreenfbo;
 
 	NSGBuffer * mGBuffer;
 	NSShadowBuffer * mShadowBuf;

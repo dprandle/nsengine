@@ -285,7 +285,7 @@ void NSInputSystem::_mouseRelease(NSInputMap::MouseButton pButton, const fvec2 &
 	}
 }
 
-void NSInputSystem::_mouseScroll(nsfloat pDelta, const fvec2 & mousePos)
+void NSInputSystem::_mouseScroll(float pDelta, const fvec2 & mousePos)
 {
 	setCursorPos(mousePos);
 	mScrollDelta = pDelta;
@@ -342,7 +342,7 @@ void NSInputSystem::init()
     registerHandlerFunc(this, &NSInputSystem::mouseMoveEvent);
 }
 
-nsint NSInputSystem::updatePriority()
+int32 NSInputSystem::updatePriority()
 {
 	return INP_SYS_UPDATE_PR;
 }

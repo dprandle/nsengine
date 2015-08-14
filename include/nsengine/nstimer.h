@@ -21,13 +21,13 @@ public:
 	NSTimer();
 	~NSTimer();
 
-	nsfloat dt();
+	float dt();
 
-	nsfloat elapsed();
+	float elapsed();
 
-	nsfloat fixed();
+	float fixed();
 
-	nsfloat & lag();
+	float & lag();
 
 	void pause(bool pPause);
 
@@ -43,6 +43,6 @@ private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> mLast;
 	std::chrono::high_resolution_clock mTimer;
 	bool mRunning;
-	nsfloat mLag;
+	float mLag;
 };
 #endif

@@ -71,7 +71,7 @@ bool create_dir(const nsstring & path)
 	return ret;
 }
 
-nsuint remove_dir(const nsstring & dirpath)
+uint32 remove_dir(const nsstring & dirpath)
 {
 	std::tr2::sys::path p;
 	p = dirpath;
@@ -140,7 +140,7 @@ bool create_dir(const nsstring & path)
 	return (mkdir(tmp, S_IRWXU) == 0);
 }
 
-nsuint remove_dir(const nsstring & dirpath)
+uint32 remove_dir(const nsstring & dirpath)
 {
     DIR *dir;
     struct dirent *entry;
@@ -217,8 +217,8 @@ void read(const nsstring & fname, nschararray * contents)
 
     // read the data:
     contents->insert(contents->begin(),
-               std::istream_iterator<nschar>(file),
-               std::istream_iterator<nschar>());
+               std::istream_iterator<char>(file),
+               std::istream_iterator<char>());
 }
 
 }

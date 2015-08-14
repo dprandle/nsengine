@@ -1,5 +1,5 @@
 type:<nsstring>NSParticleProcessShader</nsstring>
-vertex.type:<nsuint>35633</nsuint>
+vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>#version 440
 
 layout (location = 0) in vec4 position;
@@ -22,7 +22,7 @@ void main()
 
 
 </nsstring>
-geometry.type:<nsuint>36313</nsuint>
+geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>#version 440
 
 layout (points) in;
@@ -234,5 +234,5 @@ void main()
 
 
 </nsstring>
-fragment.type:<nsuint>35632</nsuint>
+fragment.type:<uint32>35632</uint32>
 fragment.source:<nsstring></nsstring>

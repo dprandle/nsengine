@@ -24,7 +24,7 @@ public:
 	{}
     virtual ~NSEvent() {}
 
-	nsuint refcount;
+	uint32 refcount;
 };
 
 class NSKeyEvent : public NSEvent
@@ -69,31 +69,31 @@ public:
 class NSMouseScrollEvent : public NSEvent
 {
 public:
-	NSMouseScrollEvent(nsfloat scrollDelta, const fvec2 & normalized_mpos) :
+	NSMouseScrollEvent(float scrollDelta, const fvec2 & normalized_mpos) :
 		mScroll(scrollDelta),
 		mNormMousePos(normalized_mpos),
 		NSEvent()
 	{}
 	fvec2 mNormMousePos;
-	nsfloat mScroll;
+	float mScroll;
 };
 
 class NSActionEvent : public NSEvent
 {
 public:
-	NSActionEvent(nsuint trigger_hashid):
+	NSActionEvent(uint32 trigger_hashid):
 		mTriggerHashName(trigger_hashid),
 		NSEvent()
 	{}
 
-	nsuint mTriggerHashName;
+	uint32 mTriggerHashName;
 	NSInputMap::AxisMap axes;
 };
 
 class NSStateEvent : public NSActionEvent
 {
 public:
-	NSStateEvent(nsuint trigger_hashid, bool toggle):
+	NSStateEvent(uint32 trigger_hashid, bool toggle):
 		mToggle(toggle),
 		NSActionEvent(trigger_hashid)
 	{}

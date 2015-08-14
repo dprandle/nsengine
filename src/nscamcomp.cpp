@@ -98,20 +98,20 @@ const fmat4 & NSCamComp::proj()
 	return mProjMat;
 }
 
-nsfloat NSCamComp::fov()
+float NSCamComp::fov()
 {
 	return mFovAngle;
 }
 
-void NSCamComp::setfov(nsfloat angledeg)
+void NSCamComp::setfov(float angledeg)
 {
 	mFovAngle = angledeg;
 	_updateProj();
 }
 
-nsfloat NSCamComp::aspectRatio()
+float NSCamComp::aspectRatio()
 {
-	return nsfloat(mDim.w) / nsfloat(mDim.h);
+	return float(mDim.w) / float(mDim.h);
 }
 
 const fmat4 & NSCamComp::invproj()
@@ -172,12 +172,12 @@ void NSCamComp::rotateFocus(const fquat & pQuat)
 	computeFocusTransform();
 }
 
-void NSCamComp::rotateFocus(nsfloat pX, nsfloat pY, nsfloat pZ, nsfloat pAngle)
+void NSCamComp::rotateFocus(float pX, float pY, float pZ, float pAngle)
 {
 	rotateFocus(fvec3(pX, pY, pZ), pAngle);
 }
 
-void NSCamComp::rotateFocus(const fvec3 & pAxis, nsfloat pAngle)
+void NSCamComp::rotateFocus(const fvec3 & pAxis, float pAngle)
 {
 	mFocRot = orientation(fvec4(pAxis, pAngle)) * mFocRot;
 	computeFocusTransform();
@@ -199,7 +199,7 @@ fmat4 NSCamComp::camFocusTForm()
 	return mFocTForm;
 }
 
-void NSCamComp::resize(nsint w, nsint h)
+void NSCamComp::resize(int32 w, int32 h)
 {
 	mDim.set(w,h);
 	_updateProj();

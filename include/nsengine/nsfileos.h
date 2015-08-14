@@ -12,7 +12,7 @@ bool dir_exists(const nsstring & filename);
 
 bool create_dir(const nsstring & path);
 
-nsuint remove_dir(const nsstring & path);
+uint32 remove_dir(const nsstring & path);
 bool remove_file(const nsstring & filename);
 
 bool rename_dir(const nsstring & oldpath, const nsstring & newpath);

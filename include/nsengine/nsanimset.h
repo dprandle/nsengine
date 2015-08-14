@@ -58,8 +58,8 @@ public:
 
 		std::map<nsstring,AnimationNode*> mAnimNodesMap;
 		nsstring mAnimationName;
-		nsfloat mDuration;
-		nsfloat mTicksPerSecond;
+		float mDuration;
+		float mTicksPerSecond;
 	};
 
 	typedef std::map<nsstring, AnimationData*> AnimMap;

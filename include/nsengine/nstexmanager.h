@@ -64,7 +64,7 @@ public:
 		return load<NSTexture>(fname);
 	}
 
-	virtual NSTexture * load(nsuint res_type_id, const nsstring & fname);
+	virtual NSTexture * load(uint32 res_type_id, const nsstring & fname);
 	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)

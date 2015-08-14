@@ -36,12 +36,12 @@ public:
 	void initGL();
 	void release();
 	void setPrimitive(PrimitiveMode pMode);
-	void setUpdate(nsbool pUpdate);
+	void setUpdate(bool pUpdate);
 	void unbind();
-	nsbool update();
+	bool update();
 private:
 	PrimitiveMode mPrimMode;
-	nsbool mUpdate;
+	bool mUpdate;
 };
 
 #endif

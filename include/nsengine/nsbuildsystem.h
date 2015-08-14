@@ -37,13 +37,13 @@ public:
 
 	~NSBuildSystem();
 
-	void changeLayer(const nsint & pAmount);
+	void changeLayer(const int32 & pAmount);
 
 	void enable(const bool & pEnable, const fvec2 & pMousePos);
 
-	void enableOverwrite(nsbool pEnable);
+	void enableOverwrite(bool pEnable);
 
-	void enableMirror(nsbool pEnable);
+	void enableMirror(bool pEnable);
 
 	void erase();
 
@@ -59,7 +59,7 @@ public:
 
 	NSEntity * objectbrush();
 
-	const nsint & layer() const;
+	const int32 & layer() const;
 
 	const Mode & mode() const;
 
@@ -67,11 +67,11 @@ public:
 
 	virtual void init();
 
-	nsbool enabled() const;
+	bool enabled() const;
 
-	nsbool overwrite() const;
+	bool overwrite() const;
 
-	nsbool mirror() const;
+	bool mirror() const;
 
 	void toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst=false);
 
@@ -89,7 +89,7 @@ public:
 
 	void setBuildEnt(NSEntity * pBuildEnt);
 
-	void setLayer(const nsint & pLayer);
+	void setLayer(const int32 & pLayer);
 
 	void setCenter(const fvec3 & pMirrorCenter);
 
@@ -97,7 +97,7 @@ public:
 
 	virtual void update();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 private:
 	NSEntity * mTileBrush;
@@ -105,13 +105,13 @@ private:
 	NSEntity * mMirrorBrush;
 	NSEntity * mBuildEnt;
 	fvec3 mMirrorCenter;
-	nsuint mTBCenterTFormID;
-	nsint mLayer;
+	uint32 mTBCenterTFormID;
+	int32 mLayer;
 	Mode mCurrentMode;
 	BrushMode mCurrentBrushMode;
-	nsbool mOverwrite;
-	nsbool mEnabled;
-	nsbool mMirrorMode;
+	bool mOverwrite;
+	bool mEnabled;
+	bool mMirrorMode;
 };
 
 

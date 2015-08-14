@@ -48,10 +48,10 @@ public:
 
 	struct SpecularComp
 	{
-		SpecularComp(nsfloat pPower = 0.0f, nsfloat pIntensity = 0.0f, fvec3 pColor = fvec3(1.0f, 1.0f, 1.0f)) :mPower(pPower), mIntensity(pIntensity), mColor(pColor)
+		SpecularComp(float pPower = 0.0f, float pIntensity = 0.0f, fvec3 pColor = fvec3(1.0f, 1.0f, 1.0f)) :mPower(pPower), mIntensity(pIntensity), mColor(pColor)
 		{};
-		nsfloat mPower;
-		nsfloat mIntensity;
+		float mPower;
+		float mIntensity;
 		fvec3 mColor;
 	};
 
@@ -61,26 +61,26 @@ public:
 	MapIter begin();
 	ConstMapIter begin() const;
 
-	void changeSpecular(nsfloat pPowAmount, nsfloat pIntensityAmount);
+	void changeSpecular(float pPowAmount, float pIntensityAmount);
 
-	void changeSpecularIntensity(nsfloat pAmount);
+	void changeSpecularIntensity(float pAmount);
 
-	void changeSpecularPower(nsfloat pAmount);
+	void changeSpecularPower(float pAmount);
 
 	void clear();
 
 	bool contains(const MapType & pMType);
 
-	void enableCulling(nsbool pEnable);
+	void enableCulling(bool pEnable);
 
-	void enableWireframe(nsbool pEnable);
+	void enableWireframe(bool pEnable);
 
 	MapIter end();
 	ConstMapIter end() const;
 
 	const fvec4 & color();
 
-	nsbool colorMode();
+	bool colorMode();
 
 	const GLenum & cullMode() const;
 
@@ -96,9 +96,9 @@ public:
 
 	const fvec3 & specularColor() const;
 
-	nsfloat specularPower() const;
+	float specularPower() const;
 
-	nsfloat specularIntensity() const;
+	float specularIntensity() const;
 
 	/*!
 	Get the other resources that this Material uses. This includes all texture maps.
@@ -110,9 +110,9 @@ public:
 
 	bool alphaBlend();
 
-	nsbool culling() const;
+	bool culling() const;
 
-	nsbool wireframe() const;
+	bool wireframe() const;
 
 	/*!
 	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
@@ -122,48 +122,48 @@ public:
 
 	bool removeTextureMap(MapType pMapType);
 
-	void setAlphaBlend(nsbool pBlend);
+	void setAlphaBlend(bool pBlend);
 
 	void setColor(const fvec4 & pColor);
 
-	void setColorMode(nsbool pEnable);
+	void setColorMode(bool pEnable);
 
 	void setCullMode(GLenum pMode);
 
-	bool setMapTextureID(MapType pMapType, const uivec2 & resID, nsbool pOverwrite = false);
+	bool setMapTextureID(MapType pMapType, const uivec2 & resID, bool pOverwrite = false);
 
-	bool setMapTextureID(MapType pMapType, nsuint plugID, nsuint resID, nsbool pOverwrite = false)
+	bool setMapTextureID(MapType pMapType, uint32 plugID, uint32 resID, bool pOverwrite = false)
 	{
 		return setMapTextureID(pMapType, uivec2(plugID,resID), pOverwrite);
 	}
 
 	void setShaderID(const uivec2 & resID);
 
-	void setShaderID(nsuint plugID, nsuint resID)
+	void setShaderID(uint32 plugID, uint32 resID)
 	{
 		mMatShaderID.set(plugID, resID);
 	}
 
 	void setSpecular(const SpecularComp & pSpecComp);
 
-	void setSpecular(nsfloat pPower, nsfloat pIntensity, const fvec3 & pColor);
+	void setSpecular(float pPower, float pIntensity, const fvec3 & pColor);
 
 	void setSpecularColor(const fvec3 & pColor);
 
-	void setSpecularPower(nsfloat pPower);
+	void setSpecularPower(float pPower);
 
-	void setSpecularIntensity(nsfloat pIntensity);
+	void setSpecularIntensity(float pIntensity);
 
 private:
-	nsbool mAlphaBlend;
+	bool mAlphaBlend;
 	uivec2 mMatShaderID;
 	fvec4 mColor;
-	nsbool mColorMode;
-	nsbool mCullEnabled;
+	bool mColorMode;
+	bool mCullEnabled;
 	GLenum mCullMode;
 	SpecularComp mSpecComp;
 	TexMap mTextureMaps;
-	nsbool mWireframe;
+	bool mWireframe;
 };
 
 
@@ -192,7 +192,7 @@ void pup(PUPer & p, NSMaterial::SpecularComp & mat, const nsstring & pString)
 template<class PUPer>
 void pup(PUPer & p, NSMaterial::MapType & my, const nsstring & pString)
 {
-	nsuint mt = static_cast<nsuint>(my);
+	uint32 mt = static_cast<uint32>(my);
 	pup(p, mt, pString);
 	my = static_cast<NSMaterial::MapType>(mt);
 }

@@ -20,7 +20,7 @@ NSInputComp::NSInputComp() :NSComponent()
 NSInputComp::~NSInputComp()
 {}
 
-nsbool NSInputComp::add(const nsstring & pTriggerName)
+bool NSInputComp::add(const nsstring & pTriggerName)
 {
 	auto insert = mActions.emplace(pTriggerName, Action());
 	return insert.second;
@@ -40,7 +40,7 @@ NSInputComp* NSInputComp::copy(const NSComponent * pToCopy)
 	return this;
 }
 
-nsbool NSInputComp::contains(const nsstring & pTriggerName)
+bool NSInputComp::contains(const nsstring & pTriggerName)
 {
 	return (mActions.find(pTriggerName) != mActions.end());
 }
@@ -56,20 +56,20 @@ NSInputComp::Action * NSInputComp::action(const nsstring & pTriggerName)
 	return &iter->second;
 }
 
-nsbool NSInputComp::remove(const nsstring & pTriggerName)
+bool NSInputComp::remove(const nsstring & pTriggerName)
 {
 	size_t erased = mActions.erase(pTriggerName);
 	return erased && 1;
 }
 
-void NSInputComp::setActivated(const nsstring & pTriggerName, nsbool pActivate)
+void NSInputComp::setActivated(const nsstring & pTriggerName, bool pActivate)
 {
 	auto iter = mActions.find(pTriggerName);
 	if (iter != mActions.end())
 		iter->second.mActivated = pActivate;
 }
 
-void NSInputComp::setActivated(nsbool pActivate)
+void NSInputComp::setActivated(bool pActivate)
 {
 	auto iter = mActions.begin();
 	while (iter != mActions.end())

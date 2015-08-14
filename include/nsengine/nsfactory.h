@@ -39,7 +39,7 @@ class NSResFactory : public NSFactory
 	{}
 	virtual NSResource * create() = 0;
 	void setid(NSResource * res);	
-	nsuint type_id;
+	uint32 type_id;
 };
 
 template<class T>
@@ -63,7 +63,7 @@ public:
 	NSResManagerFactory() : NSFactory(ResManager) {}
 	virtual NSResManager * create() = 0;
 	void setid(NSResManager * manager);
-	nsuint type_id;
+	uint32 type_id;
 };
 
 template<class T>
@@ -84,7 +84,7 @@ public:
 	NSCompFactory() : NSFactory(Component) {}
 	virtual NSComponent * create() = 0;
 	void setid(NSComponent * comp);
-	nsuint type_id;
+	uint32 type_id;
 };
 
 template<class T>
@@ -105,7 +105,7 @@ public:
 	NSSysFactory() : NSFactory(System) {}
 	virtual NSSystem * create() = 0;
 	void setid(NSSystem * sys);	
-	nsuint type_id;
+	uint32 type_id;
 };
 
 template<class T>

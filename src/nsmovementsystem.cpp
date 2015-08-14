@@ -49,17 +49,17 @@ void NSMovementSystem::update()
 				tFormBuf.bind();
 				tFormBuf.allocate<fmat4>(NSBufferObject::MutableDynamicDraw, tForm->count());
 				tFormIDBuf.bind();
-				tFormIDBuf.allocate<nsuint>(NSBufferObject::MutableDynamicDraw, tForm->count());
+				tFormIDBuf.allocate<uint32>(NSBufferObject::MutableDynamicDraw, tForm->count());
 			}
 
 			tFormBuf.bind();
 			fmat4 * mappedT = tFormBuf.map<fmat4>(0, tForm->count(), NSBufferObject::AccessMapRange(NSBufferObject::MapWrite));
 			tFormIDBuf.bind();
-			nsuint * mappedI = tFormIDBuf.map<nsuint>(0, tForm->count(), NSBufferObject::AccessMapRange(NSBufferObject::MapWrite));
+			uint32 * mappedI = tFormIDBuf.map<uint32>(0, tForm->count(), NSBufferObject::AccessMapRange(NSBufferObject::MapWrite));
 			tFormIDBuf.unbind();
 
-			nsuint visibleCount = 0;
-			for (nsuint i = 0; i < tForm->count(); ++i)
+			uint32 visibleCount = 0;
+			for (uint32 i = 0; i < tForm->count(); ++i)
 			{
 				if (tForm->transUpdate(i))
 				{
@@ -78,7 +78,7 @@ void NSMovementSystem::update()
 					tForm->computeTransform(i);
 					tForm->setTransUpdate(false, i);
 				}
-				int state = tForm->hiddenState(i);
+				int32 state = tForm->hiddenState(i);
 
 				bool layerBit = state & NSTFormComp::LayerHide && true;
 				bool objectBit = state & NSTFormComp::ObjectHide && true;
@@ -107,7 +107,7 @@ void NSMovementSystem::update()
 	}
 }
 
-nsint NSMovementSystem::updatePriority()
+int32 NSMovementSystem::updatePriority()
 {
 	return MOVE_SYS_UPDATE_PR;
 }

@@ -5,22 +5,22 @@
 #include <cmath>
 
 template <class T>
-NSQuat<T> operator*(const nsint & pLHS, const NSQuat<T> & pRHS);
+NSQuat<T> operator*(const int32 & pLHS, const NSQuat<T> & pRHS);
 
 template <class T>
-NSQuat<T> operator*(const nsfloat & pLHS, const NSQuat<T> & pRHS);
+NSQuat<T> operator*(const float & pLHS, const NSQuat<T> & pRHS);
 
 template <class T>
-NSQuat<T> operator*(const nsdouble & pLHS, const NSQuat<T> & pRHS);
+NSQuat<T> operator*(const double & pLHS, const NSQuat<T> & pRHS);
 
 template <class T>
-NSQuat<T> operator/(const nsint & pLHS, const NSQuat<T> & pRHS);
+NSQuat<T> operator/(const int32 & pLHS, const NSQuat<T> & pRHS);
 
 template <class T>
-NSQuat<T> operator/(const nsfloat & pLHS, const NSQuat<T> & pRHS);
+NSQuat<T> operator/(const float & pLHS, const NSQuat<T> & pRHS);
 
 template <class T>
-NSQuat<T> operator/(const nsdouble & pLHS, const NSQuat<T> & pRHS);
+NSQuat<T> operator/(const double & pLHS, const NSQuat<T> & pRHS);
 
 template<class T>
 NSQuat<T> orientation(const NSMat3<T> & rotationMat3);
@@ -396,14 +396,14 @@ struct NSQuat
 		return *this;
 	}
 
-	NSQuat<T> operator++(nsint)
+	NSQuat<T> operator++(int32)
 	{
 		NSQuat<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSQuat<T> operator--(nsint)
+	NSQuat<T> operator--(int32)
 	{
 		NSQuat<T> ret(*this);
 		--(*this);
@@ -462,34 +462,34 @@ struct NSQuat
 		return *this;
 	}
 
-	nsbool operator==(const NSQuat<T> & rhs) const
+	bool operator==(const NSQuat<T> & rhs) const
 	{
 		return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z) && (w == rhs.w));
 	}
 
-	nsbool operator!=(const NSQuat<T> & rhs) const
+	bool operator!=(const NSQuat<T> & rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	nsbool operator==(const T & rhs) const
+	bool operator==(const T & rhs) const
 	{
 		return ((x == rhs) && (y == rhs) && (z == rhs) && (w == rhs));
 	}
 
-	nsbool operator!=(const T & rhs) const
+	bool operator!=(const T & rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	const T & operator[](const nsuint & pVal) const
+	const T & operator[](const uint32 & pVal) const
 	{
 		if (pVal > 3)
 			throw(std::out_of_range("quat index out of range"));
 		return data[pVal];
 	}
 
-	T & operator[](const nsuint & pVal)
+	T & operator[](const uint32 & pVal)
 	{
 		if (pVal > 3)
 			throw(std::out_of_range("quat index out of range"));
@@ -528,37 +528,37 @@ struct NSQuat
 };
 
 template <class T>
-NSQuat<T> operator*(const nsint & pLHS, const NSQuat<T> & pRHS)
+NSQuat<T> operator*(const int32 & pLHS, const NSQuat<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSQuat<T> operator*(const nsfloat & pLHS, const NSQuat<T> & pRHS)
+NSQuat<T> operator*(const float & pLHS, const NSQuat<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSQuat<T> operator*(const nsdouble & pLHS, const NSQuat<T> & pRHS)
+NSQuat<T> operator*(const double & pLHS, const NSQuat<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSQuat<T> operator/(const nsint & pLHS, const NSQuat<T> & pRHS)
+NSQuat<T> operator/(const int32 & pLHS, const NSQuat<T> & pRHS)
 {
 	return NSQuat<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z, pLHS / pRHS.w);
 }
 
 template <class T>
-NSQuat<T> operator/(const nsfloat & pLHS, const NSQuat<T> & pRHS)
+NSQuat<T> operator/(const float & pLHS, const NSQuat<T> & pRHS)
 {
 	return NSQuat<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z, pLHS / pRHS.w);
 }
 
 template <class T>
-NSQuat<T> operator/(const nsdouble & pLHS, const NSQuat<T> & pRHS)
+NSQuat<T> operator/(const double & pLHS, const NSQuat<T> & pRHS)
 {
 	return NSQuat<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z, pLHS / pRHS.w);
 }

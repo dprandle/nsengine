@@ -7,7 +7,7 @@
 
 GLFWwindow * win;
 
-bool glfw_setup(const ivec2 & screendim, nsbool fullscreen, const nsstring & title)
+bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title)
 {
     if (!glfwInit())
         return false;
@@ -43,7 +43,7 @@ void glfw_update()
 	glfwPollEvents();
 }
 
-void glfw_keypress_callback(GLFWwindow * pWindow, int pKey, int pScancode, int pAction, int pMods)
+void glfw_keypress_callback(GLFWwindow * pWindow, int32 pKey, int32 pScancode, int32 pAction, int32 pMods)
 {
 	if (pAction == GLFW_REPEAT)
 		return;
@@ -374,12 +374,12 @@ void glfw_keypress_callback(GLFWwindow * pWindow, int pKey, int pScancode, int p
     }
 }
 
-void glfw_mousebutton_callback(GLFWwindow * pWindow, int pButton, int pAction, int pMods)
+void glfw_mousebutton_callback(GLFWwindow * pWindow, int32 pButton, int32 pAction, int32 pMods)
 {
 	if (pAction == GLFW_REPEAT)
 		return;
 
-    double xPos = 0.0, yPos = 0.0; int frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
+    double xPos = 0.0, yPos = 0.0; int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
     glfwGetCursorPos(pWindow, &xPos, &yPos);
     glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
     glfwGetWindowSize(pWindow, &winX, &winY);
@@ -391,8 +391,8 @@ void glfw_mousebutton_callback(GLFWwindow * pWindow, int pButton, int pAction, i
     xPos /= double(frameBufX);
 
     // so compilers wont complain turn in to floats explicitly
-    nsfloat normXPos = nsfloat(xPos);
-    nsfloat normYPos = nsfloat(yPos);
+    float normXPos = float(xPos);
+    float normYPos = float(yPos);
 
     bool pressed = pAction == 1;
 
@@ -426,7 +426,7 @@ void glfw_mousebutton_callback(GLFWwindow * pWindow, int pButton, int pAction, i
 
 void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 {
-    int frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
+    int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
     glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
     glfwGetWindowSize(pWindow, &winX, &winY);
 
@@ -445,7 +445,7 @@ void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset
     double xPos = 0.0, yPos = 0.0;
     glfwGetCursorPos(pWindow, &xPos, &yPos);
 
-    int frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
+    int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
     glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
     glfwGetWindowSize(pWindow, &winX, &winY);
 
@@ -458,7 +458,7 @@ void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset
     nsengine.eventDispatch()->push<NSMouseScrollEvent>(float(pYOffset), fvec2(float(yPos),float(xPos)));
 }
 
-void glfw_resizewindow_callback(GLFWwindow* window, int width, int height)
+void glfw_resizewindow_callback(GLFWwindow* window, int32 width, int32 height)
 {
 	NSRenderSystem * rs = nsengine.system<NSRenderSystem>();
 	if (rs != NULL)

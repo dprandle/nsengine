@@ -24,7 +24,7 @@ public:
 	NSPluginManager();
 	~NSPluginManager();
 
-	virtual nsbool add(NSResource * res);
+	virtual bool add(NSResource * res);
 	
 	template <class ResType>
 	ResType * create(const nsstring & resName)
@@ -75,13 +75,13 @@ public:
 	NSPlugin * active();
 	
 	template<class T>
-	nsbool bind(const T & name)
+	bool bind(const T & name)
 	{
 		NSPlugin * plug = get(name);
 		return bind(plug);
 	}
 
-	nsbool bind(NSPlugin * plg);
+	bool bind(NSPlugin * plg);
 		
 	void setPluginDirectory(const nsstring & dir);
 
@@ -92,13 +92,13 @@ public:
 	const nsstring & resourceDirectory();
 
 	template<class T>
-	nsbool unbind(const T & name)
+	bool unbind(const T & name)
 	{
 		NSPlugin * plg = get(name);
 		return unbind(plg);
 	}
 
-	nsbool unbind(NSPlugin * plg);
+	bool unbind(NSPlugin * plg);
 
 	template<class T>
 	void setActive(const T & name)
@@ -110,7 +110,7 @@ public:
 	void setActive(NSPlugin * plg);
 	
 private:
-	nsuint mActivePlugin;
+	uint32 mActivePlugin;
 	nsstring mResourceDirForOwnedPlugs;
 };
 

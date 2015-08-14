@@ -22,7 +22,7 @@ NSGLObject::~NSGLObject()
 		NSLogFile("Warning : Failed to call \"release()\" on NSBuffer object - openGL resource was not released","enginecreatedestroy.log");
 }
 
-nsuint NSGLObject::glid()
+uint32 NSGLObject::glid()
 {
 	return mGLName;
 }

@@ -48,7 +48,7 @@ public:
 
 	virtual void update();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 	void popContext();
 
@@ -68,7 +68,7 @@ private:
 
 	void _mouseRelease(NSInputMap::MouseButton pButton, const fvec2 & mousePos);
 
-	void _mouseScroll(nsfloat pDelta, const fvec2 & mousePos);
+	void _mouseScroll(float pDelta, const fvec2 & mousePos);
 
 	bool _checkTriggerModifiers(const NSInputMap::Trigger & t);
 

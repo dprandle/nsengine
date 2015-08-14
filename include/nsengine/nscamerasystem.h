@@ -71,9 +71,9 @@ public:
 
 	const CameraMode & mode() const;
 
-	const nsfloat & sensitivity(const Sensitivity & pWhich) const;
+	const float & sensitivity(const Sensitivity & pWhich) const;
 
-	nsfloat zoom() const;
+	float zoom() const;
 
 	void setSensitivity(float pSensitivity, const Sensitivity & pWhich);
 
@@ -89,11 +89,11 @@ public:
 
 	void setyinv(bool pInvert, const CameraMode & pMode = Free);
 
-	void setZoom(nsfloat pZFactor);
+	void setZoom(float pZFactor);
 
 	void toggleMode();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 private:
 
@@ -114,15 +114,15 @@ private:
 
     void _onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
 	void _onCamMove(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
-	void _onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pScroll);
+	void _onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, float pScroll);
 	
 	bool _handleActionEvent(NSActionEvent * evnt);
 	bool _handleStateEvent(NSStateEvent * evnt);
 	bool _handleSelFocusEvent(NSSelFocusEvent * evnt);
 	
-	nsfloat mZoomFactor;
-	nsfloat mTurnSensitivity;
-	nsfloat mStrafeSensitivity;
+	float mZoomFactor;
+	float mTurnSensitivity;
+	float mStrafeSensitivity;
 
 	float animTime;
 	float anim_elapsed;

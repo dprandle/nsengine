@@ -26,7 +26,7 @@ class NSComponent;
 class NSEntity : public NSResource
 {
 public:
-	typedef std::unordered_map<nsuint, NSComponent*> CompSet;
+	typedef std::unordered_map<uint32, NSComponent*> CompSet;
 
 	template <class PUPer>
 	friend void pup(PUPer & p, NSEntity & ent);
@@ -38,49 +38,49 @@ public:
 
 	NSEntity(NSEntity & copy);
 
-	nsbool add(NSComponent * pComp);
+	bool add(NSComponent * pComp);
 
 	CompSet::iterator begin();
 	CompSet::iterator end();
 
 	void clear();
 
-	nsbool copy(NSComponent * toCopy, bool overwrite = true);
+	bool copy(NSComponent * toCopy, bool overwrite = true);
 
 	template<class CompType>
 	CompType * create()
 	{
-		nsuint tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
 		return static_cast<CompType*>(create(tid));
 	}
 
 	NSComponent * create(const nsstring & guid);
 
-	NSComponent * create(nsuint type_id);
+	NSComponent * create(uint32 type_id);
 
 	template<class CompType>
 	bool del()
 	{
-		nsuint tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
 		return del(tid);
 	}
 
-	bool del(nsuint type_id);
+	bool del(uint32 type_id);
 
 	bool del(const nsstring & guid);
 
 	template<class CompType>
 	CompType * get()
 	{
-		nsuint tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
 		return static_cast<CompType*>(get(tid));
 	}
 
-	NSComponent * get(nsuint type_id);
+	NSComponent * get(uint32 type_id);
 
 	NSComponent * get(const nsstring & guid);
 
-	nsuint count();
+	uint32 count();
 
 	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
 
@@ -93,11 +93,11 @@ public:
 	template<class CompType>
 	bool has()
 	{
-		nsuint tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
 		return (has(tid));
 	}
 
-	bool has(nsuint type_id);
+	bool has(uint32 type_id);
 
 	bool has(const nsstring & guid);
 
@@ -106,36 +106,36 @@ public:
 	template<class CompType>
 	CompType * remove()
 	{
-		nsuint tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
 		return static_cast<CompType*>(remove(tid));
 	}
 
 	// LEFT OFF HERE
-	NSComponent * remove(nsuint type_id);
+	NSComponent * remove(uint32 type_id);
 
 	NSComponent * remove(const nsstring & guid);
 	
-	void postUpdateAll(nsbool pUpdate);
+	void postUpdateAll(bool pUpdate);
 
 	template<class CompType>
-	void postUpdate(nsbool update)
+	void postUpdate(bool update)
 	{
 		postUpdate(CompType::getTypeString(), update);
 	}
 
-	void postUpdate(const nsstring & compType, nsbool update);
+	void postUpdate(const nsstring & compType, bool update);
 
 	virtual void pup(NSFilePUPer * p);
 
 	void updateScene();
 
 	template<class CompType>
-	nsbool updatePosted()
+	bool updatePosted()
 	{
 		return updatePosted(CompType::getTypeString());
 	}
 
-	nsbool updatePosted(const nsstring & compType);
+	bool updatePosted(const nsstring & compType);
 
 	NSEntity & operator=(NSEntity rhs);
 
@@ -146,7 +146,7 @@ private:
 template <class PUPer>
 void pup(PUPer & p, NSEntity & ent)
 {
-	nsuint size = ent.count();
+	uint32 size = ent.count();
 
 	if (ent.has<NSTFormComp>())
 		size -= 1;
@@ -155,7 +155,7 @@ void pup(PUPer & p, NSEntity & ent)
 
 	if (p.mode() == PUP_IN)
 	{
-		for (nsuint i = 0; i < size; ++i)
+		for (uint32 i = 0; i < size; ++i)
 		{
 			nsstring k; NSComponent * v = NULL;
 			pup(p, k, "comptype");
@@ -168,7 +168,7 @@ void pup(PUPer & p, NSEntity & ent)
 		auto iter = ent.mComponents.begin();
 		while (iter != ent.mComponents.end())
 		{
-			nsuint tform_typeid = nsengine.typeID(std::type_index(typeid(NSTFormComp)));
+			uint32 tform_typeid = nsengine.typeID(std::type_index(typeid(NSTFormComp)));
 			if (iter->first != tform_typeid)
 			{
 				nsstring k = nsengine.guid(iter->first);

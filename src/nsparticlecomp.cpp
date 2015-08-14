@@ -138,7 +138,7 @@ void NSParticleComp::clearVisualKeys()
 	mVisualKeys[mMaxVisualKeys] = fvec3(1.0f, 1.0f, 1.0f);
 }
 
-void NSParticleComp::setAngularVelocity(nsint pVel)
+void NSParticleComp::setAngularVelocity(int32 pVel)
 {
 	mAngularVelocity = pVel;
 }
@@ -148,7 +148,7 @@ fvec2 NSParticleComp::startingSize()
 	return mStartingSize;
 }
 
-int NSParticleComp::angularVelocity()
+int32 NSParticleComp::angularVelocity()
 {
 	return mAngularVelocity;
 }
@@ -215,7 +215,7 @@ void NSParticleComp::setEmitterSize(const fvec3 & pSize)
 
 fvec3 NSParticleComp::motionKeyAt(float pTime)
 {
-	nsuint index = static_cast<nsuint>(pTime * mMaxMotionKeys);
+	uint32 index = static_cast<uint32>(pTime * mMaxMotionKeys);
 	fvec3uimap::iterator fIter = mMotionKeys.find(index);
 	if (fIter != mMotionKeys.end())
 		return fIter->second;
@@ -224,7 +224,7 @@ fvec3 NSParticleComp::motionKeyAt(float pTime)
 
 fvec3 NSParticleComp::visualKeyAt(float pTime)
 {
-	nsuint index = static_cast<nsuint>(pTime * mMaxVisualKeys);
+	uint32 index = static_cast<uint32>(pTime * mMaxVisualKeys);
 	fvec3uimap::iterator rIter = mVisualKeys.find(index);
 	if (rIter != mVisualKeys.end())
 		return rIter->second;
@@ -247,7 +247,7 @@ void NSParticleComp::init()
 	mBackBuf->bind();
 	mBackBuf->allocate(mParticles,
 					   NSBufferObject::MutableDynamicDraw,
-					   static_cast<nsuint>(mParticles.size()));
+					   static_cast<uint32>(mParticles.size()));
 	mVAO[0]->enable(0);
 	mVAO[0]->vertexAttribPtr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
 	mVAO[0]->enable(1);
@@ -262,7 +262,7 @@ void NSParticleComp::init()
 	mFrontBuf->bind();
 	mFrontBuf->allocate(mParticles,
 						NSBufferObject::MutableDynamicDraw,
-						static_cast<nsuint>(mParticles.size()));
+						static_cast<uint32>(mParticles.size()));
 	mVAO[1]->enable(0);
 	mVAO[1]->vertexAttribPtr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
 	mVAO[1]->enable(1);
@@ -299,7 +299,7 @@ void NSParticleComp::removeMotionKey(float pTime)
 	{
 		return;
 	}
-	nsuint index = static_cast<nsuint>(pTime * mMaxMotionKeys);
+	uint32 index = static_cast<uint32>(pTime * mMaxMotionKeys);
 	mMotionKeys.erase(index);
 }
 
@@ -333,7 +333,7 @@ void NSParticleComp::removeVisualKey(float pTime)
 	{
 		return;
 	}
-	nsuint index = static_cast<nsuint>(pTime * mMaxVisualKeys);
+	uint32 index = static_cast<uint32>(pTime * mMaxVisualKeys);
 	mVisualKeys.erase(index);
 }
 
@@ -343,17 +343,17 @@ const uivec2 & NSParticleComp::shaderID()
 	return mXFBShaderID;
 }
 
-nsuint NSParticleComp::maxMotionKeys()
+uint32 NSParticleComp::maxMotionKeys()
 {
 	return mMaxMotionKeys;
 }
 
-nsuint NSParticleComp::maxVisualKeys()
+uint32 NSParticleComp::maxVisualKeys()
 {
 	return mMaxVisualKeys;
 }
 
-void NSParticleComp::setMaxMotionKeys(nsuint pMax)
+void NSParticleComp::setMaxMotionKeys(uint32 pMax)
 {
 	if (pMax > PARTICLE_MAX_MOTION_KEYS)
 		return;
@@ -362,7 +362,7 @@ void NSParticleComp::setMaxMotionKeys(nsuint pMax)
 	fvec3uimap::iterator mapIter = mMotionKeys.begin();
 	while (mapIter != mMotionKeys.end())
 	{
-		tmpMap[static_cast<nsuint>(float(mapIter->first) / float(mMaxMotionKeys) * pMax)] = mapIter->second;
+		tmpMap[static_cast<uint32>(float(mapIter->first) / float(mMaxMotionKeys) * pMax)] = mapIter->second;
 		++mapIter;
 	}
 	std::swap(tmpMap, mMotionKeys);
@@ -379,7 +379,7 @@ const fvec3uimap & NSParticleComp::visualKeys()
 	return mVisualKeys;
 }
 
-void NSParticleComp::setMaxVisualKeys(nsuint pMax)
+void NSParticleComp::setMaxVisualKeys(uint32 pMax)
 {
 	if (pMax > PARTICLE_MAX_VISUAL_KEYS)
 		return;
@@ -388,7 +388,7 @@ void NSParticleComp::setMaxVisualKeys(nsuint pMax)
 	fvec3uimap::iterator mapIter = mVisualKeys.begin();
 	while (mapIter != mVisualKeys.end())
 	{
-		tmpMap[static_cast<nsuint>(float(mapIter->first) / float(mMaxVisualKeys) * pMax)] = mapIter->second;
+		tmpMap[static_cast<uint32>(float(mapIter->first) / float(mMaxVisualKeys) * pMax)] = mapIter->second;
 		++mapIter;
 	}
 	std::swap(tmpMap, mVisualKeys);
@@ -407,7 +407,7 @@ void NSParticleComp::setMotionKey(float pTime, const fvec3 & pForce)
 		dprint("NSParticleComp::setForceKey - Warning : setting time below 0.0 clamps the time to 0");
 		pTime = 0.0f;
 	}
-	nsuint index = static_cast<nsuint>(pTime * mMaxMotionKeys);
+	uint32 index = static_cast<uint32>(pTime * mMaxMotionKeys);
 	mMotionKeys[index] = pForce;
 }
 
@@ -423,7 +423,7 @@ void NSParticleComp::setVisualKey(float pTime, const fvec3 & pRenderKey)
 		dprint("NSParticleComp::setRenderKey - Warning : setting time below 0.0 clamps the time to 0");
 		pTime = 0.0f;
 	}
-	nsuint index = static_cast<nsuint>(pTime * mMaxVisualKeys);
+	uint32 index = static_cast<uint32>(pTime * mMaxVisualKeys);
 	mVisualKeys[index] = pRenderKey;
 }
 
@@ -437,22 +437,22 @@ const uivec2 & NSParticleComp::materialID()
 	return mMatID;
 }
 
-nsuint NSParticleComp::maxParticles()
+uint32 NSParticleComp::maxParticles()
 {
 	return mMaxParticleCount;
 }
 
-nsfloat & NSParticleComp::elapsed()
+float & NSParticleComp::elapsed()
 {
 	return mElapsedTime;
 }
 
-nsuint NSParticleComp::lifetime()
+uint32 NSParticleComp::lifetime()
 {
 	return mLifetime;
 }
 
-nsuint NSParticleComp::emissionRate()
+uint32 NSParticleComp::emissionRate()
 {
 	return mEmissionRate;
 }
@@ -467,14 +467,14 @@ void NSParticleComp::setInitVelocityMult(const fvec3 & pMult)
 	mInitVelocityMult = pMult;
 }
 
-nsuint NSParticleComp::motionKeyCount()
+uint32 NSParticleComp::motionKeyCount()
 {
-	return static_cast<nsuint>(mMotionKeys.size());
+	return static_cast<uint32>(mMotionKeys.size());
 }
 
-nsuint NSParticleComp::visualKeyCount()
+uint32 NSParticleComp::visualKeyCount()
 {
-	return static_cast<nsuint>(mVisualKeys.size());
+	return static_cast<uint32>(mVisualKeys.size());
 }
 
 fvec3uimap::iterator NSParticleComp::beginMotionKey()
@@ -497,11 +497,11 @@ fvec3uimap::iterator NSParticleComp::endVisualKey()
 	return mVisualKeys.end();
 }
 
-void NSParticleComp::setEmissionRate(nsuint pRate)
+void NSParticleComp::setEmissionRate(uint32 pRate)
 {
 	if (pRate * mLifetime >= 1000 * mMaxParticleCount)
 	{
-		dprint("NSParticleComp::setEmissionRate(nsuint pRate) - Emission rate limited by max particle count");
+		dprint("NSParticleComp::setEmissionRate(uint32 pRate) - Emission rate limited by max particle count");
 		return;
 	}
 	mEmissionRate = pRate;
@@ -509,13 +509,13 @@ void NSParticleComp::setEmissionRate(nsuint pRate)
 
 bool NSParticleComp::hasMotionKey(float pTime)
 {
-	int index = static_cast<nsuint>(pTime*mMaxMotionKeys);
+	int32 index = static_cast<uint32>(pTime*mMaxMotionKeys);
 	return (mMotionKeys.find(index) != mMotionKeys.end());
 }
 
 bool NSParticleComp::hasVisualKey(float pTime)
 {
-	int index = static_cast<nsuint>(pTime*mMaxVisualKeys);
+	int32 index = static_cast<uint32>(pTime*mMaxVisualKeys);
 	return (mVisualKeys.find(index) != mVisualKeys.end());
 }
 
@@ -530,11 +530,11 @@ void NSParticleComp::setStartingSize(float pWidth, float pHeight)
 	mStartingSize.v = pHeight;
 }
 
-void NSParticleComp::setLifetime(nsuint pLifetime)
+void NSParticleComp::setLifetime(uint32 pLifetime)
 {
 	if (mEmissionRate * pLifetime >= 1000 * mMaxParticleCount)
 	{
-		dprint("NSParticleComp::setLoopTime(nsuint pRate) - Lifetime limited by max particle count");
+		dprint("NSParticleComp::setLoopTime(uint32 pRate) - Lifetime limited by max particle count");
 		return;
 	}
 	mLifetime = pLifetime;
@@ -551,15 +551,15 @@ void NSParticleComp::allocateBuffers()
 	mBackBuf->bind();
 	mBackBuf->allocate(mParticles,
 					   NSBufferObject::MutableDynamicDraw,
-					   static_cast<nsuint>(mParticles.size()));
+					   static_cast<uint32>(mParticles.size()));
 	mFrontBuf->bind();
 	mBackBuf->allocate(mParticles,
 					   NSBufferObject::MutableDynamicDraw,
-					   static_cast<nsuint>(mParticles.size()));
+					   static_cast<uint32>(mParticles.size()));
 	mFrontBuf->unbind();
 }
 
-void NSParticleComp::setMaxParticles(nsuint pMaxParticles)
+void NSParticleComp::setMaxParticles(uint32 pMaxParticles)
 {
 	mMaxParticleCount = pMaxParticles;
 	if (mEmissionRate * mLifetime >= 1000 * mMaxParticleCount)
@@ -604,7 +604,7 @@ const uivec2 & NSParticleComp::randomTextureID()
 	return mRandTextID;
 }
 
-nsuint NSParticleComp::transformFeedbackID()
+uint32 NSParticleComp::transformFeedbackID()
 {
 	return mTFB[1 - mBufferIndex]->glid();
 }

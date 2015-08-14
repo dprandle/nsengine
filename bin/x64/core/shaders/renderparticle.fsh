@@ -1,5 +1,5 @@
 type:<nsstring>NSParticleRenderShaderstage:35632</nsstring>
-fragment.type:<nsuint>5632</nsuint>
+fragment.type:<uint32>5632</uint32>
 fragment.source:<nsstring>#version 440
 
 in vec2 texCoord;

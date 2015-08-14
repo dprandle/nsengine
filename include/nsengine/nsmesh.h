@@ -49,7 +49,7 @@ public:
 	struct Bone
 	{
 		Bone();
-		nsuint boneID;
+		uint32 boneID;
 		fmat4 mOffsetTransform;
 	};
 
@@ -61,7 +61,7 @@ public:
 		Node * findNode(const nsstring & pNodeName);
 
 		nsstring mName;
-		nsuint mNodeID;
+		uint32 mNodeID;
 		fmat4 mNodeTransform;
 		fmat4 mWorldTransform;
 		Node * mParentNode;
@@ -84,9 +84,9 @@ public:
 		struct BoneWeightIDs
 		{
 			BoneWeightIDs();
-			void addBoneInfo(nsuint pBoneID, nsfloat pWeight);
+			void addBoneInfo(uint32 pBoneID, float pWeight);
 
-			nsuint boneIDs[BONES_PER_VERTEX];
+			uint32 boneIDs[BONES_PER_VERTEX];
 			float weights[BONES_PER_VERTEX];
 		};
 
@@ -95,7 +95,7 @@ public:
 		void allocateBuffers();
 		void calcaabb();
 		void initGL();
-		void resize(nsuint pNewSize);
+		void resize(uint32 pNewSize);
 		void updateVAO();
 
 
@@ -111,7 +111,7 @@ public:
 		fvec2array mTexCoords;
 		fvec3array mNormals;
 		fvec3array mTangents;
-		nsuintarray mIndices;
+		uint32array mIndices;
 		uivec3array mTriangles;
 		uivec2array mLines;
 		std::vector<BoneWeightIDs> mBoneInfo;
@@ -135,7 +135,7 @@ public:
 
 	void allocate();
 
-	void allocate(nsuint subindex);
+	void allocate(uint32 subindex);
 
 	void bake();
 
@@ -145,11 +145,11 @@ public:
 
 	void bakeTranslation(const fvec3 & tranlation);
 
-	void bakeRotation(nsuint subindex, const fquat & rotation);
+	void bakeRotation(uint32 subindex, const fquat & rotation);
 
-	void bakeScaling(nsuint subindex, const fvec3 & scale);
+	void bakeScaling(uint32 subindex, const fvec3 & scale);
 
-	void bakeTranslation(nsuint subindex, const fvec3 & tranlation);
+	void bakeTranslation(uint32 subindex, const fvec3 & tranlation);
 
 	void bakeNodeRotation(const fquat & rotation);
 
@@ -159,43 +159,43 @@ public:
 
 	void calcaabb();
 
-	nsuint count();
+	uint32 count();
 
-	nsbool contains(SubMesh * submesh);
+	bool contains(SubMesh * submesh);
 
-	nsbool contains(nsuint subindex);
+	bool contains(uint32 subindex);
 
-	nsbool contains(const nsstring & subname);
+	bool contains(const nsstring & subname);
 	
 	SubMesh * create();
 
 	bool del();
 
-	nsbool del(SubMesh * submesh);
+	bool del(SubMesh * submesh);
 
-	nsbool del(nsuint subindex);
+	bool del(uint32 subindex);
 
-	nsbool del(const nsstring & subname);
+	bool del(const nsstring & subname);
 
-	nsuint find(SubMesh * sub);
+	uint32 find(SubMesh * sub);
 
-	nsuint find(const nsstring & subname);
+	uint32 find(const nsstring & subname);
 
 	void flipnorm();
 
-	void flipnorm(nsuint subindex);
+	void flipnorm(uint32 subindex);
 
 	void flipuv();
 
-	void flipuv(nsuint pSubIndex);
+	void flipuv(uint32 pSubIndex);
 
 	void initGL();
 
-	void initGL(nsuint subindex);
+	void initGL(uint32 subindex);
 
 	SubMesh * submesh(const nsstring & pName);
 
-	SubMesh * submesh(nsuint pIndex);
+	SubMesh * submesh(uint32 pIndex);
 
 	void init();
 
@@ -205,20 +205,20 @@ public:
 
 	SubMesh * remove(SubMesh * submesh);
 
-	SubMesh * remove(nsuint subindex);
+	SubMesh * remove(uint32 subindex);
 
 	SubMesh * remove(const nsstring & subname);
 
 	void transformNode(Node * pParentNode, const fmat4 & pTransform);
 
-	nsuint vertcount();
+	uint32 vertcount();
 
-	nsuint vertcount(nsuint pIndex);
+	uint32 vertcount(uint32 pIndex);
 
 	/*!
 	Calculate volume using divergence theorem method
 	*/
-	nsfloat volume();
+	float volume();
 
 private:
 	void _propagateWorldTransform(Node * pChildNode);
@@ -233,14 +233,14 @@ private:
 template <class PUPer>
 void pup(PUPer & p, NSMesh::SubMesh::BoneWeightIDs & bwid, const nsstring & varName)
 {
-	for (nsuint i = 0; i < BONES_PER_VERTEX; ++i)
+	for (uint32 i = 0; i < BONES_PER_VERTEX; ++i)
 	{
 		pup(p, bwid.boneIDs[i], varName + ".boneID[" + std::to_string(i) + "]");
 		pup(p, bwid.weights[i], varName + ".weights[" + std::to_string(i) + "]");
 	}
 }
 
-// This simply pups the submesh data - not much to say here - most of these attributes are std::vectors of vec3 or vec2 or unsigned ints
+// This simply pups the submesh data - not much to say here - most of these attributes are std::vectors of vec3 or vec2 or uint32s
 // The prim type is just GL_TRIANGLES or GL_LINES etc - and the BoneInfo is a std::vector of BoneWeightIDs
 template <class PUPer>
 void pup(PUPer & p, NSMesh::SubMesh & sm, const nsstring & varName)
@@ -286,7 +286,7 @@ void pup(PUPer & p, NSMesh::Node & node, const nsstring & varName)
 	pup(p, node.mNodeTransform, varName + ".mNodeTransform");
 	pup(p, node.mWorldTransform, varName + ".mWorldTransform");
 	pup(p, node.mChildNodes, varName + ".mChildNodes");
-	for (nsuint i = 0; i < node.mChildNodes.size(); ++i)
+	for (uint32 i = 0; i < node.mChildNodes.size(); ++i)
 		node.mChildNodes[i]->mParentNode = &node;
 }
 
@@ -305,7 +305,7 @@ template <class PUPer>
 void pup(PUPer & p, NSMesh::NodeTree & nodeTree, const nsstring & varName)
 {
 	pup(p, nodeTree.boneNameMap, varName + ".boneNameMap");
-	nsbool hasRoot = (nodeTree.mRootNode != NULL);
+	bool hasRoot = (nodeTree.mRootNode != NULL);
 	pup(p, hasRoot, varName + ".hasRoot"); // hasRoot will be saved or overwritten depending on saving or loading
 	if (hasRoot)
 		pup(p, nodeTree.mRootNode, varName);
@@ -320,7 +320,7 @@ void pup(PUPer & p, NSMesh & mesh)
 {
 	pup(p, *mesh.mNodeTree, "nodeTree");
 	pup(p, mesh.subMeshes, "subMeshes");
-	for (nsuint i = 0; i < mesh.subMeshes.size(); ++i)
+	for (uint32 i = 0; i < mesh.subMeshes.size(); ++i)
 	{
 		nsstring nodeName = "";
 		if (mesh.subMeshes[i]->mNode != NULL)

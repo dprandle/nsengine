@@ -23,7 +23,7 @@ NSComponent()
 NSTileBrushComp::~NSTileBrushComp()
 {}
 
-bool NSTileBrushComp::add(int x, int y)
+bool NSTileBrushComp::add(int32 x, int32 y)
 {
 	return add(ivec2(x, y));
 }
@@ -42,19 +42,19 @@ ivec2array::iterator NSTileBrushComp::begin()
 	return mBrush.begin();
 }
 
-void NSTileBrushComp::changeHeight(const nsint & pAmount)
+void NSTileBrushComp::changeHeight(const int32 & pAmount)
 {
 	mHeight += pAmount;
 }
 
-bool NSTileBrushComp::contains(int x, int y)
+bool NSTileBrushComp::contains(int32 x, int32 y)
 {
 	return contains(ivec2(x, y));
 }
 
 bool NSTileBrushComp::contains(const ivec2 & pGridSpace)
 {
-	for (nsuint i = 0; i < mBrush.size(); ++i)
+	for (uint32 i = 0; i < mBrush.size(); ++i)
 	{
 		if (pGridSpace == mBrush[i])
 			return true;
@@ -90,7 +90,7 @@ void NSTileBrushComp::pup(NSFilePUPer * p)
 	}
 }
 
-nsint NSTileBrushComp::height() const
+int32 NSTileBrushComp::height() const
 {
 	return mHeight;
 }
@@ -98,7 +98,7 @@ nsint NSTileBrushComp::height() const
 void NSTileBrushComp::init()
 {}
 
-bool NSTileBrushComp::remove(int x, int y)
+bool NSTileBrushComp::remove(int32 x, int32 y)
 {
 	return remove(ivec2(x, y));
 }
@@ -122,7 +122,7 @@ bool NSTileBrushComp::remove(const ivec2 & pGridPos)
 	return false;
 }
 
-void NSTileBrushComp::setHeight(const nsint & pHeight)
+void NSTileBrushComp::setHeight(const int32 & pHeight)
 {
 	mHeight = pHeight;
 }
@@ -131,7 +131,7 @@ NSTileBrushComp & NSTileBrushComp::operator=(const NSTileBrushComp & pRHSComp)
 {
 	mHeight = pRHSComp.mHeight;
 	mBrush.resize(pRHSComp.mBrush.size());
-	for (nsuint i = 0; i < mBrush.size(); ++i)
+	for (uint32 i = 0; i < mBrush.size(); ++i)
 		mBrush[i] = pRHSComp.mBrush[i];
 
 	postUpdate(true);

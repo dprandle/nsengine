@@ -38,12 +38,12 @@ NSEntity::~NSEntity()
 	clear();
 }
 
-nsbool NSEntity::add(NSComponent * pComp)
+bool NSEntity::add(NSComponent * pComp)
 {
 	if (pComp == NULL)
 		return false;
 
-	nsuint hashed_type = pComp->type();
+	uint32 hashed_type = pComp->type();
 	if (hashed_type == 0)
 	{
 		dprint(nsstring("Cannot add component with type ") + nsengine.guid(hashed_type) + nsstring(" to Entity ") + mName +
@@ -60,14 +60,14 @@ nsbool NSEntity::add(NSComponent * pComp)
 	return ret.second;
 }
 
-nsbool NSEntity::copy(NSComponent * toCopy, bool overwrite)
+bool NSEntity::copy(NSComponent * toCopy, bool overwrite)
 {
 	if (toCopy == NULL)
 		return false;
 
 	NSComponent * nc = NULL;
 	
-	nsuint type_id = toCopy->type();
+	uint32 type_id = toCopy->type();
 	if (has(type_id))
 	{
 		if (!overwrite)
@@ -104,7 +104,7 @@ NSEntity::CompSet::iterator NSEntity::end()
 	return mComponents.end();
 }
 
-NSComponent * NSEntity::create(nsuint type_id)
+NSComponent * NSEntity::create(uint32 type_id)
 {
 	NSComponent * comp_t = nsengine.factory<NSCompFactory>(type_id)->create();
 	if (!add(comp_t))
@@ -128,7 +128,7 @@ bool NSEntity::del(const nsstring & guid)
 	return del(hash_id(guid));
 }
 
-bool NSEntity::del(nsuint type_id)
+bool NSEntity::del(uint32 type_id)
 {
 	NSComponent * cmp = remove(type_id);
 	if (cmp != NULL) // Log delete
@@ -156,9 +156,9 @@ void NSEntity::pup(NSFilePUPer * p)
 	}
 }
 
-nsuint NSEntity::count()
+uint32 NSEntity::count()
 {
-	return static_cast<nsuint>(mComponents.size());
+	return static_cast<uint32>(mComponents.size());
 }
 
 NSComponent * NSEntity::get(const nsstring & guid)
@@ -166,7 +166,7 @@ NSComponent * NSEntity::get(const nsstring & guid)
 	return get(hash_id(guid));
 }
 
-NSComponent * NSEntity::get(nsuint type_id)
+NSComponent * NSEntity::get(uint32 type_id)
 {
 	CompSet::iterator iter = mComponents.find(type_id);
 	if (iter != mComponents.end())
@@ -208,7 +208,7 @@ bool NSEntity::has(const nsstring & guid)
 	return has(hash_id(guid));
 }
 
-bool NSEntity::has(nsuint type_id)
+bool NSEntity::has(uint32 type_id)
 {
 	return (mComponents.find(type_id) != mComponents.end());
 }
@@ -218,7 +218,7 @@ void NSEntity::init()
 	// do nothing
 }
 
-NSComponent * NSEntity::remove(nsuint type_id)
+NSComponent * NSEntity::remove(uint32 type_id)
 {
 	NSComponent * comp_t = NULL;
 	auto iter = mComponents.find(type_id);
@@ -244,7 +244,7 @@ NSComponent * NSEntity::remove(const nsstring & guid)
 	return remove(hash_id(guid));
 }
 
-void NSEntity::postUpdateAll(nsbool pUpdate)
+void NSEntity::postUpdateAll(bool pUpdate)
 {
 	auto iter = mComponents.begin();
 	while (iter != mComponents.end());
@@ -254,14 +254,14 @@ void NSEntity::postUpdateAll(nsbool pUpdate)
 	}
 }
 
-void NSEntity::postUpdate(const nsstring & compType, nsbool update)
+void NSEntity::postUpdate(const nsstring & compType, bool update)
 {
 	NSComponent * comp_t = get(compType);
 	if (comp_t != NULL)
 		comp_t->postUpdate(update);
 }
 
-nsbool NSEntity::updatePosted(const nsstring & compType)
+bool NSEntity::updatePosted(const nsstring & compType)
 {
 	NSComponent * comp_t = get(compType);
 	if (comp_t != NULL)

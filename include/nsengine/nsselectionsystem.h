@@ -52,11 +52,11 @@ public:
 
 	~NSSelectionSystem();
 
-	bool add(NSEntity * ent, nsuint tformid);
+	bool add(NSEntity * ent, uint32 tformid);
 
 	bool addToGrid();
 
-	void changeLayer(int pChange);
+	void changeLayer(int32 pChange);
 
 	bool collision();
 
@@ -70,31 +70,31 @@ public:
 
 	bool empty();
 
-	void enableLayerMode(const nsbool & pMode);
+	void enableLayerMode(const bool & pMode);
 
-	nsint layer() const;
+	int32 layer() const;
 
 	const uivec3 & center();
 
-	virtual nsint drawPriority();
+	virtual int32 drawPriority();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 //	virtual bool handleEvent(NSEvent * pEvent);
 
-	uivec3 pick(nsfloat mousex, nsfloat mousey);
+	uivec3 pick(float mousex, float mousey);
 
 	uivec3 pick(const fvec2 & mpos);
 
 	virtual void init();
 
-	nsbool layerMode() const;
+	bool layerMode() const;
 
 	bool brushValid();
 
 	bool tileSwapValid();
 
-	void remove(NSEntity * ent, nsuint pTFormID);
+	void remove(NSEntity * ent, uint32 pTFormID);
 
 	void removeFromGrid();
 
@@ -104,13 +104,13 @@ public:
 
 	void rotate(const fvec4 & axisangle);
 
-	void rotate(NSEntity * ent, NSTFormComp::DirVec axis, nsfloat angle);
+	void rotate(NSEntity * ent, NSTFormComp::DirVec axis, float angle);
 
-	void rotate(NSTFormComp::DirVec axis, nsfloat angle);
+	void rotate(NSTFormComp::DirVec axis, float angle);
 
-	void rotate(NSEntity * ent, NSTFormComp::Axis axis, nsfloat angle);
+	void rotate(NSEntity * ent, NSTFormComp::Axis axis, float angle);
 
-	void rotate(NSTFormComp::Axis axis, nsfloat angle);
+	void rotate(NSTFormComp::Axis axis, float angle);
 
 	void rotate(NSEntity * ent, const fvec3 & euler);
 
@@ -124,21 +124,21 @@ public:
 
 	void scale(const fvec3 & pAmount);
 
-	void scale(NSEntity * ent, nsfloat x, nsfloat y, nsfloat z);
+	void scale(NSEntity * ent, float x, float y, float z);
 
-	void scale(nsfloat x, nsfloat y, nsfloat z);
+	void scale(float x, float y, float z);
 
-	bool set(NSEntity * ent, nsuint tformid);
+	bool set(NSEntity * ent, uint32 tformid);
 
 	void setColor(const fvec4 & pColor);
 
-	void setPickfbo(nsuint fbo);
+	void setPickfbo(uint32 fbo);
 
-	void setFinalfbo(nsuint fbo);
+	void setFinalfbo(uint32 fbo);
 
-	void setHiddenState(NSTFormComp::HiddenState pState, nsbool pSet);
+	void setHiddenState(NSTFormComp::HiddenState pState, bool pSet);
 
-	void setLayer(nsint pLayer);
+	void setLayer(int32 pLayer);
 
 	void setShader(NSSelectionShader * selShader);
 
@@ -166,17 +166,17 @@ public:
 
 	void translate(const fvec3 & pAmount);
 
-	void translate(nsfloat x, nsfloat y, nsfloat z);
+	void translate(float x, float y, float z);
 
-	void translate(NSEntity * ent, nsfloat x, nsfloat y, nsfloat z);
+	void translate(NSEntity * ent, float x, float y, float z);
 
-	void translate(NSEntity * ent, NSTFormComp::DirVec pDir, nsfloat pAmount);
+	void translate(NSEntity * ent, NSTFormComp::DirVec pDir, float pAmount);
 
-	void translate(NSTFormComp::DirVec pDir, nsfloat pAmount);
+	void translate(NSTFormComp::DirVec pDir, float pAmount);
 
-	void translate(NSEntity * ent, NSTFormComp::Axis pDir, nsfloat pAmount);
+	void translate(NSEntity * ent, NSTFormComp::Axis pDir, float pAmount);
 
-	void translate(NSTFormComp::Axis pDir, nsfloat pAmount);
+	void translate(NSTFormComp::Axis pDir, float pAmount);
 
 	virtual void update();
 
@@ -219,14 +219,14 @@ protected:
 
 	virtual void _onSelect(
 		NSEntity * ent,
-		nsbool pPressed,
+		bool pPressed,
 		const uivec3 & pID,
 		bool pSnapZOnly = false
 		);
 
 	virtual void _onMultiSelect(
 		NSEntity * ent,
-		nsbool pPressed,
+		bool pPressed,
 		const uivec3 & pID
 		);
 
@@ -238,7 +238,7 @@ protected:
 	virtual void _onDragObject(
 		NSEntity * ent,
 		const fvec2 & pDelta,
-		nsusint _axis
+		uint16 _axis
 		);
 
 	void _drawOcc();
@@ -257,10 +257,10 @@ protected:
 	fvec3 mCachedPoint;
 	bool mLayerMode;
 	bool drawOcc;
-	nsint mLayer;
+	int32 mLayer;
 	fvec2 mCachedLPoint;
-	nsuint finalBuf;
-	nsuint pickBuf;
+	uint32 finalBuf;
+	uint32 pickBuf;
 	fmat4 trans;
 };
 

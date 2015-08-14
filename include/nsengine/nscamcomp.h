@@ -43,7 +43,7 @@ public:
 	struct Movement
 	{
 		Movement() :mDir(DirNone), mAnimate(false){}
-		nsint mDir;
+		int32 mDir;
 		bool mAnimate;
 	};
 
@@ -147,7 +147,7 @@ public:
 	*/
 	void init();
 
-	nsfloat aspectRatio();
+	float aspectRatio();
 
 	const fvec2 & orthoTBClip();
 
@@ -195,7 +195,7 @@ public:
 	*/
 	void setFly(Direction pDir, bool pAnimate);
 
-	void setfov(nsfloat angledeg);
+	void setfov(float angledeg);
 
 	/*!
 	Sets the focus point that the camera will rotate around in focus mode. Call this
@@ -219,7 +219,7 @@ public:
 
 	const fmat4 & invproj();
 
-	nsfloat fov();
+	float fov();
 
 
 	/*!
@@ -243,15 +243,15 @@ public:
 	*/
 	void setStrafe(Direction pDir, bool pAnimate);
 
-	void resize(nsint w, nsint h);
+	void resize(int32 w, int32 h);
 
 	void resize(const ivec2 & dimen);
 
 	void rotateFocus(const fquat & pQuat);
 
-	void rotateFocus(nsfloat pX, nsfloat pY, nsfloat pZ, nsfloat pAngle);
+	void rotateFocus(float pX, float pY, float pZ, float pAngle);
 
-	void rotateFocus(const fvec3 & pAxis, nsfloat pAngle);
+	void rotateFocus(const fvec3 & pAxis, float pAngle);
 
 	void translateFocus(const fvec3 & pAmount);
 
@@ -264,12 +264,12 @@ private:
 	Movement mStrafing;		    // if any of these are non-zero it means the camera is
 	Movement mElevating;			// moving in a direction
 
-	nsfloat mSpeed;				    // speed in units per second used in animation
+	float mSpeed;				    // speed in units per second used in animation
 
 	fvec3 mFocPoint;               // Basically the camera's parent position - camera has a special type of parent though
 	fquat mFocRot;		    // Has the parent orientation for focusing
 
-	nsfloat mFovAngle;
+	float mFovAngle;
 	fvec2 mPersNFClip;
 	ivec2 mDim;
 
@@ -319,7 +319,7 @@ void pup(PUPer & p, NSCamComp::Movement & cc, const nsstring & varName)
 template<class PUPer>
 void pup(PUPer & p, NSCamComp::ProjectionMode & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSCamComp::ProjectionMode>(in);
 }

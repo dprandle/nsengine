@@ -13,7 +13,7 @@ int main()
 {
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
 	
-	nsuint i = nsengine.createContext();
+	uint32 i = nsengine.createContext();
     nsengine.start();
 
     NSPlugin * plg = nsengine.createPlugin("sillyplug");

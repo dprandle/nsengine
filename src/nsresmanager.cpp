@@ -35,7 +35,7 @@ NSResManager::~NSResManager()
 	destroyAll();
 }
 
-nsbool NSResManager::add(NSResource * res)
+bool NSResManager::add(NSResource * res)
 {
 	if (res == NULL)
 	{
@@ -63,7 +63,7 @@ NSResManager::MapType::iterator NSResManager::begin()
 	return mIDResourceMap.begin();
 }
 
-nsbool NSResManager::changed(NSResource * res, nsstring fname)
+bool NSResManager::changed(NSResource * res, nsstring fname)
 {
 	if (fname == "")
 		fname = mResourceDirectory + mLocalDirectory + res->subDir() + res->name() + res->extension();
@@ -84,7 +84,7 @@ nsbool NSResManager::changed(NSResource * res, nsstring fname)
 	return (s1 != s2);
 }
 
-nsuint NSResManager::type()
+uint32 NSResManager::type()
 {
 	return mHashedType;
 }
@@ -94,7 +94,7 @@ NSResource * NSResManager::create(const nsstring & guid_, const nsstring & resNa
 	return create(hash_id(guid_), resName);
 }
 
-NSResource * NSResManager::create(nsuint res_type_id, const nsstring & resName)
+NSResource * NSResManager::create(uint32 res_type_id, const nsstring & resName)
 {
 	// Create the resource and add it to the map - if there is a resource with the same name already
 	// in the map then insertion will have failed, so delete the created resource and retun NULL
@@ -117,9 +117,9 @@ bool NSResManager::contains(NSResource * res)
 	return (get(res->id()) != NULL);
 }
 
-nsuint NSResManager::count() const
+uint32 NSResManager::count() const
 {
-	return static_cast<nsuint>(mIDResourceMap.size());
+	return static_cast<uint32>(mIDResourceMap.size());
 }
 
 bool NSResManager::del(NSResource * res)
@@ -151,7 +151,7 @@ bool NSResManager::empty()
 	return mIDResourceMap.empty();
 }
 
-NSResource * NSResManager::get(nsuint resid)
+NSResource * NSResManager::get(uint32 resid)
 {
 	MapType::iterator iter = mIDResourceMap.find(resid);
 	if (iter != mIDResourceMap.end())
@@ -185,7 +185,7 @@ NSResource * NSResManager::load(const nsstring & res_guid,
 	return load(hash_id(res_guid), fname);
 }
 
-NSResource * NSResManager::load(nsuint res_type_id, const nsstring & fname)
+NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
 {
 	nsstring resName(fname);
 	nsstring resExtension;
@@ -311,12 +311,12 @@ void NSResManager::nameChange(const uivec2 & oldid, const uivec2 newid)
 	}
 }
 
-nsuint NSResManager::plugid()
+uint32 NSResManager::plugid()
 {
 	return mPlugID;
 }
 
-NSResource * NSResManager::remove(nsuint res_type_id)
+NSResource * NSResManager::remove(uint32 res_type_id)
 {
 	return remove((get(res_type_id)));
 }
@@ -351,7 +351,7 @@ bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
 	nsstring dir = mResourceDirectory + mLocalDirectory + res->subDir();
 	nsstring fNameOld = dir + oldName + res->extension();
 	nsstring fNameNew = dir + res->name() + res->extension();
-	int ret = rename_file(fNameOld.c_str(), fNameNew.c_str());
+	int32 ret = rename_file(fNameOld.c_str(), fNameNew.c_str());
 			
 	if (ret == 0)
 	{
@@ -425,7 +425,7 @@ bool NSResManager::save(NSResource * res,const nsstring & path)
 		return false;
 	}
 
-	nsuint hashed_type = res->type();
+	uint32 hashed_type = res->type();
 	nsstring rest = nsengine.guid(hashed_type);
 
 	if (mSaveMode == Binary)
@@ -454,7 +454,7 @@ void NSResManager::setLocalDirectory(const nsstring & pDirectory)
 	mLocalDirectory = pDirectory;
 }
 
-void NSResManager::setPlugID(nsuint plugid)
+void NSResManager::setPlugID(uint32 plugid)
 {
 	mPlugID = plugid;
 }

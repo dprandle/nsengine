@@ -45,12 +45,12 @@ public:
 
 	struct Index
 	{
-		Index(nsuint pQuad = 0, nsuint pX = 0, nsuint pY = 0, nsuint pZ = 0) :
+		Index(uint32 pQuad = 0, uint32 pX = 0, uint32 pY = 0, uint32 pZ = 0) :
 		mQuad(QuadrantIndex(pQuad)),
 		mIndex(pX, pY, pZ)
 		{}
 
-		Index(nsuint pQuad, const uivec3 & pInd) :
+		Index(uint32 pQuad, const uivec3 & pInd) :
 			mQuad(QuadrantIndex(pQuad)),
 			mIndex(pInd)
 		{}
@@ -79,17 +79,17 @@ public:
 
 	GridBounds occupiedGridBounds();
 
-	nsint minLayer();
+	int32 minLayer();
 
-	nsint maxLayer();
+	int32 maxLayer();
 
-	nsint minY();
+	int32 minY();
 
-	nsint maxY();
+	int32 maxY();
 
-	nsint minX();
+	int32 minX();
 
-	nsint maxX();
+	int32 maxX();
 
 	bool occupied(const fvec3 & pPos) const;
 
@@ -114,15 +114,15 @@ public:
 	/*!
 	Go through entire grid and remove any occurances that have this plugin ID
 	*/
-	void remove(nsuint plugid);
+	void remove(uint32 plugid);
 
 	bool remove(const ivec3array & pSpaces, const fvec3 & pOrigin = fvec3());
 
 	void nameChange(const uivec2 & oldid, const uivec2 newid);
 
-	static nsint indexX(float pX, bool pOffset);
-	static nsint indexY(float pY);
-	static nsint indexZ(float pZ);
+	static int32 indexX(float pX, bool pOffset);
+	static int32 indexY(float pY);
+	static int32 indexZ(float pZ);
 
 	static ivec3 grid(const fvec3 & world);
 	static ivec3 grid(const Index & index);

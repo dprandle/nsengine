@@ -48,7 +48,7 @@ void NSMeshManager::_assimpLoadNode(NSMesh* pMesh, NSMesh::Node * pMeshNode, con
 
 
 	// Assign each subMesh that refers to this node in assimp to this node in our NSMesh
-	for ( nsuint j = 0; j < node->mNumMeshes; ++j)
+	for ( uint32 j = 0; j < node->mNumMeshes; ++j)
 	{
 		NSMesh::SubMesh * subMesh = pMesh->submesh(node->mMeshes[j]);
 		if (subMesh == NULL)
@@ -63,12 +63,12 @@ void NSMeshManager::_assimpLoadNode(NSMesh* pMesh, NSMesh::Node * pMeshNode, con
 			subMesh->mBoneInfo.assign(subMesh->mPositions.size(), id);
 			subMesh->mBoneBuf.allocate(subMesh->mBoneInfo,
 									   NSBufferObject::MutableStaticDraw,
-									   static_cast<nsuint>(subMesh->mBoneInfo.size()));
+									   static_cast<uint32>(subMesh->mBoneInfo.size()));
 		}
 	}
 
 	// For each child node go through and load the node struture recursively
-	for ( nsuint i = 0; i < node->mNumChildren; ++i)
+	for ( uint32 i = 0; i < node->mNumChildren; ++i)
 	{
 		aiNode * childAINode = node->mChildren[i];
 		NSMesh::Node * childNode = pMeshNode->createChild(childAINode->mName.C_Str());
@@ -85,7 +85,7 @@ void NSMeshManager::_assimpLoadNodeHeirarchy(NSMesh* pMesh, const aiNode * pRoot
 
 void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 {
-	for (nsuint meshIndex = 0; meshIndex < pScene->mNumMeshes; ++meshIndex)
+	for (uint32 meshIndex = 0; meshIndex < pScene->mNumMeshes; ++meshIndex)
 	{
 		const aiMesh * currentSubMesh = pScene->mMeshes[meshIndex];
 		bool generateTangents = false;
@@ -117,7 +117,7 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			fvec3 maxNoNormals, maxNormals;
 			fvec3 minNoNormals, minNormals;
 
-			for (nsuint verticeIndex = 0; verticeIndex < currentSubMesh->mNumVertices; ++verticeIndex)
+			for (uint32 verticeIndex = 0; verticeIndex < currentSubMesh->mNumVertices; ++verticeIndex)
 			{
 				subMesh->mPositions[verticeIndex].x = currentSubMesh->mVertices[verticeIndex].x;
 				subMesh->mPositions[verticeIndex].y = currentSubMesh->mVertices[verticeIndex].y;
@@ -158,16 +158,16 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			// in the shader to get bone transformations
 			if (currentSubMesh->HasBones())
 			{
-				for (nsuint k = 0; k < currentSubMesh->mNumBones; ++k)
+				for (uint32 k = 0; k < currentSubMesh->mNumBones; ++k)
 				{
 					const aiBone * currentBone = currentSubMesh->mBones[k];
 					nsstring boneName = currentBone->mName.C_Str();
-					nsuint boneIndex = 0;
+					uint32 boneIndex = 0;
 					NSMesh::NodeTree * nodeTree = pMesh->nodetree();
 
 					if (nodeTree->boneNameMap.find(boneName) == nodeTree->boneNameMap.end() )
 					{
-						boneIndex = static_cast<nsuint>(pMesh->nodetree()->boneNameMap.size());
+						boneIndex = static_cast<uint32>(pMesh->nodetree()->boneNameMap.size());
 						NSMesh::Bone boneInfo;
 						const aiMatrix4x4 * mat = &currentBone->mOffsetMatrix;
 						boneInfo.boneID = boneIndex;
@@ -181,10 +181,10 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 					else
 						boneIndex = nodeTree->boneNameMap[boneName].boneID;
 
-					for (nsuint l = 0; l < currentSubMesh->mBones[k]->mNumWeights; ++l)
+					for (uint32 l = 0; l < currentSubMesh->mBones[k]->mNumWeights; ++l)
 					{
-						nsuint vertexIndex = currentBone->mWeights[l].mVertexId;
-						nsfloat weight = currentBone->mWeights[l].mWeight;
+						uint32 vertexIndex = currentBone->mWeights[l].mVertexId;
+						float weight = currentBone->mWeights[l].mWeight;
 						subMesh->mBoneInfo[vertexIndex].addBoneInfo(boneIndex, weight);
 					}
 				}
@@ -196,10 +196,10 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			{
 				subMesh->mIndices.resize(currentSubMesh->mNumFaces * 3);
 				subMesh->mTriangles.resize(currentSubMesh->mNumFaces);
-				for (nsuint m = 0; m < currentSubMesh->mNumFaces; ++m)
+				for (uint32 m = 0; m < currentSubMesh->mNumFaces; ++m)
 				{
 					const aiFace * currentFace = &currentSubMesh->mFaces[m];
-					nsuint offset = m * 3;
+					uint32 offset = m * 3;
 
 					subMesh->mTriangles[m][0] = currentFace->mIndices[0];
 					subMesh->mIndices[offset] = currentFace->mIndices[0];
@@ -236,7 +236,7 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 							f * (delta2.v * edge1.z - delta1.v * edge2.z)
 							);
 
-						for (nsuint i = 0; i < 3; ++i)
+						for (uint32 i = 0; i < 3; ++i)
 						{
 							subMesh->mTangents[currentFace->mIndices[i]] = tangent;
 							subMesh->mTangents[currentFace->mIndices[i]].normalize();
@@ -248,10 +248,10 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			{
 				subMesh->mIndices.resize(currentSubMesh->mNumFaces * 2);
 				subMesh->mLines.resize(currentSubMesh->mNumFaces);
-				for (nsuint m = 0; m < currentSubMesh->mNumFaces; ++m)
+				for (uint32 m = 0; m < currentSubMesh->mNumFaces; ++m)
 				{
 					const aiFace * currentFace = &currentSubMesh->mFaces[m];
-					nsuint offset = m * 2;
+					uint32 offset = m * 2;
 
 					subMesh->mLines[m][0] = currentFace->mIndices[0];
 					subMesh->mIndices[offset] = currentFace->mIndices[0];
@@ -263,7 +263,7 @@ void NSMeshManager::_assimpLoadSubMeshes(NSMesh * pMesh, const aiScene * pScene)
 			else if (subMesh->mPrimType == GL_POINTS)
 			{
 				subMesh->mIndices.resize(currentSubMesh->mNumFaces);
-				for (nsuint m = 0; m < currentSubMesh->mNumFaces; ++m)
+				for (uint32 m = 0; m < currentSubMesh->mNumFaces; ++m)
 				{
 					const aiFace * currentFace = &currentSubMesh->mFaces[m];
 					subMesh->mIndices[m] = currentFace->mIndices[0];

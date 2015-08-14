@@ -129,7 +129,7 @@ NSAnimSet::AnimationData::AnimationNode::~AnimationNode()
 
 fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTicksPerSecond)
 {
-	nsfloat tick = pTime * pTicksPerSecond;
+	float tick = pTime * pTicksPerSecond;
 
 	KeyRotIter lowerRot = mRotationKeys.upper_bound(tick);
 	KeyRotIter upperRot = lowerRot;
@@ -146,7 +146,7 @@ fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTic
 		if (lowerRot != mRotationKeys.begin())
 		{
 			--lowerRot;
-			nsfloat scaling = (tick - lowerRot->first) / (upperRot->first - lowerRot->first);
+			float scaling = (tick - lowerRot->first) / (upperRot->first - lowerRot->first);
 			interQ = slerp(lowerRot->second, upperRot->second, scaling);
 		}
 		else
@@ -161,7 +161,7 @@ fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTic
 		if (lowerTrans != mTranslationKeys.begin())
 		{
 			--lowerTrans;
-			nsfloat scaling = (tick - lowerTrans->first) / (upperTrans->first - lowerTrans->first);
+			float scaling = (tick - lowerTrans->first) / (upperTrans->first - lowerTrans->first);
 			transInter = lerp(lowerTrans->second, upperTrans->second, scaling);
 		}
 		else
@@ -176,7 +176,7 @@ fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTic
 		if (lowerScale != mScalingKeys.begin())
 		{
 			--lowerScale;
-			nsfloat scaling = (tick - lowerScale->first) / (upperScale->first - lowerScale->first);
+			float scaling = (tick - lowerScale->first) / (upperScale->first - lowerScale->first);
 			scaleInter = lerp(lowerScale->second, upperScale->second, scaling);
 		}
 		else

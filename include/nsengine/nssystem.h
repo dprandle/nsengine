@@ -36,21 +36,21 @@ public:
 
 	virtual void update() = 0;
 
-	virtual nsint drawPriority();
+	virtual int32 drawPriority();
 
-	virtual nsint updatePriority() = 0;
+	virtual int32 updatePriority() = 0;
 
-	nsuint type();
+	uint32 type();
 
   protected:
 	
-	void addTriggerHash(nsuint key, const nsstring & trigname);
-	void removeTriggerHash(nsuint key);
-	nsuint triggerHash(nsuint key);
+	void addTriggerHash(uint32 key, const nsstring & trigname);
+	void removeTriggerHash(uint32 key);
+	uint32 triggerHash(uint32 key);
 	
   private:
-	nsuintuintu_map mHashedInputTriggers;
-	nsuint mHashedType;
+	uint32uintu_map mHashedInputTriggers;
+	uint32 mHashedType;
 };
 
 #endif

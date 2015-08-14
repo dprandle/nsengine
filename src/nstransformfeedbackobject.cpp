@@ -60,7 +60,7 @@ void NSTransformFeedbackObject::setPrimitive(PrimitiveMode pMode)
 	mPrimMode = pMode;
 }
 
-void NSTransformFeedbackObject::setUpdate(nsbool pUpdate)
+void NSTransformFeedbackObject::setUpdate(bool pUpdate)
 {
 	mUpdate = pUpdate;
 }
@@ -71,7 +71,7 @@ void NSTransformFeedbackObject::unbind()
 	GLError("NSTransformFeedbackObject::unbind");
 }
 
-nsbool NSTransformFeedbackObject::update()
+bool NSTransformFeedbackObject::update()
 {
 	return mUpdate;
 }

@@ -44,12 +44,12 @@ NSRenderSystem::~NSRenderSystem()
 	delete mGBuffer;
 }
 
-void NSRenderSystem::setScreenfbo(nsuint fbo)
+void NSRenderSystem::setScreenfbo(uint32 fbo)
 {
 	mScreenfbo = fbo;
 }
 
-nsuint NSRenderSystem::screenfbo()
+uint32 NSRenderSystem::screenfbo()
 {
 	return mScreenfbo;
 }
@@ -218,7 +218,7 @@ void NSRenderSystem::draw()
 	auto dLIter = scene->entities<NSLightComp>().begin();
 
 	fmat4 projLightMat, proj;
-	nsfloat ar;
+	float ar;
 	while (dLIter != scene->entities<NSLightComp>().end())
 	{
 		NSLightComp * lComp = (*dLIter)->get<NSLightComp>();
@@ -234,7 +234,7 @@ void NSRenderSystem::draw()
 		{
 			ar = float(mShadowBuf->dim(NSShadowBuffer::Spot).w) / float(mShadowBuf->dim(NSShadowBuffer::Spot).h);
 			proj = perspective(lComp->angle()*2.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
-			for (nsuint i = 0; i < tComp->count(); ++i)
+			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * lComp->pov(i);
 				if (lComp->castShadows())
@@ -292,7 +292,7 @@ void NSRenderSystem::draw()
 		{
 			ar = float(mShadowBuf->dim(NSShadowBuffer::Point).w) / float(mShadowBuf->dim(NSShadowBuffer::Point).h);
 			proj = perspective(90.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
-			for (nsuint i = 0; i < tComp->count(); ++i)
+			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * lComp->pov(i);
 				glCullFace(GL_FRONT);
@@ -356,7 +356,7 @@ void NSRenderSystem::draw()
 		{
 			ar = float(mShadowBuf->dim(NSShadowBuffer::Direction).w) / float(mShadowBuf->dim(NSShadowBuffer::Direction).h);
 			proj = perspective(160.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
-			for (nsuint i = 0; i < tComp->count(); ++i)
+			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * tComp->pov();
 				glCullFace(GL_BACK);
@@ -410,7 +410,7 @@ void NSRenderSystem::draw()
 	}
 }
 
-nsuint NSRenderSystem::boundfbo()
+uint32 NSRenderSystem::boundfbo()
 {
 	GLint params;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &params);
@@ -595,7 +595,7 @@ void NSRenderSystem::update()
 			NSMaterial * mat = NULL;
 			fmat4array * fTForms = NULL;
 			NSMaterialShader * shader = NULL;
-			for (nsuint i = 0; i < currentMesh->count(); ++i)
+			for (uint32 i = 0; i < currentMesh->count(); ++i)
 			{
 				mSMesh = currentMesh->submesh(i);
 				mat = nsengine.resource<NSMaterial>(rComp->materialID(i));
@@ -642,11 +642,11 @@ void NSRenderSystem::_blendDirectionLight(NSLightComp * pLight)
 	mShaders.mDirLightShader->setLightColor(pLight->color());
 	mShaders.mDirLightShader->setShadowSamples(pLight->shadowSamples());
 	mShaders.mDirLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mDirLightShader->setScreenSize(fvec2(static_cast<nsfloat>(mFinalBuf->dim().x), static_cast<nsfloat>(mFinalBuf->dim().y)));
-	mShaders.mDirLightShader->setShadowTexSize(fvec2(static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
+	mShaders.mDirLightShader->setScreenSize(fvec2(static_cast<float>(mFinalBuf->dim().x), static_cast<float>(mFinalBuf->dim().y)));
+	mShaders.mDirLightShader->setShadowTexSize(fvec2(static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
 
 	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
-	for (nsuint i = 0; i < boundingMesh->count(); ++i)
+	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 		cSub->mVAO.bind();
@@ -668,15 +668,15 @@ void NSRenderSystem::_blendPointLight(NSLightComp * pLight)
 	mShaders.mPointLightShader->setLightColor(pLight->color());
 	mShaders.mPointLightShader->setShadowSamples(pLight->shadowSamples());
 	mShaders.mPointLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mPointLightShader->setScreenSize(fvec2(static_cast<nsfloat>(mFinalBuf->dim().x), static_cast<nsfloat>(mFinalBuf->dim().y)));
-	mShaders.mPointLightShader->setShadowTexSize(fvec2(static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
+	mShaders.mPointLightShader->setScreenSize(fvec2(static_cast<float>(mFinalBuf->dim().x), static_cast<float>(mFinalBuf->dim().y)));
+	mShaders.mPointLightShader->setShadowTexSize(fvec2(static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
 	mShaders.mPointLightShader->setConstAtten(pLight->atten().x);
 	mShaders.mPointLightShader->setLinAtten(pLight->atten().y);
 	mShaders.mPointLightShader->setExpAtten(pLight->atten().z);
 
 
 	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
-	for (nsuint i = 0; i < boundingMesh->count(); ++i)
+	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 
@@ -702,18 +702,18 @@ void NSRenderSystem::_blendSpotLight(NSLightComp * pLight)
 	mShaders.mSpotLightShader->setLightColor(pLight->color());
 	mShaders.mSpotLightShader->setShadowSamples(pLight->shadowSamples());
 	mShaders.mSpotLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mSpotLightShader->setScreenSize(fvec2(static_cast<nsfloat>(mFinalBuf->dim().x),
-												   static_cast<nsfloat>(mFinalBuf->dim().y)));
+	mShaders.mSpotLightShader->setScreenSize(fvec2(static_cast<float>(mFinalBuf->dim().x),
+												   static_cast<float>(mFinalBuf->dim().y)));
 	mShaders.mSpotLightShader->setShadowTexSize(
-		fvec2(static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).w),
-			  static_cast<nsfloat>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
+		fvec2(static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).w),
+			  static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
 	mShaders.mSpotLightShader->setConstAtten(pLight->atten().x);
 	mShaders.mSpotLightShader->setLinAtten(pLight->atten().y);
 	mShaders.mSpotLightShader->setExpAtten(pLight->atten().z);
 	mShaders.mSpotLightShader->setCutoff(pLight->cutoff());
 
 	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
-	for (nsuint i = 0; i < boundingMesh->count(); ++i)
+	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 
@@ -746,14 +746,14 @@ uivec3 NSRenderSystem::shadowfbo()
 	return ret;
 }
 
-nsuint NSRenderSystem::finalfbo()
+uint32 NSRenderSystem::finalfbo()
 {
 	if (mFinalBuf != NULL)
 		return mFinalBuf->glid();
 	return 0;
 }
 
-nsuint NSRenderSystem::gbufferfbo()
+uint32 NSRenderSystem::gbufferfbo()
 {
 	NSFrameBuffer * fb = mGBuffer->fb();
 	if (fb != NULL)
@@ -761,7 +761,7 @@ nsuint NSRenderSystem::gbufferfbo()
 	return 0;
 }
 
-void NSRenderSystem::setShadowfbo(nsuint fbodir, nsuint fbospot, nsuint fbopoint)
+void NSRenderSystem::setShadowfbo(uint32 fbodir, uint32 fbospot, uint32 fbopoint)
 {
 	mShadowBuf->setfb(nsengine.framebuffer(fbodir), NSShadowBuffer::Direction);
 	mShadowBuf->setfb(nsengine.framebuffer(fbospot), NSShadowBuffer::Spot);
@@ -772,14 +772,14 @@ void NSRenderSystem::setShadowfbo(nsuint fbodir, nsuint fbospot, nsuint fbopoint
 	mShadowBuf->init();
 }
 
-void NSRenderSystem::setGBufferfbo(nsuint fbo)
+void NSRenderSystem::setGBufferfbo(uint32 fbo)
 {
 	mGBuffer->setfb(nsengine.framebuffer(fbo));
 	mGBuffer->setfbdim(uivec2(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y));
 	mGBuffer->init();
 }
 
-void NSRenderSystem::setFinalfbo(nsuint fbo)
+void NSRenderSystem::setFinalfbo(uint32 fbo)
 {
 	mFinalBuf = nsengine.framebuffer(fbo);
 	if (mFinalBuf == NULL)
@@ -816,8 +816,8 @@ void NSRenderSystem::_drawTransformFeedbacks()
 		NSTFormComp::XFBData * xbdat = tComp->xfbData();
 
 		auto bufIter = xbdat->mXFBBuffers.begin();
-		nsuint tFormByteOffset = 0;
-		nsuint indexByteOffset = 0;
+		uint32 tFormByteOffset = 0;
+		uint32 indexByteOffset = 0;
 		while (bufIter != xbdat->mXFBBuffers.end())
 		{
 			if (xbdat->mUpdate)
@@ -827,7 +827,7 @@ void NSRenderSystem::_drawTransformFeedbacks()
 				bufIter->mTFFeedbackObj->bind();
 				glEnable(GL_RASTERIZER_DISCARD);
 				bufIter->mTFFeedbackObj->begin();
-				for (nsuint subI = 0; subI < mesh->count(); ++subI)
+				for (uint32 subI = 0; subI < mesh->count(); ++subI)
 				{
 					NSMesh::SubMesh * subMesh = mesh->submesh(subI);
 
@@ -839,7 +839,7 @@ void NSRenderSystem::_drawTransformFeedbacks()
 					// Set up all of the uniform inputs
 					subMesh->mVAO.bind();
 					tComp->transformBuffer()->bind();
-					for (nsuint tfInd = 0; tfInd < 4; ++tfInd)
+					for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 					{
 						subMesh->mVAO.add(tComp->transformBuffer(), NSShader::InstTrans + tfInd);
 						subMesh->mVAO.vertexAttribPtr(NSShader::InstTrans + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
@@ -848,7 +848,7 @@ void NSRenderSystem::_drawTransformFeedbacks()
 
 					tComp->transformIDBuffer()->bind();
 					subMesh->mVAO.add(tComp->transformIDBuffer(), NSShader::RefID);
-					subMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(nsuint), indexByteOffset);
+					subMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
 					subMesh->mVAO.vertexAttribDiv(NSShader::RefID, 1);
 
 					// Draw the stuff without sending the stuff to be rasterized
@@ -874,7 +874,7 @@ void NSRenderSystem::_drawTransformFeedbacks()
 				bufIter->mTFFeedbackObj->unbind();
 			}
 
-			for (nsuint subI = 0; subI < mesh->count(); ++subI)
+			for (uint32 subI = 0; subI < mesh->count(); ++subI)
 			{
 				NSMesh::SubMesh * subMesh = mesh->submesh(subI);
 
@@ -948,7 +948,7 @@ void NSRenderSystem::_drawTransformFeedbacks()
 
 			}
 			tFormByteOffset += bufIter->mInstanceCount * sizeof(fmat4);
-			indexByteOffset += bufIter->mInstanceCount * sizeof(nsuint);
+			indexByteOffset += bufIter->mInstanceCount * sizeof(uint32);
 			++bufIter;
 		}
 		xbdat->mUpdate = false;
@@ -963,7 +963,7 @@ void NSRenderSystem::_drawCall(DCSet::iterator pDCIter)
 
 	pDCIter->mSubMesh->mVAO.bind();
 	pDCIter->mTransformBuffer->bind();
-	for (nsuint tfInd = 0; tfInd < 4; ++tfInd)
+	for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 	{
 		pDCIter->mSubMesh->mVAO.add(pDCIter->mTransformBuffer, NSShader::InstTrans + tfInd);
 		pDCIter->mSubMesh->mVAO.vertexAttribPtr(NSShader::InstTrans + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
@@ -972,7 +972,7 @@ void NSRenderSystem::_drawCall(DCSet::iterator pDCIter)
 
 	pDCIter->mTransformIDBuffer->bind();
 	pDCIter->mSubMesh->mVAO.add(pDCIter->mTransformIDBuffer, NSShader::RefID);
-	pDCIter->mSubMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(nsuint), 0);
+	pDCIter->mSubMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
 	pDCIter->mSubMesh->mVAO.vertexAttribDiv(NSShader::RefID, 1);
 	GLError("NSRenderSystem::_drawCall 1");
 	
@@ -1164,13 +1164,13 @@ void NSRenderSystem::_drawSceneToDepthXFB(NSShader * pShader)
 		NSTFormComp::XFBData * xbdat = tComp->xfbData();
 
 		auto bufIter = xbdat->mXFBBuffers.begin();
-		nsuint tFormByteOffset = 0;
-		nsuint indexByteOffset = 0;
+		uint32 tFormByteOffset = 0;
+		uint32 indexByteOffset = 0;
 		if (!xbdat->mUpdate)
 		{
 			while (bufIter != xbdat->mXFBBuffers.end())
 			{
-				for (nsuint subI = 0; subI < mesh->count(); ++subI)
+				for (uint32 subI = 0; subI < mesh->count(); ++subI)
 				{
 					bufIter->mXFBVAO->bind();
 					glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->glid());
@@ -1187,7 +1187,7 @@ void NSRenderSystem::_drawSceneToDepthXFB(NSShader * pShader)
 void NSRenderSystem::_stencilPointLight(NSLightComp * pLight)
 {
 	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
-	for (nsuint i = 0; i < boundingMesh->count(); ++i)
+	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 
@@ -1208,7 +1208,7 @@ void NSRenderSystem::_stencilPointLight(NSLightComp * pLight)
 void NSRenderSystem::_stencilSpotLight(NSLightComp * pLight)
 {
 	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
-	for (nsuint i = 0; i < boundingMesh->count(); ++i)
+	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
 
@@ -1231,10 +1231,10 @@ NSRenderSystem::DrawCall::DrawCall(NSMesh::SubMesh * pSubMesh,
 	NSBufferObject * pTransformBuffer,
 	NSBufferObject * pTransformIDBuffer,
 	const fvec2 & heightMinMax,
-	nsuint pEntID,
-	nsuint plugID,
-	nsuint pNumTransforms, 
-	nsbool pCastShadows) :
+	uint32 pEntID,
+	uint32 plugID,
+	uint32 pNumTransforms, 
+	bool pCastShadows) :
 mSubMesh(pSubMesh),
 mAnimTransforms(pAnimTransforms),
 mTransformBuffer(pTransformBuffer),
@@ -1283,12 +1283,12 @@ bool NSRenderSystem::DrawCall::operator!=(const DrawCall & rhs) const
 	return !(*this == rhs);
 }
 
-nsint NSRenderSystem::drawPriority()
+int32 NSRenderSystem::drawPriority()
 {
 	return RENDER_SYS_DRAW_PR;
 }
 
-nsint NSRenderSystem::updatePriority()
+int32 NSRenderSystem::updatePriority()
 {
 	return RENDER_SYS_UPDATE_PR;
 }

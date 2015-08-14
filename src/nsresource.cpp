@@ -54,12 +54,12 @@ const nsstring & NSResource::name() const
 	return mName;
 }
 
-nsuint NSResource::plugid() const
+uint32 NSResource::plugid() const
 {
 	return mPlugID;
 }
 
-nsuint NSResource::id() const
+uint32 NSResource::id() const
 {
 	return mID;
 }
@@ -96,7 +96,7 @@ void NSResource::nameChange(const uivec2 & oldid, const uivec2 newid)
 	// do nothing
 }
 
-nsuint NSResource::type()
+uint32 NSResource::type()
 {
 	return mHashedType;
 }
@@ -108,7 +108,7 @@ void NSResource::setExtension(const nsstring & pExt)
 
 void NSResource::rename(const nsstring & pRefName)
 {
-	nsuint tmp = mID;
+	uint32 tmp = mID;
 
 	mName = pRefName;
 	mID = hash_id(pRefName);

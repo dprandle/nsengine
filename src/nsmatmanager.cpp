@@ -30,7 +30,7 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 	NSMaterial * mat = create(pMaterialName);
 	NSTexManager * texmanager = nsengine.manager<NSTexManager>(mPlugID);
 	
-	nsbool ret = false;
+	bool ret = false;
 
 	aiColor3D colorDif(0.0f, 0.0f, 0.0f);
 	pAIMat->Get(AI_MATKEY_COLOR_DIFFUSE, colorDif);
@@ -42,11 +42,11 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 	if (!(colorSpec.r == 0.0f && colorSpec.g == 0.0f && colorSpec.b == 0.0f))
 		mat->setSpecularColor(fvec3(colorSpec.r, colorSpec.g, colorSpec.b));
 
-	int wf = 0;
+	int32 wf = 0;
 	pAIMat->Get(AI_MATKEY_ENABLE_WIREFRAME, wf);
 	mat->enableWireframe(wf && 1);
 
-	int ts = 0;
+	int32 ts = 0;
 	pAIMat->Get(AI_MATKEY_TWOSIDED, ts);
 	mat->enableCulling(ts && 1);
 

@@ -26,7 +26,7 @@ NSEntityManager::NSEntityManager() : NSResManager()
 NSEntityManager::~NSEntityManager()
 {}
 
-nspentityset NSEntityManager::entities(nsuint comp_type_id)
+nspentityset NSEntityManager::entities(uint32 comp_type_id)
 {
 	nspentityset ret;
 	auto iter = mIDResourceMap.begin();

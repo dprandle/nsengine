@@ -87,7 +87,7 @@ public:
 	~NSBufferObject();
 
 	template<class DataType>
-	void allocate(const std::vector<DataType>& data, UsageFlag pFlag, nsuint pSize)
+	void allocate(const std::vector<DataType>& data, UsageFlag pFlag, uint32 pSize)
 	{
 		if (data.empty())
 			return;
@@ -111,10 +111,10 @@ public:
 		mBufferAllocated = !GLError("NSBufferObject::allocate");
 	}
 
-	void allocate(UsageFlag pFlag, nsuint pTotalByteSize);
+	void allocate(UsageFlag pFlag, uint32 pTotalByteSize);
 
 	template<class DataType>
-	void allocate(UsageFlag pFlag, nsuint pSize)
+	void allocate(UsageFlag pFlag, uint32 pSize)
 	{
 		if (mStorageMode == Mutable)
 			glBufferData(mTarget, sizeof(DataType)* pSize, NULL, pFlag);
@@ -129,10 +129,10 @@ public:
 	/*!
 	This calls bind buffer base
 	*/
-	void bind(nsuint pIndex);
+	void bind(uint32 pIndex);
 
 	template<class DataType>
-	void data(std::vector<DataType> & pData, nsint pOffsetBytes = 0)
+	void data(std::vector<DataType> & pData, int32 pOffsetBytes = 0)
 	{
 		if (!mBufferAllocated)
 			return;
@@ -170,7 +170,7 @@ public:
 	}
 
 	template<class DataType>
-	DataType * map(nsuint pOffset, nsuint pLength, AccessMapRange pAccess)
+	DataType * map(uint32 pOffset, uint32 pLength, AccessMapRange pAccess)
 	{
 		if (!mBufferAllocated)
 			return NULL;
@@ -186,7 +186,7 @@ public:
 	}
 
 	template<class DataType>
-	void setData(const std::vector<DataType> & pData, nsuint pOffset, nsuint pSize)
+	void setData(const std::vector<DataType> & pData, uint32 pOffset, uint32 pSize)
 	{
 		if (!mBufferAllocated)
 			return;
@@ -204,7 +204,7 @@ public:
 	/*!
 	This calls bind buffer base
 	*/
-	void unbind(nsuint pIndex);
+	void unbind(uint32 pIndex);
 
 	bool unmap();
 

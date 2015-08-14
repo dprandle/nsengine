@@ -35,31 +35,31 @@ public:
 
 		void bind();
 
-		nsint internalFormat() const;
+		int32 internalFormat() const;
 
 		const uivec2 & dim();
 
-		nsuint multisample() const;
+		uint32 multisample() const;
 
 		void initGL();
 
 		void release();
 
-		void resize(nsint w, nsint h);
+		void resize(int32 w, int32 h);
 
-		void setMultisample(nsuint numsamples);
+		void setMultisample(uint32 numsamples);
 
-		void setdim(nsuint w, nsuint h);
+		void setdim(uint32 w, uint32 h);
 
-		void setInternalFormat(nsint pInternalFormat);
+		void setInternalFormat(int32 pInternalFormat);
 
 		void unbind();
 
 	private:
-		nsuint mSampleNumber;
-		nsint mInternalFormat;
+		uint32 mSampleNumber;
+		int32 mInternalFormat;
 		uivec2 mDim;
-		nsbool mAllocated;
+		bool mAllocated;
 	};
 
 	enum AttachmentPoint {  
@@ -83,8 +83,8 @@ public:
 		NSTexture * mTexture;
 		NSRenderBuffer * mRenderBuffer;
 		AttachmentPoint mAttPoint;
-		nsuint mTexUnit;
-		nsuint mOwningFB;
+		uint32 mTexUnit;
+		uint32 mOwningFB;
 	};
 
 	typedef std::vector<Attachment*> AttachmentArray;
@@ -94,14 +94,14 @@ public:
 	~NSFrameBuffer();
 
 	// On attachment the frame buffer is responsible for destroying the texture
-	bool add(Attachment * pAttachment, nsbool pOverwrite=false);
+	bool add(Attachment * pAttachment, bool pOverwrite=false);
 
 	void bind();
 
-	Attachment * create(AttachmentPoint pAttPoint, nsuint pSampleNumber, nsint pInternalFormat, bool overwrite = true);
+	Attachment * create(AttachmentPoint pAttPoint, uint32 pSampleNumber, int32 pInternalFormat, bool overwrite = true);
 
 	template<class TexType>
-	Attachment * create(const nsstring & pName, AttachmentPoint pAttPoint, nsuint pTexUnit, nsint pInternalFormat, nsint pFormat, nsint pPixelDataType)
+	Attachment * create(const nsstring & pName, AttachmentPoint pAttPoint, uint32 pTexUnit, int32 pInternalFormat, int32 pFormat, int32 pPixelDataType)
 	{
 		TexType * tex = new TexType();
 
@@ -151,7 +151,7 @@ public:
 
 	virtual void release();
 
-	virtual void resize(nsuint w, nsuint h=0, nsuint layers=0);
+	virtual void resize(uint32 w, uint32 h=0, uint32 layers=0);
 
 	bool setCubeface(AttachmentPoint pAttPoint, NSTexCubeMap::CubeFace pFace);
 
@@ -163,7 +163,7 @@ public:
 
 	void setTarget(Target pTarget);
 
-	void setdim(nsuint w, nsuint h);
+	void setdim(uint32 w, uint32 h);
 
 	void unbind();
 
@@ -206,13 +206,13 @@ public:
 
 	void init();
 
-	void resize(const MapType & pMap, nsuint w, nsuint h);
+	void resize(const MapType & pMap, uint32 w, uint32 h);
 
-	void resize(nsuint w, nsuint h);
+	void resize(uint32 w, uint32 h);
 
-	void setdim(nsuint w, nsuint h);
+	void setdim(uint32 w, uint32 h);
 
-	void setdim(const MapType & pMap, nsuint w, nsuint h);
+	void setdim(const MapType & pMap, uint32 w, uint32 h);
 
 	void setPointface(const NSTexCubeMap::CubeFace & pFace);
 
@@ -255,23 +255,23 @@ public:
 
 	NSFrameBuffer * fb();
 
-	uivec3 pick(nsfloat mousex, nsfloat mousey);
+	uivec3 pick(float mousex, float mousey);
 
 	const uivec2 & screendim();
 
 	void init();
 
-	void resizefb(nsuint w, nsuint h);
+	void resizefb(uint32 w, uint32 h);
 
-	void resizescreen(nsuint w, nsuint h);
+	void resizescreen(uint32 w, uint32 h);
 
-	void setscreendim(nsuint w, nsuint h);
+	void setscreendim(uint32 w, uint32 h);
 
 	void setscreendim(const uivec2 & dim);
 
 	void setfb(NSFrameBuffer * fb);
 
-	void setfbdim(nsuint w, nsuint h);
+	void setfbdim(uint32 w, uint32 h);
 
 	void setfbdim(const uivec2 & dim);
 
@@ -281,7 +281,7 @@ private:
 	bool _createTextureAttachments();
 	NSFrameBuffer * mTexFrameBuffer;
 	uivec2 mScreendim;
-	nsuint mMultisampleLevel;
+	uint32 mMultisampleLevel;
 };
 
 

@@ -269,7 +269,7 @@ bool NSLogFile::write(float num)
 	return write(ss);
 }
 
-bool NSLogFile::write(int num)
+bool NSLogFile::write(int32 num)
 {
 	nsstringstream ss;
 	ss << num;

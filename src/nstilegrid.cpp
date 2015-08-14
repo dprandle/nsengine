@@ -17,13 +17,13 @@ NSTileGrid::NSTileGrid()
 {
 	mMap.resize(8);
 
-	for (nsuint i = 0; i < QUADRANT_COUNT; ++i)
+	for (uint32 i = 0; i < QUADRANT_COUNT; ++i)
 	{
 		mMap[i].resize(64);
-		for (nsuint j = 0; j < 64; ++j)
+		for (uint32 j = 0; j < 64; ++j)
 		{
 			mMap[i][j].resize(64);
-			for (nsuint k = 0; k < 64; ++k)
+			for (uint32 k = 0; k < 64; ++k)
 				mMap[i][j][k].resize(64);
 		}
 	}
@@ -55,7 +55,7 @@ bool NSTileGrid::add(const uivec3 & pItem, const ivec3 & pSpace, const fvec3 & p
 
 bool NSTileGrid::add(const uivec3 pItem, const ivec3array & pSpaces, const fvec3 & pOrigin)
 {
-	for (nsuint i = 0; i < pSpaces.size(); ++i)
+	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
 		if (!add(pItem, pSpaces[i], pOrigin))
 			return false;
@@ -88,12 +88,12 @@ uivec3 NSTileGrid::get(const ivec3 & pSpace, const fvec3 & pOrigin) const
 	return mMap[ind.mQuad][ind.mIndex.z][ind.mIndex.y][ind.mIndex.x];
 }
 
-nsint NSTileGrid::minLayer()
+int32 NSTileGrid::minLayer()
 {
-	nsint minVal = 0;
-	for (nsuint i = 3; i < 8; ++i)
+	int32 minVal = 0;
+	for (uint32 i = 3; i < 8; ++i)
 	{
-		nsint size = static_cast<int>(mMap[i].size());
+		int32 size = static_cast<int32>(mMap[i].size());
 		size *= -1;
 		if (size < minVal)
 			minVal = size;
@@ -101,12 +101,12 @@ nsint NSTileGrid::minLayer()
 	return minVal;
 }
 
-nsint NSTileGrid::maxLayer()
+int32 NSTileGrid::maxLayer()
 {
-	nsint maxVal = 0;
-	for (nsuint i = 0; i < 4; ++i)
+	int32 maxVal = 0;
+	for (uint32 i = 0; i < 4; ++i)
 	{
-		nsint size = static_cast<int>(mMap[i].size());
+		int32 size = static_cast<int32>(mMap[i].size());
 		size -= 1;
 		if (size > maxVal)
 			maxVal = size;
@@ -114,113 +114,113 @@ nsint NSTileGrid::maxLayer()
 	return maxVal;
 }
 
-nsint NSTileGrid::minY()
+int32 NSTileGrid::minY()
 {
-	nsint minY = 0;
+	int32 minY = 0;
 
-	for (nsuint i = 0; i < mMap[2].size(); ++i)
+	for (uint32 i = 0; i < mMap[2].size(); ++i)
 	{
-		nsint lowestIndex = static_cast<int>(mMap[2][i].size()) * -1;
+		int32 lowestIndex = static_cast<int32>(mMap[2][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 
-	for (nsuint i = 0; i < mMap[3].size(); ++i)
+	for (uint32 i = 0; i < mMap[3].size(); ++i)
 	{
-		nsint lowestIndex = static_cast<int>(mMap[3][i].size()) * -1;
+		int32 lowestIndex = static_cast<int32>(mMap[3][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 
-	for (nsuint i = 0; i < mMap[6].size(); ++i)
+	for (uint32 i = 0; i < mMap[6].size(); ++i)
 	{
-		nsint lowestIndex = static_cast<int>(mMap[6][i].size()) * -1;
+		int32 lowestIndex = static_cast<int32>(mMap[6][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 
-	for (nsuint i = 0; i < mMap[7].size(); ++i)
+	for (uint32 i = 0; i < mMap[7].size(); ++i)
 	{
-		nsint lowestIndex = static_cast<int>(mMap[7][i].size()) * -1;
+		int32 lowestIndex = static_cast<int32>(mMap[7][i].size()) * -1;
 		if (lowestIndex < minY)
 			minY = lowestIndex;
 	}
 	return minY;
 }
 
-nsint NSTileGrid::maxY()
+int32 NSTileGrid::maxY()
 {
-	nsint maxY = 0;
+	int32 maxY = 0;
 
-	for (nsuint i = 0; i < mMap[0].size(); ++i)
+	for (uint32 i = 0; i < mMap[0].size(); ++i)
 	{
-		nsint highestIndex = static_cast<int>(mMap[0][i].size()) - 1;
+		int32 highestIndex = static_cast<int32>(mMap[0][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 
-	for (nsuint i = 0; i < mMap[1].size(); ++i)
+	for (uint32 i = 0; i < mMap[1].size(); ++i)
 	{
-		nsint highestIndex = static_cast<int>(mMap[1][i].size()) - 1;
+		int32 highestIndex = static_cast<int32>(mMap[1][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 
-	for (nsuint i = 0; i < mMap[4].size(); ++i)
+	for (uint32 i = 0; i < mMap[4].size(); ++i)
 	{
-		nsint highestIndex = static_cast<int>(mMap[4][i].size()) - 1;
+		int32 highestIndex = static_cast<int32>(mMap[4][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 
-	for (nsuint i = 0; i < mMap[5].size(); ++i)
+	for (uint32 i = 0; i < mMap[5].size(); ++i)
 	{
-		nsint highestIndex = static_cast<int>(mMap[5][i].size()) - 1;
+		int32 highestIndex = static_cast<int32>(mMap[5][i].size()) - 1;
 		if (highestIndex > maxY)
 			maxY = highestIndex;
 	}
 	return maxY;
 }
 
-nsint NSTileGrid::minX()
+int32 NSTileGrid::minX()
 {
-	nsint minX = 0;
+	int32 minX = 0;
 
-	for (nsuint i = 0; i < mMap[1].size(); ++i)
+	for (uint32 i = 0; i < mMap[1].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[1][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[1][i].size(); ++j)
 		{
-			nsint lowestIndex = static_cast<int>(mMap[1][i][j].size()) * -1;
+			int32 lowestIndex = static_cast<int32>(mMap[1][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
 	}
 
-	for (nsuint i = 0; i < mMap[3].size(); ++i)
+	for (uint32 i = 0; i < mMap[3].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[3][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[3][i].size(); ++j)
 		{
-			nsint lowestIndex = static_cast<int>(mMap[3][i][j].size()) * -1;
+			int32 lowestIndex = static_cast<int32>(mMap[3][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
 	}
 
-	for (nsuint i = 0; i < mMap[5].size(); ++i)
+	for (uint32 i = 0; i < mMap[5].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[5][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[5][i].size(); ++j)
 		{
-			nsint lowestIndex = static_cast<int>(mMap[5][i][j].size()) * -1;
+			int32 lowestIndex = static_cast<int32>(mMap[5][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
 	}
 
-	for (nsuint i = 0; i < mMap[7].size(); ++i)
+	for (uint32 i = 0; i < mMap[7].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[7][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[7][i].size(); ++j)
 		{
-			nsint lowestIndex = static_cast<int>(mMap[7][i][j].size()) * -1;
+			int32 lowestIndex = static_cast<int32>(mMap[7][i][j].size()) * -1;
 			if (lowestIndex < minX)
 				minX = lowestIndex;
 		}
@@ -228,45 +228,45 @@ nsint NSTileGrid::minX()
 	return minX;
 }
 
-nsint NSTileGrid::maxX()
+int32 NSTileGrid::maxX()
 {
-	nsint maxX = 0;
+	int32 maxX = 0;
 
-	for (nsuint i = 0; i < mMap[0].size(); ++i)
+	for (uint32 i = 0; i < mMap[0].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[0][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[0][i].size(); ++j)
 		{
-			nsint highestIndex = static_cast<int>(mMap[0][i][j].size()) - 1;
+			int32 highestIndex = static_cast<int32>(mMap[0][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
 	}
 
-	for (nsuint i = 0; i < mMap[2].size(); ++i)
+	for (uint32 i = 0; i < mMap[2].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[2][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[2][i].size(); ++j)
 		{
-			nsint highestIndex = static_cast<int>(mMap[2][i][j].size()) - 1;
+			int32 highestIndex = static_cast<int32>(mMap[2][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
 	}
 
-	for (nsuint i = 0; i < mMap[4].size(); ++i)
+	for (uint32 i = 0; i < mMap[4].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[4][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[4][i].size(); ++j)
 		{
-			nsint highestIndex = static_cast<int>(mMap[4][i][j].size()) - 1;
+			int32 highestIndex = static_cast<int32>(mMap[4][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
 	}
 
-	for (nsuint i = 0; i < mMap[6].size(); ++i)
+	for (uint32 i = 0; i < mMap[6].size(); ++i)
 	{
-		for (nsuint j = 0; j < mMap[6][i].size(); ++j)
+		for (uint32 j = 0; j < mMap[6][i].size(); ++j)
 		{
-			nsint highestIndex = static_cast<int>(mMap[6][i][j].size()) - 1;
+			int32 highestIndex = static_cast<int32>(mMap[6][i][j].size()) - 1;
 			if (highestIndex > maxX)
 				maxX = highestIndex;
 		}
@@ -277,13 +277,13 @@ nsint NSTileGrid::maxX()
 NSTileGrid::GridBounds NSTileGrid::occupiedGridBounds()
 {
 	GridBounds g;
-	for (nsuint i = 0; i < 8; ++i)
+	for (uint32 i = 0; i < 8; ++i)
 	{
-		for (nsuint z = 0; z < mMap[i].size(); ++z)
+		for (uint32 z = 0; z < mMap[i].size(); ++z)
 		{
-			for (nsuint y = 0; y < mMap[i][z].size(); ++y)
+			for (uint32 y = 0; y < mMap[i][z].size(); ++y)
 			{
-				for (nsuint x = 0; x < mMap[i][z][y].size(); ++x)
+				for (uint32 x = 0; x < mMap[i][z][y].size(); ++x)
 				{
 					if (mMap[i][z][y][x] != uivec3())
 					{
@@ -327,7 +327,7 @@ bool NSTileGrid::occupied(const ivec3 & pSpace, const fvec3 & pOrigin) const
 
 bool NSTileGrid::occupied(const ivec3array & pSpaces, const fvec3 & pOrigin) const
 {
-	for (nsuint i = 0; i < pSpaces.size(); ++i)
+	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
 		if (occupied(pSpaces[i], pOrigin))
 			return true;
@@ -357,17 +357,17 @@ bool NSTileGrid::remove(const ivec3 & pSpace, const fvec3 & pOrigin)
 Go through entire grid and remove any occurances that have this entity ID
 This is fairly slow so should not be used on a per-frame basis
 */
-void NSTileGrid::remove(const nsuint plugid)
+void NSTileGrid::remove(const uint32 plugid)
 {
 	// Go through entire grid and remove any entrees with entity ID equal to above
 	GridBounds g;
-	for (nsuint i = 0; i < 8; ++i)
+	for (uint32 i = 0; i < 8; ++i)
 	{
-		for (nsuint z = 0; z < mMap[i].size(); ++z)
+		for (uint32 z = 0; z < mMap[i].size(); ++z)
 		{
-			for (nsuint y = 0; y < mMap[i][z].size(); ++y)
+			for (uint32 y = 0; y < mMap[i][z].size(); ++y)
 			{
-				for (nsuint x = 0; x < mMap[i][z][y].size(); ++x)
+				for (uint32 x = 0; x < mMap[i][z][y].size(); ++x)
 				{
 					if (mMap[i][z][y][x].x == plugid)
 						mMap[i][z][y][x] = uivec3();
@@ -382,7 +382,7 @@ Remove multiple tiles from the grid - each space will be shifted by the grid pos
 */
 bool NSTileGrid::remove(const ivec3array & pSpaces, const fvec3 & pOrigin)
 {
-	for (nsuint i = 0; i < pSpaces.size(); ++i)
+	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
 		if (!remove(pSpaces[i], pOrigin))
 			return false;
@@ -397,13 +397,13 @@ void NSTileGrid::remove(const uivec2 & id)
 {
 	// Go through entire grid and remove any entrees with transform ID equal to pTFormID
 	GridBounds g;
-	for (nsuint i = 0; i < 8; ++i)
+	for (uint32 i = 0; i < 8; ++i)
 	{
-		for (nsuint z = 0; z < mMap[i].size(); ++z)
+		for (uint32 z = 0; z < mMap[i].size(); ++z)
 		{
-			for (nsuint y = 0; y < mMap[i][z].size(); ++y)
+			for (uint32 y = 0; y < mMap[i][z].size(); ++y)
 			{
-				for (nsuint x = 0; x < mMap[i][z][y].size(); ++x)
+				for (uint32 x = 0; x < mMap[i][z][y].size(); ++x)
 				{
 					if (mMap[i][z][y][x].x == id.x && mMap[i][z][y][x].y == id.y)
 						mMap[i][z][y][x] = uivec3();
@@ -417,13 +417,13 @@ void NSTileGrid::nameChange(const uivec2 & oldid, const uivec2 newid)
 {
 	// Go through entire grid and remove any entrees with entity ID equal to above
 	GridBounds g;
-	for (nsuint i = 0; i < 8; ++i)
+	for (uint32 i = 0; i < 8; ++i)
 	{
-		for (nsuint z = 0; z < mMap[i].size(); ++z)
+		for (uint32 z = 0; z < mMap[i].size(); ++z)
 		{
-			for (nsuint y = 0; y < mMap[i][z].size(); ++y)
+			for (uint32 y = 0; y < mMap[i][z].size(); ++y)
 			{
-				for (nsuint x = 0; x < mMap[i][z][y].size(); ++x)
+				for (uint32 x = 0; x < mMap[i][z][y].size(); ++x)
 				{
 					if (mMap[i][z][y][x].x == oldid.x)
 					{
@@ -484,22 +484,22 @@ uivec3array NSTileGrid::boundedSet(const fvec3 & pPoint1, const fvec3 & pPoint2)
 	return retSet;
 }
 
-nsint NSTileGrid::indexX(float pX, bool pOffset)
+int32 NSTileGrid::indexX(float pX, bool pOffset)
 {
 	if (pOffset)
-		return nsint(floor(((pX - X_GRID) / (2 * X_GRID)) + ROUND_FACTOR));
+		return int32(floor(((pX - X_GRID) / (2 * X_GRID)) + ROUND_FACTOR));
 
-	return nsint(floor((pX / (2 * X_GRID)) + ROUND_FACTOR));
+	return int32(floor((pX / (2 * X_GRID)) + ROUND_FACTOR));
 }
 
-nsint NSTileGrid::indexY(float pY)
+int32 NSTileGrid::indexY(float pY)
 {
-	return nsint(floor((pY / Y_GRID) + ROUND_FACTOR));
+	return int32(floor((pY / Y_GRID) + ROUND_FACTOR));
 }
 
-nsint NSTileGrid::indexZ(float pZ)
+int32 NSTileGrid::indexZ(float pZ)
 {
-	return nsint(floor((pZ / Z_GRID) + ROUND_FACTOR));
+	return int32(floor((pZ / Z_GRID) + ROUND_FACTOR));
 }
 
 NSTileGrid::Index NSTileGrid::index(const ivec3 & pSpace)
@@ -507,7 +507,7 @@ NSTileGrid::Index NSTileGrid::index(const ivec3 & pSpace)
 	Index index;
 	if (pSpace.z < 0)
 	{
-		index.mQuad = QuadrantIndex(nsuint(index.mQuad) + 4);
+		index.mQuad = QuadrantIndex(uint32(index.mQuad) + 4);
 		index.mIndex.z = -1 * pSpace.z;
 		index.mIndex.z -= 1;
 	}
@@ -515,7 +515,7 @@ NSTileGrid::Index NSTileGrid::index(const ivec3 & pSpace)
 		index.mIndex.z = pSpace.z;
 	if (pSpace.y < 0)
 	{
-		index.mQuad = QuadrantIndex(nsuint(index.mQuad) + 2);
+		index.mQuad = QuadrantIndex(uint32(index.mQuad) + 2);
 		index.mIndex.y = -1 * pSpace.y;
 		index.mIndex.y -= 1;
 	}
@@ -523,7 +523,7 @@ NSTileGrid::Index NSTileGrid::index(const ivec3 & pSpace)
 		index.mIndex.y = pSpace.y;
 	if (pSpace.x < 0)
 	{
-		index.mQuad = QuadrantIndex(nsuint(index.mQuad) + 1);
+		index.mQuad = QuadrantIndex(uint32(index.mQuad) + 1);
 		index.mIndex.x = -1 * pSpace.x;
 		index.mIndex.x -= 1;
 	}
@@ -608,29 +608,29 @@ bool NSTileGrid::_checkBounds(const Index & pIndex) const
 
 void NSTileGrid::_resizeForSpace(const Index & pIndex)
 {
-	nsuint lastIndex = 0;
+	uint32 lastIndex = 0;
 
 	if (pIndex.mIndex.z >= mMap[pIndex.mQuad].size())
 	{
-		lastIndex = static_cast<int>(mMap[pIndex.mQuad].size()) - 1;
+		lastIndex = static_cast<int32>(mMap[pIndex.mQuad].size()) - 1;
 		mMap[pIndex.mQuad].resize(pIndex.mIndex.z + TILE_GRID_RESIZE_PAD);
 
 		//resize the x and y dimensions for all new layers
-		for (nsuint i = lastIndex; i < mMap[pIndex.mQuad].size(); ++i)
+		for (uint32 i = lastIndex; i < mMap[pIndex.mQuad].size(); ++i)
 		{
 			mMap[pIndex.mQuad][i].resize(DEFAULT_GRID_SIZE);
-			for (nsuint j = 0; j < DEFAULT_GRID_SIZE; ++j)
+			for (uint32 j = 0; j < DEFAULT_GRID_SIZE; ++j)
 				mMap[pIndex.mQuad][i][j].resize(DEFAULT_GRID_SIZE);
 		}
 	}
 
 	if (pIndex.mIndex.y >= mMap[pIndex.mQuad][pIndex.mIndex.z].size())
 	{
-		lastIndex = static_cast<int>(mMap[pIndex.mQuad][pIndex.mIndex.z].size()) - 1;
+		lastIndex = static_cast<int32>(mMap[pIndex.mQuad][pIndex.mIndex.z].size()) - 1;
 		mMap[pIndex.mQuad][pIndex.mIndex.z].resize(pIndex.mIndex.y + TILE_GRID_RESIZE_PAD);
 
 		// resize all the x dimensions for the current layer/row
-		for (nsuint i = lastIndex; i < mMap[pIndex.mQuad][pIndex.mIndex.z].size(); ++i)
+		for (uint32 i = lastIndex; i < mMap[pIndex.mQuad][pIndex.mIndex.z].size(); ++i)
 			mMap[pIndex.mQuad][pIndex.mIndex.z][i].resize(DEFAULT_GRID_SIZE);
 	}
 

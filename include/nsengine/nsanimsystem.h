@@ -30,7 +30,7 @@ public:
 
 	virtual void update();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 };
 

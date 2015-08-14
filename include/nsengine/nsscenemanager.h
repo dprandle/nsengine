@@ -56,7 +56,7 @@ public:
 		return load<NSScene>(fname);
 	}
 
-	virtual NSScene * load(nsuint res_type_id, const nsstring & fname);
+	virtual NSScene * load(uint32 res_type_id, const nsstring & fname);
 	
 	template<class ResType, class T >
 	ResType * remove(const T & rname)

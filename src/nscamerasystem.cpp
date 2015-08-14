@@ -71,14 +71,14 @@ const NSCameraSystem::CameraMode & NSCameraSystem::mode() const
 	return mMode;
 }
 
-const nsfloat & NSCameraSystem::sensitivity(const Sensitivity & pWhich) const
+const float & NSCameraSystem::sensitivity(const Sensitivity & pWhich) const
 {
 	if (pWhich == Turn)
 		return mTurnSensitivity;
 	return mStrafeSensitivity;
 }
 
-nsfloat NSCameraSystem::zoom() const
+float NSCameraSystem::zoom() const
 {
 	return mZoomFactor;
 }
@@ -102,17 +102,17 @@ bool NSCameraSystem::yinv(const CameraMode & pMode)
 void NSCameraSystem::setxinv(bool pInvert, const CameraMode & pMode)
 {
 	if (pMode == Free)
-		mFreeModeInverted.x = nsint(pInvert) * -2 + 1;
+		mFreeModeInverted.x = int32(pInvert) * -2 + 1;
 	else
-		mFocusModeInverted.x = nsint(pInvert) * -2 + 1;
+		mFocusModeInverted.x = int32(pInvert) * -2 + 1;
 }
 
 void NSCameraSystem::setyinv(bool pInvert, const CameraMode & pMode)
 {
 	if (pMode == Free)
-		mFreeModeInverted.y = nsint(pInvert) * -2 + 1;
+		mFreeModeInverted.y = int32(pInvert) * -2 + 1;
 	else
-		mFocusModeInverted.y = nsint(pInvert) * -2 + 1;
+		mFocusModeInverted.y = int32(pInvert) * -2 + 1;
 }
 
 void NSCameraSystem::setSensitivity(float pSensitivity, const Sensitivity & pWhich)
@@ -197,7 +197,7 @@ void NSCameraSystem::setView(CameraView pView)
 	camComp->postUpdate(true);
 }
 
-void NSCameraSystem::setZoom(nsfloat pZFactor)
+void NSCameraSystem::setZoom(float pZFactor)
 {
 	mZoomFactor = pZFactor;
 }
@@ -289,17 +289,17 @@ void NSCameraSystem::_onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fve
 	pCam->postUpdate(true);
 }
 
-void NSCameraSystem::_onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, nsfloat pScroll)
+void NSCameraSystem::_onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, float pScroll)
 {
 	NSCamComp::Direction dir = NSCamComp::DirPos;
 	if (pScroll < 0)
 		dir = NSCamComp::DirNeg;
 
 	if (pCam->projectionMode() == NSCamComp::Persp)
-		tComp->translate(NSTFormComp::Target, nsfloat(dir) * mZoomFactor);
+		tComp->translate(NSTFormComp::Target, float(dir) * mZoomFactor);
 	else
 	{
-		nsfloat factor = 0.95f;
+		float factor = 0.95f;
 		if (dir < 0)
 			factor = 2 - factor;
 		pCam->setOrthoLRClip(pCam->orthoLRClip()*factor);
@@ -499,7 +499,7 @@ bool NSCameraSystem::_handleSelFocusEvent(NSSelFocusEvent * evnt)
 	return true;
 }
 
-nsint NSCameraSystem::updatePriority()
+int32 NSCameraSystem::updatePriority()
 {
 	return CAM_SYS_UPDATE_PR;
 }

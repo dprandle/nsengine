@@ -28,7 +28,7 @@ class NSRenderSystem;
 class NSScene : public NSResource
 {
 public:
-	typedef std::map<nsuint, nspentityset> EntitiesByComp;
+	typedef std::map<uint32, nspentityset> EntitiesByComp;
 
 	template<class PUPer>
 	friend void pup(PUPer & p, NSScene & sc);
@@ -36,7 +36,7 @@ public:
 	NSScene();
 	~NSScene();
 
-	nsuint add(
+	uint32 add(
 		NSEntity * pEnt,
 		const fvec3 & pPos = fvec3(),
 		const fquat & pRot = fquat(),
@@ -44,7 +44,7 @@ public:
 		);
 
 	template<class T1, class T2>
-	nsuint add(
+	uint32 add(
 		const T1 & plug,
 		const T2 & ref,
 		const fvec3 & pPos = fvec3(),
@@ -55,7 +55,7 @@ public:
 		return add(nsengine.resource<NSEntity>(plug, ref), pPos, pRot, pScale);
 	}
 
-	nsuint addGridded(
+	uint32 addGridded(
 		NSEntity * pEnt, 
 		const ivec3 & pBounds, 
 		const fvec3 & pStartingPos=fvec3(),
@@ -64,7 +64,7 @@ public:
 		);
 
 	template<class T1, class T2>
-	nsuint addGridded(
+	uint32 addGridded(
 		const T1 & plug,
 		const T2 & ref,
 		const ivec3 & pBounds,
@@ -76,11 +76,11 @@ public:
 		return addGridded(nsengine.resource<NSEntity>(plug, ref), pBounds, pStartingPos, pRot, pScale);
 	}
 
-	void changeMaxPlayers(nsint pAmount);
+	void changeMaxPlayers(int32 pAmount);
 
 	void clear();
 
-	void enableShowBit(nsbool pEnable);
+	void enableShowBit(bool pEnable);
 
 	template<class T1, class T2>
 	NSEntity * entity(const T1 & plug, const T2 & res) const
@@ -101,11 +101,11 @@ public:
 
 	bool hasDirLight() const;
 
-	nsuint maxPlayers() const;
+	uint32 maxPlayers() const;
 
 	const nsstring & notes() const;
 
-	const nsuint referenceCount() const;
+	const uint32 referenceCount() const;
 
 	NSEntity * skydome() const;
 
@@ -118,7 +118,7 @@ public:
 	template<class CompType>
 	const nspentityset & entities() const
 	{
-		nsuint type_id = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 type_id = nsengine.typeID(std::type_index(typeid(CompType)));
 		auto fiter = mEntsByCompType.find(type_id);
 		if (fiter != mEntsByCompType.end())
 			return fiter->second;
@@ -133,13 +133,13 @@ public:
 
 	NSTileGrid & grid();
 
-	void hideLayer(nsint pLayer, nsbool pHide);
+	void hideLayer(int32 pLayer, bool pHide);
 
-	void hideLayersAbove(nsint pBaseLayer, nsbool pHide);
+	void hideLayersAbove(int32 pBaseLayer, bool pHide);
 
-	void hideLayersBelow(nsint pTopLayer, nsbool pHide);
+	void hideLayersBelow(int32 pTopLayer, bool pHide);
 
-	nsbool showBit() const;
+	bool showBit() const;
 
 	/*!
 	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
@@ -147,63 +147,63 @@ public:
 	*/
 	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
 
-	nsuint replace(NSEntity * oldent, nsuint tformID, NSEntity * newent);
+	uint32 replace(NSEntity * oldent, uint32 tformID, NSEntity * newent);
 
 	template<class T1, class T2>
-	nsuint replace(const T1 & oldplug, const T2 & oldent, nsuint tformID, NSEntity * newent)
+	uint32 replace(const T1 & oldplug, const T2 & oldent, uint32 tformID, NSEntity * newent)
 	{
 		return replace(entity(oldplug, oldent), tformID, newent);
 	}
 
 	template<class T3, class T4>
-	nsuint replace(NSEntity * oldent, nsuint tformID, const T3 & newplug, const T4 & newent)
+	uint32 replace(NSEntity * oldent, uint32 tformID, const T3 & newplug, const T4 & newent)
 	{
 		return replace(oldent, tformID, entity(newplug, newent));
 	}
 
 	template<class T1, class T2, class T3, class T4>
-	nsuint replace(const T1 & oldplug, const T2 & oldent, nsuint tformID, const T3 & newplug, const T4 & newent)
+	uint32 replace(const T1 & oldplug, const T2 & oldent, uint32 tformID, const T3 & newplug, const T4 & newent)
 	{
 		return replace(entity(oldplug, oldent), tformID, entity(newplug, newent));
 	}
 
-	nsbool replace(NSEntity * oldent, NSEntity * newent);
+	bool replace(NSEntity * oldent, NSEntity * newent);
 
 	template<class T1, class T2>
-	nsuint replace(const T1 & oldplug, const T2 & oldent, NSEntity * newent)
+	uint32 replace(const T1 & oldplug, const T2 & oldent, NSEntity * newent)
 	{
 		return replace(entity(oldplug, oldent), newent);
 	}
 
 	template<class T3, class T4>
-	nsuint replace(NSEntity * oldent, const T3 & newplug, const T4 & newent)
+	uint32 replace(NSEntity * oldent, const T3 & newplug, const T4 & newent)
 	{
 		return replace(oldent, entity(newplug, newent));
 	}
 
 	template<class T1, class T2, class T3, class T4>
-	nsuint replace(const T1 & oldplug, const T2 & oldent, const T3 & newplug, const T4 & newent)
+	uint32 replace(const T1 & oldplug, const T2 & oldent, const T3 & newplug, const T4 & newent)
 	{
 		return replace(entity(oldplug, oldent), entity(newplug, newent));
 	}
 
 	template<class T1, class T2>
-	nsbool remove(const T1 & plug, const T2 & res, nsuint tformid)
+	bool remove(const T1 & plug, const T2 & res, uint32 tformid)
 	{
 		return remove(entity(plug, res), tformid);
 	}
 
-	nsbool remove(fvec3 & pWorldPos);
+	bool remove(fvec3 & pWorldPos);
 
-	nsbool remove(NSEntity * ent);
+	bool remove(NSEntity * ent);
 
 	template<class T1, class T2>
-	nsbool remove(const T1 & plug, const T2 & res)
+	bool remove(const T1 & plug, const T2 & res)
 	{
 		remove(entity(plug, res));
 	}
 
-	nsbool remove(NSEntity * entity, nsuint tformid);
+	bool remove(NSEntity * entity, uint32 tformid);
 
 	void setBackgroundColor(const fvec3 & pColor);
 
@@ -219,7 +219,7 @@ public:
 		setCamera(nsengine.resource<NSEntity>(plug, camid), addToSceneIfNeeded);
 	}
 
-	void setMaxPlayers(nsuint pMaxPlayers);
+	void setMaxPlayers(uint32 pMaxPlayers);
 
 	void setNotes(const nsstring & pNotes);
 
@@ -231,7 +231,7 @@ public:
 
 	void setSkydome(NSEntity * skydome, bool addToSceneIfNeeded = true);
 
-	void updateCompMaps(nsuint plugid, nsuint entid);
+	void updateCompMaps(uint32 plugid, uint32 entid);
 
 	uivec2array & unloaded();
 
@@ -239,13 +239,13 @@ private:
 
 	uivec2 mCamID;
 	uivec2 mSkydomeID;
-	nsuint mMaxPlayers;
+	uint32 mMaxPlayers;
 	fvec3 mBackgroundColor;
 	EntitiesByComp mEntsByCompType;
 	nsstring mNotes;
 	nsstring mCreator;
 	NSTileGrid * mTileGrid;
-	nsbool mShowBit;
+	bool mShowBit;
 
 	uivec2array mUnloaded;
 	nspentityset dummyret;
@@ -276,7 +276,7 @@ void pup(PUPer & p, NSScene & sc)
 
 	pup(p, entids, "entids");
 
-	for (nsuint i = 0; i < entids.size(); ++i)
+	for (uint32 i = 0; i < entids.size(); ++i)
 	{
 		NSEntity * ent = nsengine.resource<NSEntity>(entids[i]);
 
@@ -295,7 +295,7 @@ void pup(PUPer & p, NSScene & sc)
 			NSOccupyComp * oc = ent->get<NSOccupyComp>();
 			if (oc != NULL)
 			{
-				for (nsuint i = 0; i < tc->count(); ++i)
+				for (uint32 i = 0; i < tc->count(); ++i)
 					sc.grid().add(uivec3(ent->plugid(), ent->id(), i), tc->wpos(i));
 			}
 		}

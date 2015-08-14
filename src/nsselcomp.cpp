@@ -30,7 +30,7 @@ NSComponent()
 NSSelComp::~NSSelComp()
 {}
 
-bool NSSelComp::add(nsuint pTransformID)
+bool NSSelComp::add(uint32 pTransformID)
 {
 
 	if (pTransformID >= mOwner->get<NSTFormComp>()->count())
@@ -46,7 +46,7 @@ bool NSSelComp::add(nsuint pTransformID)
 	return true;
 }
 
-nsuintu_set::iterator NSSelComp::begin()
+uint32u_set::iterator NSSelComp::begin()
 {
 	return mSelection.begin();
 }
@@ -66,7 +66,7 @@ NSSelComp* NSSelComp::copy(const NSComponent * pToCopy)
 	return this;
 }
 
-bool NSSelComp::contains(nsuint pTransformID)
+bool NSSelComp::contains(uint32 pTransformID)
 {
 	return (mSelection.find(pTransformID) != mSelection.end());
 }
@@ -95,7 +95,7 @@ void NSSelComp::enableMove(const bool & pEnable)
 	mMoveWithInput = pEnable;
 }
 
-nsuintu_set::iterator NSSelComp::end()
+uint32u_set::iterator NSSelComp::end()
 {
 	return mSelection.end();
 }
@@ -105,7 +105,7 @@ const fvec4 & NSSelComp::defaultColor()
 	return mDefaultSelColor;
 }
 
-const nsfloat & NSSelComp::maskAlpha()
+const float & NSSelComp::maskAlpha()
 {
 	return mMaskAlpha;
 }
@@ -133,7 +133,7 @@ bool NSSelComp::selected()
 	return mSelected;
 }
 
-bool NSSelComp::remove(nsuint pTransformID)
+bool NSSelComp::remove(uint32 pTransformID)
 {
 	if (contains(pTransformID))
 	{
@@ -143,7 +143,7 @@ bool NSSelComp::remove(nsuint pTransformID)
 	return false;
 }
 
-bool NSSelComp::set(nsuint pTransformID)
+bool NSSelComp::set(uint32 pTransformID)
 {
 	clear();
 	return add(pTransformID);
@@ -156,7 +156,7 @@ void NSSelComp::setDefaultColor(const fvec4 & pColor)
 }
 
 
-void NSSelComp::setMaskAlpha(const nsfloat & pAlpha)
+void NSSelComp::setMaskAlpha(const float & pAlpha)
 {
 	mMaskAlpha = pAlpha;
 }
@@ -171,9 +171,9 @@ void NSSelComp::setColor(const fvec4 & pColor)
 	mSelColor = pColor;
 }
 
-nsuint NSSelComp::count()
+uint32 NSSelComp::count()
 {
-	return static_cast<nsuint>(mSelection.size());
+	return static_cast<uint32>(mSelection.size());
 }
 
 bool NSSelComp::empty()

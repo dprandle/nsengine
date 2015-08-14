@@ -36,9 +36,9 @@ public:
 
 	NSRenderComp* copy(const NSComponent* pToCopy);
 
-	nsbool castShadow();
+	bool castShadow();
 
-	uivec2 materialID(nsuint subMeshIndex);
+	uivec2 materialID(uint32 subMeshIndex);
 
 	const uivec2 & meshID();
 
@@ -50,7 +50,7 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	nsbool hasMaterial(nsuint pSubMeshIndex);
+	bool hasMaterial(uint32 pSubMeshIndex);
 
 	void init();
 
@@ -62,31 +62,31 @@ public:
 
 	uivec2uimap::const_iterator matEnd() const;
 
-	nsbool removeMaterial(nsuint subMeshIndex);
+	bool removeMaterial(uint32 subMeshIndex);
 
-	nsbool removeMaterialAll(const uivec2 & toremove);
+	bool removeMaterialAll(const uivec2 & toremove);
 
-	nsbool replaceMaterial(const uivec2 & oldid, const uivec2 & newid);
+	bool replaceMaterial(const uivec2 & oldid, const uivec2 & newid);
 
-	nsbool replaceMaterial(nsuint oldplugid, nsuint oldresid, nsuint newplugid, nsuint newresid)
+	bool replaceMaterial(uint32 oldplugid, uint32 oldresid, uint32 newplugid, uint32 newresid)
 	{
 		return replaceMaterial(uivec2(oldplugid, oldresid), uivec2(newplugid, newresid));
 	}
 
 	virtual void pup(NSFilePUPer * p);
 
-	void setCastShadow(nsbool pShadow);
+	void setCastShadow(bool pShadow);
 
-	nsbool setMaterial(nsuint pSubMeshIndex, const uivec2 & pMatID, nsbool pReplace = false);
+	bool setMaterial(uint32 pSubMeshIndex, const uivec2 & pMatID, bool pReplace = false);
 
-	nsbool setMaterial(nsuint pSubMeshIndex, nsuint matplugid, nsuint matresid, nsbool pReplace = false)
+	bool setMaterial(uint32 pSubMeshIndex, uint32 matplugid, uint32 matresid, bool pReplace = false)
 	{
 		return setMaterial(pSubMeshIndex, uivec2(matplugid, matresid), pReplace);
 	}
 
 	void setMeshID(const uivec2 & pMeshID);
 
-	void setMeshID(nsuint plugid, nsuint resid)
+	void setMeshID(uint32 plugid, uint32 resid)
 	{
 		mMeshID.x = plugid; mMeshID.y = resid;
 		postUpdate(true);
@@ -95,7 +95,7 @@ public:
 	NSRenderComp & operator=(const NSRenderComp & pRHSComp);
 
 private:
-	nsbool mCastShadow;
+	bool mCastShadow;
 	uivec2 mMeshID;
 	uivec2uimap mMats;
 };

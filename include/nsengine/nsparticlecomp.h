@@ -69,11 +69,11 @@ public:
 
 	virtual void init();
 
-	nsuint motionKeyCount();
+	uint32 motionKeyCount();
 
-	nsuint visualKeyCount();
+	uint32 visualKeyCount();
 
-	nsfloat & elapsed();
+	float & elapsed();
 
 	bool looping();
 
@@ -129,7 +129,7 @@ public:
 
 	const uivec2 & materialID();
 
-	nsuint maxParticles();
+	uint32 maxParticles();
 
 	const fvec3uimap & motionKeys();
 
@@ -139,9 +139,9 @@ public:
 
 	void setEmitterSize(const fvec3 & pSize);
 
-	nsuint maxMotionKeys();
+	uint32 maxMotionKeys();
 
-	nsuint maxVisualKeys();
+	uint32 maxVisualKeys();
 
 	bool motionGlobalTime();
 
@@ -157,17 +157,17 @@ public:
 
 	void removeVisualKey(float pTime);
 
-	void setMaxMotionKeys(nsuint pMax);
+	void setMaxMotionKeys(uint32 pMax);
 
-	void setMaxVisualKeys(nsuint pMax);
+	void setMaxVisualKeys(uint32 pMax);
 
 	void setMotionKey(float pTime, const fvec3 & pForce);
 
 	void setVisualKey(float pTime, const fvec3 & pRenderKey);
 
-	nsuint lifetime();
+	uint32 lifetime();
 
-	nsuint emissionRate();
+	uint32 emissionRate();
 
 	void release();
 
@@ -181,7 +181,7 @@ public:
 
 	NSVertexArrayObject * vertexArrayObject();
 
-	nsuint transformFeedbackID();
+	uint32 transformFeedbackID();
 
 	void reset();
 
@@ -191,13 +191,13 @@ public:
 
 	const uivec2 & randomTextureID();
 
-	void setEmissionRate(nsuint pRate);
+	void setEmissionRate(uint32 pRate);
 
-	void setLifetime(nsuint pLifetime);
+	void setLifetime(uint32 pLifetime);
 
-	void setMaxParticles(nsuint pMaxParticles);
+	void setMaxParticles(uint32 pMaxParticles);
 
-	void setShaderID(nsuint plugid, nsuint resid)
+	void setShaderID(uint32 plugid, uint32 resid)
 	{
 		mXFBShaderID.x = plugid; mXFBShaderID.y = resid;
 		postUpdate(true);
@@ -205,7 +205,7 @@ public:
 
 	void setShaderID(const uivec2 &);
 
-	void setMaterialID(nsuint plugid, nsuint resid)
+	void setMaterialID(uint32 plugid, uint32 resid)
 	{
 		mMatID.x = plugid; mMatID.y = resid;
 		postUpdate(true);
@@ -215,13 +215,13 @@ public:
 
 	void setRandTextureID(const uivec2 & pID);
 
-	void setRandTextureID(nsuint plugid, nsuint resid)
+	void setRandTextureID(uint32 plugid, uint32 resid)
 	{
 		mRandTextID.x = plugid; mRandTextID.y = resid;
 		postUpdate(true);
 	}
 
-	void setAngularVelocity(nsint pVel);
+	void setAngularVelocity(int32 pVel);
 
 	void setStartingSize(const fvec2 & pSize);
 
@@ -233,7 +233,7 @@ public:
 
 	fvec2 startingSize();
 
-	int angularVelocity();
+	int32 angularVelocity();
 
 	void swap();
 
@@ -245,25 +245,25 @@ private:
 
 	uivec2 mMatID; //!< Material ID for the rendered quad
 	uivec2 mXFBShaderID; //!< Shader used for transform feedback
-	nsuint mMaxParticleCount; //!< Maximum particles allowed
-	nsuint mLifetime; //!< How long should these particles stay alive
-	nsuint mEmissionRate; //!< Particles emitted per second
+	uint32 mMaxParticleCount; //!< Maximum particles allowed
+	uint32 mLifetime; //!< How long should these particles stay alive
+	uint32 mEmissionRate; //!< Particles emitted per second
 	uivec2 mRandTextID; // Random texture ID
 	EmitterShape mEmitterShape; // Cube or Ellipse
 	MotionKeyType mMotionKeyType; // Velocity or Acceleration motion keyframes
 	BlendMode mBlendMode; // Additive or Source minus destination bla bla
-	nsint mAngularVelocity; // self explanitory
+	int32 mAngularVelocity; // self explanitory
 	bool mLoopingEnabled; // wrap elapsed time back to 0 at end of lifetime and restart
 	bool mMotionKeyInterp; // Interpolate between motion key frames?
 	bool mMotionGlobalTime; // Should the particles all be affected by motion keyframes in global elapsed time or per particle lifetime
 	bool mVisualKeyInterp; // Interpolate between keys?
 	bool mVisualGlobalTime; // Should the particles all be affected by visual keyframes in global elapsed time or per particle lifetime
-	nsfloat mElapsedTime; // Amount of time elapsed since sim started
+	float mElapsedTime; // Amount of time elapsed since sim started
 	fvec2 mStartingSize; // Startung size of screen facing quads in world space sizes (not screen space)
 	fvec3 mEmitterSize; // x,y,z size of the emitter space where particles generate
 	fvec3 mInitVelocityMult; // Initial velocity x,y,z multiplier - multiplies the random number by this
-	nsuint mMaxMotionKeys; // Maximum number of motion key frames - should be set to match whatever is in shader
-	nsuint mMaxVisualKeys; // Maximum number of visual key frames - also should match whatever is set in shader
+	uint32 mMaxMotionKeys; // Maximum number of motion key frames - should be set to match whatever is in shader
+	uint32 mMaxVisualKeys; // Maximum number of visual key frames - also should match whatever is set in shader
 
 	/* This stuff does not need to be saved*/
 	bool mSimulating; // Are we simulating?
@@ -272,14 +272,14 @@ private:
 
 	NSTransformFeedbackObject * mTFB[2]; // 2 transform feedback buffers (draw from last to first then swap)
 	NSVertexArrayObject * mVAO[2]; // for rendering whats in the TF FB buffers
-	nsuint mBufferIndex; //!< Current buffer index
+	uint32 mBufferIndex; //!< Current buffer index
 	ParticleArray mParticles; //!< Sort of dummy array used to allocate VBOs
 };
 
 template<class PUPer>
 void pup(PUPer & p, NSParticleComp::EmitterShape & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSParticleComp::EmitterShape>(in);
 }
@@ -287,7 +287,7 @@ void pup(PUPer & p, NSParticleComp::EmitterShape & en, const nsstring & pString)
 template<class PUPer>
 void pup(PUPer & p, NSParticleComp::MotionKeyType & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSParticleComp::MotionKeyType>(in);
 }
@@ -295,7 +295,7 @@ void pup(PUPer & p, NSParticleComp::MotionKeyType & en, const nsstring & pString
 template<class PUPer>
 void pup(PUPer & p, NSParticleComp::BlendMode & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSParticleComp::BlendMode>(in);
 }

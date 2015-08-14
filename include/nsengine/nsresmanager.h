@@ -34,14 +34,14 @@ public:
 		Text
 	};
 
-	typedef std::unordered_map<nsuint, NSResource*> MapType;
+	typedef std::unordered_map<uint32, NSResource*> MapType;
 
-	virtual nsbool add(NSResource * res);
+	virtual bool add(NSResource * res);
 
 	MapType::iterator begin();
 
 	template<class T>
-	nsbool changed(const T & resource, const nsstring & fname="")
+	bool changed(const T & resource, const nsstring & fname="")
 	{
 		NSResource * res = get(resource);
 		return changed(res,fname);
@@ -56,7 +56,7 @@ public:
 	template <class ResType>
 	ResType * create(const nsstring & resName)
 	{
-		nsuint res_type_id = type_to_hash(ResType);
+		uint32 res_type_id = type_to_hash(ResType);
 		return static_cast<ResType*>(create(res_type_id, resName));
 	}
 
@@ -76,7 +76,7 @@ public:
 	template<class ResType>
 	ResType * load(const nsstring & fname)
 	{
-		nsuint res_type_id = type_to_hash(ResType);
+		uint32 res_type_id = type_to_hash(ResType);
 		return static_cast<ResType*>(load(res_type_id, fname));
 	}
 	
@@ -101,15 +101,15 @@ public:
 		return saveAs(res, fname);
 	}
 
-	virtual nsbool changed(NSResource * res, nsstring fname);
+	virtual bool changed(NSResource * res, nsstring fname);
 
 	virtual bool contains(NSResource * res);
 
-	nsuint count() const;
+	uint32 count() const;
 
 	virtual NSResource * create(const nsstring & resName)=0;
 
-	virtual NSResource * create(nsuint res_type_id, const nsstring & resName);
+	virtual NSResource * create(uint32 res_type_id, const nsstring & resName);
 
 	NSResource * create(const nsstring & guid_, const nsstring & resName);
 
@@ -119,9 +119,9 @@ public:
 
 	bool empty();
 
-	nsuint type();
+	uint32 type();
 
-	virtual NSResource * get(nsuint resid);
+	virtual NSResource * get(uint32 resid);
 
 	virtual NSResource * get(const nsstring & resName);
 
@@ -131,17 +131,17 @@ public:
 
 	const nsstring & localDirectory();
 
-	nsuint plugid();
+	uint32 plugid();
 
 	virtual NSResource * load(const nsstring & fname) = 0;
 	
-	virtual NSResource * load(nsuint res_type_id, const nsstring & fname);
+	virtual NSResource * load(uint32 res_type_id, const nsstring & fname);
 	
 	NSResource * load(const nsstring & res_guid, const nsstring & fname);
 	
 	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
 
-	virtual NSResource * remove(nsuint res_type_id);
+	virtual NSResource * remove(uint32 res_type_id);
 
 	virtual NSResource * remove(const nsstring & resName);
 	
@@ -155,7 +155,7 @@ public:
 
 	virtual bool saveAs(NSResource * res, const nsstring & fname);
 
-	void setPlugID(nsuint plugid);
+	void setPlugID(uint32 plugid);
 	
 	virtual void setResourceDirectory(const nsstring & pDirectory);
 
@@ -181,11 +181,11 @@ public:
 	static nsstring pathFromFilename(const nsstring & fname);
 	
 protected:
-	nsuint mHashedType;
+	uint32 mHashedType;
 	nsstring mResourceDirectory;
 	nsstring mLocalDirectory;
 	MapType mIDResourceMap;
-	nsuint mPlugID;
+	uint32 mPlugID;
 	SaveMode mSaveMode;
 };
 

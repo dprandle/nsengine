@@ -26,15 +26,15 @@ public:
 
 	virtual ~NSTileBrushComp();
 
-	bool add(int x, int y);
+	bool add(int32 x, int32 y);
 
 	bool add(const ivec2 & pGridSpace);
 
 	ivec2array::iterator begin();
 
-	void changeHeight(const nsint & pAmount);
+	void changeHeight(const int32 & pAmount);
 
-	bool contains(int x, int y);
+	bool contains(int32 x, int32 y);
 
 	bool contains(const ivec2 & pGridSpace);
 
@@ -44,21 +44,21 @@ public:
 
 	ivec2array::iterator end();
 
-	nsint height() const;
+	int32 height() const;
 
 	virtual void init();
 
-	bool remove(int x, int y);
+	bool remove(int32 x, int32 y);
 
 	bool remove(const ivec2 & pGridPos);
 
-	void setHeight(const nsint & pHeight);
+	void setHeight(const int32 & pHeight);
 
 	NSTileBrushComp & operator=(const NSTileBrushComp & pRHSComp);
 
 private:
 	ivec2array mBrush;
-	nsint mHeight;
+	int32 mHeight;
 };
 
 template <class PUPer>

@@ -50,7 +50,7 @@ NSBuildSystem::~NSBuildSystem()
 
 }
 
-void NSBuildSystem::changeLayer(const nsint & pAmount)
+void NSBuildSystem::changeLayer(const int32 & pAmount)
 {
 	mLayer += pAmount;
 }
@@ -88,7 +88,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 			while (brushIter != brushComp->end())
 			{
 				fvec3 pos = NSTileGrid::world(ivec3(brushIter->x, brushIter->y, mLayer)); // add in height when get working
-				nsuint tFormID = scene->add(mTileBrush, pos);
+				uint32 tFormID = scene->add(mTileBrush, pos);
 
 				// This tmp thing is a hack to get around added the mirrored guys to the selection
 				bool tmp = mMirrorMode;
@@ -101,7 +101,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 				{
 					fvec3 mirrorPos = mMirrorCenter*2.0f - pos;
 					mirrorPos.z = pos.z;
-					nsuint tFormIDMirror = scene->add(mMirrorBrush, mirrorPos);
+					uint32 tFormIDMirror = scene->add(mMirrorBrush, mirrorPos);
 //					nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugid(), mMirrorBrush->id(), tFormIDMirror)));
 					mMirrorBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormIDMirror);
 				}
@@ -139,7 +139,7 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 			if (selComp == NULL)
 				return;
 
-			nsuint tFormID = scene->add(mObjectBrush);
+			uint32 tFormID = scene->add(mObjectBrush);
 			mObjectBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
 //			nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), tFormID)));
 			selComp->setSelected(true);
@@ -169,12 +169,12 @@ void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
 	}
 }
 
-void NSBuildSystem::enableOverwrite(nsbool pEnable)
+void NSBuildSystem::enableOverwrite(bool pEnable)
 {
 	mOverwrite = pEnable;
 }
 
-void NSBuildSystem::enableMirror(nsbool pEnable)
+void NSBuildSystem::enableMirror(bool pEnable)
 {
 	mMirrorMode = pEnable;
 }
@@ -197,7 +197,7 @@ void NSBuildSystem::erase()
 		auto brushIter = brushComp->begin();
 		while (brushIter != brushComp->end())
 		{
-			for (nsint i = 0; i < brushComp->height(); ++i)
+			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
 				fvec3 pos = mTileBrush->get<NSTFormComp>()->lpos(mTBCenterTFormID) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				scene->remove(pos);
@@ -233,7 +233,7 @@ const NSBuildSystem::BrushMode & NSBuildSystem::brushMode()
 	return mCurrentBrushMode;
 }
 
-const nsint & NSBuildSystem::layer() const
+const int32 & NSBuildSystem::layer() const
 {
 	return mLayer;
 }
@@ -258,12 +258,12 @@ bool NSBuildSystem::enabled() const
 	return mEnabled;
 }
 
-nsbool NSBuildSystem::overwrite() const
+bool NSBuildSystem::overwrite() const
 {
 	return mOverwrite;
 }
 
-nsbool NSBuildSystem::mirror() const
+bool NSBuildSystem::mirror() const
 {
 	return mMirrorMode;
 }
@@ -356,7 +356,7 @@ void NSBuildSystem::toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 	castVec.normalize();
 
 	fvec3 normal(0.0f,0.0f,-1.0f);
-	nsfloat denom = normal * castVec;
+	float denom = normal * castVec;
 	float depth = 0.0f;
 
 	if (abs(denom) >= EPS)
@@ -365,7 +365,7 @@ void NSBuildSystem::toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 	fpos += castVec*depth;
 	fpos -= originalPos;
 	
-	for (nsuint i = 0; i < brushTForm->count(); ++i)
+	for (uint32 i = 0; i < brushTForm->count(); ++i)
 	{
 		brushTForm->translate(fpos, i);
 		if (mMirrorMode)
@@ -410,7 +410,7 @@ void NSBuildSystem::paint()
 		auto brushIter = brushComp->begin();
 		while (brushIter != brushComp->end())
 		{
-			for (nsint i = 0; i < brushComp->height(); ++i)
+			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
 				fvec3 pos = mTileBrush->get<NSTFormComp>()->lpos(mTBCenterTFormID) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				
@@ -425,7 +425,7 @@ void NSBuildSystem::paint()
 					}
 				}
 
-				nsuint tFormID = scene->add(mBuildEnt, pos);
+				uint32 tFormID = scene->add(mBuildEnt, pos);
 				
 				if (tFormID != -1)
 				{
@@ -433,7 +433,7 @@ void NSBuildSystem::paint()
 					{
 						fvec3 newPos = mMirrorCenter*2.0f - pos;
 						newPos.z = pos.z;
-						nsuint tFormMID = scene->add(mBuildEnt, newPos);
+						uint32 tFormMID = scene->add(mBuildEnt, newPos);
 						if (tFormMID == -1)
 						{
 							scene->remove(mBuildEnt, tFormID);
@@ -453,7 +453,7 @@ void NSBuildSystem::paint()
 			return;
 
 		fvec3 pos = mObjectBrush->get<NSTFormComp>()->lpos();
-		nsuint tFormID = scene->add(mBuildEnt, pos);
+		uint32 tFormID = scene->add(mBuildEnt, pos);
 		if (tFormID != -1)
 			mBuildEnt->get<NSTFormComp>()->snap(tFormID);
 	}
@@ -541,7 +541,7 @@ void NSBuildSystem::setMode(const Mode & pMode)
 		setBrushMode(Tile);
 }
 
-void NSBuildSystem::setLayer(const nsint & pLayer)
+void NSBuildSystem::setLayer(const int32 & pLayer)
 {
 	mLayer = pLayer;
 }
@@ -556,7 +556,7 @@ void NSBuildSystem::toggle(const fvec2 & pMousePos)
 	enable(!mEnabled, pMousePos);
 }
 
-nsint NSBuildSystem::updatePriority()
+int32 NSBuildSystem::updatePriority()
 {
 	return BUILD_SYS_UPDATE_PR;
 }

@@ -32,7 +32,7 @@ void NSBufferObject::bind()
 	GLError("NSBufferObject::bind()");
 }
 
-void NSBufferObject::bind(nsuint pIndex)
+void NSBufferObject::bind(uint32 pIndex)
 {
 	glBindBufferBase(mTarget, pIndex, mGLName);
 	GLError("NSBufferObject::bindBase()");
@@ -64,7 +64,7 @@ bool NSBufferObject::mapped() const
 	return mMapped;
 }
 
-void NSBufferObject::allocate(UsageFlag pFlag, nsuint pTotalByteSize)
+void NSBufferObject::allocate(UsageFlag pFlag, uint32 pTotalByteSize)
 {
 	if (mStorageMode == Mutable)
 		glBufferData(mTarget, pTotalByteSize, NULL, pFlag);
@@ -108,7 +108,7 @@ void NSBufferObject::unbind()
 	GLError("NSBufferObject::unbind()");
 }
 
-void NSBufferObject::unbind(nsuint pIndex)
+void NSBufferObject::unbind(uint32 pIndex)
 {
 	glBindBufferBase(mTarget, pIndex, 0);
 	GLError("NSBufferObject::unbindBase()");

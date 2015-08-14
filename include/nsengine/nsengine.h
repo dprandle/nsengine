@@ -45,15 +45,15 @@ class NSDebug;
 struct GLContext;
 class NSFrameBuffer;
 
-typedef std::unordered_map<nsuint, NSSystem*> SystemMap;
-typedef std::unordered_map<nsuint, nsuint> ResManagerMap;
-typedef std::unordered_map<std::type_index, nsuint> TypeHashMap;
-typedef std::unordered_map<nsuint, nsstring> HashMap;
-typedef std::unordered_map<nsuint, NSFactory*> FactoryMap;
-typedef std::unordered_map<nsuint, GLContext*> ContextMap;
-typedef std::unordered_map<nsuint, NSFrameBuffer*> FramebufferMap;
+typedef std::unordered_map<uint32, NSSystem*> SystemMap;
+typedef std::unordered_map<uint32, uint32> ResManagerMap;
+typedef std::unordered_map<std::type_index, uint32> TypeHashMap;
+typedef std::unordered_map<uint32, nsstring> HashMap;
+typedef std::unordered_map<uint32, NSFactory*> FactoryMap;
+typedef std::unordered_map<uint32, GLContext*> ContextMap;
+typedef std::unordered_map<uint32, NSFrameBuffer*> FramebufferMap;
 
-nsuint hash_id(const nsstring & str);
+uint32 hash_id(const nsstring & str);
 
 
 #define nsengine NSEngine::inst()
@@ -115,7 +115,7 @@ class NSEngine
 public:
 	NSEngine();
 	~NSEngine();
-	typedef std::map<nsint, nsuint> SystemPriorityMap;
+	typedef std::map<int32, uint32> SystemPriorityMap;
 
 	bool addPlugin(NSPlugin * plug);
 
@@ -137,27 +137,27 @@ public:
 
 	The newly created context will be set as the current context.
 	*/
-	nsuint createContext(nsbool addDefaultFactories = true //<! Add the normal system/component/resource/resource manager factories
+	uint32 createContext(bool addDefaultFactories = true //<! Add the normal system/component/resource/resource manager factories
 		);
 
-	nsuint createFramebuffer();
+	uint32 createFramebuffer();
 
 	NSPlugin * createPlugin(const nsstring & plugname, bool makeactive=true);
 
 	template<class SysType>
 	SysType * createSystem()
 	{
-		nsuint tid = typeID(std::type_index(typeid(SysType)));
+		uint32 tid = typeID(std::type_index(typeid(SysType)));
 		return static_cast<SysType*>(createSystem(tid));
 	}
 
-	NSSystem * createSystem(nsuint type_id);
+	NSSystem * createSystem(uint32 type_id);
 	
 	NSSystem * createSystem(const nsstring & guid_);
 
 	GLContext * current();
 
-	nsuint currentid();
+	uint32 currentid();
 
 	NSScene * currentScene();
 
@@ -165,7 +165,7 @@ public:
 	Delete the context with ID cID
 	Make sure shutdown has been called with the context to be deleted set as the current context
 	*/
-	bool destroyContext(nsuint cID);
+	bool destroyContext(uint32 cID);
 
 	template<class T>
 	bool delPlugin(const T & name)
@@ -176,16 +176,16 @@ public:
 
 	bool delPlugin(NSPlugin * plg);
 
-	bool delFramebuffer(nsuint fbid);
+	bool delFramebuffer(uint32 fbid);
 
 	template<class SysType>
 	bool destroySystem()
 	{
-		nsuint tid = typeID(std::type_index(typeid(SysType)));
+		uint32 tid = typeID(std::type_index(typeid(SysType)));
 		return destroySystem(tid);
 	}
 
-	bool destroySystem(nsuint type_id);
+	bool destroySystem(uint32 type_id);
 
 	bool destroySystem(const nsstring & guid_);
 
@@ -215,14 +215,14 @@ public:
 	template<class ObjType>
 	NSFactory * factory()
 	{
-		nsuint hashed_type = typeID(std::type_index(typeid(ObjType)));
+		uint32 hashed_type = typeID(std::type_index(typeid(ObjType)));
 		return factory(hashed_type);
 	}
 
-	NSFactory * factory(nsuint hashid);
+	NSFactory * factory(uint32 hashid);
 
 	template<class BaseFacType>
-	BaseFacType * factory(nsuint hashid)
+	BaseFacType * factory(uint32 hashid)
 	{
 		return static_cast<BaseFacType*>(factory(hashid));
 	}
@@ -236,40 +236,40 @@ public:
 	template<class BaseFacType, class ObjType>
 	BaseFacType * factory()
 	{
-		nsuint hashed_type = typeID(std::type_index(typeid(ObjType)));
+		uint32 hashed_type = typeID(std::type_index(typeid(ObjType)));
 		return static_cast<BaseFacType*>(factory(hashed_type));
 	}
 
-	NSFrameBuffer * framebuffer(nsuint id);
+	NSFrameBuffer * framebuffer(uint32 id);
 
 	template<class SysType>
-	nsbool hasSystem()
+	bool hasSystem()
 	{
-		nsuint hashed_type = typeID(std::type_index(typeid(SysType)));
+		uint32 hashed_type = typeID(std::type_index(typeid(SysType)));
 		return hasSystem(hashed_type);
 	}
 
-	nsbool hasSystem(nsuint type_id);
+	bool hasSystem(uint32 type_id);
 	
-	nsbool hasSystem(const nsstring & guid_);
+	bool hasSystem(const nsstring & guid_);
 
 	NSPlugin * loadPlugin(const nsstring & fname);
 
 	template<class ManagerType, class T>
 	ManagerType * manager(const T & plugname)
 	{
-		nsuint hashed_type = type_to_hash(ManagerType);
+		uint32 hashed_type = type_to_hash(ManagerType);
 		return static_cast<ManagerType*>(manager(hashed_type, plugin(plugname)));
 	}
 
-	NSResManager * manager(nsuint manager_typeid, NSPlugin * plg);
+	NSResManager * manager(uint32 manager_typeid, NSPlugin * plg);
 
 	NSResManager * manager(const nsstring & manager_guid, NSPlugin * plg);
 
 	template<class CompType>
 	bool registerComponentType(const nsstring & guid_)
 	{
-		nsuint hashed = hash_id(guid_);
+		uint32 hashed = hash_id(guid_);
 		auto ret = mObjTypeNames.emplace(hashed, guid_);
 		
 		if (!ret.second)
@@ -298,7 +298,7 @@ public:
 	template<class SysType>
 	bool registerSystemType(const nsstring & guid_)
 	{
-		nsuint hashed = hash_id(guid_);
+		uint32 hashed = hash_id(guid_);
 		auto ret = mObjTypeNames.emplace(hashed, guid_);
 		
 		if (!ret.second)
@@ -327,7 +327,7 @@ public:
 	template<class ResType, class ManagerType>
 	bool registerResourceType(const nsstring & guid_)
 	{
-		nsuint hashed = hash_id(guid_);
+		uint32 hashed = hash_id(guid_);
 		auto ret = mObjTypeNames.emplace(hashed, guid_);
 		
 		if (!ret.second)
@@ -367,7 +367,7 @@ public:
 	template<class ResType, class ManagerType>
 	bool registerAbstractResourceType(const nsstring & guid_)
 	{
-		nsuint hashed = hash_id(guid_);
+		uint32 hashed = hash_id(guid_);
 		auto ret = mObjTypeNames.emplace(hashed, guid_);
 		
 		if (!ret.second)
@@ -401,7 +401,7 @@ public:
 	template<class ManagerType>
 	bool registerResourceManagerType(const nsstring & guid_)
 	{
-		nsuint hashed = hash_id(guid_);
+		uint32 hashed = hash_id(guid_);
 		auto ret = mObjTypeNames.emplace(hashed, guid_);
 		
 		if (!ret.second)
@@ -449,17 +449,17 @@ public:
 	template<class SysType>
 	SysType * removeSystem()
 	{
-		nsuint hashed_type = typeID(std::type_index(typeid(SysType)));
+		uint32 hashed_type = typeID(std::type_index(typeid(SysType)));
 		return static_cast<SysType*>(removeSystem(hashed_type));
 	}
 
-	NSSystem * removeSystem(nsuint type_id);
+	NSSystem * removeSystem(uint32 type_id);
 
 	NSSystem * removeSystem(const nsstring & gui);
 
 	NSPlugin * plugin(const nsstring & name);
 
-	NSPlugin * plugin(nsuint id);
+	NSPlugin * plugin(uint32 id);
 
 	NSPlugin * plugin(NSPlugin * plg);
 
@@ -474,7 +474,7 @@ public:
 	template<class ResType>
 	ResType * resource(const uivec2 & resID)
 	{
-		nsuint hashed_type = type_to_hash(ResType);
+		uint32 hashed_type = type_to_hash(ResType);
 		return static_cast<ResType*>(_resource(hashed_type,resID));
 	}
 
@@ -485,9 +485,9 @@ public:
 		return static_cast<ResType*>(resource(type_to_hash(ResType),plug,res));
 	}
 
-	NSResource * resource(nsuint res_typeid, NSPlugin * plg, nsuint resid);
+	NSResource * resource(uint32 res_typeid, NSPlugin * plg, uint32 resid);
 
-	NSResource * resource(nsuint res_typeid, NSPlugin * plg, const nsstring & resname);
+	NSResource * resource(uint32 res_typeid, NSPlugin * plg, const nsstring & resname);
 	
 	/*!
 	Overload of Propagate name change
@@ -496,31 +496,31 @@ public:
 
 	const nsstring & resourceDirectory();
 
-	nsstring guid(nsuint hash);
+	nsstring guid(uint32 hash);
 
 	nsstring guid(std::type_index type);
 
-	nsuint managerID(nsuint res_id);
+	uint32 managerID(uint32 res_id);
 
-	nsuint managerID(std::type_index res_type);
+	uint32 managerID(std::type_index res_type);
 
-	nsuint managerID(const nsstring & res_guid);
+	uint32 managerID(const nsstring & res_guid);
 
-	nsuint typeID(std::type_index type);
+	uint32 typeID(std::type_index type);
 	
 	void setActive(const nsstring & plugname);
 
 	void setActive(NSPlugin * plug);
 
-	void setActive(nsuint plugid);
+	void setActive(uint32 plugid);
 
 	void setCurrentScene(const nsstring & scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
 	void setCurrentScene(NSScene * scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	void setCurrentScene(nsuint scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void setCurrentScene(uint32 scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	bool makeCurrent(nsuint cID);
+	bool makeCurrent(uint32 cID);
 
 	const nsstring & importdir();
 
@@ -535,11 +535,11 @@ public:
 	template<class SysType>
 	SysType * system()
 	{
-		nsuint hashed_type = typeID(std::type_index(typeid(SysType)));
+		uint32 hashed_type = typeID(std::type_index(typeid(SysType)));
 		return static_cast<SysType*>(system(hashed_type));
 	}
 
-	NSSystem * system(nsuint type_id);
+	NSSystem * system(uint32 type_id);
 
 	NSSystem * system(const nsstring & guid_);
 
@@ -600,9 +600,9 @@ private:
         return destroyFactory(iter->second);
 	}
 
-	bool destroyFactory(nsuint hashid);
+	bool destroyFactory(uint32 hashid);
 
-	NSFactory * removeFactory(nsuint hashid);
+	NSFactory * removeFactory(uint32 hashid);
 	
 	template<class BaseFacType,class ObjType>
 	BaseFacType * removeFactory()
@@ -624,9 +624,9 @@ private:
 	void _initInputMaps();
 	void _initEntities();
 	void _initDefaultFactories();
-	void _removeSys(nsuint type_id);
+	void _removeSys(uint32 type_id);
 
-	NSResource * _resource(nsuint restype_id, const uivec2 & resid);
+	NSResource * _resource(uint32 restype_id, const uivec2 & resid);
 	
 	nsstring mResourceDirectory;
 	nsstring mImportDirectory;
@@ -640,13 +640,13 @@ private:
 	ResManagerMap mResManagerMap;
 	
 	ContextMap mContexts;
-	nsuint mCurrentContext;
+	uint32 mCurrentContext;
 	nsstring mCwd;
 };
 
 struct GLContext
 {
-	GLContext(nsuint id);
+	GLContext(uint32 id);
 	~GLContext();
 	GLEWContext * glewContext;
 	NSPlugin * engplug;
@@ -655,8 +655,8 @@ struct GLContext
 	NSEventDispatcher * mEvents;
 	FramebufferMap fbmap;
 	NSTimer * timer;
-	nsuint compositeBuf;
-	nsuint context_id;
+	uint32 compositeBuf;
+	uint32 context_id;
 #ifdef NSDEBUG
 	NSDebug * mDebug;
 #endif

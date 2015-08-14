@@ -37,7 +37,7 @@ NSComponent()
 NSOccupyComp::~NSOccupyComp()
 {}
 
-bool NSOccupyComp::add(int x, int y, int z)
+bool NSOccupyComp::add(int32 x, int32 y, int32 z)
 {
 	//if (contains(x, y, z))
 		//return false;
@@ -64,40 +64,40 @@ uses the bounding box of the entire mesh.
 */
 void NSOccupyComp::build(const NSBoundingBox & pBox)
 {
-	nsint zCountUp = nsint(abs(pBox.mMax.z) / Z_GRID);
+	int32 zCountUp = int32(abs(pBox.mMax.z) / Z_GRID);
 	if (fmod(abs(pBox.mMax.z), Z_GRID) > 0.01)
 		++zCountUp;
 
-	nsint zCountDown = nsint(abs(pBox.mMin.z) / Z_GRID);
+	int32 zCountDown = int32(abs(pBox.mMin.z) / Z_GRID);
 	if (fmod(abs(pBox.mMin.z), Z_GRID) > 0.01)
 		++zCountDown;
 
-	nsint xCountRight = nsint(abs(pBox.mMax.x) / X_GRID);
+	int32 xCountRight = int32(abs(pBox.mMax.x) / X_GRID);
 	if (fmod(abs(pBox.mMax.x), X_GRID) > 0.01)
 		++xCountRight;
 
-	nsint xCountLeft = nsint(abs(pBox.mMin.x) / X_GRID);
+	int32 xCountLeft = int32(abs(pBox.mMin.x) / X_GRID);
 	if (fmod(abs(pBox.mMin.x), X_GRID) > 0.01)
 		++xCountLeft;
 
-	nsint yCountForward = nsint(abs(pBox.mMax.y) / Y_GRID);
+	int32 yCountForward = int32(abs(pBox.mMax.y) / Y_GRID);
 	if (fmod(abs(pBox.mMax.y), Y_GRID) > 0.01)
 		++yCountForward;
 
-	nsint yCountBackward = nsint(abs(pBox.mMin.y) / Y_GRID);
+	int32 yCountBackward = int32(abs(pBox.mMin.y) / Y_GRID);
 	if (fmod(abs(pBox.mMin.z), Y_GRID) > 0.01)
 		++yCountBackward;
 
 
 
-	for (nsint i = 0; i < zCountUp; ++i)
+	for (int32 i = 0; i < zCountUp; ++i)
 	{
-		for (nsint j = 0; j < yCountForward; ++j)
+		for (int32 j = 0; j < yCountForward; ++j)
 		{
-			nsint mod = j % 2;
-			for (nsint k = 0; k < xCountRight; ++k)
+			int32 mod = j % 2;
+			for (int32 k = 0; k < xCountRight; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -109,9 +109,9 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 						add((k)/2, j, i);
 				}
 			}
-			for (nsint k = 1; k < xCountLeft; ++k)
+			for (int32 k = 1; k < xCountLeft; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -124,12 +124,12 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 				}
 			}
 		}
-		for (nsint j = 1; j < yCountBackward; ++j)
+		for (int32 j = 1; j < yCountBackward; ++j)
 		{
-			nsint mod = j % 2;
-			for (nsint k = 0; k < xCountRight; ++k)
+			int32 mod = j % 2;
+			for (int32 k = 0; k < xCountRight; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -141,9 +141,9 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 						add((k)/2, -j, i);
 				}
 			}
-			for (nsint k = 1; k < xCountLeft; ++k)
+			for (int32 k = 1; k < xCountLeft; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -158,14 +158,14 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 		}
 	}
 
-	for (nsint i = 1; i < zCountDown; ++i)
+	for (int32 i = 1; i < zCountDown; ++i)
 	{
-		for (nsint j = 0; j < yCountForward; ++j)
+		for (int32 j = 0; j < yCountForward; ++j)
 		{
-			nsint mod = j % 2;
-			for (nsint k = 0; k < xCountRight; ++k)
+			int32 mod = j % 2;
+			for (int32 k = 0; k < xCountRight; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -177,9 +177,9 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 						add((k)/2, j, -i);
 				}
 			}
-			for (nsint k = 1; k < xCountLeft; ++k)
+			for (int32 k = 1; k < xCountLeft; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -192,12 +192,12 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 				}
 			}
 		}
-		for (nsint j = 1; j < yCountBackward; ++j)
+		for (int32 j = 1; j < yCountBackward; ++j)
 		{
-			nsint mod = j % 2;
-			for (nsint k = 0; k < xCountRight; ++k)
+			int32 mod = j % 2;
+			for (int32 k = 0; k < xCountRight; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -209,9 +209,9 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 						add((k)/2, -j, -i);
 				}
 			}
-			for (nsint k = 1; k < xCountLeft; ++k)
+			for (int32 k = 1; k < xCountLeft; ++k)
 			{
-				nsint mod2 = k % 2;
+				int32 mod2 = k % 2;
 				if (!mod) // if mod == 0 - basically if j is even
 				{
 					if (!mod2) // if k is even
@@ -241,7 +241,7 @@ void NSOccupyComp::pup(NSFilePUPer * p)
 	}
 }
 
-bool NSOccupyComp::contains(int x, int y, int z)
+bool NSOccupyComp::contains(int32 x, int32 y, int32 z)
 {
 	return contains(ivec3(x, y, z));
 }
@@ -301,7 +301,7 @@ const uivec2 & NSOccupyComp::matid()
 	return mMeshID;
 }
 
-void NSOccupyComp::nameChange(nsuint plugID, nsuint oldID, nsuint newID)
+void NSOccupyComp::nameChange(uint32 plugID, uint32 oldID, uint32 newID)
 {
 	if (mMeshID == uivec2(plugID, oldID))
 		mMeshID.y = newID;
@@ -309,7 +309,7 @@ void NSOccupyComp::nameChange(nsuint plugID, nsuint oldID, nsuint newID)
 		mMatID.y = newID;
 }
 
-bool NSOccupyComp::remove(int x, int y, int z)
+bool NSOccupyComp::remove(int32 x, int32 y, int32 z)
 {
 	return remove(ivec3(x,y,z));
 }
@@ -354,7 +354,7 @@ void NSOccupyComp::setMatID(const uivec2 & mat)
 NSOccupyComp & NSOccupyComp::operator=(const NSOccupyComp & pRHSComp)
 {
 	mSpaces.resize(pRHSComp.mSpaces.size());
-	for (nsuint i = 0; i < mSpaces.size(); ++i)
+	for (uint32 i = 0; i < mSpaces.size(); ++i)
 		mSpaces[i] = pRHSComp.mSpaces[i];
 	mMeshID = pRHSComp.mMeshID;
 	mMatID = pRHSComp.mMatID;

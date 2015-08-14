@@ -84,7 +84,7 @@ void NSFrameBuffer::bind()
 	GLError("NSFrameBuffer::bind");
 }
 
-NSFrameBuffer::Attachment * NSFrameBuffer::create(AttachmentPoint pAttPoint, nsuint pSampleNumber, nsint pInternalFormat, bool overwrite)
+NSFrameBuffer::Attachment * NSFrameBuffer::create(AttachmentPoint pAttPoint, uint32 pSampleNumber, int32 pInternalFormat, bool overwrite)
 {
 	NSRenderBuffer * rBuf = new NSRenderBuffer();
 
@@ -146,7 +146,7 @@ NSFrameBuffer::Attachment * NSFrameBuffer::get(AttachmentPoint pAttPoint)
 	if (pAttPoint == Depth || pAttPoint == Stencil || pAttPoint == DepthStencil)
 		return mDepthStencilAttachment;
 
-	for (nsuint i = 0; i < mColorAttachments.size(); ++i)
+	for (uint32 i = 0; i < mColorAttachments.size(); ++i)
 	{
 		if (mColorAttachments[i]->mAttPoint == pAttPoint)
 			return mColorAttachments[i];
@@ -202,7 +202,7 @@ void NSFrameBuffer::release()
 	mGLName = 0;
 }
 
-void NSFrameBuffer::resize(nsuint w, nsuint h, nsuint layers)
+void NSFrameBuffer::resize(uint32 w, uint32 h, uint32 layers)
 {
 	// Resize the frame buffer by resizing all associated textures
 	// This is relatively expensive operation and should only
@@ -210,7 +210,7 @@ void NSFrameBuffer::resize(nsuint w, nsuint h, nsuint layers)
 	mDim.set(w, h);
 
 	AttachmentArray::iterator iter = mColorAttachments.begin();
-	nsuint m = 0;
+	uint32 m = 0;
 	while (iter != mColorAttachments.end())
 	{
 		if ((*iter)->mRenderBuffer != NULL)
@@ -273,7 +273,7 @@ bool NSFrameBuffer::setCubeface(AttachmentPoint pAttPoint, NSTexCubeMap::CubeFac
 	return true;
 }
 
-void NSFrameBuffer::setdim(nsuint w, nsuint h)
+void NSFrameBuffer::setdim(uint32 w, uint32 h)
 {
 	resize(w, h);
 }
@@ -375,7 +375,7 @@ void NSFrameBuffer::NSRenderBuffer::release()
 	mAllocated = false;
 }
 
-nsint NSFrameBuffer::NSRenderBuffer::internalFormat() const
+int32 NSFrameBuffer::NSRenderBuffer::internalFormat() const
 {
 	return mInternalFormat;
 }
@@ -385,17 +385,17 @@ const uivec2 & NSFrameBuffer::NSRenderBuffer::dim()
 	return mDim;
 }
 
-nsuint NSFrameBuffer::NSRenderBuffer::multisample() const
+uint32 NSFrameBuffer::NSRenderBuffer::multisample() const
 {
 	return mSampleNumber;
 }
 
-void NSFrameBuffer::NSRenderBuffer::setMultisample(nsuint numsamples)
+void NSFrameBuffer::NSRenderBuffer::setMultisample(uint32 numsamples)
 {
 	mSampleNumber = numsamples;
 }
 
-void NSFrameBuffer::NSRenderBuffer::resize(nsint w, nsint h)
+void NSFrameBuffer::NSRenderBuffer::resize(int32 w, int32 h)
 {
 	// Expensive operation - reallocating memory resources
 	// Only do when absolutely necessary
@@ -407,7 +407,7 @@ void NSFrameBuffer::NSRenderBuffer::resize(nsint w, nsint h)
 	unbind();
 }
 
-void NSFrameBuffer::NSRenderBuffer::setInternalFormat(nsint pInternalFormat)
+void NSFrameBuffer::NSRenderBuffer::setInternalFormat(int32 pInternalFormat)
 {
 	if (mAllocated)
 		return;
@@ -415,7 +415,7 @@ void NSFrameBuffer::NSRenderBuffer::setInternalFormat(nsint pInternalFormat)
 	mInternalFormat = pInternalFormat;
 }
 
-void NSFrameBuffer::NSRenderBuffer::setdim(nsuint w, nsuint h)
+void NSFrameBuffer::NSRenderBuffer::setdim(uint32 w, uint32 h)
 {
 	if (mAllocated)
 		return;
@@ -602,26 +602,26 @@ void NSShadowBuffer::init()
 	att3->mTexture->setParameteri(NSTexture::WrapR, GL_CLAMP_TO_EDGE);
 }
 
-void NSShadowBuffer::resize(nsuint w, nsuint h)
+void NSShadowBuffer::resize(uint32 w, uint32 h)
 {
 	mSpotBuf->resize(w,h);
 	mPointBuf->resize(w, h);
 	mDirBuf->resize(w, h);
 }
 
-void NSShadowBuffer::resize(const MapType & pMap, nsuint w, nsuint h)
+void NSShadowBuffer::resize(const MapType & pMap, uint32 w, uint32 h)
 {
 	fb(pMap)->resize(w, h);
 }
 
-void NSShadowBuffer::setdim(nsuint w, nsuint h)
+void NSShadowBuffer::setdim(uint32 w, uint32 h)
 {
 	mSpotBuf->setdim(w, h);
 	mPointBuf->setdim(w, h);
 	mDirBuf->setdim(w, h);
 }
 
-void NSShadowBuffer::setdim(const MapType & pMap, nsuint w, nsuint h)
+void NSShadowBuffer::setdim(const MapType & pMap, uint32 w, uint32 h)
 {
 	fb(pMap)->setdim(w, h);
 }
@@ -714,7 +714,7 @@ NSFrameBuffer * NSGBuffer::fb()
 	return mTexFrameBuffer;
 }
 
-void NSGBuffer::resizefb(nsuint w, nsuint h)
+void NSGBuffer::resizefb(uint32 w, uint32 h)
 {
 	mTexFrameBuffer->resize(w, h);
 }
@@ -724,12 +724,12 @@ void NSGBuffer::setfb(NSFrameBuffer * fb)
 	mTexFrameBuffer = fb;
 }
 
-void NSGBuffer::resizescreen(nsuint w, nsuint h)
+void NSGBuffer::resizescreen(uint32 w, uint32 h)
 {
 	mScreendim.set(w, h);
 }
 
-void NSGBuffer::setscreendim(nsuint w, nsuint h)
+void NSGBuffer::setscreendim(uint32 w, uint32 h)
 {
 	mScreendim.set(w, h);
 }
@@ -739,7 +739,7 @@ void NSGBuffer::setscreendim(const uivec2 & dim)
 	mScreendim = dim;
 }
 
-void NSGBuffer::setfbdim(nsuint w, nsuint h)
+void NSGBuffer::setfbdim(uint32 w, uint32 h)
 {
 	mTexFrameBuffer->setdim(w, h);
 }

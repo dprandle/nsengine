@@ -116,14 +116,14 @@ void NSShader::initGL()
 	// time of building shader object
 }
 
-nsuint NSShader::glid(ShaderType type)
+uint32 NSShader::glid(ShaderType type)
 {
 	return _stage(type).mStageID;
 }
 
-nsuint NSShader::initUniformLoc(const nsstring & pVariable)
+uint32 NSShader::initUniformLoc(const nsstring & pVariable)
 {
-	nsuint loc = glGetUniformLocation( mGLName, pVariable.c_str() );
+	uint32 loc = glGetUniformLocation( mGLName, pVariable.c_str() );
 	GLError("NSShader::initUniformLoc");
 	mUniformLocs[_getHashedString(pVariable)] = loc;
 	return loc;
@@ -259,7 +259,7 @@ NSShader::ShaderStage & NSShader::_stage(ShaderType type)
 void NSShader::_setupTransformFeedback()
 {
 	GLchar ** varyings = new GLchar*[mXFBLocs.size()];
-	for (nsuint i = 0; i < mXFBLocs.size(); ++i)
+	for (uint32 i = 0; i < mXFBLocs.size(); ++i)
 	{
 		GLchar * str = new GLchar[mXFBLocs[i].size() + 1];
 		strcpy(str, mXFBLocs[i].c_str());
@@ -269,7 +269,7 @@ void NSShader::_setupTransformFeedback()
  	glTransformFeedbackVaryings(mGLName, 4, varyings, mMode);
 	GLError("NSShader::_setupTransformFeedback()");
 
-	for (nsuint i = 0; i < mXFBLocs.size(); ++i)
+	for (uint32 i = 0; i < mXFBLocs.size(); ++i)
 		delete[] varyings[i];
 	delete[] varyings;
 }
@@ -323,7 +323,7 @@ void NSShader::setUniform(const nsstring & pVariableName, const fmat3 & pData)
 
 void NSShader::setUniform(const nsstring & pVariableName, bool val)
 {
-	setUniform(pVariableName, int(val));
+	setUniform(pVariableName, int32(val));
 }
 
 void NSShader::setUniform(const nsstring & pVariableName, const fvec4 & pData)
@@ -372,7 +372,7 @@ void NSShader::setUniform(const nsstring & pVariableName, float pData)
 	GLError("NSShader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, int pData)
+void NSShader::setUniform(const nsstring & pVariableName, int32 pData)
 {
 	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
 	if (iter == mUniformLocs.end())
@@ -382,7 +382,7 @@ void NSShader::setUniform(const nsstring & pVariableName, int pData)
 	GLError("NSShader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, unsigned int pData)
+void NSShader::setUniform(const nsstring & pVariableName, uint32 pData)
 {
 	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
 	if (iter == mUniformLocs.end())
@@ -427,16 +427,16 @@ NSShader::Error NSShader::error() const
 	return mErrorState;
 }
 
-unsigned int NSShader::attrib(const nsstring & pVariableName) const
+uint32 NSShader::attrib(const nsstring & pVariableName) const
 {
 	return glGetAttribLocation(mGLName, pVariableName.c_str());
 	GLError("NSShader::attrib");
 }
 
-nsuint NSShader::_getHashedString(const nsstring & pString)
+uint32 NSShader::_getHashedString(const nsstring & pString)
 {
-    nsuint hash = 5381;
-    nsint c;
+    uint32 hash = 5381;
+    int32 c;
 	const char * str = pString.c_str();
 	while (c = *str++)
         hash = ((hash << 5) + hash) + c;
@@ -496,12 +496,12 @@ void NSLightShader::initUniforms()
 	setCamWorldPos(fvec3());
 }
 
-void NSLightShader::setAmbientIntensity(nsfloat intensity)
+void NSLightShader::setAmbientIntensity(float intensity)
 {
 	setUniform("light.ambientIntensity", intensity);
 }
 
-void NSLightShader::setDiffuseIntensity(nsfloat intensity)
+void NSLightShader::setDiffuseIntensity(float intensity)
 {
 	setUniform("light.diffuseIntensity", intensity);
 }
@@ -516,7 +516,7 @@ void NSLightShader::setLightColor(const fvec3 & col)
 	setUniform("light.color", col);
 }
 
-void NSLightShader::setShadowSamples(int samples)
+void NSLightShader::setShadowSamples(int32 samples)
 {
 	setUniform("shadowSamples", samples);
 }
@@ -546,27 +546,27 @@ void NSLightShader::setEpsilon(float epsilon)
 	setUniform("epsilon", epsilon);
 }
 
-void NSLightShader::setWorldPosSampler(nsint sampler)
+void NSLightShader::setWorldPosSampler(int32 sampler)
 {
 	setUniform("gWorldPosMap", sampler);
 }
 
-void NSLightShader::setDiffuseSampler(nsint sampler)
+void NSLightShader::setDiffuseSampler(int32 sampler)
 {
 	setUniform("gDiffuseMap", sampler);
 }
 
-void NSLightShader::setNormalSampler(nsint sampler)
+void NSLightShader::setNormalSampler(int32 sampler)
 {
 	setUniform("gNormalMap", sampler);
 }
 
-void NSLightShader::setMaterialSampler(nsint sampler)
+void NSLightShader::setMaterialSampler(int32 sampler)
 {
 	setUniform("gMatMap", sampler);
 }
 
-void NSLightShader::setShadowSampler(nsint sampler)
+void NSLightShader::setShadowSampler(int32 sampler)
 {
 	setUniform("shadowMap", sampler);
 }
@@ -709,17 +709,17 @@ void NSMaterialShader::init()
 	
 }
 
-void NSMaterialShader::setDiffuseSampler(nsint sampler)
+void NSMaterialShader::setDiffuseSampler(int32 sampler)
 {
 	setUniform("diffuseMap", sampler);
 }
 
-void NSMaterialShader::setOpacitySampler(nsint sampler)
+void NSMaterialShader::setOpacitySampler(int32 sampler)
 {
 	setUniform("opacityMap", sampler);
 }
 
-void NSMaterialShader::setNormalSampler(nsint sampler)
+void NSMaterialShader::setNormalSampler(int32 sampler)
 {
 	setUniform("normalMap", sampler);
 }
@@ -739,12 +739,12 @@ void NSMaterialShader::setSpecularColor(const fvec3 & col)
 	setUniform("specColor", col);
 }
 
-void NSMaterialShader::setEntityID(nsuint id)
+void NSMaterialShader::setEntityID(uint32 id)
 {
 	setUniform("entityID", id);
 }
 
-void NSMaterialShader::setPluginID(nsuint id)
+void NSMaterialShader::setPluginID(uint32 id)
 {
 	setUniform("pluginID", id);
 }
@@ -792,7 +792,7 @@ void NSMaterialShader::setProjCamMat(const fmat4 & projCam)
 
 void NSMaterialShader::setBoneTransforms(const fmat4array & transforms)
 {
-	for (nsuint i = 0; i < transforms.size(); ++i)
+	for (uint32 i = 0; i < transforms.size(); ++i)
 		setUniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
 }
 
@@ -832,7 +832,7 @@ void NSParticleProcessShader::init()
 	setxfb(NSShader::Interleaved, &outLocs2);
 }
 
-void NSParticleProcessShader::setRandomSampler(nsint sampler)
+void NSParticleProcessShader::setRandomSampler(int32 sampler)
 {
 	setUniform("randomTex", sampler);
 }
@@ -847,7 +847,7 @@ void NSParticleProcessShader::setTimeElapsed(float elapsed)
 	setUniform("timeElapsed", elapsed);
 }
 
-void NSParticleProcessShader::setLifetime(nsuint lifetime)
+void NSParticleProcessShader::setLifetime(uint32 lifetime)
 {
 	setUniform("lifetime", lifetime);
 }
@@ -857,7 +857,7 @@ void NSParticleProcessShader::setLaunchFreq(float freq)
 	setUniform("launchFrequency", freq);
 }
 
-void NSParticleProcessShader::setAngularVelocity(int angVelocity)
+void NSParticleProcessShader::setAngularVelocity(int32 angVelocity)
 {
 	setUniform("angVelocity", angVelocity);
 }
@@ -892,7 +892,7 @@ void NSParticleProcessShader::setEmitterSize(const fvec3 & size)
 	setUniform("emitterSize", size);
 }
 
-void NSParticleProcessShader::setEmitterShape(nsuint shape)
+void NSParticleProcessShader::setEmitterShape(uint32 shape)
 {
 	setUniform("emitterShape", shape);
 }
@@ -902,9 +902,9 @@ void NSParticleProcessShader::setInitialVelocityMult(const fvec3 & mult)
 	setUniform("initVelocityMult", mult);
 }
 
-void NSParticleProcessShader::setMotionKeys(const fvec3uimap & keys, nsuint maxKeys, nsuint lifetime)
+void NSParticleProcessShader::setMotionKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
 {
-	nsuint index = 0;
+	uint32 index = 0;
 	fvec3uimap::const_iterator keyIter = keys.begin();
 	while (keyIter != keys.end())
 	{
@@ -915,9 +915,9 @@ void NSParticleProcessShader::setMotionKeys(const fvec3uimap & keys, nsuint maxK
 	}
 }
 
-void NSParticleProcessShader::setVisualKeys(const fvec3uimap & keys, nsuint maxKeys, nsuint lifetime)
+void NSParticleProcessShader::setVisualKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
 {
-	nsuint index = 0;
+	uint32 index = 0;
 	fvec3uimap::const_iterator keyIter = keys.begin();
 	while (keyIter != keys.end())
 	{
@@ -949,7 +949,7 @@ void NSParticleRenderShader::initUniforms()
 
 void NSParticleRenderShader::init() {}
 
-void NSParticleRenderShader::setDiffuseSampler(nsint sampler)
+void NSParticleRenderShader::setDiffuseSampler(int32 sampler)
 {
 	setUniform("diffuseMap", sampler);
 }
@@ -974,7 +974,7 @@ void NSParticleRenderShader::setLifetime(float seconds)
 	setUniform("lifetimeSecs", seconds);
 }
 
-void NSParticleRenderShader::setBlendMode(nsuint mode)
+void NSParticleRenderShader::setBlendMode(uint32 mode)
 {
 	setUniform("blendMode", mode);
 }
@@ -1027,7 +1027,7 @@ void NSDepthShader::setNodeTransform(const fmat4 & tform)
 
 void NSDepthShader::setBoneTransforms(const fmat4array & transforms)
 {
-	for (nsuint i = 0; i < transforms.size(); ++i)
+	for (uint32 i = 0; i < transforms.size(); ++i)
 		setUniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
 }
 
@@ -1160,7 +1160,7 @@ void NSSelectionShader::setProjCamMat(const fmat4 & projCam)
 
 void NSSelectionShader::setBoneTransforms(const fmat4array & transforms)
 {
-	for (nsuint i = 0; i < transforms.size(); ++i)
+	for (uint32 i = 0; i < transforms.size(); ++i)
 		setUniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
 }
 

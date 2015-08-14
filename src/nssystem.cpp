@@ -24,27 +24,27 @@ void NSSystem::draw()
 	// do nothing
 }
 
-nsuint NSSystem::type()
+uint32 NSSystem::type()
 {
 	return mHashedType;
 }
 
-nsint NSSystem::drawPriority()
+int32 NSSystem::drawPriority()
 {
 	return NO_DRAW_PR;
 }
 
-void NSSystem::addTriggerHash(nsuint key, const nsstring & trigname)
+void NSSystem::addTriggerHash(uint32 key, const nsstring & trigname)
 {
 	mHashedInputTriggers.emplace(key,hash_id(trigname));
 }
 
-void NSSystem::removeTriggerHash(nsuint key)
+void NSSystem::removeTriggerHash(uint32 key)
 {
 	mHashedInputTriggers.erase(key);
 }
 
-nsuint NSSystem::triggerHash(nsuint key)
+uint32 NSSystem::triggerHash(uint32 key)
 {
 	auto fiter = mHashedInputTriggers.find(key);
 	if (fiter != mHashedInputTriggers.end())

@@ -1,101 +1,106 @@
 #include <nspupper.h>
 
-NSFilePUPer::NSFilePUPer(PupType t_, nsfstream & fileStream, const nsuint & _io) : t(t_), fs(fileStream), io(_io) {}
+NSFilePUPer::NSFilePUPer(PupType t_, nsfstream & fileStream, const uint32 & _io) : t(t_), fs(fileStream), io(_io) {}
 
 NSFilePUPer::PupType NSFilePUPer::type()
 {
 	return t;
 }
 
-const nsuint & NSFilePUPer::mode() const
+const uint32 & NSFilePUPer::mode() const
 {
 	return io;
 }
 
-NSBinFilePUPer::NSBinFilePUPer(nsfstream & fileStream, const nsuint & _io) :NSFilePUPer(Binary, fileStream,_io){}
+NSBinFilePUPer::NSBinFilePUPer(nsfstream & fileStream, const uint32 & _io) :NSFilePUPer(Binary, fileStream,_io){}
 
-void pup(NSBinFilePUPer & p, nschar & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, char & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nswchar & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, wchar & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nssint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, char16 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, char32 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nslint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, int8 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsllint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, int16 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsuchar & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, int32 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsusint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, int64 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsuint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, uint8 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsulint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, uint16 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsullint & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, uint32 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsfloat & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, uint64 & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsdouble & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, float & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsldouble & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, double & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
-void pup(NSBinFilePUPer & p, nsbool & val, const nsstring & varName)
+void pup(NSBinFilePUPer & p, ldouble & val, const nsstring & varName)
+{
+	pupbytes(p, val);
+}
+
+void pup(NSBinFilePUPer & p, bool & val, const nsstring & varName)
 {
 	pupbytes(p, val);
 }
 
 
-NSTextFilePUPer::NSTextFilePUPer(nsfstream & fileStream, const nsuint & _io) :NSFilePUPer(Text, fileStream, _io){}
+NSTextFilePUPer::NSTextFilePUPer(nsfstream & fileStream, const uint32 & _io) :NSFilePUPer(Text, fileStream, _io){}
 
-void pup(NSTextFilePUPer & p, nschar & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, char & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nschar>"; endtag = "</nschar>";
+	begtag = varName + ":<char>"; endtag = "</char>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -111,10 +116,10 @@ void pup(NSTextFilePUPer & p, nschar & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nswchar & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, wchar & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nswchar>"; endtag = "</nswchar>";
+	begtag = varName + ":<wchar>"; endtag = "</wchar>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -130,14 +135,14 @@ void pup(NSTextFilePUPer & p, nswchar & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nssint & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, char16 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nssint>"; endtag = "</nssint>";
+	begtag = varName + ":<char16>"; endtag = "</char16>";
 
 	if (p.io == PUP_OUT)
 	{
-		p.fs << begtag << (nsint)val << endtag << "\n";
+		p.fs << begtag << val << endtag << "\n";
 	}
 	else
 	{
@@ -145,14 +150,71 @@ void pup(NSTextFilePUPer & p, nssint & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = (nssint)std::stoi(line);
+		val = line[0];
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsint & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, char32 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsint>"; endtag = "</nsint>";
+	begtag = varName + ":<char32>"; endtag = "</char32>";
+
+	if (p.io == PUP_OUT)
+	{
+		p.fs << begtag << val << endtag << "\n";
+	}
+	else
+	{
+		nsstring line;
+		std::getline(p.fs, line);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
+		line = line.substr(beg, loc - beg);
+		val = line[0];
+	}
+}
+
+void pup(NSTextFilePUPer & p, int8 & val, const nsstring & varName)
+{
+	nsstring begtag, endtag;
+	begtag = varName + ":<int8>"; endtag = "</int8>";
+
+	if (p.io == PUP_OUT)
+	{
+		p.fs << begtag << (int32)val << endtag << "\n";
+	}
+	else
+	{
+		nsstring line;
+		std::getline(p.fs, line);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
+		line = line.substr(beg, loc - beg);
+		val = (int16)std::stoi(line);
+	}
+}
+
+void pup(NSTextFilePUPer & p, int16 & val, const nsstring & varName)
+{
+	nsstring begtag, endtag;
+	begtag = varName + ":<int16>"; endtag = "</int16>";
+
+	if (p.io == PUP_OUT)
+	{
+		p.fs << begtag << (int32)val << endtag << "\n";
+	}
+	else
+	{
+		nsstring line;
+		std::getline(p.fs, line);
+		size_t beg = begtag.size(); size_t loc = line.find(endtag);
+		line = line.substr(beg, loc - beg);
+		val = (int16)std::stoi(line);
+	}
+}
+
+void pup(NSTextFilePUPer & p, int32 & val, const nsstring & varName)
+{
+	nsstring begtag, endtag;
+	begtag = varName + ":<int32>"; endtag = "</int32>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -168,14 +230,14 @@ void pup(NSTextFilePUPer & p, nsint & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nslint & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, int64 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nslint>"; endtag = "</nslint>";
+	begtag = varName + ":<int64>"; endtag = "</int64>";
 
 	if (p.io == PUP_OUT)
 	{
-		p.fs << begtag << val << endtag << "\n";
+		p.fs << begtag << (int32)val << endtag << "\n";
 	}
 	else
 	{
@@ -183,18 +245,18 @@ void pup(NSTextFilePUPer & p, nslint & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = std::stol(line);
+		val = (int64)std::stol(line);
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsllint & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, uint8 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsllint>"; endtag = "</nsllint>";
+	begtag = varName + ":<uint8>"; endtag = "</uint8>";
 
 	if (p.io == PUP_OUT)
 	{
-		p.fs << begtag << (nslint)val << endtag << "\n";
+		p.fs << begtag << (uint32)val << endtag << "\n";
 	}
 	else
 	{
@@ -202,18 +264,18 @@ void pup(NSTextFilePUPer & p, nsllint & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = (nsllint)std::stol(line);
+		val = (uint8)std::stoul(line);
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsuchar & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, uint16 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsuchar>"; endtag = "</nsuchar>";
+	begtag = varName + ":<uint16>"; endtag = "</uint16>";
 
 	if (p.io == PUP_OUT)
 	{
-		p.fs << begtag << (nsulint)val << endtag << "\n";
+		p.fs << begtag << (uint32)val << endtag << "\n";
 	}
 	else
 	{
@@ -221,18 +283,18 @@ void pup(NSTextFilePUPer & p, nsuchar & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = (nsuchar)std::stoul(line);
+		val = (uint16)std::stoul(line);
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsusint & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, uint32 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsusint>"; endtag = "</nsusint>";
+	begtag = varName + ":<uint32>"; endtag = "</uint32>";
 
 	if (p.io == PUP_OUT)
 	{
-		p.fs << begtag << (nsulint)val << endtag << "\n";
+		p.fs << begtag << (uint32)val << endtag << "\n";
 	}
 	else
 	{
@@ -240,52 +302,14 @@ void pup(NSTextFilePUPer & p, nsusint & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = (nsusint)std::stoul(line);
+		val = (uint32)std::stoul(line);
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsuint & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, uint64 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsuint>"; endtag = "</nsuint>";
-
-	if (p.io == PUP_OUT)
-	{
-		p.fs << begtag << (nsulint)val << endtag << "\n";
-	}
-	else
-	{
-		nsstring line;
-		std::getline(p.fs, line);
-		size_t beg = begtag.size(); size_t loc = line.find(endtag);
-		line = line.substr(beg, loc - beg);
-		val = (nsuint)std::stoul(line);
-	}
-}
-
-void pup(NSTextFilePUPer & p, nsulint & val, const nsstring & varName)
-{
-	nsstring begtag, endtag;
-	begtag = varName + ":<nsulint>"; endtag = "</nsulint>";
-
-	if (p.io == PUP_OUT)
-	{
-		p.fs << begtag << val << endtag << "\n";
-	}
-	else
-	{
-		nsstring line;
-		std::getline(p.fs, line);
-		size_t beg = begtag.size(); size_t loc = line.find(endtag);
-		line = line.substr(beg, loc - beg);
-		val = std::stoul(line);
-	}
-}
-
-void pup(NSTextFilePUPer & p, nsullint & val, const nsstring & varName)
-{
-	nsstring begtag, endtag;
-	begtag = varName + ":<nsullint>"; endtag = "</nsullint>";
+	begtag = varName + ":<uint64>"; endtag = "</uint64>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -301,10 +325,10 @@ void pup(NSTextFilePUPer & p, nsullint & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsfloat & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, float & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsfloat>"; endtag = "</nsfloat>";
+	begtag = varName + ":<float>"; endtag = "</float>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -320,10 +344,10 @@ void pup(NSTextFilePUPer & p, nsfloat & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsdouble & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, double & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsdouble>"; endtag = "</nsdouble>";
+	begtag = varName + ":<double>"; endtag = "</double>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -339,10 +363,10 @@ void pup(NSTextFilePUPer & p, nsdouble & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsldouble & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, ldouble & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsldouble>"; endtag = "</nsldouble>";
+	begtag = varName + ":<ldouble>"; endtag = "</ldouble>";
 
 	if (p.io == PUP_OUT)
 	{
@@ -358,10 +382,10 @@ void pup(NSTextFilePUPer & p, nsldouble & val, const nsstring & varName)
 	}
 }
 
-void pup(NSTextFilePUPer & p, nsbool & val, const nsstring & varName)
+void pup(NSTextFilePUPer & p, bool & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
-	begtag = varName + ":<nsbool>"; endtag = "</nsbool>";
+	begtag = varName + ":<bool>"; endtag = "</bool>";
 
 	if (p.io == PUP_OUT)
 	{

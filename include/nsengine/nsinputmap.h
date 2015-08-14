@@ -255,7 +255,7 @@ void pup(PUPer & p, NSInputMap & input)
 template<class PUPer>
 void pup(PUPer & p, NSInputMap::Key & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSInputMap::Key>(in);
 }
@@ -263,7 +263,7 @@ void pup(PUPer & p, NSInputMap::Key & en, const nsstring & pString)
 template<class PUPer>
 void pup(PUPer & p, NSInputMap::MouseButton & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSInputMap::MouseButton>(in);
 }
@@ -287,7 +287,7 @@ void pup(PUPer & p, NSInputMap::Context * & c, const nsstring & varName)
 template<class PUPer>
 void pup(PUPer & p, NSInputMap::Axis & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSInputMap::Axis>(in);
 }
@@ -295,7 +295,7 @@ void pup(PUPer & p, NSInputMap::Axis & en, const nsstring & pString)
 template<class PUPer>
 void pup(PUPer & p, NSInputMap::TState & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSInputMap::TState>(in);
 }

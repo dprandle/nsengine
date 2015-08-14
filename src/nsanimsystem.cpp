@@ -144,7 +144,7 @@ void NSAnimSystem::update()
 	}
 }
 
-nsint NSAnimSystem::updatePriority()
+int32 NSAnimSystem::updatePriority()
 {
 	return ANIM_SYS_UPDATE_PR;
 }

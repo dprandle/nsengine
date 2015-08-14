@@ -44,12 +44,12 @@ NSRenderComp* NSRenderComp::copy(const NSComponent * pToCopy)
 }
 
 
-nsbool NSRenderComp::castShadow()
+bool NSRenderComp::castShadow()
 {
 	return mCastShadow;
 }
 
-uivec2 NSRenderComp::materialID(nsuint subMeshIndex)
+uivec2 NSRenderComp::materialID(uint32 subMeshIndex)
 {
 	auto fiter = mMats.find(subMeshIndex);
 	if (fiter != mMats.end())
@@ -123,7 +123,7 @@ void NSRenderComp::pup(NSFilePUPer * p)
 	}
 }
 
-nsbool NSRenderComp::hasMaterial(nsuint pSubMeshIndex)
+bool NSRenderComp::hasMaterial(uint32 pSubMeshIndex)
 {
 	return (mMats.find(pSubMeshIndex) != mMats.end());
 }
@@ -152,7 +152,7 @@ uivec2uimap::const_iterator NSRenderComp::matEnd() const
 	return mMats.end();
 }
 
-nsbool NSRenderComp::removeMaterial(nsuint pSubMeshIndex)
+bool NSRenderComp::removeMaterial(uint32 pSubMeshIndex)
 {
 	if (!hasMaterial(pSubMeshIndex))
 		return false;
@@ -161,10 +161,10 @@ nsbool NSRenderComp::removeMaterial(nsuint pSubMeshIndex)
 }
 
 
-nsbool NSRenderComp::removeMaterialAll(const uivec2 & toremove)
+bool NSRenderComp::removeMaterialAll(const uivec2 & toremove)
 {
 	uivec2uimap::iterator iter = mMats.begin();
-	nsbool ret = false;
+	bool ret = false;
 	while (iter != mMats.end())
 	{
 		if (iter->second == toremove)
@@ -179,10 +179,10 @@ nsbool NSRenderComp::removeMaterialAll(const uivec2 & toremove)
 }
 
 
-nsbool NSRenderComp::replaceMaterial(const uivec2 & oldid, const uivec2 & newid)
+bool NSRenderComp::replaceMaterial(const uivec2 & oldid, const uivec2 & newid)
 {
 	uivec2uimap::iterator iter = mMats.begin();
-	nsbool ret = false;
+	bool ret = false;
 	while (iter != mMats.end())
 	{
 		if (iter->second == oldid)
@@ -196,7 +196,7 @@ nsbool NSRenderComp::replaceMaterial(const uivec2 & oldid, const uivec2 & newid)
 }
 
 
-nsbool NSRenderComp::setMaterial(nsuint pSubMeshIndex, const uivec2 & pMatID, nsbool pReplace)
+bool NSRenderComp::setMaterial(uint32 pSubMeshIndex, const uivec2 & pMatID, bool pReplace)
 {
 	if (hasMaterial(pSubMeshIndex))
 	{
@@ -210,7 +210,7 @@ nsbool NSRenderComp::setMaterial(nsuint pSubMeshIndex, const uivec2 & pMatID, ns
 }
 
 
-void NSRenderComp::setCastShadow(nsbool pShadow)
+void NSRenderComp::setCastShadow(bool pShadow)
 {
 	mCastShadow = pShadow;
 }

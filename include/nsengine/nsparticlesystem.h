@@ -32,17 +32,17 @@ public:
 
 	virtual void draw();
 
-	virtual nsint drawPriority();
+	virtual int32 drawPriority();
 
-	virtual nsint updatePriority();
+	virtual int32 updatePriority();
 
 //	virtual bool handleEvent(NSEvent * pEvent);
 
 	virtual void init();
 
-	nsuint finalfbo();
+	uint32 finalfbo();
 
-	void setFinalfbo(nsuint fbo);
+	void setFinalfbo(uint32 fbo);
 
 	virtual void update();
 
@@ -50,7 +50,7 @@ public:
 
 private:
 	NSParticleProcessShader * mDefaultShader;
-	nsuint mFinalBuf;
+	uint32 mFinalBuf;
 };
 
 #endif

@@ -20,24 +20,24 @@ NSTimer::NSTimer() : mStart(), mCurrent(), mLast(), mLag(0.0f), mTimer(), mRunni
 NSTimer::~NSTimer()
 {}
 
-nsfloat NSTimer::dt()
+float NSTimer::dt()
 {
-	std::chrono::duration<nsfloat> dt = mCurrent - mLast;
+	std::chrono::duration<float> dt = mCurrent - mLast;
 	return dt.count();
 }
 
-nsfloat NSTimer::fixed()
+float NSTimer::fixed()
 {
 	return FIXED_TIME_STEP;
 }
 
-nsfloat NSTimer::elapsed()
+float NSTimer::elapsed()
 {
-	std::chrono::duration<nsfloat> elapsed = mCurrent - mStart;
+	std::chrono::duration<float> elapsed = mCurrent - mStart;
 	return elapsed.count();
 }
 
-nsfloat & NSTimer::lag()
+float & NSTimer::lag()
 {
 	return mLag;
 }

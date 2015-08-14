@@ -51,7 +51,7 @@ NSPlugin::~NSPlugin()
 	mManagers.clear();
 }
 
-nsbool NSPlugin::add(NSResource * res)
+bool NSPlugin::add(NSResource * res)
 {
 	if (res == NULL)
 		return false;
@@ -60,7 +60,7 @@ nsbool NSPlugin::add(NSResource * res)
 	return rm->add(res);
 }
 
-void NSPlugin::addNameToResPath(nsbool add_)
+void NSPlugin::addNameToResPath(bool add_)
 {
 	mAddname = add_;
 	auto iter = mManagers.begin();
@@ -74,12 +74,12 @@ void NSPlugin::addNameToResPath(nsbool add_)
 	}
 }
 
-nsbool NSPlugin::addingNameToResPath()
+bool NSPlugin::addingNameToResPath()
 {
 	return mAddname;
 }
 
-nsbool NSPlugin::addManager(NSResManager * manag)
+bool NSPlugin::addManager(NSResManager * manag)
 {
 	if (manag == NULL)
 		return false;
@@ -97,7 +97,7 @@ nsbool NSPlugin::addManager(NSResManager * manag)
 	return false;
 }
 
-NSResource * NSPlugin::create(nsuint res_typeid, const nsstring & resName)
+NSResource * NSPlugin::create(uint32 res_typeid, const nsstring & resName)
 {
 	NSResManager * rm = manager(nsengine.managerID(res_typeid));
 	return rm->create(res_typeid, resName);
@@ -165,7 +165,7 @@ NSEntity * NSPlugin::createDirLight(const nsstring & name,
 	const fvec3 & color,
 	bool castshadows,
 	float shadowdarkness,
-	int shadowsamples)
+	int32 shadowsamples)
 {
 	NSMesh * bounds = nsengine.engplug()->get<NSMesh>(MESH_DIRLIGHT_BOUNDS);
 	if (bounds == NULL)
@@ -197,7 +197,7 @@ NSEntity * NSPlugin::createPointLight(const nsstring & name,
 	const fvec3 & color,
 	bool castshadows,
 	float shadowdarkness,
-	int shadowsamples)
+	int32 shadowsamples)
 {
 	NSMesh * bounds = nsengine.engplug()->get<NSMesh>(MESH_POINTLIGHT_BOUNDS);
 	if (bounds == NULL)
@@ -247,7 +247,7 @@ float radius,
 const fvec3 & color,
 bool castshadows,
 float shadowdarkness,
-int shadowsamples)
+int32 shadowsamples)
 {
 	NSMesh * bounds = nsengine.engplug()->get<NSMesh>(MESH_SPOTLIGHT_BOUNDS);
 	if (bounds == NULL)
@@ -296,7 +296,7 @@ NSResManager * NSPlugin::createManager(const nsstring & manager_guid)
 	return createManager(hash_id(manager_guid));
 }
 
-NSResManager * NSPlugin::createManager(nsuint manager_typeid)
+NSResManager * NSPlugin::createManager(uint32 manager_typeid)
 {
 	NSResManagerFactory * factory = nsengine.factory<NSResManagerFactory>(manager_typeid);
 	NSResManager * man = factory->create();
@@ -313,7 +313,7 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 	const nsstring & normtex,
 	fvec3 m_col,
 	float s_pwr,
-	float s_int,
+	float s_int32,
 	fvec3 s_col,
 	bool collides,
 	Tile_t type)
@@ -327,7 +327,7 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 	mat->setSpecularColor(s_col);
 	mat->setColor(m_col);
 	mat->setSpecularPower(s_pwr);
-	mat->setSpecularIntensity(s_int);
+	mat->setSpecularIntensity(s_int32);
 	NSTexture * tdiff = load<NSTex2D>(difftex);
 	NSTexture * tnorm = load<NSTex2D>(normtex);
 	if (tdiff != NULL)
@@ -394,7 +394,7 @@ NSEntity * NSPlugin::createTile(const nsstring & name,
 }
 
 NSEntity * NSPlugin::createTile(const nsstring & name,
-	nsuint matid, bool collides, Tile_t type)
+	uint32 matid, bool collides, Tile_t type)
 {
 	return createTile(name, get<NSMaterial>(matid), collides, type);
 }
@@ -496,14 +496,14 @@ bool NSPlugin::destroyManager(const nsstring & manager_guid)
 	return destroyManager(hash_id(manager_guid));
 }
 
-bool NSPlugin::destroyManager(nsuint manager_typeid)
+bool NSPlugin::destroyManager(uint32 manager_typeid)
 {
 	NSResManager * resman = removeManager(manager_typeid);
 	delete resman;
 	return true;
 }
 
-nsbool NSPlugin::del(NSResource * res)
+bool NSPlugin::del(NSResource * res)
 {
 	NSResManager * rm = manager(nsengine.managerID(res->type()));
 	return rm->del(res);
@@ -531,13 +531,13 @@ void NSPlugin::nameChange(const uivec2 & oldid, const uivec2 newid)
 	}
 }
 
-NSResource * NSPlugin::get(nsuint res_typeid, nsuint resid)
+NSResource * NSPlugin::get(uint32 res_typeid, uint32 resid)
 {
 	NSResManager * rm = manager(nsengine.managerID(res_typeid));
 	return rm->get(resid);
 }
 
-NSResource * NSPlugin::get(nsuint res_typeid, const nsstring & resName)
+NSResource * NSPlugin::get(uint32 res_typeid, const nsstring & resName)
 {
 	NSResManager * rm = manager(nsengine.managerID(res_typeid));
 	return rm->get(resName);
@@ -564,7 +564,7 @@ void NSPlugin::init()
 	}
 }
 
-NSResource * NSPlugin::load(nsuint res_typeid, const nsstring & fname)
+NSResource * NSPlugin::load(uint32 res_typeid, const nsstring & fname)
 {
 	NSResManager * rm = manager(nsengine.managerID(res_typeid));
 	return rm->load(res_typeid, fname);
@@ -587,7 +587,7 @@ NSEntity * NSPlugin::loadModel(const nsstring & entname, nsstring fname, bool pr
 
 	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
 
-	nsuint flag = 0;
+	uint32 flag = 0;
 
 	if (flipuv)
 	{
@@ -620,8 +620,8 @@ NSEntity * NSPlugin::loadModel(const nsstring & entname, nsstring fname, bool pr
 
 	if (scene->HasMaterials())
 	{
-		std::map<nsuint, nsuint> indexMap;
-		for (nsuint i = 0; i < scene->mNumMaterials; ++i)
+		std::map<uint32, uint32> indexMap;
+		for (uint32 i = 0; i < scene->mNumMaterials; ++i)
 		{
 			nsstringstream ss;
 			ss << sceneName << "_" << i;
@@ -631,13 +631,13 @@ NSEntity * NSPlugin::loadModel(const nsstring & entname, nsstring fname, bool pr
 				indexMap[i] = mat->id();
 		}
 
-		for (nsuint i = 0; i < scene->mNumMeshes; ++i)
+		for (uint32 i = 0; i < scene->mNumMeshes; ++i)
 		{
 			const aiMesh* mesh = scene->mMeshes[i];
 			if (mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
 				continue;
 
-			nsuint mI = mesh->mMaterialIndex;
+			uint32 mI = mesh->mMaterialIndex;
 			auto fIter = indexMap.find(mI);
 			if (fIter != indexMap.end())
 				renderComp->setMaterial(i, mID, fIter->second);
@@ -679,7 +679,7 @@ bool NSPlugin::loadModelResources(nsstring fname,bool prefixWithImportDir, const
 
 	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
 
-	nsuint flag = 0;
+	uint32 flag = 0;
 
 	if (flipuv)
 	{
@@ -710,7 +710,7 @@ bool NSPlugin::loadModelResources(nsstring fname,bool prefixWithImportDir, const
 
 	if (scene->HasMaterials())
 	{
-		for (nsuint i = 0; i < scene->mNumMaterials; ++i)
+		for (uint32 i = 0; i < scene->mNumMaterials; ++i)
 		{
 			nsstringstream ss;
 			ss << sceneName << "_" << i;
@@ -730,7 +730,7 @@ NSResManager * NSPlugin::manager(const nsstring & manager_guid)
 	return manager(hash_id(manager_guid));
 }
 
-NSResManager * NSPlugin::manager(nsuint manager_typeid)
+NSResManager * NSPlugin::manager(uint32 manager_typeid)
 {
 	auto iter = mManagers.find(manager_typeid);
 	if (iter == mManagers.end())
@@ -738,17 +738,17 @@ NSResManager * NSPlugin::manager(nsuint manager_typeid)
 	return iter->second;	
 }
 
-nsbool NSPlugin::hasManager(nsuint manager_typeid)
+bool NSPlugin::hasManager(uint32 manager_typeid)
 {
 	return (mManagers.find(manager_typeid) != mManagers.end());
 }
 
-nsbool NSPlugin::hasManager(const nsstring & manager_guid)
+bool NSPlugin::hasManager(const nsstring & manager_guid)
 {
 	return hasManager(hash_id(manager_guid));
 }
 
-nsbool NSPlugin::bound()
+bool NSPlugin::bound()
 {
 	return mBound;
 }
@@ -780,7 +780,7 @@ const nsstringset & NSPlugin::parents()
 	return mParents;
 }
 
-nsbool NSPlugin::bind()
+bool NSPlugin::bind()
 {
 	if (!parentsLoaded())
 		return false;
@@ -798,7 +798,7 @@ nsbool NSPlugin::bind()
 	return (mBound = true);
 }
 
-nsbool NSPlugin::unbind()
+bool NSPlugin::unbind()
 {
 	_updateResMap();
 	_updateParents();
@@ -818,7 +818,7 @@ void NSPlugin::saveAll(const nsstring & path, NSSaveResCallback * scallback)
 	}
 }
 
-void NSPlugin::saveAll(nsuint res_typeid, const nsstring & path, NSSaveResCallback * scallback)
+void NSPlugin::saveAll(uint32 res_typeid, const nsstring & path, NSSaveResCallback * scallback)
 {
 	NSResManager * rm = manager(nsengine.managerID(res_typeid));
 	return rm->saveAll(path, scallback);	
@@ -855,7 +855,7 @@ void NSPlugin::setNotes(const nsstring & pNotes)
 	mNotes = pNotes;
 }
 
-NSResManager * NSPlugin::removeManager(nsuint manager_typeid)
+NSResManager * NSPlugin::removeManager(uint32 manager_typeid)
 {
 	NSResManager * resman = manager(manager_typeid);
 	auto iter = mManagers.erase(manager_typeid);
@@ -872,7 +872,7 @@ void NSPlugin::setEditDate(const nsstring & pEditDate)
 	mEditDate = pEditDate;
 }
 
-nsbool NSPlugin::save(NSResource * res, const nsstring & path)
+bool NSPlugin::save(NSResource * res, const nsstring & path)
 {
 	NSResManager * rm = manager(nsengine.managerID(res->type()));
 	return rm->save(res, path);
@@ -894,11 +894,11 @@ bool NSPlugin::resourceChanged(NSResource * res)
 	return rm->changed(res);
 }
 
-nsuint NSPlugin::resourceCount()
+uint32 NSPlugin::resourceCount()
 {
 	if (mBound)
 		_updateResMap();
-	return static_cast<nsuint>(resmap.size());
+	return static_cast<uint32>(resmap.size());
 }
 
 bool NSPlugin::destroy(NSResource * res)

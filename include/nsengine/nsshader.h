@@ -59,7 +59,7 @@ public:
 		RefID = REFID_ATT
 	};
 
-	typedef std::unordered_map<nsuint,nsuint> UniformLocMap;
+	typedef std::unordered_map<uint32,uint32> UniformLocMap;
 	
 	
 	template <class PUPer>
@@ -82,13 +82,13 @@ public:
 
 	virtual void initUniforms() {}
 
-	nsuint attrib(const nsstring & pVariableName) const;
+	uint32 attrib(const nsstring & pVariableName) const;
 
 	Error error() const;
 
 	void initGL();
 
-	nsuint initUniformLoc(const nsstring & pVariable);
+	uint32 initUniformLoc(const nsstring & pVariable);
 
 	bool compiled(ShaderType type);
 
@@ -122,13 +122,13 @@ public:
 
 	void setUniform(const nsstring & pVariableName, float pData);
 
-	void setUniform(const nsstring & pVariableName, int pData);
+	void setUniform(const nsstring & pVariableName, int32 pData);
 
 	void setUniform(const nsstring & pVariableName, bool val);
 
-	void setUniform(const nsstring & pVariableName, unsigned int pData);
+	void setUniform(const nsstring & pVariableName, uint32 pData);
 
-	nsuint glid(ShaderType type);
+	uint32 glid(ShaderType type);
 
 	nsstring stagename(ShaderType type);
 
@@ -139,14 +139,14 @@ protected:
 	{
 		ShaderStage(ShaderType pType);
 		nsstring mSource;
-		nsuint mStageID;
+		uint32 mStageID;
 		ShaderType mType;
 	};
 
 	template <class PUPer>
 	friend void pup(PUPer & p, NSShader::ShaderStage & stage, const nsstring & varName);
 
-	nsuint _getHashedString(const nsstring & pString);
+	uint32 _getHashedString(const nsstring & pString);
 	void _setupTransformFeedback();
 	bool _validate();
 	ShaderStage & _stage(ShaderType type);
@@ -163,7 +163,7 @@ protected:
 template<class PUPer>
 void pup(PUPer & p, NSShader::ShaderType & en, const nsstring & pString)
 {
-	nsuint in = static_cast<nsuint>(en);
+	uint32 in = static_cast<uint32>(en);
 	pup(p, in, pString);
 	en = static_cast<NSShader::ShaderType>(in);
 }
@@ -192,15 +192,15 @@ public:
 
 	virtual void initUniforms();
 
-	void setAmbientIntensity(nsfloat intensity);
+	void setAmbientIntensity(float intensity);
 
 	void setCastShadows(bool cast);
 
-	void setDiffuseIntensity(nsfloat intensity);
+	void setDiffuseIntensity(float intensity);
 
 	void setLightColor(const fvec3 & col);
 
-	void setShadowSamples(int samples);
+	void setShadowSamples(int32 samples);
 
 	void setShadowDarkness(float darkness);
 
@@ -212,15 +212,15 @@ public:
 
 	void setShadowTexSize(const fvec2 & size);
 
-	void setWorldPosSampler(nsint sampler);
+	void setWorldPosSampler(int32 sampler);
 
-	void setDiffuseSampler(nsint sampler);
+	void setDiffuseSampler(int32 sampler);
 
-	void setNormalSampler(nsint sampler);
+	void setNormalSampler(int32 sampler);
 
-	void setMaterialSampler(nsint sampler);
+	void setMaterialSampler(int32 sampler);
 
-	void setShadowSampler(nsint sampler);
+	void setShadowSampler(int32 sampler);
 
 };
 
@@ -298,13 +298,13 @@ public:
 
 	virtual void init();
 
-	void setDiffuseSampler(nsint sampler);
+	void setDiffuseSampler(int32 sampler);
 
-	void setOpacitySampler(nsint sampler);
+	void setOpacitySampler(int32 sampler);
 
-	void setNormalSampler(nsint sampler);
+	void setNormalSampler(int32 sampler);
 
-	void setHeightSampler(nsint sampler) { setUniform("heightMap", sampler); }
+	void setHeightSampler(int32 sampler) { setUniform("heightMap", sampler); }
 
 	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
 
@@ -316,9 +316,9 @@ public:
 
 	void setSpecularColor(const fvec3 & col);
 
-	void setEntityID(nsuint id);
+	void setEntityID(uint32 id);
 
-	void setPluginID(nsuint id);
+	void setPluginID(uint32 id);
 
 	void setColorMode(bool enable);
 
@@ -353,17 +353,17 @@ public:
 
 	void init();
 
-	void setRandomSampler(nsint sampler);
+	void setRandomSampler(int32 sampler);
 
 	void setdt(float dt);
 
 	void setTimeElapsed(float elapsed);
 
-	void setLifetime(nsuint lifetime);
+	void setLifetime(uint32 lifetime);
 
 	void setLaunchFreq(float freq);
 
-	void setAngularVelocity(int angVelocity);
+	void setAngularVelocity(int32 angVelocity);
 
 	void setMotionKeyGlobal(bool global);
 
@@ -377,13 +377,13 @@ public:
 
 	void setEmitterSize(const fvec3 & size);
 
-	void setEmitterShape(nsuint shape);
+	void setEmitterShape(uint32 shape);
 
 	void setInitialVelocityMult(const fvec3 & mult);
 
-	void setMotionKeys(const fvec3uimap & keys, nsuint maxKeys, nsuint lifetime);
+	void setMotionKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
 
-	void setVisualKeys(const fvec3uimap & keys, nsuint maxKeys, nsuint lifetime);
+	void setVisualKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
 
 };
 
@@ -397,7 +397,7 @@ public:
 
 	void init();
 
-	void setDiffuseSampler(nsint sampler);
+	void setDiffuseSampler(int32 sampler);
 
 	void setColorMode(bool enable);
 
@@ -407,7 +407,7 @@ public:
 
 	void setLifetime(float seconds);
 
-	void setBlendMode(nsuint mode);
+	void setBlendMode(uint32 mode);
 
 	void setProjCamMat(const fmat4 & mat);
 
@@ -437,7 +437,7 @@ public:
 
 	void setProjMat(const fmat4 & mat) { setUniform("projMat", mat); }
 
-	void setHeightSampler(nsint sampler) { setUniform("heightMap", sampler); }
+	void setHeightSampler(int32 sampler) { setUniform("heightMap", sampler); }
 
 	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
 
@@ -536,7 +536,7 @@ public:
 
 	void setLightPos(fvec3 pos) { setUniform("lightPos", pos); }
 
-	void setMaxDepth(nsfloat d) { setUniform("maxDepth", d); }
+	void setMaxDepth(float d) { setUniform("maxDepth", d); }
 
 };
 
@@ -646,7 +646,7 @@ public:
 
 	void setTransform(const fmat4 & mat);
 
-	void setHeightSampler(nsint sampler) { setUniform("heightMap", sampler); }
+	void setHeightSampler(int32 sampler) { setUniform("heightMap", sampler); }
 
 	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
 

@@ -99,7 +99,7 @@ void NSEngine::setCurrentScene(NSScene * scn, bool newSceneOverwriteFile, bool s
 	manager<NSSceneManager>(active())->setCurrent(scn, newSceneOverwriteFile, saveprevious);
 }
 
-void NSEngine::setCurrentScene(nsuint scn, bool newSceneOverwriteFile, bool saveprevious)
+void NSEngine::setCurrentScene(uint32 scn, bool newSceneOverwriteFile, bool saveprevious)
 {
 	if (active() == NULL)
 		return;
@@ -116,19 +116,19 @@ void NSEngine::setActive(NSPlugin * plug)
 	plugins()->setActive(plug);
 }
 
-void NSEngine::setActive(nsuint plugid)
+void NSEngine::setActive(uint32 plugid)
 {
 	plugins()->setActive(plugid);
 }
 
-nsbool NSEngine::addSystem(NSSystem * pSystem)
+bool NSEngine::addSystem(NSSystem * pSystem)
 {
 	if (pSystem == NULL)
 		return false;
 
 	GLContext * gc = current();
 	std::type_index ti(typeid(*pSystem));
-	nsuint type_hash = nsengine.typeID(ti);
+	uint32 type_hash = nsengine.typeID(ti);
 
 	if (type_hash == 0)
 	{
@@ -140,7 +140,7 @@ nsbool NSEngine::addSystem(NSSystem * pSystem)
 	if (!it.second)
 		return false;
 
-	nsint drawPriority = pSystem->drawPriority();
+	int32 drawPriority = pSystem->drawPriority();
 
 	// Only add systems with a draw priority
 	if (drawPriority != NO_DRAW_PR)
@@ -150,21 +150,21 @@ nsbool NSEngine::addSystem(NSSystem * pSystem)
 	return true;
 }
 
-NSResource * NSEngine::resource(nsuint res_typeid, NSPlugin * plg, nsuint resid)
+NSResource * NSEngine::resource(uint32 res_typeid, NSPlugin * plg, uint32 resid)
 {
 	if (plg == NULL)
 		return NULL;
 	return plg->get(res_typeid, resid);
 }
 
-NSResource * NSEngine::resource(nsuint res_typeid, NSPlugin * plg, const nsstring & resname)
+NSResource * NSEngine::resource(uint32 res_typeid, NSPlugin * plg, const nsstring & resname)
 {
 	if (plg == NULL)
 		return NULL;
 	return plg->get(res_typeid, resname);
 }
 
-nsuint NSEngine::createFramebuffer()
+uint32 NSEngine::createFramebuffer()
 {
 	NSFrameBuffer * fb = new NSFrameBuffer();
 	fb->initGL();
@@ -172,7 +172,7 @@ nsuint NSEngine::createFramebuffer()
 	return fb->glid();
 }
 
-bool NSEngine::delFramebuffer(nsuint fbid)
+bool NSEngine::delFramebuffer(uint32 fbid)
 {
 	NSFrameBuffer * obj = framebuffer(fbid);
 	if (obj == NULL)
@@ -183,7 +183,7 @@ bool NSEngine::delFramebuffer(nsuint fbid)
 	return true;
 }
 
-NSFrameBuffer * NSEngine::framebuffer(nsuint id)
+NSFrameBuffer * NSEngine::framebuffer(uint32 id)
 {
 	auto iter = current()->fbmap.find(id);
 	if (iter != current()->fbmap.end())
@@ -196,7 +196,7 @@ NSPlugin * NSEngine::loadPlugin(const nsstring & fname)
 	return current()->plugins->load(fname);
 }
 
-void NSEngine::savePlugins(nsbool saveOwnedResources, NSSaveResCallback * scallback)
+void NSEngine::savePlugins(bool saveOwnedResources, NSSaveResCallback * scallback)
 {
 	current()->plugins->saveAll("", scallback);
 
@@ -228,7 +228,7 @@ void NSEngine::saveCore(NSSaveResCallback * scallback)
 	engplug()->saveAll("", scallback);
 }
 
-bool NSEngine::destroyFactory(nsuint hashid)
+bool NSEngine::destroyFactory(uint32 hashid)
 {
 	NSFactory * fac = removeFactory(hashid);
 	if (fac == NULL)
@@ -237,7 +237,7 @@ bool NSEngine::destroyFactory(nsuint hashid)
 	return true;
 }
 
-NSResManager * NSEngine::manager(nsuint manager_typeid, NSPlugin * plg)
+NSResManager * NSEngine::manager(uint32 manager_typeid, NSPlugin * plg)
 {
 	return plg->manager(manager_typeid);
 }
@@ -252,7 +252,7 @@ bool NSEngine::delPlugin(NSPlugin * plg)
 	return current()->plugins->del(plg);
 }
 
-bool NSEngine::destroySystem(nsuint type_id)
+bool NSEngine::destroySystem(uint32 type_id)
 {
 	NSSystem * sys = removeSystem(type_id);
 	if (sys == NULL)
@@ -284,7 +284,7 @@ NSPlugin * NSEngine::createPlugin(const nsstring & plugname, bool makeactive)
 	return plug;
 }
 
-NSSystem * NSEngine::createSystem(nsuint type_id)
+NSSystem * NSEngine::createSystem(uint32 type_id)
 {
 	NSSystem * system = factory<NSSysFactory>(type_id)->create();
 	if (!addSystem(system))
@@ -337,7 +337,7 @@ NSEventDispatcher * NSEngine::eventDispatch()
 	return current()->mEvents;
 }
 
-NSSystem * NSEngine::system(nsuint type_id)
+NSSystem * NSEngine::system(uint32 type_id)
 {
 	GLContext * cont = current();
 	auto iter = cont->systems->find(type_id);
@@ -361,13 +361,13 @@ const nsstring & NSEngine::resourceDirectory()
 	return mResourceDirectory;
 }
 
-nsbool NSEngine::hasSystem(nsuint type_id)
+bool NSEngine::hasSystem(uint32 type_id)
 {
 	GLContext * cont = current();
 	return (cont->systems->find(type_id) != cont->systems->end());
 }
 
-nsbool NSEngine::hasSystem(const nsstring & guid_)
+bool NSEngine::hasSystem(const nsstring & guid_)
 {
 	return hasSystem(hash_id(guid_));
 }
@@ -387,9 +387,9 @@ void NSEngine::nameChange(const uivec2 & oldid, const uivec2 newid)
 	plugins()->nameChange(oldid, newid);
 }
 
-nsuint NSEngine::createContext(bool add)
+uint32 NSEngine::createContext(bool add)
 {
-	static nsuint id = 1; // forever increasing id
+	static uint32 id = 1; // forever increasing id
 	auto iter = mContexts.emplace(id, new GLContext(id));
 	if (!iter.second)
 		return -1;
@@ -409,7 +409,7 @@ NSPluginManager * NSEngine::plugins()
 	return current()->plugins;
 }
 
-NSSystem * NSEngine::removeSystem(nsuint type_id)
+NSSystem * NSEngine::removeSystem(uint32 type_id)
 {
 	NSSystem * sys = system(type_id);
 	if (sys == NULL)
@@ -527,7 +527,7 @@ NSPlugin * NSEngine::plugin(const nsstring & name)
 	return current()->plugins->get(name);
 }
 
-NSPlugin * NSEngine::plugin(nsuint id)
+NSPlugin * NSEngine::plugin(uint32 id)
 {
 	if (id == engplug()->id())
 		return engplug();
@@ -541,7 +541,7 @@ NSPlugin * NSEngine::plugin(NSPlugin * plg)
 	return current()->plugins->get(plg);
 }
 
-NSFactory * NSEngine::factory(nsuint hash_id)
+NSFactory * NSEngine::factory(uint32 hash_id)
 {
 	auto fIter = mFactories.find(hash_id);
 	if (fIter == mFactories.end())
@@ -557,7 +557,7 @@ nsstring NSEngine::guid(std::type_index type)
 	return guid(fiter->second);
 }
 
-nsstring NSEngine::guid(nsuint hash)
+nsstring NSEngine::guid(uint32 hash)
 {
 	auto fiter = mObjTypeNames.find(hash);
 	if (fiter != mObjTypeNames.end())
@@ -565,7 +565,7 @@ nsstring NSEngine::guid(nsuint hash)
 	return "";
 }
 
-nsuint NSEngine::typeID(std::type_index type)
+uint32 NSEngine::typeID(std::type_index type)
 {
 	auto fiter = mObjTypeHashes.find(type);
 	if (fiter != mObjTypeHashes.end())
@@ -573,7 +573,7 @@ nsuint NSEngine::typeID(std::type_index type)
 	return 0;
 }
 
-NSFactory * NSEngine::removeFactory(nsuint hash_id)
+NSFactory * NSEngine::removeFactory(uint32 hash_id)
 {
 	NSFactory * f = factory(hash_id);
 	if (f == NULL)
@@ -670,7 +670,7 @@ void NSEngine::_initEntities()
 	system<NSBuildSystem>()->setObjectBrush(objBrush);
 }
 
-void NSEngine::_removeSys(nsuint type_id)
+void NSEngine::_removeSys(uint32 type_id)
 {
 	auto iter1 = mSystemDrawOrder.begin();
 	while (iter1 != mSystemDrawOrder.end())
@@ -729,7 +729,7 @@ void NSEngine::_initSystems()
 	system<NSParticleSystem>()->setFinalfbo(current()->compositeBuf);
 }
 
-bool NSEngine::makeCurrent(nsuint cID)
+bool NSEngine::makeCurrent(uint32 cID)
 {
 	auto fIter = mContexts.find(cID);
 	if (fIter == mContexts.end())
@@ -746,7 +746,7 @@ GLContext * NSEngine::current()
 	return NULL;
 }
 
-nsuint NSEngine::currentid()
+uint32 NSEngine::currentid()
 {
 	return mCurrentContext;
 }
@@ -763,7 +763,7 @@ NSDebug * NSEngine::debug()
 }
 #endif
 
-bool NSEngine::destroyContext(nsuint cID)
+bool NSEngine::destroyContext(uint32 cID)
 {
 	auto fiter = mContexts.find(cID);
 	if (fiter == mContexts.end())
@@ -787,7 +787,7 @@ const nsstring & NSEngine::pluginDirectory()
 	return current()->plugins->pluginDirectory();
 }
 
-nsuint NSEngine::managerID(nsuint res_id)
+uint32 NSEngine::managerID(uint32 res_id)
 {
 	auto iter = mResManagerMap.find(res_id);
 	if (iter != mResManagerMap.end())
@@ -795,13 +795,13 @@ nsuint NSEngine::managerID(nsuint res_id)
 	return 0;
 }
 
-nsuint NSEngine::managerID(std::type_index res_type)
+uint32 NSEngine::managerID(std::type_index res_type)
 {
-	nsuint hashed_type = typeID(res_type);
+	uint32 hashed_type = typeID(res_type);
 	return managerID(hashed_type);
 }
 
-nsuint NSEngine::managerID(const nsstring & res_guid)
+uint32 NSEngine::managerID(const nsstring & res_guid)
 {
 	return managerID(hash_id(res_guid));
 }
@@ -816,7 +816,7 @@ NSPlugin * NSEngine::removePlugin(NSPlugin * plg)
 	return current()->plugins->remove(plg);
 }
 
-NSResource * NSEngine::_resource(nsuint restype_id, const uivec2 & resid)
+NSResource * NSEngine::_resource(uint32 restype_id, const uivec2 & resid)
 {
 	NSPlugin * plg = plugin(resid.x);
 	if (plg == NULL)
@@ -903,7 +903,7 @@ void NSEngine::_initDefaultFactories()
 	registerResourceType<NSInputMap, NSInputMapManager>("NSInputMap");
 }
 
-GLContext::GLContext(nsuint id) :
+GLContext::GLContext(uint32 id) :
 	glewContext(new GLEWContext()),
 	engplug(new NSPlugin()),
 	systems(new SystemMap()),
@@ -964,7 +964,7 @@ bool GLError(nsstring errorMessage)
 	return false;
 }
 
-nsuint hash_id(const nsstring & str)
+uint32 hash_id(const nsstring & str)
 {
-	return crc32(str.c_str(),static_cast<int>(str.size()),0);
+	return crc32(str.c_str(),static_cast<int32>(str.size()),0);
 }

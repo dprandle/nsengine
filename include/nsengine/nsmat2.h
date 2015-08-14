@@ -4,22 +4,22 @@
 #include "nsquat.h"
 
 template <class T>
-NSMat2<T> operator*(const nsint & pLHS, const NSMat2<T> & pRHS);
+NSMat2<T> operator*(const int32 & pLHS, const NSMat2<T> & pRHS);
 
 template <class T>
-NSMat2<T> operator*(const nsfloat & pLHS, const NSMat2<T> & pRHS);
+NSMat2<T> operator*(const float & pLHS, const NSMat2<T> & pRHS);
 
 template <class T>
-NSMat2<T> operator*(const nsdouble & pLHS, const NSMat2<T> & pRHS);
+NSMat2<T> operator*(const double & pLHS, const NSMat2<T> & pRHS);
 
 template<class T>
-NSMat2<T> operator/(const nsint & pLHS, const NSMat2<T> & pRHS);
+NSMat2<T> operator/(const int32 & pLHS, const NSMat2<T> & pRHS);
 
 template <class T>
-NSMat2<T> operator/(const nsfloat & pLHS, const NSMat2<T> & pRHS);
+NSMat2<T> operator/(const float & pLHS, const NSMat2<T> & pRHS);
 
 template <class T>
-NSMat2<T> operator/(const nsdouble & pLHS, const NSMat2<T> & pRHS);
+NSMat2<T> operator/(const double & pLHS, const NSMat2<T> & pRHS);
 
 template <class T>
 NSVec2<T> operator*(const NSVec2<T> & lhs, const NSMat2<T> & rhs);
@@ -171,13 +171,13 @@ struct NSMat2
 		return *this;
 	}
 
-	NSMat2<T> & setColumn(const nsuint & i, const T & x, const T & y)
+	NSMat2<T> & setColumn(const uint32 & i, const T & x, const T & y)
 	{
 		(*this)[0][i] = x; (*this)[1][i] = y;
 		return *this;
 	}
 
-	NSMat2<T> & setColumn(const nsuint & i, const NSVec2<T> & col)
+	NSMat2<T> & setColumn(const uint32 & i, const NSVec2<T> & col)
 	{
 		(*this)[i][0] = col.x; (*this)[i][1] = col.y;
 		return *this;
@@ -346,14 +346,14 @@ struct NSMat2
 		return *this;
 	}
 
-	NSMat2<T> operator++(nsint)
+	NSMat2<T> operator++(int32)
 	{
 		NSMat2<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSMat2<T> operator--(nsint)
+	NSMat2<T> operator--(int32)
 	{
 		NSMat2<T> ret(*this);
 		--(*this);
@@ -384,21 +384,21 @@ struct NSMat2
 		return *this;
 	}
 
-	const NSVec2<T> & operator[](const nsuint & pVal) const
+	const NSVec2<T> & operator[](const uint32 & pVal) const
 	{
 		if (pVal > 1)
 			throw(std::out_of_range("mat2 index out of range"));
 		return data[pVal];
 	}
 
-	NSVec2<T> & operator[](const nsuint & pVal)
+	NSVec2<T> & operator[](const uint32 & pVal)
 	{
 		if (pVal > 1)
 			throw(std::out_of_range("mat2 index out of range"));
 		return data[pVal];
 	}
 
-	NSVec2<T> operator()(const nsuint & pVal)
+	NSVec2<T> operator()(const uint32 & pVal)
 	{
 		return NSVec2<T>(data[0][pVal], data[1][pVal]);
 	}
@@ -408,37 +408,37 @@ private:
 };
 
 template <class T>
-NSMat2<T> operator*(const nsint & pLHS, const NSMat2<T> & pRHS)
+NSMat2<T> operator*(const int32 & pLHS, const NSMat2<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSMat2<T> operator*(const nsfloat & pLHS, const NSMat2<T> & pRHS)
+NSMat2<T> operator*(const float & pLHS, const NSMat2<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template <class T>
-NSMat2<T> operator*(const nsdouble & pLHS, const NSMat2<T> & pRHS)
+NSMat2<T> operator*(const double & pLHS, const NSMat2<T> & pRHS)
 {
 	return pRHS * static_cast<T>(pLHS);
 }
 
 template<class T>
-NSMat2<T> operator/(const nsint & pLHS, const NSMat2<T> & pRHS)
+NSMat2<T> operator/(const int32 & pLHS, const NSMat2<T> & pRHS)
 {
 	return NSMat2<T>(pLHS / pRHS[0], pLHS / pRHS[1]);
 }
 
 template <class T>
-NSMat2<T> operator/(const nsfloat & pLHS, const NSMat2<T> & pRHS)
+NSMat2<T> operator/(const float & pLHS, const NSMat2<T> & pRHS)
 {
 	return NSMat2<T>(pLHS / pRHS[0], pLHS / pRHS[1]);
 }
 
 template <class T>
-NSMat2<T> operator/(const nsdouble & pLHS, const NSMat2<T> & pRHS)
+NSMat2<T> operator/(const double & pLHS, const NSMat2<T> & pRHS)
 {
 	return NSMat2<T>(pLHS / pRHS[0], pLHS / pRHS[1]);
 }
