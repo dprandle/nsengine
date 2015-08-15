@@ -7,6 +7,14 @@ BUILD_ALL=NO
 RUN_RC=NO
 CHANGE_DIR=NO
 
+copy_dirs()
+{    
+    cp -r core bin/$PLATFORM
+    cp -r tests/import bin/$PLATFORM 
+    cp -r tests/plugins bin/$PLATFORM
+    cp -r tests/resources bin/$PLATFORM 
+}
+
 build()
 {
     mkdir -p build/$PLATFORM/$CONFIG
@@ -31,8 +39,12 @@ do
 	PLATFORM=x64
     elif [ "$var" = "-c" ]; then
 	rm -r build/$PLATFORM/$CONFIG
+	rm -r bin/$PLATFORM
+	rm -r lib/$PLATFORM
     elif [ "$var" = "-call" ]; then
 	rm -r build
+	rm -r bin
+	rm -r lib
     elif [ "$var" = "-all" ]; then
 	BUILD_ALL=YES
     fi
@@ -40,6 +52,7 @@ done
 
 if [ "$BUILD_ALL" = NO ]; then
     build
+    copy_dirs
 else
     CONFIG=debug
     CONFIG_CMAKE=Debug
@@ -52,6 +65,7 @@ else
     build
     PLATFORM=x86
     build
+    copy_dirs
 fi
 
 if [ $CONFIG = debug ]; then
