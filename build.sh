@@ -2,10 +2,10 @@
 
 CONFIG=debug
 CONFIG_CMAKE=Debug
-PLATFORM=x86
+PLATFORM=x64
 BUILD_ALL=NO
-
-cd ~/Documents/code/nsengine
+RUN_RC=NO
+CHANGE_DIR=NO
 
 build()
 {
@@ -14,9 +14,7 @@ build()
     cmake -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE -DPLATFORM=$PLATFORM -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../../..
     make -j8
     mv compile_commands.json ../../
-    cd ../..
-    rc -J
-    cd ..
+    cd ../../..
 }
 
 for var in "$@"
