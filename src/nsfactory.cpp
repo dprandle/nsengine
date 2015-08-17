@@ -2,7 +2,7 @@
 #include <nsresource.h>
 #include <nscomponent.h>
 #include <nssystem.h>
-#include <nsresmanager.h>
+#include <nsres_manager.h>
 
 void NSResFactory::setid(NSResource * res)
 {

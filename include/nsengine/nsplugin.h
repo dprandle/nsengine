@@ -14,7 +14,7 @@ This file contains all of the neccessary declarations for the NSPlugin class.
 #define NSPLUGIN_H
 
 #include <nsglobal.h>
-#include <nsresmanager.h>
+#include <nsres_manager.h>
 #include <nsresource.h>
 class NSEntity;
 class NSScene;

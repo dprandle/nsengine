@@ -14,7 +14,7 @@ This file contains all of the neccessary declartations for the NSSystem class.
 #define NSSYSTEM_H
 
 #include <nsglobal.h>
-#include <nseventhandler.h>
+#include <nsevent_handler.h>
 
 class NSTimer;
 class NSScene;

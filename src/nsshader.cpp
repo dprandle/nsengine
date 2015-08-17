@@ -12,8 +12,8 @@ Description:
 #include <nsmath.h>
 #include <nsshader.h>
 #include <nsmaterial.h>
-#include <nstformcomp.h>
-#include <nslightcomp.h>
+#include <nstform_comp.h>
+#include <nslight_comp.h>
 #include <nsengine.h>
 #include <nsengine.h>
 #include <exception>

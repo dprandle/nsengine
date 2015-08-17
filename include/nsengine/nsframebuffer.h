@@ -13,7 +13,7 @@
 #ifndef NSFRAMEBUFFER_H
 #define NSFRAMEBUFFER_H
 
-#include <nsglobject.h>
+#include <nsgl_object.h>
 #include <myGL/glew.h>
 #include <vector>
 #include <nstexture.h>

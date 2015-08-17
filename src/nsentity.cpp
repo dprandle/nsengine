@@ -12,8 +12,8 @@
 
 #include <nsentity.h>
 #include <nsscene.h>
-#include <nsscenemanager.h>
-#include <nsselcomp.h>
+#include <nsscene_manager.h>
+#include <nssel_comp.h>
 #include <nsfactory.h>
 #include <nsengine.h>
 

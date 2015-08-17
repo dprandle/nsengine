@@ -11,7 +11,7 @@
 */
 
 #include <nsframebuffer.h>
-#include <nsresmanager.h>
+#include <nsres_manager.h>
 #include <nsengine.h>
 
 NSFrameBuffer::NSFrameBuffer() : mTarget(ReadAndDraw),

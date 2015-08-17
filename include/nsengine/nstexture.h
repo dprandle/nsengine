@@ -22,7 +22,7 @@
 #include <myGL/glew.h>
 #include <vector>
 #include <nsresource.h>
-#include <nsglobject.h>
+#include <nsgl_object.h>
 #include <nsmath.h>
 #include <nsglobal.h>
 #include <nspupper.h>

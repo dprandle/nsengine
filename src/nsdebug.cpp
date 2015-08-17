@@ -11,7 +11,7 @@
 */
 
 #include <nsdebug.h>
-#include <nslogfile.h>
+#include <nslog_file.h>
 
 NSDebug::NSDebug() : mConsoleOpen(false),
 	mLogMessages(true), 

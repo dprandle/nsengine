@@ -11,21 +11,21 @@ This file contains all of the neccessary definitions for the NSPlugin class.
 */
 #include <nsplugin.h>
 #include <nsengine.h>
-#include <nsresmanager.h>
-#include <nsscenemanager.h>
+#include <nsres_manager.h>
+#include <nsscene_manager.h>
 #include <nsfactory.h>
 #include <nsentity.h>
-#include <nsanimcomp.h>
-#include <nsmatmanager.h>
-#include <nsanimmanager.h>
-#include <nsoccupycomp.h>
-#include <nsrendercomp.h>
-#include <nsinputcomp.h>
-#include <nsterraincomp.h>
-#include <nsmeshmanager.h>
-#include <nsselcomp.h>
-#include <nstilecomp.h>
-#include <nspluginmanager.h>
+#include <nsanim_comp.h>
+#include <nsmat_manager.h>
+#include <nsanim_manager.h>
+#include <nsoccupy_comp.h>
+#include <nsrender_comp.h>
+#include <nsinput_comp.h>
+#include <nsterrain_comp.h>
+#include <nsmesh_manager.h>
+#include <nssel_comp.h>
+#include <nstile_comp.h>
+#include <nsplugin_manager.h>
 
 NSPlugin::NSPlugin() : 
 	mNotes(),

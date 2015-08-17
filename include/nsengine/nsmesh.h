@@ -37,8 +37,8 @@ Description:
 #include <assimp/postprocess.h>
 #include <nsresource.h>
 #include <map>
-#include <nsbufferobject.h>
-#include <nsvertexarrayobject.h>
+#include <nsbuffer_object.h>
+#include <nsvertex_array_object.h>
 
 class NSMesh : public NSResource
 {

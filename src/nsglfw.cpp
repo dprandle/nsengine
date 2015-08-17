@@ -1,9 +1,9 @@
 #include <iostream>
 #include <nsevent.h>
-#include <nseventdispatcher.h>
+#include <nsevent_dispatcher.h>
 #include <nsengine.h>
 #include <nsglfw.h>
-#include <nsrendersystem.h>
+#include <nsrender_system.h>
 
 GLFWwindow * win;
 

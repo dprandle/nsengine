@@ -10,23 +10,23 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nstilebrushcomp.h>
+#include <nstile_brush_comp.h>
 #include <nsscene.h>
-#include <nsscenemanager.h>
+#include <nsscene_manager.h>
 #include <nsentity.h>
-#include <nsrendercomp.h>
-#include <nsanimcomp.h>
-#include <nstformcomp.h>
-#include <nstilegrid.h>
-#include <nsrendersystem.h>
-#include <nscamcomp.h>
-#include <nsresmanager.h>
-#include <nsselcomp.h>
+#include <nsrender_comp.h>
+#include <nsanim_comp.h>
+#include <nstform_comp.h>
+#include <nstile_grid.h>
+#include <nsrender_system.h>
+#include <nscam_comp.h>
+#include <nsres_manager.h>
+#include <nssel_comp.h>
 #include <nsengine.h>
-#include <nsentitymanager.h>
-#include <nsinputcomp.h>
-#include <nsoccupycomp.h>
-#include <nspluginmanager.h>
+#include <nsentity_manager.h>
+#include <nsinput_comp.h>
+#include <nsoccupy_comp.h>
+#include <nsplugin_manager.h>
 
 NSScene::NSScene():
 	mTileGrid(new NSTileGrid()),

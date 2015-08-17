@@ -25,7 +25,7 @@ class NSAnimManager;
 class NSMeshManager;
 class NSTexManager;
 class NSMatManager;
-class NSShaderManager;
+class nsshader_manager;
 class NSInputManager;
 class NSEventHandler;
 class NSAnimSystem;

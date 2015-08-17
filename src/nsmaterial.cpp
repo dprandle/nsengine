@@ -12,11 +12,11 @@ Description:
 
 #include <nsmaterial.h>
 #include <nstexture.h>
-#include <nslogfile.h>
+#include <nslog_file.h>
 #include <nsshader.h>
 #include <nsengine.h>
-#include <nsshadermanager.h>
-#include <nstexmanager.h>
+#include <nsshader_manager.h>
+#include <nstex_manager.h>
 
 NSMaterial::NSMaterial():
 	mAlphaBlend(false),

@@ -11,7 +11,7 @@ This file contains all of the neccessary declarations for the NSEvent class.
 */
 
 #include <nsmath.h>
-#include <nsinputmap.h>
+#include <nsinput_map.h>
 
 #ifndef NSEVENT_H
 #define NSEVENT_H

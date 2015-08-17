@@ -238,7 +238,7 @@
 #define MAT_MANAGER_TYPESTRING "NSMatManager"
 #define MESH_MANAGER_TYPESTRING "NSMeshManager"
 #define TEX_MANAGER_TYPESTRING "NSTexManager"
-#define SHADER_MANAGER_TYPESTRING "NSShaderManager"
+#define SHADER_MANAGER_TYPESTRING "nsshader_manager"
 #define SCENE_MANAGER_TYPESTRING "NSSceneManager"
 #define PLUGIN_MANAGER_TYPESTRING "NSPluginManager"
 #define INPUTMAP_MANAGER_TYPESTRING "NSInputMapManager"

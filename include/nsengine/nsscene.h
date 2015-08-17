@@ -17,10 +17,10 @@
 #include <map>
 #include <nsresource.h>
 #include <nsentity.h>
-#include <nsentitymanager.h>
+#include <nsentity_manager.h>
 #include <nsglobal.h>
-#include <nsoccupycomp.h>
-#include <nstilegrid.h>
+#include <nsoccupy_comp.h>
+#include <nstile_grid.h>
 
 class NSRenderComp;
 class NSRenderSystem;

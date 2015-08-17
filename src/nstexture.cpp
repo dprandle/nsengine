@@ -11,9 +11,9 @@ Description:
 *-----------------------------------------------------------------------------------------------------*/
 
 
-#include <nslogfile.h>
+#include <nslog_file.h>
 #include <nstexture.h>
-#include <nstexmanager.h>
+#include <nstex_manager.h>
 
 NSTexture::NSTexture(TexType type) :
 	mTexType(type),

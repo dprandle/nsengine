@@ -13,11 +13,11 @@
 #ifndef NSENTITY_H
 #define NSENTITY_H
 #include <nsglobal.h>
-#include <nstformcomp.h>
-#include <nsanimcomp.h>
-#include <nscamcomp.h>
-#include <nsrendercomp.h>
-#include <nslightcomp.h>
+#include <nstform_comp.h>
+#include <nsanim_comp.h>
+#include <nscam_comp.h>
+#include <nsrender_comp.h>
+#include <nslight_comp.h>
 #include <nsresource.h>
 #include <nsengine.h>
 #include <nspupper.h>

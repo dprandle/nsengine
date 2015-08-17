@@ -11,49 +11,48 @@ This file contains all of the neccessary definitions for the NSEngine class.
 */
 
 #include <hash/crc32.h>
-#include <nsfileos.h>
+#include <nsfile_os.h>
 #include <nsglobal.h>
 #include <nsengine.h>
-#include <nsrendersystem.h>
+#include <nsrender_system.h>
 #include <nsscene.h>
-#include <nsinputmapmanager.h>
-#include <nsentitymanager.h>
-#include <nsanimmanager.h>
-#include <nsmeshmanager.h>
-#include <nstexmanager.h>
-#include <nsmatmanager.h>
-#include <nseventdispatcher.h>
-#include <nsshadermanager.h>
-#include <nsinputmapmanager.h>
-#include <nsinputmap.h>
+#include <nsinput_map_manager.h>
+#include <nsentity_manager.h>
+#include <nsanim_manager.h>
+#include <nsmesh_manager.h>
+#include <nstex_manager.h>
+#include <nsmat_manager.h>
+#include <nsevent_dispatcher.h>
+#include <nsshader_manager.h>
+#include <nsinput_map.h>
 #include <nspupper.h>
-#include <nsscenemanager.h>
-#include <nsselcomp.h>
-#include <nsmovementsystem.h>
-#include <nsterraincomp.h>
-#include <nsanimsystem.h>
-#include <nsinputcomp.h>
+#include <nsscene_manager.h>
+#include <nssel_comp.h>
+#include <nsmovement_system.h>
+#include <nsterrain_comp.h>
+#include <nsanim_system.h>
+#include <nsinput_comp.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <IL/ilut.h>
-#include <nsinputsystem.h>
-#include <nsparticlecomp.h>
+#include <nsinput_system.h>
+#include <nsparticle_comp.h>
 #include <nstimer.h>
 #include <nsentity.h>
-#include <nscamerasystem.h>
-#include <nsselectionsystem.h>
+#include <nscamera_system.h>
+#include <nsselection_system.h>
 #include <nsevent.h>
-#include <nspluginmanager.h>
-#include <nstilebrushcomp.h>
-#include <nstilecomp.h>
-#include <nsoccupycomp.h>
-#include <nsbuildsystem.h>
-#include <nsparticlecomp.h>
-#include <nsparticlesystem.h>
-#include <nslogfile.h>
+#include <nsplugin_manager.h>
+#include <nstile_brush_comp.h>
+#include <nstile_comp.h>
+#include <nsoccupy_comp.h>
+#include <nsbuild_system.h>
+#include <nsparticle_comp.h>
+#include <nsparticle_system.h>
+#include <nslog_file.h>
 #include <nsfactory.h>
 #include <nssystem.h>
-#include <nsrendersystem.h>
+#include <nsrender_system.h>
 
 #ifdef NSDEBUG
 #include <nsdebug.h>
@@ -620,7 +619,7 @@ void NSEngine::_initInputMaps()
 
 void NSEngine::_initShaders()
 {
-	NSShaderManager * mShaders = engplug()->manager<NSShaderManager>();
+	nsshader_manager * mShaders = engplug()->manager<nsshader_manager>();
 	NSRenderSystem::RenderShaders renShaders;
 	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
 	renShaders.mDefaultShader = mShaders->load<NSMaterialShader>(nsstring(DEFAULT_GBUFFER_SHADER) + shext);
@@ -854,7 +853,7 @@ void NSEngine::_initDefaultFactories()
 	registerResourceManagerType<NSMatManager>("NSMatManager");
 	registerResourceManagerType<NSMeshManager>("NSMeshManager");
 	registerResourceManagerType<NSSceneManager>("NSSceneManager");
-	registerResourceManagerType<NSShaderManager>("NSShaderManager");
+	registerResourceManagerType<nsshader_manager>("nsshader_manager");
 	registerResourceManagerType<NSTexManager>("NSTexManager");
 	registerResourceManagerType<NSInputMapManager>("NSInputMapManager");
 	registerResourceManagerType<NSPluginManager>("NSPluginManager");
@@ -879,27 +878,27 @@ void NSEngine::_initDefaultFactories()
 	registerResourceType<NSTex2DMultisample, NSTexManager>("NSTex2DMultisample");
 	registerResourceType<NSTex2DMultisampleArray, NSTexManager>("NSTex2DMultisampleArray");
 
-	registerResourceType<NSShader, NSShaderManager>("NSShader");
-	registerResourceType<NSDirLightShader, NSShaderManager>("NSDirLightShader");
-	registerResourceType<NSSpotLightShader, NSShaderManager>("NSSpotLightShader");
-	registerResourceType<NSPointLightShader, NSShaderManager>("NSPointLightShader");
-	registerResourceType<NSMaterialShader, NSShaderManager>("NSMaterialShader");
-	registerResourceType<NSParticleProcessShader, NSShaderManager>("NSParticleProcessShader");
-	registerResourceType<NSParticleRenderShader, NSShaderManager>("NSParticleRenderShader");
-	registerResourceType<NSDirShadowMapShader, NSShaderManager>("NSDirShadowMapShader");
-	registerResourceType<NSPointShadowMapShader, NSShaderManager>("NSPointShadowMapShader");
-	registerResourceType<NSSpotShadowMapShader, NSShaderManager>("NSSpotShadowMapShader");
-	registerResourceType<NSEarlyZShader, NSShaderManager>("NSEarlyZShader");
-	registerResourceType<NSDirShadowMapXFBShader, NSShaderManager>("NSDirShadowMapXFBShader");
-	registerResourceType<NSPointShadowMapXFBShader, NSShaderManager>("NSPointShadowMapXFBShader");
-	registerResourceType<NSSpotShadowMapXFBShader, NSShaderManager>("NSSpotShadowMapXFBShader");
-	registerResourceType<NSEarlyZXFBShader, NSShaderManager>("NSEarlyZXFBShader");
-	registerResourceType<NSRenderXFBShader, NSShaderManager>("NSRenderXFBShader");
-	registerResourceType<NSXFBShader, NSShaderManager>("NSXFBShader");
-	registerResourceType<NSLightStencilShader, NSShaderManager>("NSLightStencilShader");
-	registerResourceType<NSSkyboxShader, NSShaderManager>("NSSkyboxShader");
-	registerResourceType<NSTransparencyShader, NSShaderManager>("NSTransparencyShader");
-	registerResourceType<NSSelectionShader, NSShaderManager>("NSSelectionShader");
+	registerResourceType<NSShader, nsshader_manager>("NSShader");
+	registerResourceType<NSDirLightShader, nsshader_manager>("NSDirLightShader");
+	registerResourceType<NSSpotLightShader, nsshader_manager>("NSSpotLightShader");
+	registerResourceType<NSPointLightShader, nsshader_manager>("NSPointLightShader");
+	registerResourceType<NSMaterialShader, nsshader_manager>("NSMaterialShader");
+	registerResourceType<NSParticleProcessShader, nsshader_manager>("NSParticleProcessShader");
+	registerResourceType<NSParticleRenderShader, nsshader_manager>("NSParticleRenderShader");
+	registerResourceType<NSDirShadowMapShader, nsshader_manager>("NSDirShadowMapShader");
+	registerResourceType<NSPointShadowMapShader, nsshader_manager>("NSPointShadowMapShader");
+	registerResourceType<NSSpotShadowMapShader, nsshader_manager>("NSSpotShadowMapShader");
+	registerResourceType<NSEarlyZShader, nsshader_manager>("NSEarlyZShader");
+	registerResourceType<NSDirShadowMapXFBShader, nsshader_manager>("NSDirShadowMapXFBShader");
+	registerResourceType<NSPointShadowMapXFBShader, nsshader_manager>("NSPointShadowMapXFBShader");
+	registerResourceType<NSSpotShadowMapXFBShader, nsshader_manager>("NSSpotShadowMapXFBShader");
+	registerResourceType<NSEarlyZXFBShader, nsshader_manager>("NSEarlyZXFBShader");
+	registerResourceType<NSRenderXFBShader, nsshader_manager>("NSRenderXFBShader");
+	registerResourceType<NSXFBShader, nsshader_manager>("NSXFBShader");
+	registerResourceType<NSLightStencilShader, nsshader_manager>("NSLightStencilShader");
+	registerResourceType<NSSkyboxShader, nsshader_manager>("NSSkyboxShader");
+	registerResourceType<NSTransparencyShader, nsshader_manager>("NSTransparencyShader");
+	registerResourceType<NSSelectionShader, nsshader_manager>("NSSelectionShader");
 	registerResourceType<NSInputMap, NSInputMapManager>("NSInputMap");
 }
 

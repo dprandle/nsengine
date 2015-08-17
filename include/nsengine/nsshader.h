@@ -16,7 +16,7 @@ Description:
 
 #include <myGL/glew.h>
 #include <nsglobal.h>
-#include <nsglobject.h>
+#include <nsgl_object.h>
 #include <nsmath.h>
 #include <vector>
 #include <map>

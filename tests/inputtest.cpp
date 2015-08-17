@@ -1,7 +1,7 @@
 #define INPUTTEST
 
-#include <nsinputsystem.h>
-#include <nsinputmap.h>
+#include <nsinput_system.h>
+#include <nsinput_map.h>
 #include <iostream>
 #include <nsengine.h>
 #include <nsglfw.h>
