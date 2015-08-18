@@ -1,82 +1,82 @@
 /*! 
 	\file nsmesh_manager.h
 	
-	\brief Header file for NSMeshManager class
+	\brief Header file for nsmesh_manager class
 
-	This file contains all of the neccessary declarations for the NSMeshManager class.
+	This file contains all of the neccessary declarations for the nsmesh_manager class.
 
 	\author Daniel Randle
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSMESHMANAGER_H
-#define NSMESHMANAGER_H
+#ifndef NSMESH_MANAGER_H
+#define NSMESH_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsmesh.h>
 
 struct aiScene;
 
-class NSMeshManager : public NSResManager
+class nsmesh_manager : public nsres_manager
 {
 public:
-	NSMeshManager();
-	~NSMeshManager();
+	nsmesh_manager();
+	~nsmesh_manager();
 
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSMesh * create(const nsstring & resName)
+	virtual nsmesh * create(const nsstring & res_name)
 	{
-		return create<NSMesh>(resName); // Create 2d texture by default
+		return create<nsmesh>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSMesh * get(const T & resname)
+	nsmesh * get(const T & res_name)
 	{
-		return get<NSMesh>(resname);
+		return get<nsmesh>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSMesh * load(const nsstring & fname)
+	nsmesh * load(const nsstring & fname)
 	{
-		return load<NSMesh>(fname);
+		return load<nsmesh>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSMesh * remove(const T & rname)
+	nsmesh * remove(const T & res_name)
 	{
-		return remove<NSMesh>(rname);
+		return remove<nsmesh>(res_name);
 	}
 
-	NSMesh* assimpLoadMeshFromScene(const aiScene * scene, const nsstring & pMeshName);
+	nsmesh * assimp_load_mesh(const aiScene * scene, const nsstring & mesh_name);
 
 private:
 
-	void _assimpLoadSubMeshes(NSMesh* pMesh, const aiScene * pScene);
-	void _assimpLoadNode(NSMesh* pMesh, NSMesh::Node * pMeshNode, const aiNode * pNode);
-	void _assimpLoadNodeHeirarchy(NSMesh* pMesh, const aiNode * pRootNode);
+	void _assimp_load_submeshes(nsmesh* pMesh, const aiScene * pScene);
+	void _assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, const aiNode * pNode);
+	void _assimp_load_node_heirarchy(nsmesh* pMesh, const aiNode * pRootNode);
 };
 
 #endif

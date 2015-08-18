@@ -19,24 +19,24 @@ This file contains all of the neccessary declartations for the NSEngine class.
 #include <typeindex>
 #include <nsmath.h>
 
-class NSScene;
-class NSRenderSystem;
-class NSAnimManager;
-class NSMeshManager;
-class NSTexManager;
-class NSMatManager;
+class nsscene;
+class nsrender_system;
+class nsanim_manager;
+class nsmesh_manager;
+class nstex_manager;
+class nsmat_manager;
 class nsshader_manager;
 class NSInputManager;
 class NSEventHandler;
 class NSAnimSystem;
 class NSMovementSystem;
 class NSTimer;
-class NSPluginManager;
+class nsplugin_manager;
 class NSSystem;
-class NSPlugin;
+class nsplugin;
 class NSEventDispatcher;
 struct NSSaveResCallback;
-class NSResManager;
+class nsres_manager;
 
 #ifdef NSDEBUG
 class NSDebug;
@@ -117,12 +117,12 @@ public:
 	~NSEngine();
 	typedef std::map<int32, uint32> SystemPriorityMap;
 
-	bool addPlugin(NSPlugin * plug);
+	bool addPlugin(nsplugin * plug);
 
 	/* Add a system to the current context */
 	bool addSystem(NSSystem * pSystem);
 
-	NSPlugin * active();
+	nsplugin * active();
 
 	FactoryMap::iterator beginFac();
 
@@ -142,7 +142,7 @@ public:
 
 	uint32 createFramebuffer();
 
-	NSPlugin * createPlugin(const nsstring & plugname, bool makeactive=true);
+	nsplugin * createPlugin(const nsstring & plugname, bool makeactive=true);
 
 	template<class SysType>
 	SysType * createSystem()
@@ -159,7 +159,7 @@ public:
 
 	uint32 currentid();
 
-	NSScene * currentScene();
+	nsscene * currentScene();
 
 	/*!
 	Delete the context with ID cID
@@ -170,11 +170,11 @@ public:
 	template<class T>
 	bool delPlugin(const T & name)
 	{
-		NSPlugin * plg = plugin(name);
+		nsplugin * plg = plugin(name);
 		return delPlugin(plg);
 	}
 
-	bool delPlugin(NSPlugin * plg);
+	bool delPlugin(nsplugin * plg);
 
 	bool delFramebuffer(uint32 fbid);
 
@@ -197,20 +197,20 @@ public:
 
 	SystemMap::iterator endSys();
 
-	NSPlugin * engplug();
+	nsplugin * engplug();
 
-	NSPluginManager * plugins();
+	nsplugin_manager * plugins();
 
 	NSEventDispatcher * eventDispatch();
 
 	template<class T>
 	bool hasPlugin(const T & name)
 	{
-		NSPlugin * plg = plugin(name);
+		nsplugin * plg = plugin(name);
 		return hasPlugin(plg);
 	}
 
-	bool hasPlugin(NSPlugin * plg);
+	bool hasPlugin(nsplugin * plg);
 
 	template<class ObjType>
 	NSFactory * factory()
@@ -253,7 +253,7 @@ public:
 	
 	bool hasSystem(const nsstring & guid_);
 
-	NSPlugin * loadPlugin(const nsstring & fname);
+	nsplugin * loadPlugin(const nsstring & fname);
 
 	template<class ManagerType, class T>
 	ManagerType * manager(const T & plugname)
@@ -262,9 +262,9 @@ public:
 		return static_cast<ManagerType*>(manager(hashed_type, plugin(plugname)));
 	}
 
-	NSResManager * manager(uint32 manager_typeid, NSPlugin * plg);
+	nsres_manager * manager(uint32 manager_typeid, nsplugin * plg);
 
-	NSResManager * manager(const nsstring & manager_guid, NSPlugin * plg);
+	nsres_manager * manager(const nsstring & manager_guid, nsplugin * plg);
 
 	template<class CompType>
 	bool registerComponentType(const nsstring & guid_)
@@ -419,7 +419,7 @@ public:
 			return false;
 		}
 
-		auto rf = createFactory<NSResManagerFactoryType<ManagerType>,ManagerType>();
+		auto rf = createFactory<nsres_managerFactoryType<ManagerType>,ManagerType>();
 		if (rf == NULL)
 			return false;
 		
@@ -429,7 +429,7 @@ public:
 
 	void saveCore(NSSaveResCallback * scallback=NULL);
 
-	bool savePlugin(NSPlugin * plg, bool saveOwnedResources=false, NSSaveResCallback * scallback=NULL);
+	bool savePlugin(nsplugin * plg, bool saveOwnedResources=false, NSSaveResCallback * scallback=NULL);
 
 	void savePlugins(bool saveOwnedResources=false, NSSaveResCallback * scallback = NULL);
 
@@ -438,13 +438,13 @@ public:
 	const nsstring & pluginDirectory();
 
 	template<class T>
-	NSPlugin * removePlugin(const T & name)
+	nsplugin * removePlugin(const T & name)
 	{
-		NSPlugin * plg = plugin(name);
+		nsplugin * plg = plugin(name);
 		return removePlugin(plg);
 	}
 
-	NSPlugin * removePlugin(NSPlugin * plg);
+	nsplugin * removePlugin(nsplugin * plg);
 
 	template<class SysType>
 	SysType * removeSystem()
@@ -457,11 +457,11 @@ public:
 
 	NSSystem * removeSystem(const nsstring & gui);
 
-	NSPlugin * plugin(const nsstring & name);
+	nsplugin * plugin(const nsstring & name);
 
-	NSPlugin * plugin(uint32 id);
+	nsplugin * plugin(uint32 id);
 
-	NSPlugin * plugin(NSPlugin * plg);
+	nsplugin * plugin(nsplugin * plg);
 
 	template<class T>
 	bool destroyPlugin(const T & name)
@@ -469,7 +469,7 @@ public:
 		return destroyPlugin(plugin(name));
 	}
 
-	bool destroyPlugin(NSPlugin * plug);
+	bool destroyPlugin(nsplugin * plug);
 
 	template<class ResType>
 	ResType * resource(const uivec2 & resID)
@@ -481,20 +481,20 @@ public:
 	template<class ResType,class T1, class T2>
 	ResType * resource(const T1 & plg, const T2 & res)
 	{
-		NSPlugin * plug = plugin(plg);
+		nsplugin * plug = plugin(plg);
 		return static_cast<ResType*>(resource(type_to_hash(ResType),plug,res));
 	}
 
-	NSResource * resource(uint32 res_typeid, NSPlugin * plg, uint32 resid);
+	nsresource * resource(uint32 res_typeid, nsplugin * plg, uint32 resid);
 
-	NSResource * resource(uint32 res_typeid, NSPlugin * plg, const nsstring & resname);
+	nsresource * resource(uint32 res_typeid, nsplugin * plg, const nsstring & resname);
 	
 	/*!
 	Overload of Propagate name change
 	*/
-	void nameChange(const uivec2 & oldid, const uivec2 newid);
+	void name_change(const uivec2 & oldid, const uivec2 newid);
 
-	const nsstring & resourceDirectory();
+	const nsstring & res_dir();
 
 	nsstring guid(uint32 hash);
 
@@ -510,13 +510,13 @@ public:
 	
 	void setActive(const nsstring & plugname);
 
-	void setActive(NSPlugin * plug);
+	void setActive(nsplugin * plug);
 
 	void setActive(uint32 plugid);
 
 	void setCurrentScene(const nsstring & scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	void setCurrentScene(NSScene * scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void setCurrentScene(nsscene * scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
 	void setCurrentScene(uint32 scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
@@ -626,9 +626,9 @@ private:
 	void _initDefaultFactories();
 	void _removeSys(uint32 type_id);
 
-	NSResource * _resource(uint32 restype_id, const uivec2 & resid);
+	nsresource * _resource(uint32 restype_id, const uivec2 & resid);
 	
-	nsstring mResourceDirectory;
+	nsstring m_res_dir;
 	nsstring mImportDirectory;
 	
 	SystemPriorityMap mSystemUpdateOrder;
@@ -649,9 +649,9 @@ struct GLContext
 	GLContext(uint32 id);
 	~GLContext();
 	GLEWContext * glewContext;
-	NSPlugin * engplug;
+	nsplugin * engplug;
 	SystemMap * systems;
-	NSPluginManager * plugins;
+	nsplugin_manager * plugins;
 	NSEventDispatcher * mEvents;
 	FramebufferMap fbmap;
 	NSTimer * timer;

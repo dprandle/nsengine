@@ -1,9 +1,9 @@
 /*!
 \file nsbuildsystem.cpp
 
-\brief Definition file for NSBuildSystem class
+\brief Definition file for nsbuild_system class
 
-This file contains all of the neccessary definitions for the NSBuildSystem class.
+This file contains all of the neccessary definitions for the nsbuild_system class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -28,169 +28,169 @@ This file contains all of the neccessary definitions for the NSBuildSystem class
 #include <nsplugin.h>
 #include <nsinput_system.h>
 
-NSBuildSystem::NSBuildSystem() :
-mEnabled(false),
-mTileBrush(NULL),
-mObjectBrush(NULL),
-mBuildEnt(NULL),
-mMirrorBrush(NULL),
-mLayer(0),
-mCurrentMode(Build),
-mCurrentBrushMode(None),
-mTBCenterTFormID(0),
-mOverwrite(false),
-mMirrorMode(false),
+nsbuild_system::nsbuild_system() :
+m_enabled(false),
+m_tile_brush(NULL),
+m_object_brush(NULL),
+m_build_ent(NULL),
+m_mirror_brush(NULL),
+m_layer(0),
+m_current_mode(build_mode),
+m_current_brush_type(brush_none),
+m_tile_brush_center_tform_id(0),
+m_overwrite(false),
+m_mirror_mode(false),
 NSSystem()
 {
 	
 }
 
-NSBuildSystem::~NSBuildSystem()
+nsbuild_system::~nsbuild_system()
 {
 
 }
 
-void NSBuildSystem::changeLayer(const int32 & pAmount)
+void nsbuild_system::change_layer(const int32 & pAmount)
 {
-	mLayer += pAmount;
+	m_layer += pAmount;
 }
 
-void NSBuildSystem::enable(const bool & pEnable, const fvec2 & pMousePos)
+void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 	
-	if (pEnable && !mEnabled)
+	if (pEnable && !m_enabled)
 	{
-		mEnabled = pEnable;
+		m_enabled = pEnable;
 		nsengine.system<NSInputSystem>()->pushContext("BuildMode");
 		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
-		if (mCurrentBrushMode == Tile)
+		if (m_current_brush_type == brush_tile)
 		{
-			if (mTileBrush == NULL)
+			if (m_tile_brush == NULL)
 				return;
 
-			if (mMirrorMode)
+			if (m_mirror_mode)
 			{
-				mMirrorBrush = nsengine.engplug()->create<NSEntity>("MirrorBrush");
-				*mMirrorBrush = *mTileBrush;
+				m_mirror_brush = nsengine.engplug()->create<nsentity>("MirrorBrush");
+				*m_mirror_brush = *m_tile_brush;
 			}
 
-			NSTileBrushComp * brushComp = mTileBrush->get<NSTileBrushComp>();
+			NSTileBrushComp * brushComp = m_tile_brush->get<NSTileBrushComp>();
 
-			NSSelComp * selComp = mTileBrush->get<NSSelComp>();
+			NSSelComp * selComp = m_tile_brush->get<NSSelComp>();
 			if (selComp == NULL || brushComp == NULL)
 				return;
 
 			auto brushIter = brushComp->begin();
 			while (brushIter != brushComp->end())
 			{
-				fvec3 pos = NSTileGrid::world(ivec3(brushIter->x, brushIter->y, mLayer)); // add in height when get working
-				uint32 tFormID = scene->add(mTileBrush, pos);
+				fvec3 pos = NSTileGrid::world(ivec3(brushIter->x, brushIter->y, m_layer)); // add in height when get working
+				uint32 tFormID = scene->add(m_tile_brush, pos);
 
 				// This tmp thing is a hack to get around added the mirrored guys to the selection
-				bool tmp = mMirrorMode;
+				bool tmp = m_mirror_mode;
 				if (tmp)
-					mMirrorMode = false;
+					m_mirror_mode = false;
 
-//				nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mTileBrush->plugid(), mTileBrush->id(), tFormID)));
+//				nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mTileBrush->plugin_id(), mTileBrush->id(), tFormID)));
 
 				if (tmp)
 				{
-					fvec3 mirrorPos = mMirrorCenter*2.0f - pos;
+					fvec3 mirrorPos = m_mirror_center*2.0f - pos;
 					mirrorPos.z = pos.z;
-					uint32 tFormIDMirror = scene->add(mMirrorBrush, mirrorPos);
-//					nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugid(), mMirrorBrush->id(), tFormIDMirror)));
-					mMirrorBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormIDMirror);
+					uint32 tFormIDMirror = scene->add(m_mirror_brush, mirrorPos);
+//					nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugin_id(), mMirrorBrush->id(), tFormIDMirror)));
+					m_mirror_brush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormIDMirror);
 				}
-				mMirrorMode = tmp;
+				m_mirror_mode = tmp;
 
 				if (*brushIter == ivec2())
-					mTBCenterTFormID = tFormID;
+					m_tile_brush_center_tform_id = tFormID;
 
-				mTileBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
+				m_tile_brush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
 				++brushIter;
 			}
-//			nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mTileBrush->plugid(), mTileBrush->id(), mTBCenterTFormID)));
+//			nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mTileBrush->plugin_id(), mTileBrush->id(), mTBCenterTFormID)));
 			selComp->setSelected(true);
-			toCursor(pMousePos);
+			to_cursor(pMousePos);
 
 
 		}
-		else if (mCurrentBrushMode == Object)
+		else if (m_current_brush_type == brush_object)
 		{
-			if (mObjectBrush == NULL)
+			if (m_object_brush == NULL)
 				return;
 
-			if (mBuildEnt == NULL)
+			if (m_build_ent == NULL)
 				return;
 
-			//nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), 0) ) );
+			//nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mObjectBrush->plugin_id(), mObjectBrush->id(), 0) ) );
 
-			mObjectBrush->del<NSLightComp>();
-			mObjectBrush->del<NSOccupyComp>();
-			mObjectBrush->copy(mBuildEnt->get<NSRenderComp>());
-			mObjectBrush->copy(mBuildEnt->get<NSOccupyComp>());
-			mObjectBrush->copy(mBuildEnt->get<NSLightComp>());
+			m_object_brush->del<NSLightComp>();
+			m_object_brush->del<NSOccupyComp>();
+			m_object_brush->copy(m_build_ent->get<NSRenderComp>());
+			m_object_brush->copy(m_build_ent->get<NSOccupyComp>());
+			m_object_brush->copy(m_build_ent->get<NSLightComp>());
 
-			NSSelComp * selComp = mObjectBrush->get<NSSelComp>();
+			NSSelComp * selComp = m_object_brush->get<NSSelComp>();
 			if (selComp == NULL)
 				return;
 
-			uint32 tFormID = scene->add(mObjectBrush);
-			mObjectBrush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
-//			nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugid(), mObjectBrush->id(), tFormID)));
+			uint32 tFormID = scene->add(m_object_brush);
+			m_object_brush->get<NSTFormComp>()->setHiddenState(NSTFormComp::Hide, true, tFormID);
+//			nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugin_id(), mObjectBrush->id(), tFormID)));
 			selComp->setSelected(true);
-			toCursor(pMousePos);
+			to_cursor(pMousePos);
 		}
 		else
 			return;
 	}
-	else if (!pEnable && mEnabled)
+	else if (!pEnable && m_enabled)
 	{
-		mEnabled = pEnable;
+		m_enabled = pEnable;
 		nsengine.system<NSInputSystem>()->popContext();
 
-		if (mObjectBrush != NULL)
+		if (m_object_brush != NULL)
 		{
-			mObjectBrush->del<NSOccupyComp>();
-			scene->remove(mObjectBrush);
+			m_object_brush->del<NSOccupyComp>();
+			scene->remove(m_object_brush);
 		}
 
-		if (mTileBrush != NULL)
-			scene->remove(mTileBrush);
+		if (m_tile_brush != NULL)
+			scene->remove(m_tile_brush);
 
 		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
-		nsengine.engplug()->destroy<NSEntity>("MirrorBrush");
-		mMirrorBrush = NULL;
+		nsengine.engplug()->destroy<nsentity>("MirrorBrush");
+		m_mirror_brush = NULL;
 	}
 }
 
-void NSBuildSystem::enableOverwrite(bool pEnable)
+void nsbuild_system::enable_overwrite(bool pEnable)
 {
-	mOverwrite = pEnable;
+	m_overwrite = pEnable;
 }
 
-void NSBuildSystem::enableMirror(bool pEnable)
+void nsbuild_system::enable_mirror(bool pEnable)
 {
-	mMirrorMode = pEnable;
+	m_mirror_mode = pEnable;
 }
 
-void NSBuildSystem::erase()
+void nsbuild_system::erase()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	if (mCurrentBrushMode == Tile)
+	if (m_current_brush_type == brush_tile)
 	{
-		if (mTileBrush == NULL)
+		if (m_tile_brush == NULL)
 			return;
 
-		NSTileBrushComp * brushComp = mTileBrush->get<NSTileBrushComp>();
+		NSTileBrushComp * brushComp = m_tile_brush->get<NSTileBrushComp>();
 		if (brushComp == NULL)
 			return;
 
@@ -199,12 +199,12 @@ void NSBuildSystem::erase()
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				fvec3 pos = mTileBrush->get<NSTFormComp>()->lpos(mTBCenterTFormID) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				fvec3 pos = m_tile_brush->get<NSTFormComp>()->lpos(m_tile_brush_center_tform_id) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				scene->remove(pos);
 
-				if (mMirrorMode)
+				if (m_mirror_mode)
 				{
-					fvec3 newPos = mMirrorCenter*2.0f - pos;
+					fvec3 newPos = m_mirror_center*2.0f - pos;
 					newPos.z = pos.z;
 					scene->remove(newPos);
 				}
@@ -214,69 +214,69 @@ void NSBuildSystem::erase()
 	}
 }
 
-const fvec4 NSBuildSystem::activeBrushColor() const
+const fvec4 nsbuild_system::active_brush_color() const
 {
-	if (mCurrentBrushMode == Tile && mTileBrush != NULL)
-		return mTileBrush->get<NSSelComp>()->defaultColor();
-	else if (mCurrentBrushMode == Object && mObjectBrush != NULL)
-		return mObjectBrush->get<NSSelComp>()->defaultColor();
+	if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
+		return m_tile_brush->get<NSSelComp>()->defaultColor();
+	else if (m_current_brush_type == brush_object && m_object_brush != NULL)
+		return m_object_brush->get<NSSelComp>()->defaultColor();
 	return fvec4();
 }
 
-NSEntity * NSBuildSystem::buildent()
+nsentity * nsbuild_system::build_ent()
 {
-	return mBuildEnt;
+	return m_build_ent;
 }
 
-const NSBuildSystem::BrushMode & NSBuildSystem::brushMode()
+const nsbuild_system::brush_t & nsbuild_system::brush_type()
 {
-	return mCurrentBrushMode;
+	return m_current_brush_type;
 }
 
-const int32 & NSBuildSystem::layer() const
+const int32 & nsbuild_system::layer() const
 {
-	return mLayer;
+	return m_layer;
 }
 
-const fvec3 & NSBuildSystem::center() const
+const fvec3 & nsbuild_system::center() const
 {
-	return mMirrorCenter;
+	return m_mirror_center;
 }
 
-const NSBuildSystem::Mode & NSBuildSystem::mode() const
+const nsbuild_system::mode_t & nsbuild_system::mode() const
 {
-	return mCurrentMode;
+	return m_current_mode;
 }
 
-void NSBuildSystem::init()
+void nsbuild_system::init()
 {
 	//nsengine.eventDispatch()->addListener(this, NSEvent::InputKey);
 }
 
-bool NSBuildSystem::enabled() const
+bool nsbuild_system::enabled() const
 {
-	return mEnabled;
+	return m_enabled;
 }
 
-bool NSBuildSystem::overwrite() const
+bool nsbuild_system::overwrite() const
 {
-	return mOverwrite;
+	return m_overwrite;
 }
 
-bool NSBuildSystem::mirror() const
+bool nsbuild_system::mirror() const
 {
-	return mMirrorMode;
+	return m_mirror_mode;
 }
 
-// bool NSBuildSystem::handleEvent(NSEvent * pEvent)
+// bool nsbuild_system::handleEvent(NSEvent * pEvent)
 // {
-// 	NSScene * scene = nsengine.currentScene();
+// 	nsscene * scene = nsengine.currentScene();
 // 	if (scene == NULL)
 // 		return false;
 
 // 	if (pEvent == NULL)
 // 	{
-// 		dprint("NSBuildSystem::handleEvent Event is NULL - bad bad bad");
+// 		dprint("nsbuild_system::handleEvent Event is NULL - bad bad bad");
 // 		return false;
 // 	}
 
@@ -295,13 +295,13 @@ bool NSBuildSystem::mirror() const
 // 	return false;
 // }
 
-void NSBuildSystem::toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
+void nsbuild_system::to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	NSEntity * camera = scene->camera();
+	nsentity * camera = scene->camera();
 	if (camera == NULL)
 		return;
 
@@ -311,20 +311,20 @@ void NSBuildSystem::toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 	NSTFormComp * brushTForm = NULL;
 	fvec3 originalPos;
 
-	if (mCurrentBrushMode == Tile)
+	if (m_current_brush_type == brush_tile)
 	{
-		if (mTileBrush == NULL)
+		if (m_tile_brush == NULL)
 			return;
-		brushTForm = mTileBrush->get<NSTFormComp>();
+		brushTForm = m_tile_brush->get<NSTFormComp>();
 		if (brushTForm == NULL)
 			return;
-		originalPos = brushTForm->lpos(mTBCenterTFormID);
+		originalPos = brushTForm->lpos(m_tile_brush_center_tform_id);
 	}
-	else if (mCurrentBrushMode == Object)
+	else if (m_current_brush_type == brush_object)
 	{
-		if (mObjectBrush == NULL)
+		if (m_object_brush == NULL)
 			return;
-		brushTForm = mObjectBrush->get<NSTFormComp>();
+		brushTForm = m_object_brush->get<NSTFormComp>();
 		if (brushTForm == NULL)
 			return;
 		originalPos = brushTForm->lpos();
@@ -368,42 +368,42 @@ void NSBuildSystem::toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 	for (uint32 i = 0; i < brushTForm->count(); ++i)
 	{
 		brushTForm->translate(fpos, i);
-		if (mMirrorMode)
+		if (m_mirror_mode)
 		{
-			NSTFormComp * mMirrorT = mMirrorBrush->get<NSTFormComp>();
+			NSTFormComp * mMirrorT = m_mirror_brush->get<NSTFormComp>();
 			fvec3 wp = brushTForm->wpos(i);
-			fvec3 newPos = mMirrorCenter*2.0f - wp;
+			fvec3 newPos = m_mirror_center*2.0f - wp;
 			newPos.z = wp.z;
 			mMirrorT->setpos(newPos, i);
 		}
 	}
 }
 
-NSEntity * NSBuildSystem::tilebrush()
+nsentity * nsbuild_system::tile_brush()
 {
-	return mTileBrush;
+	return m_tile_brush;
 }
 
-NSEntity * NSBuildSystem::objectbrush()
+nsentity * nsbuild_system::object_brush()
 {
-	return mObjectBrush;
+	return m_object_brush;
 }
 
-void NSBuildSystem::paint()
+void nsbuild_system::paint()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	if (mBuildEnt == NULL)
+	if (m_build_ent == NULL)
 		return;
 
-	if (mCurrentBrushMode == Tile)
+	if (m_current_brush_type == brush_tile)
 	{
-		if (mTileBrush == NULL)
+		if (m_tile_brush == NULL)
 			return;
 
-		NSTileBrushComp * brushComp = mTileBrush->get<NSTileBrushComp>();
+		NSTileBrushComp * brushComp = m_tile_brush->get<NSTileBrushComp>();
 		if (brushComp == NULL)
 			return;
 
@@ -412,158 +412,158 @@ void NSBuildSystem::paint()
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				fvec3 pos = mTileBrush->get<NSTFormComp>()->lpos(mTBCenterTFormID) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				fvec3 pos = m_tile_brush->get<NSTFormComp>()->lpos(m_tile_brush_center_tform_id) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				
-				if (mOverwrite)
+				if (m_overwrite)
 				{
 					scene->remove(pos);
-					if (mMirrorMode)
+					if (m_mirror_mode)
 					{
-						fvec3 newPos = mMirrorCenter*2.0f - pos;
+						fvec3 newPos = m_mirror_center*2.0f - pos;
 						newPos.z = pos.z;
 						scene->remove(newPos);
 					}
 				}
 
-				uint32 tFormID = scene->add(mBuildEnt, pos);
+				uint32 tFormID = scene->add(m_build_ent, pos);
 				
 				if (tFormID != -1)
 				{
-					if (mMirrorMode)
+					if (m_mirror_mode)
 					{
-						fvec3 newPos = mMirrorCenter*2.0f - pos;
+						fvec3 newPos = m_mirror_center*2.0f - pos;
 						newPos.z = pos.z;
-						uint32 tFormMID = scene->add(mBuildEnt, newPos);
+						uint32 tFormMID = scene->add(m_build_ent, newPos);
 						if (tFormMID == -1)
 						{
-							scene->remove(mBuildEnt, tFormID);
+							scene->remove(m_build_ent, tFormID);
 							continue;
 						}
-						mBuildEnt->get<NSTFormComp>()->snap(tFormMID);
+						m_build_ent->get<NSTFormComp>()->snap(tFormMID);
 					}
-					mBuildEnt->get<NSTFormComp>()->snap(tFormID);
+					m_build_ent->get<NSTFormComp>()->snap(tFormID);
 				}
 			}
 			++brushIter;
 		}
 	}
-	else if (mCurrentBrushMode == Object)
+	else if (m_current_brush_type == brush_object)
 	{
-		if (mObjectBrush == NULL)
+		if (m_object_brush == NULL)
 			return;
 
-		fvec3 pos = mObjectBrush->get<NSTFormComp>()->lpos();
-		uint32 tFormID = scene->add(mBuildEnt, pos);
+		fvec3 pos = m_object_brush->get<NSTFormComp>()->lpos();
+		uint32 tFormID = scene->add(m_build_ent, pos);
 		if (tFormID != -1)
-			mBuildEnt->get<NSTFormComp>()->snap(tFormID);
+			m_build_ent->get<NSTFormComp>()->snap(tFormID);
 	}
 }
 
-void NSBuildSystem::setActiveBrushColor(const fvec4 & pColor)
+void nsbuild_system::set_active_brush_color(const fvec4 & pColor)
 {
-	if (mCurrentBrushMode == Tile && mTileBrush != NULL)
+	if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
 	{
-		mTileBrush->get<NSSelComp>()->setDefaultColor(pColor);
-		if (mMirrorMode)
+		m_tile_brush->get<NSSelComp>()->setDefaultColor(pColor);
+		if (m_mirror_mode)
 		{
-			if (mMirrorBrush != NULL)
-				mMirrorBrush->get<NSSelComp>()->setDefaultColor(pColor);
+			if (m_mirror_brush != NULL)
+				m_mirror_brush->get<NSSelComp>()->setDefaultColor(pColor);
 		}
 	}
-	else if (mCurrentBrushMode == Object && mObjectBrush != NULL)
-		mObjectBrush->get<NSSelComp>()->setDefaultColor(pColor);
+	else if (m_current_brush_type == brush_object && m_object_brush != NULL)
+		m_object_brush->get<NSSelComp>()->setDefaultColor(pColor);
 }
 
-void NSBuildSystem::setBrushMode(const BrushMode & pBrushMode)
+void nsbuild_system::set_brush_type(const brush_t & pBrushMode)
 {
-	mCurrentBrushMode = pBrushMode;
-	if (mBuildEnt == NULL)
+	m_current_brush_type = pBrushMode;
+	if (m_build_ent == NULL)
 		return;
 
-	switch (mCurrentBrushMode)
+	switch (m_current_brush_type)
 	{
-	case (None) :
-		mBuildEnt = NULL;
+	case (brush_none) :
+		m_build_ent = NULL;
 		break;
-	case (Tile):
-		if (!mBuildEnt->has<NSTileComp>())
-			mBuildEnt = NULL;
+	case (brush_tile):
+		if (!m_build_ent->has<NSTileComp>())
+			m_build_ent = NULL;
 		break;
-	case (Object):
-		if (mBuildEnt->has<NSTileComp>())
-			mBuildEnt = NULL;
+	case (brush_object):
+		if (m_build_ent->has<NSTileComp>())
+			m_build_ent = NULL;
 		break;
 	}
 }
 
-void NSBuildSystem::setObjectBrush(NSEntity * pBrush)
+void nsbuild_system::set_object_brush(nsentity * pBrush)
 {
-	if (mEnabled)
+	if (m_enabled)
 		toggle(fvec2());
 
-	mObjectBrush = pBrush;
+	m_object_brush = pBrush;
 }
 
-void NSBuildSystem::setTileBrush(NSEntity * pBrush)
+void nsbuild_system::set_tile_brush(nsentity * pBrush)
 {
-	if (mEnabled)
+	if (m_enabled)
 		toggle(fvec2());
 
-	mTileBrush = pBrush;
+	m_tile_brush = pBrush;
 }
 
-void NSBuildSystem::setBuildEnt(NSEntity * pBuildEnt)
+void nsbuild_system::set_build_ent(nsentity * pBuildEnt)
 {
 	if (pBuildEnt == NULL)
 	{
-		mBuildEnt = pBuildEnt;
+		m_build_ent = pBuildEnt;
 		return;
 	}
 
 	if (pBuildEnt->has<NSTileComp>())
 	{
-		if (mCurrentBrushMode == Tile)
-			mBuildEnt = pBuildEnt;
+		if (m_current_brush_type == brush_tile)
+			m_build_ent = pBuildEnt;
 		return;
 	}
 	else
 	{
-		if (mCurrentBrushMode == Object)
-			mBuildEnt = pBuildEnt;
+		if (m_current_brush_type == brush_object)
+			m_build_ent = pBuildEnt;
 		return;
 	}
 }
 
-void NSBuildSystem::setMode(const Mode & pMode)
+void nsbuild_system::set_mode(const mode_t & pMode)
 {
-	mCurrentMode = pMode;
-	if (pMode != Build)
-		setBrushMode(Tile);
+	m_current_mode = pMode;
+	if (pMode != build_mode)
+		set_brush_type(brush_tile);
 }
 
-void NSBuildSystem::setLayer(const int32 & pLayer)
+void nsbuild_system::set_layer(const int32 & pLayer)
 {
-	mLayer = pLayer;
+	m_layer = pLayer;
 }
 
-void NSBuildSystem::setCenter(const fvec3 & pMirrorCenter)
+void nsbuild_system::setCenter(const fvec3 & pMirrorCenter)
 {
-	mMirrorCenter = pMirrorCenter;
+	m_mirror_center = pMirrorCenter;
 }
 
-void NSBuildSystem::toggle(const fvec2 & pMousePos)
+void nsbuild_system::toggle(const fvec2 & pMousePos)
 {
-	enable(!mEnabled, pMousePos);
+	enable(!m_enabled, pMousePos);
 }
 
-int32 NSBuildSystem::updatePriority()
+int32 nsbuild_system::update_priority()
 {
 	return BUILD_SYS_UPDATE_PR;
 }
 
-void NSBuildSystem::update()
+void nsbuild_system::update()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
@@ -572,9 +572,9 @@ void NSBuildSystem::update()
 		return;
 
 
-	if (mEnabled)
+	if (m_enabled)
 	{
-		NSEntity * cam = scene->camera();
+		nsentity * cam = scene->camera();
 		if (cam == NULL)
 			return;
 
@@ -583,78 +583,78 @@ void NSBuildSystem::update()
 		{
 			NSInputComp::Action * act = inComp->action(CAM_ZOOM);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos, true);
+				to_cursor(act->mPos, true);
 
 			act = inComp->action(CAM_MOVE);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos);
+				to_cursor(act->mPos);
 
 			act = inComp->action(CAM_TURN);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos);
+				to_cursor(act->mPos);
 
 			act = inComp->action(CAM_FORWARD);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos);
+				to_cursor(act->mPos);
 
 			act = inComp->action(CAM_BACKWARD);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos);
+				to_cursor(act->mPos);
 
 			act = inComp->action(CAM_LEFT);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos);
+				to_cursor(act->mPos);
 
 			act = inComp->action(CAM_RIGHT);
 			if (act != NULL && act->mActivated)
-				toCursor(act->mPos);
+				to_cursor(act->mPos);
 		}
 
-		if (mCurrentBrushMode == Tile)
+		if (m_current_brush_type == brush_tile)
 		{
-			if (mTileBrush == NULL)
+			if (m_tile_brush == NULL)
 				return;
 
-			NSInputComp * brushInComp = mTileBrush->get<NSInputComp>();
+			NSInputComp * brushInComp = m_tile_brush->get<NSInputComp>();
 			if (brushInComp != NULL)
 			{
 				NSInputComp::Action * act = brushInComp->action(INSERT_OBJECT);
 				if (act != NULL && act->mActivated && act->mPressed)
 				{
-					switch (mCurrentMode)
+					switch (m_current_mode)
 					{
-					case(Build) :
+					case(build_mode) :
 						paint();
 						break;
-					case(Erase) :
+					case(erase_mode) :
 						erase();
 						break;
 					}
-					toCursor(act->mPos);
+					to_cursor(act->mPos);
 				}
 			}
 		}
 		else
 		{
-			if (mObjectBrush == NULL)
+			if (m_object_brush == NULL)
 				return;
 
-			NSInputComp * brushInComp = mObjectBrush->get<NSInputComp>();
+			NSInputComp * brushInComp = m_object_brush->get<NSInputComp>();
 			if (brushInComp != NULL)
 			{
 				NSInputComp::Action * act = brushInComp->action(INSERT_OBJECT);
 				if (act != NULL && act->mActivated && act->mPressed)
 				{
-					switch (mCurrentMode)
+					switch (m_current_mode)
 					{
-					case(Build) :
+					case(build_mode) :
 						paint();
 						break;
-					case(Erase) :
+					case(erase_mode) :
 						erase();
 						break;
 					}
-					toCursor(act->mPos);
+					to_cursor(act->mPos);
 				}
 			}
 		}

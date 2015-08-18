@@ -1,4 +1,4 @@
-type:<nsstring>NSParticleRenderShader</nsstring>
+type:<nsstring>nsparticle_render_shader</nsstring>
 vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>#version 440
 

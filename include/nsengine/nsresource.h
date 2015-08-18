@@ -1,9 +1,9 @@
 /*! 
 	\file nsresource.h
 	
-	\brief Header file for NSResource class
+	\brief Header file for nsresource class
 
-	This file contains all of the neccessary declarations for the NSResource class.
+	This file contains all of the neccessary declarations for the nsresource class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -16,14 +16,14 @@
 #include <nsmath.h>
 #include <nspupper.h>
 
-class NSResource
+class nsresource
 {
 public:
-	friend class NSResManager;
+	friend class nsres_manager;
 	friend class NSResFactory;
 
-	NSResource();
-	virtual ~NSResource();
+	nsresource();
+	virtual ~nsresource();
 
 	virtual void init() = 0;
 
@@ -31,13 +31,13 @@ public:
 
 	const nsstring & name() const;
 
-	uint32 plugid() const;
+	uint32 plugin_id() const;
 
 	uint32 id() const;
 
 	uint32 type();
 
-	const nsstring & subDir() const;
+	const nsstring & subdir() const;
 
 	/*!
 	Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
@@ -45,42 +45,42 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	const nsstring & iconPath();
+	const nsstring & icon_path();
 
-	const uivec2 & iconTexID();
+	const uivec2 & icon_tex_id();
 
 	/*!
 	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
 	is then it will update the handle
 	*/
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	virtual void pup(NSFilePUPer * p) = 0;
 
-	bool owned() { return mOwned; }
+	bool owned() { return m_owned; }
 
-	void setExtension( const nsstring & pExt);
+	void set_ext( const nsstring & pExt);
 
 	void rename(const nsstring & pResName);
 
-	uivec2 fullid();
+	uivec2 full_id();
 
-	void setIconPath(const nsstring & pIconPath);
+	void set_icon_path(const nsstring & pIconPath);
 
-	void setIconTexID(const uivec2 & texID);
+	void set_icon_tex_id(const uivec2 & texID);
 
-	void setSubDir(const nsstring & pDir);
+	void set_subdir(const nsstring & pDir);
 
 protected:
-	uint32 mHashedType;
-	nsstring mIconPath;
-	uivec2 mIconTexID;
-	nsstring mName;
-	nsstring mSubDir;
-	nsstring mExtension;
-	uint32 mID;
-	uint32 mPlugID;
-	bool mOwned;
+	uint32 m_hashed_type;
+	nsstring m_icon_path;
+	uivec2 m_icon_tex_id;
+	nsstring m_name;
+	nsstring m_subdir;
+	nsstring m_ext;
+	uint32 m_id;
+	uint32 m_plugin_id;
+	bool m_owned;
 };
 
 #endif

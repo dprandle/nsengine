@@ -18,9 +18,9 @@ This file contains all of the neccessary declarations for the NSParticleSystem c
 #include <nsevent.h>
 #include <nstform_comp.h>
 
-class NSScene;
+class nsscene;
 class NSSelComp;
-class NSParticleProcessShader;
+class nsparticle_process_shader;
 
 class NSParticleSystem : public NSSystem
 {
@@ -32,9 +32,9 @@ public:
 
 	virtual void draw();
 
-	virtual int32 drawPriority();
+	virtual int32 draw_priority();
 
-	virtual int32 updatePriority();
+	virtual int32 update_priority();
 
 //	virtual bool handleEvent(NSEvent * pEvent);
 
@@ -46,10 +46,10 @@ public:
 
 	virtual void update();
 
-	void setShader(NSParticleProcessShader * shader) { mDefaultShader = shader; }
+	void setShader(nsparticle_process_shader * shader) { mDefaultShader = shader; }
 
 private:
-	NSParticleProcessShader * mDefaultShader;
+	nsparticle_process_shader * mDefaultShader;
 	uint32 mFinalBuf;
 };
 

@@ -1,9 +1,9 @@
 /*! 
 	\file nstexture.h
 	
-	\brief Header file for NSTexture class
+	\brief Header file for nstexture class
 
-	This file contains all of the neccessary declarations for the NSTexture class.
+	This file contains all of the neccessary declarations for the nstexture class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -27,76 +27,76 @@
 #include <nsglobal.h>
 #include <nspupper.h>
 
-class NSTexture : public NSResource, public NSGLObject
+class nstexture : public nsresource, public nsgl_object
 {
 public:
-	struct ImageData
+	struct image_data
 	{
-		ImageData(char * data_, uint32 size_, uint32 bpp_) :data(data_), size(size_), bpp(bpp_){}
+		image_data(uint8 * data_, uint32 size_, uint32 bpp_) :data(data_), size(size_), bpp(bpp_){}
 
-		char * data;
+		uint8 * data;
 		uint32 size;
 		uint32 bpp;
 	};
 
-	enum TexType {
-		Tex1D = GL_TEXTURE_1D,
-		Tex1DArray = GL_TEXTURE_1D_ARRAY,
-		Tex2D = GL_TEXTURE_2D,
-		Tex2DArray = GL_TEXTURE_2D_ARRAY,
-		Tex3D = GL_TEXTURE_3D,
-		TexRectangle = GL_TEXTURE_RECTANGLE,
-		TexBuffer = GL_TEXTURE_BUFFER,
-		TexCubeMap = GL_TEXTURE_CUBE_MAP,
-		TexCubeMapArray = GL_TEXTURE_CUBE_MAP_ARRAY,
-		Tex2DMultisample = GL_TEXTURE_2D_MULTISAMPLE,
-		Tex2DMultisampleArray = GL_TEXTURE_2D_MULTISAMPLE_ARRAY
+	enum tex_type {
+		tex_1d = GL_TEXTURE_1D,
+		tex_1d_array = GL_TEXTURE_1D_ARRAY,
+		tex_2d = GL_TEXTURE_2D,
+		tex_2d_array = GL_TEXTURE_2D_ARRAY,
+		tex_3d = GL_TEXTURE_3D,
+		tex_rectangle = GL_TEXTURE_RECTANGLE,
+		tex_buffer = GL_TEXTURE_BUFFER,
+		tex_cubemap = GL_TEXTURE_CUBE_MAP,
+		tex_cubemap_array = GL_TEXTURE_CUBE_MAP_ARRAY,
+		tex_2d_multisample = GL_TEXTURE_2D_MULTISAMPLE,
+		tex_2d_multisample_array = GL_TEXTURE_2D_MULTISAMPLE_ARRAY
 	};
 
-	enum TexParameter {
-		DepthStencilTextureMode = GL_DEPTH_STENCIL_TEXTURE_MODE,
-		BaseLevel = GL_TEXTURE_BASE_LEVEL,
-		MaxLevel = GL_TEXTURE_MAX_LEVEL,
-		CompareFunc = GL_TEXTURE_COMPARE_FUNC,
-		CompareMode = GL_TEXTURE_COMPARE_MODE,
-		LODBias = GL_TEXTURE_LOD_BIAS,
-		MinFilter = GL_TEXTURE_MIN_FILTER,
-		MagFilter = GL_TEXTURE_MAG_FILTER,
-		MinLOD = GL_TEXTURE_MIN_LOD,
-		MaxLOD = GL_TEXTURE_MAX_LOD,
-		SwizzleR = GL_TEXTURE_SWIZZLE_R,
-		SwizzleG = GL_TEXTURE_SWIZZLE_G,
-		SwizzleB = GL_TEXTURE_SWIZZLE_B,
-		SwizzleA = GL_TEXTURE_SWIZZLE_A,
-		WrapS = GL_TEXTURE_WRAP_S,
-		WrapT = GL_TEXTURE_WRAP_T,
-		WrapR = GL_TEXTURE_WRAP_R };
+	enum tex_parameter {
+		depth_stencil_texture_mode = GL_DEPTH_STENCIL_TEXTURE_MODE,
+		base_level = GL_TEXTURE_BASE_LEVEL,
+		max_level = GL_TEXTURE_MAX_LEVEL,
+		compare_func = GL_TEXTURE_COMPARE_FUNC,
+		compare_mode = GL_TEXTURE_COMPARE_MODE,
+		LOD_bias = GL_TEXTURE_LOD_BIAS,
+		min_filter = GL_TEXTURE_MIN_FILTER,
+		mag_filter = GL_TEXTURE_MAG_FILTER,
+		min_LOD = GL_TEXTURE_MIN_LOD,
+		max_LOD = GL_TEXTURE_MAX_LOD,
+		swizzle_r = GL_TEXTURE_SWIZZLE_R,
+		swizzle_g = GL_TEXTURE_SWIZZLE_G,
+		swizzle_b = GL_TEXTURE_SWIZZLE_B,
+		swizzle_a = GL_TEXTURE_SWIZZLE_A,
+		wrap_s = GL_TEXTURE_WRAP_S,
+		wrap_t = GL_TEXTURE_WRAP_T,
+		wrap_r = GL_TEXTURE_WRAP_R };
 
-	enum GetTexParam 
+	enum get_tex_param 
 	{
-		Width = GL_TEXTURE_WIDTH, 
-		Height = GL_TEXTURE_HEIGHT,
-		Depth = GL_TEXTURE_DEPTH,
-		InternalFormat = GL_TEXTURE_INTERNAL_FORMAT, 
-		Border = GL_TEXTURE_BORDER, 
-		RedSize = GL_TEXTURE_RED_SIZE, 
-		GreenSize = GL_TEXTURE_GREEN_SIZE, 
-		BlueSize = GL_TEXTURE_BLUE_SIZE, 
-		AlphaSize = GL_TEXTURE_ALPHA_SIZE, 
-		LuminanceSize = GL_TEXTURE_LUMINANCE_SIZE,
-		IntensitySize = GL_TEXTURE_INTENSITY_SIZE, 
-		DepthSize = GL_TEXTURE_DEPTH_SIZE, 
-		Compressed = GL_TEXTURE_COMPRESSED,
-		CompressedSize = GL_TEXTURE_COMPRESSED_IMAGE_SIZE
+		tex_width = GL_TEXTURE_WIDTH, 
+		tex_height = GL_TEXTURE_HEIGHT,
+		tex_depth = GL_TEXTURE_DEPTH,
+		tex_internal_format = GL_TEXTURE_INTERNAL_FORMAT, 
+		tex_border = GL_TEXTURE_BORDER, 
+		tex_size_red = GL_TEXTURE_RED_SIZE, 
+		tex_size_green = GL_TEXTURE_GREEN_SIZE, 
+		tex_size_blue = GL_TEXTURE_BLUE_SIZE, 
+		tex_size_alpha = GL_TEXTURE_ALPHA_SIZE, 
+		tex_size_luminance = GL_TEXTURE_LUMINANCE_SIZE,
+		tex_size_intensity = GL_TEXTURE_INTENSITY_SIZE, 
+		tex_size_depth = GL_TEXTURE_DEPTH_SIZE, 
+		tex_compressed = GL_TEXTURE_COMPRESSED,
+		tex_size_compressed = GL_TEXTURE_COMPRESSED_IMAGE_SIZE
 	};
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTexture & sm);
+	friend void pup(PUPer & p, nstexture & sm);
 
-	NSTexture(TexType type);
-	~NSTexture();
+	nstexture(tex_type type);
+	~nstexture();
 
-	void initGL();
+	void init_gl();
 
 	void bind();
 
@@ -111,15 +111,15 @@ public:
 
 	virtual bool allocate(const void * data) = 0;
 
-	void setAllocated(bool alloc);
+	void set_allocated(bool alloc);
 
 	bool allocated();
 
-	virtual ImageData data();
+	virtual image_data data();
 
 	int32 format() const;
 
-	int32 pixelDataType() const;
+	int32 pixel_data_type() const;
 
 	virtual bool lock() = 0;
 
@@ -127,15 +127,15 @@ public:
 
 	virtual bool unlock() = 0;
 
-	int32 internalFormat() const;
+	int32 internal_format() const;
 
 	void enable(uint32 pTexUnit);
 
 	uint32 border() const;
 
-	float getParameterf(GetTexParam p);
+	float parameter_f(get_tex_param p);
 
-	int32 getParameteri(GetTexParam p);
+	int32 parameter_i(get_tex_param p);
 
 	/*!
 	Enable mipmaps for this texture - level of 0 means use the default max mip map level
@@ -144,7 +144,7 @@ public:
 	If it has not, it will call generate mip map function when it is allocated
 	\param level how many mip map levels to include
 	*/
-	void enableMipMaps(int32 level = 0);
+	void enable_mipmaps(int32 level = 0);
 
 	virtual void pup(NSFilePUPer * p);
 
@@ -153,9 +153,9 @@ public:
 	*/
 	void release();
 
-	void setBorder(uint32 border);
+	void set_border(uint32 border);
 
-	TexType textureType() const;
+	tex_type texture_type() const;
 
 	/*
 	Set the format - see opengl specs for which formats are allowable - this determines how pixel data is read in
@@ -163,7 +163,7 @@ public:
 
 	\param OpenGL format used when uploading or downloading pixel data from a stored image on the GPU
 	*/
-	void setFormat(int32 format);
+	void set_format(int32 format);
 
 	/*
 	Set the texture internal format - it is not gaurenteed however that the image will be stored in this format - but it
@@ -187,21 +187,21 @@ public:
 
 	\param internalFormat The opengl acceptable image format
 	*/
-	void setInternalFormat(int32 intformat);
+	void set_internal_format(int32 intformat);
 
-	void setParameterf(TexParameter param, float pValue);
+	void set_parameter_f(tex_parameter param, float pValue);
 
-	void setParameteri(TexParameter param, int32 pValue);
+	void set_parameter_i(tex_parameter param, int32 pValue);
 
-	void setParameterfv(TexParameter param, const fvec4 & val);
+	void set_parameter_fv(tex_parameter param, const fvec4 & val);
 
-	void setParameteriv(TexParameter param, const ivec4 & val);
+	void set_parameter_iv(tex_parameter param, const ivec4 & val);
 
-	void setParameterIiv(TexParameter param, const ivec4 & val);
+	void set_parameter_Iiv(tex_parameter param, const ivec4 & val);
 
-	void setParameterIiuv(TexParameter param, const uivec4 & val);
+	void set_parameter_Iuiv(tex_parameter param, const uivec4 & val);
 
-	void setGLName(uint32 glid);
+	void set_gl_name(uint32 glid);
 
 	/*
 	Set the pixel data type - see opengl doc for what types are acceptable
@@ -217,7 +217,7 @@ public:
 
 	The base type must be some type that is large enough to store all of the 4 components
 	*/
-	void setPixelDataType(int32 pType);
+	void set_pixel_data_type(int32 pType);
 
 	void unbind();
 
@@ -227,73 +227,73 @@ protected:
 	*/
 	void _pixelSize() const;
 
-	TexType mTexType;
-	bool mAllocated;
-	bool mLocked;
-	GLint mFormat;
-	GLint mInternalFormat;
-	GLint mPixelDataType;
-	int32 mMipMapLevel;
-	bool mGenMipmaps;
-	uint32 mBorder;
-	ImageData mData;
+	tex_type m_tex_type;
+	bool m_allocated;
+	bool m_locked;
+	GLint m_format;
+	GLint m_internal_format;
+	GLint m_pixel_data_type;
+	int32 m_mipmap_level;
+	bool m_generate_mipmaps;
+	uint32 m_border;
+	image_data m_data;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTexture::ImageData & dat, const nsstring & varName)
+void pup(PUPer & p, nstexture::image_data & dat, const nsstring & var_name)
 {
-	pup(p, dat.bpp, varName + ".bpp");
-	pup(p, dat.size, varName + ".size");
+	pup(p, dat.bpp, var_name + ".bpp");
+	pup(p, dat.size, var_name + ".size");
 	for (uint32 i = 0; i < dat.size; ++i)
 		pup(p, dat.data[i], ".data[" + std::to_string(i) + "]");
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSTexture::TexType & en, const nsstring & pString)
+void pup(PUPer & p, nstexture::tex_type & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSTexture::TexType>(in);
+	pup(p, in, var_name);
+	en = static_cast<nstexture::tex_type>(in);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSTexture & sm)
+void pup(PUPer & p, nstexture & sm)
 {
-	pup(p, sm.mTexType,"texType");
-	pup(p, sm.mFormat,"format");
-	pup(p, sm.mInternalFormat,"internalFormat");
-	pup(p, sm.mPixelDataType,"pixelDataType");
-	pup(p, sm.mMipMapLevel,"mipMapLevel");
-	pup(p, sm.mGenMipmaps,"genMipmaps");
-	pup(p, sm.mBorder,"border");
+	pup(p, sm.m_tex_type,"tex_type");
+	pup(p, sm.m_format,"format");
+	pup(p, sm.m_internal_format,"internal_format");
+	pup(p, sm.m_pixel_data_type,"pixel_data_type");
+	pup(p, sm.m_mipmap_level,"mipmap_level");
+	pup(p, sm.m_generate_mipmaps,"generate_mipmaps");
+	pup(p, sm.m_border,"border");
 	if (p.mode() == PUP_IN)
 	{
-		if (sm.mGLName == 0)
-			sm.initGL();
+		if (sm.m_gl_name == 0)
+			sm.init_gl();
 		sm.bind();
 		sm.allocate(NULL);
 		sm.unbind();
 	}
 	sm.lock();
-	pup(p, sm.mData,"data");
+	pup(p, sm.m_data,"data");
 	sm.unlock();
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSTexture * sm)
+void pup(PUPer & p, nstexture * sm)
 {
 	pup(p, *sm);
 }
 
 // Save using raw data
-class NSTex1D : public NSTexture
+class nstex1d : public nstexture
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTex1D & sm);
+	friend void pup(PUPer & p, nstex1d & sm);
 
-	NSTex1D();
-	~NSTex1D();
+	nstex1d();
+	~nstex1d();
 
 	/*
 	Using width, internal format, pixel data type, format, and mip map level this function
@@ -308,7 +308,7 @@ public:
 	\param lowerLeft x and y screen coordinates
 	\param dim width and height starting from lowerLeft
 	*/
-	bool allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions);
+	bool allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions);
 
 	bool compressed() const;
 
@@ -333,7 +333,7 @@ public:
 	*/
 	bool unlock();
 
-	bool setCompressed(uint32 byteSize);
+	bool set_compressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -343,49 +343,47 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	bool setData(const void * data, uint32 xoffset, uint32 width);
+	bool set_data(const void * data, uint32 xoffset, uint32 width);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements 
 	*/
-	bool setDataFromScreen(uint32 xoffset, const uivec2 & lowerLeft, uint32 width);
+	bool set_data_from_screen(uint32 xoffset, const uivec2 & lowerLeft, uint32 width);
 
-	void setImmutable(bool immutable);
+	void set_immutable(bool immutable);
 
-	void setWidth(uint32 width);
-
-	uint32 width();
+	uint32 size();
 
 private:
-	uint32 mWidth;
-	uint32 mCompByteSize;
-	bool mImmutable;
+	uint32 m_width;
+	uint32 m_comp_byte_size;
+	bool m_immutable;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTex1D & sm)
+void pup(PUPer & p, nstex1d & sm)
 {
-	pup(p, sm.mWidth,"width");
-	pup(p, sm.mCompByteSize, "compByteSize");
-	pup(p, sm.mImmutable, "immutable");
-	pup(p, static_cast<NSTexture*>(&sm));
+	pup(p, sm.m_width,"width");
+	pup(p, sm.m_comp_byte_size, "comp_byte_size");
+	pup(p, sm.m_immutable, "immutable");
+	pup(p, static_cast<nstexture*>(&sm));
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSTex1D * sm)
+void pup(PUPer & p, nstex1d * sm)
 {
 	pup(p, *sm);
 }
 
-class NSTex2D : public NSTexture
+class nstex2d : public nstexture
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTex2D & sm);
+	friend void pup(PUPer & p, nstex2d & sm);
 
-	NSTex2D();
-	~NSTex2D();
+	nstex2d();
+	~nstex2d();
 	/*
 	Using width, internal format, pixel data type, format, and mip map level this function
 	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
@@ -399,11 +397,11 @@ public:
 	\param lowerLeft x and y screen coordinates
 	\param dimensions width and height starting from lowerLeft
 	*/
-	bool allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions);
+	bool allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions);
 
 	bool compressed() const;
 
-	const uivec2 & dim() const;
+	const uivec2 & size() const;
 
 	bool immutable() const;
 
@@ -420,13 +418,15 @@ public:
 
 	virtual void resize(uint32 w, uint32 h);
 
+	void resize(const uivec2 & sz);
+
 	/*!
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
 	or else it returns false. It also returns
 	*/
 	bool unlock();
 
-	bool setCompressed(uint32 byteSize);
+	bool set_compressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -436,56 +436,54 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	bool setData(const void * data, const uivec2 & offset, const uivec2 & dimensions);
+	bool set_data(const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
-	void setdim(const uivec2 & dim);
-
-	void setdim(uint32 w, uint32 h);
-
-	void setImmutable(bool immutable);
+	void set_immutable(bool immutable);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements
 	*/
-	bool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+
+	const uivec2 & size();
 
 private:
-	uivec2 mDim;
-	uint32 mCompByteSize;
-	bool mImmutable;
+	uivec2 m_size;
+	uint32 m_comp_byte_size;
+	bool m_immutable;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTex2D & sm)
+void pup(PUPer & p, nstex2d & sm)
 {
-	pup(p, sm.mDim, "dim");
-	pup(p, sm.mCompByteSize, "compByteSize");
-	pup(p, sm.mImmutable, "immutable");
-	pup(p, static_cast<NSTexture*>(&sm));
+	pup(p, sm.m_size, "size");
+	pup(p, sm.m_comp_byte_size, "comp_byte_size");
+	pup(p, sm.m_immutable, "immutable");
+	pup(p, static_cast<nstexture*>(&sm));
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSTex2D * sm)
+void pup(PUPer & p, nstex2d * sm)
 {
 	pup(p, *sm);
 }
 
-class NSTex1DArray : public NSTex2D
+class nstex1d_array : public nstex2d
 {
 public:
-	NSTex1DArray();
-	~NSTex1DArray();
+	nstex1d_array();
+	~nstex1d_array();
 };
 
-class NSTex3D : public NSTexture
+class nstex3d : public nstexture
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTex3D & sm);
+	friend void pup(PUPer & p, nstex3d & sm);
 
-	NSTex3D();
-	~NSTex3D();
+	nstex3d();
+	~nstex3d();
 	/*
 	Using width, internal format, pixel data type, format, and mip map level this function
 	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
@@ -495,7 +493,7 @@ public:
 
 	bool compressed() const;
 
-	const uivec3 & dim() const;
+	const uivec3 & size() const;
 
 	bool immutable() const;
 
@@ -518,7 +516,9 @@ public:
 
 	virtual void resize(uint32 w, uint32 h, uint32 layers);
 
-	bool setCompressed(uint32 byteSize);
+	void resize(const uivec3 & size);
+
+	bool set_compressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -528,66 +528,64 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	bool setData(const void * data, const uivec3 & offset, const uivec3 & dimensions);
-
-	void setdim(const uivec3 & dim);
-
-	void setdim(uint32 w, uint32 h, uint32 layers);
+	bool set_data(const void * data, const uivec3 & offset, const uivec3 & dimensions);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements
 	*/
-	bool setDataFromScreen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool set_data_from_screen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-	void setImmutable(bool immutable);
+	void set_immutable(bool immutable);
+
+	const uivec3 & size();
 
 private:
-	uivec3 mDim;
-	uint32 mCompByteSize;
-	bool mImmutable;
+	uivec3 m_size;
+	uint32 m_comp_byte_size;
+	bool m_immutable;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTex3D & sm)
+void pup(PUPer & p, nstex3d & sm)
 {
-	pup(p, sm.mDim, "dim");
-	pup(p, sm.mCompByteSize, "compByteSize");
-	pup(p, sm.mImmutable, "immutable");
-	pup(p, static_cast<NSTexture*>(&sm));
+	pup(p, sm.m_size, "size");
+	pup(p, sm.m_comp_byte_size, "comp_byte_size");
+	pup(p, sm.m_immutable, "immutable");
+	pup(p, static_cast<nstexture*>(&sm));
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSTex3D * sm)
+void pup(PUPer & p, nstex3d * sm)
 {
 	pup(p, *sm);
 }
 
-class NSTex2DArray : public NSTex3D
+class nstex2d_array : public nstex3d
 {
 public:
-	NSTex2DArray();
-	~NSTex2DArray();
+	nstex2d_array();
+	~nstex2d_array();
 };
 
-class NSTexCubeMap : public NSTexture
+class nstex_cubemap : public nstexture
 {
 public:
 
-	enum CubeFace {
-		PosX = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		NegX = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-		PosY = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-		NegY = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-		PosZ = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-		NegZ = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+	enum cube_face {
+		pos_x = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		neg_x = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		pos_y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		neg_y = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		pos_z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		neg_z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 	};
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTexCubeMap & sm);
+	friend void pup(PUPer & p, nstex_cubemap & sm);
 
-	NSTexCubeMap();
-	~NSTexCubeMap();
+	nstex_cubemap();
+	~nstex_cubemap();
 
 	/*
 	Using width, internal format, pixel data type, format, and mip map level this function
@@ -596,21 +594,21 @@ public:
 	*/
 	bool allocate(const void * data);
 
-	bool allocate(CubeFace f, const void * data);
+	bool allocate(cube_face f, const void * data);
 
 
-	bool allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dim);
+	bool allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dim);
 	/*
 	Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
 	Read buffer must be bound (glReadBuffer) in order to copy screen pixels
 	\param lowerLeft x and y screen coordinates
 	\param dimensions width and height starting from lowerLeft
 	*/
-	bool allocateFromScreen(CubeFace f, const uivec2 & lowerLeft, const uivec2 dimensions);
+	bool allocate_from_screen(cube_face f, const uivec2 & lowerLeft, const uivec2 dimensions);
 
 	bool compressed() const;
 
-	const uivec2 & dim() const;
+	const uivec2 & size() const;
 
 	void init();
 
@@ -621,12 +619,13 @@ public:
 	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
 	Returns true if the texture is already locked
 	*/
-	bool lock(CubeFace f);
+	bool lock(cube_face f);
 
 	virtual void pup(NSFilePUPer * p);
 
 	virtual void resize(uint32 w, uint32 h);
-
+	
+	void resize(const uivec2 & size);
 
 	bool unlock();
 
@@ -634,9 +633,9 @@ public:
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
 	or else it returns false. It also returns
 	*/
-	bool unlock(CubeFace f);
+	bool unlock(cube_face f);
 
-	bool setCompressed(uint32 byteSize);
+	bool set_compressed(uint32 byteSize);
 
 	/*
 	Set image data starting from the offset and going until offset + dimensions
@@ -646,75 +645,71 @@ public:
 	\param dimensions width and height of the sub image
 	\data Pixel data for the image
 	*/
-	bool setData(const void * data, const uivec2 & offset, const uivec2 & dimensions);
+	bool set_data(const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
-	bool setData(CubeFace f, const void * data, const uivec2 & offset, const uivec2 & dimensions);
-
-	void setdim(const uivec2 & dim);
-
-	void setdim(uint32 w, uint32 h);
+	bool set_data(cube_face f, const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
 	/*
 	Copy pixels from currently bound read buffer to existing texture - does not allocate space
 	\param offset the offset in elements
 	*/
-	bool setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-	bool setDataFromScreen(CubeFace f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
+	bool set_data_from_screen(cube_face f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
 private:
-	uivec2 mDim;
-	uint32 mCompByteSize;
+	uivec2 m_size;
+	uint32 m_comp_byte_size;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTexCubeMap & sm)
+void pup(PUPer & p, nstex_cubemap & sm)
 {
-	pup(p, sm.mDim, "dim");
-	pup(p, sm.mCompByteSize, "compByteSize");
-	pup(p, static_cast<NSTexture*>(&sm));
+	pup(p, sm.m_size, "size");
+	pup(p, sm.m_comp_byte_size, "comp_byte_size");
+	pup(p, static_cast<nstexture*>(&sm));
 }
 
 
 template <class PUPer>
-void pup(PUPer & p, NSTexCubeMap * sm)
+void pup(PUPer & p, nstex_cubemap * sm)
 {
 	pup(p, *sm);
 }
 
-class NSTexRectangle : public NSTex2D
+class nstex_rectangle : public nstex2d
 {
 public:
-	NSTexRectangle();
-	~NSTexRectangle();
+	nstex_rectangle();
+	~nstex_rectangle();
 };
 
-class NSTexCubeMapArray : public NSTex3D
+class nstex_cubemap_array : public nstex3d
 {
 public:
-	NSTexCubeMapArray();
-	~NSTexCubeMapArray();
+	nstex_cubemap_array();
+	~nstex_cubemap_array();
 };
 
-class NSTex2DMultisample : public NSTex2D
+class nstex2d_multisample : public nstex2d
 {
 public:
-	NSTex2DMultisample();
-	~NSTex2DMultisample();
+	nstex2d_multisample();
+	~nstex2d_multisample();
 };
 
-class NSTex2DMultisampleArray : public NSTex3D
+class nstex2d_multisample_array : public nstex3d
 {
 public:
-	NSTex2DMultisampleArray();
-	~NSTex2DMultisampleArray();
+	nstex2d_multisample_array();
+	~nstex2d_multisample_array();
 };
 
-class NSTexBuffer : public NSTexture
+class nstex_buffer : public nstexture
 {
 public:
-	NSTexBuffer();
-	~NSTexBuffer();
+	nstex_buffer();
+	~nstex_buffer();
 
 	bool allocate(const void * data);
 

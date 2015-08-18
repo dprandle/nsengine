@@ -1,110 +1,110 @@
 #include <nsinput_map.h>
 #include <nsengine.h>
 
-NSInputMap::NSInputMap()
+nsinput_map::nsinput_map()
 {}
 
-NSInputMap::~NSInputMap()
+nsinput_map::~nsinput_map()
 {
-	ContextCollection::iterator iter = mContexts.begin();
-	while (iter != mContexts.end())
+	context_collection::iterator iter = m_contexts.begin();
+	while (iter != m_contexts.end())
 	{
 		delete iter->second;
 		iter->second = NULL;
-		iter = mContexts.erase(iter);
+		iter = m_contexts.erase(iter);
 	}	
 }
 
-void NSInputMap::addAllowedModifier(Key pKey)
+void nsinput_map::add_allowed_mod(key_val pKey)
 {
-	mAllowedModifiers.insert(pKey);
+	m_allowed_mods.insert(pKey);
 }
 
 // In adding the context InputManager takes ownership
-bool NSInputMap::addContext(Context * toAdd)
+bool nsinput_map::add_context(ctxt * toAdd)
 {
 	if (toAdd == NULL)
 	{
-		dprint("NSInputMap::addContext Trying to add NULL context");
+		dprint("nsinput_map::addContext Trying to add NULL context");
 		return false;
 	}
-	if (context(toAdd->mName) != NULL)
+	if (context(toAdd->name) != NULL)
 	{
-		dprint("NSInputMap::addContext Cannot add context with same name " + toAdd->mName);
+		dprint("nsinput_map::addContext Cannot add context with same name " + toAdd->name);
 		return false;
 	}
-	mContexts[toAdd->mName] = toAdd;
+	m_contexts[toAdd->name] = toAdd;
 	return true;
 }
 
-bool NSInputMap::addKeyTrigger(const nsstring & pContextName, Key pKey, Trigger & pTrigger)
+bool nsinput_map::add_key_trigger(const nsstring & pContextName, key_val pKey, trigger & pTrigger)
 {
-	Context * ctxt = context(pContextName);
+	ctxt * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
-	pTrigger.mHashName = hash_id(pTrigger.mName);
+	pTrigger.hash_name = hash_id(pTrigger.name);
 	
 	// Allow for multiple trigger entrees, but all of the triggers must be unique - they
 	// can have the same name but if they do then the key modifiers must be different, for example.
-	auto iterPair = ctxt->mKeyMap.equal_range(pKey);
+	auto iterPair = ctxt->key_map.equal_range(pKey);
 	while (iterPair.first != iterPair.second)
 	{
 		if (iterPair.first->second == pTrigger)
 		{
-			dprint("NSInputMap::addKeyTrigger Cannot add trigger \"" + pTrigger.mName + "\" as an exact copy already exists in context");
+			dprint("nsinput_map::addKeyTrigger Cannot add trigger \"" + pTrigger.name + "\" as an exact copy already exists in context");
 			return false;
 		}
 		++iterPair.first;
 	}
 
-	ctxt->mKeyMap.emplace(pKey,pTrigger);
+	ctxt->key_map.emplace(pKey,pTrigger);
 	return true;
 }
 
-bool NSInputMap::addMouseTrigger(const nsstring & pContextName, MouseButton pButton, Trigger & pTrigger)
+bool nsinput_map::add_mouse_trigger(const nsstring & pContextName, mouse_button_val pButton, trigger & pTrigger)
 {
-	Context * ctxt = context(pContextName);
+	ctxt * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
-	pTrigger.mHashName = hash_id(pTrigger.mName);
+	pTrigger.hash_name = hash_id(pTrigger.name);
 	// Allow for multiple trigger entrees, but all of the triggers must be unique - they
 	// can have the same name but if they do then the key modifiers must be different, for example.
 	// Or, if the key modifiers are the same then the names must be different.
-	auto iterPair = ctxt->mMouseButtonMap.equal_range(pButton);
+	auto iterPair = ctxt->mousebutton_map.equal_range(pButton);
 	while (iterPair.first != iterPair.second)
 	{
 		if (iterPair.first->second == pTrigger)
 		{
-			dprint("NSInputMap::addMouseTrigger Cannot add trigger \"" + pTrigger.mName + "\" as an exact copy already exists in context");
+			dprint("nsinput_map::addMouseTrigger Cannot add trigger \"" + pTrigger.name + "\" as an exact copy already exists in context");
 			return false;
 		}
 		++iterPair.first;
 	}
 
-	ctxt->mMouseButtonMap.emplace(pButton,pTrigger);
+	ctxt->mousebutton_map.emplace(pButton,pTrigger);
 	return true;
 }
 
-bool NSInputMap::allowedModifier(Key mod)
+bool nsinput_map::allowed_mod(key_val mod)
 {
-	return (mAllowedModifiers.find(mod) != mAllowedModifiers.end());
+	return (m_allowed_mods.find(mod) != m_allowed_mods.end());
 }
 
-NSInputMap::Context * NSInputMap::context(nsstring name)
+nsinput_map::ctxt * nsinput_map::context(nsstring name)
 {
-	ContextCollection::iterator conIter = mContexts.find(name);
-	if (conIter == mContexts.end())
+	context_collection::iterator conIter = m_contexts.find(name);
+	if (conIter == m_contexts.end())
 		return NULL;
 	return conIter->second;
 }
 
-NSInputMap::Context * NSInputMap::createContext(const nsstring & pName)
+nsinput_map::ctxt * nsinput_map::create_context(const nsstring & pName)
 {
-	Context * toAdd = new Context();
-	toAdd->mName = pName;
-	if (!addContext(toAdd))
+	ctxt * toAdd = new ctxt();
+	toAdd->name = pName;
+	if (!add_context(toAdd))
 	{
 		delete toAdd;
 		return NULL;
@@ -112,50 +112,50 @@ NSInputMap::Context * NSInputMap::createContext(const nsstring & pName)
 	return toAdd;
 }
 
-void NSInputMap::removeAllowedModifier(Key pKey)
+void nsinput_map::remove_allowed_mod(key_val pKey)
 {
-	mAllowedModifiers.erase(pKey);
+	m_allowed_mods.erase(pKey);
 }
 
-bool NSInputMap::removeContext(const nsstring & pName)
+bool nsinput_map::remove_context(const nsstring & pName)
 {
-	ContextCollection::iterator conIter = mContexts.find(pName);
+	context_collection::iterator conIter = m_contexts.find(pName);
 
-	if (conIter == mContexts.end())
+	if (conIter == m_contexts.end())
 		return false;
 
 	delete conIter->second;
 	conIter->second = NULL;
-	mContexts.erase(conIter);
+	m_contexts.erase(conIter);
 	return true;
 }
 
 /* 
 Remove all key triggers  
  */
-bool NSInputMap::removeKey(const nsstring & context_name, Key key)
+bool nsinput_map::remove_key(const nsstring & context_name, key_val key)
 {
-	Context * ctxt = context(context_name);
+	ctxt * ctxt = context(context_name);
 	if (ctxt == NULL)
 		return false;
 	
-	auto keyIterPair = ctxt->mKeyMap.equal_range(key);
-	ctxt->mKeyMap.erase(keyIterPair.first, keyIterPair.second);
+	auto keyIterPair = ctxt->key_map.equal_range(key);
+	ctxt->key_map.erase(keyIterPair.first, keyIterPair.second);
 	return true;
 }
 
-bool NSInputMap::removeKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger)
+bool nsinput_map::remove_key_trigger(const nsstring & pContextName, key_val pKey, const trigger & pTrigger)
 {
-	Context * ctxt = context(pContextName);
+	ctxt * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 	
-	auto keyIterPair = ctxt->mKeyMap.equal_range(pKey);
+	auto keyIterPair = ctxt->key_map.equal_range(pKey);
 	while (keyIterPair.first != keyIterPair.second)
 	{
 		if (keyIterPair.first->second == pTrigger)
 		{
-			ctxt->mKeyMap.erase(keyIterPair.first);
+			ctxt->key_map.erase(keyIterPair.first);
 			return true;
 		}
 		++keyIterPair.first;
@@ -167,19 +167,19 @@ bool NSInputMap::removeKeyTrigger(const nsstring & pContextName, Key pKey, const
 Remove all key triggers with the name pTriggerName
 Returns true if any triggers are removed and false if none are
 */
-bool NSInputMap::removeKeyTriggers(const nsstring & pContextName, const nsstring & pTriggerName)
+bool nsinput_map::remove_key_triggers(const nsstring & pContextName, const nsstring & pTriggerName)
 {
-	Context * ctxt = context(pContextName);
+	ctxt * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
 	bool ret = false;
-	auto keyIter = ctxt->mKeyMap.begin();
-	while (keyIter != ctxt->mKeyMap.end())
+	auto keyIter = ctxt->key_map.begin();
+	while (keyIter != ctxt->key_map.end())
 	{
-		if (keyIter->second.mName == pTriggerName)
+		if (keyIter->second.name == pTriggerName)
 		{
-			keyIter = ctxt->mKeyMap.erase(keyIter);
+			keyIter = ctxt->key_map.erase(keyIter);
 			ret = true;
 			continue;
 		}
@@ -192,28 +192,28 @@ bool NSInputMap::removeKeyTriggers(const nsstring & pContextName, const nsstring
 /* 
 Remove all mouse button triggers  
  */
-bool NSInputMap::removeMouseButton(const nsstring & context_name, MouseButton button)
+bool nsinput_map::remove_mouse_button(const nsstring & context_name, mouse_button_val button)
 {
-	Context * ctxt = context(context_name);
+	ctxt * ctxt = context(context_name);
 	if (ctxt == NULL)
 		return false;
-	auto mouseIterPair = ctxt->mMouseButtonMap.equal_range(button);
-	ctxt->mMouseButtonMap.erase(mouseIterPair.first, mouseIterPair.second);
+	auto mouseIterPair = ctxt->mousebutton_map.equal_range(button);
+	ctxt->mousebutton_map.erase(mouseIterPair.first, mouseIterPair.second);
 	return true;
 }
 
-bool NSInputMap::removeMouseButtonTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger)
+bool nsinput_map::remove_mouse_button_trigger(const nsstring & pContextName, mouse_button_val pButton, const trigger & pTrigger)
 {
-	Context * ctxt = context(pContextName);
+	ctxt * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
-	auto mouseIterPair = ctxt->mMouseButtonMap.equal_range(pButton);
+	auto mouseIterPair = ctxt->mousebutton_map.equal_range(pButton);
 	while (mouseIterPair.first != mouseIterPair.second)
 	{
 		if (mouseIterPair.first->second == pTrigger)
 		{
-			ctxt->mMouseButtonMap.erase(mouseIterPair.first);
+			ctxt->mousebutton_map.erase(mouseIterPair.first);
 			return true;
 		}
 		++mouseIterPair.first;
@@ -225,19 +225,19 @@ bool NSInputMap::removeMouseButtonTrigger(const nsstring & pContextName, MouseBu
 Remove all mouse triggers with the name pTriggerName
 Returns true if any triggers are removed and false if none are
 */
-bool NSInputMap::removeMouseButtonTriggers(const nsstring & pContextName, const nsstring & pTriggerName)
+bool nsinput_map::remove_mouse_button_triggers(const nsstring & pContextName, const nsstring & pTriggerName)
 {
-	Context * ctxt = context(pContextName);
+	ctxt * ctxt = context(pContextName);
 	if (ctxt == NULL)
 		return false;
 
 	bool ret = false;
-	auto mouseIter = ctxt->mMouseButtonMap.begin();
-	while (mouseIter != ctxt->mMouseButtonMap.end())
+	auto mouseIter = ctxt->mousebutton_map.begin();
+	while (mouseIter != ctxt->mousebutton_map.end())
 	{
-		if (mouseIter->second.mName == pTriggerName)
+		if (mouseIter->second.name == pTriggerName)
 		{
-			mouseIter = ctxt->mMouseButtonMap.erase(mouseIter);
+			mouseIter = ctxt->mousebutton_map.erase(mouseIter);
 			ret = true;
 			continue;
 		}
@@ -246,45 +246,45 @@ bool NSInputMap::removeMouseButtonTriggers(const nsstring & pContextName, const 
 	return ret;
 }
 
-bool NSInputMap::renameContext(const nsstring & pOldContextName, const nsstring & pNewContextName)
+bool nsinput_map::rename_context(const nsstring & pOldContextName, const nsstring & pNewContextName)
 {
-	auto conIter = mContexts.find(pOldContextName); Context * nctxt = context(pNewContextName);
-	if (conIter == mContexts.end() || nctxt != NULL)
+	auto conIter = m_contexts.find(pOldContextName); ctxt * nctxt = context(pNewContextName);
+	if (conIter == m_contexts.end() || nctxt != NULL)
 		return false;
 	
-	Context * ctxt = conIter->second;
-	mContexts.erase(conIter);
-	ctxt->mName = pNewContextName;
+	ctxt * ctxt = conIter->second;
+	m_contexts.erase(conIter);
+	ctxt->name = pNewContextName;
 
-	if (!addContext(ctxt))
+	if (!add_context(ctxt))
 		return false;
 	
 	return true;
 }
 
-void NSInputMap::init()
+void nsinput_map::init()
 {
-	mAllowedModifiers.insert(Key_Any);
-	mAllowedModifiers.insert(Key_LCtrl);
-	mAllowedModifiers.insert(Key_LShift);
-	mAllowedModifiers.insert(Key_LAlt);
-	mAllowedModifiers.insert(Key_LSuper);
-	mAllowedModifiers.insert(Key_Z);
-	mAllowedModifiers.insert(Key_X);
-	mAllowedModifiers.insert(Key_Y);
+	m_allowed_mods.insert(key_any);
+	m_allowed_mods.insert(key_lctrl);
+	m_allowed_mods.insert(key_lshift);
+	m_allowed_mods.insert(key_lalt);
+	m_allowed_mods.insert(key_lsuper);
+	m_allowed_mods.insert(key_z);
+	m_allowed_mods.insert(key_x);
+	m_allowed_mods.insert(key_y);
 }
 
-uivec2array NSInputMap::resources()
+uivec2array nsinput_map::resources()
 {
 	return uivec2array();
 }
 
-void NSInputMap::nameChange(const uivec2 & oldid, const uivec2 newid)
+void nsinput_map::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 
 }
 
-void NSInputMap::pup(NSFilePUPer * p)
+void nsinput_map::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -299,50 +299,50 @@ void NSInputMap::pup(NSFilePUPer * p)
 }
 
 
-NSInputMap::Trigger::Trigger(
+nsinput_map::trigger::trigger(
 	const nsstring & pName,
-	TState triggerOn,
+	t_state triggerOn,
 	uint interestedAxis):
-	mName(pName),
-	mHashName(0),
-	mTriggerOn(triggerOn),
-	mAxes(interestedAxis)
+	name(pName),
+	hash_name(0),
+	trigger_state(triggerOn),
+	axis_bitfield(interestedAxis)
 	{}
 
-void NSInputMap::Trigger::addKeyModifier(Key mod)
+void nsinput_map::trigger::add_key_mod(key_val mod)
 {
-	mKeyMods.insert(mod);
+	key_modifiers.insert(mod);
 }
 
-void NSInputMap::Trigger::removeKeyModifier(Key mod)
+void nsinput_map::trigger::remove_key_mod(key_val mod)
 {
-	mKeyMods.erase(mod);
+	key_modifiers.erase(mod);
 }
 
-void NSInputMap::Trigger::addMouseModifier(MouseButton mod)
+void nsinput_map::trigger::add_mouse_mod(mouse_button_val mod)
 {
-	mMouseMods.insert(mod);	
+	mouse_modifiers.insert(mod);	
 }
-void NSInputMap::Trigger::removeMouseModifier(MouseButton mod)
+void nsinput_map::trigger::remove_mouse_mod(mouse_button_val mod)
 {
-	mMouseMods.erase(mod);
+	mouse_modifiers.erase(mod);
 }
 		
-const NSInputMap::Trigger & NSInputMap::Trigger::operator=(const Trigger & pRhs)
+const nsinput_map::trigger & nsinput_map::trigger::operator=(const trigger & pRhs)
 {
-	mName = pRhs.mName;
-	mTriggerOn = pRhs.mTriggerOn;
-	mAxes = pRhs.mAxes;
-	mKeyMods = pRhs.mKeyMods;
-	mMouseMods = pRhs.mMouseMods;
+	name = pRhs.name;
+	trigger_state = pRhs.trigger_state;
+	axis_bitfield = pRhs.axis_bitfield;
+	key_modifiers = pRhs.key_modifiers;
+	mouse_modifiers = pRhs.mouse_modifiers;
 	return *this;
 }
 
-bool NSInputMap::Trigger::operator==(const Trigger & pRhs)
+bool nsinput_map::trigger::operator==(const trigger & pRhs)
 {
 	return (
-		mHashName == pRhs.mHashName &&
-		mKeyMods == pRhs.mKeyMods &&
-		mMouseMods == pRhs.mMouseMods
+		hash_name == pRhs.hash_name &&
+		key_modifiers == pRhs.key_modifiers &&
+		mouse_modifiers == pRhs.mouse_modifiers
 		);
 }

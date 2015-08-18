@@ -19,7 +19,7 @@ NSBufferObject::NSBufferObject(TargetBuffer pTarget, StorageMode pStorageMode):
 	mMapped(false),
 	mStorageMode(pStorageMode),
 	mTarget(pTarget),
-	NSGLObject()
+	nsgl_object()
 {}
 
 NSBufferObject::~NSBufferObject()
@@ -28,13 +28,13 @@ NSBufferObject::~NSBufferObject()
 	
 void NSBufferObject::bind()
 {
-	glBindBuffer(mTarget, mGLName);
+	glBindBuffer(mTarget, m_gl_name);
 	GLError("NSBufferObject::bind()");
 }
 
 void NSBufferObject::bind(uint32 pIndex)
 {
-	glBindBufferBase(mTarget, pIndex, mGLName);
+	glBindBufferBase(mTarget, pIndex, m_gl_name);
 	GLError("NSBufferObject::bindBase()");
 }
 
@@ -48,9 +48,9 @@ NSBufferObject::TargetBuffer NSBufferObject::target() const
 	return mTarget;
 }
 
-void NSBufferObject::initGL()
+void NSBufferObject::init_gl()
 {
-	glGenBuffers(1, &mGLName);
+	glGenBuffers(1, &m_gl_name);
 	GLError("NSBufferObject::initGL()");
 }
 
@@ -77,9 +77,9 @@ void NSBufferObject::allocate(UsageFlag pFlag, uint32 pTotalByteSize)
 
 void NSBufferObject::release()
 {
-	if (mGLName != 0)
-		glDeleteBuffers(1, &mGLName);
-	mGLName = 0;
+	if (m_gl_name != 0)
+		glDeleteBuffers(1, &m_gl_name);
+	m_gl_name = 0;
 	mMapped = false;
 	mBufferAllocated = false;
 	GLError("NSBufferObject::release()");

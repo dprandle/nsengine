@@ -1,9 +1,9 @@
 /*! 
 	\file nsentity.h
 	
-	\brief Header file for NSEntity class
+	\brief Header file for nsentity class
 
-	This file contains all of the neccessary declarations for the NSEntity class.
+	This file contains all of the neccessary declarations for the nsentity class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -23,45 +23,45 @@
 #include <nspupper.h>
 
 class NSComponent;
-class NSEntity : public NSResource
+class nsentity : public nsresource
 {
 public:
-	typedef std::unordered_map<uint32, NSComponent*> CompSet;
+	typedef std::unordered_map<uint32, NSComponent*> comp_set;
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSEntity & ent);
+	friend void pup(PUPer & p, nsentity & ent);
 
-	friend void swap(const NSEntity & first, const NSEntity & second);
+	friend void swap(const nsentity & first, const nsentity & second);
 
-	NSEntity();
-	~NSEntity();
+	nsentity();
+	~nsentity();
 
-	NSEntity(NSEntity & copy);
+	nsentity(nsentity & copy);
 
 	bool add(NSComponent * pComp);
 
-	CompSet::iterator begin();
-	CompSet::iterator end();
+	comp_set::iterator begin();
+	comp_set::iterator end();
 
 	void clear();
 
 	bool copy(NSComponent * toCopy, bool overwrite = true);
 
-	template<class CompType>
-	CompType * create()
+	template<class comp_type>
+	comp_type * create()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
-		return static_cast<CompType*>(create(tid));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		return static_cast<comp_type*>(create(tid));
 	}
 
 	NSComponent * create(const nsstring & guid);
 
 	NSComponent * create(uint32 type_id);
 
-	template<class CompType>
+	template<class comp_type>
 	bool del()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
 		return del(tid);
 	}
 
@@ -69,11 +69,11 @@ public:
 
 	bool del(const nsstring & guid);
 
-	template<class CompType>
-	CompType * get()
+	template<class comp_type>
+	comp_type * get()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
-		return static_cast<CompType*>(get(tid));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		return static_cast<comp_type*>(get(tid));
 	}
 
 	NSComponent * get(uint32 type_id);
@@ -82,7 +82,7 @@ public:
 
 	uint32 count();
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	/*!
 	Get the other resources that this Entity uses. This is given by all the components attached to the entity.
@@ -90,10 +90,10 @@ public:
 	*/
 	virtual uivec2array resources();
 	
-	template<class CompType>
+	template<class comp_type>
 	bool has()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
 		return (has(tid));
 	}
 
@@ -103,11 +103,11 @@ public:
 
 	void init();
 
-	template<class CompType>
-	CompType * remove()
+	template<class comp_type>
+	comp_type * remove()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(CompType)));
-		return static_cast<CompType*>(remove(tid));
+		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		return static_cast<comp_type*>(remove(tid));
 	}
 
 	// LEFT OFF HERE
@@ -115,36 +115,36 @@ public:
 
 	NSComponent * remove(const nsstring & guid);
 	
-	void postUpdateAll(bool pUpdate);
+	void post_update_all(bool pUpdate);
 
-	template<class CompType>
-	void postUpdate(bool update)
+	template<class comp_type>
+	void post_update(bool update)
 	{
-		postUpdate(CompType::getTypeString(), update);
+		post_update(comp_type::getTypeString(), update);
 	}
 
-	void postUpdate(const nsstring & compType, bool update);
+	void post_update(const nsstring & compType, bool update);
 
 	virtual void pup(NSFilePUPer * p);
 
-	void updateScene();
+	void update_scene();
 
-	template<class CompType>
-	bool updatePosted()
+	template<class comp_type>
+	bool update_posted()
 	{
-		return updatePosted(CompType::getTypeString());
+		return update_posted(comp_type::getTypeString());
 	}
 
-	bool updatePosted(const nsstring & compType);
+	bool update_posted(const nsstring & compType);
 
-	NSEntity & operator=(NSEntity rhs);
+	nsentity & operator=(nsentity rhs);
 
 private:
-	CompSet mComponents;
+	comp_set m_components;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSEntity & ent)
+void pup(PUPer & p, nsentity & ent)
 {
 	uint32 size = ent.count();
 
@@ -165,8 +165,8 @@ void pup(PUPer & p, NSEntity & ent)
 	}
 	else
 	{
-		auto iter = ent.mComponents.begin();
-		while (iter != ent.mComponents.end())
+		auto iter = ent.m_components.begin();
+		while (iter != ent.m_components.end())
 		{
 			uint32 tform_typeid = nsengine.typeID(std::type_index(typeid(NSTFormComp)));
 			if (iter->first != tform_typeid)

@@ -15,20 +15,20 @@
 
 #include <nsglobal.h>
 
-class NSGLObject
+class nsgl_object
 {
 public:
-	NSGLObject();
-	virtual ~NSGLObject();
+	nsgl_object();
+	virtual ~nsgl_object();
 	virtual void bind()=0;
-	virtual void initGL()=0;
+	virtual void init_gl()=0;
 	virtual void release()=0;
 	virtual void unbind()=0;
 
-	uint32 glid();
+	uint32 gl_id();
 
 protected:
-	uint32 mGLName;
+	uint32 m_gl_name;
 };
 
 #endif

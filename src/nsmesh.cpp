@@ -6,227 +6,227 @@
 //	nsmesh.cpp
 //
 //Description:
-//	This file contains the definition for the NSMesh class functions along with any other helper
+//	This file contains the definition for the nsmesh class functions along with any other helper
 //	functions that will aid in loading/using meshes
 //*-----------------------------------------------------------------------------------------------
 #include <nsmesh.h>
 #include <nsengine.h>
 
-NSMesh::NSMesh(): mNodeTree(new NodeTree())
+nsmesh::nsmesh(): m_node_tree(new node_tree())
 {
-	setExtension(DEFAULT_MESH_EXTENSION);
+	set_ext(DEFAULT_MESH_EXTENSION);
 }
 
-NSMesh::~NSMesh()
+nsmesh::~nsmesh()
 {
-	while (subMeshes.begin() != subMeshes.end())
+	while (m_submeshes.begin() != m_submeshes.end())
 	{
-		delete subMeshes.back();
-		subMeshes.pop_back();
+		delete m_submeshes.back();
+		m_submeshes.pop_back();
 	}
-	delete mNodeTree;
+	delete m_node_tree;
 }
 
-void NSMesh::allocate()
+void nsmesh::allocate()
 {
 	for (uint32 i = 0; i < count(); ++i)
 		allocate(i);
 }
 
-void NSMesh::allocate(uint32 subindex)
+void nsmesh::allocate(uint32 subindex)
 {
-	submesh(subindex)->allocateBuffers();
+	sub(subindex)->allocate_buffers();
 }
 
-void NSMesh::bakeRotation(uint32 subindex, const fquat & pRot)
+void nsmesh::bake_rotation(uint32 subindex, const fquat & pRot)
 {
-	SubMesh * sub = submesh(subindex);
-	if (sub == NULL)
+	submesh * sb = sub(subindex);
+	if (sb == NULL)
 		return;
-	for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+	for (uint32 i = 0; i < sb->positions.size(); ++i)
 	{
-		sub->mPositions[i] = rotationMat3(pRot) * sub->mPositions[i];
-		if (sub->mNormals.size() == sub->mPositions.size())
-			sub->mNormals[i] = rotationMat3(pRot) * sub->mNormals[i];
-		if (sub->mTangents.size() == sub->mPositions.size())
-			sub->mTangents[i] = rotationMat3(pRot) * sub->mTangents[i];
+		sb->positions[i] = rotationMat3(pRot) * sb->positions[i];
+		if (sb->normals.size() == sb->positions.size())
+			sb->normals[i] = rotationMat3(pRot) * sb->normals[i];
+		if (sb->tangents.size() == sb->positions.size())
+			sb->tangents[i] = rotationMat3(pRot) * sb->tangents[i];
 	}
-	sub->allocateBuffers();
-	calcaabb();
+	sb->allocate_buffers();
+	calc_aabb();
 }
 
-void NSMesh::bakeScaling(uint32 subindex, const fvec3 & pScaling)
+void nsmesh::bake_scaling(uint32 subindex, const fvec3 & pScaling)
 {
-	SubMesh * sub = submesh(subindex);
-	if (sub == NULL)
+	submesh * sb = sub(subindex);
+	if (sb == NULL)
 		return;
-	for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+	for (uint32 i = 0; i < sb->positions.size(); ++i)
 	{
-		sub->mPositions[i] %= pScaling;
-		if (sub->mNormals.size() == sub->mPositions.size())
-			sub->mNormals[i] %= pScaling;
-		if (sub->mTangents.size() == sub->mPositions.size())
-			sub->mTangents[i] %= pScaling;
+		sb->positions[i] %= pScaling;
+		if (sb->normals.size() == sb->positions.size())
+			sb->normals[i] %= pScaling;
+		if (sb->tangents.size() == sb->positions.size())
+			sb->tangents[i] %= pScaling;
 	}
-	sub->allocateBuffers();
-	calcaabb();
+	sb->allocate_buffers();
+	calc_aabb();
 }
 
-void NSMesh::bakeTranslation(uint32 subindex, const fvec3 & pTrans)
+void nsmesh::bake_translation(uint32 subindex, const fvec3 & pTrans)
 {
-	SubMesh * sub = submesh(subindex);
-	if (sub == NULL)
+	submesh * sb = sub(subindex);
+	if (sb == NULL)
 		return;
-	for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+	for (uint32 i = 0; i < sb->positions.size(); ++i)
 	{
-		sub->mPositions[i] += pTrans;
-		if (sub->mNormals.size() == sub->mPositions.size())
-			sub->mNormals[i] += pTrans;
-		if (sub->mTangents.size() == sub->mPositions.size())
-			sub->mTangents[i] += pTrans;
+		sb->positions[i] += pTrans;
+		if (sb->normals.size() == sb->positions.size())
+			sb->normals[i] += pTrans;
+		if (sb->tangents.size() == sb->positions.size())
+			sb->tangents[i] += pTrans;
 	}
-	sub->allocateBuffers();
-	calcaabb();
+	sb->allocate_buffers();
+	calc_aabb();
 }
 
-void NSMesh::bake()
+void nsmesh::bake()
 {
 	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
-		SubMesh * sub = submesh(subindex);
-		if (sub == NULL || sub->mNode == NULL)
+		submesh * sb = sub(subindex);
+		if (sb == NULL || sb->node_ == NULL)
 			return;
-		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sb->positions.size(); ++i)
 		{
-			sub->mPositions[i] = (sub->mNode->mWorldTransform * sub->mPositions[i]).xyz();
-			if (sub->mNormals.size() == sub->mPositions.size())
-				sub->mNormals[i] = (sub->mNode->mWorldTransform * sub->mNormals[i]).xyz();
-			if (sub->mTangents.size() == sub->mPositions.size())
-				sub->mTangents[i] = (sub->mNode->mWorldTransform * sub->mTangents[i]).xyz();
+			sb->positions[i] = (sb->node_->world_transform * sb->positions[i]).xyz();
+			if (sb->normals.size() == sb->positions.size())
+				sb->normals[i] = (sb->node_->world_transform * sb->normals[i]).xyz();
+			if (sb->tangents.size() == sb->positions.size())
+				sb->tangents[i] = (sb->node_->world_transform * sb->tangents[i]).xyz();
 		}
-		sub->mNode = NULL;
-		sub->allocateBuffers();
+		sb->node_ = NULL;
+		sb->allocate_buffers();
 	}
 }
 
-void NSMesh::bakeRotation(const fquat & pRot)
+void nsmesh::bake_rotation(const fquat & pRot)
 {
 	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
-		SubMesh * sub = submesh(subindex);
-		if (sub == NULL)
+		submesh * sb = sub(subindex);
+		if (sb == NULL)
 			return;
-		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sb->positions.size(); ++i)
 		{
-			sub->mPositions[i] = rotationMat3(pRot) * sub->mPositions[i];
-			if (sub->mNormals.size() == sub->mPositions.size())
-				sub->mNormals[i] = rotationMat3(pRot) * sub->mNormals[i];
-			if (sub->mTangents.size() == sub->mPositions.size())
-				sub->mTangents[i] = rotationMat3(pRot) * sub->mTangents[i];
+			sb->positions[i] = rotationMat3(pRot) * sb->positions[i];
+			if (sb->normals.size() == sb->positions.size())
+				sb->normals[i] = rotationMat3(pRot) * sb->normals[i];
+			if (sb->tangents.size() == sb->positions.size())
+				sb->tangents[i] = rotationMat3(pRot) * sb->tangents[i];
 		}
-		sub->allocateBuffers();
+		sb->allocate_buffers();
 	}
-	calcaabb();
+	calc_aabb();
 }
 
-void NSMesh::bakeScaling(const fvec3 & pScaling)
+void nsmesh::bake_scaling(const fvec3 & pScaling)
 {
 	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
-		SubMesh * sub = submesh(subindex);
-		if (sub == NULL)
+		submesh * sb = sub(subindex);
+		if (sb == NULL)
 			return;
-		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sb->positions.size(); ++i)
 		{
-			sub->mPositions[i] %= pScaling;
-			if (sub->mNormals.size() == sub->mPositions.size())
-				sub->mNormals[i] %= pScaling;
-			if (sub->mTangents.size() == sub->mPositions.size())
-				sub->mTangents[i] %= pScaling;
+			sb->positions[i] %= pScaling;
+			if (sb->normals.size() == sb->positions.size())
+				sb->normals[i] %= pScaling;
+			if (sb->tangents.size() == sb->positions.size())
+				sb->tangents[i] %= pScaling;
 		}
-		sub->allocateBuffers();
+		sb->allocate_buffers();
 	}
-	calcaabb();
+	calc_aabb();
 }
 
-void NSMesh::bakeTranslation(const fvec3 & pTrans)
+void nsmesh::bake_translation(const fvec3 & pTrans)
 {
 	for (uint32 subindex = 0; subindex < count(); ++subindex)
 	{
-		SubMesh * sub = submesh(subindex);
-		if (sub == NULL)
+		submesh * sb = sub(subindex);
+		if (sb == NULL)
 			return;
-		for (uint32 i = 0; i < sub->mPositions.size(); ++i)
+		for (uint32 i = 0; i < sb->positions.size(); ++i)
 		{
-			sub->mPositions[i] += pTrans;
-			if (sub->mNormals.size() == sub->mPositions.size())
-				sub->mNormals[i] += pTrans;
-			if (sub->mTangents.size() == sub->mPositions.size())
-				sub->mTangents[i] += pTrans;
+			sb->positions[i] += pTrans;
+			if (sb->normals.size() == sb->positions.size())
+				sb->normals[i] += pTrans;
+			if (sb->tangents.size() == sb->positions.size())
+				sb->tangents[i] += pTrans;
 		}
-		sub->allocateBuffers();
+		sb->allocate_buffers();
 	}
-	calcaabb();
+	calc_aabb();
 }
 
-void NSMesh::bakeNodeRotation(const fquat & pRot)
+void nsmesh::bake_node_rotation(const fquat & pRot)
 {
-	transformNode(mNodeTree->mRootNode, fmat4(rotationMat3(pRot)));
-	calcaabb();
+	transform_node(m_node_tree->root_node, fmat4(rotationMat3(pRot)));
+	calc_aabb();
 }
 
-void NSMesh::bakeNodeScaling(const fvec3 & pScaling)
+void nsmesh::bake_node_scaling(const fvec3 & pScaling)
 {
-	transformNode(mNodeTree->mRootNode, scalingMat4(pScaling));
-	calcaabb();
+	transform_node(m_node_tree->root_node, scalingMat4(pScaling));
+	calc_aabb();
 }
 
-void NSMesh::bakeNodeTranslation(const fvec3 & pTrans)
+void nsmesh::bake_node_translation(const fvec3 & pTrans)
 {
-	transformNode(mNodeTree->mRootNode, translationMat4(pTrans));
-	calcaabb();
+	transform_node(m_node_tree->root_node, translationMat4(pTrans));
+	calc_aabb();
 }
 
-void NSMesh::calcaabb()
+void nsmesh::calc_aabb()
 {
-	mBoundingBox.clear();
-	auto iter = subMeshes.begin();
-	while (iter != subMeshes.end())
+	m_bounding_box.clear();
+	auto iter = m_submeshes.begin();
+	while (iter != m_submeshes.end())
 	{
 		fmat4 transform;
-		if ((*iter)->mNode != NULL)
-			transform = (*iter)->mNode->mWorldTransform;
-		(*iter)->calcaabb();
-		mBoundingBox.extend((*iter)->mPositions, transform);
+		if ((*iter)->node_ != NULL)
+			transform = (*iter)->node_->world_transform;
+		(*iter)->calc_aabb();
+		m_bounding_box.extend((*iter)->positions, transform);
 		++iter;
 	}
 }
 
-void NSMesh::flipuv()
+void nsmesh::flip_uv()
 {
-	for (uint32 i = 0; i < subMeshes.size(); ++i)
-		flipuv(i);
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
+		flip_uv(i);
 }
 
-void NSMesh::flipuv(uint32 pSubIndex)
+void nsmesh::flip_uv(uint32 pSubIndex)
 {
-	if (pSubIndex >= subMeshes.size())
+	if (pSubIndex >= m_submeshes.size())
 	{
-		dprint("NSMesh::flipSubUVs Trying to get subMesh with out of range index");
+		dprint("nsmesh::flipSubUVs Trying to get subMesh with out of range index");
 		return;
 	}
-	SubMesh * sub = submesh(pSubIndex);
-	for (uint32 i = 0; i < sub->mTexCoords.size(); ++i)
-		sub->mTexCoords[i].v = 1 - sub->mTexCoords[i].v;
+	submesh * sb = sub(pSubIndex);
+	for (uint32 i = 0; i < sb->tex_coords.size(); ++i)
+		sb->tex_coords[i].v = 1 - sb->tex_coords[i].v;
 
-	sub->mTexBuf.bind();
-	sub->mTexBuf.setData(sub->mTexCoords,
+	sb->tex_buf.bind();
+	sb->tex_buf.setData(sb->tex_coords,
 						 0,
-						 static_cast<uint32>(sub->mTexCoords.size()));
-	sub->mTexBuf.unbind();
+						 static_cast<uint32>(sb->tex_coords.size()));
+	sb->tex_buf.unbind();
 }
 
-void NSMesh::pup(NSFilePUPer * p)
+void nsmesh::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -240,52 +240,52 @@ void NSMesh::pup(NSFilePUPer * p)
 	}
 }
 
-bool NSMesh::contains(SubMesh * submesh)
+bool nsmesh::contains(submesh * submesh)
 {
-	for (uint32 i = 0; i < subMeshes.size(); ++i)
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
 	{
-		if (subMeshes[i] == submesh)
+		if (m_submeshes[i] == submesh)
 			return true;
 	}
 	return false;
 }
 
-bool NSMesh::contains(uint32 subindex)
+bool nsmesh::contains(uint32 subindex)
 {
-	return (submesh(subindex) != NULL);
+	return (sub(subindex) != NULL);
 }
 
-bool NSMesh::contains(const nsstring & subname)
+bool nsmesh::contains(const nsstring & subname)
 {
-	return (submesh(subname) != NULL);
+	return (sub(subname) != NULL);
 }
 
-bool NSMesh::del()
+bool nsmesh::del()
 {
 	bool ret = false;
-	while (subMeshes.begin() != subMeshes.end())
+	while (m_submeshes.begin() != m_submeshes.end())
 	{
-		delete subMeshes.back();
-		subMeshes.pop_back();
+		delete m_submeshes.back();
+		m_submeshes.pop_back();
 		ret = true;
 	}
-	delete mNodeTree;
-	mNodeTree = new NodeTree();
+	delete m_node_tree;
+	m_node_tree = new node_tree();
 	return ret;
 }
 
-bool NSMesh::add(SubMesh * submesh)
+bool nsmesh::add(submesh * submesh)
 {
 	bool ret = !contains(submesh);
 	if (ret)
-		subMeshes.push_back(submesh);
+		m_submeshes.push_back(submesh);
 	return ret;
 }
 
-NSMesh::SubMesh * NSMesh::create()
+nsmesh::submesh * nsmesh::create()
 {
-	SubMesh * subMesh = new SubMesh(this);
-	subMesh->initGL();
+	submesh * subMesh = new submesh(this);
+	subMesh->init_gl();
 	if (!add(subMesh))
 	{
 		delete subMesh;
@@ -294,79 +294,79 @@ NSMesh::SubMesh * NSMesh::create()
 	return subMesh;
 }
 
-void NSMesh::flipnorm()
+void nsmesh::flip_normals()
 {
-	for (uint32 i = 0; i < subMeshes.size(); ++i)
-		flipnorm(i);
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
+		flip_normals(i);
 }
 
-void NSMesh::flipnorm(uint32 pSubIndex)
+void nsmesh::flip_normals(uint32 pSubIndex)
 {
-	if (pSubIndex >= subMeshes.size())
+	if (pSubIndex >= m_submeshes.size())
 	{
-		dprint("NSMesh::flipSubNormals Trying to get subMesh with out of range index");
+		dprint("nsmesh::flipSubNormals Trying to get subMesh with out of range index");
 		return;
 	}
 
-	SubMesh * sub = submesh(pSubIndex);
-	for (uint32 i = 0; i < sub->mNormals.size(); ++i)
+	submesh * sb = sub(pSubIndex);
+	for (uint32 i = 0; i < sb->normals.size(); ++i)
 	{
-		sub->mNormals[i] *= -1.0f;
-		sub->mTangents[i] *= -1.0f;
+		sb->normals[i] *= -1.0f;
+		sb->tangents[i] *= -1.0f;
 	}
 
-	sub->mNormBuf.bind();
-	sub->mNormBuf.setData(sub->mNormals,
+	sb->norm_buf.bind();
+	sb->norm_buf.setData(sb->normals,
 						  0,
-						  static_cast<uint32>(sub->mNormals.size()));
-	sub->mTangBuf.bind();
-	sub->mTangBuf.setData(sub->mTangents,
+						  static_cast<uint32>(sb->normals.size()));
+	sb->tang_buf.bind();
+	sb->tang_buf.setData(sb->tangents,
 						  0,
-						  static_cast<uint32>(sub->mTangents.size()));
-	sub->mNormBuf.unbind();
+						  static_cast<uint32>(sb->tangents.size()));
+	sb->norm_buf.unbind();
 }
 
-void NSMesh::initGL()
+void nsmesh::init_gl()
 {
 	for (uint32 i = 0; i < count(); ++i)
-		initGL(i);
+		init_gl(i);
 }
 
-void NSMesh::initGL(uint32 subindex)
+void nsmesh::init_gl(uint32 subindex)
 {
-	submesh(subindex)->initGL();
+	sub(subindex)->init_gl();
 }
 
-const NSBoundingBox & NSMesh::aabb()
+const NSBoundingBox & nsmesh::aabb()
 {
-	return mBoundingBox;
+	return m_bounding_box;
 }
 
-NSMesh::SubMesh * NSMesh::submesh(const nsstring & pName)
+nsmesh::submesh * nsmesh::sub(const nsstring & pName)
 {
-	SubMeshIter iter = subMeshes.begin();
-	while (iter != subMeshes.end())
+	submesh_iter iter = m_submeshes.begin();
+	while (iter != m_submeshes.end())
 	{
-		if ((*iter)->mName == pName)
+		if ((*iter)->name == pName)
 			return *iter;
 		++iter;
 	}
 	return NULL;
 }
 
-NSMesh::SubMesh * NSMesh::submesh(uint32 pIndex)
+nsmesh::submesh * nsmesh::sub(uint32 pIndex)
 {
-	if (pIndex >= subMeshes.size())
+	if (pIndex >= m_submeshes.size())
 		return NULL;
 
-	return subMeshes[pIndex];
+	return m_submeshes[pIndex];
 }
 
-void NSMesh::init()
+void nsmesh::init()
 {
 }
 
-float NSMesh::volume()
+float nsmesh::volume()
 {
 	float K1 = 1.0f;
 	float K2 = 1.0f;
@@ -376,14 +376,14 @@ float NSMesh::volume()
 
 	float sum = 0.0f;
 
-	for (uint32 subI = 0; subI < subMeshes.size(); ++subI)
+	for (uint32 subI = 0; subI < m_submeshes.size(); ++subI)
 	{
-		NSMesh::SubMesh * sub = submesh(subI);
-		for (uint32 triI = 0; triI < sub->mTriangles.size(); ++triI)
+		nsmesh::submesh * sb = sub(subI);
+		for (uint32 triI = 0; triI < sb->triangles.size(); ++triI)
 		{
-			fvec3 Ai = sub->mPositions[sub->mTriangles[triI][0]];
-			fvec3 Bi = sub->mPositions[sub->mTriangles[triI][1]];
-			fvec3 Ci = sub->mPositions[sub->mTriangles[triI][2]];
+			fvec3 Ai = sb->positions[sb->triangles[triI][0]];
+			fvec3 Bi = sb->positions[sb->triangles[triI][1]];
+			fvec3 Ci = sb->positions[sb->triangles[triI][2]];
 			fvec3 Fr = (Ai + Bi + Ci) / 3.0f;
 			Fr.x *= K1; Fr.y *= K2; Fr.z *= K3;
 
@@ -398,273 +398,273 @@ float NSMesh::volume()
 	return sum;
 }
 
-uint32 NSMesh::count()
+uint32 nsmesh::count()
 {
-	return static_cast<uint32>(subMeshes.size());
+	return static_cast<uint32>(m_submeshes.size());
 }
 
-NSMesh::NodeTree * NSMesh::nodetree()
+nsmesh::node_tree * nsmesh::tree()
 {
-	return mNodeTree;
+	return m_node_tree;
 }
 
-bool NSMesh::del(SubMesh * submesh)
+bool nsmesh::del(submesh * sb)
 {
-	SubMesh * sub = remove(submesh);
-	if (sub == NULL)
+	sb = remove(sb);
+	if (sb == NULL)
 		return false;
-	delete sub;
+	delete sb;
 	return true;
 }
 
-uint32 NSMesh::find(SubMesh * sub)
+uint32 nsmesh::find(submesh * sb)
 {
-	for (uint32 i = 0; i < subMeshes.size(); ++i)
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
 	{
-		if (subMeshes[i] == sub)
+		if (m_submeshes[i] == sb)
 			return i;
 	}
 	return -1;
 }
 
-uint32 NSMesh::find(const nsstring & subname)
+uint32 nsmesh::find(const nsstring & subname)
 {
-	return find(submesh(subname));
+	return find(sub(subname));
 }
 
-bool NSMesh::del(uint32 pIndex)
+bool nsmesh::del(uint32 pIndex)
 {
-	return del(submesh(pIndex));
+	return del(sub(pIndex));
 }
 
-bool NSMesh::del(const nsstring & subname)
+bool nsmesh::del(const nsstring & subname)
 {
-	return del(submesh(subname));
+	return del(sub(subname));
 }
 
-NSMesh::SubMesh * NSMesh::remove(SubMesh * sub)
+nsmesh::submesh * nsmesh::remove(submesh * sb)
 {
-	uint32 cnt = find(sub);
+	uint32 cnt = find(sb);
 	if (cnt == -1)
 		return NULL;
-	auto iter = subMeshes.begin() + cnt;
-	subMeshes.erase(iter);
-	return sub;
+	auto iter = m_submeshes.begin() + cnt;
+	m_submeshes.erase(iter);
+	return sb;
 }
 
-NSMesh::SubMesh * NSMesh::remove(uint32 index)
+nsmesh::submesh * nsmesh::remove(uint32 index)
 {
-	return remove(submesh(index));
+	return remove(sub(index));
 }
 
-NSMesh::SubMesh * NSMesh::remove(const nsstring & name)
+nsmesh::submesh * nsmesh::remove(const nsstring & name)
 {
-	return remove(submesh(name));
+	return remove(sub(name));
 }
 
-uint32 NSMesh::vertcount()
+uint32 nsmesh::vert_count()
 {
 	uint32 total = 0;
-	for (uint32 i = 0; i < subMeshes.size(); ++i)
-		total += static_cast<uint32>(subMeshes[i]->mIndices.size());
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
+		total += static_cast<uint32>(m_submeshes[i]->indices.size());
 	return total;
 }
 
-uint32 NSMesh::vertcount(uint32 pIndex)
+uint32 nsmesh::vert_count(uint32 pIndex)
 {
-	return static_cast<uint32>(subMeshes[pIndex]->mIndices.size());
+	return static_cast<uint32>(m_submeshes[pIndex]->indices.size());
 }
 
-void NSMesh::transformNode(Node * pNode, const fmat4 & pTransform)
+void nsmesh::transform_node(node * pNode, const fmat4 & pTransform)
 {
-	pNode->mNodeTransform = pTransform * pNode->mNodeTransform;
+	pNode->node_transform = pTransform * pNode->node_transform;
 
-	if (pNode->mParentNode != NULL)
-		pNode->mWorldTransform = pNode->mParentNode->mWorldTransform * pNode->mNodeTransform;
+	if (pNode->parent_node != NULL)
+		pNode->world_transform = pNode->parent_node->world_transform * pNode->node_transform;
 	else
-		pNode->mWorldTransform = pNode->mNodeTransform;
+		pNode->world_transform = pNode->node_transform;
 
-	for (uint32 i = 0; i < pNode->mChildNodes.size(); ++i)
-		_propagateWorldTransform(pNode->mChildNodes[i]);
+	for (uint32 i = 0; i < pNode->child_nodes.size(); ++i)
+		_propagate_world_transform(pNode->child_nodes[i]);
 }
 
-void NSMesh::_propagateWorldTransform(Node * pChildNode)
+void nsmesh::_propagate_world_transform(node * pChildNode)
 {
-	if (pChildNode->mParentNode != NULL)
-		pChildNode->mWorldTransform = pChildNode->mParentNode->mWorldTransform * pChildNode->mNodeTransform;
+	if (pChildNode->parent_node != NULL)
+		pChildNode->world_transform = pChildNode->parent_node->world_transform * pChildNode->node_transform;
 	else
-		pChildNode->mWorldTransform = pChildNode->mNodeTransform;
+		pChildNode->world_transform = pChildNode->node_transform;
 
-	for (uint32 i = 0; i < pChildNode->mChildNodes.size(); ++i)
-		_propagateWorldTransform(pChildNode->mChildNodes[i]);
+	for (uint32 i = 0; i < pChildNode->child_nodes.size(); ++i)
+		_propagate_world_transform(pChildNode->child_nodes[i]);
 }
 
-NSMesh::SubMesh::BoneWeightIDs::BoneWeightIDs()
+nsmesh::submesh::joint::joint()
 {
 	for (int32 i = 0; i < BONES_PER_VERTEX; ++i)
 	{
-		boneIDs[i] = 0;
+		bone_ids[i] = 0;
 		weights[i] = 0.0f;
 	}
 }
 
-void NSMesh::SubMesh::BoneWeightIDs::addBoneInfo(uint32 pBoneID, float pWeight)
+void nsmesh::submesh::joint::add_bone(uint32 pBoneID, float pWeight)
 {
 	for (int32 i = 0; i < BONES_PER_VERTEX; ++i)
 	{
 		if (weights[i] == 0.0f)
 		{
-			boneIDs[i] = pBoneID;
+			bone_ids[i] = pBoneID;
 			weights[i] = pWeight;
 			return;
 		}
 	}
 }
 
-NSMesh::SubMesh::SubMesh(NSMesh * pParentMesh): 
-	mPosBuf(NSBufferObject::Array,NSBufferObject::Mutable),
-	mTexBuf(NSBufferObject::Array,NSBufferObject::Mutable),
-	mNormBuf(NSBufferObject::Array,NSBufferObject::Mutable),
-	mTangBuf(NSBufferObject::Array,NSBufferObject::Mutable),
-	mBoneBuf(NSBufferObject::Array,NSBufferObject::Mutable),
-	mIndiceBuf(NSBufferObject::ElementArray,NSBufferObject::Mutable),
-	mPositions(),
-	mTexCoords(),
-	mNormals(),
-	mTangents(),
-	mBoneInfo(),
-	mIndices(),
-	mNode(NULL),
-	mName(),
-	mParentMesh(pParentMesh),
-	mHasTexCoords(false),
-	mSubBoundingBox()
+nsmesh::submesh::submesh(nsmesh * pParentMesh): 
+	pos_buf(NSBufferObject::Array,NSBufferObject::Mutable),
+	tex_buf(NSBufferObject::Array,NSBufferObject::Mutable),
+	norm_buf(NSBufferObject::Array,NSBufferObject::Mutable),
+	tang_buf(NSBufferObject::Array,NSBufferObject::Mutable),
+	joint_buf(NSBufferObject::Array,NSBufferObject::Mutable),
+	indice_buf(NSBufferObject::ElementArray,NSBufferObject::Mutable),
+	positions(),
+	tex_coords(),
+	normals(),
+	tangents(),
+	joints(),
+	indices(),
+	node_(NULL),
+	name(),
+	parent_mesh(pParentMesh),
+	has_tex_coords(false),
+	bounding_box()
 {}
 
-NSMesh::SubMesh::~SubMesh()
+nsmesh::submesh::~submesh()
 {
-	mPosBuf.release();
-	mTexBuf.release();
-	mNormBuf.release();
-	mTangBuf.release();
-	mBoneBuf.release();
-	mIndiceBuf.release();
-	mVAO.release();
+	pos_buf.release();
+	tex_buf.release();
+	norm_buf.release();
+	tang_buf.release();
+	joint_buf.release();
+	indice_buf.release();
+	vao.release();
 }
 
-void NSMesh::SubMesh::allocateBuffers()
+void nsmesh::submesh::allocate_buffers()
 {
-	mPosBuf.bind();
-	mPosBuf.allocate(mPositions,
+	pos_buf.bind();
+	pos_buf.allocate(positions,
 					 NSBufferObject::MutableStaticDraw,
-					 static_cast<uint32>(mPositions.size()));
-	mTexBuf.bind();
-	mTexBuf.allocate(mTexCoords,
+					 static_cast<uint32>(positions.size()));
+	tex_buf.bind();
+	tex_buf.allocate(tex_coords,
 					 NSBufferObject::MutableStaticDraw,
-					 static_cast<uint32>(mTexCoords.size()));
-	mNormBuf.bind();
-	mNormBuf.allocate(mNormals,
+					 static_cast<uint32>(tex_coords.size()));
+	norm_buf.bind();
+	norm_buf.allocate(normals,
 					  NSBufferObject::MutableStaticDraw,
-					  static_cast<uint32>(mNormals.size()));
-	mTangBuf.bind();
-	mTangBuf.allocate(mTangents,
+					  static_cast<uint32>(normals.size()));
+	tang_buf.bind();
+	tang_buf.allocate(tangents,
 					  NSBufferObject::MutableStaticDraw,
-					  static_cast<uint32>(mTangents.size()));
-	mBoneBuf.bind();
-	mBoneBuf.allocate(mBoneInfo,
+					  static_cast<uint32>(tangents.size()));
+	joint_buf.bind();
+	joint_buf.allocate(joints,
 					  NSBufferObject::MutableStaticDraw,
-					  static_cast<uint32>(mBoneInfo.size()));
-	mIndiceBuf.bind();
-	mIndiceBuf.allocate(mIndices,
+					  static_cast<uint32>(joints.size()));
+	indice_buf.bind();
+	indice_buf.allocate(indices,
 						NSBufferObject::MutableStaticDraw,
-						static_cast<uint32>(mIndices.size()));
-	updateVAO();
+						static_cast<uint32>(indices.size()));
+	update_VAO();
 }
 
-void NSMesh::SubMesh::initGL()
+void nsmesh::submesh::init_gl()
 {
-	mPosBuf.initGL();
-	mTexBuf.initGL();
-	mNormBuf.initGL();
-	mTangBuf.initGL();
-	mBoneBuf.initGL();
-	mIndiceBuf.initGL();
-	mVAO.initGL();
+	pos_buf.init_gl();
+	tex_buf.init_gl();
+	norm_buf.init_gl();
+	tang_buf.init_gl();
+	joint_buf.init_gl();
+	indice_buf.init_gl();
+	vao.init_gl();
 }
 
-void NSMesh::SubMesh::calcaabb()
+void nsmesh::submesh::calc_aabb()
 {
-	if (mNode == NULL)
+	if (node_ == NULL)
 		return;
-	mSubBoundingBox.calculate(mPositions,mNode->mWorldTransform);
+	bounding_box.calculate(positions,node_->world_transform);
 }
 
-void NSMesh::SubMesh::resize(uint32 pNewSize)
+void nsmesh::submesh::resize(uint32 pNewSize)
 {
-	mPositions.resize(pNewSize);
-	mTexCoords.resize(pNewSize);
-	mNormals.resize(pNewSize);
-	mTangents.resize(pNewSize);
-	mIndices.resize(pNewSize);
+	positions.resize(pNewSize);
+	tex_coords.resize(pNewSize);
+	normals.resize(pNewSize);
+	tangents.resize(pNewSize);
+	indices.resize(pNewSize);
 }
 
-void NSMesh::SubMesh::updateVAO()
+void nsmesh::submesh::update_VAO()
 {
-	mVAO.bind();
+	vao.bind();
 
-	mPosBuf.bind();
-	mVAO.add(&mPosBuf, NSShader::Position);
-	mVAO.vertexAttribPtr(NSShader::Position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+	pos_buf.bind();
+	vao.add(&pos_buf, nsshader::loc_position);
+	vao.vertexAttribPtr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
-	mTexBuf.bind();
-	mVAO.add(&mTexBuf, NSShader::TexCoords);
-	mVAO.vertexAttribPtr(NSShader::TexCoords, 2, GL_FLOAT, GL_FALSE, sizeof(fvec2), 0);
+	tex_buf.bind();
+	vao.add(&tex_buf, nsshader::loc_tex_coords);
+	vao.vertexAttribPtr(nsshader::loc_tex_coords, 2, GL_FLOAT, GL_FALSE, sizeof(fvec2), 0);
 
-	mNormBuf.bind();
-	mVAO.add(&mNormBuf, NSShader::Normal);
-	mVAO.vertexAttribPtr(NSShader::Normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+	norm_buf.bind();
+	vao.add(&norm_buf, nsshader::loc_normal);
+	vao.vertexAttribPtr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
-	mTangBuf.bind();
-	mVAO.add(&mTangBuf, NSShader::Tangent);
-	mVAO.vertexAttribPtr(NSShader::Tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+	tang_buf.bind();
+	vao.add(&tang_buf, nsshader::loc_tangent);
+	vao.vertexAttribPtr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
-	mBoneBuf.bind();
-	mVAO.add(&mBoneBuf, NSShader::BoneID);
-	mVAO.add(&mBoneBuf, NSShader::BoneWeight);
-	mVAO.vertexAttribIPtr(NSShader::BoneID, 4, GL_INT, sizeof(NSMesh::SubMesh::BoneWeightIDs), 0);
-	mVAO.vertexAttribPtr(NSShader::BoneWeight, 4, GL_FLOAT, GL_FALSE, sizeof(NSMesh::SubMesh::BoneWeightIDs), 4 * sizeof(uint32));
+	joint_buf.bind();
+	vao.add(&joint_buf, nsshader::loc_bone_id);
+	vao.add(&joint_buf, nsshader::loc_joint);
+	vao.vertexAttribIPtr(nsshader::loc_bone_id, 4, GL_INT, sizeof(nsmesh::submesh::joint), 0);
+	vao.vertexAttribPtr(nsshader::loc_joint, 4, GL_FLOAT, GL_FALSE, sizeof(nsmesh::submesh::joint), 4 * sizeof(uint32));
 
-	mIndiceBuf.bind();
+	indice_buf.bind();
 
-	mVAO.unbind();
+	vao.unbind();
 }
 
-NSMesh::Node::Node(const nsstring & pName, Node * pParentNode):mName(pName),
-	mNodeID(0),
-	mNodeTransform(),
-	mWorldTransform(),
-	mParentNode(pParentNode),
-	mChildNodes()
+nsmesh::node::node(const nsstring & pName, node * pParentNode):name(pName),
+	node_id(0),
+	node_transform(),
+	world_transform(),
+	parent_node(pParentNode),
+	child_nodes()
 {}
 
-NSMesh::Node::~Node()
+nsmesh::node::~node()
 {
-	while (mChildNodes.begin() != mChildNodes.end())
+	while (child_nodes.begin() != child_nodes.end())
 	{
-		delete mChildNodes.back();
-		mChildNodes.pop_back();
+		delete child_nodes.back();
+		child_nodes.pop_back();
 	}
 }
 
-NSMesh::Node * NSMesh::Node::findNode(const nsstring & pNodeName)
+nsmesh::node * nsmesh::node::find_node(const nsstring & pNodeName)
 {
-	if (mName == pNodeName)
+	if (name == pNodeName)
 		return this;
 
-	auto iter = mChildNodes.begin();
-	while (iter != mChildNodes.end())
+	auto iter = child_nodes.begin();
+	while (iter != child_nodes.end())
 	{
-		Node * ret = (*iter)->findNode(pNodeName);
+		node * ret = (*iter)->find_node(pNodeName);
 		if (ret != NULL)
 			return ret;
 		++iter;
@@ -672,36 +672,36 @@ NSMesh::Node * NSMesh::Node::findNode(const nsstring & pNodeName)
 	return NULL;
 }
 
-NSMesh::Node * NSMesh::Node::createChild(const nsstring & pName)
+nsmesh::node * nsmesh::node::create_child(const nsstring & pName)
 {
-	Node * childNode = new Node(pName, this);
-	mChildNodes.push_back(childNode);
+	node * childNode = new node(pName, this);
+	child_nodes.push_back(childNode);
 	return childNode;
 }
 
-NSMesh::Bone::Bone(): boneID(0),
+nsmesh::bone::bone(): boneID(0),
 	mOffsetTransform()
 {}
 
-NSMesh::NodeTree::NodeTree(): boneNameMap(),
-	mRootNode(NULL)
+nsmesh::node_tree::node_tree(): bone_name_map(),
+	root_node(NULL)
 {}
 
-NSMesh::Node * NSMesh::NodeTree::findNode(const nsstring & pNodeName)
+nsmesh::node * nsmesh::node_tree::find_node(const nsstring & pNodeName)
 {
-	if (mRootNode == NULL)
+	if (root_node == NULL)
 		return NULL;
-	return mRootNode->findNode(pNodeName);
+	return root_node->find_node(pNodeName);
 }
 
-NSMesh::NodeTree::~NodeTree()
+nsmesh::node_tree::~node_tree()
 {
-	delete mRootNode;
+	delete root_node;
 }
 
-NSMesh::Node * NSMesh::NodeTree::createRootNode(const nsstring & pName)
+nsmesh::node * nsmesh::node_tree::create_root_node(const nsstring & pName)
 {
-	mRootNode = new Node(pName,NULL);
-	mRootNode->mName = pName;
-	return mRootNode;
+	root_node = new node(pName,NULL);
+	root_node->name = pName;
+	return root_node;
 }

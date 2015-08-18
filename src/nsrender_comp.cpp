@@ -62,7 +62,7 @@ const uivec2 & NSRenderComp::meshID()
 	return mMeshID;
 }
 
-void NSRenderComp::nameChange(const uivec2 & oldid, const uivec2 newid)
+void NSRenderComp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	if (mMeshID.x == oldid.x)
 	{

@@ -30,20 +30,20 @@ public:
 class NSKeyEvent : public NSEvent
 {
 public:
-	NSKeyEvent(NSInputMap::Key k, bool pressed) :
+	NSKeyEvent(nsinput_map::key_val k, bool pressed) :
 		mKey(k),
 		mPressed(pressed),
 		NSEvent()
 	{}
 
 	bool mPressed;
-	NSInputMap::Key mKey;
+	nsinput_map::key_val mKey;
 };
 
 class NSMouseButtonEvent : public NSEvent
 {
 public:
-	NSMouseButtonEvent(NSInputMap::MouseButton btn, bool pressed, const fvec2 & normalized_mpos) :
+	NSMouseButtonEvent(nsinput_map::mouse_button_val btn, bool pressed, const fvec2 & normalized_mpos) :
 		mb(btn),
 		mPressed(pressed),
 		mNormMousePos(normalized_mpos),
@@ -51,7 +51,7 @@ public:
 	{}
 
 	fvec2 mNormMousePos;
-	NSInputMap::MouseButton mb;
+	nsinput_map::mouse_button_val mb;
 	bool mPressed;
 };
 
@@ -87,7 +87,7 @@ public:
 	{}
 
 	uint32 mTriggerHashName;
-	NSInputMap::AxisMap axes;
+	nsinput_map::axis_map axes;
 };
 
 class NSStateEvent : public NSActionEvent

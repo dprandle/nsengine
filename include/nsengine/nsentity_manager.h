@@ -1,7 +1,7 @@
 /*! 
 	\file nsentity_manager.h
 	
-	\brief Header file for NSEntityManager class
+	\brief Header file for nsentity_manager class
 
 	This file contains all of the neccessary declarations for the NSEnTempManager class.
 
@@ -10,76 +10,75 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSENTITYMANAGER_H
-#define NSENTITYMANAGER_H
+#ifndef NSENTITY_MANAGER_H
+#define NSENTITY_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsentity.h>
 
-class NSEntityManager : public NSResManager
+class nsentity_manager : public nsres_manager
 {
 public:
 
-	NSEntityManager();
-	~NSEntityManager();
+	nsentity_manager();
+	~nsentity_manager();
 
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSEntity * create(const nsstring & resName)
+	virtual nsentity * create(const nsstring & res_name)
 	{
-		return create<NSEntity>(resName); // Create 2d texture by default
+		return create<nsentity>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSEntity * get(const T & resname)
+	nsentity * get(const T & res_name)
 	{
-		return get<NSEntity>(resname);
+		return get<nsentity>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSEntity * load(const nsstring & fname)
+	nsentity * load(const nsstring & fname)
 	{
-		return load<NSEntity>(fname);
+		return load<nsentity>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSEntity * remove(const T & rname)
+	nsentity * remove(const T & res_name)
 	{
-		return remove<NSEntity>(rname);
+		return remove<nsentity>(res_name);
 	}
 
-	template<class CompType>
+	template<class comp_type>
 	nspentityset entities()
 	{
-		uint32 hashed_type = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 hashed_type = nsengine.typeID(std::type_index(typeid(comp_type)));
 		return entities(hashed_type);
 	}
 
 	nspentityset entities(uint32 comp_type_id);
 
 	nspentityset entities(const nsstring & comp_guid);
-	
 };
 
 #endif

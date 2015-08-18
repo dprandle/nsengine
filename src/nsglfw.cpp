@@ -52,322 +52,322 @@ void glfw_keypress_callback(GLFWwindow * pWindow, int32 pKey, int32 pScancode, i
     switch (pKey)
     {
     case (GLFW_KEY_A) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_A, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_a, pressed);
         break;
     case (GLFW_KEY_B) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_B, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_b, pressed);
         break;
     case (GLFW_KEY_C) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_C, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_c, pressed);
         break;
     case (GLFW_KEY_D) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_D, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_d, pressed);
         break;
     case (GLFW_KEY_E) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_E, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_e, pressed);
         break;
     case (GLFW_KEY_F) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f, pressed);
         break;
     case (GLFW_KEY_G) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_G, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_g, pressed);
         break;
     case (GLFW_KEY_H) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_H, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_h, pressed);
         break;
     case (GLFW_KEY_I) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_I, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_i, pressed);
         break;
     case (GLFW_KEY_J) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_J, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_j, pressed);
         break;
     case (GLFW_KEY_K) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_K, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_k, pressed);
         break;
     case (GLFW_KEY_L) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_L, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_l, pressed);
         break;
     case (GLFW_KEY_M) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_M, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_m, pressed);
         break;
     case (GLFW_KEY_N) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_N, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_n, pressed);
         break;
     case (GLFW_KEY_O) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_O, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_o, pressed);
         break;
     case (GLFW_KEY_P) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_P, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_p, pressed);
         break;
     case (GLFW_KEY_Q) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Q, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_q, pressed);
         break;
     case (GLFW_KEY_R) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_R, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_r, pressed);
         break;
     case (GLFW_KEY_S) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_S, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_s, pressed);
         break;
     case (GLFW_KEY_T) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_T, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_t, pressed);
         break;
     case (GLFW_KEY_U) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_U, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_u, pressed);
         break;
     case (GLFW_KEY_V) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_V, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_v, pressed);
         break;
     case (GLFW_KEY_W) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_W, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_w, pressed);
         break;
     case (GLFW_KEY_X) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_X, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_x, pressed);
         break;
     case (GLFW_KEY_Y) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Y, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_y, pressed);
         break;
     case (GLFW_KEY_Z) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Z, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_z, pressed);
         break;
     case (GLFW_KEY_0) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_0, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_0, pressed);
         break;
     case (GLFW_KEY_1) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_1, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_1, pressed);
         break;
     case (GLFW_KEY_2) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_2, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_2, pressed);
         break;
     case (GLFW_KEY_3) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_3, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_3, pressed);
         break;
     case (GLFW_KEY_4) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_4, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_4, pressed);
         break;
     case (GLFW_KEY_5) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_5, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_5, pressed);
         break;
     case (GLFW_KEY_6) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_6, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_6, pressed);
         break;
     case (GLFW_KEY_7) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_7, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_7, pressed);
         break;
     case (GLFW_KEY_8) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_8, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_8, pressed);
         break;
     case (GLFW_KEY_9) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_9, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_9, pressed);
         break;
     case (GLFW_KEY_GRAVE_ACCENT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_GraveAccent, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_grave_accent, pressed);
         break;
     case (GLFW_KEY_MINUS) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Minus, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_minus, pressed);
         break;
     case (GLFW_KEY_EQUAL) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Equal, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_equal, pressed);
         break;
     case (GLFW_KEY_BACKSPACE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Backspace, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_backspace, pressed);
         break;
     case (GLFW_KEY_TAB) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Tab, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_tab, pressed);
         break;
     case (GLFW_KEY_LEFT_BRACKET) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_LBracket, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_lbracket, pressed);
         break;
     case (GLFW_KEY_RIGHT_BRACKET) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_RBracket, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_rbracket, pressed);
         break;
     case (GLFW_KEY_BACKSLASH) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_BSlash, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_backslash, pressed);
         break;
     case (GLFW_KEY_CAPS_LOCK) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_CapsLock, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_capslock, pressed);
         break;
     case (GLFW_KEY_SEMICOLON) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Semicolon, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_semicolon, pressed);
         break;
     case (GLFW_KEY_APOSTROPHE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Apostrophe, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_apostrophe, pressed);
         break;
     case (GLFW_KEY_ENTER) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Enter, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_enter, pressed);
         break;
     case (GLFW_KEY_LEFT_SHIFT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_LShift, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_lshift, pressed);
         break;
     case (GLFW_KEY_COMMA) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Comma, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_comma, pressed);
         break;
     case (GLFW_KEY_PERIOD) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Period, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_period, pressed);
         break;
     case (GLFW_KEY_SLASH) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_FSlash, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_forwardslash, pressed);
         break;
     case (GLFW_KEY_RIGHT_SHIFT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_RShift, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_rshift, pressed);
         break;
     case (GLFW_KEY_LEFT_CONTROL) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_LCtrl, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_lctrl, pressed);
         break;
     case (GLFW_KEY_LEFT_SUPER) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_LSuper, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_lsuper, pressed);
         break;
     case (GLFW_KEY_LEFT_ALT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_LAlt, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_lalt, pressed);
         break;
     case (GLFW_KEY_SPACE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Space, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_space, pressed);
         break;
     case (GLFW_KEY_RIGHT_ALT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_RAlt, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_ralt, pressed);
         break;
     case (GLFW_KEY_RIGHT_SUPER) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_RSuper, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_rsuper, pressed);
         break;
     case (GLFW_KEY_RIGHT_CONTROL) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_RCtrl, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_rctrl, pressed);
         break;
     case (GLFW_KEY_LEFT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Left, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_left, pressed);
         break;
     case (GLFW_KEY_RIGHT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Right, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_right, pressed);
         break;
     case (GLFW_KEY_UP) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Up, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_up, pressed);
         break;
     case (GLFW_KEY_DOWN) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Down, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_down, pressed);
         break;
     case (GLFW_KEY_ESCAPE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Esc, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_esc, pressed);
         break;
     case (GLFW_KEY_F1) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F1, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f1, pressed);
         break;
     case (GLFW_KEY_F2) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F2, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f2, pressed);
         break;
     case (GLFW_KEY_F3) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F3, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f3, pressed);
         break;
     case (GLFW_KEY_F4) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F4, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f4, pressed);
         break;
     case (GLFW_KEY_F5) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F5, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f5, pressed);
         break;
     case (GLFW_KEY_F6) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F6, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f6, pressed);
         break;
     case (GLFW_KEY_F7) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F7, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f7, pressed);
         break;
     case (GLFW_KEY_F8) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F8, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f8, pressed);
         break;
     case (GLFW_KEY_F9) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F9, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f9, pressed);
         break;
     case (GLFW_KEY_F10) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F10, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f10, pressed);
         break;
     case (GLFW_KEY_F11) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F11, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f11, pressed);
         break;
     case (GLFW_KEY_F12) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F12, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f12, pressed);
         break;
     case (GLFW_KEY_F13) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F13, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f13, pressed);
         break;
     case (GLFW_KEY_F14) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_F14, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_f14, pressed);
         break;
     case (GLFW_KEY_PRINT_SCREEN) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_PrntScrn, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_print_screen, pressed);
         break;
     case (GLFW_KEY_SCROLL_LOCK) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_ScrollLock, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_scroll_lock, pressed);
         break;
     case (GLFW_KEY_PAUSE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Pause, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_pause, pressed);
         break;
     case (GLFW_KEY_INSERT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Insert, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_insert, pressed);
         break;
     case (GLFW_KEY_DELETE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Delete, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_delete, pressed);
         break;
     case (GLFW_KEY_PAGE_UP) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_PGUp, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_page_up, pressed);
         break;
     case (GLFW_KEY_PAGE_DOWN) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_PGDown, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_page_down, pressed);
         break;
     case (GLFW_KEY_HOME) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_Home, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_home, pressed);
         break;
     case (GLFW_KEY_END) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_End, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_end, pressed);
         break;
     case (GLFW_KEY_NUM_LOCK) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_NumLock, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_numlock, pressed);
         break;
     case (GLFW_KEY_KP_DIVIDE) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPDivide, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_divide, pressed);
         break;
     case (GLFW_KEY_KP_MULTIPLY) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPMultiply, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_multiply, pressed);
         break;
     case (GLFW_KEY_KP_SUBTRACT) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPSubtract, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_subtract, pressed);
         break;
     case (GLFW_KEY_KP_ADD) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPAdd, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_add, pressed);
         break;
     case (GLFW_KEY_KP_DECIMAL) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPDecimal, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_decimal, pressed);
         break;
     case (GLFW_KEY_KP_ENTER) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPEnter, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_enter, pressed);
         break;
     case (GLFW_KEY_KP_EQUAL) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KPEqual, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_equal, pressed);
         break;
     case (GLFW_KEY_KP_0) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP0, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_0, pressed);
         break;
     case (GLFW_KEY_KP_1) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP1, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_1, pressed);
         break;
     case (GLFW_KEY_KP_2) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP2, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_2, pressed);
         break;
     case (GLFW_KEY_KP_3) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP3, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_3, pressed);
         break;
     case (GLFW_KEY_KP_4) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP4, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_4, pressed);
         break;
     case (GLFW_KEY_KP_5) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP5, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_5, pressed);
         break;
     case (GLFW_KEY_KP_6) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP6, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_6, pressed);
         break;
     case (GLFW_KEY_KP_7) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP7, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_7, pressed);
         break;
     case (GLFW_KEY_KP_8) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP8, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_8, pressed);
         break;
     case (GLFW_KEY_KP_9) :
-        nsengine.eventDispatch()->push<NSKeyEvent>(NSInputMap::Key_KP9, pressed);
+        nsengine.eventDispatch()->push<NSKeyEvent>(nsinput_map::key_keypad_9, pressed);
         break;
     default:
         break;
@@ -399,25 +399,25 @@ void glfw_mousebutton_callback(GLFWwindow * pWindow, int32 pButton, int32 pActio
     switch (pButton)
     {
     case (GLFW_MOUSE_BUTTON_LEFT) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::LeftButton, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::left_button, pressed, fvec2(normXPos, normYPos));
         break;
     case (GLFW_MOUSE_BUTTON_RIGHT) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::RightButton, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::right_button, pressed, fvec2(normXPos, normYPos));
         break;
     case (GLFW_MOUSE_BUTTON_MIDDLE) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::MiddleButton, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::middle_button, pressed, fvec2(normXPos, normYPos));
         break;
     case (GLFW_MOUSE_BUTTON_4) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::AuxButton1, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::aux_button_1, pressed, fvec2(normXPos, normYPos));
         break;
     case (GLFW_MOUSE_BUTTON_5) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::AuxButton2, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::aux_button_2, pressed, fvec2(normXPos, normYPos));
         break;
     case (GLFW_MOUSE_BUTTON_6) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::AuxButton3, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::aux_button_3, pressed, fvec2(normXPos, normYPos));
         break;
     case (GLFW_MOUSE_BUTTON_7) :
-        nsengine.eventDispatch()->push<NSMouseButtonEvent>(NSInputMap::AuxButton4, pressed, fvec2(normXPos, normYPos));
+        nsengine.eventDispatch()->push<NSMouseButtonEvent>(nsinput_map::aux_button_4, pressed, fvec2(normXPos, normYPos));
         break;
     default:
         break;
@@ -460,7 +460,7 @@ void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset
 
 void glfw_resizewindow_callback(GLFWwindow* window, int32 width, int32 height)
 {
-	NSRenderSystem * rs = nsengine.system<NSRenderSystem>();
+	nsrender_system * rs = nsengine.system<nsrender_system>();
 	if (rs != NULL)
-		rs->resizeScreen(ivec2(width,height));
+		rs->resize_screen(ivec2(width,height));
 }

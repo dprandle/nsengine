@@ -4,8 +4,8 @@
 #include <nsglobal.h>
 class NSComponent;
 class NSSystem;
-class NSResManager;
-class NSResource;
+class nsres_manager;
+class nsresource;
 
 class NSFactory
 {
@@ -37,8 +37,8 @@ class NSResFactory : public NSFactory
 	NSResFactory():
 		NSFactory(Resource)
 	{}
-	virtual NSResource * create() = 0;
-	void setid(NSResource * res);	
+	virtual nsresource * create() = 0;
+	void setid(nsresource * res);	
 	uint32 type_id;
 };
 
@@ -50,29 +50,29 @@ class NSResFactoryType : public NSResFactory
 		NSResFactory()
 	{}
 	
-	NSResource* create() {
-		NSResource * res = new T();
+	nsresource* create() {
+		nsresource * res = new T();
 		setid(res);
 		return res;
 	}
 };
 
-class NSResManagerFactory : public NSFactory
+class nsres_managerFactory : public NSFactory
 {
 public:
-	NSResManagerFactory() : NSFactory(ResManager) {}
-	virtual NSResManager * create() = 0;
-	void setid(NSResManager * manager);
+	nsres_managerFactory() : NSFactory(ResManager) {}
+	virtual nsres_manager * create() = 0;
+	void setid(nsres_manager * manager);
 	uint32 type_id;
 };
 
 template<class T>
-class NSResManagerFactoryType : public NSResManagerFactory
+class nsres_managerFactoryType : public nsres_managerFactory
 {
 public:
-	NSResManagerFactoryType() :NSResManagerFactory() {}
-	NSResManager * create() {
-		NSResManager * rm = new T();
+	nsres_managerFactoryType() :nsres_managerFactory() {}
+	nsres_manager * create() {
+		nsres_manager * rm = new T();
 		setid(rm);
 		return rm;
 	}

@@ -1,9 +1,9 @@
 /*!
 \file nspluginmanager.cpp
 
-\brief Definition file for NSPluginManager class
+\brief Definition file for nsplugin_manager class
 
-This file contains all of the neccessary definitions for the NSPluginManager class.
+This file contains all of the neccessary definitions for the nsplugin_manager class.
 
 \author Daniel Randle
 \date August 23 2014
@@ -20,77 +20,77 @@ This file contains all of the neccessary definitions for the NSPluginManager cla
 #include <nsscene_manager.h>
 #include <nsentity_manager.h>
 
-NSPluginManager::NSPluginManager() :
-NSResManager()
+nsplugin_manager::nsplugin_manager() :
+nsres_manager()
 {
-	setSaveMode(Text);
+	set_save_mode(text);
 }
 
-NSPluginManager::~NSPluginManager()
+nsplugin_manager::~nsplugin_manager()
 {}
 
-bool NSPluginManager::add(NSResource * res)
+bool nsplugin_manager::add(nsresource * res)
 {
-	if (NSResManager::add(res))
+	if (nsres_manager::add(res))
 	{
-		NSPlugin * plug = static_cast<NSPlugin*>(res);
-		plug->setResourceDirectory(mResourceDirForOwnedPlugs);
-		plug->setImportDir(nsengine.importdir());
+		nsplugin * plug = static_cast<nsplugin*>(res);
+		plug->set_res_dir(m_owned_plugins_res_dir);
+		plug->set_import_dir(nsengine.importdir());
 		return true;
 	}
 	return false;
 }
 
-bool NSPluginManager::bind(NSPlugin * plg)
+bool nsplugin_manager::bind(nsplugin * plg)
 {
 	return plg->bind();
 }
 
-void NSPluginManager::setResourceDirectory(const nsstring & pDirectory)
+void nsplugin_manager::set_res_dir(const nsstring & pDirectory)
 {
-	mResourceDirForOwnedPlugs = pDirectory;
-	auto iter = mIDResourceMap.begin();
-	while (iter != mIDResourceMap.end())
+	m_owned_plugins_res_dir = pDirectory;
+	auto iter = m_id_resmap.begin();
+	while (iter != m_id_resmap.end())
 	{
-		NSPlugin * plug = get(iter->first);
-		plug->setResourceDirectory(mResourceDirForOwnedPlugs);
+		nsplugin * plug = get(iter->first);
+		plug->set_res_dir(m_owned_plugins_res_dir);
 		++iter;
 	}
 }
 
-void NSPluginManager::setPluginDirectory(const nsstring & dir)
+void nsplugin_manager::set_plugin_dir(const nsstring & dir)
 {
-	mResourceDirectory = dir;
+	m_res_dir = dir;
 }
 
-const nsstring & NSPluginManager::pluginDirectory()
+const nsstring & nsplugin_manager::plugin_dir()
 {
-	return mResourceDirectory;
+	return m_res_dir;
 }
 
-const nsstring & NSPluginManager::resourceDirectory()
+const nsstring & nsplugin_manager::res_dir()
 {
-	return mResourceDirForOwnedPlugs;
+	return m_owned_plugins_res_dir;
 }
 
-NSPlugin * NSPluginManager::active()
+nsplugin * nsplugin_manager::active()
 {
-	return get(mActivePlugin);
+	return get(m_active_plugin_id);
 }
 
-void NSPluginManager::setActive(NSPlugin * plg)
+void nsplugin_manager::set_active(nsplugin * plg)
 {
 	if (plg != NULL)
 	{
 		if (!plg->bound())
 			plg->bind();
-		mActivePlugin = plg->id();
+		m_active_plugin_id = plg->id();
 	}
 	else
-		mActivePlugin = 0;
+		m_active_plugin_id = 0;
 }
 
-bool NSPluginManager::unbind(NSPlugin * plg)
+bool nsplugin_manager::unbind(nsplugin * plg)
 {
 	return plg->unbind();
 }

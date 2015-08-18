@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the NSSystem class.
 #include <nssystem.h>
 
 NSSystem::NSSystem():
-	mHashedType(0)
+	m_hashed_type(0)
 {}
 
 NSSystem::~NSSystem()
@@ -26,28 +26,28 @@ void NSSystem::draw()
 
 uint32 NSSystem::type()
 {
-	return mHashedType;
+	return m_hashed_type;
 }
 
-int32 NSSystem::drawPriority()
+int32 NSSystem::draw_priority()
 {
 	return NO_DRAW_PR;
 }
 
-void NSSystem::addTriggerHash(uint32 key, const nsstring & trigname)
+void NSSystem::add_trigger_hash(uint32 key, const nsstring & trigname)
 {
-	mHashedInputTriggers.emplace(key,hash_id(trigname));
+	m_hashed_input_triggers.emplace(key,hash_id(trigname));
 }
 
-void NSSystem::removeTriggerHash(uint32 key)
+void NSSystem::remove_trigger_hash(uint32 key)
 {
-	mHashedInputTriggers.erase(key);
+	m_hashed_input_triggers.erase(key);
 }
 
-uint32 NSSystem::triggerHash(uint32 key)
+uint32 NSSystem::trigger_hash(uint32 key)
 {
-	auto fiter = mHashedInputTriggers.find(key);
-	if (fiter != mHashedInputTriggers.end())
+	auto fiter = m_hashed_input_triggers.find(key);
+	if (fiter != m_hashed_input_triggers.end())
 		return fiter->second;
 	return 0;
 }

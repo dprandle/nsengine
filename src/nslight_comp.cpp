@@ -114,7 +114,7 @@ const uivec2 & NSLightComp::meshid() const
 	return mBoundingMeshID;
 }
 
-void NSLightComp::nameChange(const uivec2 & oldid, const uivec2 newid)
+void NSLightComp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	if (mBoundingMeshID.x == oldid.x)
 	{

@@ -1,9 +1,9 @@
 /*! 
 	\file nstex_manager.h
 	
-	\brief Header file for NSTexManager class
+	\brief Header file for nstex_manager class
 
-	This file contains all of the neccessary declarations for the NSTexManager class.
+	This file contains all of the neccessary declarations for the nstex_manager class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -16,80 +16,80 @@
 //Pixel Data Type : the data type assigned to each component of the pixe(ie unsigned byte)
 
 
-#ifndef NSTEXTUREMANAGER_H
-#define NSTEXTUREMANAGER_H
+#ifndef NSTEX_MANAGER_H
+#define NSTEX_MANAGER_H
 
 #include <nsglobal.h>
 #include <nsres_manager.h>
 #include <nstexture.h>
 
-class NSTexManager : public NSResManager
+class nstex_manager : public nsres_manager
 {
 public:
 
-	NSTexManager();
-	~NSTexManager();
+	nstex_manager();
+	~nstex_manager();
 
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & resName)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(resName);
 	}
 
-	virtual NSTex2D * create(const nsstring & resName)
+	virtual nstex2d * create(const nsstring & resName)
 	{
-		return create<NSTex2D>(resName); // Create 2d texture by default
+		return create<nstex2d>(resName); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & rname)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(rname);
 	}
 	
 	template<class T>
-	NSTexture * get(const T & resname)
+	nstexture * get(const T & resname)
 	{
-		return get<NSTexture>(resname);
+		return get<nstexture>(resname);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSTexture * load(const nsstring & fname)
+	nstexture * load(const nsstring & fname)
 	{
-		return load<NSTexture>(fname);
+		return load<nstexture>(fname);
 	}
 
-	virtual NSTexture * load(uint32 res_type_id, const nsstring & fname);
+	virtual nstexture * load(uint32 res_type_id, const nsstring & fname);
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & rname)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(rname);
 	}
 
 	template<class T >
-	NSTexture * remove(const T & rname)
+	nstexture * remove(const T & rname)
 	{
-		return remove<NSTexture>(rname);
+		return remove<nstexture>(rname);
 	}
 
 	template<class T>
 	bool save(const T & res_name, nsstring path="")
 	{
-		NSResource * res = get(res_name);
+		nsresource * res = get(res_name);
 		return save(res, path);
 	}
 
-	virtual bool save(NSResource * res, const nsstring & path);
+	virtual bool save(nsresource * res, const nsstring & path);
 	
-	virtual NSTexCubeMap * loadCubemap(const nsstring & fname);
+	virtual nstex_cubemap * load_cubemap(const nsstring & fname);
 
-	virtual NSTexCubeMap * loadCubemap(const nsstring & pXPlus,
+	virtual nstex_cubemap * load_cubemap(const nsstring & pXPlus,
 									   const nsstring & pXMinus,
 									   const nsstring & pYPlus,
 									   const nsstring & pYMinus,
@@ -97,11 +97,11 @@ public:
 									   const nsstring & pZMinus,
 									   const nsstring & fname);
 
-	virtual NSTex2D * loadImage(const nsstring & fname);
+	virtual nstex2d * load_image(const nsstring & fname);
 
-	virtual bool save(NSTex2D * image, const nsstring & path);
+	virtual bool save(nstex2d * image, const nsstring & path);
 
-	virtual bool save(NSTexCubeMap * cubemap, const nsstring & path);
+	virtual bool save(nstex_cubemap * cubemap, const nsstring & path);
 };
 
 #endif

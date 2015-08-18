@@ -18,7 +18,7 @@ NSFrameBuffer::NSFrameBuffer() : mTarget(ReadAndDraw),
 mDim(),
 mDepthStencilAttachment(NULL),
 mColorAttachments(),
-NSGLObject()
+nsgl_object()
 {}
 
 NSFrameBuffer::~NSFrameBuffer()
@@ -39,17 +39,17 @@ bool NSFrameBuffer::add(Attachment * pAttachment, bool pOverwrite)
 	//bind();
 	if (pAttachment->mRenderBuffer != NULL)
 		// Render buffers always must use the GL_RENDERBUFFER flag.. so I will just pass it explicitly here (no wrapper name)
-		glFramebufferRenderbuffer(mTarget, pAttachment->mAttPoint, GL_RENDERBUFFER, pAttachment->mRenderBuffer->glid());
+		glFramebufferRenderbuffer(mTarget, pAttachment->mAttPoint, GL_RENDERBUFFER, pAttachment->mRenderBuffer->gl_id());
 	else
 	{
 		// I dont see the point in making multiple mipmap levels for a texture right now.. so I am just
 		// going to leave this hardcoded as mip map level 0
 
 		// If attaching a cubemap attach the posX face by default - can be changed with change cubemap face function
-		if (pAttachment->mTexture->textureType() == NSTexture::TexCubeMap)
-			glFramebufferTexture(mTarget, pAttachment->mAttPoint, pAttachment->mTexture->glid(), 0);
+		if (pAttachment->mTexture->texture_type() == nstexture::tex_cubemap)
+			glFramebufferTexture(mTarget, pAttachment->mAttPoint, pAttachment->mTexture->gl_id(), 0);
 		else
-			glFramebufferTexture2D(mTarget, pAttachment->mAttPoint, pAttachment->mTexture->textureType(), pAttachment->mTexture->glid(),0);
+			glFramebufferTexture2D(mTarget, pAttachment->mAttPoint, pAttachment->mTexture->texture_type(), pAttachment->mTexture->gl_id(),0);
 	}
 
 	GLError("NSFrameBuffer::addAttachment");
@@ -80,7 +80,7 @@ bool NSFrameBuffer::add(Attachment * pAttachment, bool pOverwrite)
 void NSFrameBuffer::bind()
 {
 	// use mTarget - easily set with setTarget
-	glBindFramebuffer(mTarget, mGLName);
+	glBindFramebuffer(mTarget, m_gl_name);
 	GLError("NSFrameBuffer::bind");
 }
 
@@ -89,8 +89,8 @@ NSFrameBuffer::Attachment * NSFrameBuffer::create(AttachmentPoint pAttPoint, uin
 	NSRenderBuffer * rBuf = new NSRenderBuffer();
 
 	// Set up render buffer
-	rBuf->initGL();
-	rBuf->setInternalFormat(pInternalFormat);
+	rBuf->init_gl();
+	rBuf->set_internal_format(pInternalFormat);
 	rBuf->setMultisample(pSampleNumber);
 	rBuf->setdim(mDim.w, mDim.h);
 	rBuf->bind();
@@ -101,7 +101,7 @@ NSFrameBuffer::Attachment * NSFrameBuffer::create(AttachmentPoint pAttPoint, uin
 	Attachment * att = new Attachment();
 	att->mAttPoint = pAttPoint;
 	att->mRenderBuffer = rBuf;
-	att->mOwningFB = mGLName;
+	att->mOwningFB = m_gl_name;
 
 	if (!add(att, overwrite))
 	{
@@ -173,9 +173,9 @@ bool NSFrameBuffer::has(AttachmentPoint pAttPoint)
 	return (att != NULL);
 }
 
-void NSFrameBuffer::initGL()
+void NSFrameBuffer::init_gl()
 {
-	glGenFramebuffers(1, &mGLName);
+	glGenFramebuffers(1, &m_gl_name);
 	GLError("NSFrameBuffer::initGL");
 }
 
@@ -183,13 +183,13 @@ void NSFrameBuffer::release()
 {
 	while (mColorAttachments.begin() != mColorAttachments.end())
 	{
-		if (mColorAttachments.back()->mOwningFB == mGLName)
+		if (mColorAttachments.back()->mOwningFB == m_gl_name)
 		{
 			delete mColorAttachments.back();
 			mColorAttachments.pop_back();
 		}
 	}
-	if (mDepthStencilAttachment != NULL && mDepthStencilAttachment->mOwningFB == mGLName)
+	if (mDepthStencilAttachment != NULL && mDepthStencilAttachment->mOwningFB == m_gl_name)
 	{
 		delete mDepthStencilAttachment;
 		mDepthStencilAttachment = NULL;
@@ -197,9 +197,9 @@ void NSFrameBuffer::release()
 
 	// Attachment destructor deletes the render buffer and texture - which in turn release their
 	// open gl resources
-	glDeleteFramebuffers(1, &mGLName);
+	glDeleteFramebuffers(1, &m_gl_name);
 	GLError("NSFrameBuffer::release");
-	mGLName = 0;
+	m_gl_name = 0;
 }
 
 void NSFrameBuffer::resize(uint32 w, uint32 h, uint32 layers)
@@ -217,15 +217,15 @@ void NSFrameBuffer::resize(uint32 w, uint32 h, uint32 layers)
 			(*iter)->mRenderBuffer->resize(w, h);
 		if ((*iter)->mTexture != NULL)
 		{
-			NSTexture::TexType tt = (*iter)->mTexture->textureType();
-			if (tt == NSTexture::Tex1D)
-				((NSTex1D*)(*iter)->mTexture)->resize(w);
-			else if (tt == NSTexture::Tex2D || tt == NSTexture::Tex1DArray)
-				((NSTex2D*)(*iter)->mTexture)->resize(w, h);
-			else if (tt == NSTexture::TexCubeMap)
-				((NSTexCubeMap*)(*iter)->mTexture)->resize(w, h);
-			else if (tt == NSTexture::Tex3D || tt == NSTexture::Tex2DArray)
-				((NSTex3D*)(*iter)->mTexture)->resize(w, h, layers);
+			nstexture::tex_type tt = (*iter)->mTexture->texture_type();
+			if (tt == nstexture::tex_1d)
+				((nstex1d*)(*iter)->mTexture)->resize(w);
+			else if (tt == nstexture::tex_2d || tt == nstexture::tex_1d_array)
+				((nstex2d*)(*iter)->mTexture)->resize(w, h);
+			else if (tt == nstexture::tex_cubemap)
+				((nstex_cubemap*)(*iter)->mTexture)->resize(w, h);
+			else if (tt == nstexture::tex_3d || tt == nstexture::tex_2d_array)
+				((nstex3d*)(*iter)->mTexture)->resize(w, h, layers);
 		}
 		++iter;
 		++m;
@@ -237,26 +237,26 @@ void NSFrameBuffer::resize(uint32 w, uint32 h, uint32 layers)
 			mDepthStencilAttachment->mRenderBuffer->resize(w, h);
 		if (mDepthStencilAttachment->mTexture != NULL)
 		{
-			NSTexture::TexType tt = mDepthStencilAttachment->mTexture->textureType();
-			if (tt == NSTexture::Tex1D)
-				((NSTex1D*)mDepthStencilAttachment->mTexture)->resize(w);
-			else if (tt == NSTexture::Tex2D || tt == NSTexture::Tex1DArray)
-				((NSTex2D*)mDepthStencilAttachment->mTexture)->resize(w, h);
-			else if (tt == NSTexture::TexCubeMap)
-				((NSTexCubeMap*)mDepthStencilAttachment->mTexture)->resize(w, h);
-			else if (tt == NSTexture::Tex3D || tt == NSTexture::Tex2DArray)
-				((NSTex3D*)mDepthStencilAttachment->mTexture)->resize(w, h, layers);
+			nstexture::tex_type tt = mDepthStencilAttachment->mTexture->texture_type();
+			if (tt == nstexture::tex_1d)
+				((nstex1d*)mDepthStencilAttachment->mTexture)->resize(w);
+			else if (tt == nstexture::tex_2d || tt == nstexture::tex_1d_array)
+				((nstex2d*)mDepthStencilAttachment->mTexture)->resize(w, h);
+			else if (tt == nstexture::tex_cubemap)
+				((nstex_cubemap*)mDepthStencilAttachment->mTexture)->resize(w, h);
+			else if (tt == nstexture::tex_3d || tt == nstexture::tex_2d_array)
+				((nstex3d*)mDepthStencilAttachment->mTexture)->resize(w, h, layers);
 		}
 	}
 }
 
-bool NSFrameBuffer::setCubeface(AttachmentPoint pAttPoint, NSTexCubeMap::CubeFace pFace)
+bool NSFrameBuffer::setCubeface(AttachmentPoint pAttPoint, nstex_cubemap::cube_face pFace)
 {
 	Attachment * att = get(pAttPoint);
-	if (att == NULL || att->mTexture == NULL || att->mTexture->textureType() != NSTexture::TexCubeMap)
+	if (att == NULL || att->mTexture == NULL || att->mTexture->texture_type() != nstexture::tex_cubemap)
 		return false;
 
-	glFramebufferTexture2D(mTarget, pAttPoint, pFace, att->mTexture->glid(), 0);
+	glFramebufferTexture2D(mTarget, pAttPoint, pFace, att->mTexture->gl_id(), 0);
 	GLError("NSFrameBuffer::setCubeAttachmentFace");
 
 #ifdef NSDEBUG_RT
@@ -357,21 +357,21 @@ void NSFrameBuffer::NSRenderBuffer::allocate()
 
 void NSFrameBuffer::NSRenderBuffer::bind()
 {
-	glBindRenderbuffer(GL_RENDERBUFFER, mGLName);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_gl_name);
 	GLError("NSFrameBuffer::NSRenderBuffer::bind");
 }
 
-void NSFrameBuffer::NSRenderBuffer::initGL()
+void NSFrameBuffer::NSRenderBuffer::init_gl()
 {
-	glGenRenderbuffers(1, &mGLName);
+	glGenRenderbuffers(1, &m_gl_name);
 	GLError("NSFrameBuffer::NSRenderBuffer::initGL");
 }
 
 void NSFrameBuffer::NSRenderBuffer::release()
 {
-	glDeleteRenderbuffers(1, &mGLName);
+	glDeleteRenderbuffers(1, &m_gl_name);
 	GLError("NSFrameBuffer::NSRenderBuffer::release");
-	mGLName = 0;
+	m_gl_name = 0;
 	mAllocated = false;
 }
 
@@ -401,13 +401,13 @@ void NSFrameBuffer::NSRenderBuffer::resize(int32 w, int32 h)
 	// Only do when absolutely necessary
 	release();
 	mDim.set(w, h);
-	initGL();
+	init_gl();
 	bind();
 	allocate();
 	unbind();
 }
 
-void NSFrameBuffer::NSRenderBuffer::setInternalFormat(int32 pInternalFormat)
+void NSFrameBuffer::NSRenderBuffer::set_internal_format(int32 pInternalFormat)
 {
 	if (mAllocated)
 		return;
@@ -479,7 +479,7 @@ void NSShadowBuffer::bind(const MapType & pMType)
 	}
 }
 
-void NSShadowBuffer::setPointface(const NSTexCubeMap::CubeFace & pFace)
+void NSShadowBuffer::setPointface(const nstex_cubemap::cube_face & pFace)
 {
 	mSpotBuf->setCubeface(NSFrameBuffer::Depth, pFace);
 }
@@ -570,36 +570,36 @@ void NSShadowBuffer::init()
 	mSpotBuf->setTarget(NSFrameBuffer::Draw);
 	mSpotBuf->bind();
 	mSpotBuf->setDrawBuffer(NSFrameBuffer::None);
-	NSFrameBuffer::Attachment * att = mSpotBuf->create<NSTex2D>("SpotLightShadow", NSFrameBuffer::Depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
-	att->mTexture->setParameteri(NSTexture::MinFilter, GL_LINEAR);
-	att->mTexture->setParameteri(NSTexture::MagFilter, GL_LINEAR);
-	att->mTexture->setParameteri(NSTexture::CompareMode, GL_COMPARE_REF_TO_TEXTURE);
-	att->mTexture->setParameteri(NSTexture::CompareFunc, GL_LESS);
-	att->mTexture->setParameteri(NSTexture::WrapS, GL_CLAMP_TO_EDGE);
-	att->mTexture->setParameteri(NSTexture::WrapT, GL_CLAMP_TO_EDGE);
+	NSFrameBuffer::Attachment * att = mSpotBuf->create<nstex2d>("SpotLightShadow", NSFrameBuffer::Depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+	att->mTexture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
+	att->mTexture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
+	att->mTexture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
+	att->mTexture->set_parameter_i(nstexture::compare_func, GL_LESS);
+	att->mTexture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
+	att->mTexture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
 
 	mDirBuf->setTarget(NSFrameBuffer::Draw);
 	mDirBuf->bind();
 	mDirBuf->setDrawBuffer(NSFrameBuffer::None);
-	NSFrameBuffer::Attachment * att2 = mDirBuf->create<NSTex2D>("DirLightShadow", NSFrameBuffer::Depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
-	att2->mTexture->setParameteri(NSTexture::MinFilter, GL_LINEAR);
-	att2->mTexture->setParameteri(NSTexture::MagFilter, GL_LINEAR);
-	att2->mTexture->setParameteri(NSTexture::CompareMode, GL_COMPARE_REF_TO_TEXTURE);
-	att2->mTexture->setParameteri(NSTexture::CompareFunc, GL_LEQUAL);
-	att2->mTexture->setParameteri(NSTexture::WrapS, GL_CLAMP_TO_EDGE);
-	att2->mTexture->setParameteri(NSTexture::WrapT, GL_CLAMP_TO_EDGE);
+	NSFrameBuffer::Attachment * att2 = mDirBuf->create<nstex2d>("DirLightShadow", NSFrameBuffer::Depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+	att2->mTexture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
+	att2->mTexture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
+	att2->mTexture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
+	att2->mTexture->set_parameter_i(nstexture::compare_func, GL_LEQUAL);
+	att2->mTexture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
+	att2->mTexture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
 
 	mPointBuf->setTarget(NSFrameBuffer::Draw);
 	mPointBuf->bind();
 	mPointBuf->setDrawBuffer(NSFrameBuffer::None);
-	NSFrameBuffer::Attachment * att3 = mPointBuf->create<NSTexCubeMap>("PointLightShadow", NSFrameBuffer::Depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
-	att3->mTexture->setParameteri(NSTexture::MinFilter, GL_LINEAR);
-	att3->mTexture->setParameteri(NSTexture::MagFilter, GL_LINEAR);
-	att3->mTexture->setParameteri(NSTexture::CompareMode, GL_COMPARE_REF_TO_TEXTURE);
-	att3->mTexture->setParameteri(NSTexture::CompareFunc, GL_LEQUAL);
-	att3->mTexture->setParameteri(NSTexture::WrapS, GL_CLAMP_TO_EDGE);
-	att3->mTexture->setParameteri(NSTexture::WrapT, GL_CLAMP_TO_EDGE);
-	att3->mTexture->setParameteri(NSTexture::WrapR, GL_CLAMP_TO_EDGE);
+	NSFrameBuffer::Attachment * att3 = mPointBuf->create<nstex_cubemap>("PointLightShadow", NSFrameBuffer::Depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+	att3->mTexture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
+	att3->mTexture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
+	att3->mTexture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
+	att3->mTexture->set_parameter_i(nstexture::compare_func, GL_LEQUAL);
+	att3->mTexture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
+	att3->mTexture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
+	att3->mTexture->set_parameter_i(nstexture::wrap_r, GL_CLAMP_TO_EDGE);
 }
 
 void NSShadowBuffer::resize(uint32 w, uint32 h)
@@ -783,43 +783,43 @@ bool NSGBuffer::_createTextureAttachments()
 
 	// The order these are added here determines the layout in the shader
 	// Diffuse color data texture: layout = 0
-	att = mTexFrameBuffer->create<NSTex2D>("GBufferDiffuse", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Diffuse), G_DIFFUSE_TEX_UNIT, GL_RGBA8, GL_RGBA, GL_FLOAT);
+	att = mTexFrameBuffer->create<nstex2d>("GBufferDiffuse", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Diffuse), G_DIFFUSE_TEX_UNIT, GL_RGBA8, GL_RGBA, GL_FLOAT);
 	if (att != NULL)
 	{
-		att->mTexture->setParameterf(NSTexture::MinFilter, GL_LINEAR);
-		att->mTexture->setParameterf(NSTexture::MagFilter, GL_LINEAR);
+		att->mTexture->set_parameter_f(nstexture::min_filter, GL_LINEAR);
+		att->mTexture->set_parameter_f(nstexture::mag_filter, GL_LINEAR);
 	}
 
 	// Picking data texture: layout = 1
-	att = mTexFrameBuffer->create<NSTex2D>("GBufferPicking", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Picking), G_PICKING_TEX_UNIT, GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT);
+	att = mTexFrameBuffer->create<nstex2d>("GBufferPicking", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Picking), G_PICKING_TEX_UNIT, GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT);
 	if (att != NULL)
 	{
-		att->mTexture->setParameteri(NSTexture::MinFilter, GL_NEAREST);
-		att->mTexture->setParameteri(NSTexture::MagFilter, GL_NEAREST);
+		att->mTexture->set_parameter_i(nstexture::min_filter, GL_NEAREST);
+		att->mTexture->set_parameter_i(nstexture::mag_filter, GL_NEAREST);
 	}
 
 	// Position data texture: layout = 2
-	att = mTexFrameBuffer->create<NSTex2D>("GBufferPosition", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Position), G_WORLD_POS_TEX_UNIT, GL_RGB32F, GL_RGB, GL_FLOAT);
+	att = mTexFrameBuffer->create<nstex2d>("GBufferPosition", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Position), G_WORLD_POS_TEX_UNIT, GL_RGB32F, GL_RGB, GL_FLOAT);
 	if (att != NULL)
 	{
-		att->mTexture->setParameterf(NSTexture::MinFilter, GL_NEAREST);
-		att->mTexture->setParameterf(NSTexture::MagFilter, GL_NEAREST);
+		att->mTexture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
+		att->mTexture->set_parameter_f(nstexture::mag_filter, GL_NEAREST);
 	}
 
 	// Normal data texture: layout = 3
-	att = mTexFrameBuffer->create<NSTex2D>("GBufferNormal", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Normal), G_NORMAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+	att = mTexFrameBuffer->create<nstex2d>("GBufferNormal", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Normal), G_NORMAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	if (att != NULL)
 	{
-		att->mTexture->setParameterf(NSTexture::MinFilter, GL_NEAREST);
-		att->mTexture->setParameterf(NSTexture::MagFilter, GL_NEAREST);
+		att->mTexture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
+		att->mTexture->set_parameter_f(nstexture::mag_filter, GL_NEAREST);
 	}
 
 	// Normal data texture: layout = 4
-	att = mTexFrameBuffer->create<NSTex2D>("GBufferMaterial", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Material), G_MATERIAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+	att = mTexFrameBuffer->create<nstex2d>("GBufferMaterial", NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + Material), G_MATERIAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	if (att != NULL)
 	{
-		att->mTexture->setParameterf(NSTexture::MinFilter, GL_NEAREST);
-		att->mTexture->setParameterf(NSTexture::MagFilter, GL_NEAREST);
+		att->mTexture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
+		att->mTexture->set_parameter_f(nstexture::mag_filter, GL_NEAREST);
 	}
 	mTexFrameBuffer->updateDrawBuffers();
 	return (att != NULL);

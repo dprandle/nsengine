@@ -1,9 +1,9 @@
 /*!
 \file nsresmanager.cpp
 
-\brief Header file for NSResManager class
+\brief Header file for nsres_manager class
 
-This file contains all of the neccessary definitions for the NSResManager class.
+This file contains all of the neccessary definitions for the nsres_manager class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -20,55 +20,55 @@ This file contains all of the neccessary definitions for the NSResManager class.
 
 using namespace nsfileio;
 
-NSResManager::NSResManager():
-mResourceDirectory(),
-mLocalDirectory(),
-mIDResourceMap(),
-mPlugID(),
-mHashedType(0),
-mSaveMode(Binary)
+nsres_manager::nsres_manager():
+m_res_dir(),
+m_local_dir(),
+m_id_resmap(),
+m_plugin_id(),
+m_hashed_type(0),
+m_save_mode(binary)
 {}
 
 
-NSResManager::~NSResManager()
+nsres_manager::~nsres_manager()
 {
-	destroyAll();
+	destroy_all();
 }
 
-bool NSResManager::add(NSResource * res)
+bool nsres_manager::add(nsresource * res)
 {
 	if (res == NULL)
 	{
-		dprint("NSResManager::add Can not add NULL valued resource");
+		dprint("nsres_manager::add Can not add NULL valued resource");
 		return false;
 	}
 
-	auto check = mIDResourceMap.emplace(res->id(), res);
+	auto check = m_id_resmap.emplace(res->id(), res);
 	if (check.second)
 	{
-		dprint("NSResManager::add Successfully added resource with name " + res->name());
-		res->mPlugID = mPlugID;
-		res->mOwned = true;
+		dprint("nsres_manager::add Successfully added resource with name " + res->name());
+		res->m_plugin_id = m_plugin_id;
+		res->m_owned = true;
 	}
 	else
 	{
-		dprint("NSResManager::add Could not add resource with name " + res->name() + " because resource with that name already exists");
+		dprint("nsres_manager::add Could not add resource with name " + res->name() + " because resource with that name already exists");
 	}
 	return check.second;
 	
 }
 
-NSResManager::MapType::iterator NSResManager::begin()
+nsres_manager::map_type::iterator nsres_manager::begin()
 {
-	return mIDResourceMap.begin();
+	return m_id_resmap.begin();
 }
 
-bool NSResManager::changed(NSResource * res, nsstring fname)
+bool nsres_manager::changed(nsresource * res, nsstring fname)
 {
 	if (fname == "")
-		fname = mResourceDirectory + mLocalDirectory + res->subDir() + res->name() + res->extension();
+		fname = m_res_dir + m_local_dir + res->subdir() + res->name() + res->extension();
 
-	saveAs(res, ".tmp");
+	save_as(res, ".tmp");
 
 	nschararray v1, v2;
 	nsfileio::read(".tmp",&v1);
@@ -84,25 +84,25 @@ bool NSResManager::changed(NSResource * res, nsstring fname)
 	return (s1 != s2);
 }
 
-uint32 NSResManager::type()
+uint32 nsres_manager::type()
 {
-	return mHashedType;
+	return m_hashed_type;
 }
 
-NSResource * NSResManager::create(const nsstring & guid_, const nsstring & resName)
+nsresource * nsres_manager::create(const nsstring & guid_, const nsstring & resName)
 {
 	return create(hash_id(guid_), resName);
 }
 
-NSResource * NSResManager::create(uint32 res_type_id, const nsstring & resName)
+nsresource * nsres_manager::create(uint32 res_type_id, const nsstring & resName)
 {
 	// Create the resource and add it to the map - if there is a resource with the same name already
 	// in the map then insertion will have failed, so delete the created resource and retun NULL
-	NSResource * res = nsengine.factory<NSResFactory>(res_type_id)->create();
+	nsresource * res = nsengine.factory<NSResFactory>(res_type_id)->create();
 	res->rename(resName);
 	if (!add(res))
 	{
-		dprint("NSResManager::create Deleting unadded " + nsengine.guid(res_type_id) + " with name " + resName);
+		dprint("nsres_manager::create Deleting unadded " + nsengine.guid(res_type_id) + " with name " + resName);
 		delete res;
 		return NULL;
 	}
@@ -110,82 +110,82 @@ NSResource * NSResManager::create(uint32 res_type_id, const nsstring & resName)
 	return res;
 }
 
-bool NSResManager::contains(NSResource * res)
+bool nsres_manager::contains(nsresource * res)
 {
 	if (res == NULL)
 		return false;
 	return (get(res->id()) != NULL);
 }
 
-uint32 NSResManager::count() const
+uint32 nsres_manager::count() const
 {
-	return static_cast<uint32>(mIDResourceMap.size());
+	return static_cast<uint32>(m_id_resmap.size());
 }
 
-bool NSResManager::del(NSResource * res)
+bool nsres_manager::del(nsresource * res)
 {
-	nsstring dir = mResourceDirectory + mLocalDirectory + res->subDir();
+	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fName = dir + res->name() + res->extension();
 	bool ret = remove_file(fName);
 
 	if (ret)
 	{
-		dprint("NSResManager::del - Succesfully deleted file with name: " + fName);
+		dprint("nsres_manager::del - Succesfully deleted file with name: " + fName);
 		destroy(res);
 	}
 	else
 	{
-		dprint("NSResManager::del - Could not delete file with name: " + fName);
+		dprint("nsres_manager::del - Could not delete file with name: " + fName);
 	}
 	
 	return (ret == 0);
 }
 
-NSResManager::MapType::iterator NSResManager::end()
+nsres_manager::map_type::iterator nsres_manager::end()
 {
-	return mIDResourceMap.end();
+	return m_id_resmap.end();
 }
 
-bool NSResManager::empty()
+bool nsres_manager::empty()
 {
-	return mIDResourceMap.empty();
+	return m_id_resmap.empty();
 }
 
-NSResource * NSResManager::get(uint32 resid)
+nsresource * nsres_manager::get(uint32 resid)
 {
-	MapType::iterator iter = mIDResourceMap.find(resid);
-	if (iter != mIDResourceMap.end())
+	map_type::iterator iter = m_id_resmap.find(resid);
+	if (iter != m_id_resmap.end())
 		return iter->second;
 	return NULL;
 }
 
-NSResource * NSResManager::get(const nsstring & resName)
+nsresource * nsres_manager::get(const nsstring & resName)
 {
 	return get(hash_id(resName));
 }
 
-NSResource * NSResManager::get(NSResource * res)
+nsresource * nsres_manager::get(nsresource * res)
 {
 	return get(res->id());
 }
 
-NSResManager::SaveMode NSResManager::saveMode() const
+nsres_manager::s_mode nsres_manager::save_mode() const
 {
-	return mSaveMode;
+	return m_save_mode;
 }
 
-void NSResManager::setSaveMode(SaveMode sm)
+void nsres_manager::set_save_mode(s_mode sm)
 {
-	mSaveMode = sm;
+	m_save_mode = sm;
 }
 
-NSResource * NSResManager::load(const nsstring & res_guid,
+nsresource * nsres_manager::load(const nsstring & res_guid,
 								const nsstring & fname)
 {
 	return load(hash_id(res_guid), fname);
 }
 
-NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
+nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 {
 	nsstring resName(fname);
 	nsstring resExtension;
@@ -193,7 +193,7 @@ NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
 	nsstring subDir;
 	bool shouldPrefix = false;
 	
-	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
+	nsstring prefixdirs = m_res_dir + m_local_dir;
 
 	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
@@ -219,7 +219,7 @@ NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
 
 	nsfstream file;
 	NSFilePUPer * p;
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::in | nsfstream::binary);
 		p = new NSBinFilePUPer(file, PUP_IN);
@@ -232,12 +232,12 @@ NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
 
 	if (!file.is_open())
 	{
-		dprint("NSResManager::load : Error opening resource file " + fName);
+		dprint("nsres_manager::load : Error opening resource file " + fName);
 		delete p;
 		return NULL;
 	}
 
-	NSResource * res = get(resName);
+	nsresource * res = get(resName);
 	if (res == NULL)
 	{
 		res = create(res_type_id, resName);
@@ -249,19 +249,19 @@ NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
 		return NULL;
 	}
 
-	res->setSubDir(subDir); // should be "" for false appendDirectories is false
-	res->setExtension(resExtension);
+	res->set_subdir(subDir); // should be "" for false appendDirectories is false
+	res->set_ext(resExtension);
 
 	nsstring rt;
 
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 		pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
 	else
 		pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
 
 	if (rt != nsengine.guid(res_type_id))
 	{
-		dprint("NSResManager::load Attempted to load resource type " + nsengine.guid(res_type_id) + " from file that is not of that type: " + fName);
+		dprint("nsres_manager::load Attempted to load resource type " + nsengine.guid(res_type_id) + " from file that is not of that type: " + fName);
 		delete p;
 		file.close();
 		destroy(res);
@@ -270,32 +270,32 @@ NSResource * NSResManager::load(uint32 res_type_id, const nsstring & fname)
 
 
 	res->pup(p);
-	dprint("NSResManager::load - Succesfully loaded resource from file " + fName);
+	dprint("nsres_manager::load - Succesfully loaded resource from file " + fName);
 	delete p;
 	file.close();
 	return res;
 }
 
-const nsstring & NSResManager::localDirectory()
+const nsstring & nsres_manager::local_dir()
 {
-	return mLocalDirectory;
+	return m_local_dir;
 }
 
-const nsstring & NSResManager::resourceDirectory()
+const nsstring & nsres_manager::res_dir()
 {
-	return mResourceDirectory;
+	return m_res_dir;
 }
 
 /*!
 This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
 is then it will update the handle
 */
-void NSResManager::nameChange(const uivec2 & oldid, const uivec2 newid)
+void nsres_manager::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	// first see if we need to remove and re-add
-	if (oldid.x == mPlugID)
+	if (oldid.x == m_plugin_id)
 	{
-		NSResource * res = get<NSResource>(oldid.y);
+		nsresource * res = get<nsresource>(oldid.y);
 		if (res != NULL)
 		{
 			remove(oldid.y);
@@ -303,44 +303,44 @@ void NSResManager::nameChange(const uivec2 & oldid, const uivec2 newid)
 		}
 	}
 
-	MapType::iterator resIter = mIDResourceMap.begin();
-	while (resIter != mIDResourceMap.end())
+	map_type::iterator resIter = m_id_resmap.begin();
+	while (resIter != m_id_resmap.end())
 	{
-		resIter->second->nameChange(oldid, newid);
+		resIter->second->name_change(oldid, newid);
 		++resIter;
 	}
 }
 
-uint32 NSResManager::plugid()
+uint32 nsres_manager::plugin_id()
 {
-	return mPlugID;
+	return m_plugin_id;
 }
 
-NSResource * NSResManager::remove(uint32 res_type_id)
+nsresource * nsres_manager::remove(uint32 res_type_id)
 {
 	return remove((get(res_type_id)));
 }
 
-NSResource * NSResManager::remove(const nsstring & resName)
+nsresource * nsres_manager::remove(const nsstring & resName)
 {
 	return remove((get(resName)));
 }
 
-NSResource * NSResManager::remove(NSResource * res)
+nsresource * nsres_manager::remove(nsresource * res)
 {
 	if (res != NULL)
 	{
-		mIDResourceMap.erase(res->mID);
-		res->mPlugID = 0;
-		res->mOwned = false;
-		dprint("NSResManager::remove - Succesfully removed resource " + res->name());
+		m_id_resmap.erase(res->m_id);
+		res->m_plugin_id = 0;
+		res->m_owned = false;
+		dprint("nsres_manager::remove - Succesfully removed resource " + res->name());
 	}
 	return res;
 }
 
-bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
+bool nsres_manager::rename(const nsstring & oldName, const nsstring & newName)
 {
-	NSResource * res = get(oldName);
+	nsresource * res = get(oldName);
 
 	if (res == NULL) // resource not in map
 		return false;
@@ -348,53 +348,53 @@ bool NSResManager::rename(const nsstring & oldName, const nsstring & newName)
 	res->rename(newName); // name change will propagate
 
 
-	nsstring dir = mResourceDirectory + mLocalDirectory + res->subDir();
+	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fNameOld = dir + oldName + res->extension();
 	nsstring fNameNew = dir + res->name() + res->extension();
 	int32 ret = rename_file(fNameOld.c_str(), fNameNew.c_str());
 			
 	if (ret == 0)
 	{
-		dprint("NSResManager::rename - Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
+		dprint("nsres_manager::rename - Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	else
 	{
-		dprint("NSResManager::rename - Could not rename file with old name: " + oldName + " to file with new name: " + newName);
+		dprint("nsres_manager::rename - Could not rename file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	
 	return (ret == 0);
 }
 
-void NSResManager::saveAll(const nsstring & path, NSSaveResCallback * scallback)
+void nsres_manager::save_all(const nsstring & path, NSSaveResCallback * scallback)
 {
 	// Iterate through resources
-	MapType::iterator iter = mIDResourceMap.begin();
-	while (iter != mIDResourceMap.end())
+	map_type::iterator iter = m_id_resmap.begin();
+	while (iter != m_id_resmap.end())
 	{
 		// Save the current iterated resource to file
 		bool success = save(iter->second, path);
 		if (scallback != NULL)
 		{
 			scallback->saved = success;
-			scallback->resid = iter->second->fullid();
+			scallback->resid = iter->second->full_id();
 			scallback->run();
 		}
 		++iter;
 	}
 }
 
-bool NSResManager::save(NSResource * res,const nsstring & path)
+bool nsres_manager::save(nsresource * res,const nsstring & path)
 {
 	if (res == NULL)
 	{
-		dprint("NSResManager::save : Cannot save NULL valued resource");
+		dprint("nsres_manager::save : Cannot save NULL valued resource");
 		return false;
 	}
 
 	nsstring fName(res->name() + res->extension());
 
 	if (path == "")
-		fName = mResourceDirectory + mLocalDirectory + res->subDir() + fName;
+		fName = m_res_dir + m_local_dir + res->subdir() + fName;
 	else
 		fName = path + fName;
 	// otherwise create in cwd
@@ -402,12 +402,12 @@ bool NSResManager::save(NSResource * res,const nsstring & path)
 	bool fret = create_dir(fName);
 	if (fret)
 	{
-		dprint("NSResManager::save Created directory " + fName);
+		dprint("nsres_manager::save Created directory " + fName);
 	}
 
 	nsfstream file;
 	NSFilePUPer * p;
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::out | nsfstream::binary);
 		p = new NSBinFilePUPer(file, PUP_OUT);
@@ -420,7 +420,7 @@ bool NSResManager::save(NSResource * res,const nsstring & path)
 
 	if (!file.is_open())
 	{
-		dprint("NSResManager::save : Error opening file " + fName);
+		dprint("nsres_manager::save : Error opening file " + fName);
 		delete p;
 		return false;
 	}
@@ -428,65 +428,65 @@ bool NSResManager::save(NSResource * res,const nsstring & path)
 	uint32 hashed_type = res->type();
 	nsstring rest = nsengine.guid(hashed_type);
 
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 		pup(*(static_cast<NSBinFilePUPer*>(p)), rest, "type");
 	else
 		pup(*(static_cast<NSTextFilePUPer*>(p)), rest, "type");
 
 	res->pup(p);
-	dprint("NSResManager::save - Succesfully saved " + rest + " to file " + fName);
+	dprint("nsres_manager::save - Succesfully saved " + rest + " to file " + fName);
 	delete p;
 	file.close();
 	return true;
 }
 
-bool NSResManager::saveAs(NSResource * res, const nsstring & fname)
+bool nsres_manager::save_as(nsresource * res, const nsstring & fname)
 {
 	nsstring origName = res->name();
-	res->rename(nameFromFilename(fname));
-	bool success = save(res, pathFromFilename(fname));
+	res->rename(name_from_filename(fname));
+	bool success = save(res, path_from_filename(fname));
 	res->rename(origName);
 	return success;
 }
 
-void NSResManager::setLocalDirectory(const nsstring & pDirectory)
+void nsres_manager::set_local_dir(const nsstring & pDirectory)
 {
-	mLocalDirectory = pDirectory;
+	m_local_dir = pDirectory;
 }
 
-void NSResManager::setPlugID(uint32 plugid)
+void nsres_manager::set_plugin_id(uint32 plugid)
 {
-	mPlugID = plugid;
+	m_plugin_id = plugid;
 }
 
-void NSResManager::destroyAll()
+void nsres_manager::destroy_all()
 {
 	while (begin() != end())
 	{
 		if (!destroy(begin()->second))
 			return;
 	}
-	mIDResourceMap.clear();
+	m_id_resmap.clear();
 }
 
-bool NSResManager::destroy(NSResource * res)
+bool nsres_manager::destroy(nsresource * res)
 {
-	NSResource * res_ = remove(res);
+	nsresource * res_ = remove(res);
 	if (res_ == NULL)
 	{
-		dprint("NSResManager::destroy - Couldn't destroy " + res_->name());
+		dprint("nsres_manager::destroy - Couldn't destroy " + res_->name());
 		return false;
 	}
 	delete res_;
 	return true;
 }
 
-void NSResManager::setResourceDirectory(const nsstring & pDirectory)
+void nsres_manager::set_res_dir(const nsstring & pDirectory)
 {
-	mResourceDirectory = pDirectory;
+	m_res_dir = pDirectory;
 }
 
-nsstring NSResManager::nameFromFilename(const nsstring & fname)
+nsstring nsres_manager::name_from_filename(const nsstring & fname)
 {
 	// full file path
 	nsstring resName(fname);
@@ -509,7 +509,7 @@ nsstring NSResManager::nameFromFilename(const nsstring & fname)
 	return resName;
 }
 
-nsstring NSResManager::pathFromFilename(const nsstring & fname)
+nsstring nsres_manager::path_from_filename(const nsstring & fname)
 {
 	nsstring path = "";
 

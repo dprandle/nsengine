@@ -1,76 +1,76 @@
 /*! 
 	\file nsanim_manager.h
 	
-	\brief Header file for NSAnimManager class
+	\brief Header file for nsanim_manager class
 
-	This file contains all of the neccessary declarations for the NSAnimManager class.
+	This file contains all of the neccessary declarations for the nsanim_manager class.
 
 	\author Daniel Randle
 	\date December 11 2013
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSANIMMANAGER_H
-#define NSANIMMANAGER_H
+#ifndef NSANIM_MANAGER_H
+#define NSANIM_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsanim_set.h>
 
 struct aiScene;
 
-class NSAnimManager : public NSResManager
+class nsanim_manager : public nsres_manager
 {
 public:
-	NSAnimManager();
-	~NSAnimManager();
+	nsanim_manager();
+	~nsanim_manager();
 
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSAnimSet * create(const nsstring & resName)
+	virtual nsanim_set * create(const nsstring & res_name)
 	{
-		return create<NSAnimSet>(resName); // Create 2d texture by default
+		return create<nsanim_set>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSAnimSet * get(const T & resname)
+	nsanim_set * get(const T & res_name)
 	{
-		return get<NSAnimSet>(resname);
+		return get<nsanim_set>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSAnimSet * load(const nsstring & fname)
+	nsanim_set * load(const nsstring & fname)
 	{
-		return load<NSAnimSet>(fname);
+		return load<nsanim_set>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSAnimSet * remove(const T & rname)
+	nsanim_set * remove(const T & res_name)
 	{
-		return remove<NSAnimSet>(rname);
+		return remove<nsanim_set>(res_name);
 	}
 
-	NSAnimSet * assimpLoadAnimationSet(const aiScene * pScene, const nsstring & pSceneName);
+	nsanim_set * assimp_load_anim_set(const aiScene * assimp_scene, const nsstring & scene_name);
 };
 
 #endif

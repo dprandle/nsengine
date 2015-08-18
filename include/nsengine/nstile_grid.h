@@ -118,7 +118,7 @@ public:
 
 	bool remove(const ivec3array & pSpaces, const fvec3 & pOrigin = fvec3());
 
-	void nameChange(const uivec2 & oldid, const uivec2 newid);
+	void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	static int32 indexX(float pX, bool pOffset);
 	static int32 indexY(float pY);

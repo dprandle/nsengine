@@ -17,7 +17,7 @@
 #include <nsmath.h>
 #include <nspupper.h>
 
-class NSEntity;
+class nsentity;
 class NSEvent;
 class NSTimer;
 
@@ -33,7 +33,7 @@ public:
 
 	virtual NSComponent * copy(const NSComponent * pComp);
 
-	NSEntity * owner();
+	nsentity * owner();
 
 	bool updatePosted() const;
 
@@ -41,7 +41,7 @@ public:
 
 	uint32 type();
 
-	virtual void nameChange(const uivec2 &, const uivec2);
+	virtual void name_change(const uivec2 &, const uivec2);
 
 	/*!
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
@@ -53,13 +53,13 @@ public:
 
 	virtual void postUpdate(bool pUpdate);
 
-	void setOwner(NSEntity * owner);
+	void setOwner(nsentity * owner);
 
 	NSComponent & operator=(const NSComponent & pRHSComp);
 
 protected:
-	NSEntity * mOwner;
-	uint32 mHashedType;
+	nsentity * mOwner;
+	uint32 m_hashed_type;
 	bool mUpdate;
 };
 

@@ -1,0 +1,78 @@
+* TODO Rename Everything [25%]
+** DONE Managers [100%]
+*** DONE NSResManager
+*** DONE NSMatManager
+*** DONE NSTexManager
+*** DONE NSEntityManager
+*** DONE NSPluginManager
+*** DONE NSSceneManager
+*** DONE NSAnimManager
+*** DONE NSInputMapManager
+*** DONE NSMeshManager
+*** DONE NSShaderManager
+** DONE Resource [100%]
+*** DONE NSResource
+*** DONE NSAnimSet
+*** DONE NSMesh
+*** DONE NSShader (and all subclasses)
+*** DONE NSTexture (and all subclasses)
+*** DONE NSMaterial
+*** DONE NSScene
+*** DONE NSPlugin
+*** DONE NSInputMap
+*** DONE NSEntity
+** TODO Systems [11%]
+*** TODO NSSystem
+*** TODO NSRenderSystem
+*** TODO NSInputSystem
+*** TODO NSSelectionSystem
+*** TODO NSMovementSystem
+*** TODO NSCameraSystem
+*** TODO NSAnimationSystem
+*** TODO NSParticleSystem
+*** DONE NSBuildSystem
+** TODO Components [0%]
+*** TODO NSComponent
+*** TODO NSCamComp
+*** TODO NSInputComp
+*** TODO NSSelComp
+*** TODO NSTFormComp
+*** TODO NSRenderComp
+*** TODO NSTileComp
+*** TODO NSTileBrushComp
+*** TODO NSAnimComp
+*** TODO NSTerrainComp
+*** TODO NSLightComp
+*** TODO NSOccupyComp
+*** TODO NSParticleComp
+** TODO Math [0%]
+*** TODO NSQuat
+*** TODO NSVec2
+*** TODO NSVec3
+*** TODO NSVec4
+*** TODO NSMat2
+*** TODO NSMat3
+*** TODO NSMat4
+*** TODO NSQuat
+*** TODO Math functions
+** TODO Other OpenGL Classes [0%]
+*** TODO NSBufferObject
+*** TODO NSGLObject
+*** TODO NSTransformFeedbackObject
+*** TODO NSVertexArrayObject
+*** TODO NSFramebuffer
+** TODO Events [0%]
+*** TODO NSEvent
+*** TODO NSEventDispatcher
+*** TODO NSEventHandler
+** TODO Other [0%]
+*** TODO NSCallback
+*** TODO NSDebug
+*** TODO NSEngine
+*** TODO NSFactory
+*** TODO NSFileos functions
+*** TODO NSLogFile
+*** TODO NSPupper
+*** TODO NSTileGrid
+*** TODO NSTimer
+* TODO Redistribute "nsglobal"

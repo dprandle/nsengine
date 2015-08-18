@@ -1,9 +1,9 @@
 /*! 
 	\file nsrender_system.h
 	
-	\brief Header file for NSRenderSystem class
+	\brief Header file for nsrender_system class
 
-	This file contains all of the neccessary declarations for the NSRenderSystem class.
+	This file contains all of the neccessary declarations for the nsrender_system class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -23,136 +23,136 @@
 #include <nsframebuffer.h>
 
 
-class NSRenderSystem : public NSSystem
+class nsrender_system : public NSSystem
 {
 public:
-	struct DrawCall
+	struct draw_call
 	{
-		DrawCall(NSMesh::SubMesh * pSubMesh,
-			fmat4array * pAnimTransforms,
-			NSBufferObject * pTransformBuffer,
-			NSBufferObject * pTransformIDBuffer,
-			const fvec2 & heightMinMax,
-			uint32 pEntID,
-			uint32 plugID,
-			uint32 pNumTransforms,
-			bool pCastShadows);
-		~DrawCall();
+		draw_call(nsmesh::submesh * submesh_,
+				  fmat4array * anim_transforms_,
+				  NSBufferObject * transform_buffer_,
+				  NSBufferObject * transform_id_buffer_,
+				  const fvec2 & height_minmax_,
+				  uint32 ent_id,
+				  uint32 plug_id,
+				  uint32 transform_count_,
+				  bool casts_shadows_);
+		~draw_call();
 
-		NSMesh::SubMesh * mSubMesh;
-		fmat4array * mAnimTransforms;
-		NSBufferObject * mTransformBuffer;
-		NSBufferObject * mTransformIDBuffer;
-		fvec2 mHeightMinMax;
-		uint32 mEntID;
-		uint32 mPlugID;
-		uint32 mNumTransforms;
-		bool mCastShadows;
+		nsmesh::submesh * submesh;
+		fmat4array * anim_transforms;
+		NSBufferObject * transform_buffer;
+		NSBufferObject * transform_id_buffer;
+		fvec2 height_minmax;
+		uint32 entity_id;
+		uint32 plugin_id;
+		uint32 transform_count;
+		bool casts_shadows;
 
-		bool operator<(const DrawCall & rhs) const;
-		bool operator<=(const DrawCall & rhs) const;
-		bool operator>(const DrawCall & rhs) const;
-		bool operator>=(const DrawCall & rhs) const;
-		bool operator!=(const DrawCall & rhs) const;
-		bool operator==(const DrawCall & rhs) const;
+		bool operator<(const draw_call & rhs) const;
+		bool operator<=(const draw_call & rhs) const;
+		bool operator>(const draw_call & rhs) const;
+		bool operator>=(const draw_call & rhs) const;
+		bool operator!=(const draw_call & rhs) const;
+		bool operator==(const draw_call & rhs) const;
 	};
 
 	struct RenderShaders
 	{
 		RenderShaders() :
-			mDefaultShader(NULL),
-			mEarlyZShader(NULL),
-			mLightStencilShader(NULL),
-			mDirLightShader(NULL),
-			mPointLightShader(NULL),
-			mSpotLightShader(NULL),
-			mPointShadowShader(NULL),
-			mSpotShadowShader(NULL),
-			mDirShadowShader(NULL),
-			mGBufDefaultXFB(NULL),
-			mGBufDefaultXBFRender(NULL),
-			mXFBEarlyZ(NULL),
-			mXFBDirShadowMap(NULL),
-			mXFBPointShadowMap(NULL),
-			mXFBSpotShadowMap(NULL)
+			deflt(NULL),
+			early_z(NULL),
+			light_stencil(NULL),
+			dir_light(NULL),
+			point_light(NULL),
+			spot_light(NULL),
+			point_shadow(NULL),
+			spot_shadow(NULL),
+			dir_shadow(NULL),
+			xfb_default(NULL),
+			xfb_render(NULL),
+			xfb_earlyz(NULL),
+			xfb_dir_shadow(NULL),
+			xfb_point_shadow(NULL),
+			xfb_spot_shadow(NULL)
 		{}
 
-		NSMaterialShader * mDefaultShader;
-		NSEarlyZShader * mEarlyZShader;
-		NSLightStencilShader * mLightStencilShader;
-		NSDirLightShader * mDirLightShader;
-		NSPointLightShader * mPointLightShader;
-		NSSpotLightShader * mSpotLightShader;
-		NSPointShadowMapShader * mPointShadowShader;
-		NSSpotShadowMapShader * mSpotShadowShader;
-		NSDirShadowMapShader * mDirShadowShader;
-		NSXFBShader * mGBufDefaultXFB;
-		NSRenderXFBShader * mGBufDefaultXBFRender;
-		NSEarlyZXFBShader * mXFBEarlyZ;
-		NSDirShadowMapXFBShader * mXFBDirShadowMap;
-		NSPointShadowMapXFBShader * mXFBPointShadowMap;
-		NSSpotShadowMapXFBShader * mXFBSpotShadowMap;
+		nsmaterial_shader * deflt;
+		nsearlyz_shader * early_z;
+		nslight_stencil_shader * light_stencil;
+		nsdir_light_shader * dir_light;
+		nspoint_light_shader * point_light;
+		nsspot_light_shader * spot_light;
+		nspoint_shadowmap_shader * point_shadow;
+		nsspot_shadowmap_shader * spot_shadow;
+		nsdir_shadowmap_shader * dir_shadow;
+		nsxfb_shader * xfb_default;
+		nsrender_xfb_shader * xfb_render;
+		nsearlyz_xfb_shader * xfb_earlyz;
+		nsdir_shadowmap_xfb_shader * xfb_dir_shadow;
+		nspoint_shadowmap_xfb_shader * xfb_point_shadow;
+		nsspot_shadowmap_xfb_shader * xfb_spot_shadow;
 
 		bool error()
 		{
 			return (
-				mDefaultShader->error() != NSShader::None ||
-				mEarlyZShader->error() != NSShader::None ||
-				mLightStencilShader->error() != NSShader::None ||
-				mDirLightShader->error() != NSShader::None ||
-				mPointLightShader->error() != NSShader::None ||
-				mSpotLightShader->error() != NSShader::None ||
-				mPointShadowShader->error() != NSShader::None ||
-				mSpotShadowShader->error() != NSShader::None ||
-				mDirShadowShader->error() != NSShader::None ||
-				mGBufDefaultXFB->error() != NSShader::None ||
-				mXFBEarlyZ->error() != NSShader::None ||
-				mXFBDirShadowMap->error() != NSShader::None ||
-				mXFBPointShadowMap->error() != NSShader::None ||
-				mXFBSpotShadowMap->error() != NSShader::None ||
-				mGBufDefaultXBFRender->error() != NSShader::None);
+				deflt->error() != nsshader::error_none ||
+				early_z->error() != nsshader::error_none ||
+				light_stencil->error() != nsshader::error_none ||
+				dir_light->error() != nsshader::error_none ||
+				point_light->error() != nsshader::error_none ||
+				spot_light->error() != nsshader::error_none ||
+				point_shadow->error() != nsshader::error_none ||
+				spot_shadow->error() != nsshader::error_none ||
+				dir_shadow->error() != nsshader::error_none ||
+				xfb_default->error() != nsshader::error_none ||
+				xfb_earlyz->error() != nsshader::error_none ||
+				xfb_dir_shadow->error() != nsshader::error_none ||
+				xfb_point_shadow->error() != nsshader::error_none ||
+				xfb_spot_shadow->error() != nsshader::error_none ||
+				xfb_render->error() != nsshader::error_none);
 		}
 
 		bool valid()
 		{
 			return (
-				mDefaultShader != NULL &&
-				mEarlyZShader != NULL &&
-				mLightStencilShader != NULL &&
-				mDirLightShader != NULL &&
-				mPointLightShader != NULL &&
-				mSpotLightShader != NULL &&
-				mPointShadowShader != NULL &&
-				mSpotShadowShader != NULL &&
-				mDirShadowShader != NULL &&
-				mGBufDefaultXFB != NULL &&
-				mXFBEarlyZ != NULL &&
-				mXFBDirShadowMap != NULL &&
-				mXFBPointShadowMap != NULL &&
-				mXFBSpotShadowMap != NULL &&
-				mGBufDefaultXBFRender != NULL);
+				deflt != NULL &&
+				early_z != NULL &&
+				light_stencil != NULL &&
+				dir_light != NULL &&
+				point_light != NULL &&
+				spot_light != NULL &&
+				point_shadow != NULL &&
+				spot_shadow != NULL &&
+				dir_shadow != NULL &&
+				xfb_default != NULL &&
+				xfb_earlyz != NULL &&
+				xfb_dir_shadow != NULL &&
+				xfb_point_shadow != NULL &&
+				xfb_spot_shadow != NULL &&
+				xfb_render != NULL);
 		}
 	};
 
-	typedef std::set<DrawCall> DCSet;
-	typedef std::map<NSMaterial*, DCSet> MatDCMap;
-	typedef std::map<NSMaterialShader*, nspmatset> ShaderMaterialMap;
-	typedef std::set<NSEntity*> XFBDrawSet;
+	typedef std::set<draw_call> drawcall_set;
+	typedef std::map<nsmaterial*, drawcall_set> mat_drawcall_map;
+	typedef std::map<nsmaterial_shader*, nspmatset> shader_mat_map;
+	typedef std::set<nsentity*> xfb_draw_set;
 
-	NSRenderSystem();
-	~NSRenderSystem();
+	nsrender_system();
+	~nsrender_system();
 
-	void blitFinalFrame();
+	void blit_final_frame();
 
 	void draw();
 
-	void enableEarlyZ(bool pEnable);
+	void enable_earlyz(bool pEnable);
 
-	void enableDebugDraw(bool pDebDraw);
+	void enable_debug_draw(bool pDebDraw);
 
-	void enableLighting(bool pEnable);
+	void enable_lighting(bool pEnable);
 
-	NSMaterial * defaultMat();
+	nsmaterial * default_mat();
 
 	uivec3 pick(float mousex, float mousey);
 
@@ -160,74 +160,74 @@ public:
 
 	virtual void init();
 
-	void resizeScreen(const ivec2 & size);
+	void resize_screen(const ivec2 & size);
 
-	const ivec2 & screenSize();
+	const ivec2 & screen_size();
 
-	uivec3 shadowfbo();
+	uivec3 shadow_fbo();
 
-	uint32 finalfbo();
+	uint32 final_fbo();
 
-	uint32 gbufferfbo();
+	uint32 gbuffer_fbo();
 
-	uint32 boundfbo();
+	uint32 bound_fbo();
 
-	uint32 screenfbo();
+	uint32 screen_fbo();
 
-	void setScreenfbo(uint32 fbo);
+	void set_screen_fbo(uint32 fbo);
 
-	bool debugDraw();
+	bool debug_draw();
 
-	void setDefaultMat(NSMaterial * pDefMaterial);
+	void set_default_mat(nsmaterial * pDefMaterial);
 
-	void setShaders(const RenderShaders & pShaders);
+	void set_shaders(const RenderShaders & pShaders);
 
-	void setGBufferfbo(uint32 fbo);
+	void set_gbuffer_fbo(uint32 fbo);
 
-	void setFinalfbo(uint32 fbo);
+	void set_final_fbo(uint32 fbo);
 
-	void setShadowfbo(uint32 fbo1, uint32 fbo2, uint32 fbo3);
+	void set_shadow_fbo(uint32 fbo1, uint32 fbo2, uint32 fbo3);
 
-	void toggleDebugDraw();
+	void toggle_debug_draw();
 
 	void update();
 
-	virtual int32 drawPriority();
+	virtual int32 draw_priority();
 
-	virtual int32 updatePriority();
+	virtual int32 update_priority();
 
 private:
-	void _blendDirectionLight(NSLightComp * pLight);
-	void _blendPointLight(NSLightComp * pLight);
-	void _blendSpotLight(NSLightComp * pLight);
-	void _stencilPointLight(NSLightComp * pLight);
-	void _stencilSpotLight(NSLightComp * pLight);
-	void _drawGeometry();
-	void _drawTransformFeedbacks();
-	void _drawSceneToDepth(NSDepthShader * pShader);
-	void _drawSceneToDepthXFB(NSShader * pShader);
-	void _drawCall(DCSet::iterator pDCIter);
-	bool _validCheck();
+	void _blend_dir_light(NSLightComp * pLight);
+	void _blend_point_light(NSLightComp * pLight);
+	void _blend_spot_light(NSLightComp * pLight);
+	void _stencil_point_light(NSLightComp * pLight);
+	void _stencil_spot_light(NSLightComp * pLight);
+	void _draw_geometry();
+	void _draw_xfbs();
+	void _draw_scene_to_depth(nsdepth_shader * pShader);
+	void _draw_scene_to_depth_xfb(nsshader * pShader);
+	void _draw_call(drawcall_set::iterator pDCIter);
+	bool _valid_check();
 
-	bool mDebugDraw;
-	bool mEarlyZEnabled;
-	bool mLightingEnabled;
+	bool m_debug_draw;
+	bool m_earlyz_enabled;
+	bool m_lighting_enabled;
 
-	ivec2 mScreenSize;
+	ivec2 m_screen_size;
 
 
-	MatDCMap mDrawCallMap;
+	mat_drawcall_map m_drawcall_map;
 	//MatDCMap mTransparentDrawCallMap;
-	ShaderMaterialMap mShaderMatMap;
+	shader_mat_map m_shader_mat_map;
 	//ShaderMaterialMap mTransparentShaderMatMap;
-	XFBDrawSet mXFBDraws;
-	uint32 mScreenfbo;
+	xfb_draw_set m_xfb_draws;
+	uint32 m_screen_fbo;
 
-	NSGBuffer * mGBuffer;
-	NSShadowBuffer * mShadowBuf;
-	NSFrameBuffer * mFinalBuf;
-	NSMaterial * mDefaultMaterial;
-	RenderShaders mShaders;
+	NSGBuffer * m_gbuffer;
+	NSShadowBuffer * m_shadow_buf;
+	NSFrameBuffer * m_final_buf;
+	nsmaterial * m_default_mat;
+	RenderShaders m_shaders;
 };
 
 #endif

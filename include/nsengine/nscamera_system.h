@@ -93,7 +93,7 @@ public:
 
 	void toggleMode();
 
-	virtual int32 updatePriority();
+	virtual int32 update_priority();
 
 private:
 

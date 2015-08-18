@@ -36,7 +36,7 @@ public:
 
 	float & elapsed();
 
-	void fillBones(NSMesh::NodeTree * pNodeTree, NSAnimSet::AnimationData * pCurrentAnim);
+	void fillBones(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim);
 
 	const uivec2 & animationSetID();
 
@@ -44,7 +44,7 @@ public:
 
 	fmat4array * finalTransforms();
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	/*!
 	Get the resources that the component uses. For the animation component that is simply an AnimSet
@@ -77,7 +77,7 @@ public:
 	NSAnimComp & operator=(const NSAnimComp & pRHSComp);
 
 private:
-	void _fillBoneTransform(NSMesh::NodeTree * pNodeTree, NSMesh::Node * pNode, NSAnimSet::AnimationData * pCurrentAnim, fmat4 & pParentTransform);
+	void _fillBoneTransform(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform);
 
 	float mElapsedTime;
 	

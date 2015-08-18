@@ -21,7 +21,7 @@ This file contains all of the neccessary declarations for the NSVertexArrayObjec
 
 class NSBufferObject;
 
-class NSVertexArrayObject : public NSGLObject
+class NSVertexArrayObject : public nsgl_object
 {
 public:
 	typedef std::map<uint32,std::set<uint32>> BufferMap;
@@ -37,7 +37,7 @@ public:
 
 	void disable(uint32 pAttLoc);
 
-	void initGL();
+	void init_gl();
 
 	void remove(NSBufferObject * mBuffer);
 

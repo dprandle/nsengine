@@ -1,4 +1,4 @@
-type:<nsstring>NSParticleRenderShaderstage:35632</nsstring>
+type:<nsstring>nsparticle_render_shaderstage:35632</nsstring>
 fragment.type:<uint32>5632</uint32>
 fragment.source:<nsstring>#version 440
 

@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the NSVertexArrayObject
 #include <nsbuffer_object.h>
 
 NSVertexArrayObject::NSVertexArrayObject() :
-NSGLObject()
+nsgl_object()
 {}
 
 /*!
@@ -23,19 +23,19 @@ Add the buffer to the VAO - the buffer must be bound before adding
 */
 void NSVertexArrayObject::add(NSBufferObject * mBuffer, uint32 pAttLoc)
 {
-	mOwnedBuffers[mBuffer->glid()].emplace(pAttLoc);
+	mOwnedBuffers[mBuffer->gl_id()].emplace(pAttLoc);
 	enable(pAttLoc);
 }
 
 void NSVertexArrayObject::bind()
 {
-	glBindVertexArray(mGLName);
+	glBindVertexArray(m_gl_name);
 	GLError("NSVertexArrayObject::bind()");
 }
 
 bool NSVertexArrayObject::contains(NSBufferObject * pBuffer)
 {
-	return (mOwnedBuffers.find(pBuffer->glid()) != mOwnedBuffers.end());
+	return (mOwnedBuffers.find(pBuffer->gl_id()) != mOwnedBuffers.end());
 }
 
 void NSVertexArrayObject::enable(uint32 pAttLoc)
@@ -50,15 +50,15 @@ void NSVertexArrayObject::disable(uint32 pAttLoc)
 	GLError("NSVertexArrayObject::disableAttribute()");
 }
 
-void NSVertexArrayObject::initGL()
+void NSVertexArrayObject::init_gl()
 {
-	glGenVertexArrays(1, &mGLName);
+	glGenVertexArrays(1, &m_gl_name);
 	GLError("NSVertexArrayObject::initGL()");
 }
 
 void NSVertexArrayObject::remove(NSBufferObject * mBuffer)
 {
-	auto itemSet = mOwnedBuffers.find(mBuffer->glid());
+	auto itemSet = mOwnedBuffers.find(mBuffer->gl_id());
 	if (itemSet == mOwnedBuffers.end())
 		return;
 	auto curItem = itemSet->second.begin();
@@ -67,7 +67,7 @@ void NSVertexArrayObject::remove(NSBufferObject * mBuffer)
 		disable(*curItem);
 		++curItem;
 	}
-	mOwnedBuffers.erase(mBuffer->glid());
+	mOwnedBuffers.erase(mBuffer->gl_id());
 }
 
 /*!
@@ -75,7 +75,7 @@ Remove the buffer from the VAO - the buffer must be bound before removing
 */
 void NSVertexArrayObject::remove(NSBufferObject * mBuffer, uint32 pAttLoc)
 {
-	auto item = mOwnedBuffers.find(mBuffer->glid());
+	auto item = mOwnedBuffers.find(mBuffer->gl_id());
 	if (item != mOwnedBuffers.end())
 	{
 		size_t i = item->second.erase(pAttLoc);
@@ -83,7 +83,7 @@ void NSVertexArrayObject::remove(NSBufferObject * mBuffer, uint32 pAttLoc)
 		{
 			disable(pAttLoc);
 			if (item->second.empty())
-				mOwnedBuffers.erase(mBuffer->glid());
+				mOwnedBuffers.erase(mBuffer->gl_id());
 		}
 	}
 	
@@ -91,8 +91,8 @@ void NSVertexArrayObject::remove(NSBufferObject * mBuffer, uint32 pAttLoc)
 
 void NSVertexArrayObject::release()
 {
-	glDeleteVertexArrays(1, &mGLName);
-	mGLName = 0;
+	glDeleteVertexArrays(1, &m_gl_name);
+	m_gl_name = 0;
 	GLError("NSVertexArrayObject::release()");
 }
 

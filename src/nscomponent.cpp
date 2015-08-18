@@ -15,7 +15,7 @@
 NSComponent::NSComponent(): 
 mOwner(NULL),
 mUpdate(true),
-mHashedType(0)
+m_hashed_type(0)
 {}
 
 NSComponent::~NSComponent()
@@ -28,7 +28,7 @@ NSComponent * NSComponent::copy(const NSComponent * pComp)
 	return this;
 }
 
-NSEntity * NSComponent::owner()
+nsentity * NSComponent::owner()
 {
 	return mOwner;
 }
@@ -45,10 +45,10 @@ void NSComponent::postUpdate(bool pUpdate)
 
 uint32 NSComponent::type()
 {
-	return mHashedType;
+	return m_hashed_type;
 }
 
-void NSComponent::nameChange(const uivec2 & oldid, const uivec2 newid)
+void NSComponent::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	// do nothing
 }
@@ -67,7 +67,7 @@ uivec2array NSComponent::resources()
 	return uivec2array();
 }
 
-void NSComponent::setOwner(NSEntity * owner)
+void NSComponent::setOwner(nsentity * owner)
 {
 	mOwner = owner;
 }

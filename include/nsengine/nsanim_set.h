@@ -1,9 +1,9 @@
 /*! 
 	\file nsanim_set.h
 	
-	\brief Header file for NSAnimSet class
+	\brief Header file for nsanim_set class
 
-	This file contains all of the neccessary declarations for the NSAnimSet class.
+	This file contains all of the neccessary declarations for the nsanim_set class.
 
 	\author Daniel Randle
 	\date December 11 2013
@@ -23,110 +23,110 @@
 #include <nsmath.h>
 #include <nspupper.h>
 
-class NSAnimSet : public NSResource
+class nsanim_set : public nsresource
 {
 public:
-	struct AnimationData
+	struct animation_data
 	{
-		struct AnimationNode
+		struct animation_node
 		{
-			AnimationNode();
-			~AnimationNode();
+			animation_node();
+			~animation_node();
 
-			typedef fquatfmap::iterator KeyRotIter;
-			typedef fvec3fmap::iterator KeyIter;
+			typedef fquatfmap::iterator key_rotation_iter;
+			typedef fvec3fmap::iterator key_iter;
 
 			
-			fquatfmap mRotationKeys;
-			fvec3fmap mTranslationKeys;
-			fvec3fmap mScalingKeys;
+			fquatfmap rotation_keys;
+			fvec3fmap translation_keys;
+			fvec3fmap scaling_keys;
 
-			fmat4 transform(float pTime,float pTicksPerSecond);
+			fmat4 transform(float time_, float ticks_per_second);
 
-			nsstring mNodeName;
-			fmat4 offsetMatrix;
+			nsstring name;
+			fmat4 offset_matrix;
 		};
-		typedef std::map<nsstring, AnimationNode*>::iterator AnimNodeMapIter;
+		typedef std::map<nsstring, animation_node*>::iterator anim_nodemap_iter;
 
-		AnimationData();
-		~AnimationData();
+		animation_data();
+		~animation_data();
 
-		AnimationNode * createAnimationNode(const nsstring & pNodeName);
+		animation_node * create_node(const nsstring & node_name_);
 
-		AnimationNode * animationNode(const nsstring & pNodeName);
-		fmat4 boneTransform(const nsstring & pNodeName, float pTime);
+		animation_node * anim_node(const nsstring & node_name_);
+		fmat4 bone_transform(const nsstring & node_name_, float time_);
 
-		std::map<nsstring,AnimationNode*> mAnimNodesMap;
-		nsstring mAnimationName;
-		float mDuration;
-		float mTicksPerSecond;
+		std::map<nsstring,animation_node*> anim_node_map;
+		nsstring animation_name;
+		float duration;
+		float ticks_per_second_;
 	};
 
-	typedef std::map<nsstring, AnimationData*> AnimMap;
-	typedef std::map<nsstring,AnimationData*>::iterator AnimMapIter;
+	typedef std::map<nsstring, animation_data*> animmap;
+	typedef std::map<nsstring,animation_data*>::iterator animmap_iter;
 
 	template<class PUPer>
-	friend void pup(PUPer & p, NSAnimSet & aset);
+	friend void pup(PUPer & p, nsanim_set & aset);
 
-	NSAnimSet();
-	~NSAnimSet();
+	nsanim_set();
+	~nsanim_set();
 
 	void clear();
 
 	void init();
 
-	AnimationData * createAnimationData(const nsstring & pAnimationName);
+	animation_data * create_anim_data(const nsstring & anim_name_);
 
-	AnimationData * animationData(const nsstring & pAnimationName);
+	animation_data * anim_data(const nsstring & anim_name_);
 
-	fmat4 animationBoneTransform(const nsstring & pAnimationName,
-		const nsstring & pNodeName, float pTime);
+	fmat4 anim_bone_transform(const nsstring & anim_name_,
+		const nsstring & node_name_, float time_);
 
 	virtual void pup(NSFilePUPer * p);
 
 private:
-	AnimMap mAnimationsMap;
+	animmap m_animmap;
 };
 
 template<class PUPer>
-void pup(PUPer & p, NSAnimSet::AnimationData::AnimationNode & node, const nsstring & varName)
+void pup(PUPer & p, nsanim_set::animation_data::animation_node & node, const nsstring & var_name)
 {
-	pup(p, node.mNodeName, varName + ".mNodeName");
-	pup(p, node.offsetMatrix, varName + ".offsetMatrix");
-	pup(p, node.mScalingKeys, varName + ".mScalingKeys");
-	pup(p, node.mRotationKeys, varName + ".mRotationKeys");
-	pup(p, node.mTranslationKeys, varName + ".mTranslationKeys");
+	pup(p, node.name, var_name + ".name");
+	pup(p, node.offset_matrix, var_name + ".offset_matrix");
+	pup(p, node.scaling_keys, var_name + ".scaling_keys");
+	pup(p, node.rotation_keys, var_name + ".rotation_keys");
+	pup(p, node.translation_keys, var_name + ".translation_keys");
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSAnimSet::AnimationData::AnimationNode * & node, const nsstring & varName)
+void pup(PUPer & p, nsanim_set::animation_data::animation_node * & node, const nsstring & var_name)
 {
 	if (p.mode() == PUP_IN) // If reading in then we need to allocate memory for the node
-		node = new NSAnimSet::AnimationData::AnimationNode();
-	pup(p, *node, varName);
+		node = new nsanim_set::animation_data::animation_node();
+	pup(p, *node, var_name);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSAnimSet::AnimationData & data, const nsstring & varName)
+void pup(PUPer & p, nsanim_set::animation_data & data, const nsstring & var_name)
 {
-	pup(p, data.mAnimationName, varName + ".mAnimationName");
-	pup(p, data.mTicksPerSecond, varName + ".mTicksPerSecond");
-	pup(p, data.mDuration, varName + ".mDuration");
-	pup(p, data.mAnimNodesMap, varName + ".mAnimNodesMap");
+	pup(p, data.animation_name, var_name + ".animation_name");
+	pup(p, data.ticks_per_second_, var_name + ".ticks_per_second");
+	pup(p, data.duration, var_name + ".duration");
+	pup(p, data.anim_node_map, var_name + ".anim_node_map");
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSAnimSet::AnimationData * & data, const nsstring & varName)
+void pup(PUPer & p, nsanim_set::animation_data * & data, const nsstring & var_name)
 {
 	if (p.mode() == PUP_IN)
-		data = new NSAnimSet::AnimationData();
-	pup(p, *data, varName);
+		data = new nsanim_set::animation_data();
+	pup(p, *data, var_name);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSAnimSet & aset)
+void pup(PUPer & p, nsanim_set & aset)
 {
-	pup(p, aset.mAnimationsMap, "animationsMap");
+	pup(p, aset.m_animmap, "animmap");
 }
 
 #endif

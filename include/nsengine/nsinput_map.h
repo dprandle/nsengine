@@ -5,310 +5,310 @@
 #include <nsglobal.h>
 #include <nspupper.h>
 
-class NSInputMap : public NSResource
+class nsinput_map : public nsresource
 {
   public:
 
-	enum Key {
-		Key_A,
-		Key_B,
-		Key_C,
-		Key_D,
-		Key_E,
-		Key_F,
-		Key_G,
-		Key_H,
-		Key_I,
-		Key_J,
-		Key_K,
-		Key_L,
-		Key_M,
-		Key_N,
-		Key_O,
-		Key_P,
-		Key_Q,
-		Key_R,
-		Key_S,
-		Key_T,
-		Key_U,
-		Key_V,
-		Key_W,
-		Key_X,
-		Key_Y,
-		Key_Z,
-		Key_1,
-		Key_2,
-		Key_3,
-		Key_4,
-		Key_5,
-		Key_6,
-		Key_7,
-		Key_8,
-		Key_9,
-		Key_0,
-		Key_GraveAccent,
-		Key_Minus,
-		Key_Equal,
-		Key_Backspace,
-		Key_Tab,
-		Key_LBracket,
-		Key_RBracket,
-		Key_BSlash,
-		Key_CapsLock,
-		Key_Semicolon,
-		Key_Apostrophe,
-		Key_Enter,
-		Key_LShift,
-		Key_Comma,
-		Key_Period,
-		Key_FSlash,
-		Key_RShift,
-		Key_LCtrl,
-		Key_LSuper,
-		Key_LAlt,
-		Key_Space,
-		Key_RAlt,
-		Key_RSuper,
-		Key_RCtrl,
-		Key_Left,
-		Key_Right,
-		Key_Up,
-		Key_Down,
-		Key_Esc,
-		Key_F1,
-		Key_F2,
-		Key_F3,
-		Key_F4,
-		Key_F5,
-		Key_F6,
-		Key_F7,
-		Key_F8,
-		Key_F9,
-		Key_F10,
-		Key_F11,
-		Key_F12,
-		Key_F13,
-		Key_F14,
-		Key_PrntScrn,
-		Key_ScrollLock,
-		Key_Pause,
-		Key_Insert,
-		Key_Delete,
-		Key_PGUp,
-		Key_PGDown,
-		Key_Home,
-		Key_End,
-		Key_NumLock,
-		Key_KPDivide,
-		Key_KPMultiply,
-		Key_KPSubtract,
-		Key_KPAdd,
-		Key_KPDecimal,
-		Key_KPEnter,
-		Key_KPEqual,
-		Key_KP0,
-		Key_KP1,
-		Key_KP2,
-		Key_KP3,
-		Key_KP4,
-		Key_KP5,
-		Key_KP6,
-		Key_KP7,
-		Key_KP8,
-		Key_KP9,
-		Key_Any
+	enum key_val {
+		key_a,
+		key_b,
+		key_c,
+		key_d,
+		key_e,
+		key_f,
+		key_g,
+		key_h,
+		key_i,
+		key_j,
+		key_k,
+		key_l,
+		key_m,
+		key_n,
+		key_o,
+		key_p,
+		key_q,
+		key_r,
+		key_s,
+		key_t,
+		key_u,
+		key_v,
+		key_w,
+		key_x,
+		key_y,
+		key_z,
+		key_1,
+		key_2,
+		key_3,
+		key_4,
+		key_5,
+		key_6,
+		key_7,
+		key_8,
+		key_9,
+		key_0,
+		key_grave_accent,
+		key_minus,
+		key_equal,
+		key_backspace,
+		key_tab,
+		key_lbracket,
+		key_rbracket,
+		key_backslash,
+		key_capslock,
+		key_semicolon,
+		key_apostrophe,
+		key_enter,
+		key_lshift,
+		key_comma,
+		key_period,
+		key_forwardslash,
+		key_rshift,
+		key_lctrl,
+		key_lsuper,
+		key_lalt,
+		key_space,
+		key_ralt,
+		key_rsuper,
+		key_rctrl,
+		key_left,
+		key_right,
+		key_up,
+		key_down,
+		key_esc,
+		key_f1,
+		key_f2,
+		key_f3,
+		key_f4,
+		key_f5,
+		key_f6,
+		key_f7,
+		key_f8,
+		key_f9,
+		key_f10,
+		key_f11,
+		key_f12,
+		key_f13,
+		key_f14,
+		key_print_screen,
+		key_scroll_lock,
+		key_pause,
+		key_insert,
+		key_delete,
+		key_page_up,
+		key_page_down,
+		key_home,
+		key_end,
+		key_numlock,
+		key_keypad_divide,
+		key_keypad_multiply,
+		key_keypad_subtract,
+		key_keypad_add,
+		key_keypad_decimal,
+		key_keypad_enter,
+		key_keypad_equal,
+		key_keypad_0,
+		key_keypad_1,
+		key_keypad_2,
+		key_keypad_3,
+		key_keypad_4,
+		key_keypad_5,
+		key_keypad_6,
+		key_keypad_7,
+		key_keypad_8,
+		key_keypad_9,
+		key_any
 	};
 
-	enum MouseButton {
-		LeftButton,
-		RightButton,
-		MiddleButton,
-		AuxButton1,
-		AuxButton2,
-		AuxButton3,
-		AuxButton4,
-		Movement,
-		Scrolling,
-		AnyButton
+	enum mouse_button_val {
+		left_button,
+		right_button,
+		middle_button,
+		aux_button_1,
+		aux_button_2,
+		aux_button_3,
+		aux_button_4,
+		movement,
+		scrolling,
+		any_button
 	};
 
-	enum Axis
+	enum axis_type
 	{
-		None = 0x0000,
-		MouseXPos = 0x0001,
-		MouseYPos = 0x0002,
-		MouseXDelta = 0x0004,
-		MouseYDelta = 0x0008,
-		ScrollDelta = 0x0010
+		no_axis = 0x0000,
+		axis_mouse_xpos = 0x0001,
+		axis_mouse_ypos = 0x0002,
+		axis_mouse_xdelta = 0x0004,
+		axis_mouse_ydelta = 0x0008,
+		axis_scroll_delta = 0x0010
 	};
 
-	enum TState
+	enum t_state
 	{
-		Pressed,
-		Released,
-		Both,
-		Toggle
+		t_pressed,
+		t_released,
+		t_both,
+		t_toggle
 	};
 
 	
-    typedef std::unordered_set<Key, EnumHash> KeyModifiers;
-    typedef std::unordered_set<MouseButton, EnumHash> MouseModifiers;
-    typedef std::unordered_map<Axis, float, EnumHash> AxisMap;
+    typedef std::unordered_set<key_val, EnumHash> key_modifier_set;
+    typedef std::unordered_set<mouse_button_val, EnumHash> mouse_modifier_set;
+    typedef std::unordered_map<axis_type, float, EnumHash> axis_map;
 
-	struct Trigger
+	struct trigger
 	{
-		Trigger(
-			const nsstring & pName="",
-			TState triggerOn=Pressed,
-			uint interestedAxis=0
+		trigger(
+			const nsstring & name_="",
+			t_state trigger_state_=t_pressed,
+			uint interested_axes=0
 			);
 
-		void addKeyModifier(Key mod);
-		void removeKeyModifier(Key mod);
+		void add_key_mod(key_val mod);
+		void remove_key_mod(key_val mod);
 
-		void addMouseModifier(MouseButton mod);
-		void removeMouseModifier(MouseButton mod);
+		void add_mouse_mod(mouse_button_val mod);
+		void remove_mouse_mod(mouse_button_val mod);
 
-		const Trigger & operator=(const Trigger & pRhs);
-		bool operator==(const Trigger & pRhs);
+		const trigger & operator=(const trigger & rhs);
+		bool operator==(const trigger & rhs);
 		
-		nsstring mName;
-		uint mHashName;
-		uint mAxes;
-		TState mTriggerOn;
-		KeyModifiers mKeyMods;
-		MouseModifiers mMouseMods;
+		nsstring name;
+		uint hash_name;
+		uint axis_bitfield;
+		t_state trigger_state;
+		key_modifier_set key_modifiers;
+		mouse_modifier_set mouse_modifiers;
 		
 	};
 
-	typedef std::unordered_multimap<Key, Trigger, EnumHash> KeyMap;
-    typedef std::unordered_multimap<MouseButton, Trigger, EnumHash> MouseButtonMap;
-	
-	struct Context
+	typedef std::unordered_multimap<key_val, trigger, EnumHash> key_trigger_map;
+    typedef std::unordered_multimap<mouse_button_val, trigger, EnumHash> mousebutton_trigger_map;
+
+	struct ctxt
 	{
-		nsstring mName;
-		KeyMap mKeyMap;
-		MouseButtonMap mMouseButtonMap;
+		nsstring name;
+		key_trigger_map key_map;
+		mousebutton_trigger_map mousebutton_map;
 	};
 
-	typedef std::unordered_map<nsstring, Context*> ContextCollection;
+	typedef std::unordered_map<nsstring, ctxt*> context_collection;
 	
 	template <class PUPer>
-	friend void pup(PUPer & p, NSInputMap & input);
+	friend void pup(PUPer & p, nsinput_map & input);
 
-	NSInputMap();
-    virtual ~NSInputMap();
+	nsinput_map();
+    virtual ~nsinput_map();
 
-	void addAllowedModifier(Key pKey);
+	void add_allowed_mod(key_val pKey);
 	// In adding the context InputManager takes ownership
-	bool addContext(Context * toAdd);
+	bool add_context(ctxt * toAdd);
 
-	bool addKeyTrigger(const nsstring & pContextName, Key pKey, Trigger & pTrigger);
+	bool add_key_trigger(const nsstring & pContextName, key_val pKey, trigger & pTrigger);
 
-	bool addMouseTrigger(const nsstring & pContextName, MouseButton pButton, Trigger & pTrigger);
+	bool add_mouse_trigger(const nsstring & pContextName, mouse_button_val pButton, trigger & pTrigger);
 
-	bool allowedModifier(Key mod);
+	bool allowed_mod(key_val mod);
 	
-	Context * context(nsstring name);
+	ctxt * context(nsstring name);
 	
-	Context * createContext(const nsstring & pName);
+	ctxt * create_context(const nsstring & name_);
 
-	void removeAllowedModifier(Key pKey);
+	void remove_allowed_mod(key_val pKey);
 
-	bool removeContext(const nsstring & pName);
+	bool remove_context(const nsstring & name_);
 
-	bool removeKey(const nsstring & context_name, Key key);
+	bool remove_key(const nsstring & context_name, key_val key);
 
-	bool removeKeyTrigger(const nsstring & pContextName, Key pKey, const Trigger & pTrigger);
+	bool remove_key_trigger(const nsstring & pContextName, key_val pKey, const trigger & pTrigger);
 
-	bool removeKeyTriggers(const nsstring & pContextName, const nsstring & pTriggerName);
+	bool remove_key_triggers(const nsstring & pContextName, const nsstring & pTriggerName);
 
-	bool removeMouseButton(const nsstring & context_name, MouseButton button);
+	bool remove_mouse_button(const nsstring & context_name, mouse_button_val button);
 	
-	bool removeMouseButtonTrigger(const nsstring & pContextName, MouseButton pButton, const Trigger & pTrigger);
+	bool remove_mouse_button_trigger(const nsstring & pContextName, mouse_button_val pButton, const trigger & pTrigger);
 
-	bool removeMouseButtonTriggers(const nsstring & pContextName, const nsstring & pTriggerName);
+	bool remove_mouse_button_triggers(const nsstring & pContextName, const nsstring & pTriggerName);
 
-	bool renameContext(const nsstring & pOldContextName, const nsstring & pNewContextName);
+	bool rename_context(const nsstring & pOldContextName, const nsstring & pNewContextName);
 
 	virtual void init();
 
 	virtual uivec2array resources();
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	virtual void pup(NSFilePUPer * p);
 
   private:	
-	ContextCollection mContexts;
-	KeyModifiers mAllowedModifiers;
+	context_collection m_contexts;
+	key_modifier_set m_allowed_mods;
 };
 
 
 template <class PUPer>
-void pup(PUPer & p, NSInputMap & input)
+void pup(PUPer & p, nsinput_map & input)
 {
-	pup(p, input.mContexts, "contexts");
-	pup(p, input.mAllowedModifiers, "allowedmodifiers");
+	pup(p, input.m_contexts, "contexts");
+	pup(p, input.m_allowed_mods, "allowed_mods");
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSInputMap::Key & en, const nsstring & pString)
+void pup(PUPer & p, nsinput_map::key_val & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSInputMap::Key>(in);
+	pup(p, in, var_name);
+	en = static_cast<nsinput_map::key_val>(in);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSInputMap::MouseButton & en, const nsstring & pString)
+void pup(PUPer & p, nsinput_map::mouse_button_val & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSInputMap::MouseButton>(in);
+	pup(p, in, var_name);
+	en = static_cast<nsinput_map::mouse_button_val>(in);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputMap::Context & c, const nsstring & varName)
+void pup(PUPer & p, nsinput_map::ctxt & c, const nsstring & var_name)
 {
-	pup(p, c.mName, varName + ".mName");
-	pup(p, c.mKeyMap, varName + ".mKeyMap");
-	pup(p, c.mMouseButtonMap, varName + ".mMouseButtonMap");
+	pup(p, c.name, var_name + ".name");
+	pup(p, c.key_map, var_name + ".key_map");
+	pup(p, c.mousebutton_map, var_name + ".mousebutton_map");
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputMap::Context * & c, const nsstring & varName)
+void pup(PUPer & p, nsinput_map::ctxt * & c, const nsstring & var_name)
 {
 	if (p.mode() == PUP_IN)
-		c = new NSInputMap::Context();
-	pup(p, *c, varName);
+		c = new nsinput_map::ctxt();
+	pup(p, *c, var_name);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSInputMap::Axis & en, const nsstring & pString)
+void pup(PUPer & p, nsinput_map::axis_type & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSInputMap::Axis>(in);
+	pup(p, in, var_name);
+	en = static_cast<nsinput_map::axis_type>(in);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSInputMap::TState & en, const nsstring & pString)
+void pup(PUPer & p, nsinput_map::t_state & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSInputMap::TState>(in);
+	pup(p, in, var_name);
+	en = static_cast<nsinput_map::t_state>(in);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSInputMap::Trigger & t, const nsstring & varName)
+void pup(PUPer & p, nsinput_map::trigger & t, const nsstring & var_name)
 {
-	pup(p, t.mName, varName + ".mName");
-	t.mHashName = hash_id(t.mName);
-	pup(p, t.mTriggerOn, varName + ".mTriggerOn");
-	pup(p, t.mAxes, varName + ".mAxes");
-	pup(p, t.mKeyMods, varName + ".mKeyModifiers");
-	pup(p, t.mMouseMods, varName + ".mMouseModifiers");
+	pup(p, t.name, var_name + ".name");
+	t.hash_name = hash_id(t.name);
+	pup(p, t.trigger_state, var_name + ".trigger_state");
+	pup(p, t.axis_bitfield, var_name + ".axis_bitfield");
+	pup(p, t.key_modifiers, var_name + ".key_modifiers");
+	pup(p, t.mouse_modifiers, var_name + ".mouse_modifiers");
 }
 
 #endif

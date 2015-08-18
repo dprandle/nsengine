@@ -1,9 +1,9 @@
 /*! 
 	\file nsscene.cpp
 	
-	\brief Definition file for NSScene class
+	\brief Definition file for nsscene class
 
-	This file contains all of the neccessary definitions for the NSScene class.
+	This file contains all of the neccessary definitions for the nsscene class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -28,25 +28,25 @@
 #include <nsoccupy_comp.h>
 #include <nsplugin_manager.h>
 
-NSScene::NSScene():
-	mTileGrid(new NSTileGrid()),
-	mCamID(),
-	mSkydomeID(),
-	mMaxPlayers(0),
-	mBackgroundColor(),
-	mNotes(),
-	mCreator(),
-	mShowBit(false)
+nsscene::nsscene():
+	m_tile_grid(new NSTileGrid()),
+	m_camera_id(),
+	m_skydome_id(),
+	m_max_players(0),
+	m_bg_color(),
+	m_notes(),
+	m_creator(),
+	m_show_bit(false)
 {
-	setExtension(DEFAULT_SCENE_EXTENSION);
+	set_ext(DEFAULT_SCENE_EXTENSION);
 }
 
-NSScene::~NSScene()
+nsscene::~nsscene()
 {
-	delete mTileGrid;
+	delete m_tile_grid;
 }
 
-void NSScene::clear()
+void nsscene::clear()
 {
 	nspentityset ents = entities();
 	auto eiter = ents.begin();
@@ -56,7 +56,7 @@ void NSScene::clear()
 		++eiter;
 	}
 
-	mUnloaded.clear();
+	m_unloaded.clear();
 }
 
 /*!
@@ -65,7 +65,7 @@ If the entity contains an occupy comp, then only insert in to the scene if the s
 occupy component tile set can be inserted in to the tile grid. If adding to the scene fails, this will return -1 and if it
 succeeds it will return the transform ID of the newly inserted entity instance.
 */
-uint32 NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, const fvec3 & pScale)
+uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, const fvec3 & pScale)
 {
 	if (pEnt == NULL)
 		return -1;
@@ -100,7 +100,7 @@ uint32 NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 		// We don't want to insert it yet because we first want to check if the space is open
 		uint32 pID = tComp->count();
 
-		if (!mTileGrid->add(uivec3(pEnt->plugid(), pEnt->id(), pID), occComp->spaces(), pPos))
+		if (!m_tile_grid->add(uivec3(pEnt->plugin_id(), pEnt->id(), pID), occComp->spaces(), pPos))
 		{
 			// This is the part that we check if we just added the transform component or not
 			if (addTComp)
@@ -116,7 +116,7 @@ uint32 NSScene::add(NSEntity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 	// Adding transform will never fail unless out of memory
 
 	uint32 index = tComp->add(t);
-	tComp->setHiddenState(NSTFormComp::Show, mShowBit, index);
+	tComp->setHiddenState(NSTFormComp::Show, m_show_bit, index);
 	return index;
 }
 
@@ -126,8 +126,8 @@ The grid settings are located in the global variables X_GRID, Y_GRID, and Z_GRID
 The tile grid also uses these grid variables, so changing them should change the overall
 behavior of grid snap and tile occupation etc.
 */
-uint32 NSScene::addGridded(
-	NSEntity * pEnt,
+uint32 nsscene::add_gridded(
+	nsentity * pEnt,
 	const ivec3 & pBounds,
 	const fvec3 & pStartingPos,
 	const fquat & pRot,
@@ -173,7 +173,7 @@ uint32 NSScene::addGridded(
 				{
 					// If there is an occupy comp then make sure that it can be inserted in to the tile grid
 					// If not, remove the transform and continue without incrementing the count
-					if (!mTileGrid->add(uivec3(pEnt->plugid(),pEnt->id(), count), occComp->spaces(), pos))
+					if (!m_tile_grid->add(uivec3(pEnt->plugin_id(),pEnt->id(), count), occComp->spaces(), pos))
 					{
 						tComp->remove(count);
 						continue;
@@ -183,7 +183,7 @@ uint32 NSScene::addGridded(
 				tComp->setpos(pos, count);
 				tComp->rotate(pRot, count);
 				tComp->scale(pScale, count);
-				tComp->setHiddenState(NSTFormComp::Show, mShowBit, count);
+				tComp->setHiddenState(NSTFormComp::Show, m_show_bit, count);
 				++count;
 			}
 		}
@@ -202,28 +202,28 @@ uint32 NSScene::addGridded(
 /*!
 Change the aximum number of players allowable on this scene - pAmount can be positive or negative
 */
-void NSScene::changeMaxPlayers(int32 pAmount)
+void nsscene::change_max_players(int32 pAmount)
 {
-	if ((mMaxPlayers + pAmount) > SCENE_MAX_PLAYERS || (mMaxPlayers + pAmount) < 2)
+	if ((m_max_players + pAmount) > SCENE_MAX_PLAYERS || (m_max_players + pAmount) < 2)
 	{
-		dprint("NSScene::changeMaxPlayers Players must be in max player range");
+		dprint("nsscene::changeMaxPlayers Players must be in max player range");
 		return;
 	}
 
-	mMaxPlayers += pAmount;
+	m_max_players += pAmount;
 }
 
-void NSScene::enableShowBit(bool pEnable)
+void nsscene::enable_show_bit(bool pEnable)
 {
-	mShowBit = pEnable;
+	m_show_bit = pEnable;
 }
 
-bool NSScene::hasDirLight() const
+bool nsscene::has_dir_light() const
 {
 	auto iter = entities().begin();
 	while (iter != entities().end())
 	{
-		NSEntity * ent = *iter;
+		nsentity * ent = *iter;
 		NSLightComp * lc = ent->get<NSLightComp>();
 		if (lc != NULL)
 		{
@@ -235,17 +235,17 @@ bool NSScene::hasDirLight() const
 	return false;
 }
 
-const fvec3 & NSScene::backgroundColor() const
+const fvec3 & nsscene::bg_color() const
 {
-	return mBackgroundColor;
+	return m_bg_color;
 }
 
-const nsstring & NSScene::creator() const
+const nsstring & nsscene::creator() const
 {
-	return mCreator;
+	return m_creator;
 }
 
-void NSScene::pup(NSFilePUPer * p)
+void nsscene::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -259,22 +259,22 @@ void NSScene::pup(NSFilePUPer * p)
 	}
 }
 
-NSEntity * NSScene::camera() const
+nsentity * nsscene::camera() const
 {
-	return entity(mCamID.x, mCamID.y);
+	return entity(m_camera_id.x, m_camera_id.y);
 }
 
-uint32 NSScene::maxPlayers() const
+uint32 nsscene::max_players() const
 {
-	return mMaxPlayers;
+	return m_max_players;
 }
 
-uivec3 NSScene::refid(const fvec3 & pWorldPos) const
+uivec3 nsscene::ref_id(const fvec3 & pWorldPos) const
 {
-	return mTileGrid->get(pWorldPos);
+	return m_tile_grid->get(pWorldPos);
 }
 
-const uint32 NSScene::referenceCount() const
+const uint32 nsscene::ref_count() const
 {
 	uint32 count = 0;
 
@@ -289,12 +289,12 @@ const uint32 NSScene::referenceCount() const
 	return count;
 }
 
-NSEntity * NSScene::skydome() const
+nsentity * nsscene::skydome() const
 {
-	return entity(mSkydomeID.x, mSkydomeID.y);
+	return entity(m_skydome_id.x, m_skydome_id.y);
 }
 
-const nspentityset & NSScene::entities() const
+const nspentityset & nsscene::entities() const
 {
 	return entities<NSTFormComp>();
 }
@@ -302,7 +302,7 @@ const nspentityset & NSScene::entities() const
 /*!
 Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
 */
-uivec2array NSScene::resources()
+uivec2array nsscene::resources()
 {
 	uivec2array ret;
 	auto iter = entities().begin();
@@ -315,27 +315,27 @@ uivec2array NSScene::resources()
 	return ret;
 }
 
-const nsstring & NSScene::notes() const
+const nsstring & nsscene::notes() const
 {
-	return mNotes;
+	return m_notes;
 }
 
-NSTileGrid & NSScene::grid()
+NSTileGrid & nsscene::grid()
 {
-	return *mTileGrid;
+	return *m_tile_grid;
 }
 
-void NSScene::hideLayer(int32 pLayer, bool pHide)
+void nsscene::hide_layer(int32 pLayer, bool pHide)
 {
-	NSTileGrid::GridBounds g = mTileGrid->occupiedGridBounds();
+	NSTileGrid::GridBounds g = m_tile_grid->occupiedGridBounds();
 	for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
 	{
 		for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 		{
-			uivec3 id = mTileGrid->get(ivec3(x, y, -pLayer));
+			uivec3 id = m_tile_grid->get(ivec3(x, y, -pLayer));
 			if (id != uivec3())
 			{
-				NSEntity * ent = entity(id.x, id.y);
+				nsentity * ent = entity(id.x, id.y);
 				if (ent != NULL)
 				{
 					ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
@@ -345,9 +345,9 @@ void NSScene::hideLayer(int32 pLayer, bool pHide)
 	}
 }
 
-void NSScene::hideLayersAbove(int32 pBaseLayer, bool pHide)
+void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 {
-	NSTileGrid::GridBounds g = mTileGrid->occupiedGridBounds();
+	NSTileGrid::GridBounds g = m_tile_grid->occupiedGridBounds();
 	pBaseLayer *= -1;
 
 	for (int32 z = pBaseLayer-1; z >= g.minSpace.z; --z)
@@ -356,10 +356,10 @@ void NSScene::hideLayersAbove(int32 pBaseLayer, bool pHide)
 		{
 			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
-				uivec3 id = mTileGrid->get(ivec3(x, y, z));
+				uivec3 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec3())
 				{
-					NSEntity * ent = entity(id.x, id.y);
+					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
@@ -375,10 +375,10 @@ void NSScene::hideLayersAbove(int32 pBaseLayer, bool pHide)
 		{
 			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
-				uivec3 id = mTileGrid->get(ivec3(x, y, pBaseLayer));
+				uivec3 id = m_tile_grid->get(ivec3(x, y, pBaseLayer));
 				if (id != uivec3())
 				{
-					NSEntity * ent = entity(id.x, id.y);
+					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, !pHide, id.z);
@@ -389,9 +389,9 @@ void NSScene::hideLayersAbove(int32 pBaseLayer, bool pHide)
 	}
 }
 
-void NSScene::hideLayersBelow(int32 pTopLayer, bool pHide)
+void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 {
-	NSTileGrid::GridBounds g = mTileGrid->occupiedGridBounds();
+	NSTileGrid::GridBounds g = m_tile_grid->occupiedGridBounds();
 	pTopLayer *= -1;
 
 	for (int32 z = pTopLayer+1; z <= g.maxSpace.z; ++z)
@@ -400,10 +400,10 @@ void NSScene::hideLayersBelow(int32 pTopLayer, bool pHide)
 		{
 			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
-				uivec3 id = mTileGrid->get(ivec3(x, y, z));
+				uivec3 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec3())
 				{
-					NSEntity * ent = entity(id.x, id.y);
+					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
@@ -419,10 +419,10 @@ void NSScene::hideLayersBelow(int32 pTopLayer, bool pHide)
 		{
 			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 			{
-				uivec3 id = mTileGrid->get(ivec3(x, y, pTopLayer));
+				uivec3 id = m_tile_grid->get(ivec3(x, y, pTopLayer));
 				if (id != uivec3())
 				{
-					NSEntity * ent = entity(id.x, id.y);
+					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
 						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, !pHide, id.z);
@@ -433,38 +433,38 @@ void NSScene::hideLayersBelow(int32 pTopLayer, bool pHide)
 	}
 }
 
-void NSScene::init()
+void nsscene::init()
 {
 }
 
-bool NSScene::showBit() const
+bool nsscene::show_bit() const
 {
-	return mShowBit;
+	return m_show_bit;
 }
 
 /*!
 This should be called if there was a name change to a resource
 */
-void NSScene::nameChange(const uivec2 & oldid, const uivec2 newid)
+void nsscene::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	if (mCamID.x == oldid.x)
+	if (m_camera_id.x == oldid.x)
 	{
-		mCamID.x = newid.x;
-		if (mCamID.y == oldid.y)
-			mCamID.y = newid.y;
+		m_camera_id.x = newid.x;
+		if (m_camera_id.y == oldid.y)
+			m_camera_id.y = newid.y;
 	}
 
-	if (mSkydomeID.x == oldid.x)
+	if (m_skydome_id.x == oldid.x)
 	{
-		mSkydomeID.x = newid.x;
-		if (mSkydomeID.y == oldid.y)
-			mSkydomeID.y = newid.y;
+		m_skydome_id.x = newid.x;
+		if (m_skydome_id.y == oldid.y)
+			m_skydome_id.y = newid.y;
 	}
 
-	mTileGrid->nameChange(oldid, newid);
+	m_tile_grid->name_change(oldid, newid);
 }
 
-uint32 NSScene::replace(NSEntity * oldent, uint32 tformID, NSEntity * newent)
+uint32 nsscene::replace(nsentity * oldent, uint32 tformID, nsentity * newent)
 {
 	if (oldent == NULL || newent == NULL)
 		return false;
@@ -479,7 +479,7 @@ uint32 NSScene::replace(NSEntity * oldent, uint32 tformID, NSEntity * newent)
 	return add(newent, pos);
 }
 
-bool NSScene::replace(NSEntity * oldent, NSEntity * newent)
+bool nsscene::replace(nsentity * oldent, nsentity * newent)
 {
 	if (oldent == NULL || newent == NULL)
 		return false;
@@ -499,7 +499,7 @@ bool NSScene::replace(NSEntity * oldent, NSEntity * newent)
 Removes the entity from the scene - if the entity is not part of the scene then will do nothing
 This is true for all overloaded functions as well
 */
-bool NSScene::remove(NSEntity * entity, uint32 tformid)
+bool nsscene::remove(nsentity * entity, uint32 tformid)
 {
 	if (entity == NULL)
 		return false;
@@ -518,7 +518,7 @@ bool NSScene::remove(NSEntity * entity, uint32 tformid)
 
 	if (occComp != NULL)
 	{
-		mTileGrid->remove(occComp->spaces(), pos);
+		m_tile_grid->remove(occComp->spaces(), pos);
 
 		// This should take care of updating the reference ID for the space that got switched..
 		// When removing transforms from the tForm comp internally it moves the last tForm to the position
@@ -527,8 +527,8 @@ bool NSScene::remove(NSEntity * entity, uint32 tformid)
 		if (newSize != 0 && newSize != tformid)
 		{
 			fvec3 newPos = tComp->wpos(tformid);
-			mTileGrid->remove(occComp->spaces(), newPos);
-			mTileGrid->add(uivec3(entity->plugid(), entity->id(), tformid), occComp->spaces(), newPos);
+			m_tile_grid->remove(occComp->spaces(), newPos);
+			m_tile_grid->add(uivec3(entity->plugin_id(), entity->id(), tformid), occComp->spaces(), newPos);
 		}
 	}
 
@@ -537,10 +537,10 @@ bool NSScene::remove(NSEntity * entity, uint32 tformid)
 		ret = entity->del<NSTFormComp>();
 
 		// If the enity being removed from the scene is the current camera or current skybox then make sure to set these to 0
-		if (mSkydomeID == uivec2(entity->plugid(), entity->id()))
-			mSkydomeID = 0;
-		if (mCamID == uivec2(entity->plugid(),entity->id()))
-			mCamID = 0;
+		if (m_skydome_id == uivec2(entity->plugin_id(), entity->id()))
+			m_skydome_id = 0;
+		if (m_camera_id == uivec2(entity->plugin_id(),entity->id()))
+			m_camera_id = 0;
 	}
 	
 	return ret;
@@ -552,9 +552,9 @@ If there is nothing in that position then returns false.
 Note that in order for this function to work the entity that is being removed must have an occupy component or else
 it will not be included in the tile grid.
 */
-bool NSScene::remove(fvec3 & pWorldPos)
+bool nsscene::remove(fvec3 & pWorldPos)
 {
-	uivec3 refid = mTileGrid->get(pWorldPos);
+	uivec3 refid = m_tile_grid->get(pWorldPos);
 	if (refid == 0)
 		return false;
 
@@ -566,7 +566,7 @@ Remove all instances of the entity with name pEntName from the scene
 Does so by entering a while loop that will become false once the entity
 runs out of transforms
 */
-bool NSScene::remove(NSEntity * ent)
+bool nsscene::remove(nsentity * ent)
 {
 	if (ent == NULL)
 		return false;
@@ -578,18 +578,18 @@ bool NSScene::remove(NSEntity * ent)
 	return ret;
 }
 
-void NSScene::setBackgroundColor(const fvec3 & pBackgroundColor)
+void nsscene::set_bg_color(const fvec3 & pBackgroundColor)
 {
-	mBackgroundColor = pBackgroundColor;
+	m_bg_color = pBackgroundColor;
 }
 
-void NSScene::setCreator(const nsstring & pCreator)
+void nsscene::set_creator(const nsstring & pCreator)
 {
-	mCreator = pCreator;
+	m_creator = pCreator;
 }
 
 
-void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
+void nsscene::set_camera(nsentity * cam, bool addToSceneIfNeeded)
 {
 	if (cam == NULL)
 		return;
@@ -601,8 +601,8 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 		// The parent must be enabled in the transform component for the camera to be
 		// able to switch between camera modes properly
 		camtf->enableParent(true);
-		mCamID = uivec2(cam->plugid(),cam->id());
-		dprint("NSScene::setCamera - Map \"" + mName + "\"'s camera set to \"" + cam->name() + "\"");
+		m_camera_id = uivec2(cam->plugin_id(),cam->id());
+		dprint("nsscene::setCamera - Map \"" + m_name + "\"'s camera set to \"" + cam->name() + "\"");
 	}
 	else
 	{
@@ -612,32 +612,32 @@ void NSScene::setCamera(NSEntity * cam, bool addToSceneIfNeeded)
 		{
 			if (add(cam,fvec3(0.0f,0.0f,-10.0f)) != -1) // -1 indicates failure
 			{
-				setCamera(cam);
+				set_camera(cam);
 			}
 			else
 			{
-				dprint("NSScene::setCamera - Camera " + cam->name() + " could not be loaded in to the scene");
+				dprint("nsscene::setCamera - Camera " + cam->name() + " could not be loaded in to the scene");
 			}
 		}
 	}
 }
 
-void NSScene::setMaxPlayers(uint32 pMaxPlayers)
+void nsscene::set_max_players(uint32 pMaxPlayers)
 {
 	if (pMaxPlayers > SCENE_MAX_PLAYERS || pMaxPlayers < 2)
 	{
-		dprint("NSScene::setMaxPlayers Players must be in max player range");
+		dprint("nsscene::setMaxPlayers Players must be in max player range");
 		return;
 	}
-	mMaxPlayers = pMaxPlayers;
+	m_max_players = pMaxPlayers;
 }
 
-void NSScene::setNotes(const nsstring & pNotes)
+void nsscene::set_notes(const nsstring & pNotes)
 {
-	mNotes = pNotes;
+	m_notes = pNotes;
 }
 
-void NSScene::setSkydome(NSEntity * skydome, bool addToSceneIfNeeded)
+void nsscene::set_skydome(nsentity * skydome, bool addToSceneIfNeeded)
 {
 	if (skydome == NULL)
 		return;
@@ -646,33 +646,33 @@ void NSScene::setSkydome(NSEntity * skydome, bool addToSceneIfNeeded)
 
 	if (skytf != NULL)
 	{
-		mSkydomeID = uivec2(skydome->plugid(), skydome->id());
-		dprint("NSScene::setSkydome - Map \"" + mName + "\"'s skydome set to \"" + skydome->name() + "\"");
+		m_skydome_id = uivec2(skydome->plugin_id(), skydome->id());
+		dprint("nsscene::setSkydome - Map \"" + m_name + "\"'s skydome set to \"" + skydome->name() + "\"");
 	}
 	else
 	{
 		if (addToSceneIfNeeded)
 		{
-			if (add(skydome->plugid(), skydome->id()) != -1) // -1 indicates failure
+			if (add(skydome->plugin_id(), skydome->id()) != -1) // -1 indicates failure
 			{
-				setSkydome(skydome);
-				dprint("NSScene::setSkydome - Map \"" + mName + "\"'s skydome set to \"" + skydome->name() + "\"");
+				set_skydome(skydome);
+				dprint("nsscene::setSkydome - Map \"" + m_name + "\"'s skydome set to \"" + skydome->name() + "\"");
 			}
 		}
 	}
 }
 
-uivec2array & NSScene::unloaded()
+uivec2array & nsscene::unloaded()
 {
-	return mUnloaded;
+	return m_unloaded;
 }
 
 /*!
 Go through all entities and add only entities here that are part of the scene
 */
-void NSScene::updateCompMaps(uint32 plugid, uint32 entid)
+void nsscene::update_comp_maps(uint32 plugid, uint32 entid)
 {
-	NSEntity * ent = nsengine.resource<NSEntity>(plugid, entid);
+	nsentity * ent = nsengine.resource<nsentity>(plugid, entid);
 	if (ent == NULL)
 		return;
 
@@ -682,18 +682,18 @@ void NSScene::updateCompMaps(uint32 plugid, uint32 entid)
 		auto compiter = ent->begin();
 		while (compiter != ent->end())
 		{
-			mEntsByCompType[compiter->first].emplace(ent);
+			m_ents_by_comp_type[compiter->first].emplace(ent);
 			++compiter;
 		}
 	}
 	else
 	{
-		auto ctiter = mEntsByCompType.begin();
-		while (ctiter != mEntsByCompType.end())
+		auto ctiter = m_ents_by_comp_type.begin();
+		while (ctiter != m_ents_by_comp_type.end())
 		{
 			ctiter->second.erase(ent);
 			if (ctiter->second.empty())
-				ctiter = mEntsByCompType.erase(ctiter);
+				ctiter = m_ents_by_comp_type.erase(ctiter);
 			else
 				++ctiter;
 		}

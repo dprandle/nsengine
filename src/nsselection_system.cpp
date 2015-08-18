@@ -42,29 +42,29 @@ Need to fix the bug where when holding z in build mode and clicking to select is
 */
 
 
-NSSelectionSystem::NSSelectionSystem() :
-	mFocusEnt(),
-	mPickPos(),
-	mSelectedEnts(),
-	selShader(NULL),
-	mCachedPoint(),
-	mMoving(false),
-	mLayerMode(false),
-	mLayer(0),
-	mCachedLPoint(),
-	drawOcc(false),
-	finalBuf(0),
-	pickBuf(0),
-	trans(),
-	mToggleMove(false),
-	mSendFocEvent(false),
+nsselection_system::nsselection_system() :
+	m_focus_ent(),
+	m_pick_pos(),
+	m_selected_ents(),
+	m_sel_shader(NULL),
+	m_cached_point(),
+	m_moving(false),
+	m_layer_mode(false),
+	m_layer(0),
+	m_cached_point_last(),
+	m_draw_occ(false),
+	m_final_buf(0),
+	m_picking_buf(0),
+	m_trans(),
+	m_toggle_move(false),
+	m_send_foc_event(false),
 	NSSystem()
 {}
 
-NSSelectionSystem::~NSSelectionSystem()
+nsselection_system::~nsselection_system()
 {}
 
-bool NSSelectionSystem::add(NSEntity * ent, uint32 tformid)
+bool nsselection_system::add(nsentity * ent, uint32 tformid)
 {
 	if (ent == NULL)
 		return false;
@@ -74,45 +74,45 @@ bool NSSelectionSystem::add(NSEntity * ent, uint32 tformid)
 		return false;
 
 	// TODO: Make this an event - that is a mirror mode event to put build and sel system in mirror mode
-	if (nsengine.system<NSBuildSystem>()->mirror())
+	if (nsengine.system<nsbuild_system>()->mirror())
 	{
-		NSScene * scn = nsengine.currentScene();
+		nsscene * scn = nsengine.currentScene();
 		if (scn == NULL)
 			return false;
 		
 		NSTFormComp * tForm = ent->get<NSTFormComp>();
 		if (tForm == NULL)
 		{
-			dprint("NSSelectionSystem::add tForm is null for ent " + ent->name());
+			dprint("nsselection_system::add tForm is null for ent " + ent->name());
 			return false;
 		}
 
 		fvec3 wp = tForm->wpos(tformid);
-		fvec3 newPos = nsengine.system<NSBuildSystem>()->center()*2.0f - wp;
+		fvec3 newPos = nsengine.system<nsbuild_system>()->center()*2.0f - wp;
 		newPos.z = wp.z;
 
 		uivec3 id = scn->grid().get(newPos);
 		if (id != 0)
 		{
-			NSEntity * entAdd = scn->entity(id.x,id.y);
-			mSelectedEnts.insert(entAdd);
+			nsentity * entAdd = scn->entity(id.x,id.y);
+			m_selected_ents.insert(entAdd);
 			entAdd->get<NSSelComp>()->setSelected(true);
 			entAdd->get<NSSelComp>()->add(id.y);
 		}
 	}
-	mSelectedEnts.insert(ent);
+	m_selected_ents.insert(ent);
 	selComp->setSelected(true);
 	return selComp->add(tformid);
 }
 
-bool NSSelectionSystem::addToGrid()
+bool nsselection_system::add_to_grid()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return false;
 
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
@@ -123,7 +123,7 @@ bool NSSelectionSystem::addToGrid()
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
-				if (!scene->grid().add(uivec3((*iter)->plugid(), (*iter)->id(), *selIter), occComp->spaces(), tComp->lpos(*selIter)))
+				if (!scene->grid().add(uivec3((*iter)->plugin_id(), (*iter)->id(), *selIter), occComp->spaces(), tComp->lpos(*selIter)))
 				{
 					dprint("Could not add selection to grid");
 					return false;
@@ -136,12 +136,12 @@ bool NSSelectionSystem::addToGrid()
 	return true;
 }
 
-bool NSSelectionSystem::contains(const uivec3 & itemid)
+bool nsselection_system::contains(const uivec3 & itemid)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
-		if ((*iter)->fullid() == itemid.xy())
+		if ((*iter)->full_id() == itemid.xy())
 		{
 			if ((*iter)->get<NSSelComp>()->contains(itemid.z))
 				return true;
@@ -151,7 +151,7 @@ bool NSSelectionSystem::contains(const uivec3 & itemid)
 	return false;
 }
 
-// bool NSSelectionSystem::handleEvent(NSEvent * pEvent)
+// bool nsselection_system::handleEvent(NSEvent * pEvent)
 // {
 // 	if (pEvent->mID == NSEvent::SelPick)
 // 	{
@@ -177,10 +177,10 @@ bool NSSelectionSystem::contains(const uivec3 & itemid)
 // 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent; // Get the specific event
 
 // 		// Get the selection entity and make sure it is valid
-// 		NSEntity * selEnt = nsengine.resource<NSEntity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
+// 		nsentity * selEnt = nsengine.resource<nsentity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
 // 		if (selEnt == NULL)
 // 		{
-// 			dprint("NSSelectionSystem::handleEvent Selection entity sent in event is NULL");
+// 			dprint("nsselection_system::handleEvent Selection entity sent in event is NULL");
 // 			return false;
 // 		}
 
@@ -191,25 +191,25 @@ bool NSSelectionSystem::contains(const uivec3 & itemid)
 // 	return false;
 // }
 
-void NSSelectionSystem::changeLayer(int32 pChange)
+void nsselection_system::change_layer(int32 pChange)
 {
-	removeFromGrid();
+	remove_from_grid();
 	translate(fvec3(0, 0, pChange*-Z_GRID));
 	if (!collision())
 		translate(fvec3(0, 0, pChange*Z_GRID));
-	snapZ();
-	addToGrid();
+	snap_z();
+	add_to_grid();
 }
 
-bool NSSelectionSystem::collision()
+bool nsselection_system::collision()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return false;
 
 	bool noCollision = true;
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
@@ -228,45 +228,45 @@ bool NSSelectionSystem::collision()
 	return noCollision;
 }
 
-void NSSelectionSystem::clear()
+void nsselection_system::clear()
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		(*iter)->get<NSSelComp>()->clear();
 		++iter;
 	}
-	mSelectedEnts.clear();
-	mFocusEnt = uivec3();
+	m_selected_ents.clear();
+	m_focus_ent = uivec3();
 	//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 }
 
-void NSSelectionSystem::setPickfbo(uint32 fbo)
+void nsselection_system::set_picking_fbo(uint32 fbo)
 {
-	pickBuf = fbo;
+	m_picking_buf = fbo;
 }
 
-void NSSelectionSystem::setFinalfbo(uint32 fbo)
+void nsselection_system::set_final_fbo(uint32 fbo)
 {
-	finalBuf = fbo;
+	m_final_buf = fbo;
 }
 
-uivec3 NSSelectionSystem::pick(const fvec2 & mpos)
+uivec3 nsselection_system::pick(const fvec2 & mpos)
 {
 	return pick(mpos.x, mpos.y);
 }
 
-uivec3 NSSelectionSystem::pick(float mousex, float mousey)
+uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return uivec3();
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return uivec3();
 
-	NSFrameBuffer * pickingBuf = nsengine.framebuffer(pickBuf);
+	NSFrameBuffer * pickingBuf = nsengine.framebuffer(m_picking_buf);
 	if (pickingBuf == NULL)
 		return uivec3();
 
@@ -281,24 +281,24 @@ uivec3 NSSelectionSystem::pick(float mousex, float mousey)
 
 	uivec3 index;
 	glReadPixels(int32(mouseX), int32(mouseY), 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
-	GLError("NSSelectionSystem::pick");
+	GLError("nsselection_system::pick");
 
 	pickingBuf->setReadBuffer(NSFrameBuffer::None);
 	pickingBuf->unbind();
 	return index;
 }
 
-void NSSelectionSystem::draw()
+void nsselection_system::draw()
 {
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL || selShader == NULL)
+	nsscene * scene = nsengine.currentScene();
+	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 
-	NSFrameBuffer * finalB = nsengine.framebuffer(finalBuf);
+	NSFrameBuffer * finalB = nsengine.framebuffer(m_final_buf);
 	finalB->setTarget(NSFrameBuffer::Draw);
 	finalB->bind();
 
@@ -314,12 +314,12 @@ void NSSelectionSystem::draw()
 
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 	NSCamComp * camc = cam->get<NSCamComp>();
-	selShader->bind();
-	selShader->setProjCamMat(camc->projCam());
+	m_sel_shader->bind();
+	m_sel_shader->set_proj_cam_mat(camc->projCam());
 
 	// Go through and stencil each selected item
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
@@ -332,46 +332,46 @@ void NSSelectionSystem::draw()
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
-				selShader->setTransform(tComp->transform(*selIter));
-				NSMesh * rMesh = nsengine.resource<NSMesh>(renComp->meshID());
+				m_sel_shader->set_transform(tComp->transform(*selIter));
+				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->meshID());
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
-					NSMesh::SubMesh * cSub = rMesh->submesh(i);
+					nsmesh::submesh * cSub = rMesh->sub(i);
 
-					selShader->setHeightMapEnabled(false);
-					NSMaterial * mat = nsengine.resource<NSMaterial>(renComp->materialID(i));
+					m_sel_shader->set_heightmap_enabled(false);
+					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->materialID(i));
 					if (mat != NULL)
 					{
-						NSTexture * tex = nsengine.resource<NSTexture>(mat->mapTextureID(NSMaterial::Height));
+						nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
 						if (tex != NULL)
 						{
-							selShader->setHeightMapEnabled(true);
-							tex->enable(NSMaterial::Height);
+							m_sel_shader->set_heightmap_enabled(true);
+							tex->enable(nsmaterial::height);
 						}
 					}
 
-					if (cSub->mNode != NULL)
-						selShader->setNodeTransform(cSub->mNode->mWorldTransform);
+					if (cSub->node_ != NULL)
+						m_sel_shader->set_node_transform(cSub->node_->world_transform);
 					else
-						selShader->setNodeTransform(fmat4());
+						m_sel_shader->set_node_transform(fmat4());
 
 					if (animComp != NULL)
 					{
-						selShader->setHasBones(true);
-						selShader->setBoneTransforms(*animComp->finalTransforms());
+						m_sel_shader->set_has_bones(true);
+						m_sel_shader->set_bone_transform(*animComp->finalTransforms());
 					}
 					else
-						selShader->setHasBones(false);
+						m_sel_shader->set_has_bones(false);
 
 					if (terComp != NULL)
-						selShader->setHeightMinMax(terComp->heightBounds());
+						m_sel_shader->set_height_minmax(terComp->heightBounds());
 
-					cSub->mVAO.bind();
-					glDrawElements(cSub->mPrimType,
-								   static_cast<GLsizei>(cSub->mIndices.size()),
+					cSub->vao.bind();
+					glDrawElements(cSub->primitive_type,
+								   static_cast<GLsizei>(cSub->indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
-					cSub->mVAO.unbind();
+					cSub->vao.unbind();
 				}
 				++selIter;
 			}
@@ -381,8 +381,8 @@ void NSSelectionSystem::draw()
 
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glLineWidth(3.0f);
-	iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
@@ -401,41 +401,41 @@ void NSSelectionSystem::draw()
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
-				selShader->setTransform(tComp->transform(*selIter));
-				NSMesh * rMesh = nsengine.resource<NSMesh>(renComp->meshID());
+				m_sel_shader->set_transform(tComp->transform(*selIter));
+				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->meshID());
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
-					NSMesh::SubMesh * cSub = rMesh->submesh(i);
+					nsmesh::submesh * cSub = rMesh->sub(i);
 
-					selShader->setHeightMapEnabled(false);
-					NSMaterial * mat = nsengine.resource<NSMaterial>(renComp->materialID(i));
+					m_sel_shader->set_heightmap_enabled(false);
+					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->materialID(i));
 					if (mat != NULL)
 					{
-						NSTexture * tex = nsengine.resource<NSTexture>(mat->mapTextureID(NSMaterial::Height));
+						nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
 						if (tex != NULL)
 						{
-							selShader->setHeightMapEnabled(true);
-							tex->enable(NSMaterial::Height);
+							m_sel_shader->set_heightmap_enabled(true);
+							tex->enable(nsmaterial::height);
 						}
 					}
 
-					if (cSub->mNode != NULL)
-						selShader->setNodeTransform(cSub->mNode->mWorldTransform);
+					if (cSub->node_ != NULL)
+						m_sel_shader->set_node_transform(cSub->node_->world_transform);
 					else
-						selShader->setNodeTransform(fmat4());
+						m_sel_shader->set_node_transform(fmat4());
 
 					if (animComp != NULL)
 					{
-						selShader->setHasBones(true);
-						selShader->setBoneTransforms(*animComp->finalTransforms());
+						m_sel_shader->set_has_bones(true);
+						m_sel_shader->set_bone_transform(*animComp->finalTransforms());
 					}
 					else
-						selShader->setHasBones(false);
+						m_sel_shader->set_has_bones(false);
 
 					if (terComp != NULL)
-						selShader->setHeightMinMax(terComp->heightBounds());
+						m_sel_shader->set_height_minmax(terComp->heightBounds());
 
-					cSub->mVAO.bind();
+					cSub->vao.bind();
 
 					glDisable(GL_DEPTH_TEST);
 					glPolygonMode(GL_FRONT, GL_LINE);
@@ -443,9 +443,9 @@ void NSSelectionSystem::draw()
 					glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 					fvec4 selCol = selComp->color();
-					selShader->setFragOutColor(selCol);
-					glDrawElements(cSub->mPrimType,
-								   static_cast<GLsizei>(cSub->mIndices.size()),
+					m_sel_shader->set_frag_color_out(selCol);
+					glDrawElements(cSub->primitive_type,
+								   static_cast<GLsizei>(cSub->indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
 
@@ -454,63 +454,63 @@ void NSSelectionSystem::draw()
 					glStencilFunc(GL_EQUAL, 1, 0);
 					selCol.w = selComp->maskAlpha();
 
-					if (mFocusEnt.y == (*iter)->id() && mFocusEnt.z == *selIter)
+					if (m_focus_ent.y == (*iter)->id() && m_focus_ent.z == *selIter)
 						selCol.w = 0.4f;
 
-					selShader->setUniform("fragColOut", selCol);
-					glDrawElements(cSub->mPrimType,
-								   static_cast<GLsizei>(cSub->mIndices.size()),
+					m_sel_shader->set_uniform("fragColOut", selCol);
+					glDrawElements(cSub->primitive_type,
+								   static_cast<GLsizei>(cSub->indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
-					cSub->mVAO.unbind();
+					cSub->vao.unbind();
 				}
 				++selIter;
 			}
 		}
 
-		_drawEntOcc(*iter);
+		_draw_ent_occ(*iter);
 		++iter;
 	}
 
-	_drawOcc();
-	_drawHidden();
+	_draw_occ();
+	_draw_hidden();
 
 
 	// THIS SHOULD BE MOVED TO BUILD SYSTEM
 	// Draw mirror mode center
-	if (nsengine.system<NSBuildSystem>()->mirror())
+	if (nsengine.system<nsbuild_system>()->mirror())
 	{
-		NSMesh * tileM = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
-		fvec3 mypos = nsengine.system<NSBuildSystem>()->mirror();
-		mypos.z = nsengine.system<NSBuildSystem>()->layer() * Z_GRID;
-		selShader->setTransform(translationMat4(mypos));
+		nsmesh * tileM = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
+		fvec3 mypos = nsengine.system<nsbuild_system>()->mirror();
+		mypos.z = nsengine.system<nsbuild_system>()->layer() * Z_GRID;
+		m_sel_shader->set_transform(translationMat4(mypos));
 		for (uint32 i = 0; i < tileM->count(); ++i)
 		{
-			NSMesh::SubMesh * cSub = tileM->submesh(i);
+			nsmesh::submesh * cSub = tileM->sub(i);
 
-			if (cSub->mNode != NULL)
-				selShader->setNodeTransform(cSub->mNode->mWorldTransform);
+			if (cSub->node_ != NULL)
+				m_sel_shader->set_node_transform(cSub->node_->world_transform);
 			else
-				selShader->setNodeTransform(fmat4());
+				m_sel_shader->set_node_transform(fmat4());
 
-			selShader->setHasBones(false);
+			m_sel_shader->set_has_bones(false);
 
-			cSub->mVAO.bind();
+			cSub->vao.bind();
 			fvec4 col(1.0f, 0.0f, 1.0f, 0.7f);
-			selShader->setFragOutColor(col);
-			glDrawElements(cSub->mPrimType,
-						   static_cast<GLsizei>(cSub->mIndices.size()),
+			m_sel_shader->set_frag_color_out(col);
+			glDrawElements(cSub->primitive_type,
+						   static_cast<GLsizei>(cSub->indices.size()),
 						   GL_UNSIGNED_INT,
 						   0);
-			cSub->mVAO.unbind();
+			cSub->vao.unbind();
 		}
 	}
 
-	selShader->unbind();
+	m_sel_shader->unbind();
 	glLineWidth(1.0f);
 }
 
-void NSSelectionSystem::_drawEntOcc(NSEntity * ent)
+void nsselection_system::_draw_ent_occ(nsentity * ent)
 {
 	// Draw the occupy component if draw enabled
 	NSOccupyComp * occComp = ent->get<NSOccupyComp>();
@@ -518,8 +518,8 @@ void NSSelectionSystem::_drawEntOcc(NSEntity * ent)
 	NSTFormComp * tComp = ent->get<NSTFormComp>();
 	if (occComp != NULL && selComp != NULL && tComp != NULL && occComp->drawEnabled())
 	{
-		NSMesh * occMesh = nsengine.resource<NSMesh>(occComp->meshid());
-		NSMaterial * mat = nsengine.resource<NSMaterial>(occComp->matid());
+		nsmesh * occMesh = nsengine.resource<nsmesh>(occComp->meshid());
+		nsmaterial * mat = nsengine.resource<nsmaterial>(occComp->matid());
 		if (occMesh != NULL)
 		{
 			auto selIter = selComp->begin();
@@ -527,34 +527,34 @@ void NSSelectionSystem::_drawEntOcc(NSEntity * ent)
 			{
 				for (uint32 i = 0; i < occMesh->count(); ++i)
 				{
-					NSMesh::SubMesh * occSub = occMesh->submesh(i);
+					nsmesh::submesh * occSub = occMesh->sub(i);
 
-					if (occSub->mNode != NULL)
-						selShader->setNodeTransform(occSub->mNode->mWorldTransform);
+					if (occSub->node_ != NULL)
+						m_sel_shader->set_node_transform(occSub->node_->world_transform);
 					else
-						selShader->setNodeTransform(fmat4());
+						m_sel_shader->set_node_transform(fmat4());
 
-					selShader->setHasBones(false);
-					occSub->mVAO.bind();
+					m_sel_shader->set_has_bones(false);
+					occSub->vao.bind();
 
 					glDisable(GL_STENCIL_TEST);
 
 					if (mat != NULL)
-						selShader->setFragOutColor(mat->color());
+						m_sel_shader->set_frag_color_out(mat->color());
 					else
-						selShader->setFragOutColor(fvec4(1.0f, 0.0f, 1.0f, 0.5f));
+						m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 1.0f, 0.5f));
 
 					auto spaceIter = occComp->begin();
 					while (spaceIter != occComp->end())
 					{
-						selShader->setTransform(translationMat4(NSTileGrid::world(*spaceIter, tComp->wpos(*selIter))));
-						glDrawElements(occSub->mPrimType,
-									   static_cast<GLsizei>(occSub->mIndices.size()),
+						m_sel_shader->set_transform(translationMat4(NSTileGrid::world(*spaceIter, tComp->wpos(*selIter))));
+						glDrawElements(occSub->primitive_type,
+									   static_cast<GLsizei>(occSub->indices.size()),
 									   GL_UNSIGNED_INT,
 									   0);
 						++spaceIter;
 					}
-					occSub->mVAO.unbind();
+					occSub->vao.unbind();
 				}
 				++selIter;
 			}
@@ -562,31 +562,31 @@ void NSSelectionSystem::_drawEntOcc(NSEntity * ent)
 	}
 }
 
-void NSSelectionSystem::_drawOcc()
+void nsselection_system::_draw_occ()
 {
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL || selShader == NULL)
+	nsscene * scene = nsengine.currentScene();
+	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
-	if (!drawOcc)
+	if (!m_draw_occ)
 		return;
 
-	NSMesh * occMesh = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
+	nsmesh * occMesh = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
 	for (uint32 i = 0; i < occMesh->count(); ++i)
 	{
-		NSMesh::SubMesh * occSub = occMesh->submesh(i);
+		nsmesh::submesh * occSub = occMesh->sub(i);
 
-		if (occSub->mNode != NULL)
-			selShader->setNodeTransform(occSub->mNode->mWorldTransform);
+		if (occSub->node_ != NULL)
+			m_sel_shader->set_node_transform(occSub->node_->world_transform);
 		else
-			selShader->setNodeTransform(fmat4());
+			m_sel_shader->set_node_transform(fmat4());
 
-		selShader->setHasBones(false);
-		occSub->mPosBuf.bind();
-		occSub->mVAO.vertexAttribPtr(NSShader::Position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-		occSub->mIndiceBuf.bind();
+		m_sel_shader->set_has_bones(false);
+		occSub->pos_buf.bind();
+		occSub->vao.vertexAttribPtr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+		occSub->indice_buf.bind();
 
-		selShader->setFragOutColor(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+		m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 		NSTileGrid::GridBounds g = scene->grid().occupiedGridBounds();
 
@@ -598,13 +598,13 @@ void NSSelectionSystem::_drawOcc()
 				for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
 				{
 					uivec3 id = scene->grid().get(ivec3(x, y, z));
-					NSEntity * ent = nsengine.resource<NSEntity>(id.x, id.y);
+					nsentity * ent = nsengine.resource<nsentity>(id.x, id.y);
 					if (ent != NULL)
 					{
-						trans.setColumn(3,fvec4(ent->get<NSTFormComp>()->lpos(id.z),1.0f));
-						selShader->setTransform(trans);
-						glDrawElements(occSub->mPrimType,
-									   static_cast<GLsizei>(occSub->mIndices.size()),
+						m_trans.setColumn(3,fvec4(ent->get<NSTFormComp>()->lpos(id.z),1.0f));
+						m_sel_shader->set_transform(m_trans);
+						glDrawElements(occSub->primitive_type,
+									   static_cast<GLsizei>(occSub->indices.size()),
 									   GL_UNSIGNED_INT,
 									   0);
 					}
@@ -615,13 +615,13 @@ void NSSelectionSystem::_drawOcc()
 
 }
 
-void NSSelectionSystem::_drawHidden()
+void nsselection_system::_draw_hidden()
 {
-	NSScene * scene = nsengine.currentScene();
-	if (scene == NULL || selShader == NULL)
+	nsscene * scene = nsengine.currentScene();
+	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 
@@ -641,7 +641,7 @@ void NSSelectionSystem::_drawHidden()
 		}
 
 		NSAnimComp * animComp = (*sceneEntIter)->get<NSAnimComp>();
-		NSMesh * rMesh = nsengine.resource<NSMesh>(renComp->meshID());
+		nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->meshID());
 
 		if (rMesh == NULL)
 		{
@@ -660,32 +660,32 @@ void NSSelectionSystem::_drawHidden()
 
 			if (!hideBit && (!layerBit && objectBit))
 			{
-				selShader->setTransform(tComp->transform(index));
+				m_sel_shader->set_transform(tComp->transform(index));
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
-					NSMesh::SubMesh * cSub = rMesh->submesh(i);
+					nsmesh::submesh * cSub = rMesh->sub(i);
 
-					if (cSub->mNode != NULL)
-						selShader->setNodeTransform(cSub->mNode->mWorldTransform);
+					if (cSub->node_ != NULL)
+						m_sel_shader->set_node_transform(cSub->node_->world_transform);
 					else
-						selShader->setNodeTransform(fmat4());
+						m_sel_shader->set_node_transform(fmat4());
 
 					if (animComp != NULL)
 					{
-						selShader->setHasBones(true);
-						selShader->setBoneTransforms(*animComp->finalTransforms());
+						m_sel_shader->set_has_bones(true);
+						m_sel_shader->set_bone_transform(*animComp->finalTransforms());
 					}
 					else
-						selShader->setHasBones(false);
+						m_sel_shader->set_has_bones(false);
 
-					cSub->mVAO.bind();
+					cSub->vao.bind();
 					fvec4 col(1.0f, 1.0f, 1.0f, 0.04f);
-					selShader->setFragOutColor(col);
-					glDrawElements(cSub->mPrimType,
-								   static_cast<GLsizei>(cSub->mIndices.size()),
+					m_sel_shader->set_frag_color_out(col);
+					glDrawElements(cSub->primitive_type,
+								   static_cast<GLsizei>(cSub->indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
-					cSub->mVAO.unbind();
+					cSub->vao.unbind();
 				}
 			}
 		}
@@ -693,16 +693,16 @@ void NSSelectionSystem::_drawHidden()
 	}
 }
 
-void NSSelectionSystem::del()
+void nsselection_system::del()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
 	std::vector<fvec3> posVec;
 
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selC = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
@@ -725,49 +725,49 @@ void NSSelectionSystem::del()
 	clear();
 }
 
-bool NSSelectionSystem::empty()
+bool nsselection_system::empty()
 {
-	return mSelectedEnts.empty();
+	return m_selected_ents.empty();
 }
 
-void NSSelectionSystem::enableLayerMode(const bool & pMode)
+void nsselection_system::enable_layer_mode(const bool & pMode)
 {
-	mLayerMode = pMode;
+	m_layer_mode = pMode;
 }
 
-void NSSelectionSystem::init()
+void nsselection_system::init()
 {
 	//nsengine.events()->addListener(this, NSEvent::SelPick);
 	//nsengine.events()->addListener(this, NSEvent::SelSet);
 	//nsengine.events()->addListener(this, NSEvent::SelAdd);
 	//nsengine.events()->addListener(this, NSEvent::ClearSelection);
-	registerHandlerFunc(this, &NSSelectionSystem::_handleActionEvent);
-	registerHandlerFunc(this, &NSSelectionSystem::_handleStateEvent);
+	registerHandlerFunc(this, &nsselection_system::_handle_action_event);
+	registerHandlerFunc(this, &nsselection_system::_handle_state_event);
 
-	addTriggerHash(SelectEntity, NSSEL_SELECT);
-	addTriggerHash(MultiSelect, NSSEL_MULTISELECT);
-	addTriggerHash(ShiftSelect, NSSEL_SHIFTSELECT);
-	addTriggerHash(MoveSelection, NSSEL_MOVE);
-	addTriggerHash(MoveSelectionXY, NSSEL_MOVE_XY);
-	addTriggerHash(MoveSelectionZY, NSSEL_MOVE_ZY);
-	addTriggerHash(MoveSelectionZX, NSSEL_MOVE_ZX);
-	addTriggerHash(MoveSelectionX, NSSEL_MOVE_X);
-	addTriggerHash(MoveSelectionY, NSSEL_MOVE_Y);
-	addTriggerHash(MoveSelectionZ, NSSEL_MOVE_Z);
-	addTriggerHash(MoveSelectionToggle, NSSEL_MOVE_TOGGLE);
+	add_trigger_hash(selected_entity, NSSEL_SELECT);
+	add_trigger_hash(multi_select, NSSEL_MULTISELECT);
+	add_trigger_hash(shift_select, NSSEL_SHIFTSELECT);
+	add_trigger_hash(move_select, NSSEL_MOVE);
+	add_trigger_hash(move_selection_xy, NSSEL_MOVE_XY);
+	add_trigger_hash(move_selection_zy, NSSEL_MOVE_ZY);
+	add_trigger_hash(move_selection_zx, NSSEL_MOVE_ZX);
+	add_trigger_hash(move_selection_x, NSSEL_MOVE_X);
+	add_trigger_hash(move_selection_y, NSSEL_MOVE_Y);
+	add_trigger_hash(move_selection_z, NSSEL_MOVE_Z);
+	add_trigger_hash(move_selection_toggle, NSSEL_MOVE_TOGGLE);
 }
 
-int32 NSSelectionSystem::drawPriority()
+int32 nsselection_system::draw_priority()
 {
 	return SEL_SYS_DRAW_PR;
 }
 
-int32 NSSelectionSystem::updatePriority()
+int32 nsselection_system::update_priority()
 {
 	return SEL_SYS_UPDATE_PR;
 }
 
-void NSSelectionSystem::_onRotateX(NSEntity * ent, bool pPressed)
+void nsselection_system::_on_rotate_x(nsentity * ent, bool pPressed)
 {
 	if (ent == NULL)
 		return;
@@ -776,7 +776,7 @@ void NSSelectionSystem::_onRotateX(NSEntity * ent, bool pPressed)
 		rotate(ent, NSTFormComp::Right, 45.0f);
 }
 
-void NSSelectionSystem::_onRotateY(NSEntity * ent, bool pPressed)
+void nsselection_system::_on_rotate_y(nsentity * ent, bool pPressed)
 {
 	if (ent == NULL)
 		return;
@@ -785,7 +785,7 @@ void NSSelectionSystem::_onRotateY(NSEntity * ent, bool pPressed)
 		rotate(ent, NSTFormComp::Target, 45.0f);
 }
 
-void NSSelectionSystem::_onRotateZ(NSEntity * ent, bool pPressed)
+void nsselection_system::_on_rotate_z(nsentity * ent, bool pPressed)
 {
 	if (ent == NULL)
 		return;
@@ -794,13 +794,13 @@ void NSSelectionSystem::_onRotateZ(NSEntity * ent, bool pPressed)
 		rotate(ent, NSTFormComp::Up, 45.0f);
 }
 
-void NSSelectionSystem::_onSelect(NSEntity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
+void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 
@@ -812,18 +812,18 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, bool pPressed, const uivec3 & 
 
 	if (pPressed)
 	{
-		if (ent->plugid() == pID.x && ent->id() == pID.y)
+		if (ent->plugin_id() == pID.x && ent->id() == pID.y)
 		{
 			if (!sc->contains(pID.z))
 				set(ent, pID.z);
 
-			mFocusEnt = pID;
-			if (!mMoving)
+			m_focus_ent = pID;
+			if (!m_moving)
 			{
-				fvec3 originalPos = tc->wpos(mFocusEnt.z);
-				mCachedPoint = originalPos;
-				removeFromGrid();
-				mMoving = true;
+				fvec3 originalPos = tc->wpos(m_focus_ent.z);
+				m_cached_point = originalPos;
+				remove_from_grid();
+				m_moving = true;
 			}
 
 			//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
@@ -831,7 +831,7 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, bool pPressed, const uivec3 & 
 		else if (!contains(pID))
 		{
 			clear();
-			mFocusEnt = uivec3();
+			m_focus_ent = uivec3();
 			//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 	}
@@ -840,67 +840,67 @@ void NSSelectionSystem::_onSelect(NSEntity * ent, bool pPressed, const uivec3 & 
 		if (sc->selected())
 		{
 			if (pSnapZOnly)
-				snapZ(ent);
+				snap_z(ent);
 			else
 				snap(ent);
 		}
 			
 
-		if (mMoving)
+		if (m_moving)
 		{		
-			NSEntity * ent = scene->entity(mFocusEnt.x, mFocusEnt.y);
+			nsentity * ent = scene->entity(m_focus_ent.x, m_focus_ent.y);
 			if (ent == NULL)
 				return;
 			if (!collision())
 			{
-				ent->get<NSTFormComp>()->computeTransform(mFocusEnt.z);
-				fvec3 pTranslate = mCachedPoint - ent->get<NSTFormComp>()->wpos(mFocusEnt.z);
+				ent->get<NSTFormComp>()->computeTransform(m_focus_ent.z);
+				fvec3 pTranslate = m_cached_point - ent->get<NSTFormComp>()->wpos(m_focus_ent.z);
 				translate(pTranslate);
-				setColor(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
+				set_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 
-				if (!addToGrid())
+				if (!add_to_grid())
 				{
-					dprint("NSSelectionSystem::onSelect Error in resetting tiles to original grid position");
+					dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
 				}
 
 				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
-				fvec3 pos = ent->get<NSTFormComp>()->wpos(mFocusEnt.z);
+				fvec3 pos = ent->get<NSTFormComp>()->wpos(m_focus_ent.z);
 				scene->grid().snap(pos);
-				addToGrid();
+				add_to_grid();
 			}
 
-			mMoving = false;
-			mCachedPoint = fvec3();
+			m_moving = false;
+			m_cached_point = fvec3();
 		}
 	}
 }
 
-void NSSelectionSystem::showOccupiedSpaces(bool show)
+void nsselection_system::set_occupied_spaces(bool show)
 {
-	drawOcc = show;
+	m_draw_occ = show;
 }
 
-void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
+void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 {
 	if (ent == NULL)
 		return;
 
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
 	uivec3 pi = pick(pPos.x, pPos.y);
 	NSSelComp * sc = ent->get<NSSelComp>();
 
-	if (ent->plugid() == pi.x && ent->id() == pi.y) // needs the pointing thing
+	if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
 	{
-		mFocusEnt = pi;
+		m_focus_ent = pi;
 		//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 
-		NSEntity * tileBrush = nsengine.system<NSBuildSystem>()->tilebrush();
+		nsentity * tileBrush = nsengine.system<nsbuild_system>()->tile_brush();
 		if (tileBrush == NULL)
 		{
 			add(ent, pi.z);
@@ -918,14 +918,14 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				NSEntity * focEnt = scene->entity(mFocusEnt.x, mFocusEnt.y);
+				nsentity * focEnt = scene->entity(m_focus_ent.x, m_focus_ent.y);
 				if (focEnt == NULL)
 					continue;
 
 				NSTFormComp * tForm = focEnt->get<NSTFormComp>();
-				fvec3 pos = tForm->lpos(mFocusEnt.z) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
-				uivec3 refid = scene->refid(pos);
-				NSEntity * selEnt = nsengine.resource<NSEntity>(refid.x, refid.y);
+				fvec3 pos = tForm->lpos(m_focus_ent.z) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				uivec3 refid = scene->ref_id(pos);
+				nsentity * selEnt = nsengine.resource<nsentity>(refid.x, refid.y);
 				if (selEnt == NULL)
 					continue;
 				NSSelComp * selComp = selEnt->get<NSSelComp>();
@@ -940,13 +940,13 @@ void NSSelectionSystem::_onPaintSelect(NSEntity * ent, const fvec2 & pPos)
 	}
 }
 
-void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, uint16 axis_)
+void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 
@@ -961,7 +961,7 @@ void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, uint
 	// get change in terms of NDC
 	fvec2 delta(pDelta * 2.0f);
 
-	fvec3 originalPos = tComp->wpos(mFocusEnt.z);
+	fvec3 originalPos = tComp->wpos(m_focus_ent.z);
 	fvec4 screenSpace = camc->projCam() * fvec4(originalPos, 1.0f);
 	screenSpace /= screenSpace.w;
 	screenSpace.x += delta.u;
@@ -985,11 +985,11 @@ void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, uint
 
 
 	// Set normal if not moving in a single plane
-	if ((axis_ == (XAxis | YAxis | ZAxis) && angle > 35.0f) || (axis_ & ZAxis) != ZAxis)
+	if ((axis_ == (axis_x | axis_y | axis_z) && angle > 35.0f) || (axis_ & axis_z) != axis_z)
 		normal.set(0.0f,0.0f,-1.0f);
 	else
 	{
-		if (axis_ == ZAxis || axis_ == (XAxis | YAxis | ZAxis))
+		if (axis_ == axis_z || axis_ == (axis_x | axis_y | axis_z))
 		{
 			if (angleX < 45.0f)
 				normal.set(-1.0f,0.0f,0.0f);
@@ -998,7 +998,7 @@ void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, uint
 		}
 		else
 		{
-			if ((axis_ & XAxis) != XAxis)
+			if ((axis_ & axis_x) != axis_x)
 				normal.set(-1.0f,0.0f,0.0f);
 			else
 				normal.set(0.0f,-1.0f,0.0f);
@@ -1008,23 +1008,23 @@ void NSSelectionSystem::_onDragObject(NSEntity * ent, const fvec2 & pDelta, uint
 	depth = (normal * (originalPos - fpos)) / (normal * castVec);
 	fpos += castVec*depth;
 	fpos -= originalPos;	
-	fpos %= fvec3(float((axis_ & XAxis) == XAxis), float((axis_ & YAxis) == YAxis), float((axis_ & ZAxis) == ZAxis));
-	mTotalFrameTranslation += fpos;
+	fpos %= fvec3(float((axis_ & axis_x) == axis_x), float((axis_ & axis_y) == axis_y), float((axis_ & axis_z) == axis_z));
+	m_total_frame_translation += fpos;
 }
 
-int32 NSSelectionSystem::layer() const
+int32 nsselection_system::layer() const
 {
-	return mLayer;
+	return m_layer;
 }
 
-const uivec3 & NSSelectionSystem::center()
+const uivec3 & nsselection_system::center()
 {
-	return mFocusEnt;
+	return m_focus_ent;
 }
 
-void NSSelectionSystem::_onMultiSelect(NSEntity * ent, bool pPressed, const uivec3 & pID)
+void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const uivec3 & pID)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
@@ -1036,51 +1036,51 @@ void NSSelectionSystem::_onMultiSelect(NSEntity * ent, bool pPressed, const uive
 
 	if (pPressed)
 	{
-		NSEntity * ent = sc->owner();
-		if (ent->plugid() == pID.x && ent->id() == pID.y)
+		nsentity * ent = sc->owner();
+		if (ent->plugin_id() == pID.x && ent->id() == pID.y)
 		{
 			if (!contains(pID))
 			{
 				add(ent, pID.z);
-				mFocusEnt = pID;
+				m_focus_ent = pID;
 				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
 				remove(ent, pID.z);
-				mFocusEnt = uivec3();
-				if (!mSelectedEnts.empty())
+				m_focus_ent = uivec3();
+				if (!m_selected_ents.empty())
 				{
-					NSEntity * ent = scene->entity(pID.x,pID.y);
+					nsentity * ent = scene->entity(pID.x,pID.y);
 					if (ent != NULL)
 					{
-						auto iter = mSelectedEnts.find(ent);
-						if (iter != mSelectedEnts.end())
+						auto iter = m_selected_ents.find(ent);
+						if (iter != m_selected_ents.end())
 						{
 							NSSelComp * selComp = (*iter)->get<NSSelComp>();
 							auto first = selComp->begin();
-							mFocusEnt.x = (*iter)->plugid();
-							mFocusEnt.y = (*iter)->id();
-							mFocusEnt.z = (*first);
+							m_focus_ent.x = (*iter)->plugin_id();
+							m_focus_ent.y = (*iter)->id();
+							m_focus_ent.z = (*first);
 						}
 						else
 						{
-							auto entFirst = mSelectedEnts.begin();
+							auto entFirst = m_selected_ents.begin();
 							NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
 							auto first = selComp->begin();
-							mFocusEnt.x = (*entFirst)->plugid();
-							mFocusEnt.y = (*entFirst)->id();
-							mFocusEnt.z = (*first);
+							m_focus_ent.x = (*entFirst)->plugin_id();
+							m_focus_ent.y = (*entFirst)->id();
+							m_focus_ent.z = (*first);
 						}
 					}
 					else
 					{
-						auto entFirst = mSelectedEnts.begin();
+						auto entFirst = m_selected_ents.begin();
 						NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
 						auto first = selComp->begin();
-						mFocusEnt.y = (*entFirst)->plugid();
-						mFocusEnt.y = (*entFirst)->id();
-						mFocusEnt.z = (*first);
+						m_focus_ent.y = (*entFirst)->plugin_id();
+						m_focus_ent.y = (*entFirst)->id();
+						m_focus_ent.z = (*first);
 					}
 				}
 				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
@@ -1089,27 +1089,27 @@ void NSSelectionSystem::_onMultiSelect(NSEntity * ent, bool pPressed, const uive
 	}
 }
 
-void NSSelectionSystem::_reset_focus(const uivec3 & pickid)
+void nsselection_system::_reset_focus(const uivec3 & pickid)
 {	
-	if (mSelectedEnts.empty())
+	if (m_selected_ents.empty())
 	{
-		mFocusEnt = uivec3();
-		mSendFocEvent = true;
+		m_focus_ent = uivec3();
+		m_send_foc_event = true;
 		return;
 	}
 	
 
 	if (contains(pickid))
 	{
-		mFocusEnt = pickid;
-		mSendFocEvent = true;
+		m_focus_ent = pickid;
+		m_send_foc_event = true;
 		return;
 	}
 
-	if (contains(mFocusEnt))
+	if (contains(m_focus_ent))
 		return;
 
-	NSEntity * ent = nsengine.resource<NSEntity>(pickid.xy());
+	nsentity * ent = nsengine.resource<nsentity>(pickid.xy());
 	NSSelComp * sc;
 	if (ent == NULL || (sc = ent->get<NSSelComp>()) == NULL)
 		return;
@@ -1117,8 +1117,8 @@ void NSSelectionSystem::_reset_focus(const uivec3 & pickid)
 	NSTFormComp * tc = ent->get<NSTFormComp>();
 	fvec3 original_pos = tc->wpos(pickid.z);
 	
-	auto iter = mSelectedEnts.find(ent);
-	if (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.find(ent);
+	if (iter != m_selected_ents.end())
 	{
 		auto sel_iter = sc->begin();
 		uint closest_tformid = *sel_iter;
@@ -1129,19 +1129,19 @@ void NSSelectionSystem::_reset_focus(const uivec3 & pickid)
 				closest_tformid = *sel_iter;
 			++sel_iter;
 		}
-		mFocusEnt.set(pickid.xy(),closest_tformid);
+		m_focus_ent.set(pickid.xy(),closest_tformid);
 	}
 	else
 	{
-		auto entFirst = mSelectedEnts.begin();
+		auto entFirst = m_selected_ents.begin();
 		NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
 		auto first = selComp->begin();
-		mFocusEnt.set((*entFirst)->fullid(), *first);
+		m_focus_ent.set((*entFirst)->full_id(), *first);
 	}
-	mSendFocEvent = true;
+	m_send_foc_event = true;
 }
 
-void NSSelectionSystem::remove(NSEntity * ent, uint32 pTFormID)
+void nsselection_system::remove(nsentity * ent, uint32 pTFormID)
 {
 	if (ent == NULL)
 		return;
@@ -1153,19 +1153,19 @@ void NSSelectionSystem::remove(NSEntity * ent, uint32 pTFormID)
 	selcomp->remove(pTFormID);
 	if (selcomp->empty())
 	{
-		auto iter = mSelectedEnts.find(ent);
-		mSelectedEnts.erase(iter);
+		auto iter = m_selected_ents.find(ent);
+		m_selected_ents.erase(iter);
 	}
 }
 
-void NSSelectionSystem::removeFromGrid()
+void nsselection_system::remove_from_grid()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
@@ -1184,10 +1184,10 @@ void NSSelectionSystem::removeFromGrid()
 	}
 }
 
-void NSSelectionSystem::resetColor()
+void nsselection_system::reset_color()
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		auto selIter = selComp->begin();
@@ -1200,7 +1200,7 @@ void NSSelectionSystem::resetColor()
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, const fvec4 & axisangle)
+void nsselection_system::rotate(nsentity * ent, const fvec4 & axisangle)
 {
 	if (ent == NULL)
 		return;
@@ -1218,17 +1218,17 @@ void NSSelectionSystem::rotate(NSEntity * ent, const fvec4 & axisangle)
 	}
 }
 
-void NSSelectionSystem::rotate(const fvec4 & axisangle)
+void nsselection_system::rotate(const fvec4 & axisangle)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		rotate(*iter, axisangle);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::DirVec axis, float angle)
+void nsselection_system::rotate(nsentity * ent, NSTFormComp::DirVec axis, float angle)
 {
 	if (ent == NULL)
 		return;
@@ -1246,17 +1246,17 @@ void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::DirVec axis, float a
 	}
 }
 
-void NSSelectionSystem::rotate(NSTFormComp::DirVec axis, float angle)
+void nsselection_system::rotate(NSTFormComp::DirVec axis, float angle)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		rotate(*iter, axis, angle);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::Axis axis, float angle)
+void nsselection_system::rotate(nsentity * ent, NSTFormComp::Axis axis, float angle)
 {
 	if (ent == NULL)
 		return;
@@ -1274,17 +1274,17 @@ void NSSelectionSystem::rotate(NSEntity * ent, NSTFormComp::Axis axis, float ang
 	}
 }
 
-void NSSelectionSystem::rotate(NSTFormComp::Axis axis, float angle)
+void nsselection_system::rotate(NSTFormComp::Axis axis, float angle)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		rotate(*iter, axis, angle);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, const fvec3 & euler)
+void nsselection_system::rotate(nsentity * ent, const fvec3 & euler)
 {
 	if (ent == NULL)
 		return;
@@ -1302,17 +1302,17 @@ void NSSelectionSystem::rotate(NSEntity * ent, const fvec3 & euler)
 	}
 }
 
-void NSSelectionSystem::rotate(const fvec3 & euler)
+void nsselection_system::rotate(const fvec3 & euler)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		rotate(*iter, euler);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::rotate(NSEntity * ent, const fquat & orientation)
+void nsselection_system::rotate(nsentity * ent, const fquat & orientation)
 {
 	if (ent == NULL)
 		return;
@@ -1330,17 +1330,17 @@ void NSSelectionSystem::rotate(NSEntity * ent, const fquat & orientation)
 	}
 }
 
-void NSSelectionSystem::rotate(const fquat & orientation)
+void nsselection_system::rotate(const fquat & orientation)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		rotate(*iter, orientation);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::scale(NSEntity * ent, const fvec3 & pAmount)
+void nsselection_system::scale(nsentity * ent, const fvec3 & pAmount)
 {
 	if (ent == NULL)
 		return;
@@ -1358,36 +1358,36 @@ void NSSelectionSystem::scale(NSEntity * ent, const fvec3 & pAmount)
 	}
 }
 
-void NSSelectionSystem::scale(const fvec3 & pAmount)
+void nsselection_system::scale(const fvec3 & pAmount)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		scale(*iter, pAmount);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::scale(NSEntity * ent, float x, float y, float z)
+void nsselection_system::scale(nsentity * ent, float x, float y, float z)
 {
 	scale(ent, fvec3(x, y, z));
 }
 
-void NSSelectionSystem::scale(float x, float y, float z)
+void nsselection_system::scale(float x, float y, float z)
 {
 	scale(fvec3(x, y, z));
 }
 
-bool NSSelectionSystem::set(NSEntity * ent, uint32 tformid)
+bool nsselection_system::set(nsentity * ent, uint32 tformid)
 {
 	clear();
 	return add(ent, tformid);
 }
 
-void NSSelectionSystem::setColor(const fvec4 & pColor)
+void nsselection_system::set_color(const fvec4 & pColor)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		auto selIter = selComp->begin();
@@ -1400,10 +1400,10 @@ void NSSelectionSystem::setColor(const fvec4 & pColor)
 	}
 }
 
-void NSSelectionSystem::setHiddenState(NSTFormComp::HiddenState pState, bool pSet)
+void nsselection_system::set_hidden_state(NSTFormComp::HiddenState pState, bool pSet)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tForm = (*iter)->get<NSTFormComp>();
@@ -1418,17 +1418,17 @@ void NSSelectionSystem::setHiddenState(NSTFormComp::HiddenState pState, bool pSe
 	}
 }
 
-void NSSelectionSystem::setLayer(int32 pLayer)
+void nsselection_system::set_layer(int32 pLayer)
 {
-	mLayer = pLayer;
+	m_layer = pLayer;
 }
 
-void NSSelectionSystem::setShader(NSSelectionShader * selShader_)
+void nsselection_system::set_shader(nsselection_shader * selShader_)
 {
-	selShader = selShader_;
+	m_sel_shader = selShader_;
 }
 
-void NSSelectionSystem::snap(NSEntity * ent)
+void nsselection_system::snap(nsentity * ent)
 {
 	if (ent == NULL)
 		return;
@@ -1446,17 +1446,17 @@ void NSSelectionSystem::snap(NSEntity * ent)
 	}
 }
 
-void NSSelectionSystem::snap()
+void nsselection_system::snap()
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		snap(*iter);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::snapX(NSEntity * ent)
+void nsselection_system::snap_x(nsentity * ent)
 {
 	if (ent == NULL)
 		return;
@@ -1474,17 +1474,17 @@ void NSSelectionSystem::snapX(NSEntity * ent)
 	}
 }
 
-void NSSelectionSystem::snapX()
+void nsselection_system::snap_x()
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
-		snapX(*iter);
+		snap_x(*iter);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::snapY(NSEntity * ent)
+void nsselection_system::snap_y(nsentity * ent)
 {
 	if (ent == NULL)
 		return;
@@ -1502,17 +1502,17 @@ void NSSelectionSystem::snapY(NSEntity * ent)
 	}
 }
 
-void NSSelectionSystem::snapY()
+void nsselection_system::snap_y()
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
-		snapY(*iter);
+		snap_y(*iter);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::snapZ(NSEntity * ent)
+void nsselection_system::snap_z(nsentity * ent)
 {
 	if (ent == NULL)
 		return;
@@ -1530,35 +1530,35 @@ void NSSelectionSystem::snapZ(NSEntity * ent)
 	}
 }
 
-void NSSelectionSystem::snapZ()
+void nsselection_system::snap_z()
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
-		snapZ(*iter);
+		snap_z(*iter);
 		++iter;
 	}
 }
 
 
-void NSSelectionSystem::tileswap(NSEntity * pNewTile)
+void nsselection_system::tile_swap(nsentity * pNewTile)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
 	if (pNewTile == NULL)
 	{
-		dprint("NSSelectionSystem::swapTiles pNewTile is NULL");
+		dprint("nsselection_system::swapTiles pNewTile is NULL");
 		return;
 	}
-	if (!tileSwapValid())
+	if (!valid_tile_swap())
 		return;
 
 	std::vector<fvec3> posVec;
 
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selC = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
@@ -1575,7 +1575,7 @@ void NSSelectionSystem::tileswap(NSEntity * pNewTile)
 
 		for (uint32 cur = 0; cur < posVec.size(); ++cur)
 		{
-			uivec3 id = scene->refid(posVec[cur]);
+			uivec3 id = scene->ref_id(posVec[cur]);
 			scene->replace(id.x, id.y, id.z, pNewTile);
 		}
 
@@ -1584,7 +1584,7 @@ void NSSelectionSystem::tileswap(NSEntity * pNewTile)
 	clear();
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, const fvec3 & pAmount)
+void nsselection_system::translate(nsentity * ent, const fvec3 & pAmount)
 {
 	if (ent == NULL)
 		return;
@@ -1602,27 +1602,27 @@ void NSSelectionSystem::translate(NSEntity * ent, const fvec3 & pAmount)
 	}
 }
 
-void NSSelectionSystem::translate(const fvec3 & pAmount)
+void nsselection_system::translate(const fvec3 & pAmount)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		translate(*iter, pAmount);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::translate(float x, float y, float z)
+void nsselection_system::translate(float x, float y, float z)
 {
 	translate(fvec3(x, y, z));
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, float x, float y, float z)
+void nsselection_system::translate(nsentity * ent, float x, float y, float z)
 {
 	translate(ent, fvec3(x, y, z));
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::DirVec pDir, float pAmount)
+void nsselection_system::translate(nsentity * ent, NSTFormComp::DirVec pDir, float pAmount)
 {
 	if (ent == NULL)
 		return;
@@ -1640,17 +1640,17 @@ void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::DirVec pDir, floa
 	}
 }
 
-void NSSelectionSystem::translate(NSTFormComp::DirVec pDir, float pAmount)
+void nsselection_system::translate(NSTFormComp::DirVec pDir, float pAmount)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		translate(*iter, pDir, pAmount);
 		++iter;
 	}
 }
 
-void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::Axis pDir, float pAmount)
+void nsselection_system::translate(nsentity * ent, NSTFormComp::Axis pDir, float pAmount)
 {
 	if (ent == NULL)
 		return;
@@ -1668,28 +1668,28 @@ void NSSelectionSystem::translate(NSEntity * ent, NSTFormComp::Axis pDir, float 
 	}
 }
 
-void NSSelectionSystem::translate(NSTFormComp::Axis pDir, float pAmount)
+void nsselection_system::translate(NSTFormComp::Axis pDir, float pAmount)
 {
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		translate(*iter, pDir, pAmount);
 		++iter;
 	}
 }
 
-bool NSSelectionSystem::layerMode() const
+bool nsselection_system::layer_mode() const
 {
-	return mLayerMode;
+	return m_layer_mode;
 }
 
-bool NSSelectionSystem::brushValid()
+bool nsselection_system::valid_brush()
 {
-	if (mSelectedEnts.empty())
+	if (m_selected_ents.empty())
 		return false;
 
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		if (!(*iter)->has<NSTileComp>())
 			return false;
@@ -1719,13 +1719,13 @@ bool NSSelectionSystem::brushValid()
 	return true;
 }
 
-bool NSSelectionSystem::tileSwapValid()
+bool nsselection_system::valid_tile_swap()
 {
-	if (mSelectedEnts.empty())
+	if (m_selected_ents.empty())
 		return false;
 
-	auto iter = mSelectedEnts.begin();
-	while (iter != mSelectedEnts.end())
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
 	{
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
@@ -1736,75 +1736,75 @@ bool NSSelectionSystem::tileSwapValid()
 	return true;
 }
 
-void NSSelectionSystem::update()
+void nsselection_system::update()
 {
 
-	NSScene * scn = nsengine.currentScene();
+	nsscene * scn = nsengine.currentScene();
 	if (scn == NULL)
 		return;
-	NSEntity * ent = scn->entity(mFocusEnt.xy());
+	nsentity * ent = scn->entity(m_focus_ent.xy());
 	if (ent == NULL)
 		return;
 	NSTFormComp * foc_tform = ent->get<NSTFormComp>();
 
-	if (mSendFocEvent)
+	if (m_send_foc_event)
 	{
-		nsengine.eventDispatch()->push<NSSelFocusEvent>(mFocusEnt);
-		mSendFocEvent = false;
+		nsengine.eventDispatch()->push<NSSelFocusEvent>(m_focus_ent);
+		m_send_foc_event = false;
 	}
 
-	if (mToggleMove)
+	if (m_toggle_move)
 	{
-		if (mMoving)
+		if (m_moving)
 		{
-			fvec3 originalPos = foc_tform->wpos(mFocusEnt.z);
-			mCachedPoint = originalPos;
-			removeFromGrid();
+			fvec3 originalPos = foc_tform->wpos(m_focus_ent.z);
+			m_cached_point = originalPos;
+			remove_from_grid();
 		}
 		else
 		{
 			snap();
 			if (!collision())
 			{
-				foc_tform->computeTransform(mFocusEnt.z);
-				fvec3 pTranslate = mCachedPoint - foc_tform->wpos(mFocusEnt.z);
+				foc_tform->computeTransform(m_focus_ent.z);
+				fvec3 pTranslate = m_cached_point - foc_tform->wpos(m_focus_ent.z);
 				translate(pTranslate);
-				setColor(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
+				set_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 
-				if (!addToGrid())
+				if (!add_to_grid())
 				{
-					dprint("NSSelectionSystem::onSelect Error in resetting tiles to original grid position");
+					dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
 				}
 			}
 			else
 			{
-				fvec3 pos = foc_tform->wpos(mFocusEnt.z);
+				fvec3 pos = foc_tform->wpos(m_focus_ent.z);
 				scn->grid().snap(pos);
-				addToGrid();
-				nsengine.eventDispatch()->push<NSSelFocusEvent>(mFocusEnt);
+				add_to_grid();
+				nsengine.eventDispatch()->push<NSSelFocusEvent>(m_focus_ent);
 			}
-			mCachedPoint = fvec3();
+			m_cached_point = fvec3();
 		}
-		mToggleMove = false;
+		m_toggle_move = false;
 	}
 
-	if (mMoving)
+	if (m_moving)
 	{		
 		if (!collision())
-			setColor(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+			set_color(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
 		else
-			resetColor();
-		translate(mTotalFrameTranslation);
-		mTotalFrameTranslation = 0.0f;
+			reset_color();
+		translate(m_total_frame_translation);
+		m_total_frame_translation = 0.0f;
 	}
 }
 
-bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
+bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 {
-	if (evnt->mTriggerHashName == triggerHash(SelectEntity))
+	if (evnt->mTriggerHashName == trigger_hash(selected_entity))
 	{
-		auto xpos_iter = evnt->axes.find(NSInputMap::MouseXPos);
-		auto ypos_iter = evnt->axes.find(NSInputMap::MouseYPos);
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
 		fvec2 mpos;
 		
 		if (xpos_iter != evnt->axes.end())
@@ -1816,14 +1816,14 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (!contains(pickid))
 			clear();
 		
-		NSEntity * selectedEnt = nsengine.resource<NSEntity>(pickid.xy());
+		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
         add(selectedEnt, pickid.z);
 		_reset_focus(pickid);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MultiSelect))
+	else if (evnt->mTriggerHashName == trigger_hash(multi_select))
 	{
-		auto xpos_iter = evnt->axes.find(NSInputMap::MouseXPos);
-		auto ypos_iter = evnt->axes.find(NSInputMap::MouseYPos);
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
 		fvec2 mpos;
 		
 		if (xpos_iter != evnt->axes.end())
@@ -1832,7 +1832,7 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 			mpos.y = ypos_iter->second;
 		
 		uivec3 pickid = pick(mpos);
-		NSEntity * selectedEnt = nsengine.resource<NSEntity>(pickid.xy());
+		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
 		NSTFormComp * tc;
 			
 		if (contains(pickid))
@@ -1842,10 +1842,10 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 
 		_reset_focus(pickid);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(ShiftSelect))
+	else if (evnt->mTriggerHashName == trigger_hash(shift_select))
 	{
-		auto xpos_iter = evnt->axes.find(NSInputMap::MouseXPos);
-		auto ypos_iter = evnt->axes.find(NSInputMap::MouseYPos);
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
 		fvec2 mpos;
 		
 		if (xpos_iter != evnt->axes.end())
@@ -1854,14 +1854,14 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 			mpos.y = ypos_iter->second;
 		
 		uivec3 pickid = pick(mpos);
-		NSEntity * selectedEnt = nsengine.resource<NSEntity>(pickid.xy());
+		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
 		add(selectedEnt, pickid.z);
 		_reset_focus(pickid);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelection))
+	else if (evnt->mTriggerHashName == trigger_hash(move_select))
 	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
 		
 		if (xdelta_iter != evnt->axes.end())
@@ -1869,13 +1869,13 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, XAxis | YAxis | ZAxis);
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_x | axis_y | axis_z);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionXY))
+	else if (evnt->mTriggerHashName == trigger_hash(move_selection_xy))
 	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
 		
 		if (xdelta_iter != evnt->axes.end())
@@ -1883,13 +1883,13 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, XAxis | YAxis);
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_x | axis_y);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionZY))
+	else if (evnt->mTriggerHashName == trigger_hash(move_selection_zy))
 	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
 		
 		if (xdelta_iter != evnt->axes.end())
@@ -1897,27 +1897,13 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 		
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, YAxis | ZAxis);
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_y | axis_z);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionZX))
+	else if (evnt->mTriggerHashName == trigger_hash(move_selection_zx))
 	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
-		fvec2 mdelta;
-		
-		if (xdelta_iter != evnt->axes.end())
-			mdelta.x = xdelta_iter->second;
-		if (ydelta_iter != evnt->axes.end())
-			mdelta.y = ydelta_iter->second;
-
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, XAxis | ZAxis);
-	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionX))
-	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
 		
 		if (xdelta_iter != evnt->axes.end())
@@ -1925,13 +1911,13 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, XAxis);
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_x | axis_z);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionY))
+	else if (evnt->mTriggerHashName == trigger_hash(move_selection_x))
 	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
 		
 		if (xdelta_iter != evnt->axes.end())
@@ -1939,13 +1925,13 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, YAxis);
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_x);
 	}
-	else if (evnt->mTriggerHashName == triggerHash(MoveSelectionZ))
+	else if (evnt->mTriggerHashName == trigger_hash(move_selection_y))
 	{
-		auto xdelta_iter = evnt->axes.find(NSInputMap::MouseXDelta);
-		auto ydelta_iter = evnt->axes.find(NSInputMap::MouseYDelta);
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
 		
 		if (xdelta_iter != evnt->axes.end())
@@ -1953,18 +1939,32 @@ bool NSSelectionSystem::_handleActionEvent(NSActionEvent * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		NSEntity * ent = nsengine.resource<NSEntity>(mFocusEnt.xy());
-		_onDragObject(ent, mdelta, ZAxis);
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_y);
+	}
+	else if (evnt->mTriggerHashName == trigger_hash(move_selection_z))
+	{
+		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
+		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
+		fvec2 mdelta;
+		
+		if (xdelta_iter != evnt->axes.end())
+			mdelta.x = xdelta_iter->second;
+		if (ydelta_iter != evnt->axes.end())
+			mdelta.y = ydelta_iter->second;
+
+		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		_on_draw_object(ent, mdelta, axis_z);
 	}
 	return true;	
 }
 
-bool NSSelectionSystem::_handleStateEvent(NSStateEvent * evnt)
+bool nsselection_system::_handle_state_event(NSStateEvent * evnt)
 {
-	if (evnt->mTriggerHashName == triggerHash(MoveSelectionToggle))
+	if (evnt->mTriggerHashName == trigger_hash(move_selection_toggle))
 	{
-		mToggleMove = true;
-		mMoving = evnt->mToggle;
+		m_toggle_move = true;
+		m_moving = evnt->mToggle;
 	}
 	return true;
 }

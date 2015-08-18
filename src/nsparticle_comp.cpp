@@ -80,7 +80,7 @@ NSParticleComp* NSParticleComp::copy(const NSComponent * pToCopy)
 	return this;
 }
 
-void NSParticleComp::nameChange(const uivec2 & oldid, const uivec2 newid)
+void NSParticleComp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	if (mRandTextID.x == oldid.x)
 	{
@@ -233,12 +233,12 @@ fvec3 NSParticleComp::visualKeyAt(float pTime)
 
 void NSParticleComp::init()
 {
-	mTFB[0]->initGL();
-	mTFB[1]->initGL();
-	mVAO[0]->initGL();
-	mVAO[1]->initGL();
-	mFrontBuf->initGL();
-	mBackBuf->initGL();
+	mTFB[0]->init_gl();
+	mTFB[1]->init_gl();
+	mVAO[0]->init_gl();
+	mVAO[1]->init_gl();
+	mFrontBuf->init_gl();
+	mBackBuf->init_gl();
 
 	mParticles.resize(mMaxParticleCount);
 	mParticles[0].mAgeTypeReserved.y = 1.0f;
@@ -606,7 +606,7 @@ const uivec2 & NSParticleComp::randomTextureID()
 
 uint32 NSParticleComp::transformFeedbackID()
 {
-	return mTFB[1 - mBufferIndex]->glid();
+	return mTFB[1 - mBufferIndex]->gl_id();
 }
 
 NSTransformFeedbackObject * NSParticleComp::transformFeedbackObject()

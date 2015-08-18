@@ -18,7 +18,7 @@ This file contains all of the neccessary declarations for the NSCamComp class.
 #include <nsmath.h>
 #include <nspupper.h>
 
-class NSEntity;
+class nsentity;
 class NSTimer;
 
 /*!

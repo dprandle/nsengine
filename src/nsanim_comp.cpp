@@ -56,9 +56,9 @@ float & NSAnimComp::elapsed()
 	return mElapsedTime;
 }
 
-void NSAnimComp::fillBones(NSMesh::NodeTree * pNodeTree, NSAnimSet::AnimationData * pCurrentAnim)
+void NSAnimComp::fillBones(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim)
 {
-	_fillBoneTransform(pNodeTree, pNodeTree->mRootNode, pCurrentAnim, pNodeTree->mRootNode->mWorldTransform);
+	_fillBoneTransform(pNodeTree, pNodeTree->root_node, pCurrentAnim, pNodeTree->root_node->world_transform);
 }
 
 void NSAnimComp::init()
@@ -69,7 +69,7 @@ bool NSAnimComp::animating() const
 	return mAnimating;
 }
 
-void NSAnimComp::nameChange(const uivec2 & oldid, const uivec2 newid)
+void NSAnimComp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	if (mAnimSetID.x == oldid.x)
 	{
@@ -148,27 +148,27 @@ NSAnimComp & NSAnimComp::operator=(const NSAnimComp & pRHSComp)
 	return (*this);
 }
 
-void NSAnimComp::_fillBoneTransform(NSMesh::NodeTree * pNodeTree, NSMesh::Node * pNode, NSAnimSet::AnimationData * pCurrentAnim, fmat4 & pParentTransform)
+void NSAnimComp::_fillBoneTransform(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)
 {
 	fmat4 globalTransform;
 	nsstringstream ss;
 
-	if (pNodeTree->boneNameMap.empty())
+	if (pNodeTree->bone_name_map.empty())
 	{
 		dprint("NSAnimComp::_fillBoneTransform Animation has no bones");
 		return;
 	}
 
-	if (pCurrentAnim != NULL && pCurrentAnim->animationNode(pNode->mName) != NULL)
-		globalTransform = pParentTransform * pCurrentAnim->boneTransform(pNode->mName, mElapsedTime);
+	if (pCurrentAnim != NULL && pCurrentAnim->anim_node(pNode->name) != NULL)
+		globalTransform = pParentTransform * pCurrentAnim->bone_transform(pNode->name, mElapsedTime);
 	else
-		globalTransform = pParentTransform * pNode->mNodeTransform;
+		globalTransform = pParentTransform * pNode->node_transform;
 
-	std::map<nsstring, NSMesh::Bone>::const_iterator iter = pNodeTree->boneNameMap.find(pNode->mName);
-	if (iter != pNodeTree->boneNameMap.end())
+	std::map<nsstring, nsmesh::bone>::const_iterator iter = pNodeTree->bone_name_map.find(pNode->name);
+	if (iter != pNodeTree->bone_name_map.end())
 		mFinalTransforms[iter->second.boneID] = globalTransform * iter->second.mOffsetTransform;
 
-	for (uint32 i = 0; i < pNode->mChildNodes.size(); ++i)
-		_fillBoneTransform(pNodeTree, pNode->mChildNodes[i], pCurrentAnim, globalTransform);
+	for (uint32 i = 0; i < pNode->child_nodes.size(); ++i)
+		_fillBoneTransform(pNodeTree, pNode->child_nodes[i], pCurrentAnim, globalTransform);
 }
 

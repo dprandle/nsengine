@@ -1,97 +1,97 @@
 /*!
 \file nsscene_manager.h
 
-\brief Header file for NSSceneManager class
+\brief Header file for nsscene_manager class
 
-This file contains all of the neccessary declarations for the NSSceneManager class.
+This file contains all of the neccessary declarations for the nsscene_manager class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSSCENEMANAGER_H
-#define NSSCENEMANAGER_H
+#ifndef NSSCENE_MANAGER_H
+#define NSSCENE_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsscene.h>
 
-class NSSceneManager : public NSResManager
+class nsscene_manager : public nsres_manager
 {
 public:
-	NSSceneManager();
-	~NSSceneManager();
+	nsscene_manager();
+	~nsscene_manager();
 	
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSScene * create(const nsstring & resName)
+	virtual nsscene * create(const nsstring & res_name)
 	{
-		return create<NSScene>(resName); // Create 2d texture by default
+		return create<nsscene>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSScene * get(const T & resname)
+	nsscene * get(const T & res_name)
 	{
-		return get<NSScene>(resname);
+		return get<nsscene>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSScene * load(const nsstring & fname)
+	nsscene * load(const nsstring & fname)
 	{
-		return load<NSScene>(fname);
+		return load<nsscene>(fname);
 	}
 
-	virtual NSScene * load(uint32 res_type_id, const nsstring & fname);
+	virtual nsscene * load(uint32 res_type_id, const nsstring & fname);
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSScene * remove(const T & rname)
+	nsscene * remove(const T & res_name)
 	{
-		return remove<NSScene>(rname);
+		return remove<nsscene>(res_name);
 	}
 
 	template<class T>
 	bool save(const T & res_name, nsstring path="")
 	{
-		NSResource * res = get(res_name);
+		nsresource * res = get(res_name);
 		return save(res, path);
 	}
 
-	virtual bool save(NSResource * res, const nsstring & path="");
+	virtual bool save(nsresource * res, const nsstring & path="");
 	
-	NSScene * current();
+	nsscene * current();
 	
 	template<class T>
-	bool setCurrent(const T & scene, bool newScene = false, bool savePrevious = false)
+	bool set_current(const T & scene, bool new_scene = false, bool save_previous = false)
 	{
-		NSScene * sc = get(scene);
-		return setCurrent(sc, newScene, savePrevious);
+		nsscene * sc = get(scene);
+		return set_current(sc, new_scene, save_previous);
 	}
 	
-	bool setCurrent(NSScene * scene, bool newScene=false, bool savePrevious=false);
+	bool set_current(nsscene * scene, bool new_scene=false, bool save_previous=false);
 
 private:
-	NSScene * mCurrentScene;
+	nsscene * mCurrentScene;
 };
 
 #endif

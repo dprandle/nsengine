@@ -6,7 +6,7 @@ File:
 	nsshader.cpp
 
 Description:
-	This file contains the definition for the NSShader class and any associated functions that help
+	This file contains the definition for the nsshader class and any associated functions that help
 	the ol' girl out
 *-----------------------------------------------------------------------------------------------------*/
 #include <nsmath.h>
@@ -19,175 +19,175 @@ Description:
 #include <exception>
 #include <string.h>
 
-NSShader::NSShader():
-	mErrorState(None),
-	mFragment(Fragment),
-	mVertex(Vertex),
-	mGeometry(Geometry),
-	mUniformLocs(),
-	mMode(Interleaved)
+nsshader::nsshader():
+	m_error_sate(error_none),
+	m_fragment(fragment_shader),
+	m_vertex(vertex_shader),
+	m_geometry(geometry_shader),
+	m_uniform_locs(),
+	m_xfb_mode(xfb_interleaved)
 {
-	setExtension(DEFAULT_SHADER_EXTENSION);
+	set_ext(DEFAULT_SHADER_EXTENSION);
 }
 
-NSShader::~NSShader()
+nsshader::~nsshader()
 {
 	release();
 }
 
-bool NSShader::compile()
+bool nsshader::compile()
 {
 	bool ret = true;
 
-	if (!mFragment.mSource.empty())
-		ret = compile(Fragment) && ret;
-	if (!mVertex.mSource.empty())
-		ret = compile(Vertex) && ret;
-	if (!mGeometry.mSource.empty())
-		ret = compile(Geometry) && ret;
+	if (!m_fragment.m_source.empty())
+		ret = compile(fragment_shader) && ret;
+	if (!m_vertex.m_source.empty())
+		ret = compile(vertex_shader) && ret;
+	if (!m_geometry.m_source.empty())
+		ret = compile(geometry_shader) && ret;
 
 	if (ret)
 	{
-		dprint("NSShader::compile - Succesfully compiled shader " + mName);
+		dprint("nsshader::compile - Succesfully compiled shader " + m_name);
 	}
 	
 	return ret;
 }
 
-bool NSShader::compile(ShaderType type)
+bool nsshader::compile(shader_type type)
 {
-	if (_stage(type).mStageID != 0)
-		glDeleteShader(_stage(type).mStageID);
+	if (_stage(type).m_stage_id != 0)
+		glDeleteShader(_stage(type).m_stage_id);
 
-	_stage(type).mStageID = glCreateShader(type);
-	GLError("NSShader::compile error creating shader");
+	_stage(type).m_stage_id = glCreateShader(type);
+	GLError("nsshader::compile error creating shader");
 	// create arguements for glShaderSource
-	const char* c_str = _stage(type).mSource.c_str();
+	const char* c_str = _stage(type).m_source.c_str();
 
-	glShaderSource(_stage(type).mStageID, 1, &c_str, NULL); // Attach source to shader
-	GLError("NSShader::compile error setting shader source");
+	glShaderSource(_stage(type).m_stage_id, 1, &c_str, NULL); // Attach source to shader
+	GLError("nsshader::compile error setting shader source");
 
-	glCompileShader(_stage(type).mStageID);
-	GLError("NSShader::compile error compiling shader");
+	glCompileShader(_stage(type).m_stage_id);
+	GLError("nsshader::compile error compiling shader");
 
 	GLint worked;
-	glGetShaderiv(_stage(type).mStageID, GL_COMPILE_STATUS, &worked);
+	glGetShaderiv(_stage(type).m_stage_id, GL_COMPILE_STATUS, &worked);
 	if (!worked)
 	{
 		char infoLog[1024];
-		glGetShaderInfoLog(_stage(type).mStageID, sizeof(infoLog), NULL, (GLchar*)infoLog);
+		glGetShaderInfoLog(_stage(type).m_stage_id, sizeof(infoLog), NULL, (GLchar*)infoLog);
 		nsstring info(infoLog);
-		mErrorState = Compile;
+		m_error_sate = error_compile;
 
 #ifdef NSDEBUG
 		nsstringstream ss;
-		ss << "NSShader::compile : Error compiling shader stage " << stagename(type) << " from " << mName << "\n";
+		ss << "nsshader::compile : Error compiling shader stage " << stage_name(type) << " from " << m_name << "\n";
 			ss << info;
 		dprint(ss.str());
 #endif
 
-		glDeleteShader(_stage(type).mStageID);
-		GLError("NSShader::compile error deleting shader");
-		_stage(type).mStageID = 0;
+		glDeleteShader(_stage(type).m_stage_id);
+		GLError("nsshader::compile error deleting shader");
+		_stage(type).m_stage_id = 0;
 		return false;
 	}
-	dprint("NSShader::compile - Succesfully compiled shader stage " + stagename(type) + " from " + mName);
+	dprint("nsshader::compile - Succesfully compiled shader stage " + stage_name(type) + " from " + m_name);
 	return true;
 }
 
-bool NSShader::compiled(ShaderType type)
+bool nsshader::compiled(shader_type type)
 {
-	return (_stage(type).mStageID != 0);
+	return (_stage(type).m_stage_id != 0);
 }
 
-bool NSShader::linked()
+bool nsshader::linked()
 {
-	return (mGLName != 0);
+	return (m_gl_name != 0);
 }
 
-void NSShader::setSource(ShaderType type, const nsstring & source)
+void nsshader::set_source(shader_type type, const nsstring & source)
 {
-	_stage(type).mSource = source;
+	_stage(type).m_source = source;
 }
 
-void NSShader::initGL()
+void nsshader::init_gl()
 {
 	// initGL does nothing for shader - program object created (which mGLName is used for) at
 	// time of building shader object
 }
 
-uint32 NSShader::glid(ShaderType type)
+uint32 nsshader::gl_id(shader_type type)
 {
-	return _stage(type).mStageID;
+	return _stage(type).m_stage_id;
 }
 
-uint32 NSShader::initUniformLoc(const nsstring & pVariable)
+uint32 nsshader::init_uniform_loc(const nsstring & var_name)
 {
-	uint32 loc = glGetUniformLocation( mGLName, pVariable.c_str() );
-	GLError("NSShader::initUniformLoc");
-	mUniformLocs[_getHashedString(pVariable)] = loc;
+	uint32 loc = glGetUniformLocation( m_gl_name, var_name.c_str() );
+	GLError("nsshader::initUniformLoc");
+	m_uniform_locs[hash_id(var_name)] = loc;
 	return loc;
 }
 
-bool NSShader::link()
+bool nsshader::link()
 {
-	if (mGLName != 0)
-		glDeleteProgram(mGLName);
+	if (m_gl_name != 0)
+		glDeleteProgram(m_gl_name);
 
-	mGLName = glCreateProgram();  // create program instance
-	GLError("NSShader::link Error creating program");
-	if (mGLName == 0)
+	m_gl_name = glCreateProgram();  // create program instance
+	GLError("nsshader::link Error creating program");
+	if (m_gl_name == 0)
 	{
-		mErrorState = Program;
+		m_error_sate = error_program;
 		return false;
 	}
 
-	if (mFragment.mStageID)
-		glAttachShader(mGLName, mFragment.mStageID);
-	if (mVertex.mStageID)
-		glAttachShader(mGLName, mVertex.mStageID);
-	if (mGeometry.mStageID)
-		glAttachShader(mGLName, mGeometry.mStageID);
+	if (m_fragment.m_stage_id)
+		glAttachShader(m_gl_name, m_fragment.m_stage_id);
+	if (m_vertex.m_stage_id)
+		glAttachShader(m_gl_name, m_vertex.m_stage_id);
+	if (m_geometry.m_stage_id)
+		glAttachShader(m_gl_name, m_geometry.m_stage_id);
 
-	GLError("NSShader::link Error attaching program");
-	if (!mXFBLocs.empty())
-		_setupTransformFeedback();
+	GLError("nsshader::link Error attaching program");
+	if (!m_xfb_locs.empty())
+		_setup_xfb();
 
-	glLinkProgram(mGLName);
-	GLError("NSShader::link Error linking program");
-	if (mFragment.mStageID)
-		glDetachShader(mGLName, mFragment.mStageID);
-	if (mVertex.mStageID)
-		glDetachShader(mGLName, mVertex.mStageID);
-	if (mGeometry.mStageID)
-		glDetachShader(mGLName, mGeometry.mStageID);
+	glLinkProgram(m_gl_name);
+	GLError("nsshader::link Error linking program");
+	if (m_fragment.m_stage_id)
+		glDetachShader(m_gl_name, m_fragment.m_stage_id);
+	if (m_vertex.m_stage_id)
+		glDetachShader(m_gl_name, m_vertex.m_stage_id);
+	if (m_geometry.m_stage_id)
+		glDetachShader(m_gl_name, m_geometry.m_stage_id);
 
-	GLError("NSShader::link Error detaching program");
+	GLError("nsshader::link Error detaching program");
 	GLint worked;
-	glGetProgramiv(mGLName, GL_LINK_STATUS, &worked);
+	glGetProgramiv(m_gl_name, GL_LINK_STATUS, &worked);
 	if (!worked)
 	{
 		char infoLog[1024];
-		glGetProgramInfoLog(mGLName, sizeof(infoLog), NULL,(GLchar*)infoLog);
+		glGetProgramInfoLog(m_gl_name, sizeof(infoLog), NULL,(GLchar*)infoLog);
 		nsstring info(infoLog);
-		mErrorState = Link;
+		m_error_sate = error_link;
 		#ifdef NSDEBUG
 		nsstringstream ss;
-		ss << "Error linking shader with name " << mName << "\n";
+		ss << "Error linking shader with name " << m_name << "\n";
 		ss << info;
 		dprint(ss.str());
 		#endif
-		glDeleteProgram(mGLName);
-		GLError("NSShader::link Error deleting program");
-		mGLName = 0;
+		glDeleteProgram(m_gl_name);
+		GLError("nsshader::link Error deleting program");
+		m_gl_name = 0;
 		return false;
 	}
-	dprint("NSShader::link - Succesfully linked shader " + mName);
+	dprint("nsshader::link - Succesfully linked shader " + m_name);
 	/*Validate may fail on older GPUS - add exceptions here!!*/
 	return _validate();
 }
 
-void NSShader::pup(NSFilePUPer * p)
+void nsshader::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -202,27 +202,27 @@ void NSShader::pup(NSFilePUPer * p)
 	}
 }
 
-nsstring NSShader::stagename(ShaderType type)
+nsstring nsshader::stage_name(shader_type type)
 {
 	nsstring typestr;
 	switch (type)
 	{
-	case(Vertex) :
+	case(vertex_shader) :
 		typestr = "vertex";
 		break;
-	case(Geometry) :
+	case(geometry_shader) :
 		typestr = "geometry";
 		break;
-	case(Fragment) :
+	case(fragment_shader) :
 		typestr = "fragment";
 		break;
 	}
 	return typestr;
 }
 
-void NSShader::pup(NSFilePUPer * p, ShaderType type)
+void nsshader::pup(NSFilePUPer * p, shader_type type)
 {
-	nsstring typestr = stagename(type);
+	nsstring typestr = stage_name(type);
 
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -236,229 +236,223 @@ void NSShader::pup(NSFilePUPer * p, ShaderType type)
 	}
 }
 
-const nsstring & NSShader::source(ShaderType type)
+const nsstring & nsshader::source(shader_type type)
 {
-	return _stage(type).mSource;
+	return _stage(type).m_source;
 }
 
-NSShader::ShaderStage & NSShader::_stage(ShaderType type)
+nsshader::shader_stage & nsshader::_stage(shader_type type)
 {
 	switch (type)
 	{
-	case(Vertex) :
-		return mVertex;
-	case(Geometry) :
-		return mGeometry;
-	case(Fragment) :
-		return mFragment;
+	case(vertex_shader) :
+		return m_vertex;
+	case(geometry_shader) :
+		return m_geometry;
+	case(fragment_shader) :
+		return m_fragment;
 	default:
 		throw std::exception();
 	}
 }
 
-void NSShader::_setupTransformFeedback()
+void nsshader::_setup_xfb()
 {
-	GLchar ** varyings = new GLchar*[mXFBLocs.size()];
-	for (uint32 i = 0; i < mXFBLocs.size(); ++i)
+	GLchar ** varyings = new GLchar*[m_xfb_locs.size()];
+	for (uint32 i = 0; i < m_xfb_locs.size(); ++i)
 	{
-		GLchar * str = new GLchar[mXFBLocs[i].size() + 1];
-		strcpy(str, mXFBLocs[i].c_str());
+		GLchar * str = new GLchar[m_xfb_locs[i].size() + 1];
+		strcpy(str, m_xfb_locs[i].c_str());
 		varyings[i] = str;
 	}
 
- 	glTransformFeedbackVaryings(mGLName, 4, varyings, mMode);
-	GLError("NSShader::_setupTransformFeedback()");
+ 	glTransformFeedbackVaryings(m_gl_name, 4, varyings, m_xfb_mode);
+	GLError("nsshader::_setupTransformFeedback()");
 
-	for (uint32 i = 0; i < mXFBLocs.size(); ++i)
+	for (uint32 i = 0; i < m_xfb_locs.size(); ++i)
 		delete[] varyings[i];
 	delete[] varyings;
 }
 
-void NSShader::setxfb(TransformFeedbackMode pMode, nsstringarray * pOutLocs)
+void nsshader::set_xfb(xfb_mode pMode, nsstringarray * pOutLocs)
 {
 	// Need to link after doing this - if shader has been linked already then just re-link (ie call link again)
-	mMode = pMode;
-	mXFBLocs.clear();
+	m_xfb_mode = pMode;
+	m_xfb_locs.clear();
 	nsstringarray::iterator sIter = pOutLocs->begin();
 	while (sIter != pOutLocs->end())
 	{
-		mXFBLocs.push_back(*sIter);
+		m_xfb_locs.push_back(*sIter);
 		++sIter;
 	}
 }
 
-void NSShader::bind()
+void nsshader::bind()
 {
-	glUseProgram(mGLName);
-	GLError("NSShader::bind");
+	glUseProgram(m_gl_name);
+	GLError("nsshader::bind");
 }
 
-void NSShader::unbind()
+void nsshader::unbind()
 {
 	glUseProgram(0);
-	GLError("NSShader::bind");
+	GLError("nsshader::bind");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, const fmat4 & pData)
+void nsshader::set_uniform(const nsstring & var_name, const fmat4 & data)
 {
-	fmat4 mat = pData;
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniformMatrix4fv(initUniformLoc(pVariableName), 1, GL_TRUE, mat.dataPtr());
+	fmat4 mat = data;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniformMatrix4fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.dataPtr());
 	else
 		glUniformMatrix4fv(iter->second, 1, GL_TRUE, mat.dataPtr());
-	GLError("NSShader::setUniform");
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, const fmat3 & pData)
+void nsshader::set_uniform(const nsstring & var_name, const fmat3 & data)
 {
-	fmat3 mat = pData;
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniformMatrix3fv(initUniformLoc(pVariableName), 1, GL_TRUE, mat.dataPtr());
+	fmat3 mat = data;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniformMatrix3fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.dataPtr());
 	else
 		glUniformMatrix3fv(iter->second, 1, GL_TRUE, mat.dataPtr());
-	GLError("NSShader::setUniform");
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, bool val)
+void nsshader::set_uniform(const nsstring & var_name, bool val)
 {
-	setUniform(pVariableName, int32(val));
+	set_uniform(var_name, int32(val));
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, const fvec4 & pData)
+void nsshader::set_uniform(const nsstring & var_name, const fvec4 & data)
 {
 	GLfloat vec[4];
-	vec[0] = pData.x; vec[1] = pData.y; vec[2] = pData.z; vec[3] = pData.w;
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniform4fv(initUniformLoc(pVariableName), 1, vec);
+	vec[0] = data.x; vec[1] = data.y; vec[2] = data.z; vec[3] = data.w;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform4fv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform4fv(iter->second, 1, vec);
-	GLError("NSShader::setUniform");
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, const fvec3 & pData)
+void nsshader::set_uniform(const nsstring & var_name, const fvec3 & data)
 {
 	GLfloat vec[3];
-	vec[0] = pData.x; vec[1] = pData.y; vec[2] = pData.z;
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniform3fv(initUniformLoc(pVariableName), 1, vec);
+	vec[0] = data.x; vec[1] = data.y; vec[2] = data.z;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform3fv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform3fv(iter->second, 1, vec);
-	GLError("NSShader::setUniform");
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, const fvec2 & pData)
+void nsshader::set_uniform(const nsstring & var_name, const fvec2 & data)
 {
 	GLfloat vec[2];
-	vec[0] = pData.u; vec[1] = pData.v;
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniform2fv(initUniformLoc(pVariableName), 1, vec);
+	vec[0] = data.u; vec[1] = data.v;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform2fv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform2fv(iter->second, 1, vec);
-	GLError("NSShader::setUniform");
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, float pData)
+void nsshader::set_uniform(const nsstring & var_name, float data)
 {
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniform1f(initUniformLoc(pVariableName), pData);
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform1f(init_uniform_loc(var_name), data);
 	else
-		glUniform1f(iter->second, pData);
-	GLError("NSShader::setUniform");
+		glUniform1f(iter->second, data);
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, int32 pData)
+void nsshader::set_uniform(const nsstring & var_name, int32 data)
 {
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniform1i(initUniformLoc(pVariableName), pData);
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform1i(init_uniform_loc(var_name), data);
 	else
-		glUniform1i(iter->second, pData);
-	GLError("NSShader::setUniform");
+		glUniform1i(iter->second, data);
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::setUniform(const nsstring & pVariableName, uint32 pData)
+void nsshader::set_uniform(const nsstring & var_name, uint32 data)
 {
-	UniformLocMap::iterator iter = mUniformLocs.find(_getHashedString(pVariableName));
-	if (iter == mUniformLocs.end())
-		glUniform1ui(initUniformLoc(pVariableName), pData);
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform1ui(init_uniform_loc(var_name), data);
 	else
-		glUniform1ui(iter->second, pData);
-	GLError("NSShader::setUniform");
+		glUniform1ui(iter->second, data);
+	GLError("nsshader::setUniform");
 }
 
-void NSShader::release()
+void nsshader::release()
 {
-	if (mGLName)
+	if (m_gl_name)
 	{
-		glDeleteProgram(mGLName);
-		mGLName = 0;
+		glDeleteProgram(m_gl_name);
+		m_gl_name = 0;
 	}
-	if (mFragment.mStageID)
+	if (m_fragment.m_stage_id)
 	{
-		glDeleteShader(mFragment.mStageID);
-		mFragment.mStageID = 0;
+		glDeleteShader(m_fragment.m_stage_id);
+		m_fragment.m_stage_id = 0;
 	}
-	if (mVertex.mStageID)
+	if (m_vertex.m_stage_id)
 	{
-		glDeleteShader(mVertex.mStageID);
-		mVertex.mStageID = 0;
+		glDeleteShader(m_vertex.m_stage_id);
+		m_vertex.m_stage_id = 0;
 	}
-	if (mGeometry.mStageID)
+	if (m_geometry.m_stage_id)
 	{
-		glDeleteShader(mGeometry.mStageID);
-		mGeometry.mStageID = 0;
+		glDeleteShader(m_geometry.m_stage_id);
+		m_geometry.m_stage_id = 0;
 	}
-	GLError("NSShader::release");
+	GLError("nsshader::release");
 }
 
-void NSShader::resetError()
+void nsshader::reset_error()
 {
-	mErrorState = None;
+	m_error_sate = error_none;
 }
 
-NSShader::Error NSShader::error() const
+nsshader::xfb_mode nsshader::xfb()
 {
-	return mErrorState;
+	return m_xfb_mode;
 }
 
-uint32 NSShader::attrib(const nsstring & pVariableName) const
+nsshader::error_state nsshader::error() const
 {
-	return glGetAttribLocation(mGLName, pVariableName.c_str());
-	GLError("NSShader::attrib");
+	return m_error_sate;
 }
 
-uint32 NSShader::_getHashedString(const nsstring & pString)
+uint32 nsshader::attrib_loc(const nsstring & var_name) const
 {
-    uint32 hash = 5381;
-    int32 c;
-	const char * str = pString.c_str();
-	while (c = *str++)
-        hash = ((hash << 5) + hash) + c;
-
-    return hash;
+	return glGetAttribLocation(m_gl_name, var_name.c_str());
+	GLError("nsshader::attrib");
 }
 
-bool NSShader::_validate()
+bool nsshader::_validate()
 {
-	glValidateProgram(mGLName);
+	glValidateProgram(m_gl_name);
 	GLint worked;
-    glGetProgramiv(mGLName, GL_VALIDATE_STATUS, &worked);
+    glGetProgramiv(m_gl_name, GL_VALIDATE_STATUS, &worked);
     if (!worked) 
 	{
 		char infoLog[1024];
-        glGetProgramInfoLog(mGLName, sizeof(infoLog), NULL, infoLog);
+        glGetProgramInfoLog(m_gl_name, sizeof(infoLog), NULL, infoLog);
 		nsstring info(infoLog);
-		mErrorState = Validate;
+		m_error_sate = error_validation;
 
 		#ifdef NSDEBUG
 		nsstringstream ss;
-		ss << "NSShader::_validate : Error validating shader with name " << mName << "\n";
+		ss << "nsshader::_validate : Error validating shader with name " << m_name << "\n";
 		ss << info;
 		dprint(ss.str());
 		#endif
@@ -467,594 +461,594 @@ bool NSShader::_validate()
 	return true;
 }
 
-NSShader::ShaderStage::ShaderStage(ShaderType pType):
-	mSource(),
-	mStageID(0),
-	mType(pType)
+nsshader::shader_stage::shader_stage(shader_type pType):
+	m_source(),
+	m_stage_id(0),
+	m_type(pType)
 {}
 
 
-NSLightShader::NSLightShader():NSShader() {}
+nslight_shader::nslight_shader():nsshader() {}
 
-NSLightShader::~NSLightShader() {}
+nslight_shader::~nslight_shader() {}
 
-void NSLightShader::initUniforms()
+void nslight_shader::init_uniforms()
 {
-	setShadowSampler(SHADOW_TEX_UNIT);
-	setDiffuseSampler(G_DIFFUSE_TEX_UNIT);
-	setWorldPosSampler(G_WORLD_POS_TEX_UNIT);
-	setNormalSampler(G_NORMAL_TEX_UNIT);
-	setMaterialSampler(G_MATERIAL_TEX_UNIT);
-	setEpsilon(DEFAULT_SHADOW_EPSILON);
-	setAmbientIntensity(0);
-	setCastShadows(false);
-	setDiffuseIntensity(0);
-	setLightColor(fvec3());
-	setShadowSamples(0);
-	setShadowDarkness(0);
-	setScreenSize(fvec2());
-	setCamWorldPos(fvec3());
+	set_shadow_sampler(SHADOW_TEX_UNIT);
+	set_diffuse_sampler(G_DIFFUSE_TEX_UNIT);
+	set_world_pos_sampler(G_WORLD_POS_TEX_UNIT);
+	set_normal_sampler(G_NORMAL_TEX_UNIT);
+	set_material_sampler(G_MATERIAL_TEX_UNIT);
+	set_epsilon(DEFAULT_SHADOW_EPSILON);
+	set_ambient_intensity(0);
+	set_cast_shadows(false);
+	set_diffuse_intensity(0);
+	set_light_color(fvec3());
+	set_shadow_samples(0);
+	set_shadow_darkness(0);
+	set_screen_size(fvec2());
+	set_cam_world_pos(fvec3());
 }
 
-void NSLightShader::setAmbientIntensity(float intensity)
+void nslight_shader::set_ambient_intensity(float intensity)
 {
-	setUniform("light.ambientIntensity", intensity);
+	set_uniform("light.ambientIntensity", intensity);
 }
 
-void NSLightShader::setDiffuseIntensity(float intensity)
+void nslight_shader::set_diffuse_intensity(float intensity)
 {
-	setUniform("light.diffuseIntensity", intensity);
+	set_uniform("light.diffuseIntensity", intensity);
 }
 
-void NSLightShader::setCastShadows(bool cast)
+void nslight_shader::set_cast_shadows(bool cast)
 {
-	setUniform("castShadows", cast);
+	set_uniform("castShadows", cast);
 }
 
-void NSLightShader::setLightColor(const fvec3 & col)
+void nslight_shader::set_light_color(const fvec3 & col)
 {
-	setUniform("light.color", col);
+	set_uniform("light.color", col);
 }
 
-void NSLightShader::setShadowSamples(int32 samples)
+void nslight_shader::set_shadow_samples(int32 samples)
 {
-	setUniform("shadowSamples", samples);
+	set_uniform("shadowSamples", samples);
 }
 
-void NSLightShader::setShadowDarkness(float darkness)
+void nslight_shader::set_shadow_darkness(float darkness)
 {
-	setUniform("light.shadowDarkness", darkness);
+	set_uniform("light.shadowDarkness", darkness);
 }
 
-void NSLightShader::setShadowTexSize(const fvec2 & size)
+void nslight_shader::set_shadow_tex_size(const fvec2 & size)
 {
-	setUniform("shadowTexSize", size);
+	set_uniform("shadowTexSize", size);
 }
 
-void NSLightShader::setScreenSize(const fvec2 & size)
+void nslight_shader::set_screen_size(const fvec2 & size)
 {
-	setUniform("screenSize", size);
+	set_uniform("screenSize", size);
 }
 
-void NSLightShader::setCamWorldPos(const fvec3 & camPos)
+void nslight_shader::set_cam_world_pos(const fvec3 & camPos)
 {
-	setUniform("camWorldPos", camPos);
+	set_uniform("camWorldPos", camPos);
 }
 
-void NSLightShader::setEpsilon(float epsilon)
+void nslight_shader::set_epsilon(float epsilon)
 {
-	setUniform("epsilon", epsilon);
+	set_uniform("epsilon", epsilon);
 }
 
-void NSLightShader::setWorldPosSampler(int32 sampler)
+void nslight_shader::set_world_pos_sampler(int32 sampler)
 {
-	setUniform("gWorldPosMap", sampler);
+	set_uniform("gWorldPosMap", sampler);
 }
 
-void NSLightShader::setDiffuseSampler(int32 sampler)
+void nslight_shader::set_diffuse_sampler(int32 sampler)
 {
-	setUniform("gDiffuseMap", sampler);
+	set_uniform("gDiffuseMap", sampler);
 }
 
-void NSLightShader::setNormalSampler(int32 sampler)
+void nslight_shader::set_normal_sampler(int32 sampler)
 {
-	setUniform("gNormalMap", sampler);
+	set_uniform("gNormalMap", sampler);
 }
 
-void NSLightShader::setMaterialSampler(int32 sampler)
+void nslight_shader::set_material_sampler(int32 sampler)
 {
-	setUniform("gMatMap", sampler);
+	set_uniform("gMatMap", sampler);
 }
 
-void NSLightShader::setShadowSampler(int32 sampler)
+void nslight_shader::set_shadow_sampler(int32 sampler)
 {
-	setUniform("shadowMap", sampler);
+	set_uniform("shadowMap", sampler);
 }
 
-NSDirLightShader::NSDirLightShader() :NSLightShader() {}
+nsdir_light_shader::nsdir_light_shader() :nslight_shader() {}
 
-NSDirLightShader::~NSDirLightShader() {}
+nsdir_light_shader::~nsdir_light_shader() {}
 
-void NSDirLightShader::initUniforms()
+void nsdir_light_shader::init_uniforms()
 {
-	NSLightShader::initUniforms();
-	setProjLightMat(fmat4());
-	setLightingEnabled(false);
-	setBackgroundColor(fvec3());
-	setDirection(fvec3());
+	nslight_shader::init_uniforms();
+	set_proj_light_mat(fmat4());
+	set_lighting_enabled(false);
+	set_bg_color(fvec3());
+	set_direction(fvec3());
 }
 
-void NSDirLightShader::init() {}
+void nsdir_light_shader::init() {}
 
-void NSDirLightShader::setProjLightMat(const fmat4 & projLightMat)
+void nsdir_light_shader::set_proj_light_mat(const fmat4 & projLightMat)
 {
-	setUniform("projLightMat", projLightMat);
+	set_uniform("projLightMat", projLightMat);
 }
 
-void NSDirLightShader::setLightingEnabled(bool enable)
+void nsdir_light_shader::set_lighting_enabled(bool enable)
 {
-	setUniform("lightingEnabled", enable);
+	set_uniform("lightingEnabled", enable);
 }
 
-void NSDirLightShader::setBackgroundColor(const fvec3 & col)
+void nsdir_light_shader::set_bg_color(const fvec3 & col)
 {
-	setUniform("bgColor", col);
+	set_uniform("bgColor", col);
 }
 
-void NSDirLightShader::setDirection(const fvec3 & dir)
+void nsdir_light_shader::set_direction(const fvec3 & dir)
 {
-	setUniform("light.direction", dir);
+	set_uniform("light.direction", dir);
 }
 
-NSPointLightShader::NSPointLightShader() :NSLightShader() {}
+nspoint_light_shader::nspoint_light_shader() :nslight_shader() {}
 
-NSPointLightShader::~NSPointLightShader() {}
+nspoint_light_shader::~nspoint_light_shader() {}
 
-void NSPointLightShader::initUniforms()
+void nspoint_light_shader::init_uniforms()
 {
-	NSLightShader::initUniforms();
-	setConstAtten(0);
-	setLinAtten(0);
-	setExpAtten(0);
-	setPosition(0);
+	nslight_shader::init_uniforms();
+	set_const_atten(0);
+	set_lin_atten(0);
+	set_exp_atten(0);
+	set_position(0);
 }
 
-void NSPointLightShader::init()
+void nspoint_light_shader::init()
 {}
 
-void NSPointLightShader::setConstAtten(float att)
+void nspoint_light_shader::set_const_atten(float att)
 {
-	setUniform("light.attConstant", att);
+	set_uniform("light.attConstant", att);
 }
 
-void NSPointLightShader::setLinAtten(float lin)
+void nspoint_light_shader::set_lin_atten(float lin)
 {
-	setUniform("light.attLinear", lin);
+	set_uniform("light.attLinear", lin);
 }
 
-void NSPointLightShader::setExpAtten(float exp)
+void nspoint_light_shader::set_exp_atten(float exp)
 {
-	setUniform("light.attExp", exp);
+	set_uniform("light.attExp", exp);
 }
 
-void NSPointLightShader::setPosition(const fvec3 & pos)
+void nspoint_light_shader::set_position(const fvec3 & pos)
 {
-	setUniform("light.position", pos);
+	set_uniform("light.position", pos);
 }
 
-void NSPointLightShader::setMaxDepth(float maxd)
+void nspoint_light_shader::set_max_depth(float maxd)
 {
-	setUniform("maxDepth", maxd);
+	set_uniform("maxDepth", maxd);
 }
 
-NSSpotLightShader::NSSpotLightShader() :NSPointLightShader() {}
+nsspot_light_shader::nsspot_light_shader() :nspoint_light_shader() {}
 
-NSSpotLightShader::~NSSpotLightShader() {}
+nsspot_light_shader::~nsspot_light_shader() {}
 
-void NSSpotLightShader::initUniforms()
+void nsspot_light_shader::init_uniforms()
 {
-	NSLightShader::initUniforms();
-	setCutoff(0);
-	setDirection(fvec3());
-	setProjLightMat(fmat4());
+	nslight_shader::init_uniforms();
+	set_cutoff(0);
+	set_direction(fvec3());
+	set_proj_light_mat(fmat4());
 }
 
-void NSSpotLightShader::setProjLightMat(const fmat4 & projLightMat)
+void nsspot_light_shader::set_proj_light_mat(const fmat4 & projLightMat)
 {
-	setUniform("projLightMat", projLightMat);
+	set_uniform("projLightMat", projLightMat);
 }
 
-void NSSpotLightShader::setDirection(const fvec3 & dir)
+void nsspot_light_shader::set_direction(const fvec3 & dir)
 {
-	setUniform("light.direction", dir);
+	set_uniform("light.direction", dir);
 }
 
-void NSSpotLightShader::setCutoff(float cutoff)
+void nsspot_light_shader::set_cutoff(float cutoff)
 {
-	setUniform("light.cutoff", cutoff);
+	set_uniform("light.cutoff", cutoff);
 }
 
-NSMaterialShader::NSMaterialShader() : NSShader() {}
-NSMaterialShader::~NSMaterialShader(){}
+nsmaterial_shader::nsmaterial_shader() : nsshader() {}
+nsmaterial_shader::~nsmaterial_shader(){}
 
-void NSMaterialShader::initUniforms()
+void nsmaterial_shader::init_uniforms()
 {
 	fmat4array b;
 	b.resize(MAX_BONE_TFORMS);
-	setDiffuseSampler(DIFFUSE_TEX_UNIT);
-	setNormalSampler(NORMAL_TEX_UNIT);
-	setOpacitySampler(OPACITY_TEX_UNIT);
-	setHeightSampler(HEIGHT_TEX_UNIT);
-	setHeightMapEnabled(false);
-	setHeightMinMax(fvec2(0.0f, 1.0f));
-	setSpecularPower(0);
-	setSpecularIntensity(0);
-	setSpecularColor(fvec3());
-	setEntityID(0);
-	setPluginID(0);
-	setColorMode(false);
-	setFragOutColor(fvec4());
-	setDiffuseMapEnabled(false);
-	setOpacityMapEnabled(false);
-	setNormalMapEnabled(false);
-	setLightingEnabled(false);
-	setNodeTransform(fmat4());
-	setProjCamMat(fmat4());
-	setBoneTransforms(b);
-	setHasBones(false);
+	set_diffuse_sampler(DIFFUSE_TEX_UNIT);
+	set_normal_sampler(NORMAL_TEX_UNIT);
+	set_opacity_sampler(OPACITY_TEX_UNIT);
+	set_height_sampler(HEIGHT_TEX_UNIT);
+	set_heightmap_enabled(false);
+	set_height_minmax(fvec2(0.0f, 1.0f));
+	set_specular_power(0);
+	set_specular_intensity(0);
+	set_specular_color(fvec3());
+	set_entity_id(0);
+	set_plugin_id(0);
+	set_color_mode(false);
+	set_frag_color_out(fvec4());
+	set_diffusemap_enabled(false);
+	set_opacitymap_enabled(false);
+	set_normalmap_enabled(false);
+	set_lighting_enabled(false);
+	set_node_transform(fmat4());
+	set_proj_cam_mat(fmat4());
+	set_bone_transforms(b);
+	set_has_bones(false);
 }
 
-void NSMaterialShader::init()
+void nsmaterial_shader::init()
 {
 	
 }
 
-void NSMaterialShader::setDiffuseSampler(int32 sampler)
+void nsmaterial_shader::set_diffuse_sampler(int32 sampler)
 {
-	setUniform("diffuseMap", sampler);
+	set_uniform("diffuseMap", sampler);
 }
 
-void NSMaterialShader::setOpacitySampler(int32 sampler)
+void nsmaterial_shader::set_opacity_sampler(int32 sampler)
 {
-	setUniform("opacityMap", sampler);
+	set_uniform("opacityMap", sampler);
 }
 
-void NSMaterialShader::setNormalSampler(int32 sampler)
+void nsmaterial_shader::set_normal_sampler(int32 sampler)
 {
-	setUniform("normalMap", sampler);
+	set_uniform("normalMap", sampler);
 }
 
-void NSMaterialShader::setSpecularPower(float power)
+void nsmaterial_shader::set_specular_power(float power)
 {
-	setUniform("specPower", power);
+	set_uniform("specPower", power);
 }
 
-void NSMaterialShader::setSpecularIntensity(float intensity)
+void nsmaterial_shader::set_specular_intensity(float intensity)
 {
-	setUniform("specIntensity", intensity);
+	set_uniform("specIntensity", intensity);
 }
 
-void NSMaterialShader::setSpecularColor(const fvec3 & col)
+void nsmaterial_shader::set_specular_color(const fvec3 & col)
 {
-	setUniform("specColor", col);
+	set_uniform("specColor", col);
 }
 
-void NSMaterialShader::setEntityID(uint32 id)
+void nsmaterial_shader::set_entity_id(uint32 id)
 {
-	setUniform("entityID", id);
+	set_uniform("entityID", id);
 }
 
-void NSMaterialShader::setPluginID(uint32 id)
+void nsmaterial_shader::set_plugin_id(uint32 id)
 {
-	setUniform("pluginID", id);
+	set_uniform("pluginID", id);
 }
 
-void NSMaterialShader::setColorMode(bool enable)
+void nsmaterial_shader::set_color_mode(bool enable)
 {
-	setUniform("colorMode", enable);
+	set_uniform("colorMode", enable);
 }
 
-void NSMaterialShader::setFragOutColor(const fvec4 & fragcol)
+void nsmaterial_shader::set_frag_color_out(const fvec4 & fragcol)
 {
-	setUniform("fragColOut", fragcol);
+	set_uniform("fragColOut", fragcol);
 }
 
-void NSMaterialShader::setDiffuseMapEnabled(bool enabled)
+void nsmaterial_shader::set_diffusemap_enabled(bool enabled)
 {
-	setUniform("hasDiffuseMap", enabled);
+	set_uniform("hasDiffuseMap", enabled);
 }
 
-void NSMaterialShader::setOpacityMapEnabled(bool enabled)
+void nsmaterial_shader::set_opacitymap_enabled(bool enabled)
 {
-	setUniform("hasOpacityMap", enabled);
+	set_uniform("hasOpacityMap", enabled);
 }
 
-void NSMaterialShader::setNormalMapEnabled(bool enabled)
+void nsmaterial_shader::set_normalmap_enabled(bool enabled)
 {
-	setUniform("hasNormalMap", enabled);
+	set_uniform("hasNormalMap", enabled);
 }
 
-void NSMaterialShader::setLightingEnabled(bool enabled)
+void nsmaterial_shader::set_lighting_enabled(bool enabled)
 {
-	setUniform("lightingEnabled", enabled);
+	set_uniform("lightingEnabled", enabled);
 }
 
-void NSMaterialShader::setNodeTransform(const fmat4 & tform)
+void nsmaterial_shader::set_node_transform(const fmat4 & tform)
 {
-	setUniform("nodeTransform", tform);
+	set_uniform("nodeTransform", tform);
 }
 
-void NSMaterialShader::setProjCamMat(const fmat4 & projCam)
+void nsmaterial_shader::set_proj_cam_mat(const fmat4 & projCam)
 {
-	setUniform("projCamMat", projCam);
+	set_uniform("projCamMat", projCam);
 }
 
 
-void NSMaterialShader::setBoneTransforms(const fmat4array & transforms)
+void nsmaterial_shader::set_bone_transforms(const fmat4array & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
-		setUniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
+		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
 }
 
-void NSMaterialShader::setHasBones(bool hasthem)
+void nsmaterial_shader::set_has_bones(bool hasthem)
 {
-	setUniform("hasBones", hasthem);
+	set_uniform("hasBones", hasthem);
 }
 
-NSParticleProcessShader::NSParticleProcessShader() : NSShader() {}
-NSParticleProcessShader::~NSParticleProcessShader() {}
+nsparticle_process_shader::nsparticle_process_shader() : nsshader() {}
+nsparticle_process_shader::~nsparticle_process_shader() {}
 
-void NSParticleProcessShader::initUniforms()
+void nsparticle_process_shader::init_uniforms()
 {
-	setRandomSampler(RAND_TEX_UNIT);
-	setdt(0);
-	setTimeElapsed(0);
-	setLifetime(0);
-	setLaunchFreq(0);
-	setAngularVelocity(0);
-	setMotionKeyGlobal(false);
-	setVisualKeyGlobal(false);
-	setInterpolateMotionKeys(false);
-	setInterpolateVisualKeys(false);
-	setStartingSize(fvec2());
-	setEmitterSize(fvec3());
-	setEmitterShape(0);
-	setInitialVelocityMult(fvec3());
+	set_random_sampler(RAND_TEX_UNIT);
+	set_dt(0);
+	set_elapsed(0);
+	set_lifetime(0);
+	set_launch_freq(0);
+	set_angular_vel(0);
+	set_motion_key_global(false);
+	set_visual_key_global(false);
+	set_interpolated_motion_keys(false);
+	set_interpolated_visual_keys(false);
+	set_starting_size(fvec2());
+	set_emitter_size(fvec3());
+	set_emitter_shape(0);
+	set_initial_vel_mult(fvec3());
 }
 
-void NSParticleProcessShader::init() 
+void nsparticle_process_shader::init() 
 {
 	std::vector<nsstring> outLocs2;
 	outLocs2.push_back("gPosOut");
 	outLocs2.push_back("gVelOut");
 	outLocs2.push_back("gScaleAndAngleOut");
 	outLocs2.push_back("gAgeOut");
-	setxfb(NSShader::Interleaved, &outLocs2);
+	set_xfb(nsshader::xfb_interleaved, &outLocs2);
 }
 
-void NSParticleProcessShader::setRandomSampler(int32 sampler)
+void nsparticle_process_shader::set_random_sampler(int32 sampler)
 {
-	setUniform("randomTex", sampler);
+	set_uniform("randomTex", sampler);
 }
 
-void NSParticleProcessShader::setdt(float dt)
+void nsparticle_process_shader::set_dt(float dt)
 {
-	setUniform("dt", dt);
+	set_uniform("dt", dt);
 }
 
-void NSParticleProcessShader::setTimeElapsed(float elapsed)
+void nsparticle_process_shader::set_elapsed(float elapsed)
 {
-	setUniform("timeElapsed", elapsed);
+	set_uniform("timeElapsed", elapsed);
 }
 
-void NSParticleProcessShader::setLifetime(uint32 lifetime)
+void nsparticle_process_shader::set_lifetime(uint32 lifetime)
 {
-	setUniform("lifetime", lifetime);
+	set_uniform("lifetime", lifetime);
 }
 
-void NSParticleProcessShader::setLaunchFreq(float freq)
+void nsparticle_process_shader::set_launch_freq(float freq)
 {
-	setUniform("launchFrequency", freq);
+	set_uniform("launchFrequency", freq);
 }
 
-void NSParticleProcessShader::setAngularVelocity(int32 angVelocity)
+void nsparticle_process_shader::set_angular_vel(int32 angVelocity)
 {
-	setUniform("angVelocity", angVelocity);
+	set_uniform("angVelocity", angVelocity);
 }
 
-void NSParticleProcessShader::setMotionKeyGlobal(bool global)
+void nsparticle_process_shader::set_motion_key_global(bool global)
 {
-	setUniform("motionGlobal", global);
+	set_uniform("motionGlobal", global);
 }
 
-void NSParticleProcessShader::setVisualKeyGlobal(bool global)
+void nsparticle_process_shader::set_visual_key_global(bool global)
 {
-	setUniform("visualGlobal", global);
+	set_uniform("visualGlobal", global);
 }
 
-void NSParticleProcessShader::setInterpolateMotionKeys(bool interp)
+void nsparticle_process_shader::set_interpolated_motion_keys(bool interp)
 {
-	setUniform("interpolateMotion", interp);
+	set_uniform("interpolateMotion", interp);
 }
 
-void NSParticleProcessShader::setInterpolateVisualKeys(bool interp)
+void nsparticle_process_shader::set_interpolated_visual_keys(bool interp)
 {
-	setUniform("interpolateVisual", interp);
+	set_uniform("interpolateVisual", interp);
 }
 
-void NSParticleProcessShader::setStartingSize(const fvec2 & size)
+void nsparticle_process_shader::set_starting_size(const fvec2 & size)
 {
-	setUniform("startingSize", size);
+	set_uniform("startingSize", size);
 }
 
-void NSParticleProcessShader::setEmitterSize(const fvec3 & size)
+void nsparticle_process_shader::set_emitter_size(const fvec3 & size)
 {
-	setUniform("emitterSize", size);
+	set_uniform("emitterSize", size);
 }
 
-void NSParticleProcessShader::setEmitterShape(uint32 shape)
+void nsparticle_process_shader::set_emitter_shape(uint32 shape)
 {
-	setUniform("emitterShape", shape);
+	set_uniform("emitterShape", shape);
 }
 
-void NSParticleProcessShader::setInitialVelocityMult(const fvec3 & mult)
+void nsparticle_process_shader::set_initial_vel_mult(const fvec3 & mult)
 {
-	setUniform("initVelocityMult", mult);
+	set_uniform("initVelocityMult", mult);
 }
 
-void NSParticleProcessShader::setMotionKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
-{
-	uint32 index = 0;
-	fvec3uimap::const_iterator keyIter = keys.begin();
-	while (keyIter != keys.end())
-	{
-		setUniform("forceKeys[" + std::to_string(index) + "].time", float(keyIter->first) / float(maxKeys * 1000) * float(lifetime));
-		setUniform("forceKeys[" + std::to_string(index) + "].force", keyIter->second);
-		++index;
-		++keyIter;
-	}
-}
-
-void NSParticleProcessShader::setVisualKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
+void nsparticle_process_shader::set_motion_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
 {
 	uint32 index = 0;
 	fvec3uimap::const_iterator keyIter = keys.begin();
 	while (keyIter != keys.end())
 	{
-		setUniform("sizeKeys[" + std::to_string(index) + "].time", float(keyIter->first) / float(maxKeys * 1000) * float(lifetime));
-		setUniform("sizeKeys[" + std::to_string(index) + "].sizeVel", fvec2(keyIter->second.x, keyIter->second.y));
-		setUniform("sizeKeys[" + std::to_string(index) + "].alpha", keyIter->second.z);
+		set_uniform("forceKeys[" + std::to_string(index) + "].time", float(keyIter->first) / float(maxKeys * 1000) * float(lifetime));
+		set_uniform("forceKeys[" + std::to_string(index) + "].force", keyIter->second);
 		++index;
 		++keyIter;
 	}
 }
 
-NSParticleRenderShader::NSParticleRenderShader(): NSShader() {}
-NSParticleRenderShader::~NSParticleRenderShader() {}
-
-void NSParticleRenderShader::initUniforms()
+void nsparticle_process_shader::set_visual_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
 {
-	setDiffuseSampler(DIFFUSE_TEX_UNIT);
-	setColorMode(false);
-	setFragOutColor(fvec4());
-	setDiffuseMapEnabled(false);
-	setLifetime(0.0f);
-	setBlendMode(0);
-	setProjCamMat(fmat4());
-	setCamUp(fvec3());
-	setCamRight(fvec3());
-	setCamTarget(fvec3());
-	setWorldUp(fvec3());
+	uint32 index = 0;
+	fvec3uimap::const_iterator keyIter = keys.begin();
+	while (keyIter != keys.end())
+	{
+		set_uniform("sizeKeys[" + std::to_string(index) + "].time", float(keyIter->first) / float(maxKeys * 1000) * float(lifetime));
+		set_uniform("sizeKeys[" + std::to_string(index) + "].sizeVel", fvec2(keyIter->second.x, keyIter->second.y));
+		set_uniform("sizeKeys[" + std::to_string(index) + "].alpha", keyIter->second.z);
+		++index;
+		++keyIter;
+	}
 }
 
-void NSParticleRenderShader::init() {}
+nsparticle_render_shader::nsparticle_render_shader(): nsshader() {}
+nsparticle_render_shader::~nsparticle_render_shader() {}
 
-void NSParticleRenderShader::setDiffuseSampler(int32 sampler)
+void nsparticle_render_shader::init_uniforms()
 {
-	setUniform("diffuseMap", sampler);
+	set_diffuse_sampler(DIFFUSE_TEX_UNIT);
+	set_color_mode(false);
+	set_frag_color_out(fvec4());
+	set_diffusemap_enabled(false);
+	set_lifetime(0.0f);
+	set_blend_mode(0);
+	set_proj_cam_mat(fmat4());
+	set_cam_up(fvec3());
+	set_cam_right(fvec3());
+	set_cam_target(fvec3());
+	set_world_up(fvec3());
 }
 
-void NSParticleRenderShader::setColorMode(bool enable)
+void nsparticle_render_shader::init() {}
+
+void nsparticle_render_shader::set_diffuse_sampler(int32 sampler)
 {
-	setUniform("colorMode", enable);
+	set_uniform("diffuseMap", sampler);
 }
 
-void NSParticleRenderShader::setFragOutColor(const fvec4 & col)
+void nsparticle_render_shader::set_color_mode(bool enable)
 {
-	setUniform("fragColOut", col);
+	set_uniform("colorMode", enable);
 }
 
-void NSParticleRenderShader::setDiffuseMapEnabled(bool enable)
+void nsparticle_render_shader::set_frag_color_out(const fvec4 & col)
 {
-	setUniform("hasDiffuseMap", enable);
+	set_uniform("fragColOut", col);
 }
 
-void NSParticleRenderShader::setLifetime(float seconds)
+void nsparticle_render_shader::set_diffusemap_enabled(bool enable)
 {
-	setUniform("lifetimeSecs", seconds);
+	set_uniform("hasDiffuseMap", enable);
 }
 
-void NSParticleRenderShader::setBlendMode(uint32 mode)
+void nsparticle_render_shader::set_lifetime(float seconds)
 {
-	setUniform("blendMode", mode);
+	set_uniform("lifetimeSecs", seconds);
 }
 
-void NSParticleRenderShader::setProjCamMat(const fmat4 & mat)
+void nsparticle_render_shader::set_blend_mode(uint32 mode)
 {
-	setUniform("projCamMat", mat);
+	set_uniform("blendMode", mode);
 }
 
-void NSParticleRenderShader::setCamUp(const fvec3 & vec)
+void nsparticle_render_shader::set_proj_cam_mat(const fmat4 & mat)
 {
-	setUniform("camUp", vec);
+	set_uniform("projCamMat", mat);
 }
 
-void NSParticleRenderShader::setCamRight(const fvec3 & vec)
+void nsparticle_render_shader::set_cam_up(const fvec3 & vec)
 {
-	setUniform("rightVec", vec);
+	set_uniform("camUp", vec);
 }
 
-void NSParticleRenderShader::setCamTarget(const fvec3 & vec)
+void nsparticle_render_shader::set_cam_right(const fvec3 & vec)
 {
-	setUniform("camTarget", vec);
+	set_uniform("rightVec", vec);
 }
 
-void NSParticleRenderShader::setWorldUp(const fvec3 & vec)
+void nsparticle_render_shader::set_cam_target(const fvec3 & vec)
 {
-	setUniform("worldUp", vec);
+	set_uniform("camTarget", vec);
 }
 
-NSDepthShader::NSDepthShader() : NSShader(){}
-NSDepthShader::~NSDepthShader() {}
+void nsparticle_render_shader::set_world_up(const fvec3 & vec)
+{
+	set_uniform("worldUp", vec);
+}
 
-void NSDepthShader::initUniforms()
+nsdepth_shader::nsdepth_shader() : nsshader(){}
+nsdepth_shader::~nsdepth_shader() {}
+
+void nsdepth_shader::init_uniforms()
 {
 	fmat4array b;
 	b.resize(MAX_BONE_TFORMS);
-	setHeightSampler(HEIGHT_TEX_UNIT);
-	setHeightMapEnabled(false);
-	setHeightMinMax(fvec2(0.0f, 1.0f));
-	setNodeTransform(fmat4());
-	setBoneTransforms(b);
-	setProjMat(fmat4());
-	setHasBones(false);
+	set_height_sampler(HEIGHT_TEX_UNIT);
+	set_height_map_enabled(false);
+	set_height_minmax(fvec2(0.0f, 1.0f));
+	set_node_transform(fmat4());
+	set_bone_transform(b);
+	set_proj_mat(fmat4());
+	set_has_bones(false);
 }
 
-void NSDepthShader::setNodeTransform(const fmat4 & tform)
+void nsdepth_shader::set_node_transform(const fmat4 & tform)
 {
-	setUniform("nodeTransform", tform);
+	set_uniform("nodeTransform", tform);
 }
 
-void NSDepthShader::setBoneTransforms(const fmat4array & transforms)
+void nsdepth_shader::set_bone_transform(const fmat4array & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
-		setUniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
+		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
 }
 
-void NSDepthShader::setHasBones(bool hasthem)
+void nsdepth_shader::set_has_bones(bool hasthem)
 {
-	setUniform("hasBones", hasthem);
+	set_uniform("hasBones", hasthem);
 }
 
-NSDirShadowMapShader::NSDirShadowMapShader() :NSDepthShader() {}
+nsdir_shadowmap_shader::nsdir_shadowmap_shader() :nsdepth_shader() {}
 
-NSDirShadowMapShader::~NSDirShadowMapShader() {}
+nsdir_shadowmap_shader::~nsdir_shadowmap_shader() {}
 
-void NSDirShadowMapShader::initUniforms()
+void nsdir_shadowmap_shader::init_uniforms()
 {}
 
-void NSDirShadowMapShader::init() {}
+void nsdir_shadowmap_shader::init() {}
 
-NSPointShadowMapShader::NSPointShadowMapShader() :NSDepthShader() {}
+nspoint_shadowmap_shader::nspoint_shadowmap_shader() :nsdepth_shader() {}
 
-NSPointShadowMapShader::~NSPointShadowMapShader() {}
+nspoint_shadowmap_shader::~nspoint_shadowmap_shader() {}
 
-void NSPointShadowMapShader::initUniforms()
+void nspoint_shadowmap_shader::init_uniforms()
 {
-	setLightPos(fvec3());
-	setMaxDepth(0.0f);
-	setInverseTMat(fmat4());
-	NSDepthShader::initUniforms();
+	set_light_pos(fvec3());
+	set_max_depth(0.0f);
+	set_inverse_trans_mat(fmat4());
+	nsdepth_shader::init_uniforms();
 }
 
 void init()
@@ -1062,114 +1056,114 @@ void init()
 
 }
 
-void NSPointShadowMapShader::setLightPos(const fvec3 & pos)
+void nspoint_shadowmap_shader::set_light_pos(const fvec3 & pos)
 {
-	setUniform("lightPos", pos);
+	set_uniform("lightPos", pos);
 }
 
-void NSPointShadowMapShader::setMaxDepth(float maxd)
+void nspoint_shadowmap_shader::set_max_depth(float maxd)
 {
-	setUniform("maxDepth", maxd);
+	set_uniform("maxDepth", maxd);
 }
 
-void NSPointShadowMapShader::setInverseTMat(const fmat4 & invt)
+void nspoint_shadowmap_shader::set_inverse_trans_mat(const fmat4 & invt)
 {
-	setUniform("inverseTMat", invt);
+	set_uniform("inverseTMat", invt);
 }
 
-NSSpotShadowMapShader::NSSpotShadowMapShader() :NSDepthShader() {}
+nsspot_shadowmap_shader::nsspot_shadowmap_shader() :nsdepth_shader() {}
 
-NSSpotShadowMapShader::~NSSpotShadowMapShader() {}
+nsspot_shadowmap_shader::~nsspot_shadowmap_shader() {}
 
-void NSSpotShadowMapShader::initUniforms()
+void nsspot_shadowmap_shader::init_uniforms()
 {}
 
-void NSSpotShadowMapShader::init() {}
+void nsspot_shadowmap_shader::init() {}
 
-NSEarlyZShader::NSEarlyZShader() : NSDepthShader() {}
+nsearlyz_shader::nsearlyz_shader() : nsdepth_shader() {}
 
-NSEarlyZShader::~NSEarlyZShader() {}
+nsearlyz_shader::~nsearlyz_shader() {}
 
-void NSEarlyZShader::initUniforms()
+void nsearlyz_shader::init_uniforms()
 {}
 
-void NSEarlyZShader::init()
+void nsearlyz_shader::init()
 {}
 
-NSRenderXFBShader::NSRenderXFBShader() : NSMaterialShader() {}
-NSRenderXFBShader::~NSRenderXFBShader() {}
+nsrender_xfb_shader::nsrender_xfb_shader() : nsmaterial_shader() {}
+nsrender_xfb_shader::~nsrender_xfb_shader() {}
 
 
-NSXFBShader::NSXFBShader() : NSShader() {}
-NSXFBShader::~NSXFBShader() {}
+nsxfb_shader::nsxfb_shader() : nsshader() {}
+nsxfb_shader::~nsxfb_shader() {}
 
-void NSXFBShader::initUniforms()
+void nsxfb_shader::init_uniforms()
 {
-	setNodeTransform(fmat4());
+	set_node_transform(fmat4());
 }
 
-void NSXFBShader::init()
+void nsxfb_shader::init()
 {
 	std::vector<nsstring> outLocs;
 	outLocs.push_back("worldPos");
 	outLocs.push_back("texCoords");
 	outLocs.push_back("normal");
 	outLocs.push_back("tangent");
-	setxfb(NSShader::Separate, &outLocs);
+	set_xfb(nsshader::xfb_separate, &outLocs);
 }
 
-void NSXFBShader::setNodeTransform(const fmat4 & mat)
+void nsxfb_shader::set_node_transform(const fmat4 & mat)
 {
-	setUniform("nodeTransform", mat);
+	set_uniform("nodeTransform", mat);
 }
 
-NSSelectionShader::NSSelectionShader() : NSShader() {}
-NSSelectionShader::~NSSelectionShader() {}
+nsselection_shader::nsselection_shader() : nsshader() {}
+nsselection_shader::~nsselection_shader() {}
 
-void NSSelectionShader::initUniforms()
+void nsselection_shader::init_uniforms()
 {
 	fmat4array b;
 	b.resize(MAX_BONE_TFORMS);
-	setHeightSampler(HEIGHT_TEX_UNIT);
-	setHeightMapEnabled(false);
-	setHeightMinMax(fvec2(0.0f, 1.0f));
-	setNodeTransform(fmat4());
-	setBoneTransforms(b);
-	setHasBones(false);
-	setProjCamMat(fmat4());
-	setFragOutColor(fvec4());
-	setTransform(fmat4());
+	set_height_sampler(HEIGHT_TEX_UNIT);
+	set_heightmap_enabled(false);
+	set_height_minmax(fvec2(0.0f, 1.0f));
+	set_node_transform(fmat4());
+	set_bone_transform(b);
+	set_has_bones(false);
+	set_proj_cam_mat(fmat4());
+	set_frag_color_out(fvec4());
+	set_transform(fmat4());
 }
 
-void NSSelectionShader::init() {}
+void nsselection_shader::init() {}
 
-void NSSelectionShader::setFragOutColor(const fvec4 & col)
+void nsselection_shader::set_frag_color_out(const fvec4 & col)
 {
-	setUniform("fragColOut", col);
+	set_uniform("fragColOut", col);
 }
 
-void NSSelectionShader::setNodeTransform(const fmat4 & tform)
+void nsselection_shader::set_node_transform(const fmat4 & tform)
 {
-	setUniform("nodeTransform", tform);
+	set_uniform("nodeTransform", tform);
 }
 
-void NSSelectionShader::setProjCamMat(const fmat4 & projCam)
+void nsselection_shader::set_proj_cam_mat(const fmat4 & projCam)
 {
-	setUniform("projCamMat", projCam);
+	set_uniform("projCamMat", projCam);
 }
 
-void NSSelectionShader::setBoneTransforms(const fmat4array & transforms)
+void nsselection_shader::set_bone_transform(const fmat4array & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
-		setUniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
+		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
 }
 
-void NSSelectionShader::setHasBones(bool hasthem)
+void nsselection_shader::set_has_bones(bool hasthem)
 {
-	setUniform("hasBones", hasthem);
+	set_uniform("hasBones", hasthem);
 }
 
-void NSSelectionShader::setTransform(const fmat4 & mat)
+void nsselection_shader::set_transform(const fmat4 & mat)
 {
-	setUniform("transform", mat);
+	set_uniform("transform", mat);
 }

@@ -22,8 +22,8 @@ This file contains all of the neccessary declarations for the NSLightComp class.
 #include <nsmath.h>
 #include <nstform_comp.h>
 
-class NSMesh;
-class NSEntity;
+class nsmesh;
+class nsentity;
 class NSTimer;
 
 class NSLightComp : public NSComponent
@@ -102,7 +102,7 @@ public:
 
 	fmat4array & transforms();
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	/*!
 	Get the resources that the component uses. The light comp uses a bounding mesh.

@@ -14,55 +14,55 @@
 #include <nsfile_os.h>
 #include <nsengine.h>
 
-nsshader_manager::nsshader_manager():NSResManager()
+nsshader_manager::nsshader_manager():nsres_manager()
 {
-	setLocalDirectory(LOCAL_SHADER_DIR_DEFAULT);
-	setSaveMode(Text);
+	set_local_dir(LOCAL_SHADER_DIR_DEFAULT);
+	set_save_mode(text);
 }
 
 nsshader_manager::~nsshader_manager()
 {}
 
-bool nsshader_manager::compile(NSShader * sh)
+bool nsshader_manager::compile(nsshader * sh)
 {
 	return sh->compile();		
 }
 
-bool nsshader_manager::compileAll()
+bool nsshader_manager::compile_all()
 {
 	bool ret = true;
-	MapType::iterator iter = begin();
+	map_type::iterator iter = begin();
 	while (iter != end())
 	{
-		ret = ((NSShader*)iter->second)->compile() && ret;
+		ret = ((nsshader*)iter->second)->compile() && ret;
 		++iter;
 	}
 	return ret;
 }
 
-void nsshader_manager::initUniforms(NSShader * sh)
+void nsshader_manager::init_uniforms(nsshader * sh)
 {
-	sh->initUniforms();
+	sh->init_uniforms();
 }
 
-void nsshader_manager::initUniformsAll()
+void nsshader_manager::init_uniforms_all()
 {
-	MapType::iterator iter = begin();
+	map_type::iterator iter = begin();
 	while (iter != end())
 	{
-		NSShader * shader = static_cast<NSShader*>(iter->second);
+		nsshader * shader = static_cast<nsshader*>(iter->second);
 		shader->bind();
-		shader->initUniforms();
+		shader->init_uniforms();
 		shader->unbind();
 		++iter;
 	}
 }
 
-bool nsshader_manager::loadStage(NSShader * sh, const nsstring & fname, NSShader::ShaderType stagetype)
+bool nsshader_manager::load_stage(nsshader * sh, const nsstring & fname, nsshader::shader_type stagetype)
 {
 	nsstring fName;
 	bool shouldPrefix = false;
-	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
+	nsstring prefixdirs = m_res_dir + m_local_dir;
 
 	size_t pos = fname.find_last_of("/\\");
 	if (pos != nsstring::npos)
@@ -80,7 +80,7 @@ bool nsshader_manager::loadStage(NSShader * sh, const nsstring & fname, NSShader
 	
 	nsfstream file;
 	NSFilePUPer * p;
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::in | nsfstream::binary);
 		p = new NSBinFilePUPer(file, PUP_IN);
@@ -99,12 +99,12 @@ bool nsshader_manager::loadStage(NSShader * sh, const nsstring & fname, NSShader
 	}
 
 	nsstring rt;
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 		pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
 	else
 		pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
 
-	if (rt != nsengine.guid(sh->type()) + "_stage:" + sh->stagename(stagetype))
+	if (rt != nsengine.guid(sh->type()) + "_stage:" + sh->stage_name(stagetype))
 	{
 		dprint("nsshader_manager::loadStage Attempted to load shader stage " + fName + " which is not of stage type " + std::to_string(stagetype));
 		delete p;
@@ -114,13 +114,13 @@ bool nsshader_manager::loadStage(NSShader * sh, const nsstring & fname, NSShader
 	}
 
 	sh->pup(p, stagetype);
-	dprint("nsshader_manager::loadStage - Succesfully loaded stage " + sh->stagename(stagetype) + " from file " + fName);
+	dprint("nsshader_manager::loadStage - Succesfully loaded stage " + sh->stage_name(stagetype) + " from file " + fName);
 	delete p;
 	file.close();
 	return true;
 }
 
-bool nsshader_manager::saveStage(NSShader * sh, const nsstring & filename, NSShader::ShaderType stagetype)
+bool nsshader_manager::save_stage(nsshader * sh, const nsstring & filename, nsshader::shader_type stagetype)
 {
 	nsstring fName;
 	bool shouldPrefix = false;
@@ -135,7 +135,7 @@ bool nsshader_manager::saveStage(NSShader * sh, const nsstring & filename, NSSha
 		shouldPrefix = true;
 
 	if (shouldPrefix)
-		fName = mResourceDirectory + mLocalDirectory + filename;
+		fName = m_res_dir + m_local_dir + filename;
 	else
 		fName = filename;
 
@@ -147,7 +147,7 @@ bool nsshader_manager::saveStage(NSShader * sh, const nsstring & filename, NSSha
 
 	nsfstream file;
 	NSFilePUPer * p;
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::out | nsfstream::binary);
 		p = new NSBinFilePUPer(file, PUP_OUT);
@@ -160,37 +160,37 @@ bool nsshader_manager::saveStage(NSShader * sh, const nsstring & filename, NSSha
 
 	if (!file.is_open())
 	{
-		dprint("nsshader_manager::saveStage : Error opening stage " + sh->stagename(stagetype) + " file " + fName);
+		dprint("nsshader_manager::saveStage : Error opening stage " + sh->stage_name(stagetype) + " file " + fName);
 		delete p;
 		return false;
 	}
 
 	nsstring guid_ = nsengine.guid(sh->type());
-    std::string savestr = guid_ + "_stage:" + sh->stagename(stagetype);
-	if (mSaveMode == Binary)
+    std::string savestr = guid_ + "_stage:" + sh->stage_name(stagetype);
+	if (m_save_mode == binary)
         pup(*(static_cast<NSBinFilePUPer*>(p)), savestr, "type");
 	else
         pup(*(static_cast<NSTextFilePUPer*>(p)), savestr, std::string("type"));
 
 	sh->pup(p, stagetype);
-	dprint("nsshader_manager::saveStage - Succesfully saved stage " + sh->stagename(stagetype) + " to file " + fName);
+	dprint("nsshader_manager::saveStage - Succesfully saved stage " + sh->stage_name(stagetype) + " to file " + fName);
 	delete p;
 	file.close();
 	return true;
 }
 
-bool nsshader_manager::link(NSShader * sh)
+bool nsshader_manager::link(nsshader * sh)
 {
 	return sh->link();
 }
 
-bool nsshader_manager::linkAll()
+bool nsshader_manager::link_all()
 {
 	bool ret = true;
-	MapType::iterator iter = begin();
+	map_type::iterator iter = begin();
 	while (iter != end())
 	{
-		ret = ((NSShader*)iter->second)->link() && ret;
+		ret = ((nsshader*)iter->second)->link() && ret;
 		++iter;
 	}
 	return ret;

@@ -38,7 +38,7 @@ void NSAnimSystem::init()
 
 // bool NSAnimSystem::handleEvent(NSEvent * pEvent)
 // {
-// 	NSScene * scene = nsengine.currentScene();
+// 	nsscene * scene = nsengine.currentScene();
 // 	if (scene == NULL)
 // 		return false;
 
@@ -53,7 +53,7 @@ void NSAnimSystem::init()
 
 void NSAnimSystem::update()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	NSTimer * timer = nsengine.timer();
 	if (scene == NULL)
 		return;
@@ -83,7 +83,7 @@ void NSAnimSystem::update()
 				continue;
 			}
 
-			NSMesh * msh = nsengine.resource<NSMesh>(meshID);
+			nsmesh * msh = nsengine.resource<nsmesh>(meshID);
 			if (msh == NULL)
 			{
 				dprint("NSAnimSystem::update mesh with id " + meshID.toString() + " is null in anim ent " + (*entIter)->name());
@@ -91,7 +91,7 @@ void NSAnimSystem::update()
 				continue;
 			}
 
-			NSMesh::NodeTree * nTree = msh->nodetree();
+			nsmesh::node_tree * nTree = msh->tree();
 			if (nTree == NULL)
 			{
 				dprint("NSAnimSystem::update msh node tree is null in anim ent " + (*entIter)->name());
@@ -100,16 +100,16 @@ void NSAnimSystem::update()
 			}
 
 			auto finalTF = animComp->finalTransforms();
-			finalTF->resize(nTree->boneNameMap.size());
+			finalTF->resize(nTree->bone_name_map.size());
 
-			NSAnimSet * animset = nsengine.resource<NSAnimSet>(animsetID);
+			nsanim_set * animset = nsengine.resource<nsanim_set>(animsetID);
 			if (animset == NULL)
 			{
 				++entIter;
 				continue;
 			}
 
-			NSAnimSet::AnimationData * currAnim = animset->animationData(mCurrentAnim);
+			nsanim_set::animation_data * currAnim = animset->anim_data(mCurrentAnim);
 			if (currAnim == NULL)
 			{
 				dprint("NSAnimSystem::update anim set not found " + (*entIter)->name());
@@ -122,13 +122,13 @@ void NSAnimSystem::update()
 				animComp->elapsed() += timer->fixed();
 				if (animComp->looping())
 				{
-					if (animComp->elapsed() >= currAnim->mDuration)
+					if (animComp->elapsed() >= currAnim->duration)
 						animComp->elapsed() = 0.0f;
 					animComp->fillBones(nTree, currAnim);
 				}
 				else
 				{
-					if (animComp->elapsed() >= currAnim->mDuration)
+					if (animComp->elapsed() >= currAnim->duration)
 					{
 						animComp->setAnimate(false);
 						animComp->elapsed() = 0.0f;
@@ -144,7 +144,7 @@ void NSAnimSystem::update()
 	}
 }
 
-int32 NSAnimSystem::updatePriority()
+int32 NSAnimSystem::update_priority()
 {
 	return ANIM_SYS_UPDATE_PR;
 }

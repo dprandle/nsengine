@@ -31,66 +31,66 @@ class NSTFormComp;
 
 #include <nsresource.h>
 
-class NSShader : public NSResource, public NSGLObject
+class nsshader : public nsresource, public nsgl_object
 {
 public:
-	enum Error { None, Program, Compile, Link, Validate };
+	enum error_state { error_none, error_program, error_compile, error_link, error_validation };
 
-	enum ShaderType 
+	enum shader_type 
 	{
-		Vertex = GL_VERTEX_SHADER, 
-		Geometry = GL_GEOMETRY_SHADER, 
-		Fragment = GL_FRAGMENT_SHADER
+		vertex_shader = GL_VERTEX_SHADER, 
+		geometry_shader = GL_GEOMETRY_SHADER, 
+		fragment_shader = GL_FRAGMENT_SHADER
 	};
 
-	enum TransformFeedbackMode {
-		Interleaved = GL_INTERLEAVED_ATTRIBS,
-		Separate = GL_SEPARATE_ATTRIBS
+	enum xfb_mode {
+		xfb_interleaved = GL_INTERLEAVED_ATTRIBS,
+		xfb_separate = GL_SEPARATE_ATTRIBS
 	};
 
-	enum Attrib {
-		Position = POS_ATT,
-		TexCoords = TEX_ATT,
-		Normal = NORM_ATT,
-		Tangent = TANG_ATT,
-		BoneID = BONEID_ATT,
-		BoneWeight = BONEWEIGHT_ATT,
-		InstTrans = TRANS_ATT,
-		RefID = REFID_ATT
+	enum attrib_loc {
+		loc_position = POS_ATT,
+		loc_tex_coords = TEX_ATT,
+		loc_normal = NORM_ATT,
+		loc_tangent = TANG_ATT,
+		loc_bone_id = BONEID_ATT,
+		loc_joint = BONEWEIGHT_ATT,
+		loc_instance_tform = TRANS_ATT,
+		loc_ref_id = REFID_ATT
 	};
 
-	typedef std::unordered_map<uint32,uint32> UniformLocMap;
+	typedef std::unordered_map<uint32,uint32> uniform_loc_map;
 	
 	
 	template <class PUPer>
-	friend void pup(PUPer & p, NSShader & shader);
+	friend void pup(PUPer & p, nsshader & shader);
 
-	NSShader();
-	~NSShader();
+	nsshader();
+	~nsshader();
 
 	bool compile();
 
-	bool compile(ShaderType type);
+	bool compile(shader_type type);
 
 	void unbind();
 
 	void bind();
 
-	void setxfb(TransformFeedbackMode pMode, nsstringarray * pOutLocs);
+	void set_xfb(xfb_mode pMode, nsstringarray * pOutLocs);
 
 	virtual void init() {}
 
-	virtual void initUniforms() {}
+	virtual void init_uniforms() {}
 
-	uint32 attrib(const nsstring & pVariableName) const;
+	uint32 attrib_loc(const nsstring & var_name) const;
 
-	Error error() const;
+	error_state error() const;
 
-	void initGL();
+	void init_gl();
 
-	uint32 initUniformLoc(const nsstring & pVariable);
+	uint32 init_uniform_loc(const nsstring & pVariable);
 
-	bool compiled(ShaderType type);
+	bool compiled(shader_type type);
 
 	bool linked();
 
@@ -98,559 +98,558 @@ public:
 
 	virtual void pup(NSFilePUPer * p);
 
-	virtual void pup(NSFilePUPer * p, ShaderType type);
+	virtual void pup(NSFilePUPer * p, shader_type type);
 
 	void release();
 
-	void resetError();
+	void reset_error();
 
-	const nsstring & source(ShaderType type);
+	const nsstring & source(shader_type type);
 
-	void setName(ShaderType type, const nsstring & name);
+	void set_name(shader_type type, const nsstring & name);
 
-	void setSource(ShaderType type, const nsstring & source);
+	void set_source(shader_type type, const nsstring & source);
 
-	void setUniform(const nsstring & pVariableName, const fmat4 & pData);
+	void set_uniform(const nsstring & var_name, const fmat4 & data);
 
-	void setUniform(const nsstring & pVariableName, const fmat3 & pData);
+	void set_uniform(const nsstring & var_name, const fmat3 & data);
 
-	void setUniform(const nsstring & pVariableName, const fvec4 & pData);
+	void set_uniform(const nsstring & var_name, const fvec4 & data);
 
-	void setUniform(const nsstring & pVariableName, const fvec3 & pData);
+	void set_uniform(const nsstring & var_name, const fvec3 & data);
 
-	void setUniform(const nsstring & pVariableName, const fvec2 & pData);
+	void set_uniform(const nsstring & var_name, const fvec2 & data);
 
-	void setUniform(const nsstring & pVariableName, float pData);
+	void set_uniform(const nsstring & var_name, float data);
 
-	void setUniform(const nsstring & pVariableName, int32 pData);
+	void set_uniform(const nsstring & var_name, int32 data);
 
-	void setUniform(const nsstring & pVariableName, bool val);
+	void set_uniform(const nsstring & var_name, bool val);
 
-	void setUniform(const nsstring & pVariableName, uint32 pData);
+	void set_uniform(const nsstring & var_name, uint32 data);
 
-	uint32 glid(ShaderType type);
+	uint32 gl_id(shader_type type);
 
-	nsstring stagename(ShaderType type);
+	nsstring stage_name(shader_type type);
 
-	TransformFeedbackMode xfb();
+	xfb_mode xfb();
 
 protected:
-	struct ShaderStage
+	struct shader_stage
 	{
-		ShaderStage(ShaderType pType);
-		nsstring mSource;
-		uint32 mStageID;
-		ShaderType mType;
+		shader_stage(shader_type pType);
+		nsstring m_source;
+		uint32 m_stage_id;
+		shader_type m_type;
 	};
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSShader::ShaderStage & stage, const nsstring & varName);
+	friend void pup(PUPer & p, nsshader::shader_stage & stage, const nsstring & var_name);
 
-	uint32 _getHashedString(const nsstring & pString);
-	void _setupTransformFeedback();
+	void _setup_xfb();
 	bool _validate();
-	ShaderStage & _stage(ShaderType type);
+	shader_stage & _stage(shader_type type);
 
-	Error mErrorState;
-	TransformFeedbackMode mMode;
-	ShaderStage mVertex;
-	ShaderStage mGeometry;
-	ShaderStage mFragment;
-	nsstringarray mXFBLocs;
-	UniformLocMap mUniformLocs;
+	error_state m_error_sate;
+	xfb_mode m_xfb_mode;
+	shader_stage m_vertex;
+	shader_stage m_geometry;
+	shader_stage m_fragment;
+	nsstringarray m_xfb_locs;
+	uniform_loc_map m_uniform_locs;
 };
 
 template<class PUPer>
-void pup(PUPer & p, NSShader::ShaderType & en, const nsstring & pString)
+void pup(PUPer & p, nsshader::shader_type & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSShader::ShaderType>(in);
+	pup(p, in, var_name);
+	en = static_cast<nsshader::shader_type>(in);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSShader::ShaderStage & stage, const nsstring & varName)
+void pup(PUPer & p, nsshader::shader_stage & stage, const nsstring & var_name)
 {
-	pup(p, stage.mType, varName + ".type");
-	pup(p, stage.mSource, varName + ".source");
+	pup(p, stage.m_type, var_name + ".type");
+	pup(p, stage.m_source, var_name + ".source");
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSShader & shader)
+void pup(PUPer & p, nsshader & shader)
 {
-	pup(p, shader.mVertex, "vertex");
-	pup(p, shader.mGeometry, "geometry");
-	pup(p, shader.mFragment, "fragment");
+	pup(p, shader.m_vertex, "vertex");
+	pup(p, shader.m_geometry, "geometry");
+	pup(p, shader.m_fragment, "fragment");
 
 }
 
-class NSLightShader : public NSShader
+class nslight_shader : public nsshader
 {
 public:
-	NSLightShader();
-	~NSLightShader();
+	nslight_shader();
+	~nslight_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
-	void setAmbientIntensity(float intensity);
+	void set_ambient_intensity(float intensity);
 
-	void setCastShadows(bool cast);
+	void set_cast_shadows(bool cast);
 
-	void setDiffuseIntensity(float intensity);
+	void set_diffuse_intensity(float intensity);
 
-	void setLightColor(const fvec3 & col);
+	void set_light_color(const fvec3 & col);
 
-	void setShadowSamples(int32 samples);
+	void set_shadow_samples(int32 samples);
 
-	void setShadowDarkness(float darkness);
+	void set_shadow_darkness(float darkness);
 
-	void setScreenSize(const fvec2 & size);
+	void set_screen_size(const fvec2 & size);
 
-	void setCamWorldPos(const fvec3 & camPos);
+	void set_cam_world_pos(const fvec3 & camPos);
 
-	void setEpsilon(float epsilon);
+	void set_epsilon(float epsilon);
 
-	void setShadowTexSize(const fvec2 & size);
+	void set_shadow_tex_size(const fvec2 & size);
 
-	void setWorldPosSampler(int32 sampler);
+	void set_world_pos_sampler(int32 sampler);
 
-	void setDiffuseSampler(int32 sampler);
+	void set_diffuse_sampler(int32 sampler);
 
-	void setNormalSampler(int32 sampler);
+	void set_normal_sampler(int32 sampler);
 
-	void setMaterialSampler(int32 sampler);
+	void set_material_sampler(int32 sampler);
 
-	void setShadowSampler(int32 sampler);
+	void set_shadow_sampler(int32 sampler);
 
 };
 
-class NSDirLightShader : public NSLightShader
+class nsdir_light_shader : public nslight_shader
 {
 public:
-	NSDirLightShader();
-	~NSDirLightShader();
+	nsdir_light_shader();
+	~nsdir_light_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	virtual void init();
 
-	void setProjLightMat(const fmat4 & projLightMat);
+	void set_proj_light_mat(const fmat4 & projLightMat);
 
-	void setLightingEnabled(bool enable);
+	void set_lighting_enabled(bool enable);
 
-	void setBackgroundColor(const fvec3 & col);
+	void set_bg_color(const fvec3 & col);
 
-	void setDirection(const fvec3 & dir);
+	void set_direction(const fvec3 & dir);
 
 };
 
-class NSPointLightShader : public NSLightShader
+class nspoint_light_shader : public nslight_shader
 {
 public:
-	NSPointLightShader();
-	~NSPointLightShader();
+	nspoint_light_shader();
+	~nspoint_light_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	virtual void init();
 
-	void setConstAtten(float att);
+	void set_const_atten(float att);
 
-	void setLinAtten(float lin);
+	void set_lin_atten(float lin);
 
-	void setExpAtten(float exp);
+	void set_exp_atten(float exp);
 
-	void setPosition(const fvec3 & pos);
+	void set_position(const fvec3 & pos);
 
-	void setMaxDepth(float maxd);
+	void set_max_depth(float maxd);
 
-	void setTransform(const fmat4 & mat) { setUniform("transform", mat); }
+	void set_transform(const fmat4 & mat) { set_uniform("transform", mat); }
 
-	void setProjCamMat(const fmat4 & mat) { setUniform("projCamMat", mat); }
+	void set_proj_cam_mat(const fmat4 & mat) { set_uniform("projCamMat", mat); }
 
-	void setNodeTransform(const fmat4 & mat) { setUniform("nodeTransform", mat); }
-
-};
-
-class NSSpotLightShader : public NSPointLightShader
-{
-public:
-	NSSpotLightShader();
-	~NSSpotLightShader();
-
-	virtual void initUniforms();
-
-	void setProjLightMat(const fmat4 & projLightMat);
-
-	void setDirection(const fvec3 & dir);
-
-	void setCutoff(float cutoff);
+	void set_node_transform(const fmat4 & mat) { set_uniform("nodeTransform", mat); }
 
 };
 
-class NSMaterialShader : public NSShader
+class nsspot_light_shader : public nspoint_light_shader
 {
 public:
-	NSMaterialShader();
-	~NSMaterialShader();
+	nsspot_light_shader();
+	~nsspot_light_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
+
+	void set_proj_light_mat(const fmat4 & projLightMat);
+
+	void set_direction(const fvec3 & dir);
+
+	void set_cutoff(float cutoff);
+
+};
+
+class nsmaterial_shader : public nsshader
+{
+public:
+	nsmaterial_shader();
+	~nsmaterial_shader();
+
+	virtual void init_uniforms();
 
 	virtual void init();
 
-	void setDiffuseSampler(int32 sampler);
+	void set_diffuse_sampler(int32 sampler);
 
-	void setOpacitySampler(int32 sampler);
+	void set_opacity_sampler(int32 sampler);
 
-	void setNormalSampler(int32 sampler);
+	void set_normal_sampler(int32 sampler);
 
-	void setHeightSampler(int32 sampler) { setUniform("heightMap", sampler); }
+	void set_height_sampler(int32 sampler) { set_uniform("heightMap", sampler); }
 
-	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
+	void set_heightmap_enabled(bool enabled) { set_uniform("hasHeightMap", enabled); }
 
-	void setHeightMinMax(const fvec2 & hu) { setUniform("hminmax", hu); }
+	void set_height_minmax(const fvec2 & hu) { set_uniform("hminmax", hu); }
 
-	void setSpecularPower(float power);
+	void set_specular_power(float power);
 
-	void setSpecularIntensity(float intensity);
+	void set_specular_intensity(float intensity);
 
-	void setSpecularColor(const fvec3 & col);
+	void set_specular_color(const fvec3 & col);
 
-	void setEntityID(uint32 id);
+	void set_entity_id(uint32 id);
 
-	void setPluginID(uint32 id);
+	void set_plugin_id(uint32 id);
 
-	void setColorMode(bool enable);
+	void set_color_mode(bool enable);
 
-	void setFragOutColor(const fvec4 & fragcol);
+	void set_frag_color_out(const fvec4 & fragcol);
 
-	void setDiffuseMapEnabled(bool enabled);
+	void set_diffusemap_enabled(bool enabled);
 
-	void setOpacityMapEnabled(bool enabled);
+	void set_opacitymap_enabled(bool enabled);
 
-	void setNormalMapEnabled(bool enabled);
+	void set_normalmap_enabled(bool enabled);
 
-	void setLightingEnabled(bool enabled);
+	void set_lighting_enabled(bool enabled);
 
-	void setNodeTransform(const fmat4 & tform);
+	void set_node_transform(const fmat4 & tform);
 
-	void setProjCamMat(const fmat4 & projCam);
+	void set_proj_cam_mat(const fmat4 & projCam);
 
-	void setBoneTransforms(const fmat4array & transforms);
+	void set_bone_transforms(const fmat4array & transforms);
 
-	void setHasBones(bool hasthem);
+	void set_has_bones(bool hasthem);
 
 
 };
 
-class NSParticleProcessShader : public NSShader
+class nsparticle_process_shader : public nsshader
 {
 public:
-	NSParticleProcessShader();
-	~NSParticleProcessShader();
+	nsparticle_process_shader();
+	~nsparticle_process_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	void init();
 
-	void setRandomSampler(int32 sampler);
+	void set_random_sampler(int32 sampler);
 
-	void setdt(float dt);
+	void set_dt(float dt);
 
-	void setTimeElapsed(float elapsed);
+	void set_elapsed(float elapsed);
 
-	void setLifetime(uint32 lifetime);
+	void set_lifetime(uint32 lifetime);
 
-	void setLaunchFreq(float freq);
+	void set_launch_freq(float freq);
 
-	void setAngularVelocity(int32 angVelocity);
+	void set_angular_vel(int32 angVelocity);
 
-	void setMotionKeyGlobal(bool global);
+	void set_motion_key_global(bool global);
 
-	void setVisualKeyGlobal(bool global);
+	void set_visual_key_global(bool global);
 
-	void setInterpolateMotionKeys(bool interp);
+	void set_interpolated_motion_keys(bool interp);
 
-	void setInterpolateVisualKeys(bool interp);
+	void set_interpolated_visual_keys(bool interp);
 
-	void setStartingSize(const fvec2 & size);
+	void set_starting_size(const fvec2 & size);
 
-	void setEmitterSize(const fvec3 & size);
+	void set_emitter_size(const fvec3 & size);
 
-	void setEmitterShape(uint32 shape);
+	void set_emitter_shape(uint32 shape);
 
-	void setInitialVelocityMult(const fvec3 & mult);
+	void set_initial_vel_mult(const fvec3 & mult);
 
-	void setMotionKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
+	void set_motion_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
 
-	void setVisualKeys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
+	void set_visual_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
 
 };
 
-class NSParticleRenderShader : public NSShader
+class nsparticle_render_shader : public nsshader
 {
 public:
-	NSParticleRenderShader();
-	~NSParticleRenderShader();
+	nsparticle_render_shader();
+	~nsparticle_render_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	void init();
 
-	void setDiffuseSampler(int32 sampler);
+	void set_diffuse_sampler(int32 sampler);
 
-	void setColorMode(bool enable);
+	void set_color_mode(bool enable);
 
-	void setFragOutColor(const fvec4 & col);
+	void set_frag_color_out(const fvec4 & col);
 
-	void setDiffuseMapEnabled(bool enable);
+	void set_diffusemap_enabled(bool enable);
 
-	void setLifetime(float seconds);
+	void set_lifetime(float seconds);
 
-	void setBlendMode(uint32 mode);
+	void set_blend_mode(uint32 mode);
 
-	void setProjCamMat(const fmat4 & mat);
+	void set_proj_cam_mat(const fmat4 & mat);
 
-	void setCamUp(const fvec3 & vec);
+	void set_cam_up(const fvec3 & vec);
 
-	void setCamRight(const fvec3 & vec);
+	void set_cam_right(const fvec3 & vec);
 
-	void setCamTarget(const fvec3 & vec);
+	void set_cam_target(const fvec3 & vec);
 
-	void setWorldUp(const fvec3 & vec);
-
-};
-
-class NSDepthShader : public NSShader
-{
-public:
-	NSDepthShader();
-	~NSDepthShader();
-
-	virtual void initUniforms();
-
-	void setNodeTransform(const fmat4 & tform);
-
-	void setBoneTransforms(const fmat4array & transforms);
-
-	void setHasBones(bool hasthem);
-
-	void setProjMat(const fmat4 & mat) { setUniform("projMat", mat); }
-
-	void setHeightSampler(int32 sampler) { setUniform("heightMap", sampler); }
-
-	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
-
-	void setHeightMinMax(const fvec2 & hu) { setUniform("hminmax", hu); }
+	void set_world_up(const fvec3 & vec);
 
 };
 
-class NSDirShadowMapShader : public NSDepthShader
+class nsdepth_shader : public nsshader
 {
 public:
-	NSDirShadowMapShader();
-	~NSDirShadowMapShader();
+	nsdepth_shader();
+	~nsdepth_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
+
+	void set_node_transform(const fmat4 & tform);
+
+	void set_bone_transform(const fmat4array & transforms);
+
+	void set_has_bones(bool hasthem);
+
+	void set_proj_mat(const fmat4 & mat) { set_uniform("projMat", mat); }
+
+	void set_height_sampler(int32 sampler) { set_uniform("heightMap", sampler); }
+
+	void set_height_map_enabled(bool enabled) { set_uniform("hasHeightMap", enabled); }
+
+	void set_height_minmax(const fvec2 & hu) { set_uniform("hminmax", hu); }
+
+};
+
+class nsdir_shadowmap_shader : public nsdepth_shader
+{
+public:
+	nsdir_shadowmap_shader();
+	~nsdir_shadowmap_shader();
+
+	virtual void init_uniforms();
 
 	void init();
 
 };
 
-class NSPointShadowMapShader : public NSDepthShader
+class nspoint_shadowmap_shader : public nsdepth_shader
 {
 public:
-	NSPointShadowMapShader();
-	~NSPointShadowMapShader();
+	nspoint_shadowmap_shader();
+	~nspoint_shadowmap_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	void init() {}
 
-	void setLightPos(const fvec3 & pos);
+	void set_light_pos(const fvec3 & pos);
 
-	void setMaxDepth(float maxd);
+	void set_max_depth(float maxd);
 
-	void setInverseTMat(const fmat4 & invt);
+	void set_inverse_trans_mat(const fmat4 & invt);
 
 };
 
-class NSSpotShadowMapShader : public NSDepthShader
+class nsspot_shadowmap_shader : public nsdepth_shader
 {
 public:
-	NSSpotShadowMapShader();
-	~NSSpotShadowMapShader();
+	nsspot_shadowmap_shader();
+	~nsspot_shadowmap_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	void init();
 
 };
 
-class NSEarlyZShader : public NSDepthShader
+class nsearlyz_shader : public nsdepth_shader
 {
 public:
-	NSEarlyZShader();
-	~NSEarlyZShader();
+	nsearlyz_shader();
+	~nsearlyz_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	void init();
 
 };
 
-class NSDirShadowMapXFBShader : public NSShader
+class nsdir_shadowmap_xfb_shader : public nsshader
 {
 public:
-	NSDirShadowMapXFBShader(){}
-	~NSDirShadowMapXFBShader(){}
+	nsdir_shadowmap_xfb_shader(){}
+	~nsdir_shadowmap_xfb_shader(){}
 
-	virtual void initUniforms() { setProjLightMat(fmat4()); }
+	virtual void init_uniforms() { set_proj_light_mat(fmat4()); }
 
-	void init(){ NSShader::init(); }
+	void init(){ nsshader::init(); }
 
-	void setProjLightMat(const fmat4 & mat){ setUniform("projLightMat", mat); }
+	void set_proj_light_mat(const fmat4 & mat){ set_uniform("projLightMat", mat); }
 };
 
-class NSPointShadowMapXFBShader : public NSShader
+class nspoint_shadowmap_xfb_shader : public nsshader
 {
 public:
-	NSPointShadowMapXFBShader(){}
-	~NSPointShadowMapXFBShader(){}
+	nspoint_shadowmap_xfb_shader(){}
+	~nspoint_shadowmap_xfb_shader(){}
 
-	void init(){ NSShader::init(); }
+	void init(){ nsshader::init(); }
 
-	virtual void initUniforms() {
-		setProjMat(fmat4());
-		setInverseTMat(fmat4());
-		setProjLightMat(fmat4());
-		setLightPos(fvec3());
-		setMaxDepth(0.0f);
+	virtual void init_uniforms() {
+		set_proj_mat(fmat4());
+		set_inverse_trans_mat(fmat4());
+		set_proj_light_mat(fmat4());
+		set_light_pos(fvec3());
+		set_max_depth(0.0f);
 	}
 
-	void setProjMat(const fmat4 & mat){ setUniform("projMat", mat); }
+	void set_proj_mat(const fmat4 & mat){ set_uniform("projMat", mat); }
 
-	void setInverseTMat(const fmat4 & mat){ setUniform("inverseTMat", mat); }
+	void set_inverse_trans_mat(const fmat4 & mat){ set_uniform("inverseTMat", mat); }
 
-	void setProjLightMat(const fmat4 & mat){ setUniform("projLightMat", mat); }
+	void set_proj_light_mat(const fmat4 & mat){ set_uniform("projLightMat", mat); }
 
-	void setLightPos(fvec3 pos) { setUniform("lightPos", pos); }
+	void set_light_pos(fvec3 pos) { set_uniform("lightPos", pos); }
 
-	void setMaxDepth(float d) { setUniform("maxDepth", d); }
-
-};
-
-class NSSpotShadowMapXFBShader : public NSShader
-{
-public:
-	NSSpotShadowMapXFBShader() {}
-	~NSSpotShadowMapXFBShader() {}
-
-	virtual void initUniforms() { setProjLightMat(fmat4()); }
-
-	void init(){ NSShader::init(); }
-
-	void setProjLightMat(const fmat4 & mat){ setUniform("projLightMat", mat); }
+	void set_max_depth(float d) { set_uniform("maxDepth", d); }
 
 };
 
-class NSEarlyZXFBShader : public NSSpotShadowMapXFBShader
+class nsspot_shadowmap_xfb_shader : public nsshader
 {
 public:
-	NSEarlyZXFBShader(){}
-	~NSEarlyZXFBShader(){}
+	nsspot_shadowmap_xfb_shader() {}
+	~nsspot_shadowmap_xfb_shader() {}
 
-	virtual void initUniforms() { setProjCamMat(fmat4()); }
+	virtual void init_uniforms() { set_proj_light_mat(fmat4()); }
 
-	void init(){ NSShader::init(); }
+	void init(){ nsshader::init(); }
 
-	void setProjCamMat(const fmat4 & mat){ setUniform("projCamMat", mat); }
+	void set_proj_light_mat(const fmat4 & mat){ set_uniform("projLightMat", mat); }
 
 };
 
-class NSRenderXFBShader : public NSMaterialShader
+class nsearlyz_xfb_shader : public nsspot_shadowmap_xfb_shader
 {
 public:
-	NSRenderXFBShader();
-	~NSRenderXFBShader();
+	nsearlyz_xfb_shader(){}
+	~nsearlyz_xfb_shader(){}
+
+	virtual void init_uniforms() { set_proj_cam_mat(fmat4()); }
+
+	void init(){ nsshader::init(); }
+
+	void set_proj_cam_mat(const fmat4 & mat){ set_uniform("projCamMat", mat); }
+
 };
 
-class NSXFBShader : public NSShader
+class nsrender_xfb_shader : public nsmaterial_shader
 {
 public:
-	NSXFBShader();
-	~NSXFBShader();
+	nsrender_xfb_shader();
+	~nsrender_xfb_shader();
+};
 
-	virtual void initUniforms();
+class nsxfb_shader : public nsshader
+{
+public:
+	nsxfb_shader();
+	~nsxfb_shader();
+
+	virtual void init_uniforms();
 
 	void init();
 
-	void setNodeTransform(const fmat4 & mat);
+	void set_node_transform(const fmat4 & mat);
 
 };
 
-class NSLightStencilShader : public NSShader
+class nslight_stencil_shader : public nsshader
 {
 public:
-	NSLightStencilShader() {}
-	~NSLightStencilShader() {}
+	nslight_stencil_shader() {}
+	~nslight_stencil_shader() {}
 
-	virtual void initUniforms() {
-		setTransform(fmat4());
-		setProjCamMat(fmat4());
+	virtual void init_uniforms() {
+		set_transform(fmat4());
+		set_proj_cam_mat(fmat4());
 	}
 
 	void init() {}
 
-	void setNodeTransform(const fmat4 & mat) { setUniform("nodeTransform", mat); }
+	void set_node_transform(const fmat4 & mat) { set_uniform("nodeTransform", mat); }
 
-	void setTransform(const fmat4 & mat) { setUniform("transform", mat); }
+	void set_transform(const fmat4 & mat) { set_uniform("transform", mat); }
 
-	void setProjCamMat(const fmat4 & mat){ setUniform("projCamMat", mat); }
+	void set_proj_cam_mat(const fmat4 & mat){ set_uniform("projCamMat", mat); }
 };
 
-class NSSkyboxShader : public NSMaterialShader
+class nsskybox_shader : public nsmaterial_shader
 {
 public:
-	NSSkyboxShader() : NSMaterialShader() {}
-	~NSSkyboxShader() {}
+	nsskybox_shader() : nsmaterial_shader() {}
+	~nsskybox_shader() {}
 
 };
 
-class NSTransparencyShader : public NSMaterialShader
+class nstransparency_shader : public nsmaterial_shader
 {
 public:
-	NSTransparencyShader() : NSMaterialShader() {}
-	~NSTransparencyShader() {}
+	nstransparency_shader() : nsmaterial_shader() {}
+	~nstransparency_shader() {}
 };
 
-class NSSelectionShader : public NSShader
+class nsselection_shader : public nsshader
 {
 public:
-	NSSelectionShader();
-	~NSSelectionShader();
+	nsselection_shader();
+	~nsselection_shader();
 
-	virtual void initUniforms();
+	virtual void init_uniforms();
 
 	void init();
 
-	void setFragOutColor(const fvec4 & col);
+	void set_frag_color_out(const fvec4 & col);
 
-	void setNodeTransform(const fmat4 & tform);
+	void set_node_transform(const fmat4 & tform);
 
-	void setProjCamMat(const fmat4 & projCam);
+	void set_proj_cam_mat(const fmat4 & projCam);
 
-	void setBoneTransforms(const fmat4array & transforms);
+	void set_bone_transform(const fmat4array & transforms);
 
-	void setHasBones(bool hasthem);
+	void set_has_bones(bool hasthem);
 
-	void setTransform(const fmat4 & mat);
+	void set_transform(const fmat4 & mat);
 
-	void setHeightSampler(int32 sampler) { setUniform("heightMap", sampler); }
+	void set_height_sampler(int32 sampler) { set_uniform("heightMap", sampler); }
 
-	void setHeightMapEnabled(bool enabled) { setUniform("hasHeightMap", enabled); }
+	void set_heightmap_enabled(bool enabled) { set_uniform("hasHeightMap", enabled); }
 
-	void setHeightMinMax(const fvec2 & hu) { setUniform("hminmax", hu); }
+	void set_height_minmax(const fvec2 & hu) { set_uniform("hminmax", hu); }
 };
 
 #endif

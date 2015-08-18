@@ -23,14 +23,14 @@ mMatID(),
 NSComponent()
 {
 	add(0, 0, 0);
-	NSMesh * occ = nsengine.engplug()->get<NSMesh>(MESH_FULL_TILE);
+	nsmesh * occ = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
 	if (occ == NULL)
 	{
 		dprint("NSOccupyComp::NSOccupyComp Could not get occupy mesh");
 	}
 	else
 	{
-		mMeshID = occ->fullid();
+		mMeshID = occ->full_id();
 	}
 }
 
@@ -301,7 +301,7 @@ const uivec2 & NSOccupyComp::matid()
 	return mMeshID;
 }
 
-void NSOccupyComp::nameChange(uint32 plugID, uint32 oldID, uint32 newID)
+void NSOccupyComp::name_change(uint32 plugID, uint32 oldID, uint32 newID)
 {
 	if (mMeshID == uivec2(plugID, oldID))
 		mMeshID.y = newID;

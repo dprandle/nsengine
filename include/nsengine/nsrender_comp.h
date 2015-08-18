@@ -18,9 +18,9 @@
 #include <map>
 #include <nsmath.h>
 
-class NSMesh;
+class nsmesh;
 class NSTimer;
-class NSMaterial;
+class nsmaterial;
 
 class NSRenderComp : public NSComponent
 {
@@ -42,7 +42,7 @@ public:
 
 	const uivec2 & meshID();
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	/*!
 	Get the resources that the component uses. The render comp uses a mesh and possibly multiple materials.

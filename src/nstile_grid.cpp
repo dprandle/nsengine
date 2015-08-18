@@ -413,7 +413,7 @@ void NSTileGrid::remove(const uivec2 & id)
 	}
 }
 
-void NSTileGrid::nameChange(const uivec2 & oldid, const uivec2 newid)
+void NSTileGrid::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	// Go through entire grid and remove any entrees with entity ID equal to above
 	GridBounds g;

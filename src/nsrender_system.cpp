@@ -1,9 +1,9 @@
 /*! 
 	\file nsrendersystem.cpp
 	
-	\brief Definition file for NSRenderSystem class
+	\brief Definition file for nsrender_system class
 
-	This file contains all of the neccessary definitions for the NSRenderSystem class.
+	This file contains all of the neccessary definitions for the nsrender_system class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -25,52 +25,52 @@
 #include <nsscene.h>
 #include <nsterrain_comp.h>
 
-NSRenderSystem::NSRenderSystem() :
-mDrawCallMap(),
-mGBuffer(new NSGBuffer()),
-mFinalBuf(NULL),
-mShadowBuf(new NSShadowBuffer()),
-mShaders(),
-mDebugDraw(false),
-mEarlyZEnabled(false),
-mLightingEnabled(true),
-mScreenfbo(0),
+nsrender_system::nsrender_system() :
+m_drawcall_map(),
+m_gbuffer(new NSGBuffer()),
+m_final_buf(NULL),
+m_shadow_buf(new NSShadowBuffer()),
+m_shaders(),
+m_debug_draw(false),
+m_earlyz_enabled(false),
+m_lighting_enabled(true),
+m_screen_fbo(0),
 NSSystem()
 {}
 
-NSRenderSystem::~NSRenderSystem()
+nsrender_system::~nsrender_system()
 {
-	delete mShadowBuf;
-	delete mGBuffer;
+	delete m_shadow_buf;
+	delete m_gbuffer;
 }
 
-void NSRenderSystem::setScreenfbo(uint32 fbo)
+void nsrender_system::set_screen_fbo(uint32 fbo)
 {
-	mScreenfbo = fbo;
+	m_screen_fbo = fbo;
 }
 
-uint32 NSRenderSystem::screenfbo()
+uint32 nsrender_system::screen_fbo()
 {
-	return mScreenfbo;
+	return m_screen_fbo;
 }
 
-void NSRenderSystem::blitFinalFrame()
+void nsrender_system::blit_final_frame()
 {
-	if (mDebugDraw)
+	if (m_debug_draw)
 		return;
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mScreenfbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_fbo);
 	if (nsengine.currentScene() != NULL)
 	{
-		mFinalBuf->setTarget(NSFrameBuffer::Read);
-		mFinalBuf->bind();
-		mFinalBuf->setReadBuffer(NSFrameBuffer::Color);
+		m_final_buf->setTarget(NSFrameBuffer::Read);
+		m_final_buf->bind();
+		m_final_buf->setReadBuffer(NSFrameBuffer::Color);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_STENCIL_TEST);
 		glDisable(GL_BLEND);
 		glBlitFramebuffer(0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y, 0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		mFinalBuf->setReadBuffer(NSFrameBuffer::None);
-		mFinalBuf->unbind();
+		m_final_buf->setReadBuffer(NSFrameBuffer::None);
+		m_final_buf->unbind();
 	}
 	else
 	{
@@ -79,63 +79,63 @@ void NSRenderSystem::blitFinalFrame()
 	}
 }
 
-void NSRenderSystem::enableEarlyZ(bool pEnable)
+void nsrender_system::enable_earlyz(bool pEnable)
 {
-	mEarlyZEnabled = pEnable;
+	m_earlyz_enabled = pEnable;
 }
 
-void NSRenderSystem::enableLighting(bool pEnable)
+void nsrender_system::enable_lighting(bool pEnable)
 {
-	mLightingEnabled = pEnable;
-	NSFrameBuffer * mCur = nsengine.framebuffer(boundfbo());
+	m_lighting_enabled = pEnable;
+	NSFrameBuffer * mCur = nsengine.framebuffer(bound_fbo());
 
-	mGBuffer->bind();
+	m_gbuffer->bind();
 	if (pEnable)
-		mGBuffer->fb()->updateDrawBuffers();
+		m_gbuffer->fb()->updateDrawBuffers();
 	else
 	{
 		NSFrameBuffer::AttachmentPointArray ap;
 		ap.push_back(NSFrameBuffer::Color + NSGBuffer::Diffuse);
 		ap.push_back(NSFrameBuffer::Color + NSGBuffer::Picking);
-		mGBuffer->fb()->setDrawBuffers(&ap);
+		m_gbuffer->fb()->setDrawBuffers(&ap);
 	}
 	
 	mCur->bind();
 }
 
-bool NSRenderSystem::_validCheck()
+bool nsrender_system::_valid_check()
 {
 	static bool shadererr = false;
 	static bool shadernull = false;
 	static bool defmaterr = false;
 
-	if (!mShaders.valid())
+	if (!m_shaders.valid())
 	{
 		if (!shadernull)
 		{
-			dprint("NSRenderSystem::_validCheck: Error - one of the rendering shaders is NULL ");
+			dprint("nsrender_system::_validCheck: Error - one of the rendering shaders is NULL ");
 			shadernull = true;
 		}
 		return false;
 	}
 	shadernull = false;
 
-	if (mDefaultMaterial == NULL)
+	if (m_default_mat == NULL)
 	{
 		if (!defmaterr)
 		{
-			dprint("NSRenderSystem::_validCheck Error - default material is NULL - assign default material to render system");
+			dprint("nsrender_system::_validCheck Error - deflt material is NULL - assign deflt material to render system");
 			defmaterr = true;
 		}
 		return false;
 	}
 	defmaterr = false;
 
-	if (mShaders.error())
+	if (m_shaders.error())
 	{
 		if (!shadererr)
 		{
-			dprint("NSRenderSystem::_validCheck: Error in one of the rendering shaders - check compile log");
+			dprint("nsrender_system::_validCheck: Error in one of the rendering shaders - check compile log");
 			shadererr = true;
 		}
 		return false;
@@ -144,25 +144,25 @@ bool NSRenderSystem::_validCheck()
 	return true;
 }
 
-void NSRenderSystem::draw()
+void nsrender_system::draw()
 {
 	bool dirlt = false;
 	static bool dirlterr = false;
 
-	if (!_validCheck())
+	if (!_valid_check())
 		return;
 
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 
 	NSCamComp * camc = cam->get<NSCamComp>();
 
-	mGBuffer->bind();
+	m_gbuffer->bind();
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);;
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
@@ -170,46 +170,46 @@ void NSRenderSystem::draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);;
-	if (mEarlyZEnabled)
+	if (m_earlyz_enabled)
 	{
 		glDepthFunc(GL_LESS);
 		
-		mGBuffer->enableColorWrite(false);
+		m_gbuffer->enableColorWrite(false);
 
-		mShaders.mEarlyZShader->bind();
-		mShaders.mEarlyZShader->setProjMat(camc->projCam());
-		_drawSceneToDepth(mShaders.mEarlyZShader);
+		m_shaders.early_z->bind();
+		m_shaders.early_z->set_proj_mat(camc->projCam());
+		_draw_scene_to_depth(m_shaders.early_z);
 
-		mShaders.mXFBEarlyZ->bind();
-		mShaders.mXFBEarlyZ->setProjCamMat(camc->projCam());
-		_drawSceneToDepthXFB(mShaders.mXFBEarlyZ);
+		m_shaders.xfb_earlyz->bind();
+		m_shaders.xfb_earlyz->set_proj_cam_mat(camc->projCam());
+		_draw_scene_to_depth_xfb(m_shaders.xfb_earlyz);
 
-		mGBuffer->enableColorWrite(true);
+		m_gbuffer->enableColorWrite(true);
 		glDepthMask(GL_FALSE);
 		glDepthFunc(GL_LEQUAL);
 	}
 	
 	// Now draw geometry
-	GLError("NSTexture::_drawTransformFeedbacks");
+	GLError("nstexture::_drawTransformFeedbacks");
 	//_drawTransformFeedbacks();
-	GLError("NSTexture::_drawTransformFeedbacks");
-	_drawGeometry();
-	GLError("NSTexture::_drawTransformFeedbacks");
-	mGBuffer->unbind();
-	mGBuffer->enableTextures();
+	GLError("nstexture::_drawTransformFeedbacks");
+	_draw_geometry();
+	GLError("nstexture::_drawTransformFeedbacks");
+	m_gbuffer->unbind();
+	m_gbuffer->enableTextures();
 
 
-	if (mDebugDraw)
+	if (m_debug_draw)
 	{
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mScreenfbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		mGBuffer->debugBlit(camc->dim());
+		m_gbuffer->debugBlit(camc->dim());
 		return;
 	}
 
 
-	mFinalBuf->setTarget(NSFrameBuffer::Draw);
-	mFinalBuf->bind();
+	m_final_buf->setTarget(NSFrameBuffer::Draw);
+	m_final_buf->bind();
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);
@@ -230,26 +230,26 @@ void NSRenderSystem::draw()
 			continue;
 		}
 
-		if (lComp->type() == NSLightComp::Spot && mLightingEnabled)
+		if (lComp->type() == NSLightComp::Spot && m_lighting_enabled)
 		{
-			ar = float(mShadowBuf->dim(NSShadowBuffer::Spot).w) / float(mShadowBuf->dim(NSShadowBuffer::Spot).h);
+			ar = float(m_shadow_buf->dim(NSShadowBuffer::Spot).w) / float(m_shadow_buf->dim(NSShadowBuffer::Spot).h);
 			proj = perspective(lComp->angle()*2.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
 			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * lComp->pov(i);
 				if (lComp->castShadows())
 				{
-					mShadowBuf->bind(NSShadowBuffer::Spot);
+					m_shadow_buf->bind(NSShadowBuffer::Spot);
 					glEnable(GL_DEPTH_TEST);
 					glDepthMask(GL_TRUE);
 					glClear(GL_DEPTH_BUFFER_BIT);
 					glCullFace(GL_FRONT);
 
-					glViewport(0, 0, mShadowBuf->dim(NSShadowBuffer::Spot).w, mShadowBuf->dim(NSShadowBuffer::Spot).h);
+					glViewport(0, 0, m_shadow_buf->dim(NSShadowBuffer::Spot).w, m_shadow_buf->dim(NSShadowBuffer::Spot).h);
 
-					mShaders.mSpotShadowShader->bind();
-					mShaders.mSpotShadowShader->setProjMat(projLightMat);
-					_drawSceneToDepth(mShaders.mSpotShadowShader);
+					m_shaders.spot_shadow->bind();
+					m_shaders.spot_shadow->set_proj_mat(projLightMat);
+					_draw_scene_to_depth(m_shaders.spot_shadow);
 
 					//mShaders.mXFBSpotShadowMap->bind();
 					//mShaders.mXFBSpotShadowMap->setProjLightMat(projLightMat);
@@ -258,9 +258,9 @@ void NSRenderSystem::draw()
 					glViewport(0, 0, camc->dim().w, camc->dim().h);
 				}
 
-				mFinalBuf->bind();
-				mShadowBuf->enable(NSShadowBuffer::Spot);
-				mFinalBuf->setDrawBuffer(NSFrameBuffer::None);
+				m_final_buf->bind();
+				m_shadow_buf->enable(NSShadowBuffer::Spot);
+				m_final_buf->setDrawBuffer(NSFrameBuffer::None);
 				glDepthMask(GL_FALSE);
 				glClear(GL_STENCIL_BUFFER_BIT);
 				glDisable(GL_CULL_FACE);
@@ -268,29 +268,29 @@ void NSRenderSystem::draw()
 				glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
-				mShaders.mLightStencilShader->bind();
-				mShaders.mLightStencilShader->setProjCamMat(camc->projCam());
-				mShaders.mLightStencilShader->setTransform(lComp->transform(i));
-				_stencilSpotLight(lComp);
-				mFinalBuf->setDrawBuffer(NSFrameBuffer::Color);
+				m_shaders.light_stencil->bind();
+				m_shaders.light_stencil->set_proj_cam_mat(camc->projCam());
+				m_shaders.light_stencil->set_transform(lComp->transform(i));
+				_stencil_spot_light(lComp);
+				m_final_buf->setDrawBuffer(NSFrameBuffer::Color);
 				glDisable(GL_DEPTH_TEST);
 				glEnable(GL_CULL_FACE);
 				glCullFace(GL_FRONT);
 				glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-				mShaders.mSpotLightShader->bind();
-				mShaders.mSpotLightShader->setCamWorldPos(camTComp->wpos());
-				mShaders.mSpotLightShader->setPosition(tComp->wpos(i));
-				mShaders.mSpotLightShader->setMaxDepth(lComp->shadowClipping().y - lComp->shadowClipping().x);
-				mShaders.mSpotLightShader->setTransform(lComp->transform(i));
-				mShaders.mSpotLightShader->setProjCamMat(camc->projCam());
-				mShaders.mSpotLightShader->setProjLightMat(projLightMat);
-				mShaders.mSpotLightShader->setDirection(tComp->dirVec(NSTFormComp::Target, i));
-				_blendSpotLight(lComp);
+				m_shaders.spot_light->bind();
+				m_shaders.spot_light->set_cam_world_pos(camTComp->wpos());
+				m_shaders.spot_light->set_position(tComp->wpos(i));
+				m_shaders.spot_light->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+				m_shaders.spot_light->set_transform(lComp->transform(i));
+				m_shaders.spot_light->set_proj_cam_mat(camc->projCam());
+				m_shaders.spot_light->set_proj_light_mat(projLightMat);
+				m_shaders.spot_light->set_direction(tComp->dirVec(NSTFormComp::Target, i));
+				_blend_spot_light(lComp);
 			}
 		}
-		else if (lComp->type() == NSLightComp::Point && mLightingEnabled)
+		else if (lComp->type() == NSLightComp::Point && m_lighting_enabled)
 		{
-			ar = float(mShadowBuf->dim(NSShadowBuffer::Point).w) / float(mShadowBuf->dim(NSShadowBuffer::Point).h);
+			ar = float(m_shadow_buf->dim(NSShadowBuffer::Point).w) / float(m_shadow_buf->dim(NSShadowBuffer::Point).h);
 			proj = perspective(90.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
 			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
@@ -298,21 +298,21 @@ void NSRenderSystem::draw()
 				glCullFace(GL_FRONT);
 				if (lComp->castShadows())
 				{
-					mShadowBuf->bind(NSShadowBuffer::Point);
+					m_shadow_buf->bind(NSShadowBuffer::Point);
 					glEnable(GL_DEPTH_TEST);
 					glDepthMask(GL_TRUE);
 					glClear(GL_DEPTH_BUFFER_BIT);
 
-					glViewport(0, 0, mShadowBuf->dim(NSShadowBuffer::Point).w, mShadowBuf->dim(NSShadowBuffer::Point).h);
+					glViewport(0, 0, m_shadow_buf->dim(NSShadowBuffer::Point).w, m_shadow_buf->dim(NSShadowBuffer::Point).h);
 
-					mShaders.mPointShadowShader->bind();
-					mShaders.mPointShadowShader->setLightPos(tComp->wpos(i));
-					mShaders.mPointShadowShader->setMaxDepth(lComp->shadowClipping().y - lComp->shadowClipping().x);
-					mShaders.mPointShadowShader->setProjMat(proj);
+					m_shaders.point_shadow->bind();
+					m_shaders.point_shadow->set_light_pos(tComp->wpos(i));
+					m_shaders.point_shadow->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+					m_shaders.point_shadow->set_proj_mat(proj);
 					fmat4 f;
 					f.setColumn(3,fvec4(tComp->wpos(i)*-1.0f,1.0f));
-					mShaders.mPointShadowShader->setInverseTMat(f);
-					_drawSceneToDepth(mShaders.mPointShadowShader);
+					m_shaders.point_shadow->set_inverse_trans_mat(f);
+					_draw_scene_to_depth(m_shaders.point_shadow);
 
 					//mShaders.mXFBPointShadowMap->bind();
 					//mShaders.mXFBPointShadowMap->setLightPos(tComp->wpos(i));
@@ -324,78 +324,78 @@ void NSRenderSystem::draw()
 					glViewport(0, 0, camc->dim().w, camc->dim().h);
 				}
 
-				mFinalBuf->bind();
-				mShadowBuf->enable(NSShadowBuffer::Point);
-				mFinalBuf->setDrawBuffer(NSFrameBuffer::None);
+				m_final_buf->bind();
+				m_shadow_buf->enable(NSShadowBuffer::Point);
+				m_final_buf->setDrawBuffer(NSFrameBuffer::None);
 				glDepthMask(GL_FALSE);
 				glClear(GL_STENCIL_BUFFER_BIT);
 				glDisable(GL_CULL_FACE);
 				glStencilFunc(GL_ALWAYS, 0, 0);
 				glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-				mShaders.mLightStencilShader->bind();
-				mShaders.mLightStencilShader->setProjCamMat(camc->projCam());
-				mShaders.mLightStencilShader->setTransform(lComp->transform(i));
-				_stencilPointLight(lComp);
+				m_shaders.light_stencil->bind();
+				m_shaders.light_stencil->set_proj_cam_mat(camc->projCam());
+				m_shaders.light_stencil->set_transform(lComp->transform(i));
+				_stencil_point_light(lComp);
 
-				mFinalBuf->setDrawBuffer(NSFrameBuffer::Color);
+				m_final_buf->setDrawBuffer(NSFrameBuffer::Color);
 				glEnable(GL_CULL_FACE);
 				glCullFace(GL_FRONT);
 				glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 				glDisable(GL_DEPTH_TEST);
-				mShaders.mPointLightShader->bind();
-				mShaders.mPointLightShader->setCamWorldPos(camTComp->wpos());
-				mShaders.mPointLightShader->setPosition(tComp->wpos(i));
-				mShaders.mPointLightShader->setMaxDepth(lComp->shadowClipping().y - lComp->shadowClipping().x);
-				mShaders.mPointLightShader->setTransform(lComp->transform(i));
-				mShaders.mPointLightShader->setProjCamMat(camc->projCam());
-				_blendPointLight(lComp);
+				m_shaders.point_light->bind();
+				m_shaders.point_light->set_cam_world_pos(camTComp->wpos());
+				m_shaders.point_light->set_position(tComp->wpos(i));
+				m_shaders.point_light->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+				m_shaders.point_light->set_transform(lComp->transform(i));
+				m_shaders.point_light->set_proj_cam_mat(camc->projCam());
+				_blend_point_light(lComp);
 			}
 		}
 		else if (lComp->type() == NSLightComp::Directional)
 		{
-			ar = float(mShadowBuf->dim(NSShadowBuffer::Direction).w) / float(mShadowBuf->dim(NSShadowBuffer::Direction).h);
+			ar = float(m_shadow_buf->dim(NSShadowBuffer::Direction).w) / float(m_shadow_buf->dim(NSShadowBuffer::Direction).h);
 			proj = perspective(160.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
 			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * tComp->pov();
 				glCullFace(GL_BACK);
 
-				if (lComp->castShadows() && mLightingEnabled)
+				if (lComp->castShadows() && m_lighting_enabled)
 				{
-					mShadowBuf->bind(NSShadowBuffer::Direction);
+					m_shadow_buf->bind(NSShadowBuffer::Direction);
 					glEnable(GL_DEPTH_TEST);
 					glDepthMask(GL_TRUE);
 					glClear(GL_DEPTH_BUFFER_BIT);
-					glViewport(0, 0, mShadowBuf->dim(NSShadowBuffer::Direction).w, mShadowBuf->dim(NSShadowBuffer::Direction).h);
+					glViewport(0, 0, m_shadow_buf->dim(NSShadowBuffer::Direction).w, m_shadow_buf->dim(NSShadowBuffer::Direction).h);
 
-					mShaders.mDirShadowShader->bind();
-					mShaders.mDirShadowShader->setProjMat(projLightMat);
-					_drawSceneToDepth(mShaders.mDirShadowShader);
+					m_shaders.dir_shadow->bind();
+					m_shaders.dir_shadow->set_proj_mat(projLightMat);
+					_draw_scene_to_depth(m_shaders.dir_shadow);
 
-					mShaders.mXFBDirShadowMap->bind();
-					mShaders.mXFBDirShadowMap->setProjLightMat(projLightMat);
-					_drawSceneToDepthXFB(mShaders.mXFBDirShadowMap);
+					m_shaders.xfb_dir_shadow->bind();
+					m_shaders.xfb_dir_shadow->set_proj_light_mat(projLightMat);
+					_draw_scene_to_depth_xfb(m_shaders.xfb_dir_shadow);
 
 					glViewport(0, 0, camc->dim().w, camc->dim().h);
 				}
 
 
-				mFinalBuf->bind();
-				mShadowBuf->enable(NSShadowBuffer::Direction);
-				mFinalBuf->setDrawBuffer(NSFrameBuffer::Color);
+				m_final_buf->bind();
+				m_shadow_buf->enable(NSShadowBuffer::Direction);
+				m_final_buf->setDrawBuffer(NSFrameBuffer::Color);
 				glClear(GL_STENCIL_BUFFER_BIT);
 				glDepthMask(GL_FALSE);
 				glDisable(GL_DEPTH_TEST);
 				glStencilFunc(GL_EQUAL, 0, 0xFF);
-				mShaders.mDirLightShader->bind();
-				mShaders.mDirLightShader->initUniforms();
-				mShaders.mDirLightShader->setProjLightMat(projLightMat);
-				mShaders.mDirLightShader->setLightingEnabled(mLightingEnabled);
-				mShaders.mDirLightShader->setBackgroundColor(scene->backgroundColor());
-				mShaders.mDirLightShader->setDirection(tComp->dirVec(NSTFormComp::Target, i));
-				mShaders.mDirLightShader->setCamWorldPos(camTComp->wpos());
-				_blendDirectionLight(lComp);
+				m_shaders.dir_light->bind();
+				m_shaders.dir_light->init_uniforms();
+				m_shaders.dir_light->set_proj_light_mat(projLightMat);
+				m_shaders.dir_light->set_lighting_enabled(m_lighting_enabled);
+				m_shaders.dir_light->set_bg_color(scene->bg_color());
+				m_shaders.dir_light->set_direction(tComp->dirVec(NSTFormComp::Target, i));
+				m_shaders.dir_light->set_cam_world_pos(camTComp->wpos());
+				_blend_dir_light(lComp);
 				dirlt = true;
 				dirlterr = false;
 			}
@@ -405,58 +405,58 @@ void NSRenderSystem::draw()
 	}
 	if (!dirlt && !dirlterr)
 	{
-		dprint("NSRenderSystem::draw WARNING No directional light - scene will not be drawn. Add a directional light to the scene.");
+		dprint("nsrender_system::draw WARNING No directional light - scene will not be drawn. Add a directional light to the scene.");
 		dirlterr = true;
 	}
 }
 
-uint32 NSRenderSystem::boundfbo()
+uint32 nsrender_system::bound_fbo()
 {
 	GLint params;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &params);
 	return params;
 }
 
-void NSRenderSystem::resizeScreen(const ivec2 & size)
+void nsrender_system::resize_screen(const ivec2 & size)
 {
-	mScreenSize = size;
-	NSScene * scn = nsengine.currentScene();
+	m_screen_size = size;
+	nsscene * scn = nsengine.currentScene();
 	if (scn != NULL)
 	{
-		NSEntity * cam = scn->camera();
+		nsentity * cam = scn->camera();
 		if (cam != NULL)
 		{
 			NSCamComp * cc = cam->get<NSCamComp>();
-			cc->resize(mScreenSize);
+			cc->resize(m_screen_size);
 		}
 	}
 }
 
-const ivec2 & NSRenderSystem::screenSize()
+const ivec2 & nsrender_system::screen_size()
 {
-	return mScreenSize;	
+	return m_screen_size;	
 }
 
-bool NSRenderSystem::debugDraw()
+bool nsrender_system::debug_draw()
 {
-	return mDebugDraw;
+	return m_debug_draw;
 }
 
-NSMaterial * NSRenderSystem::defaultMat()
+nsmaterial * nsrender_system::default_mat()
 {
-	return mDefaultMaterial;
+	return m_default_mat;
 }
 
 
-// bool NSRenderSystem::handleEvent(NSEvent * pEvent)
+// bool nsrender_system::handleEvent(NSEvent * pEvent)
 // {
-// 	NSScene * scene = nsengine.currentScene();
+// 	nsscene * scene = nsengine.currentScene();
 // 	if (scene == NULL)
 // 		return false;
 	
 // 	if (pEvent == NULL)
 // 	{
-// 		dprint("NSRenderSystem::handleEvent Event is NULL - bad bad bad");
+// 		dprint("nsrender_system::handleEvent Event is NULL - bad bad bad");
 // 		return false;
 // 	}
 
@@ -477,7 +477,7 @@ NSMaterial * NSRenderSystem::defaultMat()
 // 	return handled;
 // }
 
-void NSRenderSystem::init()
+void nsrender_system::init()
 {
 	//nsengine.events()->addListener(this, NSEvent::InputKey);
 	glFrontFace(GL_CW);
@@ -487,31 +487,31 @@ void NSRenderSystem::init()
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthFunc(GL_LEQUAL);
 	glViewport(0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
-	setGBufferfbo(nsengine.createFramebuffer());
-	setShadowfbo(nsengine.createFramebuffer(), nsengine.createFramebuffer(), nsengine.createFramebuffer());
+	set_gbuffer_fbo(nsengine.createFramebuffer());
+	set_shadow_fbo(nsengine.createFramebuffer(), nsengine.createFramebuffer(), nsengine.createFramebuffer());
 }
 
-void NSRenderSystem::enableDebugDraw(bool pDebDraw)
+void nsrender_system::enable_debug_draw(bool pDebDraw)
 {
-	mDebugDraw = pDebDraw;
+	m_debug_draw = pDebDraw;
 }
 
-void NSRenderSystem::setDefaultMat(NSMaterial * pDefMat)
+void nsrender_system::set_default_mat(nsmaterial * pDefMat)
 {
-	mDefaultMaterial = pDefMat;
+	m_default_mat = pDefMat;
 }
 
-void NSRenderSystem::setShaders(const RenderShaders & pShaders)
+void nsrender_system::set_shaders(const RenderShaders & pShaders)
 {
-	mShaders = pShaders;
+	m_shaders = pShaders;
 }
 
-void NSRenderSystem::toggleDebugDraw()
+void nsrender_system::toggle_debug_draw()
 {
-	enableDebugDraw(!mDebugDraw);
+	enable_debug_draw(!m_debug_draw);
 }
 
-void NSRenderSystem::update()
+void nsrender_system::update()
 {
 	static bool sceneerr = false;
 	static bool camerr = false;
@@ -519,12 +519,12 @@ void NSRenderSystem::update()
 	//nsengine.events()->process(this);
 
 	// Warning message switches (so they dont appear every frame)
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 	{
 		if (!sceneerr)
 		{
-			dprint("NSRenderSystem::update WARNING No current scene set");
+			dprint("nsrender_system::update WARNING No current scene set");
 			sceneerr = true;
 		}
 		return;
@@ -532,12 +532,12 @@ void NSRenderSystem::update()
 	else
 		sceneerr = false;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 	{
 		if (!camerr)
 		{
-			dprint("NSRenderSystem::update WARNING No scene camera set");
+			dprint("nsrender_system::update WARNING No scene camera set");
 			camerr = true;
 		}
 		return;
@@ -545,9 +545,9 @@ void NSRenderSystem::update()
 	else
 		camerr = false;
 
-	 mDrawCallMap.clear();
-	 mShaderMatMap.clear();
-	 mXFBDraws.clear();
+	 m_drawcall_map.clear();
+	 m_shader_mat_map.clear();
+	 m_xfb_draws.clear();
 
 	// update render components and the draw call list
 	 fvec2 terh;
@@ -555,7 +555,7 @@ void NSRenderSystem::update()
 	 NSTFormComp * tComp = NULL;
 	 NSAnimComp * animComp = NULL;
 	 NSTerrainComp * terComp = NULL;
-	 NSMesh * currentMesh = NULL;
+	 nsmesh * currentMesh = NULL;
 	 NSLightComp * lc = NULL;
 
 	auto iter = scene->entities<NSRenderComp>().begin();
@@ -567,7 +567,7 @@ void NSRenderSystem::update()
 		lc = (*iter)->get<NSLightComp>();
 		animComp = (*iter)->get<NSAnimComp>();
 		terComp = (*iter)->get<NSTerrainComp>();
-		currentMesh = nsengine.resource<NSMesh>(rComp->meshID());
+		currentMesh = nsengine.resource<nsmesh>(rComp->meshID());
 
 		if (lc != NULL)
 		{
@@ -588,26 +588,26 @@ void NSRenderSystem::update()
 		}
 
 		if (tComp->transformFeedback())
-			mXFBDraws.emplace((*iter));
+			m_xfb_draws.emplace((*iter));
 		else
 		{
-			NSMesh::SubMesh * mSMesh = NULL;
-			NSMaterial * mat = NULL;
+			nsmesh::submesh * mSMesh = NULL;
+			nsmaterial * mat = NULL;
 			fmat4array * fTForms = NULL;
-			NSMaterialShader * shader = NULL;
+			nsmaterial_shader * shader = NULL;
 			for (uint32 i = 0; i < currentMesh->count(); ++i)
 			{
-				mSMesh = currentMesh->submesh(i);
-				mat = nsengine.resource<NSMaterial>(rComp->materialID(i));
+				mSMesh = currentMesh->sub(i);
+				mat = nsengine.resource<nsmaterial>(rComp->materialID(i));
 
 				if (mat == NULL)
-					mat = mDefaultMaterial;
+					mat = m_default_mat;
 
-				shader = nsengine.resource<NSMaterialShader>(mat->shaderID());
+				shader = nsengine.resource<nsmaterial_shader>(mat->shader_id());
 				fTForms = NULL;
 
 				if (shader == NULL)
-					shader = mShaders.mDefaultShader;
+					shader = m_shaders.deflt;
 
 				if (animComp != NULL)
 					fTForms = animComp->finalTransforms();
@@ -617,16 +617,16 @@ void NSRenderSystem::update()
 
 				if (tComp != NULL)
 				{
-					mDrawCallMap[mat].emplace(DrawCall(mSMesh,
+					m_drawcall_map[mat].emplace(draw_call(mSMesh,
 						fTForms,
 						tComp->transformBuffer(),
 						tComp->transformIDBuffer(),
 						terh,
 						(*iter)->id(),
-						(*iter)->plugid(),
+						(*iter)->plugin_id(),
 						tComp->count(),
 						rComp->castShadow()));
-					mShaderMatMap[shader].insert(mat);
+					m_shader_mat_map[shader].insert(mat);
 				}
 			}
 		}
@@ -634,182 +634,182 @@ void NSRenderSystem::update()
 	}
 }
 
-void NSRenderSystem::_blendDirectionLight(NSLightComp * pLight)
+void nsrender_system::_blend_dir_light(NSLightComp * pLight)
 {
-	mShaders.mDirLightShader->setAmbientIntensity(pLight->intensity().y);
-	mShaders.mDirLightShader->setCastShadows(pLight->castShadows());
-	mShaders.mDirLightShader->setDiffuseIntensity(pLight->intensity().x);
-	mShaders.mDirLightShader->setLightColor(pLight->color());
-	mShaders.mDirLightShader->setShadowSamples(pLight->shadowSamples());
-	mShaders.mDirLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mDirLightShader->setScreenSize(fvec2(static_cast<float>(mFinalBuf->dim().x), static_cast<float>(mFinalBuf->dim().y)));
-	mShaders.mDirLightShader->setShadowTexSize(fvec2(static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
+	m_shaders.dir_light->set_ambient_intensity(pLight->intensity().y);
+	m_shaders.dir_light->set_cast_shadows(pLight->castShadows());
+	m_shaders.dir_light->set_diffuse_intensity(pLight->intensity().x);
+	m_shaders.dir_light->set_light_color(pLight->color());
+	m_shaders.dir_light->set_shadow_samples(pLight->shadowSamples());
+	m_shaders.dir_light->set_shadow_darkness(pLight->shadowDarkness());
+	m_shaders.dir_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->dim().x), static_cast<float>(m_final_buf->dim().y)));
+	m_shaders.dir_light->set_shadow_tex_size(fvec2(static_cast<float>(m_shadow_buf->dim(NSShadowBuffer::Direction).w), static_cast<float>(m_shadow_buf->dim(NSShadowBuffer::Direction).y)));
 
-	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
-		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
-		cSub->mVAO.bind();
-		GLsizei sz = static_cast<GLsizei>(cSub->mIndices.size());
-		glDrawElements(cSub->mPrimType,
+		nsmesh::submesh * cSub = boundingMesh->sub(i);
+		cSub->vao.bind();
+		GLsizei sz = static_cast<GLsizei>(cSub->indices.size());
+		glDrawElements(cSub->primitive_type,
 					   sz,
 					   GL_UNSIGNED_INT,
 					   nullptr);
         GLError("_blendDirectionLight: Draw Error");
-		cSub->mVAO.unbind();
+		cSub->vao.unbind();
 	}
 }
 
-void NSRenderSystem::_blendPointLight(NSLightComp * pLight)
+void nsrender_system::_blend_point_light(NSLightComp * pLight)
 {
-	mShaders.mPointLightShader->setAmbientIntensity(pLight->intensity().y);
-	mShaders.mPointLightShader->setCastShadows(pLight->castShadows());
-	mShaders.mPointLightShader->setDiffuseIntensity(pLight->intensity().x);
-	mShaders.mPointLightShader->setLightColor(pLight->color());
-	mShaders.mPointLightShader->setShadowSamples(pLight->shadowSamples());
-	mShaders.mPointLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mPointLightShader->setScreenSize(fvec2(static_cast<float>(mFinalBuf->dim().x), static_cast<float>(mFinalBuf->dim().y)));
-	mShaders.mPointLightShader->setShadowTexSize(fvec2(static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).w), static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
-	mShaders.mPointLightShader->setConstAtten(pLight->atten().x);
-	mShaders.mPointLightShader->setLinAtten(pLight->atten().y);
-	mShaders.mPointLightShader->setExpAtten(pLight->atten().z);
+	m_shaders.point_light->set_ambient_intensity(pLight->intensity().y);
+	m_shaders.point_light->set_cast_shadows(pLight->castShadows());
+	m_shaders.point_light->set_diffuse_intensity(pLight->intensity().x);
+	m_shaders.point_light->set_light_color(pLight->color());
+	m_shaders.point_light->set_shadow_samples(pLight->shadowSamples());
+	m_shaders.point_light->set_shadow_darkness(pLight->shadowDarkness());
+	m_shaders.point_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->dim().x), static_cast<float>(m_final_buf->dim().y)));
+	m_shaders.point_light->set_shadow_tex_size(fvec2(static_cast<float>(m_shadow_buf->dim(NSShadowBuffer::Direction).w), static_cast<float>(m_shadow_buf->dim(NSShadowBuffer::Direction).y)));
+	m_shaders.point_light->set_const_atten(pLight->atten().x);
+	m_shaders.point_light->set_lin_atten(pLight->atten().y);
+	m_shaders.point_light->set_exp_atten(pLight->atten().z);
 
 
-	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
-		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
+		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->mNode != NULL)
-			mShaders.mPointLightShader->setUniform("nodeTransform", cSub->mNode->mWorldTransform);
+		if (cSub->node_ != NULL)
+			m_shaders.point_light->set_uniform("nodeTransform", cSub->node_->world_transform);
 		else
-			mShaders.mPointLightShader->setUniform("nodeTransform", fmat4());
+			m_shaders.point_light->set_uniform("nodeTransform", fmat4());
 
-		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType,
-					   static_cast<GLsizei>(cSub->mIndices.size()),
+		cSub->vao.bind();
+		glDrawElements(cSub->primitive_type,
+					   static_cast<GLsizei>(cSub->indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->mVAO.unbind();
+		cSub->vao.unbind();
 	}
 }
 
-void NSRenderSystem::_blendSpotLight(NSLightComp * pLight)
+void nsrender_system::_blend_spot_light(NSLightComp * pLight)
 {
-	mShaders.mSpotLightShader->setAmbientIntensity(pLight->intensity().y);
-	mShaders.mSpotLightShader->setCastShadows(pLight->castShadows());
-	mShaders.mSpotLightShader->setDiffuseIntensity(pLight->intensity().x);
-	mShaders.mSpotLightShader->setLightColor(pLight->color());
-	mShaders.mSpotLightShader->setShadowSamples(pLight->shadowSamples());
-	mShaders.mSpotLightShader->setShadowDarkness(pLight->shadowDarkness());
-	mShaders.mSpotLightShader->setScreenSize(fvec2(static_cast<float>(mFinalBuf->dim().x),
-												   static_cast<float>(mFinalBuf->dim().y)));
-	mShaders.mSpotLightShader->setShadowTexSize(
-		fvec2(static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).w),
-			  static_cast<float>(mShadowBuf->dim(NSShadowBuffer::Direction).y)));
-	mShaders.mSpotLightShader->setConstAtten(pLight->atten().x);
-	mShaders.mSpotLightShader->setLinAtten(pLight->atten().y);
-	mShaders.mSpotLightShader->setExpAtten(pLight->atten().z);
-	mShaders.mSpotLightShader->setCutoff(pLight->cutoff());
+	m_shaders.spot_light->set_ambient_intensity(pLight->intensity().y);
+	m_shaders.spot_light->set_cast_shadows(pLight->castShadows());
+	m_shaders.spot_light->set_diffuse_intensity(pLight->intensity().x);
+	m_shaders.spot_light->set_light_color(pLight->color());
+	m_shaders.spot_light->set_shadow_samples(pLight->shadowSamples());
+	m_shaders.spot_light->set_shadow_darkness(pLight->shadowDarkness());
+	m_shaders.spot_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->dim().x),
+												   static_cast<float>(m_final_buf->dim().y)));
+	m_shaders.spot_light->set_shadow_tex_size(
+		fvec2(static_cast<float>(m_shadow_buf->dim(NSShadowBuffer::Direction).w),
+			  static_cast<float>(m_shadow_buf->dim(NSShadowBuffer::Direction).y)));
+	m_shaders.spot_light->set_const_atten(pLight->atten().x);
+	m_shaders.spot_light->set_lin_atten(pLight->atten().y);
+	m_shaders.spot_light->set_exp_atten(pLight->atten().z);
+	m_shaders.spot_light->set_cutoff(pLight->cutoff());
 
-	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
-		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
+		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->mNode != NULL)
-			mShaders.mSpotLightShader->setUniform("nodeTransform", cSub->mNode->mWorldTransform);
+		if (cSub->node_ != NULL)
+			m_shaders.spot_light->set_uniform("nodeTransform", cSub->node_->world_transform);
 		else
-			mShaders.mSpotLightShader->setUniform("nodeTransform", fmat4());
+			m_shaders.spot_light->set_uniform("nodeTransform", fmat4());
 
-		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType,
-					   static_cast<GLsizei>(cSub->mIndices.size()),
+		cSub->vao.bind();
+		glDrawElements(cSub->primitive_type,
+					   static_cast<GLsizei>(cSub->indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->mVAO.unbind();
+		cSub->vao.unbind();
 	}
 }
 
-uivec3 NSRenderSystem::shadowfbo()
+uivec3 nsrender_system::shadow_fbo()
 {
-	NSFrameBuffer * d = mShadowBuf->fb(NSShadowBuffer::Direction);
-	NSFrameBuffer * s = mShadowBuf->fb(NSShadowBuffer::Spot);
-	NSFrameBuffer * p = mShadowBuf->fb(NSShadowBuffer::Point);
+	NSFrameBuffer * d = m_shadow_buf->fb(NSShadowBuffer::Direction);
+	NSFrameBuffer * s = m_shadow_buf->fb(NSShadowBuffer::Spot);
+	NSFrameBuffer * p = m_shadow_buf->fb(NSShadowBuffer::Point);
 	uivec3 ret;
 	if (d != NULL)
-		ret.x = d->glid();
+		ret.x = d->gl_id();
 	if (s != NULL)
-		ret.y = s->glid();
+		ret.y = s->gl_id();
 	if (p != NULL)
-		ret.z = s->glid();
+		ret.z = s->gl_id();
 	return ret;
 }
 
-uint32 NSRenderSystem::finalfbo()
+uint32 nsrender_system::final_fbo()
 {
-	if (mFinalBuf != NULL)
-		return mFinalBuf->glid();
+	if (m_final_buf != NULL)
+		return m_final_buf->gl_id();
 	return 0;
 }
 
-uint32 NSRenderSystem::gbufferfbo()
+uint32 nsrender_system::gbuffer_fbo()
 {
-	NSFrameBuffer * fb = mGBuffer->fb();
+	NSFrameBuffer * fb = m_gbuffer->fb();
 	if (fb != NULL)
-		return fb->glid();
+		return fb->gl_id();
 	return 0;
 }
 
-void NSRenderSystem::setShadowfbo(uint32 fbodir, uint32 fbospot, uint32 fbopoint)
+void nsrender_system::set_shadow_fbo(uint32 fbodir, uint32 fbospot, uint32 fbopoint)
 {
-	mShadowBuf->setfb(nsengine.framebuffer(fbodir), NSShadowBuffer::Direction);
-	mShadowBuf->setfb(nsengine.framebuffer(fbospot), NSShadowBuffer::Spot);
-	mShadowBuf->setfb(nsengine.framebuffer(fbopoint), NSShadowBuffer::Point);
-	mShadowBuf->setdim(NSShadowBuffer::Direction, DEFAULT_DIRLIGHT_SHADOW_W, DEFAULT_DIRLIGHT_SHADOW_H);
-	mShadowBuf->setdim(NSShadowBuffer::Spot, DEFAULT_SPOTLIGHT_SHADOW_W, DEFAULT_SPOTLIGHT_SHADOW_H);
-	mShadowBuf->setdim(NSShadowBuffer::Point, DEFAULT_POINTLIGHT_SHADOW_W, DEFAULT_POINTLIGHT_SHADOW_H);
-	mShadowBuf->init();
+	m_shadow_buf->setfb(nsengine.framebuffer(fbodir), NSShadowBuffer::Direction);
+	m_shadow_buf->setfb(nsengine.framebuffer(fbospot), NSShadowBuffer::Spot);
+	m_shadow_buf->setfb(nsengine.framebuffer(fbopoint), NSShadowBuffer::Point);
+	m_shadow_buf->setdim(NSShadowBuffer::Direction, DEFAULT_DIRLIGHT_SHADOW_W, DEFAULT_DIRLIGHT_SHADOW_H);
+	m_shadow_buf->setdim(NSShadowBuffer::Spot, DEFAULT_SPOTLIGHT_SHADOW_W, DEFAULT_SPOTLIGHT_SHADOW_H);
+	m_shadow_buf->setdim(NSShadowBuffer::Point, DEFAULT_POINTLIGHT_SHADOW_W, DEFAULT_POINTLIGHT_SHADOW_H);
+	m_shadow_buf->init();
 }
 
-void NSRenderSystem::setGBufferfbo(uint32 fbo)
+void nsrender_system::set_gbuffer_fbo(uint32 fbo)
 {
-	mGBuffer->setfb(nsengine.framebuffer(fbo));
-	mGBuffer->setfbdim(uivec2(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y));
-	mGBuffer->init();
+	m_gbuffer->setfb(nsengine.framebuffer(fbo));
+	m_gbuffer->setfbdim(uivec2(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y));
+	m_gbuffer->init();
 }
 
-void NSRenderSystem::setFinalfbo(uint32 fbo)
+void nsrender_system::set_final_fbo(uint32 fbo)
 {
-	mFinalBuf = nsengine.framebuffer(fbo);
-	if (mFinalBuf == NULL)
+	m_final_buf = nsengine.framebuffer(fbo);
+	if (m_final_buf == NULL)
 		return;
 
-	mFinalBuf->setdim(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
-	mFinalBuf->setTarget(NSFrameBuffer::ReadAndDraw);
-	mFinalBuf->bind();
-	mFinalBuf->add(mFinalBuf->create<NSTex2D>("RenderedFrame", NSFrameBuffer::Color, FINAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT));
-	mFinalBuf->add(mGBuffer->depth());
-	mFinalBuf->updateDrawBuffers();
+	m_final_buf->setdim(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
+	m_final_buf->setTarget(NSFrameBuffer::ReadAndDraw);
+	m_final_buf->bind();
+	m_final_buf->add(m_final_buf->create<nstex2d>("RenderedFrame", NSFrameBuffer::Color, FINAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+	m_final_buf->add(m_gbuffer->depth());
+	m_final_buf->updateDrawBuffers();
 }
 
-void NSRenderSystem::_drawTransformFeedbacks()
+void nsrender_system::_draw_xfbs()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 	NSCamComp * camc = cam->get<NSCamComp>();
 
-	XFBDrawSet::iterator drawIter = mXFBDraws.begin();
-	while (drawIter != mXFBDraws.end())
+	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
+	while (drawIter != m_xfb_draws.end())
 	{
 		NSRenderComp * rComp = (*drawIter)->get<NSRenderComp>();
 		NSTFormComp * tComp = (*drawIter)->get<NSTFormComp>();
-		NSMesh * mesh = nsengine.resource<NSMesh>(rComp->meshID());
+		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->meshID());
 		if (mesh == NULL)
 			return;
 
@@ -822,51 +822,51 @@ void NSRenderSystem::_drawTransformFeedbacks()
 		{
 			if (xbdat->mUpdate)
 			{
-				mShaders.mGBufDefaultXFB->bind();
+				m_shaders.xfb_default->bind();
 
 				bufIter->mTFFeedbackObj->bind();
 				glEnable(GL_RASTERIZER_DISCARD);
 				bufIter->mTFFeedbackObj->begin();
 				for (uint32 subI = 0; subI < mesh->count(); ++subI)
 				{
-					NSMesh::SubMesh * subMesh = mesh->submesh(subI);
+					nsmesh::submesh * subMesh = mesh->sub(subI);
 
-					if (subMesh->mNode != NULL)
-						mShaders.mGBufDefaultXFB->setUniform("nodeTransform", subMesh->mNode->mWorldTransform);
+					if (subMesh->node_ != NULL)
+						m_shaders.xfb_default->set_uniform("nodeTransform", subMesh->node_->world_transform);
 					else
-						mShaders.mGBufDefaultXFB->setUniform("nodeTransform", fmat4());
+						m_shaders.xfb_default->set_uniform("nodeTransform", fmat4());
 
 					// Set up all of the uniform inputs
-					subMesh->mVAO.bind();
+					subMesh->vao.bind();
 					tComp->transformBuffer()->bind();
 					for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 					{
-						subMesh->mVAO.add(tComp->transformBuffer(), NSShader::InstTrans + tfInd);
-						subMesh->mVAO.vertexAttribPtr(NSShader::InstTrans + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
-						subMesh->mVAO.vertexAttribDiv(NSShader::InstTrans + tfInd, 1);
+						subMesh->vao.add(tComp->transformBuffer(), nsshader::loc_instance_tform + tfInd);
+						subMesh->vao.vertexAttribPtr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
+						subMesh->vao.vertexAttribDiv(nsshader::loc_instance_tform + tfInd, 1);
 					}
 
 					tComp->transformIDBuffer()->bind();
-					subMesh->mVAO.add(tComp->transformIDBuffer(), NSShader::RefID);
-					subMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
-					subMesh->mVAO.vertexAttribDiv(NSShader::RefID, 1);
+					subMesh->vao.add(tComp->transformIDBuffer(), nsshader::loc_ref_id);
+					subMesh->vao.vertexAttribIPtr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
+					subMesh->vao.vertexAttribDiv(nsshader::loc_ref_id, 1);
 
 					// Draw the stuff without sending the stuff to be rasterized
-					glDrawElementsInstanced(subMesh->mPrimType,
-											static_cast<GLsizei>(subMesh->mIndices.size()),
+					glDrawElementsInstanced(subMesh->primitive_type,
+											static_cast<GLsizei>(subMesh->indices.size()),
 											GL_UNSIGNED_INT,
 											0,
 											bufIter->mInstanceCount);
 					
-					GLError("NSRenderSystem::_drawTransformFeedbacks glDrawElementsInstanced");
+					GLError("nsrender_system::_drawTransformFeedbacks glDrawElementsInstanced");
 
 					tComp->transformBuffer()->bind();
-					subMesh->mVAO.remove(tComp->transformBuffer());
+					subMesh->vao.remove(tComp->transformBuffer());
 
 					tComp->transformIDBuffer()->bind();
-					subMesh->mVAO.remove(tComp->transformIDBuffer());
+					subMesh->vao.remove(tComp->transformIDBuffer());
 
-					subMesh->mVAO.unbind();
+					subMesh->vao.unbind();
 				}
 
 				bufIter->mTFFeedbackObj->end();
@@ -876,21 +876,21 @@ void NSRenderSystem::_drawTransformFeedbacks()
 
 			for (uint32 subI = 0; subI < mesh->count(); ++subI)
 			{
-				NSMesh::SubMesh * subMesh = mesh->submesh(subI);
+				nsmesh::submesh * subMesh = mesh->sub(subI);
 
-				NSMaterial * mat = nsengine.resource<NSMaterial>(rComp->materialID(subI));
+				nsmaterial * mat = nsengine.resource<nsmaterial>(rComp->materialID(subI));
 				if (mat == NULL)
-					mat = mDefaultMaterial;
+					mat = m_default_mat;
 
-				NSMaterialShader * shader = nsengine.resource<NSMaterialShader>(mat->shaderID());
+				nsmaterial_shader * shader = nsengine.resource<nsmaterial_shader>(mat->shader_id());
 				if (shader == NULL)
-					shader = mShaders.mGBufDefaultXBFRender;
+					shader = m_shaders.xfb_render;
 
 				shader->bind();
-				shader->setProjCamMat(camc->projCam());
-				shader->setLightingEnabled(mLightingEnabled);
+				shader->set_proj_cam_mat(camc->projCam());
+				shader->set_lighting_enabled(m_lighting_enabled);
 
-				glCullFace(mat->cullMode());
+				glCullFace(mat->cull_mode());
 
 				if (mat->culling())
 					glEnable(GL_CULL_FACE);
@@ -902,47 +902,47 @@ void NSRenderSystem::_drawTransformFeedbacks()
 				else
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-				shader->setDiffuseMapEnabled(mat->contains(NSMaterial::Diffuse));
-				shader->setOpacityMapEnabled(mat->contains(NSMaterial::Opacity));
-				shader->setNormalMapEnabled(mat->contains(NSMaterial::Normal));
-				shader->setHeightMapEnabled(mat->contains(NSMaterial::Height));
+				shader->set_diffusemap_enabled(mat->contains(nsmaterial::diffuse));
+				shader->set_opacitymap_enabled(mat->contains(nsmaterial::opacity));
+				shader->set_normalmap_enabled(mat->contains(nsmaterial::normal));
+				shader->set_heightmap_enabled(mat->contains(nsmaterial::height));
 
-				NSMaterial::ConstMapIter cIter = mat->begin();
+				nsmaterial::texmap_map_const_iter cIter = mat->begin();
 				while (cIter != mat->end())
 				{
-					NSTexture * t = nsengine.resource<NSTexture>(cIter->second);
+					nstexture * t = nsengine.resource<nstexture>(cIter->second);
 					if (t != NULL)
 						t->enable(cIter->first);
 					else
-						dprint("NSRenderSystem::_drawGeometry Texture id in material " + mat->name() + " does not refer to any valid texture");
+						dprint("nsrender_system::_drawGeometry Texture id in material " + mat->name() + " does not refer to any valid texture");
 					++cIter;
 				}
 
-				shader->setColorMode(mat->colorMode());
-				shader->setFragOutColor(mat->color());
-				shader->setSpecularPower(mat->specularPower());
-				shader->setSpecularColor(mat->specularColor());
-				shader->setSpecularIntensity(mat->specularIntensity());
-				shader->setEntityID((*drawIter)->id());
-				shader->setPluginID((*drawIter)->plugid());
+				shader->set_color_mode(mat->color_mode());
+				shader->set_frag_color_out(mat->color());
+				shader->set_specular_power(mat->specular_power());
+				shader->set_specular_color(mat->specular_color());
+				shader->set_specular_intensity(mat->specular_intensity());
+				shader->set_entity_id((*drawIter)->id());
+				shader->set_plugin_id((*drawIter)->plugin_id());
 
-				if (!subMesh->mHasTexCoords)
-					shader->setColorMode(true);
+				if (!subMesh->has_tex_coords)
+					shader->set_color_mode(true);
 
 				bufIter->mXFBVAO->bind();
-				glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->glid());
-				GLError("NSRenderSystem::_drawTransformFeedbacks glDrawTransformFeedback");
+				glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->gl_id());
+				GLError("nsrender_system::_drawTransformFeedbacks glDrawTransformFeedback");
 				bufIter->mXFBVAO->unbind();
 
 
-				NSMaterial::ConstMapIter eIter = mat->begin();
+				nsmaterial::texmap_map_const_iter eIter = mat->begin();
 				while (eIter != mat->end())
 				{
-					NSTexture * t = nsengine.resource<NSTexture>(eIter->second);
+					nstexture * t = nsengine.resource<nstexture>(eIter->second);
 					if (t != NULL)
 						t->enable(eIter->first);
 					else
-						dprint("NSRenderSystem::_drawGeometry Texture id in material " + mat->name() + " does not refer to any valid texture");
+						dprint("nsrender_system::_drawGeometry Texture id in material " + mat->name() + " does not refer to any valid texture");
 					++eIter;
 				}
 
@@ -956,47 +956,47 @@ void NSRenderSystem::_drawTransformFeedbacks()
 	}
 }
 
-void NSRenderSystem::_drawCall(DCSet::iterator pDCIter)
+void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)
 {
 	// Check to make sure each buffer is allocated before setting the shader attribute : un-allocated buffers
 	// are fairly common because not every mesh has tangents for example.. or normals.. or whatever
 
-	pDCIter->mSubMesh->mVAO.bind();
-	pDCIter->mTransformBuffer->bind();
+	pDCIter->submesh->vao.bind();
+	pDCIter->transform_buffer->bind();
 	for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 	{
-		pDCIter->mSubMesh->mVAO.add(pDCIter->mTransformBuffer, NSShader::InstTrans + tfInd);
-		pDCIter->mSubMesh->mVAO.vertexAttribPtr(NSShader::InstTrans + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-		pDCIter->mSubMesh->mVAO.vertexAttribDiv(NSShader::InstTrans + tfInd, 1);
+		pDCIter->submesh->vao.add(pDCIter->transform_buffer, nsshader::loc_instance_tform + tfInd);
+		pDCIter->submesh->vao.vertexAttribPtr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+		pDCIter->submesh->vao.vertexAttribDiv(nsshader::loc_instance_tform + tfInd, 1);
 	}
 
-	pDCIter->mTransformIDBuffer->bind();
-	pDCIter->mSubMesh->mVAO.add(pDCIter->mTransformIDBuffer, NSShader::RefID);
-	pDCIter->mSubMesh->mVAO.vertexAttribIPtr(NSShader::RefID, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
-	pDCIter->mSubMesh->mVAO.vertexAttribDiv(NSShader::RefID, 1);
-	GLError("NSRenderSystem::_drawCall 1");
+	pDCIter->transform_id_buffer->bind();
+	pDCIter->submesh->vao.add(pDCIter->transform_id_buffer, nsshader::loc_ref_id);
+	pDCIter->submesh->vao.vertexAttribIPtr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
+	pDCIter->submesh->vao.vertexAttribDiv(nsshader::loc_ref_id, 1);
+	GLError("nsrender_system::_drawCall 1");
 	
-	glDrawElementsInstanced(pDCIter->mSubMesh->mPrimType,
-							static_cast<GLsizei>(pDCIter->mSubMesh->mIndices.size()),
+	glDrawElementsInstanced(pDCIter->submesh->primitive_type,
+							static_cast<GLsizei>(pDCIter->submesh->indices.size()),
 							GL_UNSIGNED_INT,
 							0,
-							pDCIter->mNumTransforms);
+							pDCIter->transform_count);
 	
-	GLError("NSRenderSystem::_drawCall 2");
+	GLError("nsrender_system::_drawCall 2");
 
-	pDCIter->mTransformBuffer->bind();
-	pDCIter->mSubMesh->mVAO.remove(pDCIter->mTransformBuffer);
-	pDCIter->mTransformIDBuffer->bind();
-	pDCIter->mSubMesh->mVAO.remove(pDCIter->mTransformIDBuffer);
-	pDCIter->mSubMesh->mVAO.unbind();
+	pDCIter->transform_buffer->bind();
+	pDCIter->submesh->vao.remove(pDCIter->transform_buffer);
+	pDCIter->transform_id_buffer->bind();
+	pDCIter->submesh->vao.remove(pDCIter->transform_id_buffer);
+	pDCIter->submesh->vao.unbind();
 }
 
-void NSRenderSystem::_drawGeometry()
+void nsrender_system::_draw_geometry()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
@@ -1004,13 +1004,13 @@ void NSRenderSystem::_drawGeometry()
 	
 	// Go through each shader in the shader material map.. because each submesh corresponds to exactly one
 	// material we can use this material as the key in to the draw call map minimizing shader switches
-	ShaderMaterialMap::iterator shaderIter = mShaderMatMap.begin();
-	while (shaderIter != mShaderMatMap.end())
+	shader_mat_map::iterator shaderIter = m_shader_mat_map.begin();
+	while (shaderIter != m_shader_mat_map.end())
 	{
-		NSMaterialShader * currentShader = shaderIter->first;
+		nsmaterial_shader * currentShader = shaderIter->first;
 		currentShader->bind();
-		currentShader->setProjCamMat(camc->projCam());
-		currentShader->setLightingEnabled(mLightingEnabled);
+		currentShader->set_proj_cam_mat(camc->projCam());
+		currentShader->set_lighting_enabled(m_lighting_enabled);
 		// Now go through each material that is under the current shader, use the material as a key in the draw call map
 		// to get all the draw calls associated with that material, and then draw everything. If a material for some reason
 		// is not in the shader map then some items wont draw
@@ -1018,7 +1018,7 @@ void NSRenderSystem::_drawGeometry()
 		while (matIter != shaderIter->second.end())
 		{
 
-			glCullFace((*matIter)->cullMode());
+			glCullFace((*matIter)->cull_mode());
 
 			if ((*matIter)->culling())
 				glEnable(GL_CULL_FACE);
@@ -1030,66 +1030,66 @@ void NSRenderSystem::_drawGeometry()
 			else
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-			currentShader->setDiffuseMapEnabled((*matIter)->contains(NSMaterial::Diffuse));
-			currentShader->setOpacityMapEnabled((*matIter)->contains(NSMaterial::Opacity));
-			currentShader->setNormalMapEnabled((*matIter)->contains(NSMaterial::Normal));
-			currentShader->setHeightMapEnabled((*matIter)->contains(NSMaterial::Height));
+			currentShader->set_diffusemap_enabled((*matIter)->contains(nsmaterial::diffuse));
+			currentShader->set_opacitymap_enabled((*matIter)->contains(nsmaterial::opacity));
+			currentShader->set_normalmap_enabled((*matIter)->contains(nsmaterial::normal));
+			currentShader->set_heightmap_enabled((*matIter)->contains(nsmaterial::height));
 
-			NSMaterial::ConstMapIter cIter = (*matIter)->begin();
+			nsmaterial::texmap_map_const_iter cIter = (*matIter)->begin();
 			while (cIter != (*matIter)->end())
 			{
-				NSTexture * t = nsengine.resource<NSTexture>(cIter->second);
+				nstexture * t = nsengine.resource<nstexture>(cIter->second);
 				if (t != NULL)
 					t->enable(cIter->first);
 				else
-					dprint("NSRenderSystem::_drawGeometry Texture id in material " + (*matIter)->name() + " does not refer to any valid texture");
+					dprint("nsrender_system::_drawGeometry Texture id in material " + (*matIter)->name() + " does not refer to any valid texture");
 				++cIter;
 			}
 
-			currentShader->setColorMode((*matIter)->colorMode());
-			currentShader->setFragOutColor((*matIter)->color());
-			currentShader->setSpecularPower((*matIter)->specularPower());
-			currentShader->setSpecularColor((*matIter)->specularColor());
-			currentShader->setSpecularIntensity((*matIter)->specularIntensity());
+			currentShader->set_color_mode((*matIter)->color_mode());
+			currentShader->set_frag_color_out((*matIter)->color());
+			currentShader->set_specular_power((*matIter)->specular_power());
+			currentShader->set_specular_color((*matIter)->specular_color());
+			currentShader->set_specular_intensity((*matIter)->specular_intensity());
 
 			// Finally get the draw calls that go with this material and iterate through all of them
-			DCSet & currentSet = mDrawCallMap[*matIter];
-			DCSet::iterator  dcIter = currentSet.begin();
+			drawcall_set & currentSet = m_drawcall_map[*matIter];
+			drawcall_set::iterator  dcIter = currentSet.begin();
 			while (dcIter != currentSet.end())
 			{
-				currentShader->setEntityID(dcIter->mEntID);
-				currentShader->setPluginID(dcIter->mPlugID);
+				currentShader->set_entity_id(dcIter->entity_id);
+				currentShader->set_plugin_id(dcIter->plugin_id);
 
-				if (!dcIter->mSubMesh->mHasTexCoords)
-					currentShader->setColorMode(true);
+				if (!dcIter->submesh->has_tex_coords)
+					currentShader->set_color_mode(true);
 
-				if (dcIter->mSubMesh->mNode != NULL)
-					currentShader->setNodeTransform(dcIter->mSubMesh->mNode->mWorldTransform);
+				if (dcIter->submesh->node_ != NULL)
+					currentShader->set_node_transform(dcIter->submesh->node_->world_transform);
 				else
-					currentShader->setNodeTransform(fmat4());
+					currentShader->set_node_transform(fmat4());
 
-				if (dcIter->mAnimTransforms != NULL)
+				if (dcIter->anim_transforms != NULL)
 				{
-					currentShader->setHasBones(true);
-					currentShader->setBoneTransforms(*dcIter->mAnimTransforms);
+					currentShader->set_has_bones(true);
+					currentShader->set_bone_transforms(*dcIter->anim_transforms);
 				}
 				else
-					currentShader->setHasBones(false);
+					currentShader->set_has_bones(false);
 
-				currentShader->setHeightMinMax(dcIter->mHeightMinMax);
+				currentShader->set_height_minmax(dcIter->height_minmax);
 
-				_drawCall(dcIter);
+				_draw_call(dcIter);
 				++dcIter;
 			}
-			GLError("NSRenderSystem::df");
-			NSMaterial::ConstMapIter eIter = (*matIter)->begin();
+			GLError("nsrender_system::df");
+			nsmaterial::texmap_map_const_iter eIter = (*matIter)->begin();
 			while (eIter != (*matIter)->end())
 			{
-				NSTexture * t = nsengine.resource<NSTexture>(eIter->second);
+				nstexture * t = nsengine.resource<nstexture>(eIter->second);
 				if (t != NULL)
 					t->disable(eIter->first);
 				else
-					dprint("NSRenderSystem::_drawGeometry Texture id in material " + (*matIter)->name() + " does not refer to any valid texture");
+					dprint("nsrender_system::_drawGeometry Texture id in material " + (*matIter)->name() + " does not refer to any valid texture");
 				++eIter;
 			}
 			++matIter;
@@ -1098,51 +1098,51 @@ void NSRenderSystem::_drawGeometry()
 	}
 }
 
-void NSRenderSystem::_drawSceneToDepth(NSDepthShader * pShader)
+void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 {
 
-	MatDCMap::iterator matIter = mDrawCallMap.begin();
-	while (matIter != mDrawCallMap.end())
+	mat_drawcall_map::iterator matIter = m_drawcall_map.begin();
+	while (matIter != m_drawcall_map.end())
 	{
-		pShader->setHeightMapEnabled(false);
-		NSTexture * tex = nsengine.resource<NSTexture>(matIter->first->mapTextureID(NSMaterial::Height));
+		pShader->set_height_map_enabled(false);
+		nstexture * tex = nsengine.resource<nstexture>(matIter->first->map_tex_id(nsmaterial::height));
 		if (tex != NULL)
 		{
-			pShader->setHeightMapEnabled(true);
-			tex->enable(NSMaterial::Height);
+			pShader->set_height_map_enabled(true);
+			tex->enable(nsmaterial::height);
 		}
 
-		DCSet & currentSet = matIter->second;
-		DCSet::iterator  dcIter = currentSet.begin();
+		drawcall_set & currentSet = matIter->second;
+		drawcall_set::iterator  dcIter = currentSet.begin();
 		while (dcIter != currentSet.end())
 		{
-			if (dcIter->mSubMesh->mPrimType != GL_TRIANGLES)
+			if (dcIter->submesh->primitive_type != GL_TRIANGLES)
 			{
 				++dcIter;
 				continue;
 			}
 
-			if (!dcIter->mCastShadows)
+			if (!dcIter->casts_shadows)
 			{
 				++dcIter;
 				continue;
 			}
 
-			if (dcIter->mSubMesh->mNode != NULL)
-				pShader->setNodeTransform(dcIter->mSubMesh->mNode->mWorldTransform);
+			if (dcIter->submesh->node_ != NULL)
+				pShader->set_node_transform(dcIter->submesh->node_->world_transform);
 			else
-				pShader->setNodeTransform(fmat4());
+				pShader->set_node_transform(fmat4());
 
-			if (dcIter->mAnimTransforms != NULL)
+			if (dcIter->anim_transforms != NULL)
 			{
-				pShader->setHasBones(true);
-				pShader->setBoneTransforms(*dcIter->mAnimTransforms);
+				pShader->set_has_bones(true);
+				pShader->set_bone_transform(*dcIter->anim_transforms);
 			}
 			else
-				pShader->setHasBones(false);
+				pShader->set_has_bones(false);
 
-			pShader->setHeightMinMax(dcIter->mHeightMinMax);
-			_drawCall(dcIter);
+			pShader->set_height_minmax(dcIter->height_minmax);
+			_draw_call(dcIter);
 			++dcIter;
 		}
 		++matIter;
@@ -1150,14 +1150,14 @@ void NSRenderSystem::_drawSceneToDepth(NSDepthShader * pShader)
 }
 
 
-void NSRenderSystem::_drawSceneToDepthXFB(NSShader * pShader)
+void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
 {
-	XFBDrawSet::iterator drawIter = mXFBDraws.begin();
-	while (drawIter != mXFBDraws.end())
+	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
+	while (drawIter != m_xfb_draws.end())
 	{
 		NSRenderComp * rComp = (*drawIter)->get<NSRenderComp>();
 		NSTFormComp * tComp = (*drawIter)->get<NSTFormComp>();
-		NSMesh * mesh = nsengine.resource<NSMesh>(rComp->meshID());
+		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->meshID());
 		if (mesh == NULL)
 			return;
 
@@ -1173,8 +1173,8 @@ void NSRenderSystem::_drawSceneToDepthXFB(NSShader * pShader)
 				for (uint32 subI = 0; subI < mesh->count(); ++subI)
 				{
 					bufIter->mXFBVAO->bind();
-					glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->glid());
-					GLError("NSRenderSystem::_drawSceneToDepthXFB");
+					glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->gl_id());
+					GLError("nsrender_system::_drawSceneToDepthXFB");
 					bufIter->mXFBVAO->unbind();
 				}
 				++bufIter;
@@ -1184,49 +1184,49 @@ void NSRenderSystem::_drawSceneToDepthXFB(NSShader * pShader)
 	}
 }
 
-void NSRenderSystem::_stencilPointLight(NSLightComp * pLight)
+void nsrender_system::_stencil_point_light(NSLightComp * pLight)
 {
-	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
-		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
+		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->mNode != NULL)
-			mShaders.mLightStencilShader->setNodeTransform(cSub->mNode->mWorldTransform);
+		if (cSub->node_ != NULL)
+			m_shaders.light_stencil->set_node_transform(cSub->node_->world_transform);
 		else
-			mShaders.mLightStencilShader->setNodeTransform(fmat4());
+			m_shaders.light_stencil->set_node_transform(fmat4());
 
-		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType,
-					   static_cast<GLsizei>(cSub->mIndices.size()),
+		cSub->vao.bind();
+		glDrawElements(cSub->primitive_type,
+					   static_cast<GLsizei>(cSub->indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->mVAO.unbind();
+		cSub->vao.unbind();
 	}
 }
 
-void NSRenderSystem::_stencilSpotLight(NSLightComp * pLight)
+void nsrender_system::_stencil_spot_light(NSLightComp * pLight)
 {
-	NSMesh * boundingMesh = nsengine.resource<NSMesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
-		NSMesh::SubMesh * cSub = boundingMesh->submesh(i);
+		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->mNode != NULL)
-			mShaders.mLightStencilShader->setNodeTransform(cSub->mNode->mWorldTransform);
+		if (cSub->node_ != NULL)
+			m_shaders.light_stencil->set_node_transform(cSub->node_->world_transform);
 		else
-			mShaders.mLightStencilShader->setNodeTransform(fmat4());
+			m_shaders.light_stencil->set_node_transform(fmat4());
 
-		cSub->mVAO.bind();
-		glDrawElements(cSub->mPrimType,
-					   static_cast<GLsizei>(cSub->mIndices.size()),
+		cSub->vao.bind();
+		glDrawElements(cSub->primitive_type,
+					   static_cast<GLsizei>(cSub->indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->mVAO.unbind();
+		cSub->vao.unbind();
 	}
 }
 
-NSRenderSystem::DrawCall::DrawCall(NSMesh::SubMesh * pSubMesh, 
+nsrender_system::draw_call::draw_call(nsmesh::submesh * pSubMesh, 
 	fmat4array * pAnimTransforms,
 	NSBufferObject * pTransformBuffer,
 	NSBufferObject * pTransformIDBuffer,
@@ -1235,60 +1235,60 @@ NSRenderSystem::DrawCall::DrawCall(NSMesh::SubMesh * pSubMesh,
 	uint32 plugID,
 	uint32 pNumTransforms, 
 	bool pCastShadows) :
-mSubMesh(pSubMesh),
-mAnimTransforms(pAnimTransforms),
-mTransformBuffer(pTransformBuffer),
-mTransformIDBuffer(pTransformIDBuffer),
-mHeightMinMax(heightMinMax),
-mEntID(pEntID),
-mPlugID(plugID),
-mNumTransforms(pNumTransforms),
-mCastShadows(pCastShadows)
+submesh(pSubMesh),
+anim_transforms(pAnimTransforms),
+transform_buffer(pTransformBuffer),
+transform_id_buffer(pTransformIDBuffer),
+height_minmax(heightMinMax),
+entity_id(pEntID),
+plugin_id(plugID),
+transform_count(pNumTransforms),
+casts_shadows(pCastShadows)
 {}
 
-NSRenderSystem::DrawCall::~DrawCall()
+nsrender_system::draw_call::~draw_call()
 {}
 
-bool NSRenderSystem::DrawCall::operator<(const DrawCall & rhs) const
+bool nsrender_system::draw_call::operator<(const draw_call & rhs) const
 {
-	if (mEntID < rhs.mEntID)
+	if (entity_id < rhs.entity_id)
 		return true;
-	else if (mEntID == rhs.mEntID)
-		return mSubMesh < rhs.mSubMesh;
+	else if (entity_id == rhs.entity_id)
+		return submesh < rhs.submesh;
 	return false;
 }
 
-bool NSRenderSystem::DrawCall::operator<=(const DrawCall & rhs) const
+bool nsrender_system::draw_call::operator<=(const draw_call & rhs) const
 {
 	return (*this < rhs || *this == rhs);
 }
 
-bool NSRenderSystem::DrawCall::operator>(const DrawCall & rhs) const
+bool nsrender_system::draw_call::operator>(const draw_call & rhs) const
 {
 	return !(*this <= rhs);
 }
 
-bool NSRenderSystem::DrawCall::operator>=(const DrawCall & rhs) const
+bool nsrender_system::draw_call::operator>=(const draw_call & rhs) const
 {
 	return !(*this < rhs);
 }
 
-bool NSRenderSystem::DrawCall::operator==(const DrawCall & rhs) const
+bool nsrender_system::draw_call::operator==(const draw_call & rhs) const
 {
-	return (mEntID == rhs.mEntID) && (mSubMesh == rhs.mSubMesh);
+	return (entity_id == rhs.entity_id) && (submesh == rhs.submesh);
 }
 
-bool NSRenderSystem::DrawCall::operator!=(const DrawCall & rhs) const
+bool nsrender_system::draw_call::operator!=(const draw_call & rhs) const
 {
 	return !(*this == rhs);
 }
 
-int32 NSRenderSystem::drawPriority()
+int32 nsrender_system::draw_priority()
 {
 	return RENDER_SYS_DRAW_PR;
 }
 
-int32 NSRenderSystem::updatePriority()
+int32 nsrender_system::update_priority()
 {
 	return RENDER_SYS_UPDATE_PR;
 }

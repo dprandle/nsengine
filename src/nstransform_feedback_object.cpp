@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the NSTransformFeedback
 
 NSTransformFeedbackObject::NSTransformFeedbackObject():
 mPrimMode(Triangles),
-NSGLObject(),
+nsgl_object(),
 mUpdate(true)
 {}
 
@@ -27,7 +27,7 @@ void NSTransformFeedbackObject::begin()
 
 void NSTransformFeedbackObject::bind()
 {
-	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, mGLName);
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_gl_name);
 	GLError("NSTransformFeedbackObject::bind");
 }
 
@@ -42,16 +42,16 @@ NSTransformFeedbackObject::PrimitiveMode NSTransformFeedbackObject::primitive()
 	return mPrimMode;
 }
 
-void NSTransformFeedbackObject::initGL()
+void NSTransformFeedbackObject::init_gl()
 {
-	glGenTransformFeedbacks(1, &mGLName);
+	glGenTransformFeedbacks(1, &m_gl_name);
 	GLError("NSTransformFeedbackObject::initGL");
 }
 
 void NSTransformFeedbackObject::release()
 {
-	glDeleteTransformFeedbacks(1, &mGLName);
-	mGLName = 0;
+	glDeleteTransformFeedbacks(1, &m_gl_name);
+	m_gl_name = 0;
 	GLError("NSTransformFeedbackObject::release");
 }
 

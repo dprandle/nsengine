@@ -1,9 +1,9 @@
 /*! 
 	\file nsmatmanager.cpp
 	
-	\brief Header file for NSMatManager class
+	\brief Header file for nsmat_manager class
 
-	This file contains all of the neccessary definitions for the NSMatManager class.
+	This file contains all of the neccessary definitions for the nsmat_manager class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -15,47 +15,47 @@
 #include <nstex_manager.h>
 #include <nsengine.h>
 
-NSMatManager::NSMatManager():
-	NSResManager()
+nsmat_manager::nsmat_manager():
+	nsres_manager()
 {
-	setLocalDirectory(LOCAL_MATERIAL_DIR_DEFAULT);
-	setSaveMode(NSResManager::Text);
+	set_local_dir(LOCAL_MATERIAL_DIR_DEFAULT);
+	set_save_mode(nsres_manager::text);
 }
 
-NSMatManager::~NSMatManager()
+nsmat_manager::~nsmat_manager()
 {}
 
-NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir)
+nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir)
 {
-	NSMaterial * mat = create(pMaterialName);
-	NSTexManager * texmanager = nsengine.manager<NSTexManager>(mPlugID);
+	nsmaterial * mat = create(pMaterialName);
+	nstex_manager * texmanager = nsengine.manager<nstex_manager>(m_plugin_id);
 	
 	bool ret = false;
 
 	aiColor3D colorDif(0.0f, 0.0f, 0.0f);
 	pAIMat->Get(AI_MATKEY_COLOR_DIFFUSE, colorDif);
 	if (!(colorDif.r == 0.0f && colorDif.g == 0.0f && colorDif.b == 0.0f))
-		mat->setColor(fvec4(colorDif.r, colorDif.g, colorDif.b, mat->color().w));
+		mat->set_color(fvec4(colorDif.r, colorDif.g, colorDif.b, mat->color().w));
 
 	aiColor3D colorSpec(0.0f, 0.0f, 0.0f);
 	pAIMat->Get(AI_MATKEY_COLOR_SPECULAR, colorSpec);
 	if (!(colorSpec.r == 0.0f && colorSpec.g == 0.0f && colorSpec.b == 0.0f))
-		mat->setSpecularColor(fvec3(colorSpec.r, colorSpec.g, colorSpec.b));
+		mat->set_specular_color(fvec3(colorSpec.r, colorSpec.g, colorSpec.b));
 
 	int32 wf = 0;
 	pAIMat->Get(AI_MATKEY_ENABLE_WIREFRAME, wf);
-	mat->enableWireframe(wf && 1);
+	mat->enable_wireframe(wf && 1);
 
 	int32 ts = 0;
 	pAIMat->Get(AI_MATKEY_TWOSIDED, ts);
-	mat->enableCulling(ts && 1);
+	mat->enable_culling(ts && 1);
 
 	float shininess = 0.0f;
 	float shininessStr = 0.0f;
 	pAIMat->Get(AI_MATKEY_SHININESS, shininess);
 	pAIMat->Get(AI_MATKEY_SHININESS_STRENGTH, shininessStr);
-	mat->setSpecularPower(shininess);
-	mat->setSpecularIntensity(shininessStr);
+	mat->set_specular_power(shininess);
+	mat->set_specular_intensity(shininessStr);
 
 	if (pAIMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
 	{
@@ -70,13 +70,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Diffuse, uivec2(tex->plugid(), tex->id()));
+					mat->set_map_tex_id(nsmaterial::diffuse, uivec2(tex->plugin_id(), tex->id()));
 					ret = true;
 				}
 			}
@@ -95,13 +95,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Specular, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::spec, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -120,13 +120,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Ambient, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::ambient, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -145,13 +145,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Emissive, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::emmisive, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -170,13 +170,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Height, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::height, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -195,13 +195,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Normal, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::normal, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -220,13 +220,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Shininess, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::shininess, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -245,13 +245,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Opacity, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::opacity, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -270,13 +270,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Displacement, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::displacement, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -295,13 +295,13 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Light, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::light, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -320,20 +320,20 @@ NSMaterial* NSMatManager::assimpLoadMaterial(const nsstring & pMaterialName, con
 			if (extPos != nsstring::npos)
 			{
 				lookName = texName.substr(0, extPos);
-				NSTexture * tex = texmanager->loadImage(pTexDir + texName);
+				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
 					tex = texmanager->get(lookName);
 
 				if (tex != NULL)
 				{
-					mat->setMapTextureID(NSMaterial::Reflection, uivec2(tex->plugid(),tex->id()));
+					mat->set_map_tex_id(nsmaterial::reflection, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
 		}
 	}
 	if (!ret)
-		mat->setColorMode(true);
+		mat->set_color_mode(true);
 
 	return mat;
 }

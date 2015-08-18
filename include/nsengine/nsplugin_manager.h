@@ -1,117 +1,117 @@
 /*!
 \file nsplugin_manager.h
 
-\brief Header file for NSPluginManager class
+\brief Header file for nsplugin_manager class
 
-This file contains all of the neccessary declarations for the NSPluginManager class.
+This file contains all of the neccessary declarations for the nsplugin_manager class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSPLUGINMANAGER_H
-#define NSPLUGINMANAGER_H
+#ifndef NSPLUGIN_MANAGER_H
+#define NSPLUGIN_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsglobal.h>
 #include <nsplugin.h>
 
-class NSPluginManager : public NSResManager
+class nsplugin_manager : public nsres_manager
 {
 public:
-	using NSResManager::save;
-	NSPluginManager();
-	~NSPluginManager();
+	using nsres_manager::save;
+	nsplugin_manager();
+	~nsplugin_manager();
 
-	virtual bool add(NSResource * res);
+	virtual bool add(nsresource * res);
 	
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSPlugin * create(const nsstring & resName)
+	virtual nsplugin * create(const nsstring & res_name)
 	{
-		return create<NSPlugin>(resName); // Create 2d texture by default
+		return create<nsplugin>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSPlugin * get(const T & resname)
+	nsplugin * get(const T & res_name)
 	{
-		return get<NSPlugin>(resname);
+		return get<nsplugin>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSPlugin * load(const nsstring & fname)
+	nsplugin * load(const nsstring & fname)
 	{
-		return load<NSPlugin>(fname);
+		return load<nsplugin>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSPlugin * remove(const T & rname)
+	nsplugin * remove(const T & res_name)
 	{
-		return remove<NSPlugin>(rname);
+		return remove<nsplugin>(res_name);
 	}
 
-	NSPlugin * active();
+	nsplugin * active();
 	
 	template<class T>
 	bool bind(const T & name)
 	{
-		NSPlugin * plug = get(name);
+		nsplugin * plug = get(name);
 		return bind(plug);
 	}
 
-	bool bind(NSPlugin * plg);
+	bool bind(nsplugin * plg);
 		
-	void setPluginDirectory(const nsstring & dir);
+	void set_plugin_dir(const nsstring & dir);
 
-	const nsstring & pluginDirectory();
+	const nsstring & plugin_dir();
 
-	void setResourceDirectory(const nsstring & pDirectory);
+	void set_res_dir(const nsstring & pDirectory);
 
-	const nsstring & resourceDirectory();
+	const nsstring & res_dir();
 
 	template<class T>
 	bool unbind(const T & name)
 	{
-		NSPlugin * plg = get(name);
+		nsplugin * plg = get(name);
 		return unbind(plg);
 	}
 
-	bool unbind(NSPlugin * plg);
+	bool unbind(nsplugin * plg);
 
 	template<class T>
-	void setActive(const T & name)
+	void set_active(const T & name)
 	{
-		NSPlugin * plg = get(name);
-		setActive(plg);
+		nsplugin * plg = get(name);
+		set_active(plg);
 	}
 
-	void setActive(NSPlugin * plg);
+	void set_active(nsplugin * plg);
 	
 private:
-	uint32 mActivePlugin;
-	nsstring mResourceDirForOwnedPlugs;
+	uint32 m_active_plugin_id;
+	nsstring m_owned_plugins_res_dir;
 };
 
 #endif

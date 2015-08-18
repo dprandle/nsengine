@@ -1,13 +1,13 @@
 #include <nsinput_map_manager.h>
 
 
-NSInputMapManager::NSInputMapManager()
+nsinput_map_manager::nsinput_map_manager()
 {
-	setLocalDirectory(LOCAL_INPUT_DIR_DEFAULT);
-	setSaveMode(Text);
+	set_local_dir(LOCAL_INPUT_DIR_DEFAULT);
+	set_save_mode(text);
 }
 
-NSInputMapManager::~NSInputMapManager()
+nsinput_map_manager::~nsinput_map_manager()
 {
 	
 }

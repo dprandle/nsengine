@@ -17,7 +17,7 @@ This file contains all of the neccessary declartations for the NSSystem class.
 #include <nsevent_handler.h>
 
 class NSTimer;
-class NSScene;
+class nsscene;
 class NSEvent;
 
 class NSSystem : public NSEventHandler
@@ -36,21 +36,21 @@ public:
 
 	virtual void update() = 0;
 
-	virtual int32 drawPriority();
+	virtual int32 draw_priority();
 
-	virtual int32 updatePriority() = 0;
+	virtual int32 update_priority() = 0;
 
 	uint32 type();
 
   protected:
 	
-	void addTriggerHash(uint32 key, const nsstring & trigname);
-	void removeTriggerHash(uint32 key);
-	uint32 triggerHash(uint32 key);
+	void add_trigger_hash(uint32 key, const nsstring & trigname);
+	void remove_trigger_hash(uint32 key);
+	uint32 trigger_hash(uint32 key);
 	
   private:
-	uint32uintu_map mHashedInputTriggers;
-	uint32 mHashedType;
+	uint32uintu_map m_hashed_input_triggers;
+	uint32 m_hashed_type;
 };
 
 #endif

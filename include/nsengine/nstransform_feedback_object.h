@@ -18,7 +18,7 @@ This file contains all of the neccessary declarations for the NSTransformFeedbac
 #include <vector>
 #include <nstexture.h>
 
-class NSTransformFeedbackObject : public NSGLObject
+class NSTransformFeedbackObject : public nsgl_object
 {
 public:
 
@@ -33,7 +33,7 @@ public:
 	void bind();
 	void end();
 	PrimitiveMode primitive();
-	void initGL();
+	void init_gl();
 	void release();
 	void setPrimitive(PrimitiveMode pMode);
 	void setUpdate(bool pUpdate);

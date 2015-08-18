@@ -1,76 +1,76 @@
 /*! 
 	\file nsmat_manager.h
 	
-	\brief Header file for NSMatManager class
+	\brief Header file for nsmat_manager class
 
-	This file contains all of the neccessary declarations for the NSMatManager class.
+	This file contains all of the neccessary declarations for the nsmat_manager class.
 
 	\author Daniel Randle
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSMATERIALMANAGER_H
-#define NSMATERIALMANAGER_H
+#ifndef NSMAT_MANAGER_H
+#define NSMAT_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsmaterial.h>
 
 struct aiMaterial;
 
-class NSMatManager : public NSResManager
+class nsmat_manager : public nsres_manager
 {
 public:
-	NSMatManager();
-	~NSMatManager();
+	nsmat_manager();
+	~nsmat_manager();
 
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & resName)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(resName);
 	}
 
-	virtual NSMaterial * create(const nsstring & resName)
+	virtual nsmaterial * create(const nsstring & resName)
 	{
-		return create<NSMaterial>(resName);
+		return create<nsmaterial>(resName);
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & rname)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(rname);
 	}
 	
 	template<class T>
-	NSMaterial * get(const T & resname)
+	nsmaterial * get(const T & resname)
 	{
-		return get<NSMaterial>(resname);
+		return get<nsmaterial>(resname);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSMaterial * load(const nsstring & fname)
+	nsmaterial * load(const nsstring & fname)
 	{
-		return load<NSMaterial>(fname);
+		return load<nsmaterial>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & rname)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(rname);
 	}
 
 	template<class T >
-	NSMaterial * remove(const T & rname)
+	nsmaterial * remove(const T & rname)
 	{
-		return remove<NSMaterial>(rname);
+		return remove<nsmaterial>(rname);
 	}
 
-	NSMaterial* assimpLoadMaterial(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir="");
+	nsmaterial * assimp_load_material(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir="");
 
 };
 

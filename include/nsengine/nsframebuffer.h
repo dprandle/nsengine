@@ -19,11 +19,11 @@
 #include <nstexture.h>
 #include <nsengine.h>
 
-class NSFrameBuffer : public NSGLObject
+class NSFrameBuffer : public nsgl_object
 {
 public:
 
-	class NSRenderBuffer : public NSGLObject
+	class NSRenderBuffer : public nsgl_object
 	{
 	public:
 
@@ -41,7 +41,7 @@ public:
 
 		uint32 multisample() const;
 
-		void initGL();
+		void init_gl();
 
 		void release();
 
@@ -51,7 +51,7 @@ public:
 
 		void setdim(uint32 w, uint32 h);
 
-		void setInternalFormat(int32 pInternalFormat);
+		void set_internal_format(int32 pInternalFormat);
 
 		void unbind();
 
@@ -80,7 +80,7 @@ public:
 		~Attachment();
 		bool valid();
 
-		NSTexture * mTexture;
+		nstexture * mTexture;
 		NSRenderBuffer * mRenderBuffer;
 		AttachmentPoint mAttPoint;
 		uint32 mTexUnit;
@@ -106,12 +106,12 @@ public:
 		TexType * tex = new TexType();
 
 		// Set up the texture according to the format provided in the function arguements
-		tex->initGL();
+		tex->init_gl();
 		tex->rename(pName);
-		tex->setFormat(pFormat);
-		tex->setInternalFormat(pInternalFormat);
-		tex->setPixelDataType(pPixelDataType);
-		tex->setdim(mDim);
+		tex->set_format(pFormat);
+		tex->set_internal_format(pInternalFormat);
+		tex->set_pixel_data_type(pPixelDataType);
+		tex->resize(mDim);
 		tex->bind();
 		// Fill the texture with NULL data
 		tex->allocate(NULL);
@@ -120,7 +120,7 @@ public:
 		Attachment * att = new Attachment();
 		att->mAttPoint = pAttPoint;
 		att->mTexture = tex;
-		att->mOwningFB = mGLName;
+		att->mOwningFB = m_gl_name;
 		att->mTexUnit = pTexUnit;
 
 		if (!add(att, true))
@@ -147,13 +147,13 @@ public:
 
 	bool has(AttachmentPoint pAttPoint);
 
-	virtual void initGL();
+	virtual void init_gl();
 
 	virtual void release();
 
 	virtual void resize(uint32 w, uint32 h=0, uint32 layers=0);
 
-	bool setCubeface(AttachmentPoint pAttPoint, NSTexCubeMap::CubeFace pFace);
+	bool setCubeface(AttachmentPoint pAttPoint, nstex_cubemap::cube_face pFace);
 
 	void setDrawBuffer(AttachmentPoint pAttPoint);
 
@@ -196,7 +196,7 @@ public:
 
 	void enable(const MapType & pMType);
 
-	NSTexture * get(const MapType & pMap);
+	nstexture * get(const MapType & pMap);
 
 	const uivec2 & dim(const MapType & pMap);
 
@@ -214,7 +214,7 @@ public:
 
 	void setdim(const MapType & pMap, uint32 w, uint32 h);
 
-	void setPointface(const NSTexCubeMap::CubeFace & pFace);
+	void setPointface(const nstex_cubemap::cube_face & pFace);
 
 private:
 	NSFrameBuffer * mSpotBuf;

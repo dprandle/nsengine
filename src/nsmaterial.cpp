@@ -6,7 +6,7 @@ File:
 	nsmaterial.cpp
 
 Description:
-	This file contains the definition for the NSMaterial class along with any helper functions
+	This file contains the definition for the nsmaterial class along with any helper functions
 	that the class may use
 *--------------------------------------------------------------------------------------------------*/
 
@@ -18,96 +18,96 @@ Description:
 #include <nsshader_manager.h>
 #include <nstex_manager.h>
 
-NSMaterial::NSMaterial():
-	mAlphaBlend(false),
-	mMatShaderID(0),
-	mColor(1.0f,1.0f,1.0f,1.0f),
-	mColorMode(false),
-	mSpecComp(),
-	mTextureMaps(),
-	mCullEnabled(true),
-	mCullMode(GL_BACK),
-	mWireframe(false)
+nsmaterial::nsmaterial():
+	m_alpha_blend(false),
+	m_shader_id(0),
+	m_color(1.0f,1.0f,1.0f,1.0f),
+	m_color_mode(false),
+	m_spec_comp(),
+	m_tex_maps(),
+	m_culling_enabled(true),
+	m_cull_mode(GL_BACK),
+	m_wireframe(false)
 {
-	setExtension(DEFAULT_MAT_EXTENSION);
+	set_ext(DEFAULT_MAT_EXTENSION);
 }
 
-NSMaterial::~NSMaterial()
+nsmaterial::~nsmaterial()
 {}
 
-NSMaterial::MapIter NSMaterial::begin()
+nsmaterial::texmap_map_iter nsmaterial::begin()
 {
-	return mTextureMaps.begin();
+	return m_tex_maps.begin();
 }
 
-NSMaterial::ConstMapIter NSMaterial::begin() const
+nsmaterial::texmap_map_const_iter nsmaterial::begin() const
 {
-	return mTextureMaps.begin();
+	return m_tex_maps.begin();
 }
 
-void NSMaterial::changeSpecular(float pPowAmount, float pIntensityAmount)
+void nsmaterial::change_specular(float pPowAmount, float pIntensityAmount)
 {
-	changeSpecularPower(pPowAmount);
-	changeSpecularIntensity(pIntensityAmount);
+	change_specular_power(pPowAmount);
+	change_specular_intensity(pIntensityAmount);
 }
 
-void NSMaterial::changeSpecularIntensity(float pAmount)
+void nsmaterial::change_specular_intensity(float pAmount)
 {
-	mSpecComp.mIntensity += pAmount;
+	m_spec_comp.intensity += pAmount;
 }
 
-void NSMaterial::changeSpecularPower(float pAmount)
+void nsmaterial::change_specular_power(float pAmount)
 {
-	mSpecComp.mPower += pAmount;
+	m_spec_comp.power += pAmount;
 }
 
-void NSMaterial::clear()
+void nsmaterial::clear()
 {
-	mTextureMaps.clear();
+	m_tex_maps.clear();
 }
 
-bool NSMaterial::contains(const MapType & pMType)
+bool nsmaterial::contains(const map_type & pMType)
 {
-	auto iter = mTextureMaps.find(pMType);
-	return (iter != mTextureMaps.end());
+	auto iter = m_tex_maps.find(pMType);
+	return (iter != m_tex_maps.end());
 }
 
-void NSMaterial::enableCulling(bool pEnable)
+void nsmaterial::enable_culling(bool pEnable)
 {
-	mCullEnabled = pEnable;
+	m_culling_enabled = pEnable;
 }
 
-void NSMaterial::enableWireframe(bool pEnable)
+void nsmaterial::enable_wireframe(bool pEnable)
 {
-	mWireframe = pEnable;
+	m_wireframe = pEnable;
 }
 
-NSMaterial::MapIter NSMaterial::end()
+nsmaterial::texmap_map_iter nsmaterial::end()
 {
-	return mTextureMaps.end();
+	return m_tex_maps.end();
 }
 
-NSMaterial::ConstMapIter NSMaterial::end() const
+nsmaterial::texmap_map_const_iter nsmaterial::end() const
 {
-	return mTextureMaps.end();
+	return m_tex_maps.end();
 }
 
-const fvec4 & NSMaterial::color()
+const fvec4 & nsmaterial::color()
 {
-	return mColor;
+	return m_color;
 }
 
-const GLenum & NSMaterial::cullMode() const
+const GLenum & nsmaterial::cull_mode() const
 {
-	return mCullMode;
+	return m_cull_mode;
 }
 
-bool NSMaterial::colorMode()
+bool nsmaterial::color_mode()
 {
-	return mColorMode;
+	return m_color_mode;
 }
 
-void NSMaterial::pup(NSFilePUPer * p)
+void nsmaterial::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -121,54 +121,54 @@ void NSMaterial::pup(NSFilePUPer * p)
 	}
 }
 
-uivec2 NSMaterial::mapTextureID(MapType pMapType)
+uivec2 nsmaterial::map_tex_id(map_type pMapType)
 {
-	TexMap::iterator iter = mTextureMaps.find(pMapType);
-	if (iter != mTextureMaps.end())
+	texmap_map::iterator iter = m_tex_maps.find(pMapType);
+	if (iter != m_tex_maps.end())
 		return iter->second;
 	return uivec2();
 }
 
-const uivec2 & NSMaterial::shaderID()
+const uivec2 & nsmaterial::shader_id()
 {
-	return mMatShaderID;
+	return m_shader_id;
 }
 
-const NSMaterial::SpecularComp & NSMaterial::specular() const
+const nsmaterial::specular_comp & nsmaterial::specular() const
 {
-	return mSpecComp;
+	return m_spec_comp;
 }
 
-const fvec3 & NSMaterial::specularColor() const
+const fvec3 & nsmaterial::specular_color() const
 {
-	return mSpecComp.mColor;
+	return m_spec_comp.color;
 }
 
-float NSMaterial::specularPower() const
+float nsmaterial::specular_power() const
 {
-	return mSpecComp.mPower;
+	return m_spec_comp.power;
 }
 
-float NSMaterial::specularIntensity() const
+float nsmaterial::specular_intensity() const
 {
-	return mSpecComp.mIntensity;
+	return m_spec_comp.intensity;
 }
 
-const NSMaterial::TexMap & NSMaterial::texMaps() const
+const nsmaterial::texmap_map & nsmaterial::tex_maps() const
 {
-	return mTextureMaps;
+	return m_tex_maps;
 }
 
 /*!
 Get the other resources that this Material uses. This includes all texture maps.
 */
-uivec2array NSMaterial::resources()
+uivec2array nsmaterial::resources()
 {
 	uivec2array ret;
 
 	// add all texture maps that are available
-	auto iter = mTextureMaps.begin();
-	while (iter != mTextureMaps.end())
+	auto iter = m_tex_maps.begin();
+	while (iter != m_tex_maps.end())
 	{
 		if (iter->second != 0) // only add if not equal to 0
 			ret.push_back(iter->second);
@@ -176,40 +176,40 @@ uivec2array NSMaterial::resources()
 	}
 
 	// Add the shader and all resources shader may use
-	if (mMatShaderID != 0)
-		ret.push_back(mMatShaderID);
+	if (m_shader_id != 0)
+		ret.push_back(m_shader_id);
 
 	return ret;
 }
 
-void NSMaterial::init()
+void nsmaterial::init()
 {
 	// do nothing
 }
 
-bool NSMaterial::alphaBlend()
+bool nsmaterial::alpha_blend()
 {
-	return mAlphaBlend;
+	return m_alpha_blend;
 }
 
-bool NSMaterial::culling() const
+bool nsmaterial::culling() const
 {
-	return mCullEnabled;
+	return m_culling_enabled;
 }
 
-bool NSMaterial::wireframe() const
+bool nsmaterial::wireframe() const
 {
-	return mWireframe;
+	return m_wireframe;
 }
 
 /*!
 This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
 is then it will update the handle
 */
-void NSMaterial::nameChange(const uivec2 & oldid, const uivec2 newid)
+void nsmaterial::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	TexMap::iterator iter = mTextureMaps.begin();
-	while (iter != mTextureMaps.end())
+	texmap_map::iterator iter = m_tex_maps.begin();
+	while (iter != m_tex_maps.end())
 	{
 		if (iter->second.x == oldid.x)
 		{
@@ -220,86 +220,86 @@ void NSMaterial::nameChange(const uivec2 & oldid, const uivec2 newid)
 		++iter;
 	}
 
-	if (mMatShaderID.x == oldid.x)
+	if (m_shader_id.x == oldid.x)
 	{
-		mMatShaderID.x = newid.x;
-		if (mMatShaderID.y == oldid.y)
-			mMatShaderID.y = newid.y;
+		m_shader_id.x = newid.x;
+		if (m_shader_id.y == oldid.y)
+			m_shader_id.y = newid.y;
 	}
 }
 
-bool NSMaterial::removeTextureMap(MapType pMapType)
+bool nsmaterial::remove_tex_map(map_type pMapType)
 {
-	return mTextureMaps.erase(pMapType) && 1;
+	return m_tex_maps.erase(pMapType) && 1;
 }
 
-void NSMaterial::setAlphaBlend(bool pBlend)
+void nsmaterial::set_alpha_blend(bool pBlend)
 {
-	mAlphaBlend = pBlend;
+	m_alpha_blend = pBlend;
 }
 
-void NSMaterial::setCullMode(GLenum pMode)
+void nsmaterial::set_cull_mode(GLenum pMode)
 {
-	mCullMode = pMode;
+	m_cull_mode = pMode;
 }
 
-void NSMaterial::setColor(const fvec4 & pColor)
+void nsmaterial::set_color(const fvec4 & pColor)
 {
-	mColor = pColor;
+	m_color = pColor;
 }
 
-void NSMaterial::setColorMode(bool pColorMode)
+void nsmaterial::set_color_mode(bool pColorMode)
 {
-	mColorMode = pColorMode;
+	m_color_mode = pColorMode;
 }
 
-void NSMaterial::setShaderID(const uivec2 & resID)
+void nsmaterial::set_shader_id(const uivec2 & resID)
 {
-	mMatShaderID = resID;
+	m_shader_id = resID;
 }
 
-void NSMaterial::setSpecular(const SpecularComp & pSpecComp)
+void nsmaterial::set_specular(const specular_comp & pSpecComp)
 {
-	mSpecComp = pSpecComp;
+	m_spec_comp = pSpecComp;
 }
 
-void NSMaterial::setSpecular(float pPower, float pIntensity,const fvec3 & pColor)
+void nsmaterial::set_specular(float pPower, float pIntensity,const fvec3 & pColor)
 {
-	setSpecularPower(pPower);
-	setSpecularIntensity(pIntensity);
-	setSpecularColor(pColor);
+	set_specular_power(pPower);
+	set_specular_intensity(pIntensity);
+	set_specular_color(pColor);
 }
 
-void NSMaterial::setSpecularColor(const fvec3 & pColor)
+void nsmaterial::set_specular_color(const fvec3 & pColor)
 {
-	mSpecComp.mColor = pColor;
+	m_spec_comp.color = pColor;
 }
 
-void NSMaterial::setSpecularPower(float pPower)
+void nsmaterial::set_specular_power(float pPower)
 {
-	mSpecComp.mPower = pPower;
+	m_spec_comp.power = pPower;
 }
 
-void NSMaterial::setSpecularIntensity(float pIntensity)
+void nsmaterial::set_specular_intensity(float pIntensity)
 {
-	mSpecComp.mIntensity = pIntensity;
+	m_spec_comp.intensity = pIntensity;
 }
 
-bool NSMaterial::setMapTextureID(MapType pMapType, const uivec2 & pID, bool pOverwrite)
+bool nsmaterial::set_map_tex_id(map_type pMapType, const uivec2 & pID, bool pOverwrite)
 {
-	TexMap::iterator iter = mTextureMaps.find(pMapType);
-	if (iter != mTextureMaps.end())
+	texmap_map::iterator iter = m_tex_maps.find(pMapType);
+	if (iter != m_tex_maps.end())
 	{
 		if (pOverwrite)
 		{
-			mTextureMaps.erase(iter);
-			mTextureMaps.emplace(pMapType, pID);
+			m_tex_maps.erase(iter);
+			m_tex_maps.emplace(pMapType, pID);
 			return true;
 		}
 		else
 			return false;
 	}
 
-	mTextureMaps.emplace(pMapType, pID);
+	m_tex_maps.emplace(pMapType, pID);
 	return true;
 }

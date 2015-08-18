@@ -13,6 +13,7 @@ copy_dirs()
     cp -r tests/import bin/$PLATFORM 
     cp -r tests/plugins bin/$PLATFORM
     cp -r tests/resources bin/$PLATFORM 
+    cp -r tests/logs bin/$PLATFORM 
 }
 
 build()

@@ -1,9 +1,9 @@
 /*! 
 	\file nsentity.cpp
 	
-	\brief Definition file for NSEntity class
+	\brief Definition file for nsentity class
 
-	This file contains all of the neccessary definitions for the NSEntity class.
+	This file contains all of the neccessary definitions for the nsentity class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -17,13 +17,13 @@
 #include <nsfactory.h>
 #include <nsengine.h>
 
-NSEntity::NSEntity() :mComponents(), NSResource()
+nsentity::nsentity() :m_components(), nsresource()
 {
-	mComponents.clear();
-	setExtension(DEFAULT_ENTITY_EXTENSION);
+	m_components.clear();
+	set_ext(DEFAULT_ENTITY_EXTENSION);
 }
 
-NSEntity::NSEntity(NSEntity & toCopy) :mComponents(), NSResource()
+nsentity::nsentity(nsentity & toCopy) :m_components(), nsresource()
 {
 	auto iter = toCopy.begin();
 	while (iter != toCopy.end())
@@ -33,12 +33,12 @@ NSEntity::NSEntity(NSEntity & toCopy) :mComponents(), NSResource()
 	}
 }
 
-NSEntity::~NSEntity()
+nsentity::~nsentity()
 {
 	clear();
 }
 
-bool NSEntity::add(NSComponent * pComp)
+bool nsentity::add(NSComponent * pComp)
 {
 	if (pComp == NULL)
 		return false;
@@ -46,21 +46,21 @@ bool NSEntity::add(NSComponent * pComp)
 	uint32 hashed_type = pComp->type();
 	if (hashed_type == 0)
 	{
-		dprint(nsstring("Cannot add component with type ") + nsengine.guid(hashed_type) + nsstring(" to Entity ") + mName +
+		dprint(nsstring("Cannot add component with type ") + nsengine.guid(hashed_type) + nsstring(" to Entity ") + m_name +
 			   nsstring(": No hash_id found"));
 		return false;
 	}
 	
-	auto ret = mComponents.emplace(hashed_type, pComp);
+	auto ret = m_components.emplace(hashed_type, pComp);
 	if (ret.second)
 	{
 		pComp->setOwner(this);
-		updateScene();
+		update_scene();
 	}
 	return ret.second;
 }
 
-bool NSEntity::copy(NSComponent * toCopy, bool overwrite)
+bool nsentity::copy(NSComponent * toCopy, bool overwrite)
 {
 	if (toCopy == NULL)
 		return false;
@@ -83,34 +83,34 @@ bool NSEntity::copy(NSComponent * toCopy, bool overwrite)
 	return true;
 }
 
-void NSEntity::clear()
+void nsentity::clear()
 {
-	auto iter = mComponents.begin();
-	while (iter != mComponents.end())
+	auto iter = m_components.begin();
+	while (iter != m_components.end())
 	{
 		delete iter->second;
-		iter = mComponents.erase(iter);
+		iter = m_components.erase(iter);
 	}
-	updateScene();
+	update_scene();
 }
 
-NSEntity::CompSet::iterator NSEntity::begin()
+nsentity::comp_set::iterator nsentity::begin()
 {
-	return mComponents.begin();
+	return m_components.begin();
 }
 
-NSEntity::CompSet::iterator NSEntity::end()
+nsentity::comp_set::iterator nsentity::end()
 {
-	return mComponents.end();
+	return m_components.end();
 }
 
-NSComponent * NSEntity::create(uint32 type_id)
+NSComponent * nsentity::create(uint32 type_id)
 {
 	NSComponent * comp_t = nsengine.factory<NSCompFactory>(type_id)->create();
 	if (!add(comp_t))
 	{
-		dprint(nsstring("NSEntity::createComponent - Failed adding comp_t type ") + nsengine.guid(type_id) +
-			   nsstring(" to Entity ") + mName);
+		dprint(nsstring("nsentity::createComponent - Failed adding comp_t type ") + nsengine.guid(type_id) +
+			   nsstring(" to Entity ") + m_name);
 		delete comp_t;
 		return NULL;
 	}
@@ -118,31 +118,31 @@ NSComponent * NSEntity::create(uint32 type_id)
 	return comp_t;
 }
 
-NSComponent * NSEntity::create(const nsstring & guid)
+NSComponent * nsentity::create(const nsstring & guid)
 {
 	return create(hash_id(guid));
 }
 
-bool NSEntity::del(const nsstring & guid)
+bool nsentity::del(const nsstring & guid)
 {
 	return del(hash_id(guid));
 }
 
-bool NSEntity::del(uint32 type_id)
+bool nsentity::del(uint32 type_id)
 {
 	NSComponent * cmp = remove(type_id);
 	if (cmp != NULL) // Log delete
 	{
 		delete cmp;
-		updateScene();
-		dprint("NSEntity::del - Deleting \"" + nsengine.guid(type_id) + "\" from Entity " + mName + "\"");
+		update_scene();
+		dprint("nsentity::del - Deleting \"" + nsengine.guid(type_id) + "\" from Entity " + m_name + "\"");
 		return true;
 	}
-	dprint("NSEntity::del - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + mName + "\"");
+	dprint("nsentity::del - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + m_name + "\"");
 	return false;
 }
 
-void NSEntity::pup(NSFilePUPer * p)
+void nsentity::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -156,31 +156,31 @@ void NSEntity::pup(NSFilePUPer * p)
 	}
 }
 
-uint32 NSEntity::count()
+uint32 nsentity::count()
 {
-	return static_cast<uint32>(mComponents.size());
+	return static_cast<uint32>(m_components.size());
 }
 
-NSComponent * NSEntity::get(const nsstring & guid)
+NSComponent * nsentity::get(const nsstring & guid)
 {
 	return get(hash_id(guid));
 }
 
-NSComponent * NSEntity::get(uint32 type_id)
+NSComponent * nsentity::get(uint32 type_id)
 {
-	CompSet::iterator iter = mComponents.find(type_id);
-	if (iter != mComponents.end())
+	comp_set::iterator iter = m_components.find(type_id);
+	if (iter != m_components.end())
 		return iter->second;
 	return NULL;
 }
 
-void NSEntity::nameChange(const uivec2 & oldid, const uivec2 newid)
+void nsentity::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	// Go through each component and call name change
-	auto iter = mComponents.begin();
-	while (iter != mComponents.end())
+	auto iter = m_components.begin();
+	while (iter != m_components.end())
 	{
-		iter->second->nameChange(oldid, newid);
+		iter->second->name_change(oldid, newid);
 		++iter;
 	}
 }
@@ -188,13 +188,13 @@ void NSEntity::nameChange(const uivec2 & oldid, const uivec2 newid)
 /*!
 Get the other resources that this Entity uses. This is given by all the components attached to the entity.
 */
-uivec2array NSEntity::resources()
+uivec2array nsentity::resources()
 {
 	uivec2array ret;
 
 	// Go through each component and insert all used resources from each comp_t
-	auto iter = mComponents.begin();
-	while (iter != mComponents.end())
+	auto iter = m_components.begin();
+	while (iter != m_components.end())
 	{
 		uivec2array tmp = iter->second->resources();
 		ret.insert(ret.end(), tmp.begin(), tmp.end() );
@@ -203,65 +203,65 @@ uivec2array NSEntity::resources()
 	return ret;
 }
 
-bool NSEntity::has(const nsstring & guid)
+bool nsentity::has(const nsstring & guid)
 {
 	return has(hash_id(guid));
 }
 
-bool NSEntity::has(uint32 type_id)
+bool nsentity::has(uint32 type_id)
 {
-	return (mComponents.find(type_id) != mComponents.end());
+	return (m_components.find(type_id) != m_components.end());
 }
 
-void NSEntity::init()
+void nsentity::init()
 {
 	// do nothing
 }
 
-NSComponent * NSEntity::remove(uint32 type_id)
+NSComponent * nsentity::remove(uint32 type_id)
 {
 	NSComponent * comp_t = NULL;
-	auto iter = mComponents.find(type_id);
-	if (iter != mComponents.end())
+	auto iter = m_components.find(type_id);
+	if (iter != m_components.end())
 	{
 		comp_t = iter->second;
 		comp_t->setOwner(NULL);
-		mComponents.erase(iter);
-		updateScene();
-		dprint("NSEntity::remove - Removing \"" + nsengine.guid(type_id) + "\" from Entity " + mName + "\"");
+		m_components.erase(iter);
+		update_scene();
+		dprint("nsentity::remove - Removing \"" + nsengine.guid(type_id) + "\" from Entity " + m_name + "\"");
 	}
 	else
 	{
-		dprint("NSEntity::remove - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + mName + "\"");
+		dprint("nsentity::remove - Component type \"" + nsengine.guid(type_id) + "\" was not part of Entity \"" + m_name + "\"");
 	}
 
 	return comp_t;
 	
 }
 
-NSComponent * NSEntity::remove(const nsstring & guid)
+NSComponent * nsentity::remove(const nsstring & guid)
 {
 	return remove(hash_id(guid));
 }
 
-void NSEntity::postUpdateAll(bool pUpdate)
+void nsentity::post_update_all(bool pUpdate)
 {
-	auto iter = mComponents.begin();
-	while (iter != mComponents.end());
+	auto iter = m_components.begin();
+	while (iter != m_components.end());
 	{
 		iter->second->postUpdate(pUpdate);
 		++iter;
 	}
 }
 
-void NSEntity::postUpdate(const nsstring & compType, bool update)
+void nsentity::post_update(const nsstring & compType, bool update)
 {
 	NSComponent * comp_t = get(compType);
 	if (comp_t != NULL)
 		comp_t->postUpdate(update);
 }
 
-bool NSEntity::updatePosted(const nsstring & compType)
+bool nsentity::update_posted(const nsstring & compType)
 {
 	NSComponent * comp_t = get(compType);
 	if (comp_t != NULL)
@@ -269,15 +269,15 @@ bool NSEntity::updatePosted(const nsstring & compType)
 	return false;
 }
 
-void NSEntity::updateScene()
+void nsentity::update_scene()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene != NULL)
-		scene->updateCompMaps(mPlugID, mID);
+		scene->update_comp_maps(m_plugin_id, m_id);
 }
 
-NSEntity & NSEntity::operator=(NSEntity rhs)
+nsentity & nsentity::operator=(nsentity rhs)
 {
-	std::swap(mComponents, rhs.mComponents);
+	std::swap(m_components, rhs.m_components);
 	return *this;
 }

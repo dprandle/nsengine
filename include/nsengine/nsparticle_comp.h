@@ -16,7 +16,7 @@ This file contains all of the neccessary declarations for the NSParticleComp cla
 #include <nscomponent.h>
 #include <nsmath.h>
 
-class NSEntity;
+class nsentity;
 class NSTransformFeedbackObject;
 class NSVertexArrayObject;
 class NSBufferObject;
@@ -107,7 +107,7 @@ public:
 
 	void clearVisualKeys();
 
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	/*!
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.

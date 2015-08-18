@@ -31,7 +31,7 @@ void NSMovementSystem::init()
 
 void NSMovementSystem::update()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
@@ -66,7 +66,7 @@ void NSMovementSystem::update()
 					uivec3 parentID = tForm->parentid(i);
 					if (parentID != 0)
 					{
-						NSEntity * ent = scene->entity(parentID.x, parentID.y);
+						nsentity * ent = scene->entity(parentID.x, parentID.y);
 						if (ent != NULL)
 						{
 							NSTFormComp * tComp2 = ent->get<NSTFormComp>();
@@ -107,7 +107,7 @@ void NSMovementSystem::update()
 	}
 }
 
-int32 NSMovementSystem::updatePriority()
+int32 NSMovementSystem::update_priority()
 {
 	return MOVE_SYS_UPDATE_PR;
 }

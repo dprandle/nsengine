@@ -44,10 +44,10 @@ void NSParticleSystem::setFinalfbo(uint32 fbo) { mFinalBuf = fbo; }
 
 void NSParticleSystem::draw()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 	NSCamComp * compc = cam->get<NSCamComp>();
@@ -68,14 +68,14 @@ void NSParticleSystem::draw()
 			++entIter;
 			continue;
 		}
-		NSMaterial * mat = nsengine.resource<NSMaterial>(comp->materialID());
+		nsmaterial * mat = nsengine.resource<nsmaterial>(comp->materialID());
 		if (mat == NULL)
-			mat = nsengine.system<NSRenderSystem>()->defaultMat();
+			mat = nsengine.system<nsrender_system>()->default_mat();
 
-		NSParticleRenderShader * renderShader = nsengine.resource<NSParticleRenderShader>(mat->shaderID());
+		nsparticle_render_shader * renderShader = nsengine.resource<nsparticle_render_shader>(mat->shader_id());
 
 		if (renderShader == NULL)
-			renderShader = nsengine.engplug()->get<NSParticleRenderShader>(DEFAULT_RENDER_PARTICLE_SHADER);
+			renderShader = nsengine.engplug()->get<nsparticle_render_shader>(DEFAULT_RENDER_PARTICLE_SHADER);
 
 		if (renderShader == NULL || comp->first())
 		{
@@ -84,7 +84,7 @@ void NSParticleSystem::draw()
 			continue;
 		}
 
-		if (renderShader->error() != NSShader::None)
+		if (renderShader->error() != nsshader::error_none)
 		{
 			dprint("NSParticleSystem::update Render shader has an error set to " + std::to_string(renderShader->error()) + " in entity \"" + (*entIter)->name() + "\"");
 			++entIter;
@@ -99,9 +99,9 @@ void NSParticleSystem::draw()
 
 		NSTFormComp * tComp = (*entIter)->get<NSTFormComp>();
 		NSTFormComp * camTComp = scene->camera()->get<NSTFormComp>();
-		NSTexture * tex = nsengine.resource<NSTexture>(mat->mapTextureID(NSMaterial::Diffuse));
+		nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
 		if (tex != NULL)
-			tex->enable(NSMaterial::Diffuse);
+			tex->enable(nsmaterial::diffuse);
 		else
 			dprint("NSParticleSystem::draw() - No random texture set - particles will be lame.");
 
@@ -117,16 +117,16 @@ void NSParticleSystem::draw()
 		glDisable(GL_CULL_FACE);
 
 		renderShader->bind();
-		renderShader->setProjCamMat(compc->projCam());
-		renderShader->setCamRight(camTComp->dirVec(NSTFormComp::Right));
-		renderShader->setCamUp(camTComp->dirVec(NSTFormComp::Up));
-		renderShader->setCamTarget(camTComp->dirVec(NSTFormComp::Target));
-		renderShader->setWorldUp(fvec3(0.0f, 0.0f, 1.0f));
-		renderShader->setDiffuseMapEnabled(mat->contains(NSMaterial::Diffuse));
-		renderShader->setColorMode(mat->colorMode());
-		renderShader->setFragOutColor(mat->color());
-		renderShader->setLifetime(float(comp->lifetime()) / 1000.0f);
-		renderShader->setBlendMode(uint32(comp->blendMode()));
+		renderShader->set_proj_cam_mat(compc->projCam());
+		renderShader->set_cam_right(camTComp->dirVec(NSTFormComp::Right));
+		renderShader->set_cam_up(camTComp->dirVec(NSTFormComp::Up));
+		renderShader->set_cam_target(camTComp->dirVec(NSTFormComp::Target));
+		renderShader->set_world_up(fvec3(0.0f, 0.0f, 1.0f));
+		renderShader->set_diffusemap_enabled(mat->contains(nsmaterial::diffuse));
+		renderShader->set_color_mode(mat->color_mode());
+		renderShader->set_frag_color_out(mat->color());
+		renderShader->set_lifetime(float(comp->lifetime()) / 1000.0f);
+		renderShader->set_blend_mode(uint32(comp->blendMode()));
 
 		
 		comp->vertexArrayObject()->bind();
@@ -159,22 +159,22 @@ void NSParticleSystem::init()
 {
 }
 
-int32 NSParticleSystem::drawPriority()
+int32 NSParticleSystem::draw_priority()
 {
 	return PARTICLE_SYS_DRAW_PR;
 }
 
-int32 NSParticleSystem::updatePriority()
+int32 NSParticleSystem::update_priority()
 {
 	return PARTICLE_SYS_UPDATE_PR;
 }
 
 void NSParticleSystem::update()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 	NSCamComp * compc = cam->get<NSCamComp>();
@@ -202,11 +202,11 @@ void NSParticleSystem::update()
 			comp->enableSimulation(comp->looping());
 		}
 
-		NSParticleProcessShader * particleShader = nsengine.resource<NSParticleProcessShader>(comp->shaderID());
+		nsparticle_process_shader * particleShader = nsengine.resource<nsparticle_process_shader>(comp->shaderID());
 		if (particleShader == NULL)
 			particleShader = mDefaultShader;
 
-		if (particleShader->error() != NSShader::None)
+		if (particleShader->error() != nsshader::error_none)
 		{
 			dprint("NSParticleSystem::update XFBShader shader has an error set to " + std::to_string(particleShader->error()) + " in entity \"" + (*entIter)->name() + "\"");
 			++entIter;
@@ -214,26 +214,26 @@ void NSParticleSystem::update()
 		}
 
 		particleShader->bind();
-		NSTexture * texRand = nsengine.resource<NSTexture>(comp->randomTextureID());
+		nstexture * texRand = nsengine.resource<nstexture>(comp->randomTextureID());
 		if (texRand != NULL)
 			texRand->enable(RAND_TEX_UNIT);
 
-		particleShader->setTimeElapsed(comp->elapsed());
-		particleShader->setdt(nsengine.timer()->fixed());
-		particleShader->setAngularVelocity(comp->angularVelocity());
-		particleShader->setLifetime(comp->lifetime());
-		particleShader->setLaunchFreq(float(comp->emissionRate())); // for now
-		particleShader->setMotionKeyGlobal(comp->motionGlobalTime());
-		particleShader->setInterpolateMotionKeys(comp->motionKeyInterpolation());
-		particleShader->setUniform("motionKeyType", uint32(comp->motionKeyType()));
-		particleShader->setStartingSize(comp->startingSize());
-		particleShader->setEmitterSize(comp->emitterSize());
-		particleShader->setEmitterShape(comp->emitterShape());
-		particleShader->setInterpolateVisualKeys(comp->visualKeyInterpolation());
-		particleShader->setVisualKeyGlobal(comp->visualGlobalTime());
-		particleShader->setInitialVelocityMult(comp->initVelocityMult());
-		particleShader->setMotionKeys(comp->mMotionKeys,comp->mMaxMotionKeys, comp->mLifetime);
-		particleShader->setVisualKeys(comp->mVisualKeys, comp->mMaxVisualKeys, comp->mLifetime);
+		particleShader->set_elapsed(comp->elapsed());
+		particleShader->set_dt(nsengine.timer()->fixed());
+		particleShader->set_angular_vel(comp->angularVelocity());
+		particleShader->set_lifetime(comp->lifetime());
+		particleShader->set_launch_freq(float(comp->emissionRate())); // for now
+		particleShader->set_motion_key_global(comp->motionGlobalTime());
+		particleShader->set_interpolated_motion_keys(comp->motionKeyInterpolation());
+		particleShader->set_uniform("motionKeyType", uint32(comp->motionKeyType()));
+		particleShader->set_starting_size(comp->startingSize());
+		particleShader->set_emitter_size(comp->emitterSize());
+		particleShader->set_emitter_shape(comp->emitterShape());
+		particleShader->set_interpolated_visual_keys(comp->visualKeyInterpolation());
+		particleShader->set_visual_key_global(comp->visualGlobalTime());
+		particleShader->set_initial_vel_mult(comp->initVelocityMult());
+		particleShader->set_motion_keys(comp->mMotionKeys,comp->mMaxMotionKeys, comp->mLifetime);
+		particleShader->set_visual_keys(comp->mVisualKeys, comp->mMaxVisualKeys, comp->mLifetime);
 		
 		comp->transformFeedbackObject()->bind();
 		comp->vertexArrayObject()->bind();

@@ -13,16 +13,16 @@
 #include <nsgl_object.h>
 #include <nslog_file.h>
 
-NSGLObject::NSGLObject() :mGLName(0)
+nsgl_object::nsgl_object() :m_gl_name(0)
 {}
 
-NSGLObject::~NSGLObject()
+nsgl_object::~nsgl_object()
 {
-	if (mGLName != 0)
+	if (m_gl_name != 0)
 		NSLogFile("Warning : Failed to call \"release()\" on NSBuffer object - openGL resource was not released","enginecreatedestroy.log");
 }
 
-uint32 NSGLObject::glid()
+uint32 nsgl_object::gl_id()
 {
-	return mGLName;
+	return m_gl_name;
 }

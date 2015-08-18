@@ -18,7 +18,7 @@ This file contains all of the neccessary declarations for the NSSelComp class.
 #include <nstform_comp.h>
 
 
-class NSShader;
+class nsshader;
 class NSTimer;
 
 class NSSelComp : public NSComponent

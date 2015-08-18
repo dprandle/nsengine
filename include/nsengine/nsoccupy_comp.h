@@ -57,7 +57,7 @@ public:
 
 	const uivec2 & meshid();
 
-	virtual void nameChange(uint32 plugID, uint32 oldID, uint32 newID);
+	virtual void name_change(uint32 plugID, uint32 oldID, uint32 newID);
 
 	virtual void pup(NSFilePUPer * p);
 

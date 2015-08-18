@@ -191,57 +191,57 @@
 
 // Resource typenames
 // Must add entry here for any custom resource types
-#define ANIM_TYPESTRING "NSAnimSet"
-#define ENTITY_TYPESTRING "NSEntity"
-#define MATERIAL_TYPESTRING "NSMaterial"
-#define MESH_TYPESTRING "NSMesh"
-#define INPUTMAP_TYPESTRING "NSInputMap"
-#define TEX1D_TYPESTRING "NSTex1D"
-#define TEX1DARRAY_TYPESTRING "NSTex1DArray"
-#define TEX2D_TYPESTRING "NSTex2D"
-#define TEXRECTANGLE_TYPESTRING "NSTexRectangle"
-#define TEX2DMULTISAMPLE_TYPESTRING "NSTex2DMultisample"
-#define TEX2DMULTISAMPLEARRAY_TYPESTRING "NSTex2DMultisampleArray"
-#define TEXBUFFER_TYPESTRING "NSTexBuffer"
-#define TEX2DARRAY_TYPESTRING "NSTex2DArray"
-#define TEX3D_TYPESTRING "NSTex3D"
-#define TEXCUBEMAP_TYPESTRING "NSTexCubeMap"
-#define TEXCUBEMAPARRAY_TYPESTRING "NSTexCubeMapArray"
-#define SHADER_TYPESTRING "NSShader"
-#define DIRLIGHTSHADER_TYPESTRING "NSDirLightShader"
-#define POINTLIGHTSHADER_TYPESTRING "NSPointLightShader"
-#define SPOTLIGHTSHADER_TYPESTRING "NSSpotLightShader"
-#define MATERIALSHADER_TYPESTRING "NSMaterialShader"
-#define PARTICLEPROCESSSHADER_TYPESTRING "NSParticleProcessShader"
-#define PARTICLERENDERSHADER_TYPESTRING "NSParticleRenderShader"
-#define DIR_SHADOWMAP_SHADER_TYPESTRING "NSDirShadowMapShader"
-#define DIR_SHADOWMAPXFB_SHADER_TYPESTRING "NSDirShadowMapXFBShader"
-#define POINT_SHADOWMAP_SHADER_TYPESTRING "NSPointShadowMapShader"
-#define POINT_SHADOWMAPXFB_SHADER_TYPESTRING "NSPointShadowMapXFBShader"
-#define SPOT_SHADOWMAP_SHADER_TYPESTRING "NSSpotShadowMapShader"
-#define SPOT_SHADOWMAPXFB_SHADER_TYPESTRING "NSSpotShadowMapXFBShader"
-#define EARLYZ_SHADER_TYPESTRING "NSEarlyZShader"
-#define EARLYZXFB_SHADER_TYPESTRING "NSEarlyZXFBShader"
-#define RENDERXFB_SHADER_TYPESTRING "NSRenderXFBShader"
-#define XFB_SHADER_TYPESTRING "NSXFBShader"
-#define LIGHTSTENCIL_SHADER_TYPESTRING "NSLightStencilShader"
-#define SKYBOX_SHADER_TYPESTRING "NSSkyboxShader"
-#define TRANSPARENCY_SHADER_TYPESTRING "NSTransparencyShader"
-#define SELECTION_SHADER_TYPESTRING "NSSelectionShader"
-#define SCENE_TYPESTRING "NSScene"
-#define PLUGIN_TYPESTRING "NSPlugin"
+#define ANIM_TYPESTRING "nsanim_set"
+#define ENTITY_TYPESTRING "nsentity"
+#define MATERIAL_TYPESTRING "nsmaterial"
+#define MESH_TYPESTRING "nsmesh"
+#define INPUTMAP_TYPESTRING "nsinput_map"
+#define TEX1D_TYPESTRING "nstex1d"
+#define TEX1DARRAY_TYPESTRING "nstex1d_array"
+#define TEX2D_TYPESTRING "nstex2d"
+#define TEXRECTANGLE_TYPESTRING "nstex_rectangle"
+#define TEX2DMULTISAMPLE_TYPESTRING "nstex2d_multisample"
+#define TEX2DMULTISAMPLEARRAY_TYPESTRING "nstex2d_multisample_array"
+#define TEXBUFFER_TYPESTRING "nstex_buffer"
+#define TEX2DARRAY_TYPESTRING "nstex2d_array"
+#define TEX3D_TYPESTRING "nstex3d"
+#define TEXCUBEMAP_TYPESTRING "nstex_cubemap"
+#define TEXCUBEMAPARRAY_TYPESTRING "nstex_cubemap_array"
+#define SHADER_TYPESTRING "nsshader"
+#define DIRLIGHTSHADER_TYPESTRING "nsdir_light_shader"
+#define POINTLIGHTSHADER_TYPESTRING "nspoint_light_shader"
+#define SPOTLIGHTSHADER_TYPESTRING "nsspot_light_shader"
+#define MATERIALSHADER_TYPESTRING "nsmaterial_shader"
+#define PARTICLEPROCESSSHADER_TYPESTRING "nsparticle_process_shader"
+#define PARTICLERENDERSHADER_TYPESTRING "nsparticle_render_shader"
+#define DIR_SHADOWMAP_SHADER_TYPESTRING "nsdir_shadowmap_shader"
+#define DIR_SHADOWMAPXFB_SHADER_TYPESTRING "nsdir_shadowmap_xfb_shader"
+#define POINT_SHADOWMAP_SHADER_TYPESTRING "nspoint_shadowmap_shader"
+#define POINT_SHADOWMAPXFB_SHADER_TYPESTRING "nspoint_shadowmap_xfb_shader"
+#define SPOT_SHADOWMAP_SHADER_TYPESTRING "nsspot_shadowmap_shader"
+#define SPOT_SHADOWMAPXFB_SHADER_TYPESTRING "nsspot_shadowmap_xfb_shader"
+#define EARLYZ_SHADER_TYPESTRING "nsearlyz_shader"
+#define EARLYZXFB_SHADER_TYPESTRING "nsearlyz_xfb_shader"
+#define RENDERXFB_SHADER_TYPESTRING "nsrender_xfb_shader"
+#define XFB_SHADER_TYPESTRING "nsxfb_shader"
+#define LIGHTSTENCIL_SHADER_TYPESTRING "nslight_stencil_shader"
+#define SKYBOX_SHADER_TYPESTRING "nsskybox_shader"
+#define TRANSPARENCY_SHADER_TYPESTRING "nstransparency_shader"
+#define SELECTION_SHADER_TYPESTRING "nsselection_shader"
+#define SCENE_TYPESTRING "nsscene"
+#define PLUGIN_TYPESTRING "nsplugin"
 
 #define ENGINE_PLUG "engplug"
 
-#define ANIM_MANAGER_TYPESTRING "NSAnimManager"
-#define ENTITY_MANAGER_TYPESTRING "NSEntityManager"
-#define MAT_MANAGER_TYPESTRING "NSMatManager"
-#define MESH_MANAGER_TYPESTRING "NSMeshManager"
-#define TEX_MANAGER_TYPESTRING "NSTexManager"
+#define ANIM_MANAGER_TYPESTRING "nsanim_manager"
+#define ENTITY_MANAGER_TYPESTRING "nsentity_manager"
+#define MAT_MANAGER_TYPESTRING "nsmat_manager"
+#define MESH_MANAGER_TYPESTRING "nsmesh_manager"
+#define TEX_MANAGER_TYPESTRING "nstex_manager"
 #define SHADER_MANAGER_TYPESTRING "nsshader_manager"
-#define SCENE_MANAGER_TYPESTRING "NSSceneManager"
-#define PLUGIN_MANAGER_TYPESTRING "NSPluginManager"
-#define INPUTMAP_MANAGER_TYPESTRING "NSInputMapManager"
+#define SCENE_MANAGER_TYPESTRING "nsscene_manager"
+#define PLUGIN_MANAGER_TYPESTRING "nsplugin_manager"
+#define INPUTMAP_MANAGER_TYPESTRING "nsinput_map_manager"
 
 // Component Typenames
 #define ANIM_COMP_TYPESTRING "NSAnimComp"
@@ -261,10 +261,10 @@
 // System Typenames
 #define ANIM_SYS_TYPESTRING "NSAnimationSystem"
 #define CAM_SYS_TYPESTRING "NSCameraSystem"
-#define BUILD_SYS_TYPESTRING "NSBuildSystem"
+#define BUILD_SYS_TYPESTRING "nsbuild_system"
 #define MOVE_SYS_TYPESTRING "NSMovementSystem"
-#define RENDER_SYS_TYPESTRING "NSRenderSystem"
-#define SEL_SYS_TYPESTRING "NSSelectionSystem"
+#define RENDER_SYS_TYPESTRING "nsrender_system"
+#define SEL_SYS_TYPESTRING "nsselection_system"
 #define UI_SYS_TYPESTRING "NSUISystem"
 #define INP_SYS_TYPESTRING "NSInputSystem"
 #define PARTICLE_SYS_TYPESTRING "NSParticleSystem"
@@ -1414,12 +1414,12 @@ typedef std::multimap<nsstring, ldouble> nsstringldoublemultimap;
 typedef std::multimap<nsstring, bool> nsstringboolmultimap;
 typedef std::multimap<nsstring, nsstring> nsstringstringmultimap;
 
-class NSMaterial;
-class NSEntity;
+class nsmaterial;
+class nsentity;
 
-typedef std::set<NSMaterial*> nspmatset;
-typedef std::map<uint32, NSEntity*> uint32pentity_map;
-typedef std::set<NSEntity*> nspentityset;
+typedef std::set<nsmaterial*> nspmatset;
+typedef std::map<uint32, nsentity*> uint32pentity_map;
+typedef std::set<nsentity*> nspentityset;
 
 GLEWContext * glewGetContext();
 bool GLError(nsstring errorMessage);

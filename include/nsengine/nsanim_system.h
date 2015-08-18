@@ -30,7 +30,7 @@ public:
 
 	virtual void update();
 
-	virtual int32 updatePriority();
+	virtual int32 update_priority();
 
 };
 

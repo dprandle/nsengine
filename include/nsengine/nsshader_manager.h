@@ -11,115 +11,115 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSSHADERMANAGER_H
-#define NSSHADERMANAGER_H
+#ifndef NSSHADER_MANAGER_H
+#define NSSHADER_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsshader.h>
 
-class nsshader_manager : public NSResManager
+class nsshader_manager : public nsres_manager
 {
 public:
 
 	nsshader_manager();
 	~nsshader_manager();
 
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSShader * create(const nsstring & resName)
+	virtual nsshader * create(const nsstring & res_name)
 	{
-		return create<NSShader>(resName); // Create 2d texture by default
+		return create<nsshader>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSShader * get(const T & resname)
+	nsshader * get(const T & res_name)
 	{
-		return get<NSShader>(resname);
+		return get<nsshader>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSShader * load(const nsstring & fname)
+	nsshader * load(const nsstring & fname)
 	{
-		return load<NSShader>(fname);
+		return load<nsshader>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSShader * remove(const T & rname)
+	nsshader * remove(const T & res_name)
 	{
-		return remove<NSShader>(rname);
+		return remove<nsshader>(res_name);
 	}
 
-	bool compileAll();
+	bool compile_all();
 
 	template<class T>
 	bool compile(const T & shader)
 	{
-		NSShader * sh = get(shader);
+		nsshader * sh = get(shader);
 		return compile(sh);
 	}
 
-	bool compile(NSShader * sh);
+	bool compile(nsshader * sh);
 
-	void initUniformsAll();
+	void init_uniforms_all();
 
 	template<class T>
-	void initUniforms(const T & shader)
+	void init_uniforms(const T & shader)
 	{
-		NSShader * sh = get(shader);
-		initUniforms(sh);
+		nsshader * sh = get(shader);
+		init_uniforms(sh);
 	}
 
-	void initUniforms(NSShader * sh);
+	void init_uniforms(nsshader * sh);
 
-	bool linkAll();
+	bool link_all();
 
 	template<class T>
 	bool link(const T & shader)
 	{
-		NSShader * sh = get(shader);
+		nsshader * sh = get(shader);
 		return link(sh);
 	}
 
-	bool link(NSShader * sh);
+	bool link(nsshader * sh);
 	
 	template<class T>
-	bool loadStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype)
+	bool load_stage(const T & shader, const nsstring & filename, nsshader::shader_type stagetype)
 	{
-		NSShader * sh = get(shader);
-        return loadStage(shader, filename, stagetype);
+		nsshader * sh = get(shader);
+        return load_stage(shader, filename, stagetype);
 	}
 
-	bool loadStage(NSShader * shader, const nsstring & fname, NSShader::ShaderType stagetype);
+	bool load_stage(nsshader * shader, const nsstring & fname, nsshader::shader_type stagetype);
 
 	template<class T>
-	bool saveStage(const T & shader, const nsstring & filename, NSShader::ShaderType stagetype)
+	bool save_stage(const T & shader, const nsstring & filename, nsshader::shader_type stagetype)
 	{
-		NSShader * sh = get(shader);
-        return saveStage(sh, filename, stagetype);
+		nsshader * sh = get(shader);
+        return save_stage(sh, filename, stagetype);
 	}
 
-	bool saveStage(NSShader * sh, const nsstring & filename, NSShader::ShaderType stagetype);
+	bool save_stage(nsshader * sh, const nsstring & filename, nsshader::shader_type stagetype);
 };
 
 #endif

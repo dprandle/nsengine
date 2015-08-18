@@ -1,9 +1,9 @@
 /*! 
 	\file nsentitymanager.cpp
 	
-	\brief Definition file for NSEntityManager class
+	\brief Definition file for nsentity_manager class
 
-	This file contains all of the neccessary definitions for the NSEntityManager class.
+	This file contains all of the neccessary definitions for the nsentity_manager class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -17,22 +17,22 @@
 #include <nsscene.h>
 #include <nsengine.h>
 
-NSEntityManager::NSEntityManager() : NSResManager()
+nsentity_manager::nsentity_manager() : nsres_manager()
 {
-	setLocalDirectory(LOCAL_ENTITY_DIR_DEFAULT);
-	setSaveMode(NSResManager::Text);
+	set_local_dir(LOCAL_ENTITY_DIR_DEFAULT);
+	set_save_mode(nsres_manager::text);
 }
 
-NSEntityManager::~NSEntityManager()
+nsentity_manager::~nsentity_manager()
 {}
 
-nspentityset NSEntityManager::entities(uint32 comp_type_id)
+nspentityset nsentity_manager::entities(uint32 comp_type_id)
 {
 	nspentityset ret;
-	auto iter = mIDResourceMap.begin();
-	while (iter != mIDResourceMap.end())
+	auto iter = m_id_resmap.begin();
+	while (iter != m_id_resmap.end())
 	{
-		NSEntity * curEnt = get(iter->first);
+		nsentity * curEnt = get(iter->first);
 		if (curEnt->has(comp_type_id))
 			ret.emplace(curEnt);
 		++iter;
@@ -40,7 +40,7 @@ nspentityset NSEntityManager::entities(uint32 comp_type_id)
 	return ret;	
 }
 
-nspentityset NSEntityManager::entities(const nsstring & comp_guid)
+nspentityset nsentity_manager::entities(const nsstring & comp_guid)
 {
 	return entities(hash_id(comp_guid));
 }

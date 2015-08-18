@@ -153,12 +153,12 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 		if (mRenComp == NULL || mTransforms.empty())
 			return false;
 
-		NSMesh * mesh = nsengine.resource<NSMesh>(mRenComp->meshID());
+		nsmesh * mesh = nsengine.resource<nsmesh>(mRenComp->meshID());
 		if (mesh == NULL)
 			return false;
 
 		// Figure out how much memory to allocate in the buffers.. this should be number of tranforms times number of verts
-		uint32 allocAmount = mesh->vertcount() * static_cast<uint32>(mTransforms.size());
+		uint32 allocAmount = mesh->vert_count() * static_cast<uint32>(mTransforms.size());
 		uint32 instancePerDraw = static_cast<uint32>(mTransforms.size());
 		uint32 totalIntanceCount = static_cast<uint32>(mTransforms.size());
 
@@ -168,7 +168,7 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 		{
 			bufCount = allocAmount / MAX_TF_BUFFER_SIZE + 1;
 			allocAmount = MAX_TF_BUFFER_SIZE;
-			instancePerDraw = MAX_TF_BUFFER_SIZE / mesh->vertcount();
+			instancePerDraw = MAX_TF_BUFFER_SIZE / mesh->vert_count();
 		}
 
 		if (bufCount > MAX_TF_BUFFER_COUNT)
@@ -189,35 +189,35 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 			buf->mXBNormalBuf = new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable);
 			buf->mXBTangentBuf = new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable);
 
-			buf->mXFBVAO->initGL();
-			buf->mTFFeedbackObj->initGL();
-			buf->mXBWorldPosBuf->initGL();
-			buf->mXBTexCoordBuf->initGL();
-			buf->mXBNormalBuf->initGL();
-			buf->mXBTangentBuf->initGL();
+			buf->mXFBVAO->init_gl();
+			buf->mTFFeedbackObj->init_gl();
+			buf->mXBWorldPosBuf->init_gl();
+			buf->mXBTexCoordBuf->init_gl();
+			buf->mXBNormalBuf->init_gl();
+			buf->mXBTangentBuf->init_gl();
 
 			// Set up VAO for draw on other stuff
 			buf->mXFBVAO->bind();
 
 			buf->mXBWorldPosBuf->bind();
 			buf->mXBWorldPosBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
-			buf->mXFBVAO->add(buf->mXBWorldPosBuf, NSShader::Position);
-			buf->mXFBVAO->vertexAttribPtr(NSShader::Position, 4, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->add(buf->mXBWorldPosBuf, nsshader::loc_position);
+			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_position, 4, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXBTexCoordBuf->bind();
 			buf->mXBTexCoordBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
-			buf->mXFBVAO->add(buf->mXBTexCoordBuf, NSShader::TexCoords);
-			buf->mXFBVAO->vertexAttribPtr(NSShader::TexCoords, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->add(buf->mXBTexCoordBuf, nsshader::loc_tex_coords);
+			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_tex_coords, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXBNormalBuf->bind();
 			buf->mXBNormalBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
-			buf->mXFBVAO->add(buf->mXBNormalBuf, NSShader::Normal);
-			buf->mXFBVAO->vertexAttribPtr(NSShader::Normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->add(buf->mXBNormalBuf, nsshader::loc_normal);
+			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXBTangentBuf->bind();
 			buf->mXBTangentBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
-			buf->mXFBVAO->add(buf->mXBTangentBuf, NSShader::Tangent);
-			buf->mXFBVAO->vertexAttribPtr(NSShader::Tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->add(buf->mXBTangentBuf, nsshader::loc_tangent);
+			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXFBVAO->unbind();
 
@@ -226,10 +226,10 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 			buf->mXBNormalBuf->setTarget(NSBufferObject::TransformFeedback);
 			buf->mXBTangentBuf->setTarget(NSBufferObject::TransformFeedback);
 			buf->mTFFeedbackObj->bind();
-			buf->mXBWorldPosBuf->bind(NSShader::Position);
-			buf->mXBTexCoordBuf->bind(NSShader::TexCoords);
-			buf->mXBNormalBuf->bind(NSShader::Normal);
-			buf->mXBTangentBuf->bind(NSShader::Tangent);
+			buf->mXBWorldPosBuf->bind(nsshader::loc_position);
+			buf->mXBTexCoordBuf->bind(nsshader::loc_tex_coords);
+			buf->mXBNormalBuf->bind(nsshader::loc_normal);
+			buf->mXBTangentBuf->bind(nsshader::loc_tangent);
 			buf->mTFFeedbackObj->unbind();
 
 			if (instancePerDraw <= totalIntanceCount)
@@ -282,8 +282,8 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 
 void NSTFormComp::init()
 {
-	mTransformBuffer.initGL();
-	mTransformIDBuffer.initGL();
+	mTransformBuffer.init_gl();
+	mTransformIDBuffer.init_gl();
 }
 
 const fvec3 NSTFormComp::dirVec(DirVec pDirection, uint32 pTransformID) const

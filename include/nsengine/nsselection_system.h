@@ -1,17 +1,17 @@
 /*!
 \file nsselection_system.h
 
-\brief Header file for NSSelectionSystem class
+\brief Header file for nsselection_system class
 
-This file contains all of the neccessary declarations for the NSSelectionSystem class.
+This file contains all of the neccessary declarations for the nsselection_system class.
 
 \author Daniel Randle
 \date March 8 2014
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSSELECTIONSYSTEM_H
-#define NSSELECTIONSYSTEM_H
+#ifndef NSSELECTION_SYSTEM_H
+#define NSSELECTION_SYSTEM_H
 
 #include <nssystem.h>
 #include <nsglobal.h>
@@ -19,44 +19,44 @@ This file contains all of the neccessary declarations for the NSSelectionSystem 
 #include <nstform_comp.h>
 #include <nsmath.h>
 
-#define NSSEL_SELECT "SelectEntity"
-#define NSSEL_MULTISELECT "MultiSelect"
-#define NSSEL_SHIFTSELECT "ShiftSelect"
-#define NSSEL_MOVE "MoveSelection"
-#define NSSEL_MOVE_XY "MoveSelectionXY"
-#define NSSEL_MOVE_ZY "MoveSelectionZY"
-#define NSSEL_MOVE_ZX "MoveSelectionZX"
-#define NSSEL_MOVE_X "MoveSelectionX"
-#define NSSEL_MOVE_Y "MoveSelectionY"
-#define NSSEL_MOVE_Z "MoveSelectionZ"
-#define NSSEL_MOVE_TOGGLE "MoveSelectionToggle"
+#define NSSEL_SELECT "select_entity"
+#define NSSEL_SHIFTSELECT "shift_select"
+#define NSSEL_MULTISELECT "multi_select"
+#define NSSEL_MOVE "move_selection"
+#define NSSEL_MOVE_XY "move_selection_xy"
+#define NSSEL_MOVE_ZY "move_selection_zy"
+#define NSSEL_MOVE_ZX "move_selection_zx"
+#define NSSEL_MOVE_X "move_selection_x"
+#define NSSEL_MOVE_Y "move_selection_y"
+#define NSSEL_MOVE_Z "move_selection_z"
+#define NSSEL_MOVE_TOGGLE "move_selection_toggle"
 
-class NSScene;
+class nsscene;
 class NSSelComp;
-class NSSelectionShader;
+class nsselection_shader;
 class NSActionEvent;
 class NSStateEvent;
 
-class NSSelectionSystem : public NSSystem
+class nsselection_system : public NSSystem
 {
 public:
 	
-	enum Axis
+	enum axis_t
 	{
-		XAxis=0x0001,
-		YAxis=0x0010,
-		ZAxis=0x0100
+		axis_x=0x0001,
+		axis_y=0x0010,
+		axis_z=0x0100
 	};
 
-	NSSelectionSystem();
+	nsselection_system();
 
-	~NSSelectionSystem();
+	~nsselection_system();
 
-	bool add(NSEntity * ent, uint32 tformid);
+	bool add(nsentity * ent, uint32 tformid);
 
-	bool addToGrid();
+	bool add_to_grid();
 
-	void changeLayer(int32 pChange);
+	void change_layer(int32 pChange);
 
 	bool collision();
 
@@ -70,15 +70,15 @@ public:
 
 	bool empty();
 
-	void enableLayerMode(const bool & pMode);
+	void enable_layer_mode(const bool & pMode);
 
 	int32 layer() const;
 
 	const uivec3 & center();
 
-	virtual int32 drawPriority();
+	virtual int32 draw_priority();
 
-	virtual int32 updatePriority();
+	virtual int32 update_priority();
 
 //	virtual bool handleEvent(NSEvent * pEvent);
 
@@ -88,93 +88,93 @@ public:
 
 	virtual void init();
 
-	bool layerMode() const;
+	bool layer_mode() const;
 
-	bool brushValid();
+	bool valid_brush();
 
-	bool tileSwapValid();
+	bool valid_tile_swap();
 
-	void remove(NSEntity * ent, uint32 pTFormID);
+	void remove(nsentity * ent, uint32 pTFormID);
 
-	void removeFromGrid();
+	void remove_from_grid();
 
-	void resetColor();
+	void reset_color();
 
-	void rotate(NSEntity * ent, const fvec4 & axisangle);
+	void rotate(nsentity * ent, const fvec4 & axisangle);
 
 	void rotate(const fvec4 & axisangle);
 
-	void rotate(NSEntity * ent, NSTFormComp::DirVec axis, float angle);
+	void rotate(nsentity * ent, NSTFormComp::DirVec axis, float angle);
 
 	void rotate(NSTFormComp::DirVec axis, float angle);
 
-	void rotate(NSEntity * ent, NSTFormComp::Axis axis, float angle);
+	void rotate(nsentity * ent, NSTFormComp::Axis axis, float angle);
 
 	void rotate(NSTFormComp::Axis axis, float angle);
 
-	void rotate(NSEntity * ent, const fvec3 & euler);
+	void rotate(nsentity * ent, const fvec3 & euler);
 
 	void rotate(const fvec3 & euler);
 
-	void rotate(NSEntity * ent, const fquat & orientation);
+	void rotate(nsentity * ent, const fquat & orientation);
 
 	void rotate(const fquat & orientation);
 
-	void scale(NSEntity * ent, const fvec3 & pAmount);
+	void scale(nsentity * ent, const fvec3 & pAmount);
 
 	void scale(const fvec3 & pAmount);
 
-	void scale(NSEntity * ent, float x, float y, float z);
+	void scale(nsentity * ent, float x, float y, float z);
 
 	void scale(float x, float y, float z);
 
-	bool set(NSEntity * ent, uint32 tformid);
+	bool set(nsentity * ent, uint32 tformid);
 
-	void setColor(const fvec4 & pColor);
+	void set_color(const fvec4 & pColor);
 
-	void setPickfbo(uint32 fbo);
+	void set_picking_fbo(uint32 fbo);
 
-	void setFinalfbo(uint32 fbo);
+	void set_final_fbo(uint32 fbo);
 
-	void setHiddenState(NSTFormComp::HiddenState pState, bool pSet);
+	void set_hidden_state(NSTFormComp::HiddenState pState, bool pSet);
 
-	void setLayer(int32 pLayer);
+	void set_layer(int32 pLayer);
 
-	void setShader(NSSelectionShader * selShader);
+	void set_shader(nsselection_shader * selShader);
 
-	void showOccupiedSpaces(bool show);
+	void set_occupied_spaces(bool show);
 
-	void snap(NSEntity * ent);
+	void snap(nsentity * ent);
 
 	void snap();
 
-	void snapX(NSEntity * ent);
+	void snap_x(nsentity * ent);
 
-	void snapX();
+	void snap_x();
 
-	void snapY(NSEntity * ent);
+	void snap_y(nsentity * ent);
 
-	void snapY();
+	void snap_y();
 
-	void snapZ(NSEntity * ent);
+	void snap_z(nsentity * ent);
 
-	void snapZ();
+	void snap_z();
 
-	void tileswap(NSEntity * newtile);
+	void tile_swap(nsentity * newtile);
 
-	void translate(NSEntity * ent, const fvec3 & pAmount);
+	void translate(nsentity * ent, const fvec3 & pAmount);
 
 	void translate(const fvec3 & pAmount);
 
 	void translate(float x, float y, float z);
 
-	void translate(NSEntity * ent, float x, float y, float z);
+	void translate(nsentity * ent, float x, float y, float z);
 
-	void translate(NSEntity * ent, NSTFormComp::DirVec pDir, float pAmount);
+	void translate(nsentity * ent, NSTFormComp::DirVec pDir, float pAmount);
 
 	void translate(NSTFormComp::DirVec pDir, float pAmount);
 
-	void translate(NSEntity * ent, NSTFormComp::Axis pDir, float pAmount);
+	void translate(nsentity * ent, NSTFormComp::Axis pDir, float pAmount);
 
 	void translate(NSTFormComp::Axis pDir, float pAmount);
 
@@ -182,86 +182,86 @@ public:
 
 protected:
 
-	enum InputTriggers
+	enum input_triggers
 	{
-		SelectEntity,
-		MultiSelect,
-		ShiftSelect,
-		MoveSelection,
-		MoveSelectionXY,
-		MoveSelectionZY,
-		MoveSelectionZX,
-		MoveSelectionX,
-		MoveSelectionY,
-		MoveSelectionZ,
-		MoveSelectionToggle
+		selected_entity,
+		multi_select,
+		shift_select,
+		move_select,
+		move_selection_xy,
+		move_selection_zy,
+		move_selection_zx,
+		move_selection_x,
+		move_selection_y,
+		move_selection_z,
+		move_selection_toggle
 	};
    	
-	bool _handleActionEvent(NSActionEvent * evnt);
-	bool _handleStateEvent(NSStateEvent * evnt);
+	bool _handle_action_event(NSActionEvent * evnt);
+	bool _handle_state_event(NSStateEvent * evnt);
 
 	void _reset_focus(const uivec3 & pickid);
 
-	virtual void _onRotateX(
-		NSEntity * ent,
+	virtual void _on_rotate_x(
+		nsentity * ent,
 		bool pPressed
 		);
 
-	virtual void _onRotateY(
-		NSEntity * ent,
+	virtual void _on_rotate_y(
+		nsentity * ent,
 		bool pPressed
 		);
 
-	virtual void _onRotateZ(
-		NSEntity * ent,
+	virtual void _on_rotate_z(
+		nsentity * ent,
 		bool pPressed
 		);
 
-	virtual void _onSelect(
-		NSEntity * ent,
+	virtual void _on_select(
+		nsentity * ent,
 		bool pPressed,
 		const uivec3 & pID,
 		bool pSnapZOnly = false
 		);
 
-	virtual void _onMultiSelect(
-		NSEntity * ent,
+	virtual void _on_multi_select(
+		nsentity * ent,
 		bool pPressed,
 		const uivec3 & pID
 		);
 
-	virtual void _onPaintSelect(
-		NSEntity * ent,
+	virtual void _on_paint_select(
+		nsentity * ent,
 		const fvec2 & pPos
 		);
 
-	virtual void _onDragObject(
-		NSEntity * ent,
+	virtual void _on_draw_object(
+		nsentity * ent,
 		const fvec2 & pDelta,
 		uint16 _axis
 		);
 
-	void _drawOcc();
-	void _drawEntOcc(NSEntity * ent);
-	void _drawHidden();
+	void _draw_occ();
+	void _draw_ent_occ(nsentity * ent);
+	void _draw_hidden();
 
-	uivec3 mFocusEnt; //!< The entity/tform ID that the selection is focused on (the center of rotation)
-	nspentityset mSelectedEnts;
-	NSSelectionShader * selShader;
-	fvec3 mTotalFrameTranslation;
-	bool mMoving;
-	bool mToggleMove;
-	bool mSendFocEvent;
+	uivec3 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
+	nspentityset m_selected_ents;
+	nsselection_shader * m_sel_shader;
+	fvec3 m_total_frame_translation;
+	bool m_moving;
+	bool m_toggle_move;
+	bool m_send_foc_event;
 	
-	fvec2 mPickPos;
-	fvec3 mCachedPoint;
-	bool mLayerMode;
-	bool drawOcc;
-	int32 mLayer;
-	fvec2 mCachedLPoint;
-	uint32 finalBuf;
-	uint32 pickBuf;
-	fmat4 trans;
+	fvec2 m_pick_pos;
+	fvec3 m_cached_point;
+	bool m_layer_mode;
+	bool m_draw_occ;
+	int32 m_layer;
+	fvec2 m_cached_point_last;
+	uint32 m_final_buf;
+	uint32 m_picking_buf;
+	fmat4 m_trans;
 };
 
 #endif

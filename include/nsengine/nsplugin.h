@@ -1,9 +1,9 @@
 /*!
 \file nsplugin.h
 
-\brief Header file for NSPlugin class
+\brief Header file for nsplugin class
 
-This file contains all of the neccessary declarations for the NSPlugin class.
+This file contains all of the neccessary declarations for the nsplugin class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -16,40 +16,40 @@ This file contains all of the neccessary declarations for the NSPlugin class.
 #include <nsglobal.h>
 #include <nsres_manager.h>
 #include <nsresource.h>
-class NSEntity;
-class NSScene;
+class nsentity;
+class nsscene;
 
-class NSPlugin : public NSResource
+class nsplugin : public nsresource
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSPlugin & plug);
+	friend void pup(PUPer & p, nsplugin & plug);
 
-	typedef std::unordered_map<uint32, NSResManager*> ManagerMap;
+	typedef std::unordered_map<uint32, nsres_manager*> manager_map;
 
 	// This is manager type string to pair(get typestring, get name)
-	// Sometimes managers can manage an abstract type - NSTexture for example - which
+	// Sometimes managers can manage an abstract type - nstexture for example - which
 	// means the get type string must also be included so we can get the right factory
-	typedef std::unordered_multimap<nsstring, std::pair<std::string, std::string>> ResTypeMap;
+	typedef std::unordered_multimap<nsstring, std::pair<std::string, std::string>> res_type_map;
 
-	enum Tile_t
+	enum tile_t
 	{
-		Full,
-		Half
+		tile_full,
+		tile_half
 	};
 
-	NSPlugin();
-	~NSPlugin();
+	nsplugin();
+	~nsplugin();
 
-	bool add(NSResource * res);
+	bool add(nsresource * res);
 
-	void addNameToResPath(bool add_);
+	void add_name_to_res_path(bool add_);
 
-	bool addingNameToResPath();
+	bool adding_names_to_res_path();
 
-	bool addManager(NSResManager * pManager);
+	bool add_manager(nsres_manager * pManager);
 
-	bool contains(NSResource * res);
+	bool contains(nsresource * res);
 
 	template<class ResType, class T>
 	bool contains(const T & res)
@@ -64,19 +64,19 @@ public:
 		return static_cast<ResType*>(create(hashed_type, resName));
 	}
 
-	NSResource * create(uint32 res_typeid, const nsstring & resName);
+	nsresource * create(uint32 res_typeid, const nsstring & resName);
 
-	NSEntity * createCamera(const nsstring & name,
+	nsentity * create_camera(const nsstring & name,
 		float fov,
 		const uivec2 & screenDim,
 		const fvec2 & clipnf);
 
-	NSEntity * createCamera(const nsstring & name, 
+	nsentity * create_camera(const nsstring & name, 
 		const fvec2 & lrclip, 
 		const fvec2 & tbclip, 
 		const fvec2 & nfclip);
 
-	NSEntity * createTerrain(const nsstring & name,
+	nsentity * create_terrain(const nsstring & name,
 		float hmin,
 		float hmax, 
 		const nsstring & hmfile, 
@@ -84,7 +84,7 @@ public:
 		const nsstring & nmfile = "",
 		bool importdir=true);
 
-	NSEntity * createDirLight(const nsstring & name,
+	nsentity * create_dir_light(const nsstring & name,
 		float diffuse,
 		float ambient,
 		const fvec3 & color = fvec3(1, 1, 1),
@@ -92,7 +92,7 @@ public:
 		float shadowdarkness = 1.0f,
 		int32 shadowsamples = 2);
 
-	NSEntity * createPointLight(const nsstring & name,
+	nsentity * create_point_light(const nsstring & name,
 		float diffuse,
 		float ambient,
 		float distance,
@@ -101,7 +101,7 @@ public:
 		float shadowdarkness = 1.0f,
 		int32 shadowsamples = 2);
 
-	NSEntity * createSpotLight(const nsstring & name,
+	nsentity * create_spot_light(const nsstring & name,
 		float diffuse,
 		float ambient,
 		float distance,
@@ -111,7 +111,7 @@ public:
 		float shadowdarkness = 1.0f,
 		int32 shadowsamples = 2);
 
-	NSEntity * createTile(const nsstring & name,
+	nsentity * create_tile(const nsstring & name,
 		const nsstring & difftex,
 		const nsstring & normtex,
 		fvec3 m_col,
@@ -119,36 +119,36 @@ public:
 		float s_int32,
 		fvec3 s_col,
 		bool collides,
-		Tile_t type = Full);
+		tile_t type = tile_full);
 
-	NSEntity * createTile(const nsstring & name,
-		NSMaterial * mat,
+	nsentity * create_tile(const nsstring & name,
+		nsmaterial * mat,
 		bool collides,
-		Tile_t type=Full);
+		tile_t type=tile_full);
 
-	NSEntity * createTile(const nsstring & name,
+	nsentity * create_tile(const nsstring & name,
 		const nsstring & matname,
 		bool collides, 
-		Tile_t type = Full);
+		tile_t type = tile_full);
 
-	NSEntity * createTile(const nsstring & name,
+	nsentity * create_tile(const nsstring & name,
 		uint32 matid,
 		bool collides, 
-		Tile_t type = Full);
+		tile_t type = tile_full);
 
 
 	template<class ManagerType>
-	ManagerType * createManager()
+	ManagerType * create_manager()
 	{
 		uint32 hashed_type = type_to_hash(ManagerType);
-		return createManager(hashed_type);
+		return create_manager(hashed_type);
 	}
 
-	NSResManager * createManager(uint32 manager_typeid);
+	nsres_manager * create_manager(uint32 manager_typeid);
 
-	NSResManager * createManager(const nsstring & manager_guid);
+	nsres_manager * create_manager(const nsstring & manager_guid);
 
-	NSScene * currentScene();
+	nsscene * current_scene();
 
 	template<class ResType, class T>
 	bool del(const T & name)
@@ -156,20 +156,20 @@ public:
 		return del(get<ResType>(name));
 	}
 
-	bool del(NSResource * res);
+	bool del(nsresource * res);
 
 	template<class ResManager>
-	bool destroyManager()
+	bool destroy_manager()
 	{
 		uint32 hashed_type = type_to_hash(ResManager);
-		return destroyManager(hashed_type);
+		return destroy_manager(hashed_type);
 	}
 
-	bool destroyManager(uint32 manager_typeid);
+	bool destroy_manager(uint32 manager_typeid);
 
-	bool destroyManager(const nsstring & manager_guid);
+	bool destroy_manager(const nsstring & manager_guid);
 
-	bool hasParent(const nsstring & pname);
+	bool has_parent(const nsstring & pname);
 
 	template<class ResType, class T>
 	ResType * get(const T & name)
@@ -178,11 +178,11 @@ public:
 		return static_cast<ResType*>(get(hashed_type, name));
 	}
 
-	NSResource * get(uint32 res_typeid, uint32 resid);
+	nsresource * get(uint32 res_typeid, uint32 resid);
 
-	NSResource * get(uint32 res_typeid, const nsstring & resName);
+	nsresource * get(uint32 res_typeid, const nsstring & resName);
 
-	bool resourceChanged(NSResource * res);
+	bool resource_changed(nsresource * res);
 
 	template<class ManagerType>
 	ManagerType * manager()
@@ -191,20 +191,20 @@ public:
 		return static_cast<ManagerType*>(manager(hashed_type));
 	}
 
-	NSResManager * manager(const nsstring & manager_guid);
+	nsres_manager * manager(const nsstring & manager_guid);
 	
-	NSResManager * manager(uint32 manager_typeid);
+	nsres_manager * manager(uint32 manager_typeid);
 
 	template<class ManagerType>
-	bool hasManager()
+	bool has_manager()
 	{
 		uint32 hashed_type = type_to_hash(ManagerType);
-		return hasManager(hashed_type);
+		return has_manager(hashed_type);
 	}
 
-	bool hasManager(uint32 manager_typeid);
+	bool has_manager(uint32 manager_typeid);
 
-	bool hasManager(const nsstring & manager_guid);
+	bool has_manager(const nsstring & manager_guid);
 
 	void init();
 
@@ -221,15 +221,15 @@ public:
 		return static_cast<ResType*>(load(hashed_type, fname));
 	}
 
-	NSResource * load(uint32 res_typeid, const nsstring & fname);
+	nsresource * load(uint32 res_typeid, const nsstring & fname);
 
-	NSEntity * loadModel(const nsstring & entname,
+	nsentity * load_model(const nsstring & entname,
 						 nsstring fname,
 						 bool prefixWithImportDir,
 						 const nsstring & meshname = "",
 						 bool pFlipUVs = true);
 
-	bool loadModelResources(nsstring fname,
+	bool load_model_resources(nsstring fname,
 							bool prefixWithImportDir,
 							const nsstring & meshname = "",
 							bool flipuv = true);
@@ -238,38 +238,38 @@ public:
 
 	bool bound();
 
-	const nsstring & editDate();
+	const nsstring & edit_date();
 
 	const nsstringset & parents();
 
 	virtual void pup(NSFilePUPer * p);
 
-	const nsstring & creationDate();
+	const nsstring & creation_date();
 
 	template<class ResManager>
-	ResManager * removeManager()
+	ResManager * remove_manager()
 	{
 		uint32 hashed_type = type_to_hash(ResManager);
-		return static_cast<ResManager*>(removeManager(hashed_type));
+		return static_cast<ResManager*>(remove_manager(hashed_type));
 	}
 
-	NSResManager * removeManager(uint32 manager_typeid);
+	nsres_manager * remove_manager(uint32 manager_typeid);
 
-	NSResManager * removeManager(const nsstring & manager_guid);
+	nsres_manager * remove_manager(const nsstring & manager_guid);
 
-	uint32 resourceCount();
+	uint32 resource_count();
 
-	const nsstring & resourceDirectory();
+	const nsstring & res_dir();
 
-	const nsstring & importDir() { return mImportDir; }
+	const nsstring & import_dir() { return m_import_dir; }
 
 	/*!
 	This should be called if there was a name change to a get - will check if the get is used by this component and if is
 	is then it will update the handle
 	*/
-	virtual void nameChange(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
-	bool parentsLoaded();
+	bool parents_loaded();
 
 	template<class ResType, class T>
 	bool save(const T & name, const nsstring & path="")
@@ -277,48 +277,48 @@ public:
 		return save(get<ResType>(name),path);
 	}
 
-	bool save(NSResource * res, const nsstring & path="");
+	bool save(nsresource * res, const nsstring & path="");
 
 	template<class ResType>
-	void saveAll(const nsstring & path="", NSSaveResCallback * scallback = NULL)
+	void save_all(const nsstring & path="", NSSaveResCallback * scallback = NULL)
 	{
 		uint32 hashed_type = type_to_hash(ResType);
-		return saveAll(hashed_type, path, scallback);
+		return save_all(hashed_type, path, scallback);
 	}
 
-	void saveAll(const nsstring & path="", NSSaveResCallback * scallback = NULL);
+	void save_all(const nsstring & path="", NSSaveResCallback * scallback = NULL);
 
-	void saveAll(uint32 res_typeid, const nsstring & path, NSSaveResCallback * scallback);
+	void save_all(uint32 res_typeid, const nsstring & path, NSSaveResCallback * scallback);
 	
 	template<class ResType, class T>
-	bool saveAs(const T & resname, const nsstring & fname)
+	bool save_as(const T & resname, const nsstring & fname)
 	{
-		NSResource * res = get<ResType>(resname);
-		return saveAs(res, fname);
+		nsresource * res = get<ResType>(resname);
+		return save_as(res, fname);
 	}
 
-	bool saveAs(NSResource * res, const nsstring & fname);
+	bool save_as(nsresource * res, const nsstring & fname);
 
-	void setCreator(const nsstring & pCreator);
+	void set_creator(const nsstring & pCreator);
 
-	void setNotes(const nsstring & pNotes);
+	void set_notes(const nsstring & pNotes);
 
-	void setEditDate(const nsstring & pEditDate);
+	void set_edit_date(const nsstring & pEditDate);
 
-	void setCreationDate(const nsstring & pCreationDate);
+	void set_creation_date(const nsstring & pCreationDate);
 
-	void setResourceDirectory(const nsstring & dir);
+	void set_res_dir(const nsstring & dir);
 
-	void setImportDir(const nsstring & dir) { mImportDir = dir; }
+	void set_import_dir(const nsstring & dir) { m_import_dir = dir; }
 
 	template<class ResType, class T>
 	ResType * remove(const T & resName)
 	{
-		NSResource * res = get<ResType>(resName);
+		nsresource * res = get<ResType>(resName);
 		return static_cast<ResType*>(remove(res));
 	}
 
-	NSResource * remove(NSResource * res);
+	nsresource * remove(nsresource * res);
 	
 	template<class ResType, class T>
 	bool destroy(const T & name)
@@ -326,35 +326,35 @@ public:
 		return destroy(get<ResType>(name));
 	}
 
-	bool destroy(NSResource * res);
+	bool destroy(nsresource * res);
 
 	bool unbind();
 
 private:
-	void _updateParents();
-	void _updateResMap();
+	void _update_parents();
+	void _update_res_map();
 	void _clear();
 	
-	nsstring mResDir;
-	nsstring mImportDir;
-	nsstring mNotes;
-	nsstring mCreator;
-	nsstring mCreationDate;
-	nsstring mEditDate;
+	nsstring m_res_dir;
+	nsstring m_import_dir;
+	nsstring m_notes;
+	nsstring m_creator;
+	nsstring m_creation_date;
+	nsstring m_edit_date;
 
-	bool mBound;
-	ManagerMap mManagers;
-	nsstringset mParents;
-	ResTypeMap resmap;
-	ResTypeMap unloaded;
-	bool mAddname;
+	bool m_bound;
+	manager_map m_managers;
+	nsstringset m_parents;
+	res_type_map m_resmap;
+	res_type_map m_unloaded;
+	bool m_add_name;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSPlugin & plug)
+void pup(PUPer & p, nsplugin & plug)
 {
-	pup(p, plug.mParents, "parents");
-	pup(p, plug.resmap, "resmap");
+	pup(p, plug.m_parents, "parents");
+	pup(p, plug.m_resmap, "resmap");
 }
 
 #endif

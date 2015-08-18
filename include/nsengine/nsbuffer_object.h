@@ -18,7 +18,7 @@
 #include <vector>
 #include <nsgl_object.h>
 
-class NSBufferObject : public NSGLObject
+class NSBufferObject : public nsgl_object
 {
 public:
 	enum TargetBuffer 
@@ -145,7 +145,7 @@ public:
 
 	TargetBuffer target() const;
 
-	void initGL();
+	void init_gl();
 
 	bool allocated() const;
 

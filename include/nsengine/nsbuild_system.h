@@ -1,9 +1,9 @@
 /*!
 \file nsbuild_system.h
 
-\brief Header file for NSBuildSystem class
+\brief Header file for nsbuild_system class
 
-This file contains all of the neccessary declarations for the NSBuildSystem class.
+This file contains all of the neccessary declarations for the nsbuild_system class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -16,52 +16,52 @@ This file contains all of the neccessary declarations for the NSBuildSystem clas
 #include <nssystem.h>
 #include <nsmath.h>
 
-class NSEntity;
+class nsentity;
 
-class NSBuildSystem : public NSSystem
+class nsbuild_system : public NSSystem
 {
 public:
 
-	enum Mode {
-		Build,
-		Erase
+	enum mode_t {
+		build_mode,
+		erase_mode
 	};
 
-	enum BrushMode {
-		None,
-		Tile,
-		Object
+	enum brush_t {
+		brush_none,
+		brush_tile,
+		brush_object
 	};
 
-	NSBuildSystem();
+	nsbuild_system();
 
-	~NSBuildSystem();
+	~nsbuild_system();
 
-	void changeLayer(const int32 & pAmount);
+	void change_layer(const int32 & pAmount);
 
 	void enable(const bool & pEnable, const fvec2 & pMousePos);
 
-	void enableOverwrite(bool pEnable);
+	void enable_overwrite(bool pEnable);
 
-	void enableMirror(bool pEnable);
+	void enable_mirror(bool pEnable);
 
 	void erase();
 
-	const fvec4 activeBrushColor() const;
+	const fvec4 active_brush_color() const;
 
-	const BrushMode & brushMode();
+	const brush_t & brush_type();
 
-	NSEntity * buildent();
+	nsentity * build_ent();
 
 	const fvec3 & center() const;
 
-	NSEntity * tilebrush();
+	nsentity * tile_brush();
 
-	NSEntity * objectbrush();
+	nsentity * object_brush();
 
 	const int32 & layer() const;
 
-	const Mode & mode() const;
+	const mode_t & mode() const;
 
 	//virtual bool handleEvent(NSEvent * pEvent);
 
@@ -73,23 +73,23 @@ public:
 
 	bool mirror() const;
 
-	void toCursor(const fvec2 & pCursorPos, bool pUpdateCamFirst=false);
+	void to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst=false);
 
 	void paint();
 
-	void setBrushMode(const BrushMode & pBrushMode);
+	void set_brush_type(const brush_t & pBrushMode);
 
-	void setActiveBrushColor(const fvec4 & pColor);
+	void set_active_brush_color(const fvec4 & pColor);
 
-	void setMode(const Mode & pMode);
+	void set_mode(const mode_t & pMode);
 
-	void setObjectBrush(NSEntity * pBrush);
+	void set_object_brush(nsentity * pBrush);
 
-	void setTileBrush(NSEntity * pBrush);
+	void set_tile_brush(nsentity * pBrush);
 
-	void setBuildEnt(NSEntity * pBuildEnt);
+	void set_build_ent(nsentity * pBuildEnt);
 
-	void setLayer(const int32 & pLayer);
+	void set_layer(const int32 & pLayer);
 
 	void setCenter(const fvec3 & pMirrorCenter);
 
@@ -97,21 +97,21 @@ public:
 
 	virtual void update();
 
-	virtual int32 updatePriority();
+	virtual int32 update_priority();
 
 private:
-	NSEntity * mTileBrush;
-	NSEntity * mObjectBrush;
-	NSEntity * mMirrorBrush;
-	NSEntity * mBuildEnt;
-	fvec3 mMirrorCenter;
-	uint32 mTBCenterTFormID;
-	int32 mLayer;
-	Mode mCurrentMode;
-	BrushMode mCurrentBrushMode;
-	bool mOverwrite;
-	bool mEnabled;
-	bool mMirrorMode;
+	nsentity * m_tile_brush;
+	nsentity * m_object_brush;
+	nsentity * m_mirror_brush;
+	nsentity * m_build_ent;
+	fvec3 m_mirror_center;
+	uint32 m_tile_brush_center_tform_id;
+	int32 m_layer;
+	mode_t m_current_mode;
+	brush_t m_current_brush_type;
+	bool m_overwrite;
+	bool m_enabled;
+	bool m_mirror_mode;
 };
 
 

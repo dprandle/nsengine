@@ -45,17 +45,17 @@ void NSCameraSystem::init()
 	registerHandlerFunc(this, &NSCameraSystem::_handleActionEvent);
 	registerHandlerFunc(this, &NSCameraSystem::_handleSelFocusEvent);
 
-	addTriggerHash(CameraForward, NSCAM_FORWARD);
-	addTriggerHash(CameraBackward, NSCAM_BACKWARD);
-	addTriggerHash(CameraLeft, NSCAM_LEFT);
-	addTriggerHash(CameraRight, NSCAM_RIGHT);
-	addTriggerHash(CameraTiltPan, NSCAM_TILTPAN);
-	addTriggerHash(CameraZoom, NSCAM_ZOOM);
-	addTriggerHash(CameraMove, NSCAM_MOVE);
-	addTriggerHash(CameraTopView, NSCAM_TOPVIEW);
-	addTriggerHash(CameraIsoView, NSCAM_ISOVIEW);
-	addTriggerHash(CameraFrontView, NSCAM_FRONTVIEW);
-	addTriggerHash(CameraToggleMode, NSCAM_TOGGLEMODE);
+	add_trigger_hash(CameraForward, NSCAM_FORWARD);
+	add_trigger_hash(CameraBackward, NSCAM_BACKWARD);
+	add_trigger_hash(CameraLeft, NSCAM_LEFT);
+	add_trigger_hash(CameraRight, NSCAM_RIGHT);
+	add_trigger_hash(CameraTiltPan, NSCAM_TILTPAN);
+	add_trigger_hash(CameraZoom, NSCAM_ZOOM);
+	add_trigger_hash(CameraMove, NSCAM_MOVE);
+	add_trigger_hash(CameraTopView, NSCAM_TOPVIEW);
+	add_trigger_hash(CameraIsoView, NSCAM_ISOVIEW);
+	add_trigger_hash(CameraFrontView, NSCAM_FRONTVIEW);
+	add_trigger_hash(CameraToggleMode, NSCAM_TOGGLEMODE);
 }
 
 void NSCameraSystem::changeSensitivity(float pAmount, const Sensitivity & pWhich)
@@ -132,11 +132,11 @@ selected.
 */
 void NSCameraSystem::setView(CameraView pView)
 {	
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
-	NSEntity * cam = scene->camera();
+	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 
@@ -205,13 +205,13 @@ void NSCameraSystem::setZoom(float pZFactor)
 void NSCameraSystem::setMode(CameraMode pMode)
 {
 	mMode = pMode;
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
 		return;
 
 	if (pMode == Free)
 	{
-		NSEntity * cam = scene->camera();
+		nsentity * cam = scene->camera();
 		if (cam == NULL)
 			return;
 
@@ -225,13 +225,13 @@ void NSCameraSystem::setMode(CameraMode pMode)
 	}
 	else
 	{
-		NSEntity * cam = scene->camera();
+		nsentity * cam = scene->camera();
 		if (cam == NULL)
 			return;
 
 		NSCamComp * camComp = cam->get<NSCamComp>();
 		NSTFormComp * camTComp = cam->get<NSTFormComp>();
-		NSEntity * ent = scene->entity(mFocusEnt.xy());
+		nsentity * ent = scene->entity(mFocusEnt.xy());
 		if (ent != NULL)
 		{
 			NSTFormComp * tC = ent->get<NSTFormComp>();
@@ -311,7 +311,7 @@ void NSCameraSystem::_onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, float pSc
 
 void NSCameraSystem::update()
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 	// Dont do anything if the scene is NULL
 	if (scene == NULL)
 		return;
@@ -350,7 +350,7 @@ void NSCameraSystem::update()
 			}
 
 			// Update the skybox!
-			NSEntity * skyDome = scene->skydome();
+			nsentity * skyDome = scene->skydome();
 			if (skyDome != NULL)
 			{
 				NSTFormComp * tComp = skyDome->get<NSTFormComp>();
@@ -390,12 +390,12 @@ void NSCameraSystem::update()
 
 bool NSCameraSystem::_handleActionEvent(NSActionEvent * evnt)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 
 	if (scene == NULL)
 		return true;
 
-	NSEntity * camera = scene->camera();
+	nsentity * camera = scene->camera();
 	if (camera == NULL)
 		return true;
 
@@ -404,9 +404,9 @@ bool NSCameraSystem::_handleActionEvent(NSActionEvent * evnt)
 
 	fvec2 mouseDelta;
 	float scroll;
-	auto xpos_iter = evnt->axes.find(NSInputMap::MouseXDelta),
-		ypos_iter = evnt->axes.find(NSInputMap::MouseYDelta),
-		scroll_iter = evnt->axes.find(NSInputMap::ScrollDelta);
+	auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta),
+		ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta),
+		scroll_iter = evnt->axes.find(nsinput_map::axis_scroll_delta);
 
 	if (xpos_iter != evnt->axes.end())
 		mouseDelta.x = xpos_iter->second;
@@ -417,25 +417,25 @@ bool NSCameraSystem::_handleActionEvent(NSActionEvent * evnt)
 	if (scroll_iter != evnt->axes.end())
 		scroll = scroll_iter->second;
 
-	if (evnt->mTriggerHashName == triggerHash(CameraTiltPan))
+	if (evnt->mTriggerHashName == trigger_hash(CameraTiltPan))
 		_onCamTurn(camc, tcomp, mouseDelta);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraMove))
+	if (evnt->mTriggerHashName == trigger_hash(CameraMove))
 		_onCamMove(camc, tcomp, mouseDelta);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraZoom))
+	if (evnt->mTriggerHashName == trigger_hash(CameraZoom))
 		_onCamZoom(camc, tcomp, scroll);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraTopView))
+	if (evnt->mTriggerHashName == trigger_hash(CameraTopView))
 		setView(Top);
 		
-	if (evnt->mTriggerHashName == triggerHash(CameraIsoView))
+	if (evnt->mTriggerHashName == trigger_hash(CameraIsoView))
 		setView(Iso);
 	
-	if (evnt->mTriggerHashName == triggerHash(CameraFrontView))
+	if (evnt->mTriggerHashName == trigger_hash(CameraFrontView))
 		setView(Front);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraToggleMode))
+	if (evnt->mTriggerHashName == trigger_hash(CameraToggleMode))
 		toggleMode();
 
 	return true;
@@ -443,27 +443,27 @@ bool NSCameraSystem::_handleActionEvent(NSActionEvent * evnt)
 
 bool NSCameraSystem::_handleStateEvent(NSStateEvent * evnt)
 {
-	NSScene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.currentScene();
 
 	if (scene == NULL)
 		return true;
 	
-	NSEntity * camera = scene->camera();
+	nsentity * camera = scene->camera();
 	if (camera == NULL)
 		return true;
 
 	NSCamComp * camc = camera->get<NSCamComp>();
 
-	if (evnt->mTriggerHashName == triggerHash(CameraForward))
+	if (evnt->mTriggerHashName == trigger_hash(CameraForward))
 		camc->setFly(NSCamComp::DirPos, evnt->mToggle);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraBackward))
+	if (evnt->mTriggerHashName == trigger_hash(CameraBackward))
 		camc->setFly(NSCamComp::DirNeg, evnt->mToggle);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraLeft))
+	if (evnt->mTriggerHashName == trigger_hash(CameraLeft))
 		camc->setStrafe(NSCamComp::DirNeg, evnt->mToggle);
 
-	if (evnt->mTriggerHashName == triggerHash(CameraRight))
+	if (evnt->mTriggerHashName == trigger_hash(CameraRight))
 		camc->setStrafe(NSCamComp::DirPos, evnt->mToggle);
 	return true;
 }
@@ -474,14 +474,14 @@ bool NSCameraSystem::_handleSelFocusEvent(NSSelFocusEvent * evnt)
 
 	if (mMode == Free)
 		return true;
-	NSScene * scn = nsengine.currentScene();
+	nsscene * scn = nsengine.currentScene();
 	if (scn == NULL)
 		return true;
-	NSEntity * cam = scn->camera();
+	nsentity * cam = scn->camera();
 	if (cam == NULL)
 		return true;
 	
-	NSEntity * ent = scn->entity(evnt->mFocID.xy());
+	nsentity * ent = scn->entity(evnt->mFocID.xy());
 	if (ent != NULL)
 	{
 		NSTFormComp * tC = ent->get<NSTFormComp>();
@@ -499,7 +499,7 @@ bool NSCameraSystem::_handleSelFocusEvent(NSSelFocusEvent * evnt)
 	return true;
 }
 
-int32 NSCameraSystem::updatePriority()
+int32 NSCameraSystem::update_priority()
 {
 	return CAM_SYS_UPDATE_PR;
 }

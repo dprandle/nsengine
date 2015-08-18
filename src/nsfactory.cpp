@@ -4,22 +4,22 @@
 #include <nssystem.h>
 #include <nsres_manager.h>
 
-void NSResFactory::setid(NSResource * res)
+void NSResFactory::setid(nsresource * res)
 {
-	res->mHashedType = type_id;
+	res->m_hashed_type = type_id;
 }
 
-void NSResManagerFactory::setid(NSResManager * manager)
+void nsres_managerFactory::setid(nsres_manager * manager)
 {
-	manager->mHashedType = type_id;
+	manager->m_hashed_type = type_id;
 }
 
 void NSCompFactory::setid(NSComponent * comp)
 {
-	comp->mHashedType = type_id;
+	comp->m_hashed_type = type_id;
 }
 
 void NSSysFactory::setid(NSSystem * sys)
 {
-	sys->mHashedType = type_id;
+	sys->m_hashed_type = type_id;
 }

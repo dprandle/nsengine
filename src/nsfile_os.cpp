@@ -8,14 +8,16 @@
 \copywrite Earth Banana Games 2013
 */
 
+#include <iostream>
 #include <nsfile_os.h>
-
+#include <nsres_manager.h>
 #ifdef WIN32
 #include <filesystem>
 #include <Windows.h>
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
@@ -188,8 +190,11 @@ bool rename_file(const nsstring & oldname, const nsstring & newname)
 
 nsstring cwd()
 {
-   char temp[256];
-   return ( getcwd(temp, 256) ? std::string( temp ) : std::string("") );
+	char temp[256];
+	uint32 sz = readlink("/proc/self/exe", temp, 256);
+	nsstring ret(temp);
+	ret.resize(sz);
+	return nsres_manager::path_from_filename(ret);
 }
 
 #endif

@@ -1,9 +1,9 @@
 /*! 
 	\file nsanimset.cpp
 	
-	\brief Header file for NSAnimSet class
+	\brief Header file for nsanim_set class
 
-	This file contains all of the neccessary definitions for the NSAnimSet class.
+	This file contains all of the neccessary definitions for the nsanim_set class.
 
 	\author Daniel Randle
 	\date December 11 2013
@@ -12,39 +12,39 @@
 
 #include <nsanim_set.h>
 
-NSAnimSet::NSAnimSet(): mAnimationsMap()
+nsanim_set::nsanim_set(): m_animmap()
 {
-	setExtension(DEFAULT_ANIM_EXTENSION);
+	set_ext(DEFAULT_ANIM_EXTENSION);
 }
 
-NSAnimSet::~NSAnimSet()
+nsanim_set::~nsanim_set()
 {
-	AnimMapIter iter = mAnimationsMap.begin();
-	while (iter != mAnimationsMap.end())
+	animmap_iter iter = m_animmap.begin();
+	while (iter != m_animmap.end())
 	{
 		delete iter->second;
 		++iter;
 	}
-	mAnimationsMap.clear();
+	m_animmap.clear();
 }
 
-void NSAnimSet::init()
+void nsanim_set::init()
 {
 
 }
 
-void NSAnimSet::clear()
+void nsanim_set::clear()
 {
-	AnimMapIter iter = mAnimationsMap.begin();
-	while (iter != mAnimationsMap.end())
+	animmap_iter iter = m_animmap.begin();
+	while (iter != m_animmap.end())
 	{
 		delete iter->second;
 		++iter;
 	}
-	mAnimationsMap.clear();
+	m_animmap.clear();
 }
 
-void NSAnimSet::pup(NSFilePUPer * p)
+void nsanim_set::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -58,92 +58,92 @@ void NSAnimSet::pup(NSFilePUPer * p)
 	}
 }
 
-NSAnimSet::AnimationData * NSAnimSet::createAnimationData(const nsstring & pAnimationName)
+nsanim_set::animation_data * nsanim_set::create_anim_data(const nsstring & pAnimationName)
 {
-	AnimationData * animData = new AnimationData();
-	animData->mAnimationName = pAnimationName;
-	mAnimationsMap[pAnimationName] = animData;
+	animation_data * animData = new animation_data();
+	animData->animation_name = pAnimationName;
+	m_animmap[pAnimationName] = animData;
 	return animData;
 }
 
-NSAnimSet::AnimationData * NSAnimSet::animationData(const nsstring & pAnimationName)
+nsanim_set::animation_data * nsanim_set::anim_data(const nsstring & pAnimationName)
 {
-	AnimMapIter iter = mAnimationsMap.find(pAnimationName);
-	if (iter != mAnimationsMap.end())
-		return mAnimationsMap.at(pAnimationName);
+	animmap_iter iter = m_animmap.find(pAnimationName);
+	if (iter != m_animmap.end())
+		return m_animmap.at(pAnimationName);
 	return NULL;
 }
 
-fmat4 NSAnimSet::animationBoneTransform(const nsstring & pAnimationName,
+fmat4 nsanim_set::anim_bone_transform(const nsstring & pAnimationName,
 	const nsstring & pNodeName, float pTime)
 {
-	return animationData(pAnimationName)->boneTransform(pNodeName,pTime);
+	return anim_data(pAnimationName)->bone_transform(pNodeName,pTime);
 }
 
-NSAnimSet::AnimationData::AnimationData(): mAnimNodesMap(),
-	mAnimationName(),
-	mDuration(0.0f)
+nsanim_set::animation_data::animation_data(): anim_node_map(),
+	animation_name(),
+	duration(0.0f)
 {}
 
-NSAnimSet::AnimationData::~AnimationData()
+nsanim_set::animation_data::~animation_data()
 {
-	AnimNodeMapIter iter = mAnimNodesMap.begin();
-	while (iter != mAnimNodesMap.end())
+	anim_nodemap_iter iter = anim_node_map.begin();
+	while (iter != anim_node_map.end())
 	{
 		delete iter->second;
 		iter->second = NULL;
 		++iter;
 	}
-	mAnimNodesMap.clear();
+	anim_node_map.clear();
 }
 
-NSAnimSet::AnimationData::AnimationNode * NSAnimSet::AnimationData::createAnimationNode(const nsstring & pNodeName)
+nsanim_set::animation_data::animation_node * nsanim_set::animation_data::create_node(const nsstring & pNodeName)
 {
-	AnimationNode * animNode = new AnimationNode();
-	animNode->mNodeName = pNodeName;
-	mAnimNodesMap[pNodeName] = animNode;
+	animation_node * animNode = new animation_node();
+	animNode->name = pNodeName;
+	anim_node_map[pNodeName] = animNode;
 	return animNode;
 }
 
-NSAnimSet::AnimationData::AnimationNode * NSAnimSet::AnimationData::animationNode(const nsstring & pNodeName)
+nsanim_set::animation_data::animation_node * nsanim_set::animation_data::anim_node(const nsstring & pNodeName)
 {
-	AnimNodeMapIter iter = mAnimNodesMap.find(pNodeName);
-	if (iter != mAnimNodesMap.end())
+	anim_nodemap_iter iter = anim_node_map.find(pNodeName);
+	if (iter != anim_node_map.end())
 		return iter->second;
 	return NULL;
 }
 
-fmat4 NSAnimSet::AnimationData::boneTransform(const nsstring & pNodeName, float pTime)
+fmat4 nsanim_set::animation_data::bone_transform(const nsstring & pNodeName, float pTime)
 {
-	AnimNodeMapIter iter = mAnimNodesMap.find(pNodeName);
-	if (iter != mAnimNodesMap.end())
-		return iter->second->transform(pTime,mTicksPerSecond);
+	anim_nodemap_iter iter = anim_node_map.find(pNodeName);
+	if (iter != anim_node_map.end())
+		return iter->second->transform(pTime,ticks_per_second_);
 	return fmat4();
 }
 
-NSAnimSet::AnimationData::AnimationNode::AnimationNode()
+nsanim_set::animation_data::animation_node::animation_node()
 {}
 
-NSAnimSet::AnimationData::AnimationNode::~AnimationNode()
+nsanim_set::animation_data::animation_node::~animation_node()
 {}
 
-fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTicksPerSecond)
+fmat4 nsanim_set::animation_data::animation_node::transform(float pTime, float pTicksPerSecond)
 {
 	float tick = pTime * pTicksPerSecond;
 
-	KeyRotIter lowerRot = mRotationKeys.upper_bound(tick);
-	KeyRotIter upperRot = lowerRot;
+	key_rotation_iter lowerRot = rotation_keys.upper_bound(tick);
+	key_rotation_iter upperRot = lowerRot;
 
-	KeyIter lowerScale = mScalingKeys.upper_bound(tick);
-	KeyIter upperScale = lowerScale;
+	key_iter lowerScale = scaling_keys.upper_bound(tick);
+	key_iter upperScale = lowerScale;
 
-	KeyIter lowerTrans = mTranslationKeys.upper_bound(tick);
-	KeyIter upperTrans = lowerTrans;
+	key_iter lowerTrans = translation_keys.upper_bound(tick);
+	key_iter upperTrans = lowerTrans;
 
 	fquat interQ;
-	if (upperRot != mRotationKeys.end())
+	if (upperRot != rotation_keys.end())
 	{
-		if (lowerRot != mRotationKeys.begin())
+		if (lowerRot != rotation_keys.begin())
 		{
 			--lowerRot;
 			float scaling = (tick - lowerRot->first) / (upperRot->first - lowerRot->first);
@@ -153,12 +153,12 @@ fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTic
 			interQ = lowerRot->second;
 	}
 	else
-		interQ = mRotationKeys.rbegin()->second;
+		interQ = rotation_keys.rbegin()->second;
 
 	fvec3 transInter;
-	if (upperTrans != mTranslationKeys.end())
+	if (upperTrans != translation_keys.end())
 	{
-		if (lowerTrans != mTranslationKeys.begin())
+		if (lowerTrans != translation_keys.begin())
 		{
 			--lowerTrans;
 			float scaling = (tick - lowerTrans->first) / (upperTrans->first - lowerTrans->first);
@@ -168,12 +168,12 @@ fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTic
 			transInter = lowerTrans->second;
 	}
 	else
-		transInter = mTranslationKeys.rbegin()->second;
+		transInter = translation_keys.rbegin()->second;
 
 	fvec3 scaleInter;
-	if (upperScale != mScalingKeys.end())
+	if (upperScale != scaling_keys.end())
 	{
-		if (lowerScale != mScalingKeys.begin())
+		if (lowerScale != scaling_keys.begin())
 		{
 			--lowerScale;
 			float scaling = (tick - lowerScale->first) / (upperScale->first - lowerScale->first);
@@ -183,7 +183,7 @@ fmat4 NSAnimSet::AnimationData::AnimationNode::transform(float pTime, float pTic
 			scaleInter = lowerScale->second;
 	}
 	else
-		scaleInter = mScalingKeys.rbegin()->second;
+		scaleInter = scaling_keys.rbegin()->second;
 
 	return ( fmat4(rotationMat3(interQ) % scaleInter).setColumn(3, transInter.x, transInter.y, transInter.z, 1) );
 }

@@ -6,7 +6,7 @@ File:
 	nstexture.cpp
 
 Description:
-	This file contains the definition for the NSTexture class functions along with any other helper
+	This file contains the definition for the nstexture class functions along with any other helper
 	functions
 *-----------------------------------------------------------------------------------------------------*/
 
@@ -15,51 +15,51 @@ Description:
 #include <nstexture.h>
 #include <nstex_manager.h>
 
-NSTexture::NSTexture(TexType type) :
-	mTexType(type),
-	mAllocated(false),
-	mLocked(false),
-	mFormat(0),
-	mInternalFormat(0),
-	mPixelDataType(0),
-	mMipMapLevel(0),
-	mGenMipmaps(true),
-	mBorder(0),
-	mData(NULL, 0, 0)
+nstexture::nstexture(tex_type type) :
+	m_tex_type(type),
+	m_allocated(false),
+	m_locked(false),
+	m_format(0),
+	m_internal_format(0),
+	m_pixel_data_type(0),
+	m_mipmap_level(0),
+	m_generate_mipmaps(true),
+	m_border(0),
+	m_data(NULL, 0, 0)
 {
-	setExtension(DEFAULT_TEX_EXTENSION);
+	set_ext(DEFAULT_TEX_EXTENSION);
 }
 
-NSTexture::~NSTexture()
+nstexture::~nstexture()
 {
 	release();
 }
 
-void NSTexture::initGL()
+void nstexture::init_gl()
 {
-	glGenTextures(1, &mGLName);
-	GLError("NSTexture::initGL");
+	glGenTextures(1, &m_gl_name);
+	GLError("nstexture::initGL");
 }
 
-void NSTexture::bind()
+void nstexture::bind()
 {
-	glBindTexture(mTexType, mGLName);
-	GLError("NSTexture::bind");
+	glBindTexture(m_tex_type, m_gl_name);
+	GLError("nstexture::bind");
 }
 
-uint32 NSTexture::border() const
+uint32 nstexture::border() const
 {
-	return mBorder;
+	return m_border;
 }
 
-void NSTexture::setAllocated(bool alloc)
+void nstexture::set_allocated(bool alloc)
 {
-	mAllocated = alloc;
+	m_allocated = alloc;
 }
 
-bool NSTexture::allocated()
+bool nstexture::allocated()
 {
-	return mAllocated;
+	return m_allocated;
 }
 
 /*!
@@ -68,49 +68,49 @@ If you want to disable mipmaps you need to create a new texture with them disabl
 If the texture has been allocated then this will call generate mip map function
 If it has not, it will call generate mip map function when it is allocated
 */
-void NSTexture::enableMipMaps(int32 level)
+void nstexture::enable_mipmaps(int32 level)
 {
-	mMipMapLevel = level;
-	mGenMipmaps = true;
-	if (mAllocated)
+	m_mipmap_level = level;
+	m_generate_mipmaps = true;
+	if (m_allocated)
 	{
 		if (level != 0)
-			setParameteri(MaxLevel, mMipMapLevel);
-		glGenerateMipmap(mTexType);
-		GLError("NSTexture::enableMipMaps");
+			set_parameter_i(max_level, m_mipmap_level);
+		glGenerateMipmap(m_tex_type);
+		GLError("nstexture::enableMipMaps");
 	}
 }
 
-void NSTexture::setBorder(uint32 border)
+void nstexture::set_border(uint32 border)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return;
-	mBorder = border;
+	m_border = border;
 }
 
-uint32 NSTexture::channels()
+uint32 nstexture::channels()
 {
-	if (mFormat == GL_RGBA || mFormat == GL_RGBA_INTEGER || GL_BGRA || GL_BGRA_INTEGER)
+	if (m_format == GL_RGBA || m_format == GL_RGBA_INTEGER || GL_BGRA || GL_BGRA_INTEGER)
 		return 4;
-	else if (mFormat == GL_RGB || mFormat == GL_RGB_INTEGER || mFormat == GL_BGR || mFormat == GL_BGR_INTEGER)
+	else if (m_format == GL_RGB || m_format == GL_RGB_INTEGER || m_format == GL_BGR || m_format == GL_BGR_INTEGER)
 		return 3;
-	else if (mFormat == GL_RG || mFormat == GL_RG_INTEGER || mFormat == GL_DEPTH_STENCIL)
+	else if (m_format == GL_RG || m_format == GL_RG_INTEGER || m_format == GL_DEPTH_STENCIL)
 		return 2;
-	else if (mFormat == GL_BLUE || mFormat == GL_GREEN || mFormat == GL_RED ||
-		mFormat == GL_BLUE_INTEGER || mFormat == GL_GREEN_INTEGER || mFormat == GL_RED_INTEGER ||
-		mFormat == GL_STENCIL_INDEX || mFormat == GL_DEPTH_COMPONENT)
+	else if (m_format == GL_BLUE || m_format == GL_GREEN || m_format == GL_RED ||
+		m_format == GL_BLUE_INTEGER || m_format == GL_GREEN_INTEGER || m_format == GL_RED_INTEGER ||
+		m_format == GL_STENCIL_INDEX || m_format == GL_DEPTH_COMPONENT)
 		return 1;
 	else
 		return 0;
 }
 
-uint32 NSTexture::bpp()
+uint32 nstexture::bpp()
 {
-	char chans; char bpc;
+	uint8 chans; uint8 bpc;
 
 	chans = channels();
 
-	switch (mPixelDataType)
+	switch (m_pixel_data_type)
 	{
 	case(GL_UNSIGNED_BYTE) :
 		bpc = 1;
@@ -190,97 +190,97 @@ uint32 NSTexture::bpp()
 	return chans * bpc;
 }
 
-float NSTexture::getParameterf(GetTexParam p)
+float nstexture::parameter_f(get_tex_param p)
 {
 	GLfloat f;
 
-	if (mTexType == TexCubeMap)
+	if (m_tex_type == tex_cubemap)
 		glGetTexParameterfv(BASE_CUBEMAP_FACE, p, &f);
 	else
-		glGetTexParameterfv(mTexType, p, &f);
+		glGetTexParameterfv(m_tex_type, p, &f);
 	
-	GLError("NSTexture::getParameterf");
+	GLError("nstexture::getParameterf");
 	return f;
 }
 
-int32 NSTexture::getParameteri(GetTexParam p)
+int32 nstexture::parameter_i(get_tex_param p)
 {
 	GLint i;
 
-	if (mTexType == TexCubeMap)
+	if (m_tex_type == tex_cubemap)
 		glGetTexParameteriv(BASE_CUBEMAP_FACE, p, &i);
 	else
-		glGetTexParameteriv(mTexType, p, &i);
+		glGetTexParameteriv(m_tex_type, p, &i);
 
-	GLError("NSTexture::getParameteri");
+	GLError("nstexture::getParameteri");
 	return i;
 }
 
-void NSTexture::disable(uint32 pTexUnit)
+void nstexture::disable(uint32 pTexUnit)
 {
 	glActiveTexture(BASE_TEX_UNIT + pTexUnit);
-	GLError("NSTexture::disable");
+	GLError("nstexture::disable");
 	unbind();
 }
 
-void NSTexture::enable(uint32 pTexUnit)
+void nstexture::enable(uint32 pTexUnit)
 {
 	glActiveTexture(BASE_TEX_UNIT + pTexUnit);
-	GLError("NSTexture::enable");
+	GLError("nstexture::enable");
 	bind();
 }
 
-NSTexture::ImageData NSTexture::data()
+nstexture::image_data nstexture::data()
 {
-	return mData;
+	return m_data;
 }
 
-bool NSTexture::locked() const
+bool nstexture::locked() const
 {
-	return mLocked;
+	return m_locked;
 }
 
-int32 NSTexture::internalFormat() const
+int32 nstexture::internal_format() const
 {
-	return mInternalFormat;
+	return m_internal_format;
 }
 
-int32 NSTexture::format() const
+int32 nstexture::format() const
 {
-	return mFormat;
+	return m_format;
 }
 
-int32 NSTexture::pixelDataType() const
+int32 nstexture::pixel_data_type() const
 {
-	return mPixelDataType;
+	return m_pixel_data_type;
 }
 
-void NSTexture::release()
+void nstexture::release()
 {
-	glDeleteTextures(1,&mGLName);
-	mGLName = 0;
-	mAllocated = false;
+	glDeleteTextures(1,&m_gl_name);
+	m_gl_name = 0;
+	m_allocated = false;
 }
 
-void NSTexture::setGLName(uint32 glid)
+void nstexture::set_gl_name(uint32 glid)
 {
 	if (glid != 0)
 	{
-		if (mGLName != 0)
+		if (m_gl_name != 0)
 			release();
-		mGLName = glid;
+		m_gl_name = glid;
 	}
 }
 
-void NSTexture::setInternalFormat(int32 intformat)
+void nstexture::set_internal_format(int32 intformat)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return;
 
-	mInternalFormat = intformat;
+	m_internal_format = intformat;
 }
 
-void NSTexture::pup(NSFilePUPer * p)
+void nstexture::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -294,89 +294,89 @@ void NSTexture::pup(NSFilePUPer * p)
 	}
 }
 
-void NSTexture::setFormat(int32 pFormat)
+void nstexture::set_format(int32 pFormat)
 {
-	mFormat = pFormat;
+	m_format = pFormat;
 }
 
-void NSTexture::setPixelDataType(int32 pDataType)
+void nstexture::set_pixel_data_type(int32 pDataType)
 {
-	mPixelDataType = pDataType;
+	m_pixel_data_type = pDataType;
 }
 
-void NSTexture::setParameterf(TexParameter pParam, float pValue)
+void nstexture::set_parameter_f(tex_parameter pParam, float pValue)
 {
 	if (pParam == GL_TEXTURE_BUFFER)
 		return;
-	glTexParameterf(mTexType, pParam, pValue);
-	GLError("NSTexture::setParameterf");
+	glTexParameterf(m_tex_type, pParam, pValue);
+	GLError("nstexture::setParameterf");
 }
 
-void NSTexture::setParameteri(TexParameter pParam, int32 pValue)
+void nstexture::set_parameter_i(tex_parameter pParam, int32 pValue)
 {
 	if (pParam == GL_TEXTURE_BUFFER)
 		return;
-	glTexParameteri(mTexType, pParam, pValue);
-	GLError("NSTexture::setParameteri");
+	glTexParameteri(m_tex_type, pParam, pValue);
+	GLError("nstexture::setParameteri");
 }
 
-void NSTexture::setParameterfv(TexParameter param, const fvec4 & val)
+void nstexture::set_parameter_fv(tex_parameter param, const fvec4 & val)
 {
 	if (param == GL_TEXTURE_BUFFER)
 		return;
-	glTexParameterfv(mTexType, param, &val[0]);
-	GLError("NSTexture::setParameterfv");
+	glTexParameterfv(m_tex_type, param, &val[0]);
+	GLError("nstexture::setParameterfv");
 }
 
-void NSTexture::setParameteriv(TexParameter param, const ivec4 & val)
+void nstexture::set_parameter_iv(tex_parameter param, const ivec4 & val)
 {
 	if (param == GL_TEXTURE_BUFFER)
 		return;
-	glTexParameteriv(mTexType, param, &val[0]);
-	GLError("NSTexture::setParameteriv");
+	glTexParameteriv(m_tex_type, param, &val[0]);
+	GLError("nstexture::setParameteriv");
 }
 
-void NSTexture::setParameterIiv(TexParameter param, const ivec4 & val)
+void nstexture::set_parameter_Iiv(tex_parameter param, const ivec4 & val)
 {
 	if (param == GL_TEXTURE_BUFFER)
 		return;
-	glTexParameterIiv(mTexType, param, &val[0]);
-	GLError("NSTexture::setParameterIiv");
+	glTexParameterIiv(m_tex_type, param, &val[0]);
+	GLError("nstexture::setParameterIiv");
 }
 
-void NSTexture::setParameterIiuv(TexParameter param, const uivec4 & val)
+void nstexture::set_parameter_Iuiv(tex_parameter param, const uivec4 & val)
 {
 	if (param == GL_TEXTURE_BUFFER)
 		return;
-	glTexParameterIuiv(mTexType, param, &val[0]);
-	GLError("NSTexture::setParameterIiuv");
+	glTexParameterIuiv(m_tex_type, param, &val[0]);
+	GLError("nstexture::setParameterIiuv");
 }
 
-void NSTexture::unbind()
+void nstexture::unbind()
 {
-	glBindTexture(mTexType, 0);
+	glBindTexture(m_tex_type, 0);
 }
 
-NSTexture::TexType NSTexture::textureType() const
+nstexture::tex_type nstexture::texture_type() const
 {
-	return mTexType;
+	return m_tex_type;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
 
-NSTex1D::NSTex1D():
-mWidth(0),
-mCompByteSize(0),
-mImmutable(false),
-NSTexture(Tex1D)
+nstex1d::nstex1d():
+m_width(0),
+m_comp_byte_size(0),
+m_immutable(false),
+nstexture(tex_1d)
 {}
 
-NSTex1D::~NSTex1D()
+nstex1d::~nstex1d()
 {
-	if (mLocked && mData.data != NULL)
-		delete[] mData.data;
+	if (m_locked && m_data.data != NULL)
+		delete[] m_data.data;
 }
 
 /*
@@ -384,25 +384,25 @@ Using width, internal format, pixel data type, format, and mip map level this fu
 will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 before calling allocate.
 */
-bool NSTex1D::allocate(const void * data)
+bool nstex1d::allocate(const void * data)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		if (mImmutable)
-			glTexStorage1D(mTexType, mMipMapLevel, mInternalFormat, mWidth);
+		if (m_immutable)
+			glTexStorage1D(m_tex_type, m_mipmap_level, m_internal_format, m_width);
 		else
-			glTexImage1D(mTexType, 0, mInternalFormat, mWidth, mBorder, mFormat, mPixelDataType, data); // specify base mip map level
+			glTexImage1D(m_tex_type, 0, m_internal_format, m_width, m_border, m_format, m_pixel_data_type, data); // specify base mip map level
 	}
 	else
 	{
-		glCompressedTexImage1D(mTexType, 0, mInternalFormat, mWidth, mBorder, mCompByteSize, data);
+		glCompressedTexImage1D(m_tex_type, 0, m_internal_format, m_width, m_border, m_comp_byte_size, data);
 	}
 
-	mAllocated = !GLError("NSTex1D::allocate");
-	return mAllocated;
+	m_allocated = !GLError("nstex1d::allocate");
+	return m_allocated;
 }
 
 /*
@@ -411,33 +411,33 @@ Read buffer must be bound (glReadBuffer) in order to copy screen pixels
 \param lowerLeft x and y screen coordinates
 \param dimensions width and height starting from lowerLeft
 */
-bool NSTex1D::allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions)
+bool nstex1d::allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions)
 {
-	if (mCompByteSize != 0 || mImmutable) // Cannot perform this operation on a compressed textureor immutable texture
+	if (m_comp_byte_size != 0 || m_immutable) // Cannot perform this operation on a compressed textureor immutable texture
 		return false;
 
-	glCopyTexImage1D(mTexType, 0, mInternalFormat, lowerLeft.x, lowerLeft.y, mWidth, mBorder);
-	mAllocated = !GLError("NSTexture::allocateFromScreen()");
-	return mAllocated;
+	glCopyTexImage1D(m_tex_type, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_width, m_border);
+	m_allocated = !GLError("nstexture::allocateFromScreen()");
+	return m_allocated;
 }
 
 
-bool NSTex1D::compressed() const
+bool nstex1d::compressed() const
 {
-	return (mCompByteSize != 0);
+	return (m_comp_byte_size != 0);
 }
 
-bool NSTex1D::immutable() const
+bool nstex1d::immutable() const
 {
-	return mImmutable;
+	return m_immutable;
 }
 
-void NSTex1D::init()
+void nstex1d::init()
 {
 	// do nothing
 }
 
-void NSTex1D::pup(NSFilePUPer * p)
+void nstex1d::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -451,49 +451,49 @@ void NSTex1D::pup(NSFilePUPer * p)
 	}
 }
 
-bool NSTex1D::lock()
+bool nstex1d::lock()
 {
-	mLocked = true;
+	m_locked = true;
 
-	if (!mAllocated)
-		return mLocked;
+	if (!m_allocated)
+		return m_locked;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		mData.bpp = bpp();
-		mData.size = mData.bpp*mWidth;
-		mData.data = new char[mData.size];
-		glGetTexImage(mTexType, 0, mFormat, mPixelDataType, static_cast<void*>(mData.data));
+		m_data.bpp = bpp();
+		m_data.size = m_data.bpp*m_width;
+		m_data.data = new uint8[m_data.size];
+		glGetTexImage(m_tex_type, 0, m_format, m_pixel_data_type, static_cast<void*>(m_data.data));
 	}
 	else
 	{
-		mData.size = mCompByteSize;
-		mData.data = new char[mData.size];
-		glGetCompressedTexImage(mTexType, 0, static_cast<void*>(mData.data));
+		m_data.size = m_comp_byte_size;
+		m_data.data = new uint8[m_data.size];
+		glGetCompressedTexImage(m_tex_type, 0, static_cast<void*>(m_data.data));
 	}
 
-	mLocked = !GLError("NSTex1D::lock");
-	if (!mLocked)
+	m_locked = !GLError("nstex1d::lock");
+	if (!m_locked)
 	{
-		mData.bpp = 0;
-		mData.size = 0;
-		delete[] mData.data;
-		mData.data = NULL;
+		m_data.bpp = 0;
+		m_data.size = 0;
+		delete[] m_data.data;
+		m_data.data = NULL;
 	}
-	return mLocked;
+	return m_locked;
 }
 
-bool NSTex1D::unlock()
+bool nstex1d::unlock()
 {
-	if (!mLocked)
-		return mLocked;
+	if (!m_locked)
+		return m_locked;
 
-	mLocked = false;
-	bool ret = setData(mData.data, 0, mWidth);
-	mData.bpp = 0;
-	mData.size = 0;
-	delete[] mData.data;
-	mData.data = NULL;
+	m_locked = false;
+	bool ret = set_data(m_data.data, 0, m_width);
+	m_data.bpp = 0;
+	m_data.size = 0;
+	delete[] m_data.data;
+	m_data.data = NULL;
 	return ret;
 }
 
@@ -502,55 +502,55 @@ Set image data starting from the offset and going until offset + dimensions
 If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
 the store data
 */
-bool NSTex1D::setData(const void * data, uint32 xoffset, uint32 width)
+bool nstex1d::set_data(const void * data, uint32 xoffset, uint32 width)
 {
-	if (!mAllocated || mImmutable)
+	if (!m_allocated || m_immutable)
 		return false;
 
-	if (mCompByteSize == 0)
-		glTexSubImage1D(mTexType, 0, xoffset, width, mFormat, mPixelDataType, data);
+	if (m_comp_byte_size == 0)
+		glTexSubImage1D(m_tex_type, 0, xoffset, width, m_format, m_pixel_data_type, data);
 	else
-		glCompressedTexSubImage1D(mTexType, 0, xoffset, width, mFormat, mCompByteSize, data);
+		glCompressedTexSubImage1D(m_tex_type, 0, xoffset, width, m_format, m_comp_byte_size, data);
 
-	return GLError("NSTex1D::setData");
+	return GLError("nstex1d::setData");
 }
 
-bool NSTex1D::setCompressed(uint32 byteSize)
+bool nstex1d::set_compressed(uint32 byteSize)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
-	mCompByteSize = byteSize;
+	m_comp_byte_size = byteSize;
 	return true;
 }
 
 /*
 Copy pixels from currently bound read buffer to existing texture - does not allocate space
 */
-bool NSTex1D::setDataFromScreen(uint32 xoffset, const uivec2 & lowerLeft, uint32 width)
+bool nstex1d::set_data_from_screen(uint32 xoffset, const uivec2 & lowerLeft, uint32 width)
 {
-	if (!mAllocated || mCompByteSize != 0 || mImmutable)
+	if (!m_allocated || m_comp_byte_size != 0 || m_immutable)
 		return false;
 
-	glCopyTexSubImage1D(mTexType, 0, xoffset, lowerLeft.x, lowerLeft.y, width);
-	return GLError("NSTex1D::setDataFromScreen");
+	glCopyTexSubImage1D(m_tex_type, 0, xoffset, lowerLeft.x, lowerLeft.y, width);
+	return GLError("nstex1d::setDataFromScreen");
 }
 
-void NSTex1D::setImmutable(bool immutable)
+void nstex1d::set_immutable(bool immutable)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return;
 
-	mImmutable = immutable;
+	m_immutable = immutable;
 }
 
-void NSTex1D::resize(uint32 w)
+void nstex1d::resize(uint32 w)
 {
-	if (!mAllocated)
+	if (!m_allocated)
 	{
-		mWidth = w;
+		m_width = w;
 		return;
 	}
-	else if (mImmutable)
+	else if (m_immutable)
 		return;
 
 	lock();
@@ -558,50 +558,43 @@ void NSTex1D::resize(uint32 w)
 	uint8 * cpy = new uint8[nsize];
 	for (uint32 i = 0; i < nsize; ++i)
 	{
-		if (i < mData.size)
-			cpy[i] = mData.data[i];
+		if (i < m_data.size)
+			cpy[i] = m_data.data[i];
 		else
 			cpy[i] = 0;
 	}
 	unlock();
 
-	mAllocated = false;
-	mWidth = w;
+	m_allocated = false;
+	m_width = w;
 	allocate(cpy);
 	delete[] cpy;
 }
 
-void NSTex1D::setWidth(uint32 width)
+uint32 nstex1d::size()
 {
-	if (mAllocated)
-		return;
-	mWidth = width;
-}
-
-uint32 NSTex1D::width()
-{
-	return mWidth;
+	return m_width;
 }
 
 
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 
-NSTex1DArray::NSTex1DArray() :NSTex2D() { mTexType = Tex1DArray;}
-NSTex1DArray::~NSTex1DArray(){}
+nstex1d_array::nstex1d_array() :nstex2d() { m_tex_type = tex_1d_array;}
+nstex1d_array::~nstex1d_array(){}
 
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 
-NSTex2D::NSTex2D() :
-mDim(),
-mCompByteSize(0),
-mImmutable(false),
-NSTexture(Tex2D)
+nstex2d::nstex2d() :
+m_size(),
+m_comp_byte_size(0),
+m_immutable(false),
+nstexture(tex_2d)
 {}
 
-NSTex2D::~NSTex2D()
+nstex2d::~nstex2d()
 {
-	if (mLocked && mData.data != NULL)
-		delete[] mData.data;
+	if (m_locked && m_data.data != NULL)
+		delete[] m_data.data;
 }
 
 /*
@@ -609,25 +602,25 @@ Using width, internal format, pixel data type, format, and mip map level this fu
 will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 before calling allocate.
 */
-bool NSTex2D::allocate(const void * data)
+bool nstex2d::allocate(const void * data)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		if (mImmutable)
-			glTexStorage2D(mTexType, mMipMapLevel, mInternalFormat, mDim.w, mDim.h);
+		if (m_immutable)
+			glTexStorage2D(m_tex_type, m_mipmap_level, m_internal_format, m_size.w, m_size.h);
 		else
-			glTexImage2D(mTexType, 0, mInternalFormat, mDim.w, mDim.h, mBorder, mFormat, mPixelDataType, data); // specify base mip map level
+			glTexImage2D(m_tex_type, 0, m_internal_format, m_size.w, m_size.h, m_border, m_format, m_pixel_data_type, data); // specify base mip map level
 	}
 	else
 	{
-		glCompressedTexImage2D(mTexType, 0, mInternalFormat, mDim.w, mDim.h, mBorder, mCompByteSize, data);
+		glCompressedTexImage2D(m_tex_type, 0, m_internal_format, m_size.w, m_size.h, m_border, m_comp_byte_size, data);
 	}
 
-	mAllocated = !GLError("NSTex2D::allocate");
-	return mAllocated;
+	m_allocated = !GLError("nstex2d::allocate");
+	return m_allocated;
 }
 
 /*
@@ -636,41 +629,41 @@ Read buffer must be bound (glReadBuffer) in order to copy screen pixels
 \param lowerLeft x and y screen coordinates
 \param dimensions width and height starting from lowerLeft
 */
-bool NSTex2D::allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions)
+bool nstex2d::allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions)
 {
-	if (mAllocated || mImmutable)
+	if (m_allocated || m_immutable)
 		return false;
 
-	if (mCompByteSize != 0) // Cannot perform this operation on a compressed texture
+	if (m_comp_byte_size != 0) // Cannot perform this operation on a compressed texture
 		return false;
 
-	glCopyTexImage2D(mTexType, 0, mInternalFormat, lowerLeft.x, lowerLeft.y, mDim.w, mDim.h, mBorder);
-	mAllocated = !GLError("NSTex2D::allocateFromScreen()");
-	return mAllocated;
+	glCopyTexImage2D(m_tex_type, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_size.w, m_size.h, m_border);
+	m_allocated = !GLError("nstex2d::allocateFromScreen()");
+	return m_allocated;
 }
 
 
-bool NSTex2D::compressed() const
+bool nstex2d::compressed() const
 {
-	return (mCompByteSize != 0);
+	return (m_comp_byte_size != 0);
 }
 
-const uivec2 & NSTex2D::dim() const
+const uivec2 & nstex2d::size() const
 {
-	return mDim;
+	return m_size;
 }
 
-bool NSTex2D::immutable() const
+bool nstex2d::immutable() const
 {
-	return mImmutable;
+	return m_immutable;
 }
 
-void NSTex2D::init()
+void nstex2d::init()
 {
 	// do nothing
 }
 
-void NSTex2D::pup(NSFilePUPer * p)
+void nstex2d::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -684,46 +677,51 @@ void NSTex2D::pup(NSFilePUPer * p)
 	}
 }
 
-bool NSTex2D::lock()
+bool nstex2d::lock()
 {
-	mLocked = true;
+	m_locked = true;
 
-	if (!mAllocated)
-		return mLocked;
+	if (!m_allocated)
+		return m_locked;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		mData.bpp = bpp();
-		mData.size = mData.bpp*mDim.w*mDim.h;
-		mData.data = new char[mData.size];
-		glGetTexImage(mTexType, 0, mFormat, mPixelDataType, static_cast<void*>(mData.data));
+		m_data.bpp = bpp();
+		m_data.size = m_data.bpp*m_size.w*m_size.h;
+		m_data.data = new uint8[m_data.size];
+		glGetTexImage(m_tex_type, 0, m_format, m_pixel_data_type, static_cast<void*>(m_data.data));
 	}
 	else
 	{
-		mData.size = mCompByteSize;
-		mData.data = new char[mData.size];
-		glGetCompressedTexImage(mTexType, 0, static_cast<void*>(mData.data));
+		m_data.size = m_comp_byte_size;
+		m_data.data = new uint8[m_data.size];
+		glGetCompressedTexImage(m_tex_type, 0, static_cast<void*>(m_data.data));
 	}
 
-	mLocked = !GLError("NSTex2D::lock");
-	if (!mLocked)
+	m_locked = !GLError("nstex2d::lock");
+	if (!m_locked)
 	{
-		mData.bpp = 0;
-		mData.size = 0;
-		delete[] mData.data;
-		mData.data = NULL;
+		m_data.bpp = 0;
+		m_data.size = 0;
+		delete[] m_data.data;
+		m_data.data = NULL;
 	}
-	return mLocked;
+	return m_locked;
 }
 
-void NSTex2D::resize(uint32 w, uint32 h)
+void nstex2d::resize(const uivec2 & size)
 {
-	if (!mAllocated)
+	resize(size.x,size.y);
+}
+
+void nstex2d::resize(uint32 w, uint32 h)
+{
+	if (!m_allocated)
 	{
-		mDim.set(w,h);
+		m_size.set(w,h);
 		return;
 	}
-	else if (mImmutable)
+	else if (m_immutable)
 		return;
 
 	lock();
@@ -731,30 +729,30 @@ void NSTex2D::resize(uint32 w, uint32 h)
 	uint8 * cpy = new uint8[nsize];
 	for (uint32 i = 0; i < nsize; ++i)
 	{
-		if (i < mData.size)
-			cpy[i] = mData.data[i];
+		if (i < m_data.size)
+			cpy[i] = m_data.data[i];
 		else
 			cpy[i] = 0;
 	}
 	unlock();
 
-	mAllocated = false;
-	mDim.set(w, h);
+	m_allocated = false;
+	m_size.set(w, h);
 	allocate(cpy);
 	delete[] cpy;
 }
 
-bool NSTex2D::unlock()
+bool nstex2d::unlock()
 {
-	if (!mLocked) // cannot be locked if not allocated
-		return mLocked;
+	if (!m_locked) // cannot be locked if not allocated
+		return m_locked;
 
-	mLocked = false;
-	bool ret = setData(mData.data, 0, mDim);
-	mData.bpp = 0;
-	mData.size = 0;
-	delete[] mData.data;
-	mData.data = NULL;
+	m_locked = false;
+	bool ret = set_data(m_data.data, 0, m_size);
+	m_data.bpp = 0;
+	m_data.size = 0;
+	delete[] m_data.data;
+	m_data.data = NULL;
 	return ret;
 }
 
@@ -763,80 +761,71 @@ Set image data starting from the offset and going until offset + dimensions
 If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
 the store data
 */
-bool NSTex2D::setData(const void * data, const uivec2 & offset, const uivec2 & dimensions)
+bool nstex2d::set_data(const void * data, const uivec2 & offset, const uivec2 & dimensions)
 {
-	if (!mAllocated || mImmutable)
+	if (!m_allocated || m_immutable)
 		return false;
 
-	if (mCompByteSize == 0)
-		glTexSubImage2D(mTexType, 0, offset.x, offset.y, dimensions.w, dimensions.h, mFormat, mPixelDataType, data);
+	if (m_comp_byte_size == 0)
+		glTexSubImage2D(m_tex_type, 0, offset.x, offset.y, dimensions.w, dimensions.h, m_format, m_pixel_data_type, data);
 	else
-		glCompressedTexSubImage2D(mTexType, 0, offset.x, offset.y, dimensions.w, dimensions.h, mFormat, mCompByteSize, data);
+		glCompressedTexSubImage2D(m_tex_type, 0, offset.x, offset.y, dimensions.w, dimensions.h, m_format, m_comp_byte_size, data);
 
-	return !GLError("NSTex2D::setData");
+	return !GLError("nstex2d::setData");
 }
 
-bool NSTex2D::setCompressed(uint32 byteSize)
+bool nstex2d::set_compressed(uint32 byteSize)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
-	mCompByteSize = byteSize;
+	m_comp_byte_size = byteSize;
 	return true;
-}
-
-void NSTex2D::setdim(const uivec2 & dim)
-{
-	if (mAllocated)
-		return;
-	mDim = dim;
-}
-
-void NSTex2D::setdim(uint32 w, uint32 h)
-{
-	if (mAllocated)
-		return;
-	mDim.set(w, h);
 }
 
 /*
 Copy pixels from currently bound read buffer to existing texture - does not allocate space
 */
-bool NSTex2D::setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
+bool nstex2d::set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
 {
-	if (!mAllocated || mCompByteSize != 0 || mImmutable)
+	if (!m_allocated || m_comp_byte_size != 0 || m_immutable)
 		return false;
 
-	glCopyTexSubImage2D(mTexType, 0, offset.x, offset.y, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
-	return !GLError("NSTex2D::setDataFromScreen");
+	glCopyTexSubImage2D(m_tex_type, 0, offset.x, offset.y, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
+	return !GLError("nstex2d::setDataFromScreen");
 }
 
-void NSTex2D::setImmutable(bool immutable)
+void nstex2d::set_immutable(bool immutable)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return;
 
-	mImmutable = immutable;
+	m_immutable = immutable;
 }
 
 
+const uivec2 & nstex2d::size()
+{
+	return m_size;
+}
+
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 
-NSTex2DArray::NSTex2DArray() : NSTex3D() { mTexType = Tex2DArray; }
-NSTex2DArray::~NSTex2DArray(){}
+nstex2d_array::nstex2d_array() : nstex3d() { m_tex_type = tex_2d_array; }
+nstex2d_array::~nstex2d_array(){}
 
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 
-NSTex3D::NSTex3D() :
-mDim(),
-mCompByteSize(0),
-mImmutable(false),
-NSTexture(Tex3D)
+nstex3d::nstex3d() :
+m_size(),
+m_comp_byte_size(0),
+m_immutable(false),
+nstexture(tex_3d)
 {}
 
-NSTex3D::~NSTex3D()
+nstex3d::~nstex3d()
 {
-	if (mLocked && mData.data != NULL)
-		delete[] mData.data;
+	if (m_locked && m_data.data != NULL)
+		delete[] m_data.data;
 }
 
 /*
@@ -844,49 +833,49 @@ Using width, internal format, pixel data type, format, and mip map level this fu
 will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 before calling allocate.
 */
-bool NSTex3D::allocate(const void * data)
+bool nstex3d::allocate(const void * data)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		if (mImmutable)
-			glTexStorage3D(mTexType, mMipMapLevel, mInternalFormat, mDim.x, mDim.y, mDim.z);
+		if (m_immutable)
+			glTexStorage3D(m_tex_type, m_mipmap_level, m_internal_format, m_size.x, m_size.y, m_size.z);
 		else
-			glTexImage3D(mTexType, 0, mInternalFormat, mDim.x, mDim.y, mDim.z, mBorder, mFormat, mPixelDataType, data); // specify base mip map level
+			glTexImage3D(m_tex_type, 0, m_internal_format, m_size.x, m_size.y, m_size.z, m_border, m_format, m_pixel_data_type, data); // specify base mip map level
 	}
 	else
 	{
-		glCompressedTexImage3D(mTexType, 0, mInternalFormat, mDim.x, mDim.y, mDim.z, mBorder, mCompByteSize, data);
+		glCompressedTexImage3D(m_tex_type, 0, m_internal_format, m_size.x, m_size.y, m_size.z, m_border, m_comp_byte_size, data);
 	}
 
-	mAllocated = !GLError("NSTex3D::allocate");
-	return mAllocated;
+	m_allocated = !GLError("nstex3d::allocate");
+	return m_allocated;
 }
 
 
-bool NSTex3D::compressed() const
+bool nstex3d::compressed() const
 {
-	return (mCompByteSize != 0);
+	return (m_comp_byte_size != 0);
 }
 
-const uivec3 & NSTex3D::dim() const
+const uivec3 & nstex3d::size() const
 {
-	return mDim;
+	return m_size;
 }
 
-void NSTex3D::init()
+void nstex3d::init()
 {
 	// do nothing
 }
 
-bool NSTex3D::immutable() const
+bool nstex3d::immutable() const
 {
-	return mImmutable;
+	return m_immutable;
 }
 
-void NSTex3D::pup(NSFilePUPer * p)
+void nstex3d::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -900,53 +889,51 @@ void NSTex3D::pup(NSFilePUPer * p)
 	}
 }
 
-bool NSTex3D::lock()
+bool nstex3d::lock()
 {
-	mLocked = true;
+	m_locked = true;
 
-	if (!mAllocated)
-		return mLocked;
+	if (!m_allocated)
+		return m_locked;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		mData.bpp = bpp();
-		mData.size = mData.bpp*mDim.x*mDim.y*mDim.z;
-		mData.data = new char[mData.size];
-		glGetTexImage(mTexType, 0, mFormat, mPixelDataType, static_cast<void*>(mData.data));
+		m_data.bpp = bpp();
+		m_data.size = m_data.bpp*m_size.x*m_size.y*m_size.z;
+		m_data.data = new uint8[m_data.size];
+		glGetTexImage(m_tex_type, 0, m_format, m_pixel_data_type, static_cast<void*>(m_data.data));
 	}
 	else
 	{
-		mData.size = mCompByteSize;
-		mData.data = new char[mData.size];
-		glGetCompressedTexImage(mTexType, 0, static_cast<void*>(mData.data));
+		m_data.size = m_comp_byte_size;
+		m_data.data = new uint8[m_data.size];
+		glGetCompressedTexImage(m_tex_type, 0, static_cast<void*>(m_data.data));
 	}
 
-	mLocked = !GLError("NSTex3D::lock");
-	if (!mLocked)
+	m_locked = !GLError("nstex3d::lock");
+	if (!m_locked)
 	{
-		mData.bpp = 0;
-		mData.size = 0;
-		delete[] mData.data;
-		mData.data = NULL;
+		m_data.bpp = 0;
+		m_data.size = 0;
+		delete[] m_data.data;
+		m_data.data = NULL;
 	}
-	return mLocked;
+	return m_locked;
 }
 
-void NSTex3D::setdim(uint32 w, uint32 h, uint32 layers)
+void nstex3d::resize(const uivec3 & size)
 {
-	if (mAllocated)
-		return;
-	mDim.set(w, h, layers);
+	resize(size.x,size.y,size.z);
 }
 
-void NSTex3D::resize(uint32 w, uint32 h, uint32 layers)
+void nstex3d::resize(uint32 w, uint32 h, uint32 layers)
 {
-	if (!mAllocated)
+	if (!m_allocated)
 	{
-		mDim.set(w, h, layers);
+		m_size.set(w, h, layers);
 		return;
 	}
-	else if (mImmutable)
+	else if (m_immutable)
 		return;
 
 	lock();
@@ -954,30 +941,30 @@ void NSTex3D::resize(uint32 w, uint32 h, uint32 layers)
 	uint8 * cpy = new uint8[nsize];
 	for (uint32 i = 0; i < nsize; ++i)
 	{
-		if (i < mData.size)
-			cpy[i] = mData.data[i];
+		if (i < m_data.size)
+			cpy[i] = m_data.data[i];
 		else
 			cpy[i] = 0;
 	}
 	unlock();
 
-	mAllocated = false;
-	mDim.set(w, h, layers);
+	m_allocated = false;
+	m_size.set(w, h, layers);
 	allocate(cpy);
 	delete[] cpy;
 }
 
-bool NSTex3D::unlock()
+bool nstex3d::unlock()
 {
-	if (!mLocked) // cannot be locked if not allocated
-		return mLocked;
+	if (!m_locked) // cannot be locked if not allocated
+		return m_locked;
 
-	mLocked = false;
-	bool ret = setData(mData.data, 0, mDim);
-	mData.bpp = 0;
-	mData.size = 0;
-	delete[] mData.data;
-	mData.data = NULL;
+	m_locked = false;
+	bool ret = set_data(m_data.data, 0, m_size);
+	m_data.bpp = 0;
+	m_data.size = 0;
+	delete[] m_data.data;
+	m_data.data = NULL;
 	return ret;
 }
 
@@ -986,67 +973,64 @@ Set image data starting from the offset and going until offset + dimensions
 If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
 the store data
 */
-bool NSTex3D::setData(const void * data, const uivec3 & offset, const uivec3 & dimensions)
+bool nstex3d::set_data(const void * data, const uivec3 & offset, const uivec3 & dimensions)
 {
-	if (!mAllocated || mImmutable)
+	if (!m_allocated || m_immutable)
 		return false;
 
-	if (mCompByteSize == 0)
-		glTexSubImage3D(mTexType, 0, offset.x, offset.y, offset.z, dimensions.x, dimensions.y, dimensions.z, mFormat, mPixelDataType, data);
+	if (m_comp_byte_size == 0)
+		glTexSubImage3D(m_tex_type, 0, offset.x, offset.y, offset.z, dimensions.x, dimensions.y, dimensions.z, m_format, m_pixel_data_type, data);
 	else
-		glCompressedTexSubImage3D(mTexType, 0, offset.x, offset.y, offset.z, dimensions.x, dimensions.y, dimensions.z, mFormat, mCompByteSize, data);
+		glCompressedTexSubImage3D(m_tex_type, 0, offset.x, offset.y, offset.z, dimensions.x, dimensions.y, dimensions.z, m_format, m_comp_byte_size, data);
 
-	return !GLError("NSTex3D::setData");
+	return !GLError("nstex3d::setData");
 }
 
-bool NSTex3D::setCompressed(uint32 byteSize)
+bool nstex3d::set_compressed(uint32 byteSize)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
-	mCompByteSize = byteSize;
+	m_comp_byte_size = byteSize;
 	return true;
-}
-
-void NSTex3D::setdim(const uivec3 & dim)
-{
-	if (mAllocated)
-		return;
-	mDim = dim;
 }
 
 /*
 Copy pixels from currently bound read buffer to existing texture - does not allocate space
 */
-bool NSTex3D::setDataFromScreen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
+bool nstex3d::set_data_from_screen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
 {
-	if (!mAllocated || mCompByteSize != 0 || mImmutable)
+	if (!m_allocated || m_comp_byte_size != 0 || m_immutable)
 		return false;
 
-	glCopyTexSubImage3D(mTexType, 0, offset.x, offset.y, offset.z, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
-	return !GLError("NSTex3D::setDataFromScreen");
+	glCopyTexSubImage3D(m_tex_type, 0, offset.x, offset.y, offset.z, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
+	return !GLError("nstex3d::setDataFromScreen");
 }
 
-void NSTex3D::setImmutable(bool immutable)
+void nstex3d::set_immutable(bool immutable)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return;
 
-	mImmutable = immutable;
+	m_immutable = immutable;
 }
 
+const uivec3 & nstex3d::size()
+{
+	return m_size;
+}
 
 /*------------------------------------------------------------------------------------------------------------------------------*/
 
-NSTexCubeMap::NSTexCubeMap() :
-mDim(),
-mCompByteSize(0),
-NSTexture(TexCubeMap)
+nstex_cubemap::nstex_cubemap() :
+m_size(),
+m_comp_byte_size(0),
+nstexture(tex_cubemap)
 {}
 
-NSTexCubeMap::~NSTexCubeMap()
+nstex_cubemap::~nstex_cubemap()
 {
-	if (mLocked && mData.data != NULL)
-		delete[] mData.data;
+	if (m_locked && m_data.data != NULL)
+		delete[] m_data.data;
 }
 
 /*
@@ -1054,48 +1038,48 @@ Using width, internal format, pixel data type, format, and mip map level this fu
 will allocate new texture data to the currently bound texture name. Be sure to bind the texture
 before calling allocate.
 */
-bool NSTexCubeMap::allocate(const void * data)
+bool nstex_cubemap::allocate(const void * data)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
 	bool s = true;
-	for (uint32 i = PosX; i <= NegZ; i += 1)
+	for (uint32 i = pos_x; i <= neg_z; i += 1)
 	{
-		s = s && allocate(CubeFace(i), data);
-		mAllocated = false;
+		s = s && allocate(cube_face(i), data);
+		m_allocated = false;
 	}
 
-	return (mAllocated = s);
+	return (m_allocated = s);
 }
 
-bool NSTexCubeMap::allocate(CubeFace f, const void * data)
+bool nstex_cubemap::allocate(cube_face f, const void * data)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
-	if (mCompByteSize == 0)
-		glTexImage2D(f, 0, mInternalFormat, mDim.w, mDim.h, mBorder, mFormat, mPixelDataType, data); // specify base mip map level
+	if (m_comp_byte_size == 0)
+		glTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_format, m_pixel_data_type, data); // specify base mip map level
 	else
-		glCompressedTexImage2D(f, 0, mInternalFormat, mDim.w, mDim.h, mBorder, mCompByteSize, data);
+		glCompressedTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_comp_byte_size, data);
 
-	mAllocated = !GLError("NSTexCubeMap::allocateFace");
-	return mAllocated;
+	m_allocated = !GLError("nstex_cubemap::allocateFace");
+	return m_allocated;
 }
 
-bool NSTexCubeMap::allocateFromScreen(const uivec2 & lowerLeft, const uivec2 dimensions)
+bool nstex_cubemap::allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
-	if (mCompByteSize != 0) // Cannot perform this operation on a compressed texture
+	if (m_comp_byte_size != 0) // Cannot perform this operation on a compressed texture
 		return false;
 
 	bool s = true;
-	for (uint32 i = PosX; i <= NegZ; ++i)
-		s = s && allocateFromScreen(CubeFace(i), lowerLeft, dimensions);
+	for (uint32 i = pos_x; i <= neg_z; ++i)
+		s = s && allocate_from_screen(cube_face(i), lowerLeft, dimensions);
 
-	return (mAllocated = s);
+	return (m_allocated = s);
 }
 
 /*
@@ -1104,104 +1088,109 @@ Read buffer must be bound (glReadBuffer) in order to copy screen pixels
 \param lowerLeft x and y screen coordinates
 \param dimensions width and height starting from lowerLeft
 */
-bool NSTexCubeMap::allocateFromScreen(CubeFace f, const uivec2 & lowerLeft, const uivec2 dimensions)
+bool nstex_cubemap::allocate_from_screen(cube_face f, const uivec2 & lowerLeft, const uivec2 dimensions)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
 
-	if (mCompByteSize != 0) // Cannot perform this operation on a compressed texture
+	if (m_comp_byte_size != 0) // Cannot perform this operation on a compressed texture
 		return false;
 
-	glCopyTexImage2D(f, 0, mInternalFormat, lowerLeft.x, lowerLeft.y, mDim.w, mDim.h, mBorder);
-	mAllocated = !GLError("NSTexture::allocateFromScreen()");
-	return mAllocated;
+	glCopyTexImage2D(f, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_size.w, m_size.h, m_border);
+	m_allocated = !GLError("nstexture::allocateFromScreen()");
+	return m_allocated;
 }
 
 
-bool NSTexCubeMap::compressed() const
+bool nstex_cubemap::compressed() const
 {
-	return (mCompByteSize != 0);
+	return (m_comp_byte_size != 0);
 }
 
-const uivec2 & NSTexCubeMap::dim() const
+const uivec2 & nstex_cubemap::size() const
 {
-	return mDim;
+	return m_size;
 }
 
-void NSTexCubeMap::init()
+void nstex_cubemap::init()
 {
 	// do nothing
 }
 
-bool NSTexCubeMap::lock()
+bool nstex_cubemap::lock()
 {
-	mLocked = true;
+	m_locked = true;
 
-	if (!mAllocated)
-		return mLocked;
+	if (!m_allocated)
+		return m_locked;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		mData.bpp = bpp();
-		mData.size = mData.bpp*mDim.w*mDim.h*6;
-		mData.data = new char[mData.size];
+		m_data.bpp = bpp();
+		m_data.size = m_data.bpp*m_size.w*m_size.h*6;
+		m_data.data = new uint8[m_data.size];
 		for (uint32 i = 0; i < 6; ++i)
-			glGetTexImage(PosX + i, 0, mFormat, mPixelDataType, static_cast<void*>(mData.data + i*mData.bpp*mDim.w*mDim.h));
+			glGetTexImage(pos_x + i, 0, m_format, m_pixel_data_type, static_cast<void*>(m_data.data + i*m_data.bpp*m_size.w*m_size.h));
 	}
 	else
 	{
-		mData.size = mCompByteSize;
-		mData.data = new char[mData.size];
+		m_data.size = m_comp_byte_size;
+		m_data.data = new uint8[m_data.size];
 		for (uint32 i = 0; i < 6; ++i)
-			glGetCompressedTexImage(PosX + i, 0, static_cast<void*>(mData.data + i*mData.bpp*mDim.w*mDim.h));
+			glGetCompressedTexImage(pos_x + i, 0, static_cast<void*>(m_data.data + i*m_data.bpp*m_size.w*m_size.h));
 	}
 
-	mLocked = !GLError("NSTexCubeMap::lock");
-	if (!mLocked)
+	m_locked = !GLError("nstex_cubemap::lock");
+	if (!m_locked)
 	{
-		mData.bpp = 0;
-		mData.size = 0;
-		delete[] mData.data;
-		mData.data = NULL;
+		m_data.bpp = 0;
+		m_data.size = 0;
+		delete[] m_data.data;
+		m_data.data = NULL;
 	}
-	return mLocked;
+	return m_locked;
 }
 
-bool NSTexCubeMap::lock(CubeFace f)
+bool nstex_cubemap::lock(cube_face f)
 {
-	if (mLocked || !mAllocated)
-		return mLocked;
+	if (m_locked || !m_allocated)
+		return m_locked;
 
-	if (mCompByteSize == 0)
+	if (m_comp_byte_size == 0)
 	{
-		mData.bpp = bpp();
-		mData.size = mData.bpp*mDim.w*mDim.h;
-		mData.data = new char[mData.size];
-		glGetTexImage(f, 0, mFormat, mPixelDataType, static_cast<void*>(mData.data));
+		m_data.bpp = bpp();
+		m_data.size = m_data.bpp*m_size.w*m_size.h;
+		m_data.data = new uint8[m_data.size];
+		glGetTexImage(f, 0, m_format, m_pixel_data_type, static_cast<void*>(m_data.data));
 	}
 	else
 	{
-		mData.size = mCompByteSize;
-		mData.data = new char[mData.size];
-		glGetCompressedTexImage(f, 0, static_cast<void*>(mData.data));
+		m_data.size = m_comp_byte_size;
+		m_data.data = new uint8[m_data.size];
+		glGetCompressedTexImage(f, 0, static_cast<void*>(m_data.data));
 	}
 
-	mLocked = !GLError("NSTexCubeMap::lock");
-	if (!mLocked)
+	m_locked = !GLError("nstex_cubemap::lock");
+	if (!m_locked)
 	{
-		mData.bpp = 0;
-		mData.size = 0;
-		delete[] mData.data;
-		mData.data = NULL;
+		m_data.bpp = 0;
+		m_data.size = 0;
+		delete[] m_data.data;
+		m_data.data = NULL;
 	}
-	return mLocked;
+	return m_locked;
 }
 
-void NSTexCubeMap::resize(uint32 w, uint32 h)
+void nstex_cubemap::resize(const uivec2 & size)
 {
-	if (!mAllocated)
+	resize(size.w,size.h);
+}
+
+void nstex_cubemap::resize(uint32 w, uint32 h)
+{
+	if (!m_allocated)
 	{
-		mDim.set(w, h);
+		m_size.set(w, h);
 		return;
 	}
 
@@ -1210,48 +1199,48 @@ void NSTexCubeMap::resize(uint32 w, uint32 h)
 	uint8 * cpy = new uint8[nsize];
 	for (uint32 i = 0; i < nsize; ++i)
 	{
-		if (i < mData.size)
-			cpy[i] = mData.data[i];
+		if (i < m_data.size)
+			cpy[i] = m_data.data[i];
 		else
 			cpy[i] = 0;
 	}
 	unlock();
 
-	mAllocated = false;
-	mDim.set(w, h);
+	m_allocated = false;
+	m_size.set(w, h);
 	allocate(cpy);
 	delete[] cpy;
 }
 
-bool NSTexCubeMap::unlock()
+bool nstex_cubemap::unlock()
 {
-	if (!mLocked) // cannot be locked if not allocated
-		return mLocked;
+	if (!m_locked) // cannot be locked if not allocated
+		return m_locked;
 
-	mLocked = false;
+	m_locked = false;
 
 	bool s = true;
 	for (uint32 i = 0; i < 6; ++i)
-		s = s && setData(CubeFace(PosX + i), mData.data + i*(mData.bpp*mDim.x*mDim.y), 0, mDim);
+		s = s && set_data(cube_face(pos_x + i), m_data.data + i*(m_data.bpp*m_size.x*m_size.y), 0, m_size);
 
-	mData.bpp = 0;
-	mData.size = 0;
-	delete[] mData.data;
-	mData.data = NULL;
+	m_data.bpp = 0;
+	m_data.size = 0;
+	delete[] m_data.data;
+	m_data.data = NULL;
 	return s;
 }
 
-bool NSTexCubeMap::unlock(CubeFace f)
+bool nstex_cubemap::unlock(cube_face f)
 {
-	if (!mLocked) // cannot be locked if not allocated
-		return mLocked;
+	if (!m_locked) // cannot be locked if not allocated
+		return m_locked;
 
-	mLocked = false;
-	bool ret = setData(f, mData.data, 0, mDim);
-	mData.bpp = 0;
-	mData.size = 0;
-	delete[] mData.data;
-	mData.data = NULL;
+	m_locked = false;
+	bool ret = set_data(f, m_data.data, 0, m_size);
+	m_data.bpp = 0;
+	m_data.size = 0;
+	delete[] m_data.data;
+	m_data.data = NULL;
 	return ret;
 }
 
@@ -1260,78 +1249,64 @@ Set image data starting from the offset and going until offset + dimensions
 If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
 the store data
 */
-bool NSTexCubeMap::setData(const void * data, const uivec2 & offset, const uivec2 & dimensions)
+bool nstex_cubemap::set_data(const void * data, const uivec2 & offset, const uivec2 & dimensions)
 {
-	if (!mAllocated)
+	if (!m_allocated)
 		return false;
 
 	bool s = true;
-	for (uint32 i = PosX; i <= NegZ; ++i)
-		s = s && setData(CubeFace(i), data, offset, dimensions);
+	for (uint32 i = pos_x; i <= neg_z; ++i)
+		s = s && set_data(cube_face(i), data, offset, dimensions);
 
 	return s;
 }
 
-bool NSTexCubeMap::setData(CubeFace f, const void * data, const uivec2 & offset, const uivec2 & dimensions)
+bool nstex_cubemap::set_data(cube_face f, const void * data, const uivec2 & offset, const uivec2 & dimensions)
 {
-	if (!mAllocated)
+	if (!m_allocated)
 		return false;
 
-	if (mCompByteSize == 0)
-		glTexSubImage2D(f, 0, offset.x, offset.y, dimensions.w, dimensions.h, mFormat, mPixelDataType, data);
+	if (m_comp_byte_size == 0)
+		glTexSubImage2D(f, 0, offset.x, offset.y, dimensions.w, dimensions.h, m_format, m_pixel_data_type, data);
 	else
-		glCompressedTexSubImage2D(f, 0, offset.x, offset.y, dimensions.w, dimensions.h, mFormat, mCompByteSize, data);
+		glCompressedTexSubImage2D(f, 0, offset.x, offset.y, dimensions.w, dimensions.h, m_format, m_comp_byte_size, data);
 
-	return !GLError("NSTexCubeMap::setData");
+	return !GLError("nstex_cubemap::setData");
 }
 
-bool NSTexCubeMap::setCompressed(uint32 byteSize)
+bool nstex_cubemap::set_compressed(uint32 byteSize)
 {
-	if (mAllocated)
+	if (m_allocated)
 		return false;
-	mCompByteSize = byteSize;
+	m_comp_byte_size = byteSize;
 	return true;
-}
-
-void NSTexCubeMap::setdim(const uivec2 & dim)
-{
-	if (mAllocated)
-		return;
-	mDim = dim;
-}
-
-void NSTexCubeMap::setdim(uint32 w, uint32 h)
-{
-	if (mAllocated)
-		return;
-	mDim.set(w, h);
 }
 
 /*
 Copy pixels from currently bound read buffer to existing texture - does not allocate space
 */
-bool NSTexCubeMap::setDataFromScreen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
+bool nstex_cubemap::set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
 {
-	if (!mAllocated || mCompByteSize != 0)
+	if (!m_allocated || m_comp_byte_size != 0)
 		return false;
 
 	bool s = true;
-	for (uint32 i = PosX; i <= NegZ; ++i)
-		s = s && setDataFromScreen(CubeFace(i), offset, lowerLeft, dimensions);
+	for (uint32 i = pos_x; i <= neg_z; ++i)
+		s = s && set_data_from_screen(cube_face(i), offset, lowerLeft, dimensions);
 
 	return s;
 }
 
-bool NSTexCubeMap::setDataFromScreen(CubeFace f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
+bool nstex_cubemap::set_data_from_screen(cube_face f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions)
 {
-	if (!mAllocated || mCompByteSize != 0)
+	if (!m_allocated || m_comp_byte_size != 0)
 		return false;
 
 	glCopyTexSubImage2D(f, 0, offset.x, offset.y, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
-	return !GLError("NSTexCubeMap::setDataFromScreen");
+	return !GLError("nstex_cubemap::setDataFromScreen");
 }
 
-void NSTexCubeMap::pup(NSFilePUPer * p)
+void nstex_cubemap::pup(NSFilePUPer * p)
 {
 	if (p->type() == NSFilePUPer::Binary)
 	{
@@ -1347,37 +1322,37 @@ void NSTexCubeMap::pup(NSFilePUPer * p)
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-NSTexRectangle::NSTexRectangle() { mTexType = TexRectangle; }
-NSTexRectangle::~NSTexRectangle() {}
+nstex_rectangle::nstex_rectangle() { m_tex_type = tex_rectangle; }
+nstex_rectangle::~nstex_rectangle() {}
 
-NSTexCubeMapArray::NSTexCubeMapArray() { mTexType = TexCubeMapArray; }
-NSTexCubeMapArray::~NSTexCubeMapArray() {}
+nstex_cubemap_array::nstex_cubemap_array() { m_tex_type = tex_cubemap_array; }
+nstex_cubemap_array::~nstex_cubemap_array() {}
 
-NSTex2DMultisample::NSTex2DMultisample() { mTexType = Tex2DMultisample;}
-NSTex2DMultisample::~NSTex2DMultisample() {}
+nstex2d_multisample::nstex2d_multisample() { m_tex_type = tex_2d_multisample;}
+nstex2d_multisample::~nstex2d_multisample() {}
 
-NSTex2DMultisampleArray::NSTex2DMultisampleArray() { mTexType = Tex2DMultisampleArray; }
-NSTex2DMultisampleArray::~NSTex2DMultisampleArray() {}
+nstex2d_multisample_array::nstex2d_multisample_array() { m_tex_type = tex_2d_multisample_array; }
+nstex2d_multisample_array::~nstex2d_multisample_array() {}
 
-NSTexBuffer::NSTexBuffer():NSTexture(TexBuffer) {}
-NSTexBuffer::~NSTexBuffer() {}
+nstex_buffer::nstex_buffer():nstexture(tex_buffer) {}
+nstex_buffer::~nstex_buffer() {}
 
-bool NSTexBuffer::allocate(const void * data)
+bool nstex_buffer::allocate(const void * data)
 {
 	return false;
 }
 
-void NSTexBuffer::init()
+void nstex_buffer::init()
 {
 	// do nothing
 }
 
-bool NSTexBuffer::lock()
+bool nstex_buffer::lock()
 {
 	return false;
 }
 
-bool NSTexBuffer::unlock()
+bool nstex_buffer::unlock()
 {
 	return false;
 }

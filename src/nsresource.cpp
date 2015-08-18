@@ -1,9 +1,9 @@
 /*! 
 	\file nsresource.cpp
 	
-	\brief Definition file for NSResource class
+	\brief Definition file for nsresource class
 
-	This file contains all of the neccessary definitions for the NSResource class.
+	This file contains all of the neccessary definitions for the nsresource class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -15,74 +15,74 @@
 #include <nsengine.h>
 #endif
 
-NSResource::NSResource() :
-mIconPath(),
-mIconTexID(),
-mName(),
-mSubDir(),
-mID(0),
-mPlugID(0),
-mHashedType(0),
-mOwned(false)
+nsresource::nsresource() :
+m_icon_path(),
+m_icon_tex_id(),
+m_name(),
+m_subdir(),
+m_id(0),
+m_plugin_id(0),
+m_hashed_type(0),
+m_owned(false)
 {}
 
-NSResource::~NSResource()
+nsresource::~nsresource()
 {}
 
-const nsstring & NSResource::extension() const
+const nsstring & nsresource::extension() const
 {
-	return mExtension;
+	return m_ext;
 }
 
-uivec2 NSResource::fullid()
+uivec2 nsresource::full_id()
 {
-	return uivec2(mPlugID, mID);
+	return uivec2(m_plugin_id, m_id);
 }
 
-void NSResource::setIconPath(const nsstring & pIconPath)
+void nsresource::set_icon_path(const nsstring & pIconPath)
 {
-	mIconPath = pIconPath;
+	m_icon_path = pIconPath;
 }
 
-void NSResource::setIconTexID(const uivec2 & texID)
+void nsresource::set_icon_tex_id(const uivec2 & texID)
 {
-	mIconTexID = texID;
+	m_icon_tex_id = texID;
 }
 
-const nsstring & NSResource::name() const
+const nsstring & nsresource::name() const
 {
-	return mName;
+	return m_name;
 }
 
-uint32 NSResource::plugid() const
+uint32 nsresource::plugin_id() const
 {
-	return mPlugID;
+	return m_plugin_id;
 }
 
-uint32 NSResource::id() const
+uint32 nsresource::id() const
 {
-	return mID;
+	return m_id;
 }
 
-const nsstring & NSResource::subDir() const
+const nsstring & nsresource::subdir() const
 {
-	return mSubDir;
+	return m_subdir;
 }
 
-const nsstring & NSResource::iconPath()
+const nsstring & nsresource::icon_path()
 {
-	return mIconPath;
+	return m_icon_path;
 }
 
-const uivec2 & NSResource::iconTexID()
+const uivec2 & nsresource::icon_tex_id()
 {
-	return mIconTexID;
+	return m_icon_tex_id;
 }
 
 /*!
 Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
 */
-uivec2array  NSResource::resources()
+uivec2array  nsresource::resources()
 {
 	return uivec2array();
 }
@@ -91,35 +91,35 @@ uivec2array  NSResource::resources()
 This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
 is then it will update the handle
 */
-void NSResource::nameChange(const uivec2 & oldid, const uivec2 newid)
+void nsresource::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	// do nothing
 }
 
-uint32 NSResource::type()
+uint32 nsresource::type()
 {
-	return mHashedType;
+	return m_hashed_type;
 }
 
-void NSResource::setExtension(const nsstring & pExt)
+void nsresource::set_ext(const nsstring & pExt)
 {
-	mExtension = pExt;
+	m_ext = pExt;
 }
 
-void NSResource::rename(const nsstring & pRefName)
+void nsresource::rename(const nsstring & pRefName)
 {
-	uint32 tmp = mID;
+	uint32 tmp = m_id;
 
-	mName = pRefName;
-	mID = hash_id(pRefName);
+	m_name = pRefName;
+	m_id = hash_id(pRefName);
 
 #ifdef NOTIFY_ENGINE_NAME_CHANGE
-	if (mOwned) // if a manager owns this resource - otherwise we dont care
-		nsengine.nameChange(uivec2(mPlugID, tmp),uivec2(mPlugID, mID));
+	if (m_owned) // if a manager owns this resource - otherwise we dont care
+		nsengine.name_change(uivec2(m_plugin_id, tmp),uivec2(m_plugin_id, m_id));
 #endif
 }
 
-void NSResource::setSubDir(const nsstring & pDir)
+void nsresource::set_subdir(const nsstring & pDir)
 {
-	mSubDir = pDir;
+	m_subdir = pDir;
 }

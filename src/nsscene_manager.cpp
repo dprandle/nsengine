@@ -1,9 +1,9 @@
 /*!
 \file nsscenemanager.cpp
 
-\brief Definition file for NSSceneManager class
+\brief Definition file for nsscene_manager class
 
-This file contains all of the neccessary definitions for the NSSceneManager class.
+This file contains all of the neccessary definitions for the nsscene_manager class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -19,21 +19,21 @@ This file contains all of the neccessary definitions for the NSSceneManager clas
 #include <nsfile_os.h>
 using namespace nsfileio;
 
-NSSceneManager::NSSceneManager() : 
+nsscene_manager::nsscene_manager() : 
 mCurrentScene(NULL)
 {
-	setLocalDirectory(LOCAL_SCENE_DIR_DEFAULT);
+	set_local_dir(LOCAL_SCENE_DIR_DEFAULT);
 }
 
-NSSceneManager::~NSSceneManager()
+nsscene_manager::~nsscene_manager()
 {}
 
-NSScene * NSSceneManager::current()
+nsscene * nsscene_manager::current()
 {
 	return mCurrentScene;
 }
 
-NSScene * NSSceneManager::load(uint32 res_type_id, const nsstring & fname)
+nsscene * nsscene_manager::load(uint32 res_type_id, const nsstring & fname)
 {
 	nsstring resName(fname);
 	nsstring resExtension;
@@ -41,7 +41,7 @@ NSScene * NSSceneManager::load(uint32 res_type_id, const nsstring & fname)
 	nsstring subDir;
 	bool shouldPrefix = false;
 	
-	nsstring prefixdirs = mResourceDirectory + mLocalDirectory;
+	nsstring prefixdirs = m_res_dir + m_local_dir;
 
 	size_t pos = resName.find_last_of("/\\");
 	if (pos != nsstring::npos)
@@ -69,33 +69,33 @@ NSScene * NSSceneManager::load(uint32 res_type_id, const nsstring & fname)
 	if (!file_exists(fName))
 		return NULL;
 
-	NSScene * scene = get(resName);
+	nsscene * scene = get(resName);
 	if (scene == NULL)
 		scene = create(resName);
 	else
 		return NULL;
 
-	scene->setSubDir(subDir); // should be "" for false appendDirectories is false
-	scene->setExtension(resExtension);
+	scene->set_subdir(subDir); // should be "" for false appendDirectories is false
+	scene->set_ext(resExtension);
 	return scene;
 }
 
-bool NSSceneManager::save(NSResource * res, const nsstring & path)
+bool nsscene_manager::save(nsresource * res, const nsstring & path)
 {
-	NSScene * scene = get(res->id());
+	nsscene * scene = get(res->id());
 	if (scene == NULL)
 		return false;
 
 	nsstring fName(scene->name() + scene->extension());
 	if (path == "")
-		fName = mResourceDirectory + mLocalDirectory + res->subDir() + fName;
+		fName = m_res_dir + m_local_dir + res->subdir() + fName;
 	else
 		fName = path + fName;
 	// otherwise create in cwd
 
 	bool fret = create_dir(fName);
 	if (fret)
-		dprint("NSSceneManager::save Created directory " + fName);
+		dprint("nsscene_manager::save Created directory " + fName);
 
 
     // If a scene other than the current scene is being saved, check first to make sure that there isnt a file
@@ -106,7 +106,7 @@ bool NSSceneManager::save(NSResource * res, const nsstring & path)
 
 	nsfstream file;
 	NSFilePUPer * p;
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::out | nsfstream::binary);
 		p = new NSBinFilePUPer(file, PUP_OUT);
@@ -119,12 +119,12 @@ bool NSSceneManager::save(NSResource * res, const nsstring & path)
 
 	if (!file.is_open())
 	{
-		dprint("NSSceneManager::save : Error opening file with name - " + fName);
+		dprint("nsscene_manager::save : Error opening file with name - " + fName);
 		delete p;
 		return false;
 	}
 	nsstring rest = nsengine.guid(scene->type());
-	if (mSaveMode == Binary)
+	if (m_save_mode == binary)
 		pup(*(static_cast<NSBinFilePUPer*>(p)), rest, "type");
 	else
 		pup(*(static_cast<NSTextFilePUPer*>(p)), rest, "type");
@@ -135,17 +135,17 @@ bool NSSceneManager::save(NSResource * res, const nsstring & path)
 	return true;
 }
 
-bool NSSceneManager::setCurrent(NSScene * sc, bool newScene, bool savePrevious)
+bool nsscene_manager::set_current(nsscene * sc, bool newScene, bool savePrevious)
 {
 	if (sc != NULL && sc != mCurrentScene)
 	{
 		if (savePrevious && mCurrentScene != NULL)
 			save(mCurrentScene);
 
-		nsstring fName = mResourceDirectory + mLocalDirectory + sc->subDir() + sc->name() + sc->extension();
+		nsstring fName = m_res_dir + m_local_dir + sc->subdir() + sc->name() + sc->extension();
 		nsfstream file;
 		NSFilePUPer * p;
-		if (mSaveMode == Binary)
+		if (m_save_mode == binary)
 		{
 			file.open(fName, nsfstream::in | nsfstream::binary);
 			p = new NSBinFilePUPer(file, PUP_IN);
@@ -168,7 +168,7 @@ bool NSSceneManager::setCurrent(NSScene * sc, bool newScene, bool savePrevious)
 		}
 
 		nsstring rt;
-		if (mSaveMode == Binary)
+		if (m_save_mode == binary)
 			pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
 		else
 			pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
@@ -176,7 +176,7 @@ bool NSSceneManager::setCurrent(NSScene * sc, bool newScene, bool savePrevious)
 		nsstring guid_ = nsengine.guid(sc->type());
 		if (rt != guid_)
 		{
-			dprint("NSScene::setCurrent Loaded scene file: " + fName + " is not a scene file type - removing from scenes.");
+			dprint("nsscene::setCurrent Loaded scene file: " + fName + " is not a scene file type - removing from scenes.");
 			delete p;
 			file.close();
 			destroy(sc);

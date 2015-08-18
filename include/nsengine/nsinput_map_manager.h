@@ -1,60 +1,60 @@
-#ifndef NSINPUTMAP_MANAGER_H
-#define NSINPUTMAP_MANAGER_H
+#ifndef NSINPUT_MAP_MANAGER_H
+#define NSINPUT_MAP_MANAGER_H
 
 #include <nsres_manager.h>
 #include <nsinput_map.h>
 
-class NSInputMapManager : public NSResManager
+class nsinput_map_manager : public nsres_manager
 {
 public:
 
-	NSInputMapManager();
-	~NSInputMapManager();
+	nsinput_map_manager();
+	~nsinput_map_manager();
 	
-	template <class ResType>
-	ResType * create(const nsstring & resName)
+	template <class res_type>
+	res_type * create(const nsstring & res_name)
 	{
-		return NSResManager::create<ResType>(resName);
+		return nsres_manager::create<res_type>(res_name);
 	}
 
-	virtual NSInputMap * create(const nsstring & resName)
+	virtual nsinput_map * create(const nsstring & res_name)
 	{
-		return create<NSInputMap>(resName); // Create 2d texture by default
+		return create<nsinput_map>(res_name); // Create 2d texture by default
 	}
 
-	template <class ResType, class T>
-	ResType * get(const T & rname)
+	template <class res_type, class T>
+	res_type * get(const T & res_name)
 	{
-		return NSResManager::get<ResType>(rname);
+		return nsres_manager::get<res_type>(res_name);
 	}
 	
 	template<class T>
-	NSInputMap * get(const T & resname)
+	nsinput_map * get(const T & res_name)
 	{
-		return get<NSInputMap>(resname);
+		return get<nsinput_map>(res_name);
 	}
 
-	template<class ResType>
-	ResType * load(const nsstring & fname)
+	template<class res_type>
+	res_type * load(const nsstring & fname)
 	{
-		return NSResManager::load<ResType>(fname);
+		return nsres_manager::load<res_type>(fname);
 	}
 
-	NSInputMap * load(const nsstring & fname)
+	nsinput_map * load(const nsstring & fname)
 	{
-		return load<NSInputMap>(fname);
+		return load<nsinput_map>(fname);
 	}
 	
-	template<class ResType, class T >
-	ResType * remove(const T & rname)
+	template<class res_type, class T >
+	res_type * remove(const T & res_name)
 	{
-		return NSResManager::remove<ResType>(rname);
+		return nsres_manager::remove<res_type>(res_name);
 	}
 
 	template<class T >
-	NSInputMap * remove(const T & rname)
+	nsinput_map * remove(const T & res_name)
 	{
-		return remove<NSInputMap>(rname);
+		return remove<nsinput_map>(res_name);
 	}
 
 };
