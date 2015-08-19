@@ -17,10 +17,10 @@ This file contains all of the neccessary declarations for the NSParticleComp cla
 #include <nsmath.h>
 
 class nsentity;
-class NSTransformFeedbackObject;
-class NSVertexArrayObject;
-class NSBufferObject;
-class NSEvent;
+class nsxfb_object;
+class nsvertex_array_object;
+class nsbuffer_object;
+class nsevent;
 
 class NSParticleComp : public NSComponent
 {
@@ -57,7 +57,7 @@ public:
 	template <class PUPer>
 	friend void pup(PUPer & p, NSParticleComp & pc);
 
-	friend class NSParticleSystem;
+	friend class nsparticle_system;
 	
 	NSParticleComp();
 
@@ -177,9 +177,9 @@ public:
 
 	virtual void pup(NSFilePUPer * p);
 
-	NSTransformFeedbackObject * transformFeedbackObject();
+	nsxfb_object * transformFeedbackObject();
 
-	NSVertexArrayObject * vertexArrayObject();
+	nsvertex_array_object * vertexArrayObject();
 
 	uint32 transformFeedbackID();
 
@@ -237,8 +237,8 @@ public:
 
 	void swap();
 
-	NSBufferObject * mFrontBuf;
-	NSBufferObject * mBackBuf;
+	nsbuffer_object * mFrontBuf;
+	nsbuffer_object * mBackBuf;
 private:
 	fvec3uimap mMotionKeys;
 	fvec3uimap mVisualKeys;
@@ -270,8 +270,8 @@ private:
 	bool mFirst; // Is it the first time running the simulation since being reset (need to render using glDrawElements rather than feedback draw)
 
 
-	NSTransformFeedbackObject * mTFB[2]; // 2 transform feedback buffers (draw from last to first then swap)
-	NSVertexArrayObject * mVAO[2]; // for rendering whats in the TF FB buffers
+	nsxfb_object * mTFB[2]; // 2 transform feedback buffers (draw from last to first then swap)
+	nsvertex_array_object * mVAO[2]; // for rendering whats in the TF FB buffers
 	uint32 mBufferIndex; //!< Current buffer index
 	ParticleArray mParticles; //!< Sort of dummy array used to allocate VBOs
 };

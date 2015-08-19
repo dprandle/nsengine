@@ -12,7 +12,7 @@ This file contains all of the neccessary definitions for the NSParticleComp clas
 
 
 #include <nsparticle_comp.h>
-#include <nstransform_feedback_object.h>
+#include <nsxfb_object.h>
 #include <nsvertex_array_object.h>
 #include <nsbuffer_object.h>
 #include <nstex_manager.h>
@@ -22,8 +22,8 @@ This file contains all of the neccessary definitions for the NSParticleComp clas
 #include <nsengine.h>
 
 NSParticleComp::NSParticleComp() :
-mFrontBuf(new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable)),
-mBackBuf(new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable)),
+mFrontBuf(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+mBackBuf(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
 mBufferIndex(0),
 mSimulating(false),
 mFirst(true),
@@ -50,10 +50,10 @@ mEmitterShape(Cube),
 mEmitterSize(1.0f, 1.0f, 1.0f),
 NSComponent()
 {
-	mTFB[0] = new NSTransformFeedbackObject();
-	mTFB[1] = new NSTransformFeedbackObject();
-	mVAO[0] = new NSVertexArrayObject();
-	mVAO[1] = new NSVertexArrayObject();
+	mTFB[0] = new nsxfb_object();
+	mTFB[1] = new nsxfb_object();
+	mVAO[0] = new nsvertex_array_object();
+	mVAO[1] = new nsvertex_array_object();
 	mMotionKeys[0] = fvec3();
 	mMotionKeys[mMaxMotionKeys] = fvec3();
 	mVisualKeys[0] = fvec3(1.0f,1.0f,1.0f);
@@ -246,37 +246,37 @@ void NSParticleComp::init()
 	mVAO[0]->bind();
 	mBackBuf->bind();
 	mBackBuf->allocate(mParticles,
-					   NSBufferObject::MutableDynamicDraw,
+					   nsbuffer_object::mutable_dynamic_draw,
 					   static_cast<uint32>(mParticles.size()));
 	mVAO[0]->enable(0);
-	mVAO[0]->vertexAttribPtr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
+	mVAO[0]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
 	mVAO[0]->enable(1);
-	mVAO[0]->vertexAttribPtr(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4));
+	mVAO[0]->vertex_attrib_ptr(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4));
 	mVAO[0]->enable(2);
-	mVAO[0]->vertexAttribPtr(2, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 2);
+	mVAO[0]->vertex_attrib_ptr(2, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 2);
 	mVAO[0]->enable(3);
-	mVAO[0]->vertexAttribPtr(3, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 3);
+	mVAO[0]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 3);
 	mVAO[0]->unbind();
 
 	mVAO[1]->bind();
 	mFrontBuf->bind();
 	mFrontBuf->allocate(mParticles,
-						NSBufferObject::MutableDynamicDraw,
+						nsbuffer_object::mutable_dynamic_draw,
 						static_cast<uint32>(mParticles.size()));
 	mVAO[1]->enable(0);
-	mVAO[1]->vertexAttribPtr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
+	mVAO[1]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), 0);
 	mVAO[1]->enable(1);
-	mVAO[1]->vertexAttribPtr(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4));
+	mVAO[1]->vertex_attrib_ptr(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4));
 	mVAO[1]->enable(2);
-	mVAO[1]->vertexAttribPtr(2, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 2);
+	mVAO[1]->vertex_attrib_ptr(2, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 2);
 	mVAO[1]->enable(3);
-	mVAO[1]->vertexAttribPtr(3, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 3);
+	mVAO[1]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), sizeof(fvec4) * 3);
 	mVAO[1]->unbind();
 
-	mFrontBuf->setTarget(NSBufferObject::TransformFeedback);
-	mBackBuf->setTarget(NSBufferObject::TransformFeedback);
-	mTFB[0]->setPrimitive(NSTransformFeedbackObject::Points);
-	mTFB[1]->setPrimitive(NSTransformFeedbackObject::Points);
+	mFrontBuf->set_target(nsbuffer_object::transform_feedback);
+	mBackBuf->set_target(nsbuffer_object::transform_feedback);
+	mTFB[0]->set_primitive(nsxfb_object::gl_points);
+	mTFB[1]->set_primitive(nsxfb_object::gl_points);
 
 	mTFB[0]->bind();
 	mFrontBuf->bind();
@@ -545,16 +545,16 @@ void NSParticleComp::allocateBuffers()
 	mParticles.resize(mMaxParticleCount);
 	mParticles[0].mAgeTypeReserved.y = 1.0f;
 
-	mFrontBuf->setTarget(NSBufferObject::Array);
-	mBackBuf->setTarget(NSBufferObject::Array);
+	mFrontBuf->set_target(nsbuffer_object::array);
+	mBackBuf->set_target(nsbuffer_object::array);
 
 	mBackBuf->bind();
 	mBackBuf->allocate(mParticles,
-					   NSBufferObject::MutableDynamicDraw,
+					   nsbuffer_object::mutable_dynamic_draw,
 					   static_cast<uint32>(mParticles.size()));
 	mFrontBuf->bind();
 	mBackBuf->allocate(mParticles,
-					   NSBufferObject::MutableDynamicDraw,
+					   nsbuffer_object::mutable_dynamic_draw,
 					   static_cast<uint32>(mParticles.size()));
 	mFrontBuf->unbind();
 }
@@ -609,12 +609,12 @@ uint32 NSParticleComp::transformFeedbackID()
 	return mTFB[1 - mBufferIndex]->gl_id();
 }
 
-NSTransformFeedbackObject * NSParticleComp::transformFeedbackObject()
+nsxfb_object * NSParticleComp::transformFeedbackObject()
 {
 	return mTFB[mBufferIndex];
 }
 
-NSVertexArrayObject * NSParticleComp::vertexArrayObject()
+nsvertex_array_object * NSParticleComp::vertexArrayObject()
 {
 	return mVAO[mBufferIndex];
 }

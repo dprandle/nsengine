@@ -99,13 +99,13 @@ public:
 		void update_VAO();
 
 
-		NSBufferObject pos_buf;
-		NSBufferObject tex_buf;
-		NSBufferObject norm_buf;
-		NSBufferObject tang_buf;
-		NSBufferObject indice_buf;
-		NSBufferObject joint_buf;
-		NSVertexArrayObject vao;
+		nsbuffer_object pos_buf;
+		nsbuffer_object tex_buf;
+		nsbuffer_object norm_buf;
+		nsbuffer_object tang_buf;
+		nsbuffer_object indice_buf;
+		nsbuffer_object joint_buf;
+		nsvertex_array_object vao;
 
 		fvec3array positions;
 		fvec2array tex_coords;

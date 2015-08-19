@@ -1,29 +1,29 @@
 /*!
 \file nscamera_system.h
 
-\brief Header file for NSCameraSystem class
+\brief Header file for nscamera_system class
 
-This file contains all of the neccessary declarations for the NSCameraSystem class.
+This file contains all of the neccessary declarations for the nscamera_system class.
 
 \author Daniel Randle
 \date December 17 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSCAMERASYSTEM_H
-#define NSCAMERASYSTEM_H
+#ifndef NSCAMERA_SYSTEM_H
+#define NSCAMERA_SYSTEM_H
 
-#define NSCAM_FORWARD "CameraForward"
-#define NSCAM_BACKWARD "CameraBackward"
-#define NSCAM_LEFT "CameraLeft"
-#define NSCAM_RIGHT "CameraRight"
-#define NSCAM_TILTPAN "CameraTiltPan"
-#define NSCAM_MOVE "CameraMove"
-#define NSCAM_ZOOM "CameraZoom"
-#define NSCAM_TOPVIEW "CameraTopView"
-#define NSCAM_ISOVIEW "CameraIsoView"
-#define NSCAM_FRONTVIEW "CameraFrontView"
-#define NSCAM_TOGGLEMODE "CameraToggleMode"
+#define NSCAM_FORWARD "camera_forward"
+#define NSCAM_BACKWARD "camera_backward"
+#define NSCAM_LEFT "camera_left"
+#define NSCAM_RIGHT "camera_right"
+#define NSCAM_TILTPAN "camera_tilt_pan"
+#define NSCAM_MOVE "camera_move"
+#define NSCAM_ZOOM "camera_zoom"
+#define NSCAM_TOPVIEW "camera_top_view"
+#define NSCAM_ISOVIEW "camera_iso_view"
+#define NSCAM_FRONTVIEW "camera_front_view"
+#define NSCAM_TOGGLEMODE "camera_toggle_mode"
 
 #include <nssystem.h>
 #include <nsglobal.h>
@@ -31,111 +31,105 @@ This file contains all of the neccessary declarations for the NSCameraSystem cla
 
 class NSCamComp;
 class NSTFormComp;
-class NSActionEvent;
-class NSStateEvent;
+class nsaction_event;
+class nsstate_event;
 
-class NSCameraSystem : public NSSystem
+class nscamera_system : public nssystem
 {
 public:
 
-	enum CameraMode {
-		Free, /*!< Free mode - camera moves as fps */
-		Focus /*!< Focus mode - camera focuses on single object */
+	enum camera_mode {
+		mode_free, /*!< Free mode - camera moves as fps */
+		mode_focus /*!< Focus mode - camera focuses on single object */
 	};
 
-	enum Sensitivity
+	enum sensitivity_t
 	{
-		Turn,
-		Strafe
+		sens_turn,
+		sens_strafe
 	};
 
 	/*!
 	Enum holds 3 different pre-set camera view identifiers
 	*/
-	enum CameraView {
-		Top, /*!< Top down camera view */
-		Iso, /*!< Isometric camera view */
-		Front /*!< Front on camera view */
+	enum camera_view_t {
+		view_top, /*!< Top down camera view */
+		view_iso, /*!< Isometric camera view */
+		view_front /*!< Front on camera view */
 	};
 
-	NSCameraSystem();
-	~NSCameraSystem();
+	nscamera_system();
+	~nscamera_system();
 
-	void changeSensitivity(float pAmount, const Sensitivity & pWhich);
-
-	//virtual bool handleEvent(NSEvent * pEvent);
+	void change_sensitivity(float amount_, const sensitivity_t & which_);
 
 	void init();
 
 	virtual void update();
 
-	const CameraMode & mode() const;
+	const camera_mode & mode() const;
 
-	const float & sensitivity(const Sensitivity & pWhich) const;
+	const float & sensitivity(const sensitivity_t & which_) const;
 
 	float zoom() const;
 
-	void setSensitivity(float pSensitivity, const Sensitivity & pWhich);
+	void set_sensitivity(float sensitivity_, const sensitivity_t & which_);
 
-	void setMode(CameraMode pMode);
+	void set_mode(camera_mode mode_);
 
-	void setView(CameraView pView);
+	void set_view(camera_view_t view_);
 
-	bool xinv(const CameraMode & pMode = Free);
+	bool x_inverted(const camera_mode & mode_ = mode_free);
 
-	bool yinv(const CameraMode & pMode = Free);
+	bool y_inverted(const camera_mode & mode_ = mode_free);
 
-	void setxinv(bool pInvert, const CameraMode & pMode=Free);
+	void invert_x(bool invert_, const camera_mode & mode_=mode_free);
 
-	void setyinv(bool pInvert, const CameraMode & pMode = Free);
+	void invert_y(bool invert_, const camera_mode & mode_ = mode_free);
 
-	void setZoom(float pZFactor);
+	void set_zoom(float zfactor_);
 
-	void toggleMode();
+	void toggle_mode();
 
 	virtual int32 update_priority();
 
 private:
 
-	enum InputTriggers
+	enum input_trigger_t
 	{
-		CameraForward,
-		CameraBackward,
-		CameraLeft,
-		CameraRight,
-		CameraTiltPan,
-		CameraMove,
-		CameraZoom,
-		CameraTopView,
-		CameraIsoView,
-		CameraFrontView,
-		CameraToggleMode
+		camera_forward,
+		camera_backward,
+		camera_left,
+		camera_right,
+		camera_tilt_pan,
+		camera_move,
+		camera_zoom,
+		camera_top_view,
+		camera_iso_view,
+		camera_front_view,
+		camera_toggle_mode
 	};
 
-    void _onCamTurn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
-	void _onCamMove(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
-	void _onCamZoom(NSCamComp * pCam, NSTFormComp * tComp, float pScroll);
+    void _on_cam_turn(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
+	void _on_cam_move(NSCamComp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
+	void _on_cam_zoom(NSCamComp * pCam, NSTFormComp * tComp, float pScroll);
 	
-	bool _handleActionEvent(NSActionEvent * evnt);
-	bool _handleStateEvent(NSStateEvent * evnt);
-	bool _handleSelFocusEvent(NSSelFocusEvent * evnt);
+	bool _handle_action_event(nsaction_event * evnt);
+	bool _handle_state_event(nsstate_event * evnt);
+	bool _handle_sel_focus_event(nssel_focus_event * evnt);
 	
-	float mZoomFactor;
-	float mTurnSensitivity;
-	float mStrafeSensitivity;
-
-	float animTime;
-	float anim_elapsed;
-	fquat startOrient, finalOrient;
-	fvec3 startPos, finalPos;
-	bool anim_view, switch_back;
-
-	ivec2 mFreeModeInverted;
-	ivec2 mFocusModeInverted;
-
-	uivec3 mFocusEnt;
-
-	CameraMode mMode;
+	float m_zoom_factor;
+	float m_turn_sensitivity;
+	float m_strafe_sensitivity;
+	float m_anim_time;
+	float m_anim_elapsed;
+	fquat m_start_orient, m_final_orient;
+	fvec3 m_start_pos, m_final_pos;
+	bool m_anim_view, m_switch_back;
+	ivec2 m_free_mode_inverted;
+	ivec2 m_focus_mode_inverted;
+	uivec3 m_focus_ent;
+	camera_mode m_cam_mode;
 };
 
 #endif

@@ -27,7 +27,7 @@ class NSTimer;
 class NSCamComp : public NSComponent
 {
 public:
-	friend class NSCameraSystem;
+	friend class nscamera_system;
 	/*!
 	Assigns integers to different travel directions
 

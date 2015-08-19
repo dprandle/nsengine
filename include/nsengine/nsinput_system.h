@@ -1,17 +1,17 @@
 /*!
 \file nsinput_system.h
 
-\brief Header file for NSInputSystem class
+\brief Header file for nsinput_system class
 
-This file contains all of the neccessary declarations for the NSInputSystem class.
+This file contains all of the neccessary declarations for the nsinput_system class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSCUSTOMSYSTEM_H
-#define NSCUSTOMSYSTEM_H
+#ifndef NSINPUT_SYSTEM_H
+#define NSINPUT_SYSTEM_H
 
 #include <nssystem.h>
 #include <nsinput_map.h>
@@ -22,70 +22,70 @@ struct NSInputMouseButtonEvent;
 struct NSInputMouseMoveEvent;
 struct NSInputMouseScrollEvent;
 
-class NSInputSystem : public NSSystem
+class nsinput_system : public nssystem
 {
 public:
 
-	typedef std::vector<nsinput_map::ctxt*> ContextStack;
+	typedef std::vector<nsinput_map::ctxt*> context_stack;
 
-	NSInputSystem();
+	nsinput_system();
 
-	~NSInputSystem();
+	~nsinput_system();
 
-	bool keyEvent(NSKeyEvent * evnt);
+	bool key_event(nskey_event * evnt);
 
-	bool mouseButtonEvent(NSMouseButtonEvent * evnt);
+	bool mouse_button_event(nsmouse_button_event * evnt);
 
-	bool mouseMoveEvent(NSMouseMoveEvent * evnt);
+	bool mouse_move_event(NSMouseMoveEvent * evnt);
 
-	bool mouseScrollEvent(NSMouseScrollEvent * evnt);
+	bool mouse_scroll_event(nsmouse_scroll_event * evnt);
 	
 	virtual void init();
 
-	void setInputMap(const uivec2 & resid);
+	void set_input_map(const uivec2 & resid);
 
-	const uivec2 & inputMap();
+	const uivec2 & input_map();
 
 	virtual void update();
 
 	virtual int32 update_priority();
 
-	void popContext();
+	void pop_context();
 
-	void pushContext(const nsstring & pName);
+	void push_context(const nsstring & pName);
 
-	void setCursorPos(const fvec2 & cursorPos);
+	void set_cursor_pos(const fvec2 & cursorPos);
 	
 private:
 
-	void _keyPress(nsinput_map::key_val pKey);
+	void _key_press(nsinput_map::key_val pKey);
 
-	void _keyRelease(nsinput_map::key_val pKey);
+	void _key_release(nsinput_map::key_val pKey);
 
-	void _mouseMove(const fvec2 & cursorPos);
+	void _mouse_move(const fvec2 & cursorPos);
 
-	void _mousePress(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos);
+	void _mouse_press(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos);
 
-	void _mouseRelease(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos);
+	void _mouse_release(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos);
 
-	void _mouseScroll(float pDelta, const fvec2 & mousePos);
+	void _mouse_scroll(float pDelta, const fvec2 & mousePos);
 
-	bool _checkTriggerModifiers(const nsinput_map::trigger & t);
+	bool _check_trigger_modifiers(const nsinput_map::trigger & t);
 
-	void _createActionEvent(nsinput_map::trigger & trigger);
+	void _create_action_event(nsinput_map::trigger & trigger);
 
-	void _createStateEvent(nsinput_map::trigger & trigger, bool toggle);
+	void _create_state_event(nsinput_map::trigger & trigger, bool toggle);
 
-	void _setAxesFromTrigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t);
+	void _set_axis_from_trigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t);
 	
-	ContextStack mContextStack;
+	context_stack m_ctxt_stack;
 	nsinput_map::key_modifier_set m_key_modifiers;
 	nsinput_map::mouse_modifier_set m_mouse_modifiers;
 
-	fvec2 mCurrentPos;
-	fvec2 mLastPos;
-	float mScrollDelta;
-	uivec2 mInputMapID;
+	fvec2 m_current_pos;
+	fvec2 m_last_pos;
+	float m_scroll_delta;
+	uivec2 m_input_map_id;
 };
 
 

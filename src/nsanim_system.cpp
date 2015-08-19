@@ -1,9 +1,9 @@
 /*!
 \file nsanimsystem.cpp
 
-\brief Definition file for NSAnimSystem class
+\brief Definition file for nsanim_system class
 
-This file contains all of the neccessary definitions for the NSAnimSystem class.
+This file contains all of the neccessary definitions for the nsanim_system class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -25,18 +25,18 @@ This file contains all of the neccessary definitions for the NSAnimSystem class.
 #include <nsplugin.h>
 #include <nsres_manager.h>
 
-NSAnimSystem::NSAnimSystem() :NSSystem()
+nsanim_system::nsanim_system() :nssystem()
 {
 }
 
-NSAnimSystem::~NSAnimSystem()
+nsanim_system::~nsanim_system()
 {}
 
-void NSAnimSystem::init()
+void nsanim_system::init()
 {
 }
 
-// bool NSAnimSystem::handleEvent(NSEvent * pEvent)
+// bool nsanim_system::handleEvent(NSEvent * pEvent)
 // {
 // 	nsscene * scene = nsengine.currentScene();
 // 	if (scene == NULL)
@@ -44,14 +44,14 @@ void NSAnimSystem::init()
 
 // 	if (pEvent == NULL)
 // 	{
-// 		dprint("NSAnimSystem::handleEvent Event is NULL - bad bad bad");
+// 		dprint("nsanim_system::handleEvent Event is NULL - bad bad bad");
 // 		return false;
 // 	}
 	
 // 	return false;
 // }
 
-void NSAnimSystem::update()
+void nsanim_system::update()
 {
 	nsscene * scene = nsengine.currentScene();
 	NSTimer * timer = nsengine.timer();
@@ -66,7 +66,7 @@ void NSAnimSystem::update()
 		NSRenderComp * renderComp = (*entIter)->get<NSRenderComp>();
 		if (renderComp == NULL)
 		{
-			dprint("NSAnimSystem::update Entity has animation comp but no render comp - Cannot update");
+			dprint("nsanim_system::update Entity has animation comp but no render comp - Cannot update");
 			++entIter;
 			continue;
 		}
@@ -78,7 +78,7 @@ void NSAnimSystem::update()
 			nsstring mCurrentAnim = animComp->currentAnimation();
 			if (meshID == 0 || animsetID == 0)
 			{
-				dprint("NSAnimSystem::update Cannot update animation without AnimSetID and MeshID");
+				dprint("nsanim_system::update Cannot update animation without AnimSetID and MeshID");
 				++entIter;
 				continue;
 			}
@@ -86,7 +86,7 @@ void NSAnimSystem::update()
 			nsmesh * msh = nsengine.resource<nsmesh>(meshID);
 			if (msh == NULL)
 			{
-				dprint("NSAnimSystem::update mesh with id " + meshID.toString() + " is null in anim ent " + (*entIter)->name());
+				dprint("nsanim_system::update mesh with id " + meshID.toString() + " is null in anim ent " + (*entIter)->name());
 				++entIter;
 				continue;
 			}
@@ -94,7 +94,7 @@ void NSAnimSystem::update()
 			nsmesh::node_tree * nTree = msh->tree();
 			if (nTree == NULL)
 			{
-				dprint("NSAnimSystem::update msh node tree is null in anim ent " + (*entIter)->name());
+				dprint("nsanim_system::update msh node tree is null in anim ent " + (*entIter)->name());
 				++entIter;
 				continue;
 			}
@@ -112,7 +112,7 @@ void NSAnimSystem::update()
 			nsanim_set::animation_data * currAnim = animset->anim_data(mCurrentAnim);
 			if (currAnim == NULL)
 			{
-				dprint("NSAnimSystem::update anim set not found " + (*entIter)->name());
+				dprint("nsanim_system::update anim set not found " + (*entIter)->name());
 				++entIter;
 				continue;
 			}
@@ -144,7 +144,7 @@ void NSAnimSystem::update()
 	}
 }
 
-int32 NSAnimSystem::update_priority()
+int32 nsanim_system::update_priority()
 {
 	return ANIM_SYS_UPDATE_PR;
 }

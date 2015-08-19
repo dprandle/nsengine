@@ -1,4 +1,4 @@
-* TODO Rename Everything [25%]
+* TODO Rename Everything [37%]
 ** DONE Managers [100%]
 *** DONE NSResManager
 *** DONE NSMatManager
@@ -21,15 +21,15 @@
 *** DONE NSPlugin
 *** DONE NSInputMap
 *** DONE NSEntity
-** TODO Systems [11%]
-*** TODO NSSystem
-*** TODO NSRenderSystem
-*** TODO NSInputSystem
-*** TODO NSSelectionSystem
-*** TODO NSMovementSystem
-*** TODO NSCameraSystem
-*** TODO NSAnimationSystem
-*** TODO NSParticleSystem
+** DONE Systems [100%]
+*** DONE NSSystem
+*** DONE NSRenderSystem
+*** DONE NSInputSystem
+*** DONE NSSelectionSystem
+*** DONE NSMovementSystem
+*** DONE NSCameraSystem
+*** DONE NSAnimationSystem
+*** DONE NSParticleSystem
 *** DONE NSBuildSystem
 ** TODO Components [0%]
 *** TODO NSComponent
@@ -55,12 +55,12 @@
 *** TODO NSMat4
 *** TODO NSQuat
 *** TODO Math functions
-** TODO Other OpenGL Classes [0%]
-*** TODO NSBufferObject
-*** TODO NSGLObject
-*** TODO NSTransformFeedbackObject
-*** TODO NSVertexArrayObject
-*** TODO NSFramebuffer
+** TODO Other OpenGL Classes [100%]
+*** DONE NSBufferObject
+*** DONE NSGLObject
+*** DONE NSTransformFeedbackObject
+*** DONE NSVertexArrayObject
+*** DONE NSFramebuffer
 ** TODO Events [0%]
 *** TODO NSEvent
 *** TODO NSEventDispatcher

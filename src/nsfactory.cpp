@@ -19,7 +19,7 @@ void NSCompFactory::setid(NSComponent * comp)
 	comp->m_hashed_type = type_id;
 }
 
-void NSSysFactory::setid(NSSystem * sys)
+void NSSysFactory::setid(nssystem * sys)
 {
 	sys->m_hashed_type = type_id;
 }

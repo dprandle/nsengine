@@ -40,7 +40,7 @@ m_current_brush_type(brush_none),
 m_tile_brush_center_tform_id(0),
 m_overwrite(false),
 m_mirror_mode(false),
-NSSystem()
+nssystem()
 {
 	
 }
@@ -64,7 +64,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 	if (pEnable && !m_enabled)
 	{
 		m_enabled = pEnable;
-		nsengine.system<NSInputSystem>()->pushContext("BuildMode");
+		nsengine.system<nsinput_system>()->push_context("BuildMode");
 		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
 		if (m_current_brush_type == brush_tile)
@@ -151,7 +151,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 	else if (!pEnable && m_enabled)
 	{
 		m_enabled = pEnable;
-		nsengine.system<NSInputSystem>()->popContext();
+		nsengine.system<nsinput_system>()->pop_context();
 
 		if (m_object_brush != NULL)
 		{

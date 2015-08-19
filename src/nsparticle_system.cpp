@@ -1,9 +1,9 @@
 /*!
 \file nsparticle_system.h
 
-\brief Definition file for NSParticleSystem class
+\brief Definition file for nsparticle_system class
 
-This file contains all of the neccessary definitions for the NSParticleSystem class.
+This file contains all of the neccessary definitions for the nsparticle_system class.
 
 \author Daniel Randle
 \date March 8 2014
@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the NSParticleSystem cl
 #include <nsparticle_comp.h>
 #include <nsscene.h>
 #include <nsengine.h>
-#include <nsframebuffer.h>
+#include <nsfb_object.h>
 #include <nsrender_system.h>
 #include <nsshader.h>
 #include <nsshader_manager.h>
@@ -26,23 +26,23 @@ This file contains all of the neccessary definitions for the NSParticleSystem cl
 #include <nsplugin.h>
 #include <nstex_manager.h>
 
-NSParticleSystem::NSParticleSystem() :
-NSSystem()
+nsparticle_system::nsparticle_system() :
+nssystem()
 {}
 
-NSParticleSystem::~NSParticleSystem()
+nsparticle_system::~nsparticle_system()
 {}
 
-// bool NSParticleSystem::handleEvent(NSEvent * pEvent)
+// bool nsparticle_system::handleEvent(NSEvent * pEvent)
 // {
 // 	return false;
 // }
 
-uint32 NSParticleSystem::finalfbo() { return mFinalBuf; }
+uint32 nsparticle_system::final_fbo() { return m_final_buf; }
 
-void NSParticleSystem::setFinalfbo(uint32 fbo) { mFinalBuf = fbo; }
+void nsparticle_system::set_final_fbo(uint32 fbo) { m_final_buf = fbo; }
 
-void NSParticleSystem::draw()
+void nsparticle_system::draw()
 {
 	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -53,8 +53,8 @@ void NSParticleSystem::draw()
 	NSCamComp * compc = cam->get<NSCamComp>();
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 
-	NSFrameBuffer * finalBuf = nsengine.framebuffer(mFinalBuf);
-	finalBuf->setTarget(NSFrameBuffer::Draw);
+	nsfb_object * finalBuf = nsengine.framebuffer(m_final_buf);
+	finalBuf->set_target(nsfb_object::fb_draw);
 	finalBuf->bind();
 
 	auto comps = scene->entities<NSParticleComp>();
@@ -79,14 +79,14 @@ void NSParticleSystem::draw()
 
 		if (renderShader == NULL || comp->first())
 		{
-			dprint("NSParticleSystem::update Render shader is not set for entity or ent has not been updated yet (mFirst == false) \"" + (*entIter)->name() + "\"");
+			dprint("nsparticle_system::update Render shader is not set for entity or ent has not been updated yet (mFirst == false) \"" + (*entIter)->name() + "\"");
 			++entIter;
 			continue;
 		}
 
 		if (renderShader->error() != nsshader::error_none)
 		{
-			dprint("NSParticleSystem::update Render shader has an error set to " + std::to_string(renderShader->error()) + " in entity \"" + (*entIter)->name() + "\"");
+			dprint("nsparticle_system::update Render shader has an error set to " + std::to_string(renderShader->error()) + " in entity \"" + (*entIter)->name() + "\"");
 			++entIter;
 			continue;
 		}
@@ -103,7 +103,7 @@ void NSParticleSystem::draw()
 		if (tex != NULL)
 			tex->enable(nsmaterial::diffuse);
 		else
-			dprint("NSParticleSystem::draw() - No random texture set - particles will be lame.");
+			dprint("nsparticle_system::draw() - No random texture set - particles will be lame.");
 
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -136,12 +136,12 @@ void NSParticleSystem::draw()
 		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 		{
 			comp->vertexArrayObject()->add(tComp->transformBuffer(), 4 + tfInd);
-			comp->vertexArrayObject()->vertexAttribPtr(4 + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-			comp->vertexArrayObject()->vertexAttribDiv(4 + tfInd, 1);
+			comp->vertexArrayObject()->vertex_attrib_ptr(4 + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+			comp->vertexArrayObject()->vertex_attrib_div(4 + tfInd, 1);
 		}
 
 		glDrawTransformFeedbackInstanced(GL_POINTS, comp->transformFeedbackID(),tComp->count());
-		GLError("NSParticleSystem::draw in glDrawElementsInstanced");
+		GLError("nsparticle_system::draw in glDrawElementsInstanced");
 
 
 		tComp->transformBuffer()->bind();
@@ -155,21 +155,21 @@ void NSParticleSystem::draw()
 	finalBuf->unbind();
 }
 
-void NSParticleSystem::init()
+void nsparticle_system::init()
 {
 }
 
-int32 NSParticleSystem::draw_priority()
+int32 nsparticle_system::draw_priority()
 {
 	return PARTICLE_SYS_DRAW_PR;
 }
 
-int32 NSParticleSystem::update_priority()
+int32 nsparticle_system::update_priority()
 {
 	return PARTICLE_SYS_UPDATE_PR;
 }
 
-void NSParticleSystem::update()
+void nsparticle_system::update()
 {
 	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -204,11 +204,11 @@ void NSParticleSystem::update()
 
 		nsparticle_process_shader * particleShader = nsengine.resource<nsparticle_process_shader>(comp->shaderID());
 		if (particleShader == NULL)
-			particleShader = mDefaultShader;
+			particleShader = m_process_shader;
 
 		if (particleShader->error() != nsshader::error_none)
 		{
-			dprint("NSParticleSystem::update XFBShader shader has an error set to " + std::to_string(particleShader->error()) + " in entity \"" + (*entIter)->name() + "\"");
+			dprint("nsparticle_system::update XFBShader shader has an error set to " + std::to_string(particleShader->error()) + " in entity \"" + (*entIter)->name() + "\"");
 			++entIter;
 			continue;
 		}
@@ -241,13 +241,13 @@ void NSParticleSystem::update()
 		if (comp->first())
 		{
 			glDrawArrays(GL_POINTS, 0, 1);
-			GLError("NSParticleSystem::update in glDrawArrays");
+			GLError("nsparticle_system::update in glDrawArrays");
 			comp->setFirst(false);
 		}
 		else
 		{
 			glDrawTransformFeedback(GL_POINTS, comp->transformFeedbackID());
-			GLError("NSParticleSystem::update in glDrawTransformFeedback");
+			GLError("nsparticle_system::update in glDrawTransformFeedback");
 		}
 		comp->transformFeedbackObject()->end();
 		comp->vertexArrayObject()->unbind();

@@ -63,7 +63,7 @@ void nsmesh_manager::_assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, 
 			id.weights[0] = 1.0f;
 			subMesh->joints.assign(subMesh->positions.size(), id);
 			subMesh->joint_buf.allocate(subMesh->joints,
-									   NSBufferObject::MutableStaticDraw,
+										nsbuffer_object::mutable_static_draw,
 									   static_cast<uint32>(subMesh->joints.size()));
 		}
 	}

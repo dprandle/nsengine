@@ -236,7 +236,7 @@ void setup_input_map(nsplugin * plg)
 	selectmovetoggle.add_key_mod(nsinput_map::key_any);
     im->add_mouse_trigger("Main", nsinput_map::left_button,selectmovetoggle);
 
-	nsengine.system<NSInputSystem>()->setInputMap(im->full_id());
-	nsengine.system<NSInputSystem>()->pushContext("Main");
+	nsengine.system<nsinput_system>()->set_input_map(im->full_id());
+	nsengine.system<nsinput_system>()->push_context("Main");
 	
 }

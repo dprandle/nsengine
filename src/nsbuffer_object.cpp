@@ -1,9 +1,9 @@
 /*! 
 	\file nsbufferobject.cpp
 	
-	\brief Definition file for NSBufferObject class
+	\brief Definition file for nsbuffer_object class
 
-	This file contains all of the neccessary definitions for the NSBufferObject class.
+	This file contains all of the neccessary definitions for the nsbuffer_object class.
 
 	\author Daniel Randle
 	\date November 2 2013
@@ -14,114 +14,114 @@
 #include <nsbuffer_object.h>
 #include <nsengine.h>
 
-NSBufferObject::NSBufferObject(TargetBuffer pTarget, StorageMode pStorageMode): 
-	mBufferAllocated(false),
-	mMapped(false),
-	mStorageMode(pStorageMode),
-	mTarget(pTarget),
+nsbuffer_object::nsbuffer_object(target_buffer pTarget, storage_mode pStorageMode): 
+	m_allocated(false),
+	m_mapped(false),
+	m_storage_mode(pStorageMode),
+	m_target(pTarget),
 	nsgl_object()
 {}
 
-NSBufferObject::~NSBufferObject()
+nsbuffer_object::~nsbuffer_object()
 {}
 
 	
-void NSBufferObject::bind()
+void nsbuffer_object::bind()
 {
-	glBindBuffer(mTarget, m_gl_name);
-	GLError("NSBufferObject::bind()");
+	glBindBuffer(m_target, m_gl_name);
+	GLError("nsbuffer_object::bind()");
 }
 
-void NSBufferObject::bind(uint32 pIndex)
+void nsbuffer_object::bind(uint32 pIndex)
 {
-	glBindBufferBase(mTarget, pIndex, m_gl_name);
-	GLError("NSBufferObject::bindBase()");
+	glBindBufferBase(m_target, pIndex, m_gl_name);
+	GLError("nsbuffer_object::bindBase()");
 }
 
-NSBufferObject::StorageMode NSBufferObject::storage() const
+nsbuffer_object::storage_mode nsbuffer_object::storage() const
 {
-	return mStorageMode;
+	return m_storage_mode;
 }
 
-NSBufferObject::TargetBuffer NSBufferObject::target() const
+nsbuffer_object::target_buffer nsbuffer_object::target() const
 {
-	return mTarget;
+	return m_target;
 }
 
-void NSBufferObject::init_gl()
+void nsbuffer_object::init_gl()
 {
 	glGenBuffers(1, &m_gl_name);
-	GLError("NSBufferObject::initGL()");
+	GLError("nsbuffer_object::initGL()");
 }
 
-bool NSBufferObject::allocated() const
+bool nsbuffer_object::allocated() const
 {
-	return mBufferAllocated;
+	return m_allocated;
 }
 
-bool NSBufferObject::mapped() const
+bool nsbuffer_object::mapped() const
 {
-	return mMapped;
+	return m_mapped;
 }
 
-void NSBufferObject::allocate(UsageFlag pFlag, uint32 pTotalByteSize)
+void nsbuffer_object::allocate(usage_flag pFlag, uint32 pTotalByteSize)
 {
-	if (mStorageMode == Mutable)
-		glBufferData(mTarget, pTotalByteSize, NULL, pFlag);
+	if (m_storage_mode == storage_mutable)
+		glBufferData(m_target, pTotalByteSize, NULL, pFlag);
 	else
-		glBufferStorage(mTarget, pTotalByteSize, NULL, pFlag);
+		glBufferStorage(m_target, pTotalByteSize, NULL, pFlag);
 
-	GLError("NSBufferObject::allocate()");
-	mBufferAllocated = true;
+	GLError("nsbuffer_object::allocate()");
+	m_allocated = true;
 }
 
-void NSBufferObject::release()
+void nsbuffer_object::release()
 {
 	if (m_gl_name != 0)
 		glDeleteBuffers(1, &m_gl_name);
 	m_gl_name = 0;
-	mMapped = false;
-	mBufferAllocated = false;
-	GLError("NSBufferObject::release()");
+	m_mapped = false;
+	m_allocated = false;
+	GLError("nsbuffer_object::release()");
 }
 
-bool NSBufferObject::setStorage(StorageMode pStorageMode)
+bool nsbuffer_object::set_storage(storage_mode pStorageMode)
 {
-	if (mBufferAllocated)
+	if (m_allocated)
 	{
-		dprint("NSBufferObject::setStorageMode() : Trying to change allocated buffer's storage mode");
+		dprint("nsbuffer_object::setStorageMode() : Trying to change allocated buffer's storage mode");
 		return false;
 	}
-	mStorageMode = pStorageMode;
+	m_storage_mode = pStorageMode;
 	return true;
 }
 
-bool NSBufferObject::setTarget(TargetBuffer pTarget)
+bool nsbuffer_object::set_target(target_buffer pTarget)
 {
-	mTarget = pTarget;
+	m_target = pTarget;
 	return true;
 }
 
-void NSBufferObject::unbind()
+void nsbuffer_object::unbind()
 {
-	glBindBuffer(mTarget, 0);
-	GLError("NSBufferObject::unbind()");
+	glBindBuffer(m_target, 0);
+	GLError("nsbuffer_object::unbind()");
 }
 
-void NSBufferObject::unbind(uint32 pIndex)
+void nsbuffer_object::unbind(uint32 pIndex)
 {
-	glBindBufferBase(mTarget, pIndex, 0);
-	GLError("NSBufferObject::unbindBase()");
+	glBindBufferBase(m_target, pIndex, 0);
+	GLError("nsbuffer_object::unbindBase()");
 }
 
-bool NSBufferObject::unmap()
+bool nsbuffer_object::unmap()
 {
-	if (!mMapped || !mBufferAllocated)
+	if (!m_mapped || !m_allocated)
 	{
-		dprint("NSBufferObject::unmap() : Trying to unmap buffer that has either not been allocated or mMapped");
+		dprint("nsbuffer_object::unmap() : Trying to unmap buffer that has either not been allocated or mMapped");
 		return false;
 	}
-	mMapped = !(glUnmapBuffer(mTarget) != 0);
-	GLError("NSBufferObject::unmap()");
-	return !mMapped;
+	m_mapped = !(glUnmapBuffer(m_target) != 0);
+	GLError("nsbuffer_object::unmap()");
+	return !m_mapped;
 }

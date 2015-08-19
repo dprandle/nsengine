@@ -120,7 +120,7 @@ void NSEngine::setActive(uint32 plugid)
 	plugins()->set_active(plugid);
 }
 
-bool NSEngine::addSystem(NSSystem * pSystem)
+bool NSEngine::addSystem(nssystem * pSystem)
 {
 	if (pSystem == NULL)
 		return false;
@@ -165,7 +165,7 @@ nsresource * NSEngine::resource(uint32 res_typeid, nsplugin * plg, const nsstrin
 
 uint32 NSEngine::createFramebuffer()
 {
-	NSFrameBuffer * fb = new NSFrameBuffer();
+	nsfb_object * fb = new nsfb_object();
 	fb->init_gl();
 	current()->fbmap.emplace(fb->gl_id(), fb);
 	return fb->gl_id();
@@ -173,7 +173,7 @@ uint32 NSEngine::createFramebuffer()
 
 bool NSEngine::delFramebuffer(uint32 fbid)
 {
-	NSFrameBuffer * obj = framebuffer(fbid);
+	nsfb_object * obj = framebuffer(fbid);
 	if (obj == NULL)
 		return false;
 	obj->release();
@@ -182,7 +182,7 @@ bool NSEngine::delFramebuffer(uint32 fbid)
 	return true;
 }
 
-NSFrameBuffer * NSEngine::framebuffer(uint32 id)
+nsfb_object * NSEngine::framebuffer(uint32 id)
 {
 	auto iter = current()->fbmap.find(id);
 	if (iter != current()->fbmap.end())
@@ -253,7 +253,7 @@ bool NSEngine::delPlugin(nsplugin * plg)
 
 bool NSEngine::destroySystem(uint32 type_id)
 {
-	NSSystem * sys = removeSystem(type_id);
+	nssystem * sys = removeSystem(type_id);
 	if (sys == NULL)
 		return false;
 	delete sys;
@@ -283,9 +283,9 @@ nsplugin * NSEngine::createPlugin(const nsstring & plugname, bool makeactive)
 	return plug;
 }
 
-NSSystem * NSEngine::createSystem(uint32 type_id)
+nssystem * NSEngine::createSystem(uint32 type_id)
 {
-	NSSystem * system = factory<NSSysFactory>(type_id)->create();
+	nssystem * system = factory<NSSysFactory>(type_id)->create();
 	if (!addSystem(system))
 	{
 		delete system;
@@ -295,7 +295,7 @@ NSSystem * NSEngine::createSystem(uint32 type_id)
 	return system;
 }
 
-NSSystem * NSEngine::createSystem(const nsstring & guid_)
+nssystem * NSEngine::createSystem(const nsstring & guid_)
 {
 	return createSystem(hash_id(guid_));
 }
@@ -336,7 +336,7 @@ NSEventDispatcher * NSEngine::eventDispatch()
 	return current()->mEvents;
 }
 
-NSSystem * NSEngine::system(uint32 type_id)
+nssystem * NSEngine::system(uint32 type_id)
 {
 	GLContext * cont = current();
 	auto iter = cont->systems->find(type_id);
@@ -350,7 +350,7 @@ bool NSEngine::hasPlugin(nsplugin * plg)
 	return current()->plugins->contains(plg);
 }
 
-NSSystem * NSEngine::system(const nsstring & guid_)
+nssystem * NSEngine::system(const nsstring & guid_)
 {
 	return system(hash_id(guid_));
 }
@@ -408,9 +408,9 @@ nsplugin_manager * NSEngine::plugins()
 	return current()->plugins;
 }
 
-NSSystem * NSEngine::removeSystem(uint32 type_id)
+nssystem * NSEngine::removeSystem(uint32 type_id)
 {
-	NSSystem * sys = system(type_id);
+	nssystem * sys = system(type_id);
 	if (sys == NULL)
 		return NULL;
 	current()->systems->erase(type_id);
@@ -418,7 +418,7 @@ NSSystem * NSEngine::removeSystem(uint32 type_id)
 	return sys;
 }
 
-NSSystem * NSEngine::removeSystem(const nsstring & guid_)
+nssystem * NSEngine::removeSystem(const nsstring & guid_)
 {
 	return removeSystem(hash_id(guid_));
 }
@@ -591,7 +591,7 @@ void NSEngine::update()
 		auto sysUpdateIter = mSystemUpdateOrder.begin();
 		while (sysUpdateIter != mSystemUpdateOrder.end())
 		{
-			NSSystem * sys = system(sysUpdateIter->second);
+			nssystem * sys = system(sysUpdateIter->second);
 			eventDispatch()->process(sys);
 			sys->update();
 			++sysUpdateIter;
@@ -603,7 +603,7 @@ void NSEngine::update()
 	auto sysDrawIter = mSystemDrawOrder.begin();
 	while (sysDrawIter != mSystemDrawOrder.end())
 	{
-		NSSystem * sys = system(sysDrawIter->second);
+		nssystem * sys = system(sysDrawIter->second);
 		sys->draw();
 		++sysDrawIter;
 	}
@@ -613,8 +613,8 @@ void NSEngine::update()
 void NSEngine::_initInputMaps()
 {
 	nsinput_map * inmap = engplug()->load<nsinput_map>(DEFAULT_ENGINE_INPUT);
-	system<NSInputSystem>()->setInputMap(inmap->full_id());
-	system<NSInputSystem>()->pushContext(DEFAULT_INPUT_CONTEXT);	
+	system<nsinput_system>()->set_input_map(inmap->full_id());
+	system<nsinput_system>()->push_context(DEFAULT_INPUT_CONTEXT);	
 }
 
 void NSEngine::_initShaders()
@@ -643,7 +643,7 @@ void NSEngine::_initShaders()
 	nsskybox_shader * skysh = mShaders->load<nsskybox_shader>(nsstring(DEFAULT_SKYBOX_SHADER) + shext);
 	system<nsrender_system>()->set_shaders(renShaders);
 	system<nsselection_system>()->set_shader(selshader);
-	system<NSParticleSystem>()->setShader(xfsparticle);
+	system<nsparticle_system>()->set_process_shader(xfsparticle);
 	mShaders->compile_all();
 	mShaders->link_all();
 	mShaders->init_uniforms_all();
@@ -725,7 +725,7 @@ void NSEngine::_initSystems()
 	system<nsrender_system>()->set_final_fbo(current()->compositeBuf);
 	system<nsselection_system>()->set_final_fbo(current()->compositeBuf);
 	system<nsselection_system>()->set_picking_fbo(system<nsrender_system>()->gbuffer_fbo());
-	system<NSParticleSystem>()->setFinalfbo(current()->compositeBuf);
+	system<nsparticle_system>()->set_final_fbo(current()->compositeBuf);
 }
 
 bool NSEngine::makeCurrent(uint32 cID)
@@ -838,12 +838,12 @@ void NSEngine::_initDefaultFactories()
 	registerComponentType<NSTileComp>("NSTileComp");
 	registerComponentType<NSTerrainComp>("NSTerrainComp");
 
-	registerSystemType<NSAnimSystem>("NSAnimSystem");
+	registerSystemType<nsanim_system>("nsanim_system");
 	registerSystemType<nsbuild_system>("nsbuild_system");
-	registerSystemType<NSCameraSystem>("NSCameraSystem");
-	registerSystemType<NSInputSystem>("NSInputSystem");
-	registerSystemType<NSMovementSystem>("NSMovementSystem");
-	registerSystemType<NSParticleSystem>("NSParticleSystem");
+	registerSystemType<nscamera_system>("nscamera_system");
+	registerSystemType<nsinput_system>("nsinput_system");
+	registerSystemType<nsmovement_system>("nsmovement_system");
+	registerSystemType<nsparticle_system>("nsparticle_system");
 	registerSystemType<nsrender_system>("nsrender_system");
 	registerSystemType<nsselection_system>("nsselection_system");
 	

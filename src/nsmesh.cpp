@@ -220,7 +220,7 @@ void nsmesh::flip_uv(uint32 pSubIndex)
 		sb->tex_coords[i].v = 1 - sb->tex_coords[i].v;
 
 	sb->tex_buf.bind();
-	sb->tex_buf.setData(sb->tex_coords,
+	sb->tex_buf.set_data(sb->tex_coords,
 						 0,
 						 static_cast<uint32>(sb->tex_coords.size()));
 	sb->tex_buf.unbind();
@@ -316,11 +316,11 @@ void nsmesh::flip_normals(uint32 pSubIndex)
 	}
 
 	sb->norm_buf.bind();
-	sb->norm_buf.setData(sb->normals,
+	sb->norm_buf.set_data(sb->normals,
 						  0,
 						  static_cast<uint32>(sb->normals.size()));
 	sb->tang_buf.bind();
-	sb->tang_buf.setData(sb->tangents,
+	sb->tang_buf.set_data(sb->tangents,
 						  0,
 						  static_cast<uint32>(sb->tangents.size()));
 	sb->norm_buf.unbind();
@@ -522,12 +522,12 @@ void nsmesh::submesh::joint::add_bone(uint32 pBoneID, float pWeight)
 }
 
 nsmesh::submesh::submesh(nsmesh * pParentMesh): 
-	pos_buf(NSBufferObject::Array,NSBufferObject::Mutable),
-	tex_buf(NSBufferObject::Array,NSBufferObject::Mutable),
-	norm_buf(NSBufferObject::Array,NSBufferObject::Mutable),
-	tang_buf(NSBufferObject::Array,NSBufferObject::Mutable),
-	joint_buf(NSBufferObject::Array,NSBufferObject::Mutable),
-	indice_buf(NSBufferObject::ElementArray,NSBufferObject::Mutable),
+	pos_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	tex_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	norm_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	tang_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	joint_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	indice_buf(nsbuffer_object::element_array,nsbuffer_object::storage_mutable),
 	positions(),
 	tex_coords(),
 	normals(),
@@ -556,27 +556,27 @@ void nsmesh::submesh::allocate_buffers()
 {
 	pos_buf.bind();
 	pos_buf.allocate(positions,
-					 NSBufferObject::MutableStaticDraw,
+					 nsbuffer_object::mutable_static_draw,
 					 static_cast<uint32>(positions.size()));
 	tex_buf.bind();
 	tex_buf.allocate(tex_coords,
-					 NSBufferObject::MutableStaticDraw,
+					 nsbuffer_object::mutable_static_draw,
 					 static_cast<uint32>(tex_coords.size()));
 	norm_buf.bind();
 	norm_buf.allocate(normals,
-					  NSBufferObject::MutableStaticDraw,
+					  nsbuffer_object::mutable_static_draw,
 					  static_cast<uint32>(normals.size()));
 	tang_buf.bind();
 	tang_buf.allocate(tangents,
-					  NSBufferObject::MutableStaticDraw,
+					  nsbuffer_object::mutable_static_draw,
 					  static_cast<uint32>(tangents.size()));
 	joint_buf.bind();
 	joint_buf.allocate(joints,
-					  NSBufferObject::MutableStaticDraw,
+					  nsbuffer_object::mutable_static_draw,
 					  static_cast<uint32>(joints.size()));
 	indice_buf.bind();
 	indice_buf.allocate(indices,
-						NSBufferObject::MutableStaticDraw,
+						nsbuffer_object::mutable_static_draw,
 						static_cast<uint32>(indices.size()));
 	update_VAO();
 }
@@ -614,25 +614,25 @@ void nsmesh::submesh::update_VAO()
 
 	pos_buf.bind();
 	vao.add(&pos_buf, nsshader::loc_position);
-	vao.vertexAttribPtr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+	vao.vertex_attrib_ptr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 	tex_buf.bind();
 	vao.add(&tex_buf, nsshader::loc_tex_coords);
-	vao.vertexAttribPtr(nsshader::loc_tex_coords, 2, GL_FLOAT, GL_FALSE, sizeof(fvec2), 0);
+	vao.vertex_attrib_ptr(nsshader::loc_tex_coords, 2, GL_FLOAT, GL_FALSE, sizeof(fvec2), 0);
 
 	norm_buf.bind();
 	vao.add(&norm_buf, nsshader::loc_normal);
-	vao.vertexAttribPtr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+	vao.vertex_attrib_ptr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 	tang_buf.bind();
 	vao.add(&tang_buf, nsshader::loc_tangent);
-	vao.vertexAttribPtr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+	vao.vertex_attrib_ptr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 	joint_buf.bind();
 	vao.add(&joint_buf, nsshader::loc_bone_id);
 	vao.add(&joint_buf, nsshader::loc_joint);
-	vao.vertexAttribIPtr(nsshader::loc_bone_id, 4, GL_INT, sizeof(nsmesh::submesh::joint), 0);
-	vao.vertexAttribPtr(nsshader::loc_joint, 4, GL_FLOAT, GL_FALSE, sizeof(nsmesh::submesh::joint), 4 * sizeof(uint32));
+	vao.vertex_attrib_I_ptr(nsshader::loc_bone_id, 4, GL_INT, sizeof(nsmesh::submesh::joint), 0);
+	vao.vertex_attrib_ptr(nsshader::loc_joint, 4, GL_FLOAT, GL_FALSE, sizeof(nsmesh::submesh::joint), 4 * sizeof(uint32));
 
 	indice_buf.bind();
 

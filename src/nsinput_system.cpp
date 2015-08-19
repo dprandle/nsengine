@@ -1,9 +1,9 @@
 /*!
 \file nsinputsystem.cpp
 
-\brief Definition file for NSInputSystem class
+\brief Definition file for nsinput_system class
 
-This file contains all of the neccessary definitions for the NSInputSystem class.
+This file contains all of the neccessary definitions for the nsinput_system class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -20,91 +20,91 @@ This file contains all of the neccessary definitions for the NSInputSystem class
 #include <nsinput_map.h>
 #include <nsscene.h>
 
-NSInputSystem::NSInputSystem() :
-	mScrollDelta(0.0f),
-	NSSystem()
+nsinput_system::nsinput_system() :
+	m_scroll_delta(0.0f),
+	nssystem()
 {
 
 }
 
-NSInputSystem::~NSInputSystem()
+nsinput_system::~nsinput_system()
 {
  
 }
 
-bool NSInputSystem::keyEvent(NSKeyEvent * evnt)
+bool nsinput_system::key_event(nskey_event * evnt)
 {
 #ifdef INPUTTEST
 	std::cout << "Key was pressed: " << evnt->mPressed << " and key was: " << evnt->mKey << std::endl;
 #endif
-	if (evnt->mPressed)
-		_keyPress(evnt->mKey);
+	if (evnt->pressed)
+		_key_press(evnt->key);
 	else
-		_keyRelease(evnt->mKey);
+		_key_release(evnt->key);
 	return true;
 }
 
-bool NSInputSystem::mouseButtonEvent(NSMouseButtonEvent * evnt)
+bool nsinput_system::mouse_button_event(nsmouse_button_event * evnt)
 {
 #ifdef INPUTTEST
 	std::cout << "Mouse was pressed: " << evnt->mPressed << " and key was: " << evnt->mb << std::endl;
 	std::cout << "Mouse coords:" << evnt->mNormMousePos.toString() << std::endl;
 #endif
-	if (evnt->mPressed)
-		_mousePress(evnt->mb, evnt->mNormMousePos);
+	if (evnt->pressed)
+		_mouse_press(evnt->mb, evnt->normalized_mpos);
 	else
-		_mouseRelease(evnt->mb, evnt->mNormMousePos);
+		_mouse_release(evnt->mb, evnt->normalized_mpos);
 	return true;
 }
 
-bool NSInputSystem::mouseMoveEvent(NSMouseMoveEvent * evnt)
+bool nsinput_system::mouse_move_event(NSMouseMoveEvent * evnt)
 {
 #ifdef INPUTTEST
 	std::cout << "Mouse moved: Mouse coords:" << evnt->mNormMousePos.toString() << std::endl;
 #endif
-	_mouseMove(evnt->mNormMousePos);
+	_mouse_move(evnt->normalized_mpos);
 	return true;
 }
 
-bool NSInputSystem::mouseScrollEvent(NSMouseScrollEvent * evnt)
+bool nsinput_system::mouse_scroll_event(nsmouse_scroll_event * evnt)
 {
 #ifdef INPUTTEST
 	std::cout << "Mouse Scrolled: Mouse coords:" << evnt->mNormMousePos.toString() << " Scroll amount: " << evnt->mScroll << std::endl;
 #endif
-	_mouseScroll(evnt->mScroll, evnt->mNormMousePos);
+	_mouse_scroll(evnt->scroll_delta, evnt->normalized_mpos);
 	return true;
 }
 
-void NSInputSystem::_keyPress(nsinput_map::key_val pKey)
+void nsinput_system::_key_press(nsinput_map::key_val pKey)
 {
 	// Add the key to the modifier set (if not already there)..
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
 	// Search context at top of stack for trigger with key -
 	// create an event for every key that has matching modifiers
-	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
+	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
-	while (rIter != mContextStack.rend())
+	while (rIter != m_ctxt_stack.rend())
 	{
 		auto keyIter = (*rIter)->key_map.equal_range(pKey);
 		while (keyIter.first != keyIter.second)
 		{
 			// Send input event to event system if modifiers match the trigger modifiers
-			if (_checkTriggerModifiers(keyIter.first->second))
+			if (_check_trigger_modifiers(keyIter.first->second))
 			{
 				if (keyIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_createStateEvent(keyIter.first->second, true);
+					_create_state_event(keyIter.first->second, true);
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_released)
-					_createActionEvent(keyIter.first->second);
+					_create_action_event(keyIter.first->second);
 				
 				foundInContext = true;
 			}
 			++keyIter.first;
 		}
 		if (foundInContext) // If found a match for this key/modifier then search no further
-			rIter = mContextStack.rend();
+			rIter = m_ctxt_stack.rend();
 		else
 			++rIter;
 	}
@@ -113,23 +113,23 @@ void NSInputSystem::_keyPress(nsinput_map::key_val pKey)
 		m_key_modifiers.insert(pKey);
 }
 
-void NSInputSystem::_createActionEvent(nsinput_map::trigger & trigger)
+void nsinput_system::_create_action_event(nsinput_map::trigger & trigger)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	NSActionEvent * evnt = nsengine.eventDispatch()->push<NSActionEvent>(trigger.hash_name);
-	_setAxesFromTrigger(evnt->axes, trigger);
+	nsaction_event * evnt = nsengine.eventDispatch()->push<nsaction_event>(trigger.hash_name);
+	_set_axis_from_trigger(evnt->axes, trigger);
 }
 
-void NSInputSystem::_createStateEvent(nsinput_map::trigger & trigger, bool toggle)
+void nsinput_system::_create_state_event(nsinput_map::trigger & trigger, bool toggle)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	NSStateEvent * evnt = nsengine.eventDispatch()->push<NSStateEvent>(trigger.hash_name, toggle);
-	_setAxesFromTrigger(evnt->axes, trigger);
+	nsstate_event * evnt = nsengine.eventDispatch()->push<nsstate_event>(trigger.hash_name, toggle);
+	_set_axis_from_trigger(evnt->axes, trigger);
 }
 
-void NSInputSystem::_keyRelease(nsinput_map::key_val pKey)
+void nsinput_system::_key_release(nsinput_map::key_val pKey)
 {
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -139,19 +139,19 @@ void NSInputSystem::_keyRelease(nsinput_map::key_val pKey)
 	// Check each context for pKey - create an event for each trigger. Since multiple triggers can
 	// be assigned to each key sequence, I have to finish going through found triggers and set the iterator
 	// to the rend
-	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
+	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
-	while (rIter != mContextStack.rend())
+	while (rIter != m_ctxt_stack.rend())
 	{
 		auto keyIter = (*rIter)->key_map.equal_range(pKey);
 		while (keyIter.first != keyIter.second)
 		{
-			if (_checkTriggerModifiers(keyIter.first->second))
+			if (_check_trigger_modifiers(keyIter.first->second))
 			{
 				if (keyIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_createStateEvent(keyIter.first->second, false);
+					_create_state_event(keyIter.first->second, false);
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_pressed)
-					_createActionEvent(keyIter.first->second);
+					_create_action_event(keyIter.first->second);
 				
 				foundInContext = true;
 			}
@@ -163,45 +163,45 @@ void NSInputSystem::_keyRelease(nsinput_map::key_val pKey)
 	}
 }
 
-void NSInputSystem::setCursorPos(const fvec2 & cursorPos)
+void nsinput_system::set_cursor_pos(const fvec2 & cursorPos)
 {
-	mLastPos = mCurrentPos;
-	mCurrentPos = cursorPos;
+	m_last_pos = m_current_pos;
+	m_current_pos = cursorPos;
 }
 
-void NSInputSystem::_setAxesFromTrigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t)
+void nsinput_system::_set_axis_from_trigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t)
 {
 	if ((t.axis_bitfield & nsinput_map::axis_mouse_xpos) == nsinput_map::axis_mouse_xpos)
-		am[nsinput_map::axis_mouse_xpos] = mCurrentPos.x;
+		am[nsinput_map::axis_mouse_xpos] = m_current_pos.x;
 	if ((t.axis_bitfield & nsinput_map::axis_mouse_ypos) == nsinput_map::axis_mouse_ypos)
-		am[nsinput_map::axis_mouse_ypos] = mCurrentPos.y;
+		am[nsinput_map::axis_mouse_ypos] = m_current_pos.y;
 	if ((t.axis_bitfield & nsinput_map::axis_mouse_xdelta) == nsinput_map::axis_mouse_xdelta)
-		am[nsinput_map::axis_mouse_xdelta] = mCurrentPos.x - mLastPos.x;
+		am[nsinput_map::axis_mouse_xdelta] = m_current_pos.x - m_last_pos.x;
 	if ((t.axis_bitfield & nsinput_map::axis_mouse_ydelta) == nsinput_map::axis_mouse_ydelta)
-		am[nsinput_map::axis_mouse_ydelta] = mCurrentPos.y - mLastPos.y;
+		am[nsinput_map::axis_mouse_ydelta] = m_current_pos.y - m_last_pos.y;
 	if ((t.axis_bitfield & nsinput_map::axis_scroll_delta) == nsinput_map::axis_scroll_delta)
-		am[nsinput_map::axis_scroll_delta] = mScrollDelta;
+		am[nsinput_map::axis_scroll_delta] = m_scroll_delta;
 }
 
-void NSInputSystem::_mouseMove(const fvec2 & cursorPos)
+void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 {
-	setCursorPos(cursorPos);
+	set_cursor_pos(cursorPos);
 
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
-	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
+	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
-	while (rIter != mContextStack.rend())
+	while (rIter != m_ctxt_stack.rend())
 	{
 		auto mouseIter = (*rIter)->mousebutton_map.equal_range(nsinput_map::movement);
 		while (mouseIter.first != mouseIter.second)
 		{
 			// Send input event to event system if modifiers match the trigger modifiers
-			if (_checkTriggerModifiers(mouseIter.first->second))
+			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
-				_createActionEvent(mouseIter.first->second);
+				_create_action_event(mouseIter.first->second);
 				foundInContext = true;
 			}
 			++mouseIter.first;
@@ -212,37 +212,37 @@ void NSInputSystem::_mouseMove(const fvec2 & cursorPos)
 	}
 }
 
-void NSInputSystem::_mousePress(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos)
+void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos)
 {
-	setCursorPos(mousePos);
+	set_cursor_pos(mousePos);
 
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
 	// Go check each context for the key starting from the last context on the stack
 	// if it is found there - then return
-	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
+	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
-	while (rIter != mContextStack.rend())
+	while (rIter != m_ctxt_stack.rend())
 	{
 		auto mouseIter = (*rIter)->mousebutton_map.equal_range(pButton);
 		while (mouseIter.first != mouseIter.second)
 		{
 			// Send input event to event system if modifiers match the trigger modifiers
-			if (_checkTriggerModifiers(mouseIter.first->second))
+			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
 				if (mouseIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_createStateEvent(mouseIter.first->second, true);
+					_create_state_event(mouseIter.first->second, true);
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_released)
-					_createActionEvent(mouseIter.first->second);
+					_create_action_event(mouseIter.first->second);
 
 				foundInContext = true;
 			}
 			++mouseIter.first;
 		}
 		if (foundInContext)
-			rIter = mContextStack.rend();
+			rIter = m_ctxt_stack.rend();
 		else
 			++rIter;
 	}
@@ -250,30 +250,30 @@ void NSInputSystem::_mousePress(nsinput_map::mouse_button_val pButton, const fve
 	m_mouse_modifiers.insert(pButton);
 }
 
-void NSInputSystem::_mouseRelease(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos)
+void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos)
 {
-	setCursorPos(mousePos);
+	set_cursor_pos(mousePos);
 	
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
 	m_mouse_modifiers.erase(pButton);
 	// Go check each context for the key starting from the last context on the stack
 	// if it is found there - then return
-	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
+	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
-	while (rIter != mContextStack.rend())
+	while (rIter != m_ctxt_stack.rend())
 	{
 		auto mouseIter = (*rIter)->mousebutton_map.equal_range(pButton);
 		while (mouseIter.first != mouseIter.second)
 		{
-			if (_checkTriggerModifiers(mouseIter.first->second))
+			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
 				if (mouseIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_createStateEvent(mouseIter.first->second, false);
+					_create_state_event(mouseIter.first->second, false);
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_pressed)
-					_createActionEvent(mouseIter.first->second);
+					_create_action_event(mouseIter.first->second);
 
 				foundInContext = true;
 			}
@@ -285,26 +285,26 @@ void NSInputSystem::_mouseRelease(nsinput_map::mouse_button_val pButton, const f
 	}
 }
 
-void NSInputSystem::_mouseScroll(float pDelta, const fvec2 & mousePos)
+void nsinput_system::_mouse_scroll(float pDelta, const fvec2 & mousePos)
 {
-	setCursorPos(mousePos);
-	mScrollDelta = pDelta;
+	set_cursor_pos(mousePos);
+	m_scroll_delta = pDelta;
 
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
-	ContextStack::reverse_iterator rIter = mContextStack.rbegin();
+	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
-	while (rIter != mContextStack.rend())
+	while (rIter != m_ctxt_stack.rend())
 	{
 		auto mouseIter = (*rIter)->mousebutton_map.equal_range(nsinput_map::scrolling);
 		while (mouseIter.first != mouseIter.second)
 		{
 			// Send input event to event system if modifiers match the trigger modifiers
-			if (_checkTriggerModifiers(mouseIter.first->second))
+			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
-				_createActionEvent(mouseIter.first->second);
+				_create_action_event(mouseIter.first->second);
 				foundInContext = true;
 			}
 			++mouseIter.first;
@@ -315,49 +315,49 @@ void NSInputSystem::_mouseScroll(float pDelta, const fvec2 & mousePos)
 	}
 }
 
-void NSInputSystem::popContext()
+void nsinput_system::pop_context()
 {
-	if (mContextStack.empty())
+	if (m_ctxt_stack.empty())
 		return;
-	mContextStack.pop_back();
+	m_ctxt_stack.pop_back();
 }
 
-void NSInputSystem::pushContext(const nsstring & pName)
+void nsinput_system::push_context(const nsstring & pName)
 {
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	nsinput_map::ctxt * ctxt = inmap->context(pName);
 
 	if (ctxt == NULL)
 		return;
 	
-	mContextStack.push_back(ctxt);
+	m_ctxt_stack.push_back(ctxt);
 }
 
 
-void NSInputSystem::init()
+void nsinput_system::init()
 {
-    registerHandlerFunc(this, &NSInputSystem::keyEvent);
-    registerHandlerFunc(this, &NSInputSystem::mouseButtonEvent);
-    registerHandlerFunc(this, &NSInputSystem::mouseScrollEvent);
-    registerHandlerFunc(this, &NSInputSystem::mouseMoveEvent);
+    registerHandlerFunc(this, &nsinput_system::key_event);
+    registerHandlerFunc(this, &nsinput_system::mouse_button_event);
+    registerHandlerFunc(this, &nsinput_system::mouse_scroll_event);
+    registerHandlerFunc(this, &nsinput_system::mouse_move_event);
 }
 
-int32 NSInputSystem::update_priority()
+int32 nsinput_system::update_priority()
 {
 	return INP_SYS_UPDATE_PR;
 }
 
-void NSInputSystem::setInputMap(const uivec2 & resid)
+void nsinput_system::set_input_map(const uivec2 & resid)
 {
-	mInputMapID = resid;
+	m_input_map_id = resid;
 }
 
-const uivec2 & NSInputSystem::inputMap()
+const uivec2 & nsinput_system::input_map()
 {
-	return mInputMapID;
+	return m_input_map_id;
 }
 
-void NSInputSystem::update()
+void nsinput_system::update()
 {
 	nsscene * scene = nsengine.currentScene();
 
@@ -376,9 +376,9 @@ void NSInputSystem::update()
 	}
 }
 
-bool NSInputSystem::_checkTriggerModifiers(const nsinput_map::trigger & t)
+bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 {
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(mInputMapID);
+	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
 	
 
 	// If Key_Any is not part of key modifiers than there must be a key for key match

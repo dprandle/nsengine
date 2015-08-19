@@ -3,7 +3,7 @@
 
 #include <nsglobal.h>
 class NSComponent;
-class NSSystem;
+class nssystem;
 class nsres_manager;
 class nsresource;
 
@@ -103,8 +103,8 @@ class NSSysFactory : public NSFactory
 {
 public:
 	NSSysFactory() : NSFactory(System) {}
-	virtual NSSystem * create() = 0;
-	void setid(NSSystem * sys);	
+	virtual nssystem * create() = 0;
+	void setid(nssystem * sys);	
 	uint32 type_id;
 };
 
@@ -113,8 +113,8 @@ class NSSysFactoryType : public NSSysFactory
 {
 public:
 	NSSysFactoryType() :NSSysFactory() {}
-	NSSystem* create() {
-		NSSystem * sys = new T();
+	nssystem* create() {
+		nssystem * sys = new T();
 		setid(sys);
 		return sys;
 	}

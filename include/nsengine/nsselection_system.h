@@ -34,10 +34,10 @@ This file contains all of the neccessary declarations for the nsselection_system
 class nsscene;
 class NSSelComp;
 class nsselection_shader;
-class NSActionEvent;
-class NSStateEvent;
+class nsaction_event;
+class nsstate_event;
 
-class nsselection_system : public NSSystem
+class nsselection_system : public nssystem
 {
 public:
 	
@@ -79,8 +79,6 @@ public:
 	virtual int32 draw_priority();
 
 	virtual int32 update_priority();
-
-//	virtual bool handleEvent(NSEvent * pEvent);
 
 	uivec3 pick(float mousex, float mousey);
 
@@ -197,8 +195,8 @@ protected:
 		move_selection_toggle
 	};
    	
-	bool _handle_action_event(NSActionEvent * evnt);
-	bool _handle_state_event(NSStateEvent * evnt);
+	bool _handle_action_event(nsaction_event * evnt);
+	bool _handle_state_event(nsstate_event * evnt);
 
 	void _reset_focus(const uivec3 & pickid);
 

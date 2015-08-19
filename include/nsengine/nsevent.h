@@ -16,99 +16,99 @@ This file contains all of the neccessary declarations for the NSEvent class.
 #ifndef NSEVENT_H
 #define NSEVENT_H
 
-class NSEvent
+class nsevent
 {
 public:
-	NSEvent():
-		refcount(0)
+	nsevent():
+		ref_count(0)
 	{}
-    virtual ~NSEvent() {}
+    virtual ~nsevent() {}
 
-	uint32 refcount;
+	uint32 ref_count;
 };
 
-class NSKeyEvent : public NSEvent
+class nskey_event : public nsevent
 {
 public:
-	NSKeyEvent(nsinput_map::key_val k, bool pressed) :
-		mKey(k),
-		mPressed(pressed),
-		NSEvent()
+	nskey_event(nsinput_map::key_val key_, bool pressed_) :
+		key(key_),
+		pressed(pressed_),
+		nsevent()
 	{}
 
-	bool mPressed;
-	nsinput_map::key_val mKey;
+	bool pressed;
+	nsinput_map::key_val key;
 };
 
-class NSMouseButtonEvent : public NSEvent
+class nsmouse_button_event : public nsevent
 {
 public:
-	NSMouseButtonEvent(nsinput_map::mouse_button_val btn, bool pressed, const fvec2 & normalized_mpos) :
-		mb(btn),
-		mPressed(pressed),
-		mNormMousePos(normalized_mpos),
-		NSEvent()
+	nsmouse_button_event(nsinput_map::mouse_button_val mb_, bool pressed_, const fvec2 & normalized_mpos_) :
+		mb(mb_),
+		pressed(pressed_),
+		normalized_mpos(normalized_mpos_),
+		nsevent()
 	{}
 
-	fvec2 mNormMousePos;
+	fvec2 normalized_mpos;
 	nsinput_map::mouse_button_val mb;
-	bool mPressed;
+	bool pressed;
 };
 
-class NSMouseMoveEvent : public NSEvent
+class NSMouseMoveEvent : public nsevent
 {
 public:
-	NSMouseMoveEvent(const fvec2 & normalized_mpos) :
-		mNormMousePos(normalized_mpos),
-		NSEvent()
+	NSMouseMoveEvent(const fvec2 & normalized_mpos_) :
+		normalized_mpos(normalized_mpos_),
+		nsevent()
 	{}
 
-	fvec2 mNormMousePos;
+	fvec2 normalized_mpos;
 };
 
-class NSMouseScrollEvent : public NSEvent
+class nsmouse_scroll_event : public nsevent
 {
 public:
-	NSMouseScrollEvent(float scrollDelta, const fvec2 & normalized_mpos) :
-		mScroll(scrollDelta),
-		mNormMousePos(normalized_mpos),
-		NSEvent()
+	nsmouse_scroll_event(float scroll_delta_, const fvec2 & normalized_mpos_) :
+		scroll_delta(scroll_delta_),
+		normalized_mpos(normalized_mpos_),
+		nsevent()
 	{}
-	fvec2 mNormMousePos;
-	float mScroll;
+	fvec2 normalized_mpos;
+	float scroll_delta;
 };
 
-class NSActionEvent : public NSEvent
+class nsaction_event : public nsevent
 {
 public:
-	NSActionEvent(uint32 trigger_hashid):
-		mTriggerHashName(trigger_hashid),
-		NSEvent()
+	nsaction_event(uint32 trigger_hashid_):
+		trigger_hash_name(trigger_hashid_),
+		nsevent()
 	{}
 
-	uint32 mTriggerHashName;
+	uint32 trigger_hash_name;
 	nsinput_map::axis_map axes;
 };
 
-class NSStateEvent : public NSActionEvent
+class nsstate_event : public nsaction_event
 {
 public:
-	NSStateEvent(uint32 trigger_hashid, bool toggle):
-		mToggle(toggle),
-		NSActionEvent(trigger_hashid)
+	nsstate_event(uint32 trigger_hashid_, bool toggle_):
+		toggle(toggle_),
+		nsaction_event(trigger_hashid_)
 	{}
 
-	bool mToggle;
+	bool toggle;
 };
 
-class NSSelFocusEvent : public NSEvent
+class nssel_focus_event : public nsevent
 {
   public:
 	
-	NSSelFocusEvent(const uivec3 & focid):
-		mFocID(focid)
+	nssel_focus_event(const uivec3 & focid_):
+		focus_id(focid_)
 	{}
-	uivec3 mFocID;
+	uivec3 focus_id;
 };
 
 #endif

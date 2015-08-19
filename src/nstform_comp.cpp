@@ -20,8 +20,8 @@
 #include <nsengine.h>
 
 NSTFormComp::NSTFormComp():
-mTransformBuffer(NSBufferObject::Array, NSBufferObject::Mutable),
-mTransformIDBuffer(NSBufferObject::Array, NSBufferObject::Mutable),
+mTransformBuffer(nsbuffer_object::array, nsbuffer_object::storage_mutable),
+mTransformIDBuffer(nsbuffer_object::array, nsbuffer_object::storage_mutable),
 mXFBData(),
 mBufferResize(false),
 mTransformFB(false),
@@ -182,12 +182,12 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 			XFBBuffer * buf = &mXFBData.mXFBBuffers[bufI];
 			buf->mAllocAmount = allocAmount;
 
-			buf->mTFFeedbackObj = new NSTransformFeedbackObject();
-			buf->mXFBVAO = new NSVertexArrayObject();
-			buf->mXBWorldPosBuf = new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable);
-			buf->mXBTexCoordBuf = new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable);
-			buf->mXBNormalBuf = new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable);
-			buf->mXBTangentBuf = new NSBufferObject(NSBufferObject::Array, NSBufferObject::Mutable);
+			buf->mTFFeedbackObj = new nsxfb_object();
+			buf->mXFBVAO = new nsvertex_array_object();
+			buf->mXBWorldPosBuf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
+			buf->mXBTexCoordBuf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
+			buf->mXBNormalBuf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
+			buf->mXBTangentBuf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
 
 			buf->mXFBVAO->init_gl();
 			buf->mTFFeedbackObj->init_gl();
@@ -200,31 +200,31 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 			buf->mXFBVAO->bind();
 
 			buf->mXBWorldPosBuf->bind();
-			buf->mXBWorldPosBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
+			buf->mXBWorldPosBuf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->mAllocAmount);
 			buf->mXFBVAO->add(buf->mXBWorldPosBuf, nsshader::loc_position);
-			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_position, 4, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->vertex_attrib_ptr(nsshader::loc_position, 4, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXBTexCoordBuf->bind();
-			buf->mXBTexCoordBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
+			buf->mXBTexCoordBuf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->mAllocAmount);
 			buf->mXFBVAO->add(buf->mXBTexCoordBuf, nsshader::loc_tex_coords);
-			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_tex_coords, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->vertex_attrib_ptr(nsshader::loc_tex_coords, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXBNormalBuf->bind();
-			buf->mXBNormalBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
+			buf->mXBNormalBuf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->mAllocAmount);
 			buf->mXFBVAO->add(buf->mXBNormalBuf, nsshader::loc_normal);
-			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->vertex_attrib_ptr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXBTangentBuf->bind();
-			buf->mXBTangentBuf->allocate<fvec3>(NSBufferObject::MutableDynamicCopy, buf->mAllocAmount);
+			buf->mXBTangentBuf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->mAllocAmount);
 			buf->mXFBVAO->add(buf->mXBTangentBuf, nsshader::loc_tangent);
-			buf->mXFBVAO->vertexAttribPtr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+			buf->mXFBVAO->vertex_attrib_ptr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 
 			buf->mXFBVAO->unbind();
 
-			buf->mXBWorldPosBuf->setTarget(NSBufferObject::TransformFeedback);
-			buf->mXBTexCoordBuf->setTarget(NSBufferObject::TransformFeedback);
-			buf->mXBNormalBuf->setTarget(NSBufferObject::TransformFeedback);
-			buf->mXBTangentBuf->setTarget(NSBufferObject::TransformFeedback);
+			buf->mXBWorldPosBuf->set_target(nsbuffer_object::transform_feedback);
+			buf->mXBTexCoordBuf->set_target(nsbuffer_object::transform_feedback);
+			buf->mXBNormalBuf->set_target(nsbuffer_object::transform_feedback);
+			buf->mXBTangentBuf->set_target(nsbuffer_object::transform_feedback);
 			buf->mTFFeedbackObj->bind();
 			buf->mXBWorldPosBuf->bind(nsshader::loc_position);
 			buf->mXBTexCoordBuf->bind(nsshader::loc_tex_coords);
@@ -355,12 +355,12 @@ const fmat4 & NSTFormComp::transform(uint32 pTransformID) const
 	return mTransforms[pTransformID].mTransform;
 }
 
-NSBufferObject * NSTFormComp::transformBuffer()
+nsbuffer_object * NSTFormComp::transformBuffer()
 {
 	return &mTransformBuffer;
 }
 
-NSBufferObject * NSTFormComp::transformIDBuffer()
+nsbuffer_object * NSTFormComp::transformIDBuffer()
 {
 	return &mTransformIDBuffer;
 }

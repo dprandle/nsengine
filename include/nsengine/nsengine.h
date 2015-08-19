@@ -28,11 +28,11 @@ class nsmat_manager;
 class nsshader_manager;
 class NSInputManager;
 class NSEventHandler;
-class NSAnimSystem;
-class NSMovementSystem;
+class nsanim_system;
+class nsmovement_system;
 class NSTimer;
 class nsplugin_manager;
-class NSSystem;
+class nssystem;
 class nsplugin;
 class NSEventDispatcher;
 struct NSSaveResCallback;
@@ -43,15 +43,15 @@ class NSDebug;
 #endif
 
 struct GLContext;
-class NSFrameBuffer;
+class nsfb_object;
 
-typedef std::unordered_map<uint32, NSSystem*> SystemMap;
+typedef std::unordered_map<uint32, nssystem*> SystemMap;
 typedef std::unordered_map<uint32, uint32> ResManagerMap;
 typedef std::unordered_map<std::type_index, uint32> TypeHashMap;
 typedef std::unordered_map<uint32, nsstring> HashMap;
 typedef std::unordered_map<uint32, NSFactory*> FactoryMap;
 typedef std::unordered_map<uint32, GLContext*> ContextMap;
-typedef std::unordered_map<uint32, NSFrameBuffer*> FramebufferMap;
+typedef std::unordered_map<uint32, nsfb_object*> FramebufferMap;
 
 uint32 hash_id(const nsstring & str);
 
@@ -120,7 +120,7 @@ public:
 	bool addPlugin(nsplugin * plug);
 
 	/* Add a system to the current context */
-	bool addSystem(NSSystem * pSystem);
+	bool addSystem(nssystem * pSystem);
 
 	nsplugin * active();
 
@@ -151,9 +151,9 @@ public:
 		return static_cast<SysType*>(createSystem(tid));
 	}
 
-	NSSystem * createSystem(uint32 type_id);
+	nssystem * createSystem(uint32 type_id);
 	
-	NSSystem * createSystem(const nsstring & guid_);
+	nssystem * createSystem(const nsstring & guid_);
 
 	GLContext * current();
 
@@ -240,7 +240,7 @@ public:
 		return static_cast<BaseFacType*>(factory(hashed_type));
 	}
 
-	NSFrameBuffer * framebuffer(uint32 id);
+	nsfb_object * framebuffer(uint32 id);
 
 	template<class SysType>
 	bool hasSystem()
@@ -453,9 +453,9 @@ public:
 		return static_cast<SysType*>(removeSystem(hashed_type));
 	}
 
-	NSSystem * removeSystem(uint32 type_id);
+	nssystem * removeSystem(uint32 type_id);
 
-	NSSystem * removeSystem(const nsstring & gui);
+	nssystem * removeSystem(const nsstring & gui);
 
 	nsplugin * plugin(const nsstring & name);
 
@@ -539,9 +539,9 @@ public:
 		return static_cast<SysType*>(system(hashed_type));
 	}
 
-	NSSystem * system(uint32 type_id);
+	nssystem * system(uint32 type_id);
 
-	NSSystem * system(const nsstring & guid_);
+	nssystem * system(const nsstring & guid_);
 
 	NSTimer * timer();
 

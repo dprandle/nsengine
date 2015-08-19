@@ -24,7 +24,7 @@ class NSEventHandler;
 class NSEventDispatcher
 {
 public:
-	typedef std::deque<NSEvent*> EventQueue;
+	typedef std::deque<nsevent*> EventQueue;
 	typedef std::unordered_map<NSEventHandler*, EventQueue> ListenerQueue;
 
 	typedef std::unordered_set<NSEventHandler *> ListenerSet;
@@ -47,7 +47,7 @@ public:
 
 	void clear(NSEventHandler * handler);
 
-	NSEvent * next(NSEventHandler * handler);
+	nsevent * next(NSEventHandler * handler);
 
 	void pop(NSEventHandler * handler);
 
@@ -69,10 +69,10 @@ public:
 		while (currentListener != listenerSetIter->second.end())
 		{
 			mListenerEvents[*currentListener].push_back(evnt);
-			++evnt->refcount;
+			++evnt->ref_count;
 			++currentListener;
 		}
-        NSEvent * ev = evnt;
+        nsevent * ev = evnt;
         std::type_index eventT1(typeid(*evnt));
         std::type_index eventT2(typeid(*ev));
 		return evnt;
@@ -92,7 +92,7 @@ public:
 		while (currentListener != listenerSetIter->second.end())
 		{
 			mListenerEvents[*currentListener].push_front(evnt);
-			++evnt->refcount;
+			++evnt->ref_count;
 			++currentListener;
 		}
 		return evnt;
@@ -109,7 +109,7 @@ public:
 		return false;
 	}
 
-	bool send(NSEvent * pEvent);
+	bool send(nsevent * pEvent);
 
 private:
 	ListenerQueue mListenerEvents;

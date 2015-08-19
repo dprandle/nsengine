@@ -24,7 +24,7 @@ class NSHandlerFunc
 {
   public:
 	virtual ~NSHandlerFunc() {}
-	virtual bool exec(NSEvent * evnt)=0;
+	virtual bool exec(nsevent * evnt)=0;
 };
 
 template<class ClassType, class EventType>
@@ -38,7 +38,7 @@ class NSHandlerFuncType : public NSHandlerFunc
 		member(mf)
 	{}
 
-	bool exec(NSEvent * evnt)
+	bool exec(nsevent * evnt)
 	{
 		EventType * cast_evnt = static_cast<EventType*>(evnt);
         return (class_instance->*member)(cast_evnt);
@@ -59,7 +59,7 @@ class NSEventHandler
 	NSEventHandler();
 	~NSEventHandler();
 	
-	bool handleEvent(NSEvent * event);
+	bool handleEvent(nsevent * event);
 
 	template<class ClassType,class EventType>
 	bool registerHandlerFunc(ClassType * inst, bool (ClassType::*memberFunc)(EventType*))

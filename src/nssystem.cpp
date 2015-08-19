@@ -1,9 +1,9 @@
 /*!
 \file system.cpp
 
-\brief Definition file for NSSystem class
+\brief Definition file for nssystem class
 
-This file contains all of the neccessary definitions for the NSSystem class.
+This file contains all of the neccessary definitions for the nssystem class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -12,39 +12,39 @@ This file contains all of the neccessary definitions for the NSSystem class.
 
 #include <nssystem.h>
 
-NSSystem::NSSystem():
+nssystem::nssystem():
 	m_hashed_type(0)
 {}
 
-NSSystem::~NSSystem()
+nssystem::~nssystem()
 {}
 
-void NSSystem::draw()
+void nssystem::draw()
 {
 	// do nothing
 }
 
-uint32 NSSystem::type()
+uint32 nssystem::type()
 {
 	return m_hashed_type;
 }
 
-int32 NSSystem::draw_priority()
+int32 nssystem::draw_priority()
 {
 	return NO_DRAW_PR;
 }
 
-void NSSystem::add_trigger_hash(uint32 key, const nsstring & trigname)
+void nssystem::add_trigger_hash(uint32 key, const nsstring & trigname)
 {
 	m_hashed_input_triggers.emplace(key,hash_id(trigname));
 }
 
-void NSSystem::remove_trigger_hash(uint32 key)
+void nssystem::remove_trigger_hash(uint32 key)
 {
 	m_hashed_input_triggers.erase(key);
 }
 
-uint32 NSSystem::trigger_hash(uint32 key)
+uint32 nssystem::trigger_hash(uint32 key)
 {
 	auto fiter = m_hashed_input_triggers.find(key);
 	if (fiter != m_hashed_input_triggers.end())

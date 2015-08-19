@@ -34,6 +34,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsplugin.h>
 #include <nsevent.h>
 #include <nsmath.h>
+#include <nsgbuf_object.h>
 /*
 Notes:
 
@@ -58,7 +59,7 @@ nsselection_system::nsselection_system() :
 	m_trans(),
 	m_toggle_move(false),
 	m_send_foc_event(false),
-	NSSystem()
+	nssystem()
 {}
 
 nsselection_system::~nsselection_system()
@@ -266,7 +267,7 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 	if (cam == NULL)
 		return uivec3();
 
-	NSFrameBuffer * pickingBuf = nsengine.framebuffer(m_picking_buf);
+	nsfb_object * pickingBuf = nsengine.framebuffer(m_picking_buf);
 	if (pickingBuf == NULL)
 		return uivec3();
 
@@ -275,15 +276,15 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 	float mouseX = mousex * float(dim.w);
 	float mouseY = mousey * float(dim.h);
 
-	pickingBuf->setTarget(NSFrameBuffer::Read);
+	pickingBuf->set_target(nsfb_object::fb_read);
 	pickingBuf->bind();
-	pickingBuf->setReadBuffer(NSFrameBuffer::AttachmentPoint(NSFrameBuffer::Color + NSGBuffer::Picking));
+	pickingBuf->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + nsgbuf_object::col_picking));
 
 	uivec3 index;
 	glReadPixels(int32(mouseX), int32(mouseY), 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
 	GLError("nsselection_system::pick");
 
-	pickingBuf->setReadBuffer(NSFrameBuffer::None);
+	pickingBuf->set_read_buffer(nsfb_object::att_none);
 	pickingBuf->unbind();
 	return index;
 }
@@ -298,8 +299,8 @@ void nsselection_system::draw()
 	if (cam == NULL)
 		return;
 
-	NSFrameBuffer * finalB = nsengine.framebuffer(m_final_buf);
-	finalB->setTarget(NSFrameBuffer::Draw);
+	nsfb_object * finalB = nsengine.framebuffer(m_final_buf);
+	finalB->set_target(nsfb_object::fb_draw);
 	finalB->bind();
 
 	glDepthMask(GL_TRUE);
@@ -583,7 +584,7 @@ void nsselection_system::_draw_occ()
 
 		m_sel_shader->set_has_bones(false);
 		occSub->pos_buf.bind();
-		occSub->vao.vertexAttribPtr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
+		occSub->vao.vertex_attrib_ptr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
 		occSub->indice_buf.bind();
 
 		m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -1749,7 +1750,7 @@ void nsselection_system::update()
 
 	if (m_send_foc_event)
 	{
-		nsengine.eventDispatch()->push<NSSelFocusEvent>(m_focus_ent);
+		nsengine.eventDispatch()->push<nssel_focus_event>(m_focus_ent);
 		m_send_foc_event = false;
 	}
 
@@ -1781,7 +1782,7 @@ void nsselection_system::update()
 				fvec3 pos = foc_tform->wpos(m_focus_ent.z);
 				scn->grid().snap(pos);
 				add_to_grid();
-				nsengine.eventDispatch()->push<NSSelFocusEvent>(m_focus_ent);
+				nsengine.eventDispatch()->push<nssel_focus_event>(m_focus_ent);
 			}
 			m_cached_point = fvec3();
 		}
@@ -1799,9 +1800,9 @@ void nsselection_system::update()
 	}
 }
 
-bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
+bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 {
-	if (evnt->mTriggerHashName == trigger_hash(selected_entity))
+	if (evnt->trigger_hash_name == trigger_hash(selected_entity))
 	{
 		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
 		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
@@ -1820,7 +1821,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
         add(selectedEnt, pickid.z);
 		_reset_focus(pickid);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(multi_select))
+	else if (evnt->trigger_hash_name == trigger_hash(multi_select))
 	{
 		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
 		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
@@ -1842,7 +1843,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 
 		_reset_focus(pickid);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(shift_select))
+	else if (evnt->trigger_hash_name == trigger_hash(shift_select))
 	{
 		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
 		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
@@ -1858,7 +1859,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		add(selectedEnt, pickid.z);
 		_reset_focus(pickid);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_select))
+	else if (evnt->trigger_hash_name == trigger_hash(move_select))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1872,7 +1873,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x | axis_y | axis_z);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_selection_xy))
+	else if (evnt->trigger_hash_name == trigger_hash(move_selection_xy))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1886,7 +1887,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x | axis_y);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_selection_zy))
+	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zy))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1900,7 +1901,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_y | axis_z);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_selection_zx))
+	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zx))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1914,7 +1915,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x | axis_z);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_selection_x))
+	else if (evnt->trigger_hash_name == trigger_hash(move_selection_x))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1928,7 +1929,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_selection_y))
+	else if (evnt->trigger_hash_name == trigger_hash(move_selection_y))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1942,7 +1943,7 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_y);
 	}
-	else if (evnt->mTriggerHashName == trigger_hash(move_selection_z))
+	else if (evnt->trigger_hash_name == trigger_hash(move_selection_z))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
@@ -1959,12 +1960,12 @@ bool nsselection_system::_handle_action_event(NSActionEvent * evnt)
 	return true;	
 }
 
-bool nsselection_system::_handle_state_event(NSStateEvent * evnt)
+bool nsselection_system::_handle_state_event(nsstate_event * evnt)
 {
-	if (evnt->mTriggerHashName == trigger_hash(move_selection_toggle))
+	if (evnt->trigger_hash_name == trigger_hash(move_selection_toggle))
 	{
 		m_toggle_move = true;
-		m_moving = evnt->mToggle;
+		m_moving = evnt->toggle;
 	}
 	return true;
 }

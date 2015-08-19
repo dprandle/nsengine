@@ -43,8 +43,8 @@ void NSEventDispatcher::clear(NSEventHandler * handler)
 	{
 		while (fiter->second.begin() != fiter->second.end())
 		{
-			--(fiter->second.front()->refcount);
-			if (fiter->second.front()->refcount == 0)
+			--(fiter->second.front()->ref_count);
+			if (fiter->second.front()->ref_count == 0)
 				delete fiter->second.front();
 			fiter->second.pop_front();
 		}
@@ -52,7 +52,7 @@ void NSEventDispatcher::clear(NSEventHandler * handler)
 }
 
 
-NSEvent * NSEventDispatcher::next(NSEventHandler * handler)
+nsevent * NSEventDispatcher::next(NSEventHandler * handler)
 {
 	auto fiter = mListenerEvents.find(handler);
 	if (fiter != mListenerEvents.end() && !fiter->second.empty())
@@ -65,8 +65,8 @@ void NSEventDispatcher::pop(NSEventHandler * handler)
 	auto fiter = mListenerEvents.find(handler);
 	if (fiter != mListenerEvents.end() && !fiter->second.empty())
 	{
-		--(fiter->second.front()->refcount); // decrease refcount
-		if (fiter->second.front()->refcount == 0)
+		--(fiter->second.front()->ref_count); // decrease refcount
+		if (fiter->second.front()->ref_count == 0)
 			delete fiter->second.front();
 		fiter->second.pop_front();
 	}
@@ -77,8 +77,8 @@ void NSEventDispatcher::pop_back(NSEventHandler * handler)
 	auto fiter = mListenerEvents.find(handler);
 	if (fiter != mListenerEvents.end() && !fiter->second.empty())
 	{
-		--(fiter->second.back()->refcount); // decrease refcount
-		if (fiter->second.back()->refcount == 0)
+		--(fiter->second.back()->ref_count); // decrease refcount
+		if (fiter->second.back()->ref_count == 0)
 			delete fiter->second.back();
 		fiter->second.pop_back();
 	}
@@ -96,8 +96,8 @@ void NSEventDispatcher::process(NSEventHandler * handler)
         std::type_index ti(typeid(*(*iter)));
 		if (events->first->handleEvent(*iter))
 		{
-			--((*iter)->refcount);
-			if ((*iter)->refcount == 0)
+			--((*iter)->ref_count);
+			if ((*iter)->ref_count == 0)
 				delete (*iter);
 			iter = events->second.erase(iter);
 		}
@@ -106,7 +106,7 @@ void NSEventDispatcher::process(NSEventHandler * handler)
 	}
 }
 
-bool NSEventDispatcher::send(NSEvent * pEvent)
+bool NSEventDispatcher::send(nsevent * pEvent)
 {
 	// do nothing right now... until observer stuff realized then remove function
 	return true;

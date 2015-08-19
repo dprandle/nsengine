@@ -1,37 +1,33 @@
 /*!
 \file nsmovement_system.h
 
-\brief Header file for NSMovementSystem class
+\brief Header file for nsmovement_system class
 
-This file contains all of the neccessary declarations for the NSMovementSystem class.
+This file contains all of the neccessary declarations for the nsmovement_system class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSMOVEMENTSYSTEM_H
-#define NSMOVEMENTSYSTEM_H
+#ifndef NSMOVEMENT_SYSTEM_H
+#define NSMOVEMENT_SYSTEM_H
 
 #include <nssystem.h>
 
-class NSMovementSystem : public NSSystem
+class nsmovement_system : public nssystem
 {
 public:
 
-	NSMovementSystem();
+	nsmovement_system();
 
-	~NSMovementSystem();
-
-//	virtual bool handleEvent(NSEvent * pEvent);
+	~nsmovement_system();
 
 	virtual void init();
 
 	virtual void update();
 
 	virtual int32 update_priority();
-
-private:
 };
 
 

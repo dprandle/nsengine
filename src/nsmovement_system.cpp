@@ -1,9 +1,9 @@
 /*!
 \file nsmovementsystem.cpp
 
-\brief Definition file for NSMovementSystem class
+\brief Definition file for nsmovement_system class
 
-This file contains all of the neccessary definitions for the NSMovementSystem class.
+This file contains all of the neccessary definitions for the nsmovement_system class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -15,21 +15,16 @@ This file contains all of the neccessary definitions for the NSMovementSystem cl
 #include <nsscene.h>
 #include <nsentity.h>
 
-NSMovementSystem::NSMovementSystem() :NSSystem()
+nsmovement_system::nsmovement_system() :nssystem()
 {}
 
-NSMovementSystem::~NSMovementSystem()
+nsmovement_system::~nsmovement_system()
 {}
 
-void NSMovementSystem::init()
+void nsmovement_system::init()
 {}
 
-// bool NSMovementSystem::handleEvent(NSEvent * pEvent)
-// {
-// 	return false;
-// }
-
-void NSMovementSystem::update()
+void nsmovement_system::update()
 {
 	nsscene * scene = nsengine.currentScene();
 	if (scene == NULL)
@@ -41,21 +36,21 @@ void NSMovementSystem::update()
 		NSTFormComp * tForm = (*entIter)->get<NSTFormComp>();
 		if (tForm->updatePosted())
 		{
-			NSBufferObject & tFormBuf = *tForm->transformBuffer();
-			NSBufferObject & tFormIDBuf = *tForm->transformIDBuffer();
+			nsbuffer_object & tFormBuf = *tForm->transformBuffer();
+			nsbuffer_object & tFormIDBuf = *tForm->transformIDBuffer();
 
 			if (tForm->bufferResize())
 			{
 				tFormBuf.bind();
-				tFormBuf.allocate<fmat4>(NSBufferObject::MutableDynamicDraw, tForm->count());
+				tFormBuf.allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
 				tFormIDBuf.bind();
-				tFormIDBuf.allocate<uint32>(NSBufferObject::MutableDynamicDraw, tForm->count());
+				tFormIDBuf.allocate<uint32>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
 			}
 
 			tFormBuf.bind();
-			fmat4 * mappedT = tFormBuf.map<fmat4>(0, tForm->count(), NSBufferObject::AccessMapRange(NSBufferObject::MapWrite));
+			fmat4 * mappedT = tFormBuf.map<fmat4>(0, tForm->count(), nsbuffer_object::access_map_range(nsbuffer_object::map_write));
 			tFormIDBuf.bind();
-			uint32 * mappedI = tFormIDBuf.map<uint32>(0, tForm->count(), NSBufferObject::AccessMapRange(NSBufferObject::MapWrite));
+			uint32 * mappedI = tFormIDBuf.map<uint32>(0, tForm->count(), nsbuffer_object::access_map_range(nsbuffer_object::map_write));
 			tFormIDBuf.unbind();
 
 			uint32 visibleCount = 0;
@@ -107,7 +102,7 @@ void NSMovementSystem::update()
 	}
 }
 
-int32 NSMovementSystem::update_priority()
+int32 nsmovement_system::update_priority()
 {
 	return MOVE_SYS_UPDATE_PR;
 }

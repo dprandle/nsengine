@@ -259,15 +259,15 @@
 #define TERRAIN_COMP_TYPESTRING "NSTerrainComp"
 
 // System Typenames
-#define ANIM_SYS_TYPESTRING "NSAnimationSystem"
-#define CAM_SYS_TYPESTRING "NSCameraSystem"
+#define ANIM_SYS_TYPESTRING "nsanim_system"
+#define CAM_SYS_TYPESTRING "nscamera_system"
 #define BUILD_SYS_TYPESTRING "nsbuild_system"
-#define MOVE_SYS_TYPESTRING "NSMovementSystem"
+#define MOVE_SYS_TYPESTRING "nsmovement_system"
 #define RENDER_SYS_TYPESTRING "nsrender_system"
 #define SEL_SYS_TYPESTRING "nsselection_system"
 #define UI_SYS_TYPESTRING "NSUISystem"
-#define INP_SYS_TYPESTRING "NSInputSystem"
-#define PARTICLE_SYS_TYPESTRING "NSParticleSystem"
+#define INP_SYS_TYPESTRING "nsinput_system"
+#define PARTICLE_SYS_TYPESTRING "nsparticle_system"
 
 // System update priority
 #define ANIM_SYS_UPDATE_PR 70000

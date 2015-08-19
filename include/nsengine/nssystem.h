@@ -1,9 +1,9 @@
 /*!
 \file nssystem.h
 
-\brief Header file for NSSystem class
+\brief Header file for nssystem class
 
-This file contains all of the neccessary declartations for the NSSystem class.
+This file contains all of the neccessary declartations for the nssystem class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -18,17 +18,17 @@ This file contains all of the neccessary declartations for the NSSystem class.
 
 class NSTimer;
 class nsscene;
-class NSEvent;
+class nsevent;
 
-class NSSystem : public NSEventHandler
+class nssystem : public NSEventHandler
 {
 public:
 
 	friend class NSSysFactory;
 	
-	NSSystem();
+	nssystem();
 
-	virtual ~NSSystem();
+	virtual ~nssystem();
 
 	virtual void draw();
 

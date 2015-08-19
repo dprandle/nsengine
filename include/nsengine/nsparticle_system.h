@@ -1,9 +1,9 @@
 /*!
 \file nsparticle_system.h
 
-\brief Header file for NSParticleSystem class
+\brief Header file for nsparticle_system class
 
-This file contains all of the neccessary declarations for the NSParticleSystem class.
+This file contains all of the neccessary declarations for the nsparticle_system class.
 
 \author Daniel Randle
 \date March 8 2014
@@ -22,13 +22,13 @@ class nsscene;
 class NSSelComp;
 class nsparticle_process_shader;
 
-class NSParticleSystem : public NSSystem
+class nsparticle_system : public nssystem
 {
 public:
 
-	NSParticleSystem();
+	nsparticle_system();
 
-	~NSParticleSystem();
+	~nsparticle_system();
 
 	virtual void draw();
 
@@ -36,21 +36,19 @@ public:
 
 	virtual int32 update_priority();
 
-//	virtual bool handleEvent(NSEvent * pEvent);
-
 	virtual void init();
 
-	uint32 finalfbo();
+	uint32 final_fbo();
 
-	void setFinalfbo(uint32 fbo);
+	void set_final_fbo(uint32 fbo);
 
 	virtual void update();
 
-	void setShader(nsparticle_process_shader * shader) { mDefaultShader = shader; }
+	void set_process_shader(nsparticle_process_shader * shader) { m_process_shader = shader; }
 
 private:
-	nsparticle_process_shader * mDefaultShader;
-	uint32 mFinalBuf;
+	nsparticle_process_shader * m_process_shader;
+	uint32 m_final_buf;
 };
 
 #endif

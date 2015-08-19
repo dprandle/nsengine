@@ -18,7 +18,7 @@ This file contains all of the neccessary declarations for the nsbuild_system cla
 
 class nsentity;
 
-class nsbuild_system : public NSSystem
+class nsbuild_system : public nssystem
 {
 public:
 
@@ -62,8 +62,6 @@ public:
 	const int32 & layer() const;
 
 	const mode_t & mode() const;
-
-	//virtual bool handleEvent(NSEvent * pEvent);
 
 	virtual void init();
 

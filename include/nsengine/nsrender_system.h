@@ -20,18 +20,20 @@
 #include <nsbuffer_object.h>
 #include <map>
 
-#include <nsframebuffer.h>
+#include <nsfb_object.h>
 
+class nsshadowbuf_object;
+class nsgbuf_object;
 
-class nsrender_system : public NSSystem
+class nsrender_system : public nssystem
 {
 public:
 	struct draw_call
 	{
 		draw_call(nsmesh::submesh * submesh_,
 				  fmat4array * anim_transforms_,
-				  NSBufferObject * transform_buffer_,
-				  NSBufferObject * transform_id_buffer_,
+				  nsbuffer_object * transform_buffer_,
+				  nsbuffer_object * transform_id_buffer_,
 				  const fvec2 & height_minmax_,
 				  uint32 ent_id,
 				  uint32 plug_id,
@@ -41,8 +43,8 @@ public:
 
 		nsmesh::submesh * submesh;
 		fmat4array * anim_transforms;
-		NSBufferObject * transform_buffer;
-		NSBufferObject * transform_id_buffer;
+		nsbuffer_object * transform_buffer;
+		nsbuffer_object * transform_id_buffer;
 		fvec2 height_minmax;
 		uint32 entity_id;
 		uint32 plugin_id;
@@ -156,8 +158,6 @@ public:
 
 	uivec3 pick(float mousex, float mousey);
 
-	//virtual bool handleEvent(NSEvent * pEvent);
-
 	virtual void init();
 
 	void resize_screen(const ivec2 & size);
@@ -223,9 +223,9 @@ private:
 	xfb_draw_set m_xfb_draws;
 	uint32 m_screen_fbo;
 
-	NSGBuffer * m_gbuffer;
-	NSShadowBuffer * m_shadow_buf;
-	NSFrameBuffer * m_final_buf;
+	nsgbuf_object * m_gbuffer;
+	nsshadowbuf_object * m_shadow_buf;
+	nsfb_object * m_final_buf;
 	nsmaterial * m_default_mat;
 	RenderShaders m_shaders;
 };

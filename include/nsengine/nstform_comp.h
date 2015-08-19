@@ -17,7 +17,7 @@
 #include <nscomponent.h>
 #include <vector>
 #include <nsbuffer_object.h>
-#include <nstransform_feedback_object.h>
+#include <nsxfb_object.h>
 #include <nsvertex_array_object.h>
 
 class NSTimer;
@@ -58,12 +58,12 @@ public:
 			mInstanceCount(0)
 		{}
 
-		NSVertexArrayObject * mXFBVAO;
-		NSTransformFeedbackObject * mTFFeedbackObj;
-		NSBufferObject * mXBWorldPosBuf;
-		NSBufferObject * mXBTexCoordBuf;
-		NSBufferObject * mXBNormalBuf;
-		NSBufferObject * mXBTangentBuf;
+		nsvertex_array_object * mXFBVAO;
+		nsxfb_object * mTFFeedbackObj;
+		nsbuffer_object * mXBWorldPosBuf;
+		nsbuffer_object * mXBTexCoordBuf;
+		nsbuffer_object * mXBNormalBuf;
+		nsbuffer_object * mXBTangentBuf;
 		uint32 mAllocAmount;
 		uint32 mInstanceCount;
 	};
@@ -145,9 +145,9 @@ public:
 
 	const fvec3 dirVec(DirVec pDirection, uint32 pTransformID = 0) const;
 
-	NSBufferObject * transformBuffer();
+	nsbuffer_object * transformBuffer();
 
-	NSBufferObject * transformIDBuffer();
+	nsbuffer_object * transformIDBuffer();
 
 	const InstanceVec & transformVec() const;
 
@@ -329,8 +329,8 @@ public:
 
 private:
 	InstanceVec mTransforms;
-	NSBufferObject mTransformBuffer;
-	NSBufferObject mTransformIDBuffer;
+	nsbuffer_object mTransformBuffer;
+	nsbuffer_object mTransformIDBuffer;
 
 	XFBData mXFBData;
 	

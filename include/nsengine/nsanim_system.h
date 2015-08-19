@@ -1,28 +1,28 @@
 /*!
 \file nsanimsystem.h
 
-\brief Header file for NSAnimSystem class
+\brief Header file for nsanim_system class
 
-This file contains all of the neccessary declarations for the NSAnimSystem class.
+This file contains all of the neccessary declarations for the nsanim_system class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSANIMSYSTEM_H
-#define NSANIMSYSTEM_H
+#ifndef NSANIM_SYSTEM_H
+#define NSANIM_SYSTEM_H
 
 #include <nssystem.h>
 #include <nsglobal.h>
 
-class NSAnimSystem : public NSSystem
+class nsanim_system : public nssystem
 {
 public:
 
-	NSAnimSystem();
+	nsanim_system();
 
-	~NSAnimSystem();
+	~nsanim_system();
 
 //	virtual bool handleEvent(NSEvent * pEvent);
 
