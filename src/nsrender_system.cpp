@@ -217,29 +217,29 @@ void nsrender_system::draw()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
 	glEnable(GL_STENCIL_TEST);
-	auto dLIter = scene->entities<NSLightComp>().begin();
+	auto dLIter = scene->entities<nslight_comp>().begin();
 
 	fmat4 projLightMat, proj;
 	float ar;
-	while (dLIter != scene->entities<NSLightComp>().end())
+	while (dLIter != scene->entities<nslight_comp>().end())
 	{
-		NSLightComp * lComp = (*dLIter)->get<NSLightComp>();
-		NSTFormComp * tComp = (*dLIter)->get<NSTFormComp>();
-		NSTFormComp * camTComp = cam->get<NSTFormComp>();
+		nslight_comp * lComp = (*dLIter)->get<nslight_comp>();
+		nstform_comp * tComp = (*dLIter)->get<nstform_comp>();
+		nstform_comp * camTComp = cam->get<nstform_comp>();
 		if (tComp == NULL)
 		{
 			++dLIter;
 			continue;
 		}
 
-		if (lComp->type() == NSLightComp::Spot && m_lighting_enabled)
+		if (lComp->type() == nslight_comp::l_spot && m_lighting_enabled)
 		{
 			ar = float(m_shadow_buf->size(nsshadowbuf_object::Spot).w) / float(m_shadow_buf->size(nsshadowbuf_object::Spot).h);
-			proj = perspective(lComp->angle()*2.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
+			proj = perspective(lComp->angle()*2.0f, ar, lComp->shadow_clipping().x, lComp->shadow_clipping().y);
 			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * lComp->pov(i);
-				if (lComp->castShadows())
+				if (lComp->cast_shadows())
 				{
 					m_shadow_buf->bind(nsshadowbuf_object::Spot);
 					glEnable(GL_DEPTH_TEST);
@@ -282,23 +282,23 @@ void nsrender_system::draw()
 				m_shaders.spot_light->bind();
 				m_shaders.spot_light->set_cam_world_pos(camTComp->wpos());
 				m_shaders.spot_light->set_position(tComp->wpos(i));
-				m_shaders.spot_light->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+				m_shaders.spot_light->set_max_depth(lComp->shadow_clipping().y - lComp->shadow_clipping().x);
 				m_shaders.spot_light->set_transform(lComp->transform(i));
 				m_shaders.spot_light->set_proj_cam_mat(camc->proj_cam());
 				m_shaders.spot_light->set_proj_light_mat(projLightMat);
-				m_shaders.spot_light->set_direction(tComp->dirVec(NSTFormComp::Target, i));
+				m_shaders.spot_light->set_direction(tComp->dvec(nstform_comp::dir_target, i));
 				_blend_spot_light(lComp);
 			}
 		}
-		else if (lComp->type() == NSLightComp::Point && m_lighting_enabled)
+		else if (lComp->type() == nslight_comp::l_point && m_lighting_enabled)
 		{
 			ar = float(m_shadow_buf->size(nsshadowbuf_object::Point).w) / float(m_shadow_buf->size(nsshadowbuf_object::Point).h);
-			proj = perspective(90.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
+			proj = perspective(90.0f, ar, lComp->shadow_clipping().x, lComp->shadow_clipping().y);
 			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * lComp->pov(i);
 				glCullFace(GL_FRONT);
-				if (lComp->castShadows())
+				if (lComp->cast_shadows())
 				{
 					m_shadow_buf->bind(nsshadowbuf_object::Point);
 					glEnable(GL_DEPTH_TEST);
@@ -309,7 +309,7 @@ void nsrender_system::draw()
 
 					m_shaders.point_shadow->bind();
 					m_shaders.point_shadow->set_light_pos(tComp->wpos(i));
-					m_shaders.point_shadow->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+					m_shaders.point_shadow->set_max_depth(lComp->shadow_clipping().y - lComp->shadow_clipping().x);
 					m_shaders.point_shadow->set_proj_mat(proj);
 					fmat4 f;
 					f.set_column(3,fvec4(tComp->wpos(i)*-1.0f,1.0f));
@@ -348,22 +348,22 @@ void nsrender_system::draw()
 				m_shaders.point_light->bind();
 				m_shaders.point_light->set_cam_world_pos(camTComp->wpos());
 				m_shaders.point_light->set_position(tComp->wpos(i));
-				m_shaders.point_light->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+				m_shaders.point_light->set_max_depth(lComp->shadow_clipping().y - lComp->shadow_clipping().x);
 				m_shaders.point_light->set_transform(lComp->transform(i));
 				m_shaders.point_light->set_proj_cam_mat(camc->proj_cam());
 				_blend_point_light(lComp);
 			}
 		}
-		else if (lComp->type() == NSLightComp::Directional)
+		else if (lComp->type() == nslight_comp::l_dir)
 		{
 			ar = float(m_shadow_buf->size(nsshadowbuf_object::Direction).w) / float(m_shadow_buf->size(nsshadowbuf_object::Direction).h);
-			proj = perspective(160.0f, ar, lComp->shadowClipping().x, lComp->shadowClipping().y);
+			proj = perspective(160.0f, ar, lComp->shadow_clipping().x, lComp->shadow_clipping().y);
 			for (uint32 i = 0; i < tComp->count(); ++i)
 			{
 				projLightMat = proj * tComp->pov();
 				glCullFace(GL_BACK);
 
-				if (lComp->castShadows() && m_lighting_enabled)
+				if (lComp->cast_shadows() && m_lighting_enabled)
 				{
 					m_shadow_buf->bind(nsshadowbuf_object::Direction);
 					glEnable(GL_DEPTH_TEST);
@@ -395,7 +395,7 @@ void nsrender_system::draw()
 				m_shaders.dir_light->set_proj_light_mat(projLightMat);
 				m_shaders.dir_light->set_lighting_enabled(m_lighting_enabled);
 				m_shaders.dir_light->set_bg_color(scene->bg_color());
-				m_shaders.dir_light->set_direction(tComp->dirVec(NSTFormComp::Target, i));
+				m_shaders.dir_light->set_direction(tComp->dvec(nstform_comp::dir_target, i));
 				m_shaders.dir_light->set_cam_world_pos(camTComp->wpos());
 				_blend_dir_light(lComp);
 				dirlt = true;
@@ -553,23 +553,23 @@ void nsrender_system::update()
 
 	// update render components and the draw call list
 	 fvec2 terh;
-	 NSRenderComp * rComp = NULL;
-	 NSTFormComp * tComp = NULL;
-	 NSAnimComp * animComp = NULL;
-	 NSTerrainComp * terComp = NULL;
+	 nsrender_comp * rComp = NULL;
+	 nstform_comp * tComp = NULL;
+	 nsanim_comp * animComp = NULL;
+	 nsterrain_comp * terComp = NULL;
 	 nsmesh * currentMesh = NULL;
-	 NSLightComp * lc = NULL;
+	 nslight_comp * lc = NULL;
 
-	auto iter = scene->entities<NSRenderComp>().begin();
-	while (iter != scene->entities<NSRenderComp>().end())
+	auto iter = scene->entities<nsrender_comp>().begin();
+	while (iter != scene->entities<nsrender_comp>().end())
 	{
 		terh.set(0.0f, 1.0f);
-		rComp = (*iter)->get<NSRenderComp>();
-		tComp = (*iter)->get<NSTFormComp>();
-		lc = (*iter)->get<NSLightComp>();
-		animComp = (*iter)->get<NSAnimComp>();
-		terComp = (*iter)->get<NSTerrainComp>();
-		currentMesh = nsengine.resource<nsmesh>(rComp->meshID());
+		rComp = (*iter)->get<nsrender_comp>();
+		tComp = (*iter)->get<nstform_comp>();
+		lc = (*iter)->get<nslight_comp>();
+		animComp = (*iter)->get<nsanim_comp>();
+		terComp = (*iter)->get<nsterrain_comp>();
+		currentMesh = nsengine.resource<nsmesh>(rComp->mesh_id());
 
 		if (lc != NULL)
 		{
@@ -589,7 +589,7 @@ void nsrender_system::update()
 			continue;
 		}
 
-		if (tComp->transformFeedback())
+		if (tComp->xfb_enabled())
 			m_xfb_draws.emplace((*iter));
 		else
 		{
@@ -600,7 +600,7 @@ void nsrender_system::update()
 			for (uint32 i = 0; i < currentMesh->count(); ++i)
 			{
 				mSMesh = currentMesh->sub(i);
-				mat = nsengine.resource<nsmaterial>(rComp->materialID(i));
+				mat = nsengine.resource<nsmaterial>(rComp->material_id(i));
 
 				if (mat == NULL)
 					mat = m_default_mat;
@@ -612,22 +612,22 @@ void nsrender_system::update()
 					shader = m_shaders.deflt;
 
 				if (animComp != NULL)
-					fTForms = animComp->finalTransforms();
+					fTForms = animComp->final_transforms();
 
 				if (terComp != NULL)
-					terh = terComp->heightBounds();
+					terh = terComp->height_bounds();
 
 				if (tComp != NULL)
 				{
 					m_drawcall_map[mat].emplace(draw_call(mSMesh,
 						fTForms,
-						tComp->transformBuffer(),
-						tComp->transformIDBuffer(),
+						tComp->transform_buffer(),
+						tComp->transform_id_buffer(),
 						terh,
 						(*iter)->id(),
 						(*iter)->plugin_id(),
 						tComp->count(),
-						rComp->castShadow()));
+						rComp->cast_shadow()));
 					m_shader_mat_map[shader].insert(mat);
 				}
 			}
@@ -636,18 +636,18 @@ void nsrender_system::update()
 	}
 }
 
-void nsrender_system::_blend_dir_light(NSLightComp * pLight)
+void nsrender_system::_blend_dir_light(nslight_comp * pLight)
 {
 	m_shaders.dir_light->set_ambient_intensity(pLight->intensity().y);
-	m_shaders.dir_light->set_cast_shadows(pLight->castShadows());
+	m_shaders.dir_light->set_cast_shadows(pLight->cast_shadows());
 	m_shaders.dir_light->set_diffuse_intensity(pLight->intensity().x);
 	m_shaders.dir_light->set_light_color(pLight->color());
-	m_shaders.dir_light->set_shadow_samples(pLight->shadowSamples());
-	m_shaders.dir_light->set_shadow_darkness(pLight->shadowDarkness());
+	m_shaders.dir_light->set_shadow_samples(pLight->shadow_samples());
+	m_shaders.dir_light->set_shadow_darkness(pLight->shadow_darkness());
 	m_shaders.dir_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->size().x), static_cast<float>(m_final_buf->size().y)));
 	m_shaders.dir_light->set_shadow_tex_size(fvec2(static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).w), static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).y)));
 
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -662,14 +662,14 @@ void nsrender_system::_blend_dir_light(NSLightComp * pLight)
 	}
 }
 
-void nsrender_system::_blend_point_light(NSLightComp * pLight)
+void nsrender_system::_blend_point_light(nslight_comp * pLight)
 {
 	m_shaders.point_light->set_ambient_intensity(pLight->intensity().y);
-	m_shaders.point_light->set_cast_shadows(pLight->castShadows());
+	m_shaders.point_light->set_cast_shadows(pLight->cast_shadows());
 	m_shaders.point_light->set_diffuse_intensity(pLight->intensity().x);
 	m_shaders.point_light->set_light_color(pLight->color());
-	m_shaders.point_light->set_shadow_samples(pLight->shadowSamples());
-	m_shaders.point_light->set_shadow_darkness(pLight->shadowDarkness());
+	m_shaders.point_light->set_shadow_samples(pLight->shadow_samples());
+	m_shaders.point_light->set_shadow_darkness(pLight->shadow_darkness());
 	m_shaders.point_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->size().x), static_cast<float>(m_final_buf->size().y)));
 	m_shaders.point_light->set_shadow_tex_size(fvec2(static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).w), static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).y)));
 	m_shaders.point_light->set_const_atten(pLight->atten().x);
@@ -677,7 +677,7 @@ void nsrender_system::_blend_point_light(NSLightComp * pLight)
 	m_shaders.point_light->set_exp_atten(pLight->atten().z);
 
 
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -696,14 +696,14 @@ void nsrender_system::_blend_point_light(NSLightComp * pLight)
 	}
 }
 
-void nsrender_system::_blend_spot_light(NSLightComp * pLight)
+void nsrender_system::_blend_spot_light(nslight_comp * pLight)
 {
 	m_shaders.spot_light->set_ambient_intensity(pLight->intensity().y);
-	m_shaders.spot_light->set_cast_shadows(pLight->castShadows());
+	m_shaders.spot_light->set_cast_shadows(pLight->cast_shadows());
 	m_shaders.spot_light->set_diffuse_intensity(pLight->intensity().x);
 	m_shaders.spot_light->set_light_color(pLight->color());
-	m_shaders.spot_light->set_shadow_samples(pLight->shadowSamples());
-	m_shaders.spot_light->set_shadow_darkness(pLight->shadowDarkness());
+	m_shaders.spot_light->set_shadow_samples(pLight->shadow_samples());
+	m_shaders.spot_light->set_shadow_darkness(pLight->shadow_darkness());
 	m_shaders.spot_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->size().x),
 												   static_cast<float>(m_final_buf->size().y)));
 	m_shaders.spot_light->set_shadow_tex_size(
@@ -714,7 +714,7 @@ void nsrender_system::_blend_spot_light(NSLightComp * pLight)
 	m_shaders.spot_light->set_exp_atten(pLight->atten().z);
 	m_shaders.spot_light->set_cutoff(pLight->cutoff());
 
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -803,32 +803,32 @@ void nsrender_system::_draw_xfbs()
 	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
-	NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
 	nscam_comp * camc = cam->get<nscam_comp>();
 
 	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
 	while (drawIter != m_xfb_draws.end())
 	{
-		NSRenderComp * rComp = (*drawIter)->get<NSRenderComp>();
-		NSTFormComp * tComp = (*drawIter)->get<NSTFormComp>();
-		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->meshID());
+		nsrender_comp * rComp = (*drawIter)->get<nsrender_comp>();
+		nstform_comp * tComp = (*drawIter)->get<nstform_comp>();
+		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->mesh_id());
 		if (mesh == NULL)
 			return;
 
-		NSTFormComp::XFBData * xbdat = tComp->xfbData();
+		nstform_comp::xfb_data * xbdat = tComp->xfb();
 
-		auto bufIter = xbdat->mXFBBuffers.begin();
+		auto bufIter = xbdat->xfb_buffers.begin();
 		uint32 tFormByteOffset = 0;
 		uint32 indexByteOffset = 0;
-		while (bufIter != xbdat->mXFBBuffers.end())
+		while (bufIter != xbdat->xfb_buffers.end())
 		{
-			if (xbdat->mUpdate)
+			if (xbdat->update)
 			{
 				m_shaders.xfb_default->bind();
 
-				bufIter->mTFFeedbackObj->bind();
+				bufIter->xfb_obj->bind();
 				glEnable(GL_RASTERIZER_DISCARD);
-				bufIter->mTFFeedbackObj->begin();
+				bufIter->xfb_obj->begin();
 				for (uint32 subI = 0; subI < mesh->count(); ++subI)
 				{
 					nsmesh::submesh * subMesh = mesh->sub(subI);
@@ -840,16 +840,16 @@ void nsrender_system::_draw_xfbs()
 
 					// Set up all of the uniform inputs
 					subMesh->vao.bind();
-					tComp->transformBuffer()->bind();
+					tComp->transform_buffer()->bind();
 					for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 					{
-						subMesh->vao.add(tComp->transformBuffer(), nsshader::loc_instance_tform + tfInd);
+						subMesh->vao.add(tComp->transform_buffer(), nsshader::loc_instance_tform + tfInd);
 						subMesh->vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
 						subMesh->vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
 					}
 
-					tComp->transformIDBuffer()->bind();
-					subMesh->vao.add(tComp->transformIDBuffer(), nsshader::loc_ref_id);
+					tComp->transform_id_buffer()->bind();
+					subMesh->vao.add(tComp->transform_id_buffer(), nsshader::loc_ref_id);
 					subMesh->vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
 					subMesh->vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
 
@@ -858,29 +858,29 @@ void nsrender_system::_draw_xfbs()
 											static_cast<GLsizei>(subMesh->indices.size()),
 											GL_UNSIGNED_INT,
 											0,
-											bufIter->mInstanceCount);
+											bufIter->instance_count);
 					
 					GLError("nsrender_system::_drawTransformFeedbacks glDrawElementsInstanced");
 
-					tComp->transformBuffer()->bind();
-					subMesh->vao.remove(tComp->transformBuffer());
+					tComp->transform_buffer()->bind();
+					subMesh->vao.remove(tComp->transform_buffer());
 
-					tComp->transformIDBuffer()->bind();
-					subMesh->vao.remove(tComp->transformIDBuffer());
+					tComp->transform_id_buffer()->bind();
+					subMesh->vao.remove(tComp->transform_id_buffer());
 
 					subMesh->vao.unbind();
 				}
 
-				bufIter->mTFFeedbackObj->end();
+				bufIter->xfb_obj->end();
 				glDisable(GL_RASTERIZER_DISCARD);
-				bufIter->mTFFeedbackObj->unbind();
+				bufIter->xfb_obj->unbind();
 			}
 
 			for (uint32 subI = 0; subI < mesh->count(); ++subI)
 			{
 				nsmesh::submesh * subMesh = mesh->sub(subI);
 
-				nsmaterial * mat = nsengine.resource<nsmaterial>(rComp->materialID(subI));
+				nsmaterial * mat = nsengine.resource<nsmaterial>(rComp->material_id(subI));
 				if (mat == NULL)
 					mat = m_default_mat;
 
@@ -931,10 +931,10 @@ void nsrender_system::_draw_xfbs()
 				if (!subMesh->has_tex_coords)
 					shader->set_color_mode(true);
 
-				bufIter->mXFBVAO->bind();
-				glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->gl_id());
+				bufIter->xfb_vao->bind();
+				glDrawTransformFeedback(GL_TRIANGLES, bufIter->xfb_obj->gl_id());
 				GLError("nsrender_system::_drawTransformFeedbacks glDrawTransformFeedback");
-				bufIter->mXFBVAO->unbind();
+				bufIter->xfb_vao->unbind();
 
 
 				nsmaterial::texmap_map_const_iter eIter = mat->begin();
@@ -949,11 +949,11 @@ void nsrender_system::_draw_xfbs()
 				}
 
 			}
-			tFormByteOffset += bufIter->mInstanceCount * sizeof(fmat4);
-			indexByteOffset += bufIter->mInstanceCount * sizeof(uint32);
+			tFormByteOffset += bufIter->instance_count * sizeof(fmat4);
+			indexByteOffset += bufIter->instance_count * sizeof(uint32);
 			++bufIter;
 		}
-		xbdat->mUpdate = false;
+		xbdat->update = false;
 		++drawIter;
 	}
 }
@@ -1001,7 +1001,7 @@ void nsrender_system::_draw_geometry()
 	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
-	NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
 	nscam_comp * camc = cam->get<nscam_comp>();
 	
 	// Go through each shader in the shader material map.. because each submesh corresponds to exactly one
@@ -1157,27 +1157,27 @@ void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
 	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
 	while (drawIter != m_xfb_draws.end())
 	{
-		NSRenderComp * rComp = (*drawIter)->get<NSRenderComp>();
-		NSTFormComp * tComp = (*drawIter)->get<NSTFormComp>();
-		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->meshID());
+		nsrender_comp * rComp = (*drawIter)->get<nsrender_comp>();
+		nstform_comp * tComp = (*drawIter)->get<nstform_comp>();
+		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->mesh_id());
 		if (mesh == NULL)
 			return;
 
-		NSTFormComp::XFBData * xbdat = tComp->xfbData();
+		nstform_comp::xfb_data * xbdat = tComp->xfb();
 
-		auto bufIter = xbdat->mXFBBuffers.begin();
+		auto bufIter = xbdat->xfb_buffers.begin();
 		uint32 tFormByteOffset = 0;
 		uint32 indexByteOffset = 0;
-		if (!xbdat->mUpdate)
+		if (!xbdat->update)
 		{
-			while (bufIter != xbdat->mXFBBuffers.end())
+			while (bufIter != xbdat->xfb_buffers.end())
 			{
 				for (uint32 subI = 0; subI < mesh->count(); ++subI)
 				{
-					bufIter->mXFBVAO->bind();
-					glDrawTransformFeedback(GL_TRIANGLES, bufIter->mTFFeedbackObj->gl_id());
+					bufIter->xfb_vao->bind();
+					glDrawTransformFeedback(GL_TRIANGLES, bufIter->xfb_obj->gl_id());
 					GLError("nsrender_system::_drawSceneToDepthXFB");
-					bufIter->mXFBVAO->unbind();
+					bufIter->xfb_vao->unbind();
 				}
 				++bufIter;
 			}
@@ -1186,9 +1186,9 @@ void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
 	}
 }
 
-void nsrender_system::_stencil_point_light(NSLightComp * pLight)
+void nsrender_system::_stencil_point_light(nslight_comp * pLight)
 {
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -1207,9 +1207,9 @@ void nsrender_system::_stencil_point_light(NSLightComp * pLight)
 	}
 }
 
-void nsrender_system::_stencil_spot_light(NSLightComp * pLight)
+void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 {
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->meshid());
+	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);

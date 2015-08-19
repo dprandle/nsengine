@@ -30,7 +30,7 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 #include <nsmath.h>
 
 class nscam_comp;
-class NSTFormComp;
+class nstform_comp;
 class nsaction_event;
 class nsstate_event;
 
@@ -110,9 +110,9 @@ private:
 		camera_toggle_mode
 	};
 
-    void _on_cam_turn(nscam_comp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
-	void _on_cam_move(nscam_comp * pCam, NSTFormComp * tComp, const fvec2 & pDelta);
-	void _on_cam_zoom(nscam_comp * pCam, NSTFormComp * tComp, float pScroll);
+    void _on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
+	void _on_cam_move(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
+	void _on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, float pScroll);
 	
 	bool _handle_action_event(nsaction_event * evnt);
 	bool _handle_state_event(nsstate_event * evnt);

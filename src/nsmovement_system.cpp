@@ -33,13 +33,13 @@ void nsmovement_system::update()
 	auto entIter = scene->entities().begin();
 	while (entIter != scene->entities().end())
 	{
-		NSTFormComp * tForm = (*entIter)->get<NSTFormComp>();
+		nstform_comp * tForm = (*entIter)->get<nstform_comp>();
 		if (tForm->update_posted())
 		{
-			nsbuffer_object & tFormBuf = *tForm->transformBuffer();
-			nsbuffer_object & tFormIDBuf = *tForm->transformIDBuffer();
+			nsbuffer_object & tFormBuf = *tForm->transform_buffer();
+			nsbuffer_object & tFormIDBuf = *tForm->transform_id_buffer();
 
-			if (tForm->bufferResize())
+			if (tForm->buffer_resized())
 			{
 				tFormBuf.bind();
 				tFormBuf.allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
@@ -56,29 +56,29 @@ void nsmovement_system::update()
 			uint32 visibleCount = 0;
 			for (uint32 i = 0; i < tForm->count(); ++i)
 			{
-				if (tForm->transUpdate(i))
+				if (tForm->transform_update(i))
 				{
-					uivec3 parentID = tForm->parentid(i);
+					uivec3 parentID = tForm->parent_id(i);
 					if (parentID != 0)
 					{
 						nsentity * ent = scene->entity(parentID.x, parentID.y);
 						if (ent != NULL)
 						{
-							NSTFormComp * tComp2 = ent->get<NSTFormComp>();
+							nstform_comp * tComp2 = ent->get<nstform_comp>();
 							if (parentID.z < tComp2->count())
-								tForm->setParent(tComp2->transform(parentID.z));
+								tForm->set_parent(tComp2->transform(parentID.z));
 						}
 					}
 
-					tForm->computeTransform(i);
-					tForm->setTransUpdate(false, i);
+					tForm->compute_transform(i);
+					tForm->set_instance_update(false, i);
 				}
-				int32 state = tForm->hiddenState(i);
+				int32 state = tForm->hidden_state(i);
 
-				bool layerBit = state & NSTFormComp::LayerHide && true;
-				bool objectBit = state & NSTFormComp::ObjectHide && true;
-				bool showBit = state & NSTFormComp::Show && true;
-				bool hideBit = state & NSTFormComp::Hide && true;
+				bool layerBit = state & nstform_comp::hide_layer && true;
+				bool objectBit = state & nstform_comp::hide_object && true;
+				bool showBit = state & nstform_comp::hide_none && true;
+				bool hideBit = state & nstform_comp::hide_all && true;
 
 				if (!hideBit && (!layerBit && (showBit || !objectBit)))
 				{
@@ -87,7 +87,7 @@ void nsmovement_system::update()
 					++visibleCount;
 				}
 			}
-			tForm->setVisibleTransformCount(visibleCount);
+			tForm->set_visible_instance_count(visibleCount);
 
 
 			tFormBuf.bind();
@@ -95,8 +95,8 @@ void nsmovement_system::update()
 			tFormIDBuf.bind();
 			tFormIDBuf.unmap();
 			tFormIDBuf.unbind();
-			tForm->post_update(tForm->bufferResize());
-			tForm->setBufferResize(false);
+			tForm->post_update(tForm->buffer_resized());
+			tForm->set_buffer_resize(false);
 		}
 		++entIter;
 	}

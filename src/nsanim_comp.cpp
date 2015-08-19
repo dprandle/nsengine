@@ -1,9 +1,9 @@
 /*! 
 	\file nsanimcomp.cpp
 	
-	\brief Definition file for NSAnimComp class
+	\brief Definition file for nsanim_comp class
 
-	This file contains all of the neccessary definitions for the NSAnimComp class.
+	This file contains all of the neccessary definitions for the nsanim_comp class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -16,28 +16,28 @@
 #include <nsanim_manager.h>
 #include <nsentity.h>
 
-NSAnimComp::NSAnimComp():NSComponent(),
-	mElapsedTime(0.0f),
-	mAnimating(false),
-	mLooping(false),
-	mAnimSetID(0),
-	mCurrentAnim(),
-	mFinalTransforms()
+nsanim_comp::nsanim_comp():NSComponent(),
+	m_elapsed_time(0.0f),
+	m_animation(false),
+	m_looping(false),
+	m_anim_set_id(0),
+	m_current_anim(),
+	m_final_transforms()
 {}
 
-NSAnimComp::~NSAnimComp()
+nsanim_comp::~nsanim_comp()
 {}
 
-NSAnimComp* NSAnimComp::copy(const NSComponent * pToCopy)
+nsanim_comp* nsanim_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSAnimComp * cmp = (const NSAnimComp*)pToCopy;
+	const nsanim_comp * cmp = (const nsanim_comp*)pToCopy;
 	(*this) = (*cmp);
 	return this;
 }
 
-void NSAnimComp::pup(nsfile_pupper * p)
+void nsanim_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -51,124 +51,124 @@ void NSAnimComp::pup(nsfile_pupper * p)
 	}
 }
 
-float & NSAnimComp::elapsed()
+float & nsanim_comp::elapsed()
 {
-	return mElapsedTime;
+	return m_elapsed_time;
 }
 
-void NSAnimComp::fillBones(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim)
+void nsanim_comp::fill_bones(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim)
 {
-	_fillBoneTransform(pNodeTree, pNodeTree->root_node, pCurrentAnim, pNodeTree->root_node->world_transform);
+	_fill_bone_transforms(pNodeTree, pNodeTree->root_node, pCurrentAnim, pNodeTree->root_node->world_transform);
 }
 
-void NSAnimComp::init()
+void nsanim_comp::init()
 {}
 
-bool NSAnimComp::animating() const
+bool nsanim_comp::animating() const
 {
-	return mAnimating;
+	return m_animation;
 }
 
-void NSAnimComp::name_change(const uivec2 & oldid, const uivec2 newid)
+void nsanim_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	if (mAnimSetID.x == oldid.x)
+	if (m_anim_set_id.x == oldid.x)
 	{
-		mAnimSetID.x = newid.x;
-		if (mAnimSetID.y == oldid.y)
-			mAnimSetID.y = newid.y;
+		m_anim_set_id.x = newid.x;
+		if (m_anim_set_id.y == oldid.y)
+			m_anim_set_id.y = newid.y;
 	}
 }
 
-bool NSAnimComp::looping() const
+bool nsanim_comp::looping() const
 {
-	return mLooping;
+	return m_looping;
 }
 
-const uivec2 & NSAnimComp::animationSetID()
+const uivec2 & nsanim_comp::anim_set_id()
 {
-	return mAnimSetID;
+	return m_anim_set_id;
 }
 
-const nsstring & NSAnimComp::currentAnimation()
+const nsstring & nsanim_comp::current_anim_name()
 {
-	return mCurrentAnim;
+	return m_current_anim;
 }
 
-fmat4array * NSAnimComp::finalTransforms()
+fmat4array * nsanim_comp::final_transforms()
 {
-	return &mFinalTransforms;
+	return &m_final_transforms;
 }
 
 /*!
 Get the resources that the component uses. For the animation component that is simply an AnimSet
 */
-uivec2array NSAnimComp::resources()
+uivec2array nsanim_comp::resources()
 {
 	// Build map
 	uivec2array ret;
 	
 	// only add if not 0
-	if (mAnimSetID != 0)
-		ret.push_back(mAnimSetID);
+	if (m_anim_set_id != 0)
+		ret.push_back(m_anim_set_id);
 
 	return ret;
 }
 
-void NSAnimComp::setCurrentAnimation(const nsstring & pAnimationName)
+void nsanim_comp::set_current_animation(const nsstring & pAnimationName)
 {
-	mCurrentAnim = pAnimationName;
+	m_current_anim = pAnimationName;
 }
 
-void NSAnimComp::setAnimate(bool pAnimate)
+void nsanim_comp::set_animate(bool pAnimate)
 {
-	mAnimating = pAnimate;
+	m_animation = pAnimate;
 	post_update(true);
 }
 
-void NSAnimComp::setLoop(bool pLoop)
+void nsanim_comp::set_loop(bool pLoop)
 {
-	mLooping = pLoop;
+	m_looping = pLoop;
 	post_update(true);
 }
 
-void NSAnimComp::setAnimationSetID(const uivec2 & pID)
+void nsanim_comp::set_anim_set_id(const uivec2 & pID)
 {
-	mAnimSetID = pID;
+	m_anim_set_id = pID;
 	post_update(true);
 }
 
-NSAnimComp & NSAnimComp::operator=(const NSAnimComp & pRHSComp)
+nsanim_comp & nsanim_comp::operator=(const nsanim_comp & pRHSComp)
 {
-	mElapsedTime = pRHSComp.mElapsedTime;
-	mAnimating = pRHSComp.mAnimating;
-	mAnimSetID = pRHSComp.mAnimSetID;
-	mCurrentAnim = pRHSComp.mCurrentAnim;
-	mFinalTransforms.clear();
+	m_elapsed_time = pRHSComp.m_elapsed_time;
+	m_animation = pRHSComp.m_animation;
+	m_anim_set_id = pRHSComp.m_anim_set_id;
+	m_current_anim = pRHSComp.m_current_anim;
+	m_final_transforms.clear();
 	post_update(true);
 	return (*this);
 }
 
-void NSAnimComp::_fillBoneTransform(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)
+void nsanim_comp::_fill_bone_transforms(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)
 {
 	fmat4 globalTransform;
 	nsstringstream ss;
 
 	if (pNodeTree->bone_name_map.empty())
 	{
-		dprint("NSAnimComp::_fillBoneTransform Animation has no bones");
+		dprint("nsanim_comp::_fillBoneTransform Animation has no bones");
 		return;
 	}
 
 	if (pCurrentAnim != NULL && pCurrentAnim->anim_node(pNode->name) != NULL)
-		globalTransform = pParentTransform * pCurrentAnim->bone_transform(pNode->name, mElapsedTime);
+		globalTransform = pParentTransform * pCurrentAnim->bone_transform(pNode->name, m_elapsed_time);
 	else
 		globalTransform = pParentTransform * pNode->node_transform;
 
 	std::map<nsstring, nsmesh::bone>::const_iterator iter = pNodeTree->bone_name_map.find(pNode->name);
 	if (iter != pNodeTree->bone_name_map.end())
-		mFinalTransforms[iter->second.boneID] = globalTransform * iter->second.mOffsetTransform;
+		m_final_transforms[iter->second.boneID] = globalTransform * iter->second.mOffsetTransform;
 
 	for (uint32 i = 0; i < pNode->child_nodes.size(); ++i)
-		_fillBoneTransform(pNodeTree, pNode->child_nodes[i], pCurrentAnim, globalTransform);
+		_fill_bone_transforms(pNodeTree, pNode->child_nodes[i], pCurrentAnim, globalTransform);
 }
 

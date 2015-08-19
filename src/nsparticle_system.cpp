@@ -51,24 +51,24 @@ void nsparticle_system::draw()
 	if (cam == NULL)
 		return;
 	nscam_comp * compc = cam->get<nscam_comp>();
-	NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
 
 	nsfb_object * finalBuf = nsengine.framebuffer(m_final_buf);
 	finalBuf->set_target(nsfb_object::fb_draw);
 	finalBuf->bind();
 
-	auto comps = scene->entities<NSParticleComp>();
+	auto comps = scene->entities<nsparticle_comp>();
 	auto entIter = comps.begin();
 	while (entIter != comps.end())
 	{
-		NSParticleComp * comp = (*entIter)->get<NSParticleComp>();
+		nsparticle_comp * comp = (*entIter)->get<nsparticle_comp>();
 
 		if (comp->first())
 		{
 			++entIter;
 			continue;
 		}
-		nsmaterial * mat = nsengine.resource<nsmaterial>(comp->materialID());
+		nsmaterial * mat = nsengine.resource<nsmaterial>(comp->material_id());
 		if (mat == NULL)
 			mat = nsengine.system<nsrender_system>()->default_mat();
 
@@ -97,8 +97,8 @@ void nsparticle_system::draw()
 			continue;
 		}
 
-		NSTFormComp * tComp = (*entIter)->get<NSTFormComp>();
-		NSTFormComp * camTComp = scene->camera()->get<NSTFormComp>();
+		nstform_comp * tComp = (*entIter)->get<nstform_comp>();
+		nstform_comp * camTComp = scene->camera()->get<nstform_comp>();
 		nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
 		if (tex != NULL)
 			tex->enable(nsmaterial::diffuse);
@@ -108,7 +108,7 @@ void nsparticle_system::draw()
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 
-		if (comp->blendMode() == NSParticleComp::Mix)
+		if (comp->blend_mode() == nsparticle_comp::b_mix)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else
 			glBlendFunc(GL_ADD, GL_ADD);
@@ -118,35 +118,35 @@ void nsparticle_system::draw()
 
 		renderShader->bind();
 		renderShader->set_proj_cam_mat(compc->proj_cam());
-		renderShader->set_cam_right(camTComp->dirVec(NSTFormComp::Right));
-		renderShader->set_cam_up(camTComp->dirVec(NSTFormComp::Up));
-		renderShader->set_cam_target(camTComp->dirVec(NSTFormComp::Target));
+		renderShader->set_cam_right(camTComp->dvec(nstform_comp::dir_right));
+		renderShader->set_cam_up(camTComp->dvec(nstform_comp::dir_up));
+		renderShader->set_cam_target(camTComp->dvec(nstform_comp::dir_target));
 		renderShader->set_world_up(fvec3(0.0f, 0.0f, 1.0f));
 		renderShader->set_diffusemap_enabled(mat->contains(nsmaterial::diffuse));
 		renderShader->set_color_mode(mat->color_mode());
 		renderShader->set_frag_color_out(mat->color());
 		renderShader->set_lifetime(float(comp->lifetime()) / 1000.0f);
-		renderShader->set_blend_mode(uint32(comp->blendMode()));
+		renderShader->set_blend_mode(uint32(comp->blend_mode()));
 
 		
-		comp->vertexArrayObject()->bind();
+		comp->va_obj()->bind();
 
 
-		tComp->transformBuffer()->bind();
+		tComp->transform_buffer()->bind();
 		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 		{
-			comp->vertexArrayObject()->add(tComp->transformBuffer(), 4 + tfInd);
-			comp->vertexArrayObject()->vertex_attrib_ptr(4 + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-			comp->vertexArrayObject()->vertex_attrib_div(4 + tfInd, 1);
+			comp->va_obj()->add(tComp->transform_buffer(), 4 + tfInd);
+			comp->va_obj()->vertex_attrib_ptr(4 + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+			comp->va_obj()->vertex_attrib_div(4 + tfInd, 1);
 		}
 
-		glDrawTransformFeedbackInstanced(GL_POINTS, comp->transformFeedbackID(),tComp->count());
+		glDrawTransformFeedbackInstanced(GL_POINTS, comp->xfb_id(),tComp->count());
 		GLError("nsparticle_system::draw in glDrawElementsInstanced");
 
 
-		tComp->transformBuffer()->bind();
-		comp->vertexArrayObject()->remove(tComp->transformBuffer());
-		comp->vertexArrayObject()->unbind();
+		tComp->transform_buffer()->bind();
+		comp->va_obj()->remove(tComp->transform_buffer());
+		comp->va_obj()->unbind();
 
 		renderShader->unbind();
 		++entIter;
@@ -178,7 +178,7 @@ void nsparticle_system::update()
 	if (cam == NULL)
 		return;
 	nscam_comp * compc = cam->get<nscam_comp>();
-	NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
 
 	//nsengine.events()->process(this); // process any events first
 
@@ -187,11 +187,11 @@ void nsparticle_system::update()
 
 	glEnable(GL_RASTERIZER_DISCARD);
 	static uint32 count = 1;
-	auto comps = scene->entities<NSParticleComp>();
+	auto comps = scene->entities<nsparticle_comp>();
 	auto entIter = comps.begin();
 	while (entIter != comps.end())
 	{
-		NSParticleComp * comp = (*entIter)->get<NSParticleComp>();
+		nsparticle_comp * comp = (*entIter)->get<nsparticle_comp>();
 
 		if (comp->simulating())
 			comp->elapsed() += nsengine.timer()->fixed();
@@ -199,10 +199,10 @@ void nsparticle_system::update()
 		if (comp->elapsed() * 1000 >= comp->lifetime())
 		{
 			comp->reset();
-			comp->enableSimulation(comp->looping());
+			comp->enable_simulation(comp->looping());
 		}
 
-		nsparticle_process_shader * particleShader = nsengine.resource<nsparticle_process_shader>(comp->shaderID());
+		nsparticle_process_shader * particleShader = nsengine.resource<nsparticle_process_shader>(comp->shader_id());
 		if (particleShader == NULL)
 			particleShader = m_process_shader;
 
@@ -214,44 +214,44 @@ void nsparticle_system::update()
 		}
 
 		particleShader->bind();
-		nstexture * texRand = nsengine.resource<nstexture>(comp->randomTextureID());
+		nstexture * texRand = nsengine.resource<nstexture>(comp->rand_tex_id());
 		if (texRand != NULL)
 			texRand->enable(RAND_TEX_UNIT);
 
 		particleShader->set_elapsed(comp->elapsed());
 		particleShader->set_dt(nsengine.timer()->fixed());
-		particleShader->set_angular_vel(comp->angularVelocity());
+		particleShader->set_angular_vel(comp->angular_vel());
 		particleShader->set_lifetime(comp->lifetime());
-		particleShader->set_launch_freq(float(comp->emissionRate())); // for now
-		particleShader->set_motion_key_global(comp->motionGlobalTime());
-		particleShader->set_interpolated_motion_keys(comp->motionKeyInterpolation());
-		particleShader->set_uniform("motionKeyType", uint32(comp->motionKeyType()));
-		particleShader->set_starting_size(comp->startingSize());
-		particleShader->set_emitter_size(comp->emitterSize());
-		particleShader->set_emitter_shape(comp->emitterShape());
-		particleShader->set_interpolated_visual_keys(comp->visualKeyInterpolation());
-		particleShader->set_visual_key_global(comp->visualGlobalTime());
-		particleShader->set_initial_vel_mult(comp->initVelocityMult());
-		particleShader->set_motion_keys(comp->mMotionKeys,comp->mMaxMotionKeys, comp->mLifetime);
-		particleShader->set_visual_keys(comp->mVisualKeys, comp->mMaxVisualKeys, comp->mLifetime);
+		particleShader->set_launch_freq(float(comp->emission_rate())); // for now
+		particleShader->set_motion_key_global(comp->motion_global_time());
+		particleShader->set_interpolated_motion_keys(comp->motion_key_interpolation());
+		particleShader->set_uniform("motionKeyType", uint32(comp->motion_key_type()));
+		particleShader->set_starting_size(comp->starting_size());
+		particleShader->set_emitter_size(comp->emitter_size());
+		particleShader->set_emitter_shape(comp->emitter_shape());
+		particleShader->set_interpolated_visual_keys(comp->visual_key_interpolation());
+		particleShader->set_visual_key_global(comp->visual_global_time());
+		particleShader->set_initial_vel_mult(comp->init_vel_mult());
+		particleShader->set_motion_keys(comp->m_motion_keys,comp->m_max_motion_keys, comp->m_lifetime);
+		particleShader->set_visual_keys(comp->m_visual_keys, comp->m_max_visual_keys, comp->m_lifetime);
 		
-		comp->transformFeedbackObject()->bind();
-		comp->vertexArrayObject()->bind();
-		comp->transformFeedbackObject()->begin();
+		comp->xfb_obj()->bind();
+		comp->va_obj()->bind();
+		comp->xfb_obj()->begin();
 		if (comp->first())
 		{
 			glDrawArrays(GL_POINTS, 0, 1);
 			GLError("nsparticle_system::update in glDrawArrays");
-			comp->setFirst(false);
+			comp->set_first(false);
 		}
 		else
 		{
-			glDrawTransformFeedback(GL_POINTS, comp->transformFeedbackID());
+			glDrawTransformFeedback(GL_POINTS, comp->xfb_id());
 			GLError("nsparticle_system::update in glDrawTransformFeedback");
 		}
-		comp->transformFeedbackObject()->end();
-		comp->vertexArrayObject()->unbind();
-		comp->transformFeedbackObject()->unbind();
+		comp->xfb_obj()->end();
+		comp->va_obj()->unbind();
+		comp->xfb_obj()->unbind();
 		comp->swap();
 
 		std::vector<float> f;

@@ -1,43 +1,43 @@
 /*!
 \file nstile_comp.h
 
-\brief Header file for NSTileComp class
+\brief Header file for nstile_comp class
 
-This file contains all of the neccessary declarations for the NSTileComp class.
+This file contains all of the neccessary declarations for the nstile_comp class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSTILECOMP_H
-#define NSTILECOMP_H
+#ifndef NSTILE_COMP_H
+#define NSTILE_COMP_H
 
 #include <nscomponent.h>
 #include <nspupper.h>
 
-class NSTileComp : public NSComponent
+class nstile_comp : public NSComponent
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTileComp & tc);
+	friend void pup(PUPer & p, nstile_comp & tc);
 
-	NSTileComp();
+	nstile_comp();
 
-	virtual ~NSTileComp();
+	virtual ~nstile_comp();
 
-	virtual NSTileComp * copy(const NSComponent * pComp);
+	virtual nstile_comp * copy(const NSComponent * comp_);
 
 	virtual void init();
 
 	virtual void pup(nsfile_pupper * p);
 
-	NSTileComp & operator=(const NSTileComp & pRHSComp);
+	nstile_comp & operator=(const nstile_comp & rhs_);
 
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTileComp & tc)
+void pup(PUPer & p, nstile_comp & tc)
 {
 	// do nothing for now
 }

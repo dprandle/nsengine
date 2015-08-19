@@ -20,7 +20,6 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <nscam_comp.h>
 #include <nstimer.h>
 #include <nsscene.h>
-#include <nsinput_comp.h>
 
 nscamera_system::nscamera_system() :
 	nssystem(),
@@ -141,7 +140,7 @@ void nscamera_system::set_view(camera_view_t pView)
 		return;
 
 	nscam_comp * camComp = cam->get<nscam_comp>();
-	NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
 	m_switch_back = (m_cam_mode == mode_free);
 	m_anim_view = true;
 
@@ -216,12 +215,12 @@ void nscamera_system::set_mode(camera_mode pMode)
 			return;
 
 		nscam_comp * camComp = cam->get<nscam_comp>();
-		NSTFormComp * camTComp = cam->get<NSTFormComp>();
+		nstform_comp * camTComp = cam->get<nstform_comp>();
 
-		camTComp->setOrientation(camComp->focus_orientation() * camTComp->orientation());
+		camTComp->set_orientation(camComp->focus_orientation() * camTComp->orientation());
 		camComp->set_focus_orientation(fquat());
 		camComp->set_focus_point(fvec3());
-		camTComp->setpos(camTComp->wpos() - camComp->focus_point());
+		camTComp->set_pos(camTComp->wpos() - camComp->focus_point());
 	}
 	else
 	{
@@ -230,17 +229,17 @@ void nscamera_system::set_mode(camera_mode pMode)
 			return;
 
 		nscam_comp * camComp = cam->get<nscam_comp>();
-		NSTFormComp * camTComp = cam->get<NSTFormComp>();
+		nstform_comp * camTComp = cam->get<nstform_comp>();
 		nsentity * ent = scene->entity(m_focus_ent.xy());
 		if (ent != NULL)
 		{
-			NSTFormComp * tC = ent->get<NSTFormComp>();
+			nstform_comp * tC = ent->get<nstform_comp>();
 			if (tC->count() > m_focus_ent.z)
 			{
-				camTComp->setOrientation(camTComp->orientation() * camComp->focus_orientation());
+				camTComp->set_orientation(camTComp->orientation() * camComp->focus_orientation());
 				camComp->set_focus_orientation(fquat());
 				camComp->set_focus_point(tC->wpos(m_focus_ent.z));
-				camTComp->setpos(camTComp->wpos() - camComp->focus_point());
+				camTComp->set_pos(camTComp->wpos() - camComp->focus_point());
 			}
 		}
 	}
@@ -254,14 +253,14 @@ void nscamera_system::toggle_mode()
 		set_mode(mode_free);
 }
 
-void nscamera_system::_on_cam_move(nscam_comp * pCam, NSTFormComp * tComp, const fvec2 & pDelta)
+void nscamera_system::_on_cam_move(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta)
 {
-	tComp->translate(NSTFormComp::Right, pDelta.u*m_strafe_sensitivity * m_free_mode_inverted.x);
-	tComp->translate(NSTFormComp::Up, pDelta.v*m_strafe_sensitivity * m_free_mode_inverted.y);
+	tComp->translate(nstform_comp::dir_right, pDelta.u*m_strafe_sensitivity * m_free_mode_inverted.x);
+	tComp->translate(nstform_comp::dir_up, pDelta.v*m_strafe_sensitivity * m_free_mode_inverted.y);
 	pCam->post_update(true);
 }
 
-void nscamera_system::_on_cam_turn(nscam_comp * pCam, NSTFormComp * tComp, const fvec2 & pDelta)
+void nscamera_system::_on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta)
 {
 	// The negatives here are a preference thing.. basically Alex that pain in the ass
 	// wants rotation by default to be opposite of the normal for focus mode
@@ -269,17 +268,17 @@ void nscamera_system::_on_cam_turn(nscam_comp * pCam, NSTFormComp * tComp, const
 	if (m_cam_mode == mode_free)
 	{
 		float tFac = 1.0f;
-		fvec3 tVec = tComp->dirVec(NSTFormComp::Up);
+		fvec3 tVec = tComp->dvec(nstform_comp::dir_up);
 		if (tVec.z < 0.0f)
 			tFac = -1.0f;
 	
-		tComp->rotate(NSTFormComp::Right, pDelta.v * m_turn_sensitivity * m_free_mode_inverted.y);
-		tComp->rotate(NSTFormComp::ZAxis, pDelta.u * -1.0f * m_turn_sensitivity * tFac * m_free_mode_inverted.x);
+		tComp->rotate(nstform_comp::dir_right, pDelta.v * m_turn_sensitivity * m_free_mode_inverted.y);
+		tComp->rotate(nstform_comp::axis_z, pDelta.u * -1.0f * m_turn_sensitivity * tFac * m_free_mode_inverted.x);
 	}
 	else
 	{
 		float tFac = 1.0f;
-		fvec3 tVec = tComp->dirVec(NSTFormComp::Up);
+		fvec3 tVec = tComp->dvec(nstform_comp::dir_up);
 		if (tVec.z < 0.0f)
 			tFac = -1.0f;
 		
@@ -296,14 +295,14 @@ void nscamera_system::_on_cam_turn(nscam_comp * pCam, NSTFormComp * tComp, const
 	pCam->post_update(true);
 }
 
-void nscamera_system::_on_cam_zoom(nscam_comp * pCam, NSTFormComp * tComp, float pScroll)
+void nscamera_system::_on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, float pScroll)
 {
 	nscam_comp::dir_t dir = nscam_comp::dir_pos;
 	if (pScroll < 0)
 		dir = nscam_comp::dir_neg;
 
 	if (pCam->proj_mode() == nscam_comp::proj_persp)
-		tComp->translate(NSTFormComp::Target, float(dir) * m_zoom_factor);
+		tComp->translate(nstform_comp::dir_target, float(dir) * m_zoom_factor);
 	else
 	{
 		float factor = 0.95f;
@@ -328,8 +327,7 @@ void nscamera_system::update()
 	{
 
 		nscam_comp * camComp = (*iter)->get<nscam_comp>();
-		NSInputComp * inComp = (*iter)->get<NSInputComp>();
-		NSTFormComp * camTComp = (*iter)->get<NSTFormComp>();
+		nstform_comp * camTComp = (*iter)->get<nstform_comp>();
 
 		if ((*iter) == scene->camera())
 		{
@@ -338,17 +336,17 @@ void nscamera_system::update()
 				fvec3 toset = lerp(m_start_pos, m_final_pos, m_anim_elapsed/m_anim_time);
 				fquat tosetrot = slerp(m_start_orient, m_final_orient, m_anim_elapsed/m_anim_time);
 
-				camTComp->setpos(toset);
-				camTComp->setOrientation(tosetrot);
+				camTComp->set_pos(toset);
+				camTComp->set_orientation(tosetrot);
 				m_anim_elapsed += nsengine.timer()->fixed();
 		
 				if (m_anim_elapsed >= m_anim_time)
 				{
-					camTComp->setpos(m_final_pos);
-					camTComp->setOrientation(m_final_orient);
+					camTComp->set_pos(m_final_pos);
+					camTComp->set_orientation(m_final_orient);
 					if (m_switch_back)
 					{
-						camTComp->setParent(camComp->focus_transform());
+						camTComp->set_parent(camComp->focus_transform());
 						set_mode(mode_free);
 					}
 					m_anim_view = false;
@@ -360,8 +358,8 @@ void nscamera_system::update()
 			nsentity * skyDome = scene->skydome();
 			if (skyDome != NULL)
 			{
-				NSTFormComp * tComp = skyDome->get<NSTFormComp>();
-				tComp->setpos(camTComp->wpos());
+				nstform_comp * tComp = skyDome->get<nstform_comp>();
+				tComp->set_pos(camTComp->wpos());
 			}
 		}
 
@@ -369,18 +367,18 @@ void nscamera_system::update()
 		{
 
 			if (camComp->strafe().animating)
-				camTComp->translate(NSTFormComp::Right, camComp->strafe().direction * camComp->speed() * nsengine.timer()->fixed());
+				camTComp->translate(nstform_comp::dir_right, camComp->strafe().direction * camComp->speed() * nsengine.timer()->fixed());
 			if (camComp->elevate().animating)
-				camTComp->translate(NSTFormComp::Up, camComp->elevate().direction * camComp->speed() * nsengine.timer()->fixed());
+				camTComp->translate(nstform_comp::dir_up, camComp->elevate().direction * camComp->speed() * nsengine.timer()->fixed());
 			if (camComp->fly().animating)
-				camTComp->translate(NSTFormComp::Target, camComp->fly().direction * camComp->speed() * nsengine.timer()->fixed());
+				camTComp->translate(nstform_comp::dir_target, camComp->fly().direction * camComp->speed() * nsengine.timer()->fixed());
 
 			if (m_cam_mode == mode_focus)
-				camTComp->setParent(camComp->focus_transform());
+				camTComp->set_parent(camComp->focus_transform());
 			else
-				camTComp->setParent(fmat4());
+				camTComp->set_parent(fmat4());
 
-			camTComp->computeTransform();
+			camTComp->compute_transform();
 			camComp->m_proj_cam = camComp->proj() * camTComp->pov();
 			camComp->m_inv_proj_cam = camTComp->transform() * camComp->inv_proj();
 
@@ -407,7 +405,7 @@ bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 		return true;
 
 	nscam_comp * camc = camera->get<nscam_comp>();
-	NSTFormComp * tcomp = camera->get<NSTFormComp>();
+	nstform_comp * tcomp = camera->get<nstform_comp>();
 
 	fvec2 mouseDelta;
 	float scroll;
@@ -491,16 +489,16 @@ bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 	nsentity * ent = scn->entity(evnt->focus_id.xy());
 	if (ent != NULL)
 	{
-		NSTFormComp * tC = ent->get<NSTFormComp>();
+		nstform_comp * tC = ent->get<nstform_comp>();
 		nscam_comp * camc = cam->get<nscam_comp>();
-		NSTFormComp * camtc = cam->get<NSTFormComp>();
+		nstform_comp * camtc = cam->get<nstform_comp>();
 		
 		if (evnt->focus_id.z < tC->count())
 		{
-			camtc->setOrientation(camc->focus_orientation() * camtc->orientation());
+			camtc->set_orientation(camc->focus_orientation() * camtc->orientation());
 			camc->set_focus_orientation(fquat());
 			camc->set_focus_point(tC->wpos(evnt->focus_id.z));
-			camtc->setpos(camtc->wpos() - camc->focus_point());
+			camtc->set_pos(camtc->wpos() - camc->focus_point());
 		}
 	}
 	return true;

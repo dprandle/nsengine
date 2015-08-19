@@ -24,7 +24,6 @@
 #include <nssel_comp.h>
 #include <nsengine.h>
 #include <nsentity_manager.h>
-#include <nsinput_comp.h>
 #include <nsoccupy_comp.h>
 #include <nsplugin_manager.h>
 
@@ -70,8 +69,8 @@ uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 	if (pEnt == NULL)
 		return -1;
 
-	NSTFormComp * tComp = pEnt->get<NSTFormComp>();
-	NSOccupyComp * occComp = pEnt->get<NSOccupyComp>();
+	nstform_comp * tComp = pEnt->get<nstform_comp>();
+	nsoccupy_comp * occComp = pEnt->get<nsoccupy_comp>();
 
 	bool addTComp = false;
 
@@ -81,15 +80,15 @@ uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 	{
 		// First we must set the scene ID correctly so that 
 		// when all components are added the scene comp maps are updated correctly
-		tComp = pEnt->create<NSTFormComp>();
+		tComp = pEnt->create<nstform_comp>();
 		addTComp = true;
 	}
 
 	// Set up the first tranform
-	NSTFormComp::InstTrans t;
-	t.mPosition = pPos;
-	t.mScaling = pScale;
-	t.mOrientation = pRot;
+	nstform_comp::instance_tform t;
+	t.posistion = pPos;
+	t.scaling = pScale;
+	t.orient = pRot;
 
 	// If there is an occupy component, attemp at inserting it in to the map. It will fail if the space
 	// is already occupied therefore we need to remove the tranform component and set the entities scene
@@ -107,7 +106,7 @@ uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 			{
 				// Set the scene ID to zero and remove the transform component.. this will also update all of the
 				// entity by component lists in the scene (when removeComponent is called)
-				pEnt->del<NSTFormComp>();
+				pEnt->del<nstform_comp>();
 			}
 			return -1;
 		}
@@ -116,7 +115,7 @@ uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 	// Adding transform will never fail unless out of memory
 
 	uint32 index = tComp->add(t);
-	tComp->setHiddenState(NSTFormComp::Show, m_show_bit, index);
+	tComp->set_hidden_state(nstform_comp::hide_none, m_show_bit, index);
 	return index;
 }
 
@@ -139,13 +138,13 @@ uint32 nsscene::add_gridded(
 
 	// Get the transform and occupy components.. if no transform component then make one
 	// We have to update the comp maps if create component is not called
-	NSOccupyComp * occComp = pEnt->get<NSOccupyComp>();
-	NSTFormComp * tComp = pEnt->get<NSTFormComp>();
+	nsoccupy_comp * occComp = pEnt->get<nsoccupy_comp>();
+	nstform_comp * tComp = pEnt->get<nstform_comp>();
 	if (tComp == NULL)
 	{
 		// First we must set the scene ID correctly so that 
 		// when all components are added the scene comp maps are updated correctly
-		tComp = pEnt->create<NSTFormComp>();
+		tComp = pEnt->create<nstform_comp>();
 	}
 
 	// Figure out the total number of transforms needed and allocate that 
@@ -180,10 +179,10 @@ uint32 nsscene::add_gridded(
 					}
 				}
 
-				tComp->setpos(pos, count);
+				tComp->set_pos(pos, count);
 				tComp->rotate(pRot, count);
 				tComp->scale(pScale, count);
-				tComp->setHiddenState(NSTFormComp::Show, m_show_bit, count);
+				tComp->set_hidden_state(nstform_comp::hide_none, m_show_bit, count);
 				++count;
 			}
 		}
@@ -193,7 +192,7 @@ uint32 nsscene::add_gridded(
 	// and return false to indicate that no transforms were added
 	if (tComp->count() == 0)
 	{
-		pEnt->del<NSTFormComp>();
+		pEnt->del<nstform_comp>();
 		return false;
 	}
 	return true;
@@ -224,10 +223,10 @@ bool nsscene::has_dir_light() const
 	while (iter != entities().end())
 	{
 		nsentity * ent = *iter;
-		NSLightComp * lc = ent->get<NSLightComp>();
+		nslight_comp * lc = ent->get<nslight_comp>();
 		if (lc != NULL)
 		{
-			if (lc->type() == NSLightComp::Directional)
+			if (lc->type() == nslight_comp::l_dir)
 				return true;
 		}
 		++iter;
@@ -281,8 +280,8 @@ const uint32 nsscene::ref_count() const
 	auto iter = entities().begin();
 	while (iter != entities().end())
 	{
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		if (!(*iter)->has<NSTileBrushComp>())
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		if (!(*iter)->has<nstile_brush_comp>())
 			count += tComp->count();
 		++iter;
 	}
@@ -296,7 +295,7 @@ nsentity * nsscene::skydome() const
 
 const nspentityset & nsscene::entities() const
 {
-	return entities<NSTFormComp>();
+	return entities<nstform_comp>();
 }
 
 /*!
@@ -338,7 +337,7 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 				nsentity * ent = entity(id.x, id.y);
 				if (ent != NULL)
 				{
-					ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
+					ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, pHide, id.z);
 				}
 			}
 		}
@@ -362,7 +361,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
-						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
+						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, pHide, id.z);
 					}
 				}
 			}
@@ -381,7 +380,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
-						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, !pHide, id.z);
+						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, !pHide, id.z);
 					}
 				}
 			}
@@ -406,7 +405,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
-						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, pHide, id.z);
+						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, pHide, id.z);
 					}
 				}
 			}
@@ -425,7 +424,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 					nsentity * ent = entity(id.x, id.y);
 					if (ent != NULL)
 					{
-						ent->get<NSTFormComp>()->setHiddenState(NSTFormComp::LayerHide, !pHide, id.z);
+						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, !pHide, id.z);
 					}
 				}
 			}
@@ -469,7 +468,7 @@ uint32 nsscene::replace(nsentity * oldent, uint32 tformID, nsentity * newent)
 	if (oldent == NULL || newent == NULL)
 		return false;
 
-	NSTFormComp * tComp = oldent->get<NSTFormComp>();
+	nstform_comp * tComp = oldent->get<nstform_comp>();
 	if (tComp == NULL)
 		return false;
 
@@ -484,7 +483,7 @@ bool nsscene::replace(nsentity * oldent, nsentity * newent)
 	if (oldent == NULL || newent == NULL)
 		return false;
 
-	NSTFormComp * tComp = oldent->get<NSTFormComp>();
+	nstform_comp * tComp = oldent->get<nstform_comp>();
 	if (tComp == NULL)
 		return false;
 
@@ -504,13 +503,13 @@ bool nsscene::remove(nsentity * entity, uint32 tformid)
 	if (entity == NULL)
 		return false;
 
-	NSTFormComp * tComp = entity->get<NSTFormComp>();
+	nstform_comp * tComp = entity->get<nstform_comp>();
 	if (tComp == NULL)
 		return false;
 
 	uint32 size = tComp->count();
 	fvec3 pos = tComp->wpos(tformid);
-	NSOccupyComp * occComp = entity->get<NSOccupyComp>();
+	nsoccupy_comp * occComp = entity->get<nsoccupy_comp>();
 
 
 	uint32 newSize = tComp->remove(tformid);
@@ -534,7 +533,7 @@ bool nsscene::remove(nsentity * entity, uint32 tformid)
 
 	if (newSize == 0)
 	{
-		ret = entity->del<NSTFormComp>();
+		ret = entity->del<nstform_comp>();
 
 		// If the enity being removed from the scene is the current camera or current skybox then make sure to set these to 0
 		if (m_skydome_id == uivec2(entity->plugin_id(), entity->id()))
@@ -594,13 +593,13 @@ void nsscene::set_camera(nsentity * cam, bool addToSceneIfNeeded)
 	if (cam == NULL)
 		return;
 
-	NSTFormComp * camtf = cam->get<NSTFormComp>();
+	nstform_comp * camtf = cam->get<nstform_comp>();
 
 	if (camtf != NULL)
 	{
 		// The parent must be enabled in the transform component for the camera to be
 		// able to switch between camera modes properly
-		camtf->enableParent(true);
+		camtf->enable_parent(true);
 		m_camera_id = uivec2(cam->plugin_id(),cam->id());
 		dprint("nsscene::setCamera - Map \"" + m_name + "\"'s camera set to \"" + cam->name() + "\"");
 	}
@@ -642,7 +641,7 @@ void nsscene::set_skydome(nsentity * skydome, bool addToSceneIfNeeded)
 	if (skydome == NULL)
 		return;
 
-	NSTFormComp * skytf = skydome->get<NSTFormComp>();
+	nstform_comp * skytf = skydome->get<nstform_comp>();
 
 	if (skytf != NULL)
 	{
@@ -676,7 +675,7 @@ void nsscene::update_comp_maps(uint32 plugid, uint32 entid)
 	if (ent == NULL)
 		return;
 
-	if (ent->has<NSTFormComp>()) // if the entity is in the scene
+	if (ent->has<nstform_comp>()) // if the entity is in the scene
 	{
 		// Insert the entity to each component type set - its okay if its already there insertion will just fail
 		auto compiter = ent->begin();

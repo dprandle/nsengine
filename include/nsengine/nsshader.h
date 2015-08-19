@@ -26,8 +26,8 @@ Description:
 #define PARTICLE_MAX_VISUAL_KEYS 50
 #define PARTICLE_MAX_MOTION_KEYS 50
 
-class NSLightComp;
-class NSTFormComp;
+class nslight_comp;
+class nstform_comp;
 
 #include <nsresource.h>
 

@@ -1,9 +1,9 @@
 /*!
 \file nsoccupycomp.cpp
 
-\brief Definition file for NSOccupyComp class
+\brief Definition file for nsoccupy_comp class
 
-This file contains all of the neccessary definitions for the NSOccupyComp class.
+This file contains all of the neccessary definitions for the nsoccupy_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -16,28 +16,28 @@ This file contains all of the neccessary definitions for the NSOccupyComp class.
 #include <nsplugin.h>
 #include <cmath>
 
-NSOccupyComp::NSOccupyComp() :
-mDrawEnabled(false),
-mMeshID(),
-mMatID(),
+nsoccupy_comp::nsoccupy_comp() :
+m_draw_enabled(false),
+m_mesh_id(),
+m_mat_id(),
 NSComponent()
 {
 	add(0, 0, 0);
 	nsmesh * occ = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
 	if (occ == NULL)
 	{
-		dprint("NSOccupyComp::NSOccupyComp Could not get occupy mesh");
+		dprint("nsoccupy_comp::nsoccupy_comp Could not get occupy mesh");
 	}
 	else
 	{
-		mMeshID = occ->full_id();
+		m_mesh_id = occ->full_id();
 	}
 }
 
-NSOccupyComp::~NSOccupyComp()
+nsoccupy_comp::~nsoccupy_comp()
 {}
 
-bool NSOccupyComp::add(int32 x, int32 y, int32 z)
+bool nsoccupy_comp::add(int32 x, int32 y, int32 z)
 {
 	//if (contains(x, y, z))
 		//return false;
@@ -45,15 +45,15 @@ bool NSOccupyComp::add(int32 x, int32 y, int32 z)
 	return add(ivec3(x, y, z));
 }
 
-bool NSOccupyComp::add(const ivec3 & pGridPos)
+bool nsoccupy_comp::add(const ivec3 & pGridPos)
 {
-	mSpaces.push_back(pGridPos);
+	m_spaces.push_back(pGridPos);
 	return true;
 }
 
-ivec3array::iterator NSOccupyComp::begin()
+ivec3array::iterator nsoccupy_comp::begin()
 {
-	return mSpaces.begin();
+	return m_spaces.begin();
 }
 
 /*!
@@ -62,7 +62,7 @@ origin is the center of the object. This should be true for any object imported 
 This calculation is very basic and the actual tiles occupied should be refined - That is the algorithm
 uses the bounding box of the entire mesh.
 */
-void NSOccupyComp::build(const nsbounding_box & pBox)
+void nsoccupy_comp::build(const nsbounding_box & pBox)
 {
 	int32 zCountUp = int32(abs(pBox.mMax.z) / Z_GRID);
 	if (fmod(abs(pBox.mMax.z), Z_GRID) > 0.01)
@@ -227,7 +227,7 @@ void NSOccupyComp::build(const nsbounding_box & pBox)
 	}
 }
 
-void NSOccupyComp::pup(nsfile_pupper * p)
+void nsoccupy_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -241,15 +241,15 @@ void NSOccupyComp::pup(nsfile_pupper * p)
 	}
 }
 
-bool NSOccupyComp::contains(int32 x, int32 y, int32 z)
+bool nsoccupy_comp::contains(int32 x, int32 y, int32 z)
 {
 	return contains(ivec3(x, y, z));
 }
 
-bool NSOccupyComp::contains(const ivec3 & pGridPos)
+bool nsoccupy_comp::contains(const ivec3 & pGridPos)
 {
-	auto iter = mSpaces.begin();
-	while (iter != mSpaces.end())
+	auto iter = m_spaces.begin();
+	while (iter != m_spaces.end())
 	{
 		if (*iter == pGridPos)
 			return true;
@@ -258,70 +258,70 @@ bool NSOccupyComp::contains(const ivec3 & pGridPos)
 	return false;
 }
 
-NSOccupyComp* NSOccupyComp::copy(const NSComponent * pToCopy)
+nsoccupy_comp* nsoccupy_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSOccupyComp * comp = (const NSOccupyComp*)pToCopy;
+	const nsoccupy_comp * comp = (const nsoccupy_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
-void NSOccupyComp::enableDraw(bool pEnable)
+void nsoccupy_comp::enable_draw(bool pEnable)
 {
-	mDrawEnabled = pEnable;
+	m_draw_enabled = pEnable;
 }
 
-ivec3array::iterator NSOccupyComp::end()
+ivec3array::iterator nsoccupy_comp::end()
 {
-	return mSpaces.end();
+	return m_spaces.end();
 }
 
-const ivec3array & NSOccupyComp::spaces() const
+const ivec3array & nsoccupy_comp::spaces() const
 {
-	return mSpaces;
+	return m_spaces;
 }
 
-void NSOccupyComp::init()
+void nsoccupy_comp::init()
 {
 }
 
-bool NSOccupyComp::drawEnabled()
+bool nsoccupy_comp::draw_enabled()
 {
-	return mDrawEnabled;
+	return m_draw_enabled;
 }
 
-const uivec2 & NSOccupyComp::meshid()
+const uivec2 & nsoccupy_comp::mesh_id()
 {
-	return mMeshID;
+	return m_mesh_id;
 }
 
-const uivec2 & NSOccupyComp::matid()
+const uivec2 & nsoccupy_comp::material_id()
 {
-	return mMeshID;
+	return m_mesh_id;
 }
 
-void NSOccupyComp::name_change(uint32 plugID, uint32 oldID, uint32 newID)
+void nsoccupy_comp::name_change(uint32 plugID, uint32 oldID, uint32 newID)
 {
-	if (mMeshID == uivec2(plugID, oldID))
-		mMeshID.y = newID;
-	if (mMatID == uivec2(plugID, oldID))
-		mMatID.y = newID;
+	if (m_mesh_id == uivec2(plugID, oldID))
+		m_mesh_id.y = newID;
+	if (m_mat_id == uivec2(plugID, oldID))
+		m_mat_id.y = newID;
 }
 
-bool NSOccupyComp::remove(int32 x, int32 y, int32 z)
+bool nsoccupy_comp::remove(int32 x, int32 y, int32 z)
 {
 	return remove(ivec3(x,y,z));
 }
 
-bool NSOccupyComp::remove(const ivec3 & pGridPos)
+bool nsoccupy_comp::remove(const ivec3 & pGridPos)
 {
-	auto iter = mSpaces.begin();
-	while (iter != mSpaces.end())
+	auto iter = m_spaces.begin();
+	while (iter != m_spaces.end())
 	{
 		if (*iter == pGridPos)
 		{
-			iter = mSpaces.erase(iter);
+			iter = m_spaces.erase(iter);
 			return true;
 		}
 		++iter;
@@ -329,36 +329,36 @@ bool NSOccupyComp::remove(const ivec3 & pGridPos)
 	return false;
 }
 
-uivec2array NSOccupyComp::resources()
+uivec2array nsoccupy_comp::resources()
 {
 	uivec2array ret;
-	if (mMatID != 0)
-		ret.push_back(mMatID);
-	if (mMeshID != 0)
-		ret.push_back(mMeshID);
+	if (m_mat_id != 0)
+		ret.push_back(m_mat_id);
+	if (m_mesh_id != 0)
+		ret.push_back(m_mesh_id);
 	return ret;
 }
 
-void NSOccupyComp::setMeshID(const uivec2 & mesh)
+void nsoccupy_comp::set_mesh_id(const uivec2 & mesh)
 {
-	mMeshID = mesh;
+	m_mesh_id = mesh;
 	post_update(true);
 }
 
-void NSOccupyComp::setMatID(const uivec2 & mat)
+void nsoccupy_comp::set_material_id(const uivec2 & mat)
 {
-	mMatID = mat;
+	m_mat_id = mat;
 	post_update(true);
 }
 
-NSOccupyComp & NSOccupyComp::operator=(const NSOccupyComp & pRHSComp)
+nsoccupy_comp & nsoccupy_comp::operator=(const nsoccupy_comp & pRHSComp)
 {
-	mSpaces.resize(pRHSComp.mSpaces.size());
-	for (uint32 i = 0; i < mSpaces.size(); ++i)
-		mSpaces[i] = pRHSComp.mSpaces[i];
-	mMeshID = pRHSComp.mMeshID;
-	mMatID = pRHSComp.mMatID;
-	mDrawEnabled = pRHSComp.mDrawEnabled;
+	m_spaces.resize(pRHSComp.m_spaces.size());
+	for (uint32 i = 0; i < m_spaces.size(); ++i)
+		m_spaces[i] = pRHSComp.m_spaces[i];
+	m_mesh_id = pRHSComp.m_mesh_id;
+	m_mat_id = pRHSComp.m_mat_id;
+	m_draw_enabled = pRHSComp.m_draw_enabled;
 	post_update(true);
 	return (*this);
 }

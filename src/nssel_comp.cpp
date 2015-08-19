@@ -1,9 +1,9 @@
 /*!
 \file nsselcomp.cpp
 
-\brief Definition file for NSSelComp class
+\brief Definition file for nssel_comp class
 
-This file contains all of the neccessary definitions for the NSSelComp class.
+This file contains all of the neccessary definitions for the nssel_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -16,67 +16,67 @@ This file contains all of the neccessary definitions for the NSSelComp class.
 #include <nstform_comp.h>
 #include <nstimer.h>
 
-NSSelComp::NSSelComp() :
-mDefaultSelColor(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A),
-mSelColor(mDefaultSelColor),
-mMaskAlpha(DEFAULT_SEL_MASK_A),
-mSelected(false),
-mDrawEnabled(true),
-mSelection(),
-mMoveWithInput(true),
+nssel_comp::nssel_comp() :
+m_default_sel_color(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A),
+m_sel_color(m_default_sel_color),
+m_mask_alpha(DEFAULT_SEL_MASK_A),
+m_selected(false),
+m_draw_enabled(true),
+m_selection(),
+m_move_with_input(true),
 NSComponent()
 {}
 
-NSSelComp::~NSSelComp()
+nssel_comp::~nssel_comp()
 {}
 
-bool NSSelComp::add(uint32 pTransformID)
+bool nssel_comp::add(uint32 pTransformID)
 {
 
-	if (pTransformID >= m_owner->get<NSTFormComp>()->count())
+	if (pTransformID >= m_owner->get<nstform_comp>()->count())
 	{
-		dprint("NSSelComp::add - TransformID out of bounds");
+		dprint("nssel_comp::add - TransformID out of bounds");
 		return false;
 	}
-	if (mSelection.find(pTransformID) != mSelection.end())
+	if (m_selection.find(pTransformID) != m_selection.end())
 		return false;
 
-	mSelection.insert(pTransformID);
-	setSelected(true);
+	m_selection.insert(pTransformID);
+	set_selected(true);
 	return true;
 }
 
-uint32u_set::iterator NSSelComp::begin()
+uint32u_set::iterator nssel_comp::begin()
 {
-	return mSelection.begin();
+	return m_selection.begin();
 }
 
-void NSSelComp::clear()
+void nssel_comp::clear()
 {
-	mSelection.clear();
-	setSelected(false);
+	m_selection.clear();
+	set_selected(false);
 }
 
-NSSelComp* NSSelComp::copy(const NSComponent * pToCopy)
+nssel_comp* nssel_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSSelComp * comp = (const NSSelComp*)pToCopy;
+	const nssel_comp * comp = (const nssel_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
-bool NSSelComp::contains(uint32 pTransformID)
+bool nssel_comp::contains(uint32 pTransformID)
 {
-	return (mSelection.find(pTransformID) != mSelection.end());
+	return (m_selection.find(pTransformID) != m_selection.end());
 }
 
-void NSSelComp::enableDraw(bool pEnable)
+void nssel_comp::enable_draw(bool pEnable)
 {
-	mDrawEnabled = pEnable;
+	m_draw_enabled = pEnable;
 }
 
-void NSSelComp::pup(nsfile_pupper * p)
+void nssel_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -90,103 +90,103 @@ void NSSelComp::pup(nsfile_pupper * p)
 	}
 }
 
-void NSSelComp::enableMove(const bool & pEnable)
+void nssel_comp::enable_move(const bool & pEnable)
 {
-	mMoveWithInput = pEnable;
+	m_move_with_input = pEnable;
 }
 
-uint32u_set::iterator NSSelComp::end()
+uint32u_set::iterator nssel_comp::end()
 {
-	return mSelection.end();
+	return m_selection.end();
 }
 
-const fvec4 & NSSelComp::defaultColor()
+const fvec4 & nssel_comp::default_color()
 {
-	return mDefaultSelColor;
+	return m_default_sel_color;
 }
 
-const float & NSSelComp::maskAlpha()
+const float & nssel_comp::mask_alpha()
 {
-	return mMaskAlpha;
+	return m_mask_alpha;
 }
 
-const fvec4 & NSSelComp::color()
+const fvec4 & nssel_comp::color()
 {
-	return mSelColor;
+	return m_sel_color;
 }
 
-void NSSelComp::init()
+void nssel_comp::init()
 {}
 
-bool NSSelComp::drawEnabled()
+bool nssel_comp::draw_enabled()
 {
-	return mDrawEnabled;
+	return m_draw_enabled;
 }
 
-const bool & NSSelComp::moveEnabled()
+const bool & nssel_comp::move_enabled()
 {
-	return mMoveWithInput;
+	return m_move_with_input;
 }
 
-bool NSSelComp::selected()
+bool nssel_comp::selected()
 {
-	return mSelected;
+	return m_selected;
 }
 
-bool NSSelComp::remove(uint32 pTransformID)
+bool nssel_comp::remove(uint32 pTransformID)
 {
 	if (contains(pTransformID))
 	{
-		mSelection.erase(pTransformID);
+		m_selection.erase(pTransformID);
 		return true;
 	}
 	return false;
 }
 
-bool NSSelComp::set(uint32 pTransformID)
+bool nssel_comp::set(uint32 pTransformID)
 {
 	clear();
 	return add(pTransformID);
 }
 
-void NSSelComp::setDefaultColor(const fvec4 & pColor)
+void nssel_comp::set_default_sel_color(const fvec4 & pColor)
 {
-	mDefaultSelColor = pColor;
-	mSelColor = pColor;
+	m_default_sel_color = pColor;
+	m_sel_color = pColor;
 }
 
 
-void NSSelComp::setMaskAlpha(const float & pAlpha)
+void nssel_comp::set_mask_alpha(const float & pAlpha)
 {
-	mMaskAlpha = pAlpha;
+	m_mask_alpha = pAlpha;
 }
 
-void NSSelComp::setSelected(bool pSelected)
+void nssel_comp::set_selected(bool pSelected)
 {
-	mSelected = pSelected;
+	m_selected = pSelected;
 }
 
-void NSSelComp::setColor(const fvec4 & pColor)
+void nssel_comp::set_color(const fvec4 & pColor)
 {
-	mSelColor = pColor;
+	m_sel_color = pColor;
 }
 
-uint32 NSSelComp::count()
+uint32 nssel_comp::count()
 {
-	return static_cast<uint32>(mSelection.size());
+	return static_cast<uint32>(m_selection.size());
 }
 
-bool NSSelComp::empty()
+bool nssel_comp::empty()
 {
-	return mSelection.empty();
+	return m_selection.empty();
 }
 
-NSSelComp & NSSelComp::operator=(const NSSelComp & pRHSComp)
+nssel_comp & nssel_comp::operator=(const nssel_comp & pRHSComp)
 {
-	mSelColor = pRHSComp.mSelColor;
-	mDefaultSelColor = pRHSComp.mSelColor;
-	mMaskAlpha = pRHSComp.mMaskAlpha;
-	mDrawEnabled = pRHSComp.mDrawEnabled;
+	m_sel_color = pRHSComp.m_sel_color;
+	m_default_sel_color = pRHSComp.m_sel_color;
+	m_mask_alpha = pRHSComp.m_mask_alpha;
+	m_draw_enabled = pRHSComp.m_draw_enabled;
 	post_update(true);
 	return (*this);
 }

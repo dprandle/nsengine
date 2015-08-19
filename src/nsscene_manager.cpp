@@ -15,7 +15,6 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 #include <nsentity.h>
 #include <nsengine.h>
 #include <nsentity_manager.h>
-#include <nsinput_comp.h>
 #include <nsfile_os.h>
 using namespace nsfile_os;
 

@@ -31,7 +31,6 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsmovement_system.h>
 #include <nsterrain_comp.h>
 #include <nsanim_system.h>
-#include <nsinput_comp.h>
 #include <IL/il.h>
 #include <nsinput_system.h>
 #include <nsparticle_comp.h>
@@ -650,20 +649,12 @@ void NSEngine::_init_shaders()
 void NSEngine::_init_entities()
 {
 	nsentity * objBrush = core()->create<nsentity>(ENT_OBJECT_BRUSH);
-	NSSelComp * sc = objBrush->create<NSSelComp>();
-	sc->setDefaultColor(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->setColor(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->setMaskAlpha(0.2f);
-	sc->enableDraw(true);
-	sc->enableMove(true);
-	NSInputComp * ic = objBrush->create<NSInputComp>();
-	ic->add(DRAG_OBJECT_XY);
-	ic->add(DRAG_OBJECT_XZ);
-	ic->add(DRAG_OBJECT_YZ);
-	ic->add(INSERT_OBJECT);
-	ic->add(SHIFT_DONE);
-	ic->add(XZ_MOVE_END);
-	ic->add(YZ_MOVE_END);
+	nssel_comp * sc = objBrush->create<nssel_comp>();
+	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	sc->set_mask_alpha(0.2f);
+	sc->enable_draw(true);
+	sc->enable_move(true);
 	system<nsbuild_system>()->set_object_brush(objBrush);
 }
 
@@ -823,18 +814,17 @@ nsresource * NSEngine::_resource(uint32 restype_id, const uivec2 & resid)
 
 void NSEngine::_init_factories()
 {
-	register_component<NSAnimComp>("NSAnimComp");
+	register_component<nsanim_comp>("nsanim_comp");
 	register_component<nscam_comp>("nscam_comp");
-	register_component<NSInputComp>("NSInputComp");
-	register_component<NSLightComp>("NSLightComp");
-	register_component<NSOccupyComp>("NSOccupyComp");
-	register_component<NSParticleComp>("NSParticleComp");
-	register_component<NSRenderComp>("NSRenderComp");
-	register_component<NSSelComp>("NSSelComp");
-	register_component<NSTFormComp>("NSTFormComp");
-	register_component<NSTileBrushComp>("NSTileBrushComp");
-	register_component<NSTileComp>("NSTileComp");
-	register_component<NSTerrainComp>("NSTerrainComp");
+	register_component<nslight_comp>("nslight_comp");
+	register_component<nsoccupy_comp>("nsoccupy_comp");
+	register_component<nsparticle_comp>("nsparticle_comp");
+	register_component<nsrender_comp>("nsrender_comp");
+	register_component<nssel_comp>("nssel_comp");
+	register_component<nstform_comp>("nstform_comp");
+	register_component<nstile_brush_comp>("nstile_brush_comp");
+	register_component<nstile_comp>("nstile_comp");
+	register_component<nsterrain_comp>("nsterrain_comp");
 
 	register_system<nsanim_system>("nsanim_system");
 	register_system<nsbuild_system>("nsbuild_system");

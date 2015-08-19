@@ -1,9 +1,9 @@
 /*!
 \file nsterraincomp.cpp
 
-\brief Definition file for NSTerrainComp class
+\brief Definition file for nsterrain_comp class
 
-This file contains all of the neccessary definitions for the NSTerrainComp class.
+This file contains all of the neccessary definitions for the nsterrain_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -13,41 +13,41 @@ This file contains all of the neccessary definitions for the NSTerrainComp class
 #include <nsterrain_comp.h>
 #include <nsentity.h>
 
-NSTerrainComp::NSTerrainComp() :minmax(0.0f,1.0f), NSComponent()
+nsterrain_comp::nsterrain_comp() :m_minmax(0.0f,1.0f), NSComponent()
 {}
 
-NSTerrainComp::~NSTerrainComp()
+nsterrain_comp::~nsterrain_comp()
 {}
 
-NSTerrainComp* NSTerrainComp::copy(const NSComponent * pToCopy)
+nsterrain_comp* nsterrain_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSTerrainComp * comp = (const NSTerrainComp*)pToCopy;
+	const nsterrain_comp * comp = (const nsterrain_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
-void NSTerrainComp::init()
+void nsterrain_comp::init()
 {}
 
-void NSTerrainComp::setHeightBounds(float min, float max)
+void nsterrain_comp::set_height_bounds(float min, float max)
 {
-	minmax.set(min, max);
+	m_minmax.set(min, max);
 }
 
-void NSTerrainComp::setHeightBounds(const fvec2 & minmax_)
+void nsterrain_comp::set_height_bounds(const fvec2 & minmax_)
 {
-	minmax = minmax_;
+	m_minmax = minmax_;
 }
 
-const fvec2 & NSTerrainComp::heightBounds() const
+const fvec2 & nsterrain_comp::height_bounds() const
 {
-	return minmax;
+	return m_minmax;
 }
 
 
-void NSTerrainComp::pup(nsfile_pupper * p)
+void nsterrain_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -61,9 +61,9 @@ void NSTerrainComp::pup(nsfile_pupper * p)
 	}
 }
 
-NSTerrainComp & NSTerrainComp::operator=(const NSTerrainComp & pRHSComp)
+nsterrain_comp & nsterrain_comp::operator=(const nsterrain_comp & pRHSComp)
 {
-	minmax = pRHSComp.minmax;
+	m_minmax = pRHSComp.m_minmax;
 	post_update(true);
 	return (*this);
 }

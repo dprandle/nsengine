@@ -1,9 +1,9 @@
 /*!
 \file nssel_comp.h
 
-\brief Header file for NSSelComp class
+\brief Header file for nssel_comp class
 
-This file contains all of the neccessary declarations for the NSSelComp class.
+This file contains all of the neccessary declarations for the nssel_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -21,82 +21,82 @@ This file contains all of the neccessary declarations for the NSSelComp class.
 class nsshader;
 class nstimer;
 
-class NSSelComp : public NSComponent
+class nssel_comp : public NSComponent
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSSelComp & sc);
+	friend void pup(PUPer & p, nssel_comp & sc);
 
-	NSSelComp();
-	~NSSelComp();
+	nssel_comp();
+	~nssel_comp();
 
-	bool add(uint32 pTransformID);
+	bool add(uint32 tform_id_);
 
 	uint32u_set::iterator begin();
 
-	bool contains(uint32 pTransformID);
+	bool contains(uint32 tform_id_);
 
-	NSSelComp * copy(const NSComponent* pToCopy);
+	nssel_comp * copy(const NSComponent* copy_);
 
 	uint32 count();
 
 	void clear();
 
-	void enableDraw(bool pEnable);
+	void enable_draw(bool enable_);
 
-	void enableMove(const bool & pEnable);
+	void enable_move(const bool & enable_);
 
 	uint32u_set::iterator end();
 
 	bool empty();
 
-	const fvec4 & defaultColor();
+	const fvec4 & default_color();
 
-	const float & maskAlpha();
+	const float & mask_alpha();
 
 	const fvec4 & color();
 
 	virtual void init();
 
-	bool drawEnabled();
+	bool draw_enabled();
 
-	const bool & moveEnabled();
+	const bool & move_enabled();
 
 	bool selected();
 
-	bool remove(uint32 pTransformID);
+	bool remove(uint32 tform_id_);
 
-	bool set(uint32 pTransformID);
+	bool set(uint32 tform_id_);
 
 	virtual void pup(nsfile_pupper * p);
 
-	void setDefaultColor(const fvec4 & pColor);
+	void set_default_sel_color(const fvec4 & col_);
 
-	void setMaskAlpha(const float & pAlpha);
+	void set_mask_alpha(const float & alpha_);
 
-	void setSelected(bool pSelected);
+	void set_selected(bool selected_);
 
-	void setColor(const fvec4 & pColor);
+	void set_color(const fvec4 & col_);
 
-	NSSelComp & operator=(const NSSelComp & pRHS);
+	nssel_comp & operator=(const nssel_comp & rhs_);
 
 private:
-	fvec4 mDefaultSelColor;
-	fvec4 mSelColor;
-	float mMaskAlpha;
-	bool mSelected;
-	bool mDrawEnabled;
-	bool mMoveWithInput;
-	uint32u_set mSelection;
+	fvec4 m_default_sel_color;
+	fvec4 m_sel_color;
+	float m_mask_alpha;
+	bool m_selected;
+	bool m_draw_enabled;
+	bool m_move_with_input;
+	uint32u_set m_selection;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSSelComp & sc)
+void pup(PUPer & p, nssel_comp & sc)
 {
-	pup(p, sc.mDefaultSelColor, "defaultSelColor");
-	pup(p, sc.mSelColor, "selColor");
-	pup(p, sc.mMaskAlpha, "maskAlpha");
-	pup(p, sc.mDrawEnabled, "drawEnabled");
+	pup(p, sc.m_default_sel_color, "default_sel_color");
+	pup(p, sc.m_sel_color, "sel_color");
+	pup(p, sc.m_mask_alpha, "mask_alpha");
+	pup(p, sc.m_draw_enabled, "draw_enabled");
 }
 
 #endif

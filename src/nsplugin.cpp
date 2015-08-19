@@ -20,7 +20,6 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsanim_manager.h>
 #include <nsoccupy_comp.h>
 #include <nsrender_comp.h>
-#include <nsinput_comp.h>
 #include <nsterrain_comp.h>
 #include <nsmesh_manager.h>
 #include <nssel_comp.h>
@@ -116,15 +115,6 @@ nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec
 	camc->resize_screen(screenDim.w, screenDim.h);
 	camc->set_persp_nf_clip(clipnf);
 	camc->set_proj_mode(nscam_comp::proj_persp);
-
-	NSInputComp *ic = cament->create<NSInputComp>();
-	ic->add(CAM_BACKWARD);
-	ic->add(CAM_FORWARD);
-	ic->add(CAM_LEFT);
-	ic->add(CAM_MOVE);
-	ic->add(CAM_RIGHT);
-	ic->add(CAM_TURN);
-	ic->add(CAM_ZOOM);
 	return cament;
 }
 
@@ -148,14 +138,6 @@ nsentity * nsplugin::create_camera(const nsstring & name, const fvec2 & lrclip, 
 	camc->set_ortho_tb_clip(tbclip);
 	camc->set_ortho_nf_clip(nfclip);
 	camc->set_proj_mode(nscam_comp::proj_ortho);
-	NSInputComp *ic = cament->create<NSInputComp>();
-	ic->add(CAM_BACKWARD);
-	ic->add(CAM_FORWARD);
-	ic->add(CAM_LEFT);
-	ic->add(CAM_MOVE);
-	ic->add(CAM_RIGHT);
-	ic->add(CAM_TURN);
-	ic->add(CAM_ZOOM);
 	return cament;
 }
 
@@ -173,20 +155,20 @@ nsentity * nsplugin::create_dir_light(const nsstring & name,
 	nsentity * lt = create<nsentity>(name);
 	if (lt == NULL)
 		return NULL;
-	NSLightComp * lc = lt->create<NSLightComp>();
+	nslight_comp * lc = lt->create<nslight_comp>();
 	if (lc == NULL)
 	{
 		destroy(lt);
 		return NULL;
 	}
-	lc->setMeshID(bounds->plugin_id(), bounds->id());
-	lc->setType(NSLightComp::Directional);
-	lc->setIntensity(diffuse, ambient);
-	lc->setColor(color);
-	lc->setCastShadows(castshadows);
-	lc->setShadowClipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	lc->setShadowDarkness(shadowdarkness);
-	lc->setShadowSamples(shadowsamples);
+	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
+	lc->set_type(nslight_comp::l_dir);
+	lc->set_intensity(diffuse, ambient);
+	lc->set_color(color);
+	lc->set_cast_shadows(castshadows);
+	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	lc->set_shadow_darkness(shadowdarkness);
+	lc->set_shadow_samples(shadowsamples);
 	return lt;
 }
 
@@ -205,37 +187,25 @@ nsentity * nsplugin::create_point_light(const nsstring & name,
 	nsentity * lt = create<nsentity>(name);
 	if (lt == NULL)
 		return NULL;
-	NSLightComp * lc = lt->create<NSLightComp>();
+	nslight_comp * lc = lt->create<nslight_comp>();
 	if (lc == NULL)
 	{
 		destroy(lt);
 		return NULL;
 	}
-	lc->setMeshID(bounds->plugin_id(), bounds->id());
-	lc->setType(NSLightComp::Point);
-	lc->setIntensity(diffuse, ambient);
-	lc->setColor(color);
-	lc->setDistance(distance);
-	lc->setCastShadows(castshadows);
-	lc->setShadowClipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	lc->setShadowDarkness(shadowdarkness);
-	lc->setShadowSamples(shadowsamples);
-
-	NSInputComp * inComp = lt->create<NSInputComp>();
-	inComp->add(SELECT);
-	inComp->add(ROTATE_X);
-	inComp->add(ROTATE_Y);
-	inComp->add(ROTATE_Z);
-	inComp->add(MULTI_SELECT);
-	inComp->add(PAINT_SELECT);
-	inComp->add(DRAG_OBJECT_XY);
-	inComp->add(DRAG_OBJECT_XZ);
-	inComp->add(DRAG_OBJECT_YZ);
-	lt->create<NSSelComp>();
-
-	NSRenderComp * rc = lt->create<NSRenderComp>();
-	rc->setMeshID(bounds->full_id());
-	rc->setCastShadow(false);
+	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
+	lc->set_type(nslight_comp::l_point);
+	lc->set_intensity(diffuse, ambient);
+	lc->set_color(color);
+	lc->set_distance(distance);
+	lc->set_cast_shadows(castshadows);
+	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	lc->set_shadow_darkness(shadowdarkness);
+	lc->set_shadow_samples(shadowsamples);
+	lt->create<nssel_comp>();
+	nsrender_comp * rc = lt->create<nsrender_comp>();
+	rc->set_mesh_id(bounds->full_id());
+	rc->set_cast_shadow(false);
 	return lt;
 }
 
@@ -255,38 +225,28 @@ int32 shadowsamples)
 	nsentity * lt = create<nsentity>(name);
 	if (lt == NULL)
 		return NULL;
-	NSLightComp * lc = lt->create<NSLightComp>();
+	nslight_comp * lc = lt->create<nslight_comp>();
 	if (lc == NULL)
 	{
 		destroy(lt);
 		return NULL;
 	}
-	lc->setMeshID(bounds->plugin_id(), bounds->id());
-	lc->setType(NSLightComp::Spot);
-	lc->setIntensity(diffuse, ambient);
-	lc->setColor(color);
-	lc->setCastShadows(castshadows);
-	lc->setShadowClipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	lc->setShadowDarkness(shadowdarkness);
-	lc->setShadowSamples(shadowsamples);
-	lc->setDistance(distance);
-	lc->setRadius(radius);
+	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
+	lc->set_type(nslight_comp::l_spot);
+	lc->set_intensity(diffuse, ambient);
+	lc->set_color(color);
+	lc->set_cast_shadows(castshadows);
+	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	lc->set_shadow_darkness(shadowdarkness);
+	lc->set_shadow_samples(shadowsamples);
+	lc->set_distance(distance);
+	lc->set_radius(radius);
 
-	NSRenderComp * rc = lt->create<NSRenderComp>();
-	rc->setMeshID(bounds->full_id());
-	rc->setCastShadow(false);
+	nsrender_comp * rc = lt->create<nsrender_comp>();
+	rc->set_mesh_id(bounds->full_id());
+	rc->set_cast_shadow(false);
 
-	NSInputComp * inComp = lt->create<NSInputComp>();
-	inComp->add(SELECT);
-	inComp->add(ROTATE_X);
-	inComp->add(ROTATE_Y);
-	inComp->add(ROTATE_Z);
-	inComp->add(MULTI_SELECT);
-	inComp->add(PAINT_SELECT);
-	inComp->add(DRAG_OBJECT_XY);
-	inComp->add(DRAG_OBJECT_XZ);
-	inComp->add(DRAG_OBJECT_YZ);
-	lt->create<NSSelComp>();
+	lt->create<nssel_comp>();
 
 	return lt;
 }
@@ -346,11 +306,10 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	if (ent == NULL)
 		return NULL;
 
-	NSRenderComp * rc = ent->create<NSRenderComp>();
-	NSInputComp * ic = ent->create<NSInputComp>();
-	NSSelComp * sc = ent->create<NSSelComp>();
-	NSTileComp * tc = ent->create<NSTileComp>();
-	if (rc == NULL || ic == NULL || sc == NULL || tc == NULL)
+	nsrender_comp * rc = ent->create<nsrender_comp>();
+	nssel_comp * sc = ent->create<nssel_comp>();
+	nstile_comp * tc = ent->create<nstile_comp>();
+	if (rc == NULL || sc == NULL || tc == NULL)
 	{
 		destroy(ent);
 		return NULL;
@@ -364,26 +323,14 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 
 	if (collides)
 	{
-		NSOccupyComp * oc = ent->create<NSOccupyComp>();
+		nsoccupy_comp * oc = ent->create<nsoccupy_comp>();
 		oc->build(msh->aabb());
-		oc->setMeshID(msh->full_id());
+		oc->set_mesh_id(msh->full_id());
 	}
 
-	rc->setMeshID(msh->full_id());
+	rc->set_mesh_id(msh->full_id());
 	if (mat != NULL)
-		rc->setMaterial(0, mat->full_id());
-
-	ic->add(SELECT);
-	ic->add(ROTATE_X);
-	ic->add(ROTATE_Z);
-	ic->add(MULTI_SELECT);
-	ic->add(PAINT_SELECT);
-	ic->add(DRAG_OBJECT_XY);
-	ic->add(DRAG_OBJECT_XZ);
-	ic->add(DRAG_OBJECT_YZ);
-	ic->add(XZ_MOVE_END);
-	ic->add(YZ_MOVE_END);
-	ic->add(SHIFT_DONE);
+		rc->set_material(0, mat->full_id());
 	return ent;
 }
 
@@ -409,11 +356,11 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 {
 	nsentity * terr = create<nsentity>(name);
 	nullchkn(terr);
-	NSTerrainComp * tc = terr->create<NSTerrainComp>();
-	tc->setHeightBounds(hmin, hmax);
-	NSRenderComp * rc = terr->create<NSRenderComp>();
-	rc->setCastShadow(true);
-	rc->setMeshID(nsengine.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
+	nsterrain_comp * tc = terr->create<nsterrain_comp>();
+	tc->set_height_bounds(hmin, hmax);
+	nsrender_comp * rc = terr->create<nsrender_comp>();
+	rc->set_cast_shadow(true);
+	rc->set_mesh_id(nsengine.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
 	
 	nsmaterial * termat = create<nsmaterial>(name);
 	if (termat == NULL)
@@ -422,7 +369,7 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 		return NULL;
 	}
 	termat->enable_culling(false);
-	rc->setMaterial(0, termat->full_id(), true);
+	rc->set_material(0, termat->full_id(), true);
 
 	nstex2d * hm = NULL, * dm = NULL, * nm = NULL;
 	if (importdir)
@@ -576,7 +523,7 @@ nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool p
 		fname = m_import_dir + fname;
 
 	nsentity * ent = create<nsentity>(entname);
-	NSRenderComp * renderComp = ent->create<NSRenderComp>();
+	nsrender_comp * renderComp = ent->create<nsrender_comp>();
 
 	nsstring sceneName = meshname;
 	if (sceneName.empty())
@@ -616,7 +563,7 @@ nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool p
 
 
 	nsmesh * renderMesh = manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
-	renderComp->setMeshID(m_id, renderMesh->id());
+	renderComp->set_mesh_id(m_id, renderMesh->id());
 
 	if (scene->HasMaterials())
 	{
@@ -640,28 +587,17 @@ nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool p
 			uint32 mI = mesh->mMaterialIndex;
 			auto fIter = indexMap.find(mI);
 			if (fIter != indexMap.end())
-				renderComp->setMaterial(i, m_id, fIter->second);
+				renderComp->set_material(i, m_id, fIter->second);
 		}
 	}
 
 	if (scene->HasAnimations())
 	{
 		nsanim_set * animSet = manager<nsanim_manager>()->assimp_load_anim_set(scene, sceneName);
-		NSAnimComp * animComp = ent->create<NSAnimComp>();
-		animComp->setAnimationSetID(m_id, animSet->id());
+		nsanim_comp * animComp = ent->create<nsanim_comp>();
+		animComp->set_anim_set_id(m_id, animSet->id());
 	}
-
-	NSInputComp * inComp = ent->create<NSInputComp>();
-	inComp->add(SELECT);
-	inComp->add(ROTATE_X);
-	inComp->add(ROTATE_Y);
-	inComp->add(ROTATE_Z);
-	inComp->add(MULTI_SELECT);
-	inComp->add(PAINT_SELECT);
-	inComp->add(DRAG_OBJECT_XY);
-	inComp->add(DRAG_OBJECT_XZ);
-	inComp->add(DRAG_OBJECT_YZ);
-	ent->create<NSSelComp>();
+	ent->create<nssel_comp>();
 	return ent;
 }
 

@@ -1,53 +1,53 @@
 /*!
 \file nsterrain_comp.h
 
-\brief Header file for NSTerrainComp class
+\brief Header file for nsterrain_comp class
 
-This file contains all of the neccessary declarations for the NSTerrainComp class.
+This file contains all of the neccessary declarations for the nsterrain_comp class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSTERRAINCOMP_H
-#define NSTERRAINCOMP_H
+#ifndef NSTERRAIN_COMP_H
+#define NSTERRAIN_COMP_H
 
 #include <nscomponent.h>
 #include <nspupper.h>
 
-class NSTerrainComp : public NSComponent
+class nsterrain_comp : public NSComponent
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTerrainComp & tc);
+	friend void pup(PUPer & p, nsterrain_comp & tc);
 
-	NSTerrainComp();
+	nsterrain_comp();
 
-	virtual ~NSTerrainComp();
+	virtual ~nsterrain_comp();
 
-	virtual NSTerrainComp * copy(const NSComponent * pComp);
+	virtual nsterrain_comp * copy(const NSComponent * copy_);
 
 	virtual void init();
 
-	void setHeightBounds(float min, float max);
+	void set_height_bounds(float min_, float max_);
 
-	void setHeightBounds(const fvec2 & minmax_);
+	void set_height_bounds(const fvec2 & minmax_);
 
-	const fvec2 & heightBounds() const;
+	const fvec2 & height_bounds() const;
 
 	virtual void pup(nsfile_pupper * p);
 
-	NSTerrainComp & operator=(const NSTerrainComp & pRHSComp);
+	nsterrain_comp & operator=(const nsterrain_comp & rhs_);
 
 private:
-	fvec2 minmax;
+	fvec2 m_minmax;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTerrainComp & tc)
+void pup(PUPer & p, nsterrain_comp & tc)
 {
-	pup(p, tc.minmax, "minmax");
+	pup(p, tc.m_minmax, "minmax");
 }
 
 #endif

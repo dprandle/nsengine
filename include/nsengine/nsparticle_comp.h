@@ -1,9 +1,9 @@
 /*!
 \file nsparticle_comp.h
 
-\brief Header file for NSParticleComp class
+\brief Header file for nsparticle_comp class
 
-This file contains all of the neccessary declarations for the NSParticleComp class.
+This file contains all of the neccessary declarations for the nsparticle_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -22,56 +22,56 @@ class nsvertex_array_object;
 class nsbuffer_object;
 class nsevent;
 
-class NSParticleComp : public NSComponent
+class nsparticle_comp : public NSComponent
 {
 public:
 
-	enum EmitterShape
+	enum emitter_shape_t
 	{
-		Cube,
-		Ellipse
+		shape_cube,
+		shape_ellipse
 	};
 
-	enum MotionKeyType
+	enum motion_key_t
 	{
-		Velocity,
-		Acceleration
+		key_vel,
+		key_accel
 	};
 
-	enum BlendMode
+	enum blend_m
 	{
-		Mix,
-		Add
+		b_mix,
+		b_add
 	};
 
-	struct Particle
+	struct particle
 	{
-		fvec4 mPos;
-		fvec4 mVel;
-		fvec4 mScaleAndAngle;
-		fvec4 mAgeTypeReserved;
+		fvec4 pos;
+		fvec4 vel;
+		fvec4 scale_and_angle;
+		fvec4 age_type_reserved;
 	};
 
-	typedef std::vector<Particle> ParticleArray;
+	typedef std::vector<particle> particle_array;
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSParticleComp & pc);
+	friend void pup(PUPer & p, nsparticle_comp & pc);
 
 	friend class nsparticle_system;
 	
-	NSParticleComp();
+	nsparticle_comp();
 
-	virtual ~NSParticleComp();
+	virtual ~nsparticle_comp();
 
-	void allocateBuffers();
+	void allocate_buffers();
 
-	virtual NSParticleComp * copy(const NSComponent* pComp);
+	virtual nsparticle_comp * copy(const NSComponent* comp_);
 
 	virtual void init();
 
-	uint32 motionKeyCount();
+	uint32 motion_key_count();
 
-	uint32 visualKeyCount();
+	uint32 visual_key_count();
 
 	float & elapsed();
 
@@ -79,35 +79,35 @@ public:
 
 	bool simulating();
 
-	bool motionKeyInterpolation();
+	bool motion_key_interpolation();
 
-	bool visualKeyInterpolation();
+	bool visual_key_interpolation();
 
-	bool visualGlobalTime();
+	bool visual_global_time();
 
-	fvec3uimap::iterator beginMotionKey();
-	fvec3uimap::iterator beginVisualKey();
+	fvec3uimap::iterator begin_motion_key();
+	fvec3uimap::iterator begin_visual_key();
 
-	fvec3uimap::iterator endMotionKey();
-	fvec3uimap::iterator endVisualKey();
+	fvec3uimap::iterator end_motion_key();
+	fvec3uimap::iterator end_visual_key();
 
-	void enableLooping(bool pEnable);
+	void enable_looping(bool enable_);
 
-	void enableSimulation(bool pEnable);
+	void enable_simulation(bool enable_);
 
-	void enableMotionGlobalTime(bool pEnable);
+	void enable_motion_global_time(bool enable_);
 
-	void enableMotionKeyInterpolation(bool pEnable);
+	void enable_motion_key_interp(bool enable_);
 
-	void enableVisualGlobalTime(bool pEnable);
+	void enable_visual_global_time(bool enable_);
 
-	void enableVisualKeyInterpolation(bool pEnable);
+	void enable_visual_key_interp(bool enable_);
 
-	void clearMotionKeys();
+	void clear_motion_keys();
 
-	void clearVisualKeys();
+	void clear_visual_keys();
 
-	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
 	/*!
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
@@ -115,217 +115,217 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	void setMotionKeyType(const MotionKeyType & pType);
+	void set_motion_key_type(const motion_key_t & type_);
 
-	const MotionKeyType & motionKeyType();
+	const motion_key_t & motion_key_type();
 
-	void setEmitterShape(const EmitterShape & pShape);
+	void set_emitter_shape(const emitter_shape_t & shape_);
 
-	const EmitterShape & emitterShape();
+	const emitter_shape_t & emitter_shape();
 
-	NSParticleComp & operator=(const NSParticleComp & pRHSComp);
+	nsparticle_comp & operator=(const nsparticle_comp & rhs_);
 
-	const uivec2 & shaderID();
+	const uivec2 & shader_id();
 
-	const uivec2 & materialID();
+	const uivec2 & material_id();
 
-	uint32 maxParticles();
+	uint32 max_particles();
 
-	const fvec3uimap & motionKeys();
+	const fvec3uimap & motion_keys();
 
-	const fvec3uimap & visualKeys();
+	const fvec3uimap & visual_keys();
 
-	const fvec3 & emitterSize();
+	const fvec3 & emitter_size();
 
-	void setEmitterSize(const fvec3 & pSize);
+	void set_emitter_size(const fvec3 & size_);
 
-	uint32 maxMotionKeys();
+	uint32 max_motion_keys();
 
-	uint32 maxVisualKeys();
+	uint32 max_visual_keys();
 
-	bool motionGlobalTime();
+	bool motion_global_time();
 
-	fvec3 motionKeyAt(float pTime);
+	fvec3 motion_key_at(float time_);
 
-	fvec3 visualKeyAt(float pTime);
+	fvec3 visual_key_at(float time_);
 
-	bool hasMotionKey(float pTime);
+	bool has_motion_key(float time_);
 
-	bool hasVisualKey(float pTime);
+	bool has_visual_key(float time_);
 
-	void removeMotionKey(float pTime);
+	void remove_motion_key(float time_);
 
-	void removeVisualKey(float pTime);
+	void remove_visual_key(float time_);
 
-	void setMaxMotionKeys(uint32 pMax);
+	void set_max_motion_keys(uint32 max_);
 
-	void setMaxVisualKeys(uint32 pMax);
+	void set_max_visual_keys(uint32 max_);
 
-	void setMotionKey(float pTime, const fvec3 & pForce);
+	void set_motion_key(float time_, const fvec3 & force_);
 
-	void setVisualKey(float pTime, const fvec3 & pRenderKey);
+	void set_visual_key(float time_, const fvec3 & render_key_);
 
 	uint32 lifetime();
 
-	uint32 emissionRate();
+	uint32 emission_rate();
 
 	void release();
 
 	bool first();
 
-	void setFirst(bool pSet);
+	void set_first(bool set_);
 
 	virtual void pup(nsfile_pupper * p);
 
-	nsxfb_object * transformFeedbackObject();
+	nsxfb_object * xfb_obj();
 
-	nsvertex_array_object * vertexArrayObject();
+	nsvertex_array_object * va_obj();
 
-	uint32 transformFeedbackID();
+	uint32 xfb_id();
 
 	void reset();
 
-	const fvec3 & initVelocityMult();
+	const fvec3 & init_vel_mult();
 
-	void setInitVelocityMult(const fvec3 & pMult);
+	void set_init_vel_mult(const fvec3 & mult_);
 
-	const uivec2 & randomTextureID();
+	const uivec2 & rand_tex_id();
 
-	void setEmissionRate(uint32 pRate);
+	void set_emission_rate(uint32 rate_);
 
-	void setLifetime(uint32 pLifetime);
+	void set_lifetime(uint32 lifetime_);
 
-	void setMaxParticles(uint32 pMaxParticles);
+	void set_max_particles(uint32 max_particles_);
 
-	void setShaderID(uint32 plugid, uint32 resid)
+	void set_shader_id(uint32 plug_id_, uint32 res_id_)
 	{
-		mXFBShaderID.x = plugid; mXFBShaderID.y = resid;
+		m_xfb_shader_id.x = plug_id_; m_xfb_shader_id.y = res_id_;
 		post_update(true);
 	}
 
-	void setShaderID(const uivec2 &);
+	void set_shader_id(const uivec2 &);
 
-	void setMaterialID(uint32 plugid, uint32 resid)
+	void set_material_id(uint32 plug_id_, uint32 res_id_)
 	{
-		mMatID.x = plugid; mMatID.y = resid;
+		m_mat_id.x = plug_id_; m_mat_id.y = res_id_;
 		post_update(true);
 	}
 
-	void setMaterialID(const uivec2 & pID);
+	void set_material_id(const uivec2 & res_id_);
 
-	void setRandTextureID(const uivec2 & pID);
+	void set_rand_tex_id(const uivec2 & res_id_);
 
-	void setRandTextureID(uint32 plugid, uint32 resid)
+	void set_rand_tex_id(uint32 plug_id_, uint32 res_id_)
 	{
-		mRandTextID.x = plugid; mRandTextID.y = resid;
+		m_rand_tex_id.x = plug_id_; m_rand_tex_id.y = res_id_;
 		post_update(true);
 	}
 
-	void setAngularVelocity(int32 pVel);
+	void set_angular_vel(int32 vel_);
 
-	void setStartingSize(const fvec2 & pSize);
+	void set_starting_size(const fvec2 & size_);
 
-	void setStartingSize(float pWidth, float pHeight);
+	void set_starting_size(float width_, float height_);
 
-	BlendMode blendMode();
+	blend_m blend_mode();
 
-	void setBlendMode(const BlendMode & pMode);
+	void set_blend_mode(const blend_m & mode_);
 
-	fvec2 startingSize();
+	fvec2 starting_size();
 
-	int32 angularVelocity();
+	int32 angular_vel();
 
 	void swap();
 
-	nsbuffer_object * mFrontBuf;
-	nsbuffer_object * mBackBuf;
+	nsbuffer_object * front_buffer;
+	nsbuffer_object * back_buffer;
 private:
-	fvec3uimap mMotionKeys;
-	fvec3uimap mVisualKeys;
+	fvec3uimap m_motion_keys;
+	fvec3uimap m_visual_keys;
 
-	uivec2 mMatID; //!< Material ID for the rendered quad
-	uivec2 mXFBShaderID; //!< Shader used for transform feedback
-	uint32 mMaxParticleCount; //!< Maximum particles allowed
-	uint32 mLifetime; //!< How long should these particles stay alive
-	uint32 mEmissionRate; //!< Particles emitted per second
-	uivec2 mRandTextID; // Random texture ID
-	EmitterShape mEmitterShape; // Cube or Ellipse
-	MotionKeyType mMotionKeyType; // Velocity or Acceleration motion keyframes
-	BlendMode mBlendMode; // Additive or Source minus destination bla bla
-	int32 mAngularVelocity; // self explanitory
-	bool mLoopingEnabled; // wrap elapsed time back to 0 at end of lifetime and restart
-	bool mMotionKeyInterp; // Interpolate between motion key frames?
-	bool mMotionGlobalTime; // Should the particles all be affected by motion keyframes in global elapsed time or per particle lifetime
-	bool mVisualKeyInterp; // Interpolate between keys?
-	bool mVisualGlobalTime; // Should the particles all be affected by visual keyframes in global elapsed time or per particle lifetime
-	float mElapsedTime; // Amount of time elapsed since sim started
-	fvec2 mStartingSize; // Startung size of screen facing quads in world space sizes (not screen space)
-	fvec3 mEmitterSize; // x,y,z size of the emitter space where particles generate
-	fvec3 mInitVelocityMult; // Initial velocity x,y,z multiplier - multiplies the random number by this
-	uint32 mMaxMotionKeys; // Maximum number of motion key frames - should be set to match whatever is in shader
-	uint32 mMaxVisualKeys; // Maximum number of visual key frames - also should match whatever is set in shader
+	uivec2 m_mat_id; //!< Material ID for the rendered quad
+	uivec2 m_xfb_shader_id; //!< Shader used for transform feedback
+	uint32 m_max_particle_count; //!< Maximum particles allowed
+	uint32 m_lifetime; //!< How long should these particles stay alive
+	uint32 m_emission_rate; //!< Particles emitted per second
+	uivec2 m_rand_tex_id; // Random texture ID
+	emitter_shape_t m_emitter_shape; // Cube or Ellipse
+	motion_key_t m_motion_key_type; // Velocity or Acceleration motion keyframes
+	blend_m m_blend_mode; // Additive or Source minus destination bla bla
+	int32 m_ang_vel; // self explanitory
+	bool m_looping; // wrap elapsed time back to 0 at end of lifetime and restart
+	bool m_motion_key_interp; // Interpolate between motion key frames?
+	bool m_motion_global_time; // Should the particles all be affected by motion keyframes in global elapsed time or per particle lifetime
+	bool m_visual_key_interp; // Interpolate between keys?
+	bool m_visual_global_time; // Should the particles all be affected by visual keyframes in global elapsed time or per particle lifetime
+	float m_elapsed_time; // Amount of time elapsed since sim started
+	fvec2 m_starting_size; // Startung size of screen facing quads in world space sizes (not screen space)
+	fvec3 m_emitter_size; // x,y,z size of the emitter space where particles generate
+	fvec3 m_init_vel_mult; // Initial velocity x,y,z multiplier - multiplies the random number by this
+	uint32 m_max_motion_keys; // Maximum number of motion key frames - should be set to match whatever is in shader
+	uint32 m_max_visual_keys; // Maximum number of visual key frames - also should match whatever is set in shader
 
 	/* This stuff does not need to be saved*/
-	bool mSimulating; // Are we simulating?
-	bool mFirst; // Is it the first time running the simulation since being reset (need to render using glDrawElements rather than feedback draw)
+	bool m_simulating; // Are we simulating?
+	bool m_first; // Is it the first time running the simulation since being reset (need to render using glDrawElements rather than feedback draw)
 
 
-	nsxfb_object * mTFB[2]; // 2 transform feedback buffers (draw from last to first then swap)
-	nsvertex_array_object * mVAO[2]; // for rendering whats in the TF FB buffers
-	uint32 mBufferIndex; //!< Current buffer index
-	ParticleArray mParticles; //!< Sort of dummy array used to allocate VBOs
+	nsxfb_object * m_xfb_bufs[2]; // 2 transform feedback buffers (draw from last to first then swap)
+	nsvertex_array_object * m_vaos[2]; // for rendering whats in the TF FB buffers
+	uint32 m_buffer_index; //!< Current buffer index
+	particle_array m_particles; //!< Sort of dummy array used to allocate VBOs
 };
 
 template<class PUPer>
-void pup(PUPer & p, NSParticleComp::EmitterShape & en, const nsstring & pString)
+void pup(PUPer & p, nsparticle_comp::emitter_shape_t & en, const nsstring & val_name_)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSParticleComp::EmitterShape>(in);
+	pup(p, in, val_name_);
+	en = static_cast<nsparticle_comp::emitter_shape_t>(in);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSParticleComp::MotionKeyType & en, const nsstring & pString)
+void pup(PUPer & p, nsparticle_comp::motion_key_t & en, const nsstring & val_name_)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSParticleComp::MotionKeyType>(in);
+	pup(p, in, val_name_);
+	en = static_cast<nsparticle_comp::motion_key_t>(in);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSParticleComp::BlendMode & en, const nsstring & pString)
+void pup(PUPer & p, nsparticle_comp::blend_m & en, const nsstring & val_name_)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSParticleComp::BlendMode>(in);
+	pup(p, in, val_name_);
+	en = static_cast<nsparticle_comp::blend_m>(in);
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSParticleComp & pc)
+void pup(PUPer & p, nsparticle_comp & pc)
 {
-	pup(p, pc.mMotionKeys, "motionKeys");
-	pup(p, pc.mVisualKeys, "visualKeys");
-	pup(p, pc.mMatID, "matID");
-	pup(p, pc.mXFBShaderID, "xfbShaderID");
-	pup(p, pc.mMaxParticleCount, "maxParticleCount");
-	pup(p, pc.mLifetime, "lifetime");
-	pup(p, pc.mEmissionRate, "emissionRate");
-	pup(p, pc.mRandTextID, "randTextID");
-	pup(p, pc.mEmitterShape, "emitterShape");
-	pup(p, pc.mMotionKeyType, "motionKeyType");
-	pup(p, pc.mBlendMode, "blendMode");
-	pup(p, pc.mAngularVelocity, "angularVelocity");
-	pup(p, pc.mLoopingEnabled, "loopingEnabled");
-	pup(p, pc.mMotionKeyInterp, "motionKeyInterp");
-	pup(p, pc.mMotionGlobalTime, "motionGlobalTime");
-	pup(p, pc.mVisualKeyInterp, "visualKeyInterp");
-	pup(p, pc.mVisualGlobalTime, "visualGlobalTime");
-	pup(p, pc.mElapsedTime, "elapsedTime");
-	pup(p, pc.mStartingSize, "startingSize");
-	pup(p, pc.mEmitterSize, "emitterSize");
-	pup(p, pc.mInitVelocityMult, "initVelocityMult");
-	pup(p, pc.mMaxMotionKeys, "maxMotionKeys");
-	pup(p, pc.mMaxVisualKeys, "maxVisualKeys");
+	pup(p, pc.m_motion_keys, "motion_keys");
+	pup(p, pc.m_visual_keys, "visual_keys");
+	pup(p, pc.m_mat_id, "mat_id");
+	pup(p, pc.m_xfb_shader_id, "xfb_shader_id");
+	pup(p, pc.m_max_particle_count, "max_particle_count");
+	pup(p, pc.m_lifetime, "lifetime");
+	pup(p, pc.m_emission_rate, "emission_rate");
+	pup(p, pc.m_rand_tex_id, "rand_text_id");
+	pup(p, pc.m_emitter_shape, "emitter_shape");
+	pup(p, pc.m_motion_key_type, "motion_key_type");
+	pup(p, pc.m_blend_mode, "blend_mode");
+	pup(p, pc.m_ang_vel, "angular_velocity");
+	pup(p, pc.m_looping, "looping_enabled");
+	pup(p, pc.m_motion_key_interp, "motion_key_inter");
+	pup(p, pc.m_motion_global_time, "motion_global_time");
+	pup(p, pc.m_visual_key_interp, "visual_key_interp");
+	pup(p, pc.m_visual_global_time, "visual_global_time");
+	pup(p, pc.m_elapsed_time, "elapsed_time");
+	pup(p, pc.m_starting_size, "starting_size");
+	pup(p, pc.m_emitter_size, "emitter_size");
+	pup(p, pc.m_init_vel_mult, "init_velocity_mult");
+	pup(p, pc.m_max_motion_keys, "max_motion_keys");
+	pup(p, pc.m_max_visual_keys, "max_visual_keys");
 	pc.post_update(true);
 }
 

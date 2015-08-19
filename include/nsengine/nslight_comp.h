@@ -1,17 +1,17 @@
 /*!
 \file nslight_comp.h
 
-\brief Header file for NSLightComp class
+\brief Header file for nslight_comp class
 
-This file contains all of the neccessary declarations for the NSLightComp class.
+This file contains all of the neccessary declarations for the nslight_comp class.
 
 \author Daniel Randle
 \date January 27 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSLIGHTCOMPONENT_H
-#define NSLIGHTCOMPONENT_H
+#ifndef NSLIGHT_COMP_H
+#define NSLIGHT_COMP_H
 
 #define SHADOW_LOWER_LIMIT 0.0
 #define SHADOW_UPPER_LIMIT 1.0
@@ -26,51 +26,51 @@ class nsmesh;
 class nsentity;
 class nstimer;
 
-class NSLightComp : public NSComponent
+class nslight_comp : public NSComponent
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, NSLightComp & lc);
+	friend void pup(PUPer & p, nslight_comp & lc);
 
-	enum LightType {
-		Directional,
-		Point,
-		Spot
+	enum light_t {
+		l_dir,
+		l_point,
+		l_spot
 	};
 
-	enum Adjustment {
-		Linear,
-		Exponential
+	enum adjustment_t {
+		a_linear,
+		a_exp
 	};
 
-	NSLightComp();
-	~NSLightComp();
+	nslight_comp();
+	~nslight_comp();
 
 	void init();
 
-	bool castShadows() const;
+	bool cast_shadows() const;
 
-	void changeAtten(float constant, float lin, float exp);
+	void change_attenuation(float const_, float lin_, float exp_);
 
-	void changeColor(float pRedAmount, float pGreenAmount, float pBlueAmount);
+	void change_color(float red_, float green_, float blue_);
 
-	void changeAngle(float pAmount);
+	void change_angle(float amount_);
 
-	void changeCutoff(float pAmount);
+	void change_cutoff(float amount_);
 
-	void changeDistance(float pAmount, Adjustment pAdjustment = Exponential);
+	void change_distance(float amount_, adjustment_t adj_ = a_exp);
 
-	void changeIntensity(float diffuse, float ambient, Adjustment pAdjustment=Exponential);
+	void change_intensity(float diff_, float amb_, adjustment_t adj_=a_exp);
 
-	void changeShadowDarkness(float pAmount);
+	void change_shadow_darkness(float amount_);
 
-	void changeRadius(float pAmount);
+	void change_radius(float amount_);
 
-	NSLightComp* copy(const NSComponent* pToCopy);
+	nslight_comp* copy(const NSComponent* copy_);
 
 	const fvec3 & atten() const;
 
-	const uivec2 & meshid() const;
+	const uivec2 & mesh_id() const;
 
 	const fvec3 & color() const;
 
@@ -80,11 +80,11 @@ public:
 
 	float distance();
 
-	LightType type() const;
+	light_t type() const;
 
 	const fvec2 & intensity() const;
 
-	const fmat4 & pov(uint32 pIndex) const;
+	const fmat4 & pov(uint32 index_) const;
 
 	float radius() const;
 
@@ -92,17 +92,17 @@ public:
 
 	virtual void pup(nsfile_pupper * p);
 
-	float shadowDarkness() const;
+	float shadow_darkness() const;
 
-	const int32 & shadowSamples() const;
+	const int32 & shadow_samples() const;
 
-	const fvec2 & shadowClipping() const { return mshadowclip; }
+	const fvec2 & shadow_clipping() const { return m_shadow_clip; }
 
-	const fmat4 & transform(uint32 pIndex);
+	const fmat4 & transform(uint32 index_);
 
 	fmat4array & transforms();
 
-	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
 	/*!
 	Get the resources that the component uses. The light comp uses a bounding mesh.
@@ -110,86 +110,90 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	void setAtten(const fvec3 & pAttComp);
+	void set_attenuation(const fvec3 & atten_);
 
-	void setAtten(float pConst, float pLin, float pExp);
+	void set_attenuation(float const_, float lin_, float exp_);
 
-	void setMeshID(uint32 plugid, uint32 resid)
+	void set_mesh_id(uint32 plug_id_, uint32 res_id_)
 	{
-		mBoundingMeshID.x = plugid; mBoundingMeshID.y = resid;
+		m_bounding_mesh_id.x = plug_id_; m_bounding_mesh_id.y = res_id_;
 		post_update(true);
 	}
 
-	void setShadowClipping(const fvec2 & shadowclip) { mshadowclip = shadowclip; post_update(true); }
+	void set_shadow_clipping(const fvec2 & shadow_clip_) { m_shadow_clip = shadow_clip_; post_update(true); }
 
-	void setMeshID(const uivec2 & pID);
+	void set_mesh_id(const uivec2 & res_id_);
 
-	void setCastShadows(bool pCastShadows);
+	void set_cast_shadows(bool cast_shadows_);
 
-	void setColor(const fvec3 & pColor);
+	void set_color(const fvec3 & col_);
 
-	void setColor(float pRed, float pGreen, float pBlue);
+	void set_color(float red_, float green_, float blue_);
 
-	void setCutoff(float cutoff);
+	void set_cutoff(float cutoff_);
 
-	void setAngle(float angle);
+	void set_angle(float angle_);
 
-	void setDistance(float pDistance, Adjustment pAdjustment = Exponential);
+	void set_distance(float dist_, adjustment_t adj_ = a_exp);
 
-	void setType(LightType pType);
+	void set_type(light_t type_);
 
-	void setIntensity(const fvec2 & intensity, Adjustment pAdjustment = Exponential);
+	void set_intensity(const fvec2 & intensity_, adjustment_t adj_ = a_exp);
 
-	void setIntensity(float pDiffuse, float pAmbient, Adjustment pAdjustment = Exponential);
+	void set_intensity(float diff_, float amb_, adjustment_t adj_ = a_exp);
 
-	void setRadius(float pRandius);
+	void set_radius(float rad_);
 
-	void setShadowDarkness(float pVal);
+	void set_shadow_darkness(float val_);
 
-	void setShadowSamples(int32 pNumSamples);
+	void set_shadow_samples(int32 samples_);
 
-	NSLightComp & operator=(const NSLightComp & pRHSComp);
+	nslight_comp & operator=(const nslight_comp & rhs_);
 
 private:
-	void _updateMeshRadius();
-	void _updateMeshLength();
-	void _updateAttComp(Adjustment pAdjustment);
-	fmat4 tmpret;
-	LightType mLightType;
-	fvec3 mAttComp;
-	fvec2 mIntensityComp;
-	float mShadowDarkness;
-	float mAngle;
-	fvec3 mColor;
-	bool mCastShadows;
-	int32 mShadowSamples;
-	uivec2 mBoundingMeshID;
-	fvec3 mScaling;
-	fvec2 mshadowclip;
+
+	void _update_mesh_radius();
+
+	void _update_mesh_length();
+
+	void _update_atten_comp(adjustment_t adj_);
+
+	fmat4 m_tmp_ret;
+	light_t m_light_type;
+	fvec3 m_att_comp;
+	fvec2 m_intensity_comp;
+	float m_shadow_darkness;
+	float m_angle;
+	fvec3 m_color;
+	bool m_cast_shadows;
+	int32 m_shadow_samples;
+	uivec2 m_bounding_mesh_id;
+	fvec3 m_scaling;
+	fvec2 m_shadow_clip;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSLightComp & lc)
+void pup(PUPer & p, nslight_comp & lc)
 {
-	pup(p, lc.mLightType, "lighttype");
-	pup(p, lc.mAttComp, "attComp");
-	pup(p, lc.mIntensityComp, "intensityComp");
-	pup(p, lc.mShadowDarkness, "shadowDarkness");
-	pup(p, lc.mAngle, "angle");
-	pup(p, lc.mColor, "color");
-	pup(p, lc.mCastShadows, "castShadows");
-	pup(p, lc.mShadowSamples, "shadowSamples");
-	pup(p, lc.mBoundingMeshID, "boundingMeshID");
-	pup(p, lc.mScaling, "scaling");
+	pup(p, lc.m_light_type, "light_type");
+	pup(p, lc.m_att_comp, "att_comp");
+	pup(p, lc.m_intensity_comp, "intensity_comp");
+	pup(p, lc.m_shadow_darkness, "shadow_darkness");
+	pup(p, lc.m_angle, "angle");
+	pup(p, lc.m_color, "color");
+	pup(p, lc.m_cast_shadows, "cast_shadows");
+	pup(p, lc.m_shadow_samples, "shadow_samples");
+	pup(p, lc.m_bounding_mesh_id, "bounding_mesh_id");
+	pup(p, lc.m_scaling, "scaling");
 	lc.post_update(true);
 }
 
 template<class PUPer>
-void pup(PUPer & p, NSLightComp::LightType & en, const nsstring & pString)
+void pup(PUPer & p, nslight_comp::light_t & en, const nsstring & val_name_)
 {
 	uint32 in = static_cast<uint32>(en);
-	pup(p, in, pString);
-	en = static_cast<NSLightComp::LightType>(in);
+	pup(p, in, val_name_);
+	en = static_cast<nslight_comp::light_t>(in);
 }
 
-#endif // !NSLIGHTCOMPONENT_H
+#endif // !NSLIGHT_COMP_H

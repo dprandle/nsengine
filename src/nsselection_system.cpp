@@ -17,7 +17,6 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsscene.h>
 #include <nsevent_dispatcher.h>
 #include <nsrender_system.h>
-#include <nsinput_comp.h>
 #include <nssel_comp.h>
 #include <nsmesh_manager.h>
 #include <nstile_comp.h>
@@ -70,7 +69,7 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 	if (ent == NULL)
 		return false;
 
-	NSSelComp * selComp = ent->get<NSSelComp>();
+	nssel_comp * selComp = ent->get<nssel_comp>();
 	if (selComp == NULL)
 		return false;
 
@@ -81,7 +80,7 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 		if (scn == NULL)
 			return false;
 		
-		NSTFormComp * tForm = ent->get<NSTFormComp>();
+		nstform_comp * tForm = ent->get<nstform_comp>();
 		if (tForm == NULL)
 		{
 			dprint("nsselection_system::add tForm is null for ent " + ent->name());
@@ -97,12 +96,12 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 		{
 			nsentity * entAdd = scn->entity(id.x,id.y);
 			m_selected_ents.insert(entAdd);
-			entAdd->get<NSSelComp>()->setSelected(true);
-			entAdd->get<NSSelComp>()->add(id.y);
+			entAdd->get<nssel_comp>()->set_selected(true);
+			entAdd->get<nssel_comp>()->add(id.y);
 		}
 	}
 	m_selected_ents.insert(ent);
-	selComp->setSelected(true);
+	selComp->set_selected(true);
 	return selComp->add(tformid);
 }
 
@@ -115,9 +114,9 @@ bool nsselection_system::add_to_grid()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		NSOccupyComp * occComp = (*iter)->get<NSOccupyComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 
 		if (occComp != NULL)
 		{
@@ -144,7 +143,7 @@ bool nsselection_system::contains(const uivec3 & itemid)
 	{
 		if ((*iter)->full_id() == itemid.xy())
 		{
-			if ((*iter)->get<NSSelComp>()->contains(itemid.z))
+			if ((*iter)->get<nssel_comp>()->contains(itemid.z))
 				return true;
 		}
 		++iter;
@@ -169,7 +168,7 @@ bool nsselection_system::contains(const uivec3 & itemid)
 // 	{
 // 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent;
 // 		mFocusEnt = selEvent->mEntRefID;
-// 		//set(mScene->get(mFocusEnt.y)->get<NSSelComp>(), mFocusEnt.z);
+// 		//set(mScene->get(mFocusEnt.y)->get<nssel_comp>(), mFocusEnt.z);
 // 		return true;
 // 	}
 // 	else if (pEvent->mID == NSEvent::SelAdd)
@@ -212,9 +211,9 @@ bool nsselection_system::collision()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		NSOccupyComp * occComp = (*iter)->get<NSOccupyComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 		if (occComp != NULL)
 		{
 			auto selIter = selComp->begin();
@@ -234,7 +233,7 @@ void nsselection_system::clear()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		(*iter)->get<NSSelComp>()->clear();
+		(*iter)->get<nssel_comp>()->clear();
 		++iter;
 	}
 	m_selected_ents.clear();
@@ -313,7 +312,7 @@ void nsselection_system::draw()
 	glStencilFunc(GL_ALWAYS, 1, -1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-	NSTFormComp * camTComp = cam->get<NSTFormComp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
 	nscam_comp * camc = cam->get<nscam_comp>();
 	m_sel_shader->bind();
 	m_sel_shader->set_proj_cam_mat(camc->proj_cam());
@@ -322,25 +321,25 @@ void nsselection_system::draw()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSRenderComp * renComp = (*iter)->get<NSRenderComp>();
-		NSAnimComp * animComp = (*iter)->get<NSAnimComp>();
-		NSTerrainComp * terComp = (*iter)->get<NSTerrainComp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nsrender_comp * renComp = (*iter)->get<nsrender_comp>();
+		nsanim_comp * animComp = (*iter)->get<nsanim_comp>();
+		nsterrain_comp * terComp = (*iter)->get<nsterrain_comp>();
 
-		if (selComp->selected() && selComp->drawEnabled())
+		if (selComp->selected() && selComp->draw_enabled())
 		{
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
 				m_sel_shader->set_transform(tComp->transform(*selIter));
-				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->meshID());
+				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->mesh_id());
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					nsmesh::submesh * cSub = rMesh->sub(i);
 
 					m_sel_shader->set_heightmap_enabled(false);
-					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->materialID(i));
+					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->material_id(i));
 					if (mat != NULL)
 					{
 						nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
@@ -359,13 +358,13 @@ void nsselection_system::draw()
 					if (animComp != NULL)
 					{
 						m_sel_shader->set_has_bones(true);
-						m_sel_shader->set_bone_transform(*animComp->finalTransforms());
+						m_sel_shader->set_bone_transform(*animComp->final_transforms());
 					}
 					else
 						m_sel_shader->set_has_bones(false);
 
 					if (terComp != NULL)
-						m_sel_shader->set_height_minmax(terComp->heightBounds());
+						m_sel_shader->set_height_minmax(terComp->height_bounds());
 
 					cSub->vao.bind();
 					glDrawElements(cSub->primitive_type,
@@ -385,11 +384,11 @@ void nsselection_system::draw()
 	iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSRenderComp * renComp = (*iter)->get<NSRenderComp>();
-		NSAnimComp * animComp = (*iter)->get<NSAnimComp>();
-		NSTerrainComp * terComp = (*iter)->get<NSTerrainComp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nsrender_comp * renComp = (*iter)->get<nsrender_comp>();
+		nsanim_comp * animComp = (*iter)->get<nsanim_comp>();
+		nsterrain_comp * terComp = (*iter)->get<nsterrain_comp>();
 
 		if (renComp == NULL || tComp == NULL)
 		{
@@ -397,19 +396,19 @@ void nsselection_system::draw()
 			continue;
 		}
 
-		if (selComp->selected() && selComp->drawEnabled())
+		if (selComp->selected() && selComp->draw_enabled())
 		{
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
 				m_sel_shader->set_transform(tComp->transform(*selIter));
-				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->meshID());
+				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->mesh_id());
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					nsmesh::submesh * cSub = rMesh->sub(i);
 
 					m_sel_shader->set_heightmap_enabled(false);
-					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->materialID(i));
+					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->material_id(i));
 					if (mat != NULL)
 					{
 						nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
@@ -428,13 +427,13 @@ void nsselection_system::draw()
 					if (animComp != NULL)
 					{
 						m_sel_shader->set_has_bones(true);
-						m_sel_shader->set_bone_transform(*animComp->finalTransforms());
+						m_sel_shader->set_bone_transform(*animComp->final_transforms());
 					}
 					else
 						m_sel_shader->set_has_bones(false);
 
 					if (terComp != NULL)
-						m_sel_shader->set_height_minmax(terComp->heightBounds());
+						m_sel_shader->set_height_minmax(terComp->height_bounds());
 
 					cSub->vao.bind();
 
@@ -453,7 +452,7 @@ void nsselection_system::draw()
 					glPolygonMode(GL_FRONT, GL_FILL);
 					glEnable(GL_DEPTH_TEST);
 					glStencilFunc(GL_EQUAL, 1, 0);
-					selCol.w = selComp->maskAlpha();
+					selCol.w = selComp->mask_alpha();
 
 					if (m_focus_ent.y == (*iter)->id() && m_focus_ent.z == *selIter)
 						selCol.w = 0.4f;
@@ -514,13 +513,13 @@ void nsselection_system::draw()
 void nsselection_system::_draw_ent_occ(nsentity * ent)
 {
 	// Draw the occupy component if draw enabled
-	NSOccupyComp * occComp = ent->get<NSOccupyComp>();
-	NSSelComp * selComp = ent->get<NSSelComp>();
-	NSTFormComp * tComp = ent->get<NSTFormComp>();
-	if (occComp != NULL && selComp != NULL && tComp != NULL && occComp->drawEnabled())
+	nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
+	nssel_comp * selComp = ent->get<nssel_comp>();
+	nstform_comp * tComp = ent->get<nstform_comp>();
+	if (occComp != NULL && selComp != NULL && tComp != NULL && occComp->draw_enabled())
 	{
-		nsmesh * occMesh = nsengine.resource<nsmesh>(occComp->meshid());
-		nsmaterial * mat = nsengine.resource<nsmaterial>(occComp->matid());
+		nsmesh * occMesh = nsengine.resource<nsmesh>(occComp->mesh_id());
+		nsmaterial * mat = nsengine.resource<nsmaterial>(occComp->material_id());
 		if (occMesh != NULL)
 		{
 			auto selIter = selComp->begin();
@@ -602,7 +601,7 @@ void nsselection_system::_draw_occ()
 					nsentity * ent = nsengine.resource<nsentity>(id.x, id.y);
 					if (ent != NULL)
 					{
-						m_trans.set_column(3,fvec4(ent->get<NSTFormComp>()->lpos(id.z),1.0f));
+						m_trans.set_column(3,fvec4(ent->get<nstform_comp>()->lpos(id.z),1.0f));
 						m_sel_shader->set_transform(m_trans);
 						glDrawElements(occSub->primitive_type,
 									   static_cast<GLsizei>(occSub->indices.size()),
@@ -632,8 +631,8 @@ void nsselection_system::_draw_hidden()
 	auto sceneEntIter = sceneEnts.begin();
 	while (sceneEntIter != sceneEnts.end())
 	{
-		NSTFormComp * tComp = (*sceneEntIter)->get<NSTFormComp>();
-		NSRenderComp * renComp = (*sceneEntIter)->get<NSRenderComp>();
+		nstform_comp * tComp = (*sceneEntIter)->get<nstform_comp>();
+		nsrender_comp * renComp = (*sceneEntIter)->get<nsrender_comp>();
 
 		if (renComp == NULL)
 		{
@@ -641,8 +640,8 @@ void nsselection_system::_draw_hidden()
 			continue;
 		}
 
-		NSAnimComp * animComp = (*sceneEntIter)->get<NSAnimComp>();
-		nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->meshID());
+		nsanim_comp * animComp = (*sceneEntIter)->get<nsanim_comp>();
+		nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->mesh_id());
 
 		if (rMesh == NULL)
 		{
@@ -652,12 +651,12 @@ void nsselection_system::_draw_hidden()
 
 		for (uint32 index = 0; index < tComp->count(); ++index)
 		{
-			int32 state = tComp->hiddenState(index);
+			int32 state = tComp->hidden_state(index);
 
-			bool layerBit = state & NSTFormComp::LayerHide && true;
-			bool objectBit = state & NSTFormComp::ObjectHide && true;
-			bool showBit = state & NSTFormComp::Show && true;
-			bool hideBit = state & NSTFormComp::Hide && true;
+			bool layerBit = state & nstform_comp::hide_layer && true;
+			bool objectBit = state & nstform_comp::hide_object && true;
+			bool showBit = state & nstform_comp::hide_none && true;
+			bool hideBit = state & nstform_comp::hide_all && true;
 
 			if (!hideBit && (!layerBit && objectBit))
 			{
@@ -674,7 +673,7 @@ void nsselection_system::_draw_hidden()
 					if (animComp != NULL)
 					{
 						m_sel_shader->set_has_bones(true);
-						m_sel_shader->set_bone_transform(*animComp->finalTransforms());
+						m_sel_shader->set_bone_transform(*animComp->final_transforms());
 					}
 					else
 						m_sel_shader->set_has_bones(false);
@@ -705,8 +704,8 @@ void nsselection_system::del()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selC = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
+		nssel_comp * selC = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
 
 		posVec.resize(selC->count());
 		uint32 i = 0;
@@ -772,27 +771,27 @@ void nsselection_system::_on_rotate_x(nsentity * ent, bool pPressed)
 {
 	if (ent == NULL)
 		return;
-	NSSelComp * sc = ent->get<NSSelComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
 	if (sc->selected() && pPressed)
-		rotate(ent, NSTFormComp::Right, 45.0f);
+		rotate(ent, nstform_comp::dir_right, 45.0f);
 }
 
 void nsselection_system::_on_rotate_y(nsentity * ent, bool pPressed)
 {
 	if (ent == NULL)
 		return;
-	NSSelComp * sc = ent->get<NSSelComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
 	if (sc->selected() && pPressed)
-		rotate(ent, NSTFormComp::Target, 45.0f);
+		rotate(ent, nstform_comp::dir_target, 45.0f);
 }
 
 void nsselection_system::_on_rotate_z(nsentity * ent, bool pPressed)
 {
 	if (ent == NULL)
 		return;
-	NSSelComp * sc = ent->get<NSSelComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
 	if (sc->selected() && pPressed)
-		rotate(ent, NSTFormComp::Up, 45.0f);
+		rotate(ent, nstform_comp::dir_up, 45.0f);
 }
 
 void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
@@ -808,8 +807,8 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 	if (ent == NULL)
 		return;
 
-	NSSelComp * sc = ent->get<NSSelComp>();
-	NSTFormComp * tc = ent->get<NSTFormComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
+	nstform_comp * tc = ent->get<nstform_comp>();
 
 	if (pPressed)
 	{
@@ -854,8 +853,8 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 				return;
 			if (!collision())
 			{
-				ent->get<NSTFormComp>()->computeTransform(m_focus_ent.z);
-				fvec3 pTranslate = m_cached_point - ent->get<NSTFormComp>()->wpos(m_focus_ent.z);
+				ent->get<nstform_comp>()->compute_transform(m_focus_ent.z);
+				fvec3 pTranslate = m_cached_point - ent->get<nstform_comp>()->wpos(m_focus_ent.z);
 				translate(pTranslate);
 				set_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 
@@ -868,7 +867,7 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 			}
 			else
 			{
-				fvec3 pos = ent->get<NSTFormComp>()->wpos(m_focus_ent.z);
+				fvec3 pos = ent->get<nstform_comp>()->wpos(m_focus_ent.z);
 				scene->grid().snap(pos);
 				add_to_grid();
 			}
@@ -894,7 +893,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 		return;
 
 	uivec3 pi = pick(pPos.x, pPos.y);
-	NSSelComp * sc = ent->get<NSSelComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
 
 	if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
 	{
@@ -907,7 +906,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 			add(ent, pi.z);
 			return;
 		}
-		NSTileBrushComp * brushComp = tileBrush->get<NSTileBrushComp>();
+		nstile_brush_comp * brushComp = tileBrush->get<nstile_brush_comp>();
 		if (brushComp == NULL)
 		{
 			add(ent, pi.z);
@@ -923,13 +922,13 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 				if (focEnt == NULL)
 					continue;
 
-				NSTFormComp * tForm = focEnt->get<NSTFormComp>();
+				nstform_comp * tForm = focEnt->get<nstform_comp>();
 				fvec3 pos = tForm->lpos(m_focus_ent.z) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				uivec3 refid = scene->ref_id(pos);
 				nsentity * selEnt = nsengine.resource<nsentity>(refid.x, refid.y);
 				if (selEnt == NULL)
 					continue;
-				NSSelComp * selComp = selEnt->get<NSSelComp>();
+				nssel_comp * selComp = selEnt->get<nssel_comp>();
 				if (selComp == NULL)
 					continue;
 
@@ -954,10 +953,10 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	if (ent == NULL)
 		return;
 
-	NSSelComp * sc = ent->get<NSSelComp>();
-	NSTFormComp * camTForm = cam->get<NSTFormComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
+	nstform_comp * camTForm = cam->get<nstform_comp>();
 	nscam_comp * camc = cam->get<nscam_comp>();
-	NSTFormComp * tComp = ent->get<NSTFormComp>();
+	nstform_comp * tComp = ent->get<nstform_comp>();
 
 	// get change in terms of NDC
 	fvec2 delta(pDelta * 2.0f);
@@ -1032,7 +1031,7 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 	if (ent == NULL)
 		return;
 
-	NSSelComp * sc = ent->get<NSSelComp>();
+	nssel_comp * sc = ent->get<nssel_comp>();
 
 
 	if (pPressed)
@@ -1058,7 +1057,7 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 						auto iter = m_selected_ents.find(ent);
 						if (iter != m_selected_ents.end())
 						{
-							NSSelComp * selComp = (*iter)->get<NSSelComp>();
+							nssel_comp * selComp = (*iter)->get<nssel_comp>();
 							auto first = selComp->begin();
 							m_focus_ent.x = (*iter)->plugin_id();
 							m_focus_ent.y = (*iter)->id();
@@ -1067,7 +1066,7 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 						else
 						{
 							auto entFirst = m_selected_ents.begin();
-							NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
+							nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
 							auto first = selComp->begin();
 							m_focus_ent.x = (*entFirst)->plugin_id();
 							m_focus_ent.y = (*entFirst)->id();
@@ -1077,7 +1076,7 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 					else
 					{
 						auto entFirst = m_selected_ents.begin();
-						NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
+						nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
 						auto first = selComp->begin();
 						m_focus_ent.y = (*entFirst)->plugin_id();
 						m_focus_ent.y = (*entFirst)->id();
@@ -1111,11 +1110,11 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 		return;
 
 	nsentity * ent = nsengine.resource<nsentity>(pickid.xy());
-	NSSelComp * sc;
-	if (ent == NULL || (sc = ent->get<NSSelComp>()) == NULL)
+	nssel_comp * sc;
+	if (ent == NULL || (sc = ent->get<nssel_comp>()) == NULL)
 		return;
 
-	NSTFormComp * tc = ent->get<NSTFormComp>();
+	nstform_comp * tc = ent->get<nstform_comp>();
 	fvec3 original_pos = tc->wpos(pickid.z);
 	
 	auto iter = m_selected_ents.find(ent);
@@ -1135,7 +1134,7 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 	else
 	{
 		auto entFirst = m_selected_ents.begin();
-		NSSelComp * selComp = (*entFirst)->get<NSSelComp>();
+		nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
 		auto first = selComp->begin();
 		m_focus_ent.set((*entFirst)->full_id(), *first);
 	}
@@ -1147,7 +1146,7 @@ void nsselection_system::remove(nsentity * ent, uint32 pTFormID)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * selcomp = ent->get<NSSelComp>();
+	nssel_comp * selcomp = ent->get<nssel_comp>();
 	if (selcomp == NULL)
 		return;
 
@@ -1168,9 +1167,9 @@ void nsselection_system::remove_from_grid()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		NSOccupyComp * occComp = (*iter)->get<NSOccupyComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 
 		if (occComp != NULL)
 		{
@@ -1190,11 +1189,11 @@ void nsselection_system::reset_color()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
 		auto selIter = selComp->begin();
 		while (selIter != selComp->end())
 		{
-			selComp->setColor(selComp->defaultColor());
+			selComp->set_color(selComp->default_color());
 			++selIter;
 		}
 		++iter;
@@ -1206,8 +1205,8 @@ void nsselection_system::rotate(nsentity * ent, const fvec4 & axisangle)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1229,13 +1228,13 @@ void nsselection_system::rotate(const fvec4 & axisangle)
 	}
 }
 
-void nsselection_system::rotate(nsentity * ent, NSTFormComp::DirVec axis, float angle)
+void nsselection_system::rotate(nsentity * ent, nstform_comp::dir_vec axis, float angle)
 {
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1247,7 +1246,7 @@ void nsselection_system::rotate(nsentity * ent, NSTFormComp::DirVec axis, float 
 	}
 }
 
-void nsselection_system::rotate(NSTFormComp::DirVec axis, float angle)
+void nsselection_system::rotate(nstform_comp::dir_vec axis, float angle)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
@@ -1257,13 +1256,13 @@ void nsselection_system::rotate(NSTFormComp::DirVec axis, float angle)
 	}
 }
 
-void nsselection_system::rotate(nsentity * ent, NSTFormComp::Axis axis, float angle)
+void nsselection_system::rotate(nsentity * ent, nstform_comp::world_axis axis, float angle)
 {
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1275,7 +1274,7 @@ void nsselection_system::rotate(nsentity * ent, NSTFormComp::Axis axis, float an
 	}
 }
 
-void nsselection_system::rotate(NSTFormComp::Axis axis, float angle)
+void nsselection_system::rotate(nstform_comp::world_axis axis, float angle)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
@@ -1290,8 +1289,8 @@ void nsselection_system::rotate(nsentity * ent, const fvec3 & euler)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1318,8 +1317,8 @@ void nsselection_system::rotate(nsentity * ent, const fquat & orientation)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1346,8 +1345,8 @@ void nsselection_system::scale(nsentity * ent, const fvec3 & pAmount)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1390,29 +1389,29 @@ void nsselection_system::set_color(const fvec4 & pColor)
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
 		auto selIter = selComp->begin();
 		while (selIter != selComp->end())
 		{
-			selComp->setColor(pColor);
+			selComp->set_color(pColor);
 			++selIter;
 		}
 		++iter;
 	}
 }
 
-void nsselection_system::set_hidden_state(NSTFormComp::HiddenState pState, bool pSet)
+void nsselection_system::set_hidden_state(nstform_comp::h_state pState, bool pSet)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSTFormComp * tForm = (*iter)->get<NSTFormComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nstform_comp * tForm = (*iter)->get<nstform_comp>();
 
 		auto selIter = selComp->begin();
 		while (selIter != selComp->end())
 		{
-			tForm->setHiddenState(pState, pSet, *selIter);
+			tForm->set_hidden_state(pState, pSet, *selIter);
 			++selIter;
 		}
 		++iter;
@@ -1434,8 +1433,8 @@ void nsselection_system::snap(nsentity * ent)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1462,15 +1461,15 @@ void nsselection_system::snap_x(nsentity * ent)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
 	auto selIter = scomp->begin();
 	while (selIter != scomp->end())
 	{
-		tcomp->snapX(*selIter);
+		tcomp->snap_x(*selIter);
 		++selIter;
 	}
 }
@@ -1490,15 +1489,15 @@ void nsselection_system::snap_y(nsentity * ent)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
 	auto selIter = scomp->begin();
 	while (selIter != scomp->end())
 	{
-		tcomp->snapY(*selIter);
+		tcomp->snap_y(*selIter);
 		++selIter;
 	}
 }
@@ -1518,15 +1517,15 @@ void nsselection_system::snap_z(nsentity * ent)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
 	auto selIter = scomp->begin();
 	while (selIter != scomp->end())
 	{
-		tcomp->snapZ(*selIter);
+		tcomp->snap_z(*selIter);
 		++selIter;
 	}
 }
@@ -1561,8 +1560,8 @@ void nsselection_system::tile_swap(nsentity * pNewTile)
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selC = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
+		nssel_comp * selC = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
 
 		posVec.resize(selC->count());
 		uint32 i = 0;
@@ -1590,8 +1589,8 @@ void nsselection_system::translate(nsentity * ent, const fvec3 & pAmount)
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1623,13 +1622,13 @@ void nsselection_system::translate(nsentity * ent, float x, float y, float z)
 	translate(ent, fvec3(x, y, z));
 }
 
-void nsselection_system::translate(nsentity * ent, NSTFormComp::DirVec pDir, float pAmount)
+void nsselection_system::translate(nsentity * ent, nstform_comp::dir_vec pDir, float pAmount)
 {
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1641,7 +1640,7 @@ void nsselection_system::translate(nsentity * ent, NSTFormComp::DirVec pDir, flo
 	}
 }
 
-void nsselection_system::translate(NSTFormComp::DirVec pDir, float pAmount)
+void nsselection_system::translate(nstform_comp::dir_vec pDir, float pAmount)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
@@ -1651,13 +1650,13 @@ void nsselection_system::translate(NSTFormComp::DirVec pDir, float pAmount)
 	}
 }
 
-void nsselection_system::translate(nsentity * ent, NSTFormComp::Axis pDir, float pAmount)
+void nsselection_system::translate(nsentity * ent, nstform_comp::world_axis pDir, float pAmount)
 {
 	if (ent == NULL)
 		return;
 
-	NSSelComp * scomp = ent->get<NSSelComp>();
-	NSTFormComp * tcomp = ent->get<NSTFormComp>();
+	nssel_comp * scomp = ent->get<nssel_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
 	if (scomp == NULL || tcomp == NULL)
 		return;
 
@@ -1669,7 +1668,7 @@ void nsselection_system::translate(nsentity * ent, NSTFormComp::Axis pDir, float
 	}
 }
 
-void nsselection_system::translate(NSTFormComp::Axis pDir, float pAmount)
+void nsselection_system::translate(nstform_comp::world_axis pDir, float pAmount)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
@@ -1692,11 +1691,11 @@ bool nsselection_system::valid_brush()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		if (!(*iter)->has<NSTileComp>())
+		if (!(*iter)->has<nstile_comp>())
 			return false;
 
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
 
 		int32 newZ = nstile_grid::index_z(tComp->wpos().z);
 
@@ -1728,9 +1727,9 @@ bool nsselection_system::valid_tile_swap()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		NSSelComp * selComp = (*iter)->get<NSSelComp>();
-		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
-		if (!(*iter)->has<NSTileComp>())
+		nssel_comp * selComp = (*iter)->get<nssel_comp>();
+		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		if (!(*iter)->has<nstile_comp>())
 			return false;
 		++iter;
 	}
@@ -1746,7 +1745,7 @@ void nsselection_system::update()
 	nsentity * ent = scn->entity(m_focus_ent.xy());
 	if (ent == NULL)
 		return;
-	NSTFormComp * foc_tform = ent->get<NSTFormComp>();
+	nstform_comp * foc_tform = ent->get<nstform_comp>();
 
 	if (m_send_foc_event)
 	{
@@ -1767,7 +1766,7 @@ void nsselection_system::update()
 			snap();
 			if (!collision())
 			{
-				foc_tform->computeTransform(m_focus_ent.z);
+				foc_tform->compute_transform(m_focus_ent.z);
 				fvec3 pTranslate = m_cached_point - foc_tform->wpos(m_focus_ent.z);
 				translate(pTranslate);
 				set_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
@@ -1834,7 +1833,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		
 		uivec3 pickid = pick(mpos);
 		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
-		NSTFormComp * tc;
+		nstform_comp * tc;
 			
 		if (contains(pickid))
 			remove(selectedEnt,pickid.z);

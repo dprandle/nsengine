@@ -22,7 +22,7 @@
 #include <nsoccupy_comp.h>
 #include <nstile_grid.h>
 
-class NSRenderComp;
+class nsrender_comp;
 class nsrender_system;
 
 class nsscene : public nsresource
@@ -86,7 +86,7 @@ public:
 	nsentity * entity(const T1 & plug_, const T2 & res_) const
 	{
 		nsentity * ent = nsengine.resource<nsentity>(plug_, res_);
-		if (ent == NULL || !ent->has<NSTFormComp>())
+		if (ent == NULL || !ent->has<nstform_comp>())
 			return NULL;
 		return ent;
 	}
@@ -286,13 +286,13 @@ void pup(PUPer & p, nsscene & sc)
 			continue;
 		}
 
-		NSTFormComp * tc = ent->get<NSTFormComp>();
+		nstform_comp * tc = ent->get<nstform_comp>();
 		if (tc == NULL)
-			tc = ent->create<NSTFormComp>();
+			tc = ent->create<nstform_comp>();
 		tc->pup(&p);
 		if (p.mode() == PUP_IN)
 		{
-			NSOccupyComp * oc = ent->get<NSOccupyComp>();
+			nsoccupy_comp * oc = ent->get<nsoccupy_comp>();
 			if (oc != NULL)
 			{
 				for (uint32 i = 0; i < tc->count(); ++i)

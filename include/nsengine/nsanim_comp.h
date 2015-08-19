@@ -1,17 +1,17 @@
 /*! 
 	\file nsanim_comp.h
 	
-	\brief Header file for NSAnimComp class
+	\brief Header file for nsanim_comp class
 
-	This file contains all of the neccessary declarations for the NSAnimComp class.
+	This file contains all of the neccessary declarations for the nsanim_comp class.
 
 	\author Daniel Randle
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSANIMCOMP_H
-#define NSANIMCOMP_H
+#ifndef NSANIM_COMP_H
+#define NSANIM_COMP_H
 
 #include <vector>
 #include <nsmath.h>
@@ -23,28 +23,28 @@
 class nstimer;
 
 
-class NSAnimComp : public NSComponent
+class nsanim_comp : public NSComponent
 {
 public:
-	NSAnimComp();
-	~NSAnimComp();
+	nsanim_comp();
+	~nsanim_comp();
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSAnimComp & anim);
+	friend void pup(PUPer & p, nsanim_comp & anim);
 
-	virtual NSAnimComp* copy(const NSComponent* pToCopy);
+	virtual nsanim_comp* copy(const NSComponent* copy_);
 
 	float & elapsed();
 
-	void fillBones(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim);
+	void fill_bones(nsmesh::node_tree * node_tree_, nsanim_set::animation_data * current_anim_);
 
-	const uivec2 & animationSetID();
+	const uivec2 & anim_set_id();
 
-	const nsstring & currentAnimation();
+	const nsstring & current_anim_name();
 
-	fmat4array * finalTransforms();
+	fmat4array * final_transforms();
 
-	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
 	/*!
 	Get the resources that the component uses. For the animation component that is simply an AnimSet
@@ -60,43 +60,43 @@ public:
 
 	virtual void pup(nsfile_pupper * p);
 
-	void setAnimationSetID(uint32 plugid, uint32 resid)
+	void set_anim_set_id(uint32 plug_id_, uint32 res_id_)
 	{
-		mAnimSetID.x = plugid; mAnimSetID.y = resid;
+		m_anim_set_id.x = plug_id_; m_anim_set_id.y = res_id_;
 		post_update(true);
 	}
 
-	void setAnimationSetID(const uivec2 & pID);
+	void set_anim_set_id(const uivec2 & anim_set_id_);
 
-	void setAnimate(bool pAnimate);
+	void set_animate(bool animate_);
 
-	void setLoop(bool pLoop);
+	void set_loop(bool loop_);
 
-	void setCurrentAnimation(const nsstring & pAnimationName);
+	void set_current_animation(const nsstring & anim_name_);
 
-	NSAnimComp & operator=(const NSAnimComp & pRHSComp);
+	nsanim_comp & operator=(const nsanim_comp & rhs_);
 
 private:
-	void _fillBoneTransform(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform);
+	void _fill_bone_transforms(nsmesh::node_tree * node_tree_, nsmesh::node * node_, nsanim_set::animation_data * current_anim_, fmat4 & parent_tform_);
 
-	float mElapsedTime;
+	float m_elapsed_time;
 	
-	bool mAnimating;
-	bool mLooping;
+	bool m_animation;
+	bool m_looping;
 
-	uivec2 mAnimSetID; //! AnimSet resource used
-	nsstring mCurrentAnim; //! Current animation within the animation set
-	fmat4array mFinalTransforms;
+	uivec2 m_anim_set_id; //! AnimSet resource used
+	nsstring m_current_anim; //! Current animation within the animation set
+	fmat4array m_final_transforms;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSAnimComp & anim)
+void pup(PUPer & p, nsanim_comp & anim)
 {
-	pup(p, anim.mElapsedTime, "elapsedTime");
-	pup(p, anim.mAnimating, "animating");
-	pup(p, anim.mLooping, "looping");
-	pup(p, anim.mAnimSetID, "animSetID");
-	pup(p, anim.mCurrentAnim, "currentAnim");
+	pup(p, anim.m_elapsed_time, "elapsed_time");
+	pup(p, anim.m_animation, "animating");
+	pup(p, anim.m_looping, "looping");
+	pup(p, anim.m_anim_set_id, "anim_set_id");
+	pup(p, anim.m_current_anim, "current_anim");
 }
 
 #endif

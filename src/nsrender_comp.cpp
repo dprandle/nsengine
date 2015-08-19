@@ -1,9 +1,9 @@
 /*! 
 	\file nsrendercomp.cpp
 	
-	\brief Definition file for NSRenderComp class
+	\brief Definition file for nsrender_comp class
 
-	This file contains all of the neccessary definitions for the NSRenderComp class.
+	This file contains all of the neccessary definitions for the nsrender_comp class.
 
 	\author Daniel Randle
 	\date December 17 2013
@@ -20,60 +20,60 @@
 #include <nsmesh_manager.h>
 
 
-NSRenderComp::NSRenderComp() : 
+nsrender_comp::nsrender_comp() : 
 NSComponent(),
-mCastShadow(true),
-mMeshID(0)
+m_cast_shadow(true),
+m_mesh_id(0)
 {}
 
-NSRenderComp::~NSRenderComp()
+nsrender_comp::~nsrender_comp()
 {}
 
-void NSRenderComp::clearMats()
+void nsrender_comp::clear_mats()
 {
-	mMats.clear();
+	m_mats.clear();
 }
 
-NSRenderComp* NSRenderComp::copy(const NSComponent * pToCopy)
+nsrender_comp* nsrender_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSRenderComp * comp = (const NSRenderComp*)pToCopy;
+	const nsrender_comp * comp = (const nsrender_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
 
-bool NSRenderComp::castShadow()
+bool nsrender_comp::cast_shadow()
 {
-	return mCastShadow;
+	return m_cast_shadow;
 }
 
-uivec2 NSRenderComp::materialID(uint32 subMeshIndex)
+uivec2 nsrender_comp::material_id(uint32 subMeshIndex)
 {
-	auto fiter = mMats.find(subMeshIndex);
-	if (fiter != mMats.end())
+	auto fiter = m_mats.find(subMeshIndex);
+	if (fiter != m_mats.end())
 		return fiter->second;
 	return uivec2();
 }
 
-const uivec2 & NSRenderComp::meshID()
+const uivec2 & nsrender_comp::mesh_id()
 {
-	return mMeshID;
+	return m_mesh_id;
 }
 
-void NSRenderComp::name_change(const uivec2 & oldid, const uivec2 newid)
+void nsrender_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	if (mMeshID.x == oldid.x)
+	if (m_mesh_id.x == oldid.x)
 	{
-		mMeshID.x = newid.x;
-		if (mMeshID.y == oldid.y)
-			mMeshID.y = newid.y;
+		m_mesh_id.x = newid.x;
+		if (m_mesh_id.y == oldid.y)
+			m_mesh_id.y = newid.y;
 	}
 
 	// Add all materials
-	auto iter = matBegin();
-	while (iter != matEnd())
+	auto iter = begin_mat();
+	while (iter != end_mat())
 	{
 		if (iter->second.x == oldid.x)
 		{
@@ -88,18 +88,18 @@ void NSRenderComp::name_change(const uivec2 & oldid, const uivec2 newid)
 /*!
 Get the resources that the component uses. The render comp uses a mesh and possibly multiple materials.
 */
-uivec2array NSRenderComp::resources()
+uivec2array nsrender_comp::resources()
 {
 	// Build map
 	uivec2array ret;
 
 	// only add resources if they are not 0
-	if (mMeshID != 0)
-		ret.push_back(mMeshID);
+	if (m_mesh_id != 0)
+		ret.push_back(m_mesh_id);
 
 	// Add all materials
-	auto iter = matBegin();
-	while (iter != matEnd())
+	auto iter = begin_mat();
+	while (iter != end_mat())
 	{
 		if (iter->second != 0) // only add if the submesh has a material assigned (it might not)
 			ret.push_back(iter->second);
@@ -109,7 +109,7 @@ uivec2array NSRenderComp::resources()
 	return ret;
 }
 
-void NSRenderComp::pup(nsfile_pupper * p)
+void nsrender_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -123,53 +123,53 @@ void NSRenderComp::pup(nsfile_pupper * p)
 	}
 }
 
-bool NSRenderComp::hasMaterial(uint32 pSubMeshIndex)
+bool nsrender_comp::has_material(uint32 pSubMeshIndex)
 {
-	return (mMats.find(pSubMeshIndex) != mMats.end());
+	return (m_mats.find(pSubMeshIndex) != m_mats.end());
 }
 
 
-void NSRenderComp::init()
+void nsrender_comp::init()
 {}
 
-uivec2uimap::iterator NSRenderComp::matBegin()
+uivec2uimap::iterator nsrender_comp::begin_mat()
 {
-	return mMats.begin();
+	return m_mats.begin();
 }
 
-uivec2uimap::const_iterator NSRenderComp::matBegin() const
+uivec2uimap::const_iterator nsrender_comp::begin_mat() const
 {
-	return mMats.begin();
+	return m_mats.begin();
 }
 
-uivec2uimap::iterator NSRenderComp::matEnd()
+uivec2uimap::iterator nsrender_comp::end_mat()
 {
-	return mMats.end();
+	return m_mats.end();
 }
 
-uivec2uimap::const_iterator NSRenderComp::matEnd() const
+uivec2uimap::const_iterator nsrender_comp::end_mat() const
 {
-	return mMats.end();
+	return m_mats.end();
 }
 
-bool NSRenderComp::removeMaterial(uint32 pSubMeshIndex)
+bool nsrender_comp::remove_material(uint32 pSubMeshIndex)
 {
-	if (!hasMaterial(pSubMeshIndex))
+	if (!has_material(pSubMeshIndex))
 		return false;
-	mMats.erase(pSubMeshIndex);
+	m_mats.erase(pSubMeshIndex);
 	return true;
 }
 
 
-bool NSRenderComp::removeMaterialAll(const uivec2 & toremove)
+bool nsrender_comp::remove_all_materials(const uivec2 & toremove)
 {
-	uivec2uimap::iterator iter = mMats.begin();
+	uivec2uimap::iterator iter = m_mats.begin();
 	bool ret = false;
-	while (iter != mMats.end())
+	while (iter != m_mats.end())
 	{
 		if (iter->second == toremove)
 		{
-			iter = mMats.erase(iter);
+			iter = m_mats.erase(iter);
 			ret = true;
 		}
 		else
@@ -179,11 +179,11 @@ bool NSRenderComp::removeMaterialAll(const uivec2 & toremove)
 }
 
 
-bool NSRenderComp::replaceMaterial(const uivec2 & oldid, const uivec2 & newid)
+bool nsrender_comp::replace_material(const uivec2 & oldid, const uivec2 & newid)
 {
-	uivec2uimap::iterator iter = mMats.begin();
+	uivec2uimap::iterator iter = m_mats.begin();
 	bool ret = false;
-	while (iter != mMats.end())
+	while (iter != m_mats.end())
 	{
 		if (iter->second == oldid)
 		{
@@ -196,37 +196,37 @@ bool NSRenderComp::replaceMaterial(const uivec2 & oldid, const uivec2 & newid)
 }
 
 
-bool NSRenderComp::setMaterial(uint32 pSubMeshIndex, const uivec2 & pMatID, bool pReplace)
+bool nsrender_comp::set_material(uint32 pSubMeshIndex, const uivec2 & pMatID, bool pReplace)
 {
-	if (hasMaterial(pSubMeshIndex))
+	if (has_material(pSubMeshIndex))
 	{
 		if (!pReplace)
 			return false;
-		mMats.at(pSubMeshIndex) = pMatID;
+		m_mats.at(pSubMeshIndex) = pMatID;
 		return true;
 	}
-	mMats[pSubMeshIndex] = pMatID;
+	m_mats[pSubMeshIndex] = pMatID;
 	return true;
 }
 
 
-void NSRenderComp::setCastShadow(bool pShadow)
+void nsrender_comp::set_cast_shadow(bool pShadow)
 {
-	mCastShadow = pShadow;
+	m_cast_shadow = pShadow;
 }
 
-void NSRenderComp::setMeshID(const uivec2 & pMeshID)
+void nsrender_comp::set_mesh_id(const uivec2 & pMeshID)
 {
-	mMeshID = pMeshID;
+	m_mesh_id = pMeshID;
 }
 
-NSRenderComp & NSRenderComp::operator=(const NSRenderComp & pRHSComp)
+nsrender_comp & nsrender_comp::operator=(const nsrender_comp & pRHSComp)
 {
-	mMeshID = pRHSComp.mMeshID;
-	mCastShadow = pRHSComp.mCastShadow;
+	m_mesh_id = pRHSComp.m_mesh_id;
+	m_cast_shadow = pRHSComp.m_cast_shadow;
 	
-	mMats.clear();
-	mMats.insert(pRHSComp.mMats.begin(), pRHSComp.mMats.end());
+	m_mats.clear();
+	m_mats.insert(pRHSComp.m_mats.begin(), pRHSComp.m_mats.end());
 	post_update(true);
 	return (*this);
 }

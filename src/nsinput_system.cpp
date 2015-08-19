@@ -16,7 +16,6 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 #include <nsinput_system.h>
 #include <nsevent.h>
 #include <nsevent_dispatcher.h>
-#include <nsinput_comp.h>
 #include <nsinput_map.h>
 #include <nsscene.h>
 
@@ -363,17 +362,6 @@ void nsinput_system::update()
 
 	if (scene == NULL)
 		return;
-
-	auto ents = scene->entities<NSInputComp>();
-	auto entIter = ents.begin();
-
-	// deactivate all actions
-	while (entIter != ents.end())
-	{
-		NSInputComp * inComp = (*entIter)->get<NSInputComp>();
-		inComp->setActivated(false);
-		++entIter;
-	}
 }
 
 bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)

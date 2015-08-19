@@ -148,7 +148,7 @@ void pup(PUPer & p, nsentity & ent)
 {
 	uint32 size = ent.count();
 
-	if (ent.has<NSTFormComp>())
+	if (ent.has<nstform_comp>())
 		size -= 1;
 
 	pup(p, size, "size");
@@ -168,7 +168,7 @@ void pup(PUPer & p, nsentity & ent)
 		auto iter = ent.m_components.begin();
 		while (iter != ent.m_components.end())
 		{
-			uint32 tform_typeid = nsengine.type_id(std::type_index(typeid(NSTFormComp)));
+			uint32 tform_typeid = nsengine.type_id(std::type_index(typeid(nstform_comp)));
 			if (iter->first != tform_typeid)
 			{
 				nsstring k = nsengine.guid(iter->first);

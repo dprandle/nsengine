@@ -3,9 +3,9 @@
 /*!
 \file nslightcomp.cpp
 
-\brief Definition file for NSLightComp class
+\brief Definition file for nslight_comp class
 
-This file contains all of the neccessary definitions for the NSLightComp class.
+This file contains all of the neccessary definitions for the nslight_comp class.
 
 \author Daniel Randle
 \date January 27 2013
@@ -20,200 +20,200 @@ This file contains all of the neccessary definitions for the NSLightComp class.
 #include <nsengine.h>
 #include <nsmesh_manager.h>
 
-NSLightComp::NSLightComp() : 
-mLightType(Point),
-mAttComp(),
-mIntensityComp(),
-mShadowDarkness(1.0f),
-mAngle(),
-mColor(1.0f, 1.0f, 1.0f),
-mCastShadows(true),
-mShadowSamples(0),
-mBoundingMeshID(0),
-mScaling(1.0f, 1.0f, 1.0f),
-mshadowclip(DEFAULT_Z_NEAR, DEFAULT_Z_FAR),
+nslight_comp::nslight_comp() : 
+m_light_type(l_point),
+m_att_comp(),
+m_intensity_comp(),
+m_shadow_darkness(1.0f),
+m_angle(),
+m_color(1.0f, 1.0f, 1.0f),
+m_cast_shadows(true),
+m_shadow_samples(0),
+m_bounding_mesh_id(0),
+m_scaling(1.0f, 1.0f, 1.0f),
+m_shadow_clip(DEFAULT_Z_NEAR, DEFAULT_Z_FAR),
 NSComponent()
 {}
 
-NSLightComp::~NSLightComp()
+nslight_comp::~nslight_comp()
 {}
 
-NSLightComp* NSLightComp::copy(const NSComponent * pToCopy)
+nslight_comp* nslight_comp::copy(const NSComponent * copy_)
 {
-	if (pToCopy == NULL)
+	if (copy_ == NULL)
 		return NULL;
-	const NSLightComp * comp = (const NSLightComp*)pToCopy;
+	const nslight_comp * comp = (const nslight_comp*)copy_;
 	(*this) = (*comp);
 	return this;
 }
 
-void NSLightComp::init()
+void nslight_comp::init()
 {}
 
-bool NSLightComp::castShadows() const
+bool nslight_comp::cast_shadows() const
 {
-	return mCastShadows;
+	return m_cast_shadows;
 }
 
-void NSLightComp::changeAtten(float constant, float lin, float exp)
+void nslight_comp::change_attenuation(float const_, float lin_, float exp_)
 {
-	setAtten(mAttComp + fvec3(constant,lin,exp));
+	set_attenuation(m_att_comp + fvec3(const_,lin_,exp_));
 }
 
-void NSLightComp::changeColor(float pRedAmount, float pGreenAmount, float pBlueAmount)
+void nslight_comp::change_color(float red_, float green_, float blue_)
 {
-	mColor += fvec3(pRedAmount, pGreenAmount, pBlueAmount);
+	m_color += fvec3(red_, green_, blue_);
 	post_update(true);
 }
 
-void NSLightComp::changeAngle(float pAmount)
+void nslight_comp::change_angle(float amount_)
 {
-	setAngle(mAngle + pAmount);
+	set_angle(m_angle + amount_);
 }
 
-void NSLightComp::changeCutoff(float pAmount)
+void nslight_comp::change_cutoff(float amount_)
 {
 	float cut = cutoff();
-	cut += pAmount;
+	cut += amount_;
 	cut = clampf(cut, -1.0f, 1.0f);
-	setCutoff(cut);
+	set_cutoff(cut);
 }
 
-void NSLightComp::changeDistance(float pAmount, Adjustment pAdjustment)
+void nslight_comp::change_distance(float amount_, adjustment_t adj_)
 {
-	setDistance(mScaling.z + pAmount, pAdjustment);
+	set_distance(m_scaling.z + amount_, adj_);
 }
 
-void NSLightComp::changeIntensity(float diffuse, float ambient, Adjustment pAdjustment)
+void nslight_comp::change_intensity(float diff_, float amb_, adjustment_t adj_)
 {
-	setIntensity(mIntensityComp + fvec2(diffuse, ambient), pAdjustment);
+	set_intensity(m_intensity_comp + fvec2(diff_, amb_), adj_);
 }
 
-void NSLightComp::changeRadius(float pAmount)
+void nslight_comp::change_radius(float amount_)
 {
-	setRadius(mScaling.x + pAmount);
+	set_radius(m_scaling.x + amount_);
 }
 
-void NSLightComp::changeShadowDarkness(float pAmount)
+void nslight_comp::change_shadow_darkness(float amount_)
 {
-	if (pAmount+mShadowDarkness < SHADOW_LOWER_LIMIT)
-		mShadowDarkness = 0.0f;
-	else if (pAmount+mShadowDarkness > SHADOW_UPPER_LIMIT)
-		mShadowDarkness = 1.0f;
+	if (amount_+m_shadow_darkness < SHADOW_LOWER_LIMIT)
+		m_shadow_darkness = 0.0f;
+	else if (amount_+m_shadow_darkness > SHADOW_UPPER_LIMIT)
+		m_shadow_darkness = 1.0f;
 	else
-		mShadowDarkness += pAmount;
+		m_shadow_darkness += amount_;
 }
 
-const fvec3 & NSLightComp::atten() const
+const fvec3 & nslight_comp::atten() const
 {
-	return mAttComp;
+	return m_att_comp;
 }
 
-const uivec2 & NSLightComp::meshid() const
+const uivec2 & nslight_comp::mesh_id() const
 {
-	return mBoundingMeshID;
+	return m_bounding_mesh_id;
 }
 
-void NSLightComp::name_change(const uivec2 & oldid, const uivec2 newid)
+void nslight_comp::name_change(const uivec2 & old_id_, const uivec2 new_id_)
 {
-	if (mBoundingMeshID.x == oldid.x)
+	if (m_bounding_mesh_id.x == old_id_.x)
 	{
-		mBoundingMeshID.x = newid.x;
-		if (mBoundingMeshID.y == oldid.y)
-			mBoundingMeshID.y = newid.y;
+		m_bounding_mesh_id.x = new_id_.x;
+		if (m_bounding_mesh_id.y == old_id_.y)
+			m_bounding_mesh_id.y = new_id_.y;
 	}
 }
 
-const fvec3 & NSLightComp::color() const
+const fvec3 & nslight_comp::color() const
 {
-	return mColor;
+	return m_color;
 }
 
-float NSLightComp::angle() const
+float nslight_comp::angle() const
 {
-	return mAngle;
+	return m_angle;
 }
 
 
-float NSLightComp::cutoff() const
+float nslight_comp::cutoff() const
 {
-	return cosf(radians(mAngle));
+	return cosf(radians(m_angle));
 }
 
-float NSLightComp::distance()
+float nslight_comp::distance()
 {
-	return mScaling.z;
+	return m_scaling.z;
 }
 
-NSLightComp::LightType NSLightComp::type() const
+nslight_comp::light_t nslight_comp::type() const
 {
-	return mLightType;
+	return m_light_type;
 }
 
-const fvec2 & NSLightComp::intensity() const
+const fvec2 & nslight_comp::intensity() const
 {
-	return mIntensityComp;
+	return m_intensity_comp;
 }
 
-float NSLightComp::radius() const
+float nslight_comp::radius() const
 {
-	return mScaling.x;
+	return m_scaling.x;
 }
 
-const fvec3 & NSLightComp::scaling() const
+const fvec3 & nslight_comp::scaling() const
 {
-	return mScaling;
+	return m_scaling;
 }
 
-float NSLightComp::shadowDarkness() const
+float nslight_comp::shadow_darkness() const
 {
-	return mShadowDarkness;
+	return m_shadow_darkness;
 }
 
-const fmat4 & NSLightComp::pov(uint32 pIndex) const
+const fmat4 & nslight_comp::pov(uint32 index_) const
 {
-	return m_owner->get<NSTFormComp>()->pov(pIndex);
+	return m_owner->get<nstform_comp>()->pov(index_);
 }
 
-const int32 & NSLightComp::shadowSamples() const
+const int32 & nslight_comp::shadow_samples() const
 {
-	return mShadowSamples;
+	return m_shadow_samples;
 }
 
-const fmat4 & NSLightComp::transform(uint32 pIndex)
+const fmat4 & nslight_comp::transform(uint32 index_)
 {
-	NSTFormComp * tc = m_owner->get<NSTFormComp>();
+	nstform_comp * tc = m_owner->get<nstform_comp>();
 	if (tc == NULL)
-		return tmpret.set_identity();
-	tmpret.set(rotation_mat3(tc->orientation(pIndex)) % mScaling);
-	tmpret.set_column(3, tc->lpos(pIndex).x, tc->lpos(pIndex).y, tc->lpos(pIndex).z, 1);
-	return tmpret;
+		return m_tmp_ret.set_identity();
+	m_tmp_ret.set(rotation_mat3(tc->orientation(index_)) % m_scaling);
+	m_tmp_ret.set_column(3, tc->lpos(index_).x, tc->lpos(index_).y, tc->lpos(index_).z, 1);
+	return m_tmp_ret;
 }
 
 /*!
 Get the resources that the component uses. The light comp uses a bounding mesh.
 */
-uivec2array NSLightComp::resources()
+uivec2array nslight_comp::resources()
 {
 	// Build map
 	uivec2array ret;
 
 	// only add if not 0
-	if (mBoundingMeshID != 0)
-		ret.push_back(mBoundingMeshID);
+	if (m_bounding_mesh_id != 0)
+		ret.push_back(m_bounding_mesh_id);
 
 	return ret;
 }
 
-void NSLightComp::setAtten(const fvec3 & pAttComp)
+void nslight_comp::set_attenuation(const fvec3 & att_)
 {
-	mAttComp = pAttComp;
-	_updateMeshLength();
-	_updateMeshRadius();
+	m_att_comp = att_;
+	_update_mesh_length();
+	_update_mesh_radius();
 	post_update(true);
 }
 
-void NSLightComp::pup(nsfile_pupper * p)
+void nslight_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -227,148 +227,148 @@ void NSLightComp::pup(nsfile_pupper * p)
 	}
 }
 
-void NSLightComp::setAtten(float pConst, float pLin, float pExp)
+void nslight_comp::set_attenuation(float const_, float lin_, float exp_)
 {
-	mAttComp.set(pConst, pLin, pExp);
-	_updateMeshLength();
-	_updateMeshRadius();
+	m_att_comp.set(const_, lin_, exp_);
+	_update_mesh_length();
+	_update_mesh_radius();
 	post_update(true);
 }
 
-void NSLightComp::setMeshID(const uivec2 & pID)
+void nslight_comp::set_mesh_id(const uivec2 & mesh_id_)
 {
-	mBoundingMeshID = pID;
+	m_bounding_mesh_id = mesh_id_;
 	post_update(true);
 }
 
-void NSLightComp::setCastShadows(bool pCastShadows)
+void nslight_comp::set_cast_shadows(bool cast_shadows_)
 {
-	mCastShadows = pCastShadows;
+	m_cast_shadows = cast_shadows_;
 	post_update(true);
 }
 
-void NSLightComp::setColor(const fvec3 & pColor)
+void nslight_comp::set_color(const fvec3 & col_)
 {
-	mColor = pColor;
+	m_color = col_;
 	post_update(true);
 }
 
-void NSLightComp::setColor(float pRed, float pGreen, float pBlue)
+void nslight_comp::set_color(float red_, float green_, float blue_)
 {
-	setColor(fvec3(pRed, pGreen, pBlue));
+	set_color(fvec3(red_, green_, blue_));
 }
 
-void NSLightComp::setAngle(float angle)
+void nslight_comp::set_angle(float angle_)
 {
-	mAngle = clampf(angle,0.0f,180.0f);
-	_updateMeshRadius();
+	m_angle = clampf(angle_,0.0f,180.0f);
+	_update_mesh_radius();
 	post_update(true);
 }
 
-void NSLightComp::setCutoff(float cutoff)
+void nslight_comp::set_cutoff(float cutoff_)
 {
-	cutoff = clampf(cutoff, -1.0f, 1.0f);
-	setAngle(degrees(acosf(cutoff)));
+	cutoff_ = clampf(cutoff_, -1.0f, 1.0f);
+	set_angle(degrees(acosf(cutoff_)));
 }
 
-void NSLightComp::setDistance(float pDistance, Adjustment pAdjustment)
+void nslight_comp::set_distance(float dist_, adjustment_t adj_)
 {
-	if (mLightType == Spot)
+	if (m_light_type == l_spot)
 	{
-		mScaling.z = pDistance;
-		_updateMeshRadius();
+		m_scaling.z = dist_;
+		_update_mesh_radius();
 	}
-	else if (mLightType == Point)
-		mScaling.set(pDistance, pDistance, pDistance);
+	else if (m_light_type == l_point)
+		m_scaling.set(dist_, dist_, dist_);
 
-	_updateAttComp(pAdjustment);
+	_update_atten_comp(adj_);
 	post_update(true);
 }
 
-void NSLightComp::setType(LightType pType)
+void nslight_comp::set_type(light_t type_)
 {
-	mLightType = pType;
+	m_light_type = type_;
 	post_update(true);
 }
 
-void NSLightComp::setIntensity(const fvec2 & intensity, Adjustment pAdjustment)
+void nslight_comp::set_intensity(const fvec2 & intensity_, adjustment_t adj_)
 {
-	mIntensityComp = intensity;
-	_updateAttComp(pAdjustment);
+	m_intensity_comp = intensity_;
+	_update_atten_comp(adj_);
 	post_update(true);
 }
 
-void NSLightComp::setIntensity(float pDiffuse, float pAmbient, Adjustment pAdjustment)
+void nslight_comp::set_intensity(float diff_, float amb_, adjustment_t adj_)
 {
-	setIntensity(fvec2(pDiffuse, pAmbient),pAdjustment);
+	set_intensity(fvec2(diff_, amb_),adj_);
 }
 
-void NSLightComp::setRadius(float pRadius)
+void nslight_comp::set_radius(float rad_)
 {
-	if (mLightType == Spot)
+	if (m_light_type == l_spot)
 	{
-		float pAngle = degrees(atan2f(pRadius, mScaling.z));
-		setAngle(pAngle);
+		float pAngle = degrees(atan2f(rad_, m_scaling.z));
+		set_angle(pAngle);
 	}
-	else if (mLightType == Point)
-		setDistance(pRadius);
+	else if (m_light_type == l_point)
+		set_distance(rad_);
 }
 
-void NSLightComp::setShadowDarkness(float pVal)
+void nslight_comp::set_shadow_darkness(float val_)
 {
-	if (pVal < SHADOW_LOWER_LIMIT)
-		mShadowDarkness = 0.0f;
-	else if (pVal > SHADOW_UPPER_LIMIT)
-		mShadowDarkness = 1.0f;
+	if (val_ < SHADOW_LOWER_LIMIT)
+		m_shadow_darkness = 0.0f;
+	else if (val_ > SHADOW_UPPER_LIMIT)
+		m_shadow_darkness = 1.0f;
 	else
-		mShadowDarkness = pVal;
+		m_shadow_darkness = val_;
 }
 
-void NSLightComp::setShadowSamples(int32 pNumSamples)
+void nslight_comp::set_shadow_samples(int32 samples_)
 {
-	mShadowSamples = pNumSamples;
+	m_shadow_samples = samples_;
 	post_update(true);
 }
 
-NSLightComp & NSLightComp::operator=(const NSLightComp & pRHSComp)
+nslight_comp & nslight_comp::operator=(const nslight_comp & rhs_)
 {
-	mLightType = pRHSComp.mLightType;
-	mAttComp = pRHSComp.mAttComp;
-	mIntensityComp = pRHSComp.mIntensityComp;
-	mAngle = pRHSComp.mAngle;
-	mColor = pRHSComp.mColor;
-	mBoundingMeshID = pRHSComp.mBoundingMeshID;
-	mShadowSamples = pRHSComp.mShadowSamples;
-	mShadowDarkness = pRHSComp.mShadowDarkness;
+	m_light_type = rhs_.m_light_type;
+	m_att_comp = rhs_.m_att_comp;
+	m_intensity_comp = rhs_.m_intensity_comp;
+	m_angle = rhs_.m_angle;
+	m_color = rhs_.m_color;
+	m_bounding_mesh_id = rhs_.m_bounding_mesh_id;
+	m_shadow_samples = rhs_.m_shadow_samples;
+	m_shadow_darkness = rhs_.m_shadow_darkness;
 	post_update(true);
 	return (*this);
 }
 
-void NSLightComp::_updateMeshRadius()
+void nslight_comp::_update_mesh_radius()
 {
-	if (mLightType == Spot)
+	if (m_light_type == l_spot)
 	{
-		float scaleXY = tanf(radians(mAngle)) * mScaling.z;
-		mScaling.x = mScaling.y = scaleXY;
+		float scaleXY = tanf(radians(m_angle)) * m_scaling.z;
+		m_scaling.x = m_scaling.y = scaleXY;
 	}
 }
 
-void NSLightComp::_updateMeshLength()
+void nslight_comp::_update_mesh_length()
 {
-	float c = mAttComp.x - mIntensityComp.x / (LIGHT_CUTOFF);
-	float b = mAttComp.y;
-	float a = mAttComp.z;
+	float c = m_att_comp.x - m_intensity_comp.x / (LIGHT_CUTOFF);
+	float b = m_att_comp.y;
+	float a = m_att_comp.z;
 	float ans = (-b* + sqrt(b*b - 4*a*c)) / (2 * a);
-	if (mLightType == Spot)
-		mScaling.z = ans;
-	else if (mLightType == Point)
-		mScaling.set(ans, ans, ans);
+	if (m_light_type == l_spot)
+		m_scaling.z = ans;
+	else if (m_light_type == l_point)
+		m_scaling.set(ans, ans, ans);
 }
 
-void NSLightComp::_updateAttComp(Adjustment pAdjustment)
+void nslight_comp::_update_atten_comp(adjustment_t adj_)
 {
-	if (pAdjustment == Linear)
-		mAttComp.y = 1.0f / (LIGHT_CUTOFF * mScaling.z) - mAttComp.z * mScaling.z - mAttComp.x / mScaling.z;
+	if (adj_ == a_linear)
+		m_att_comp.y = 1.0f / (LIGHT_CUTOFF * m_scaling.z) - m_att_comp.z * m_scaling.z - m_att_comp.x / m_scaling.z;
 	else
-		mAttComp.z = 1.0f / (LIGHT_CUTOFF * mScaling.z * mScaling.z) - mAttComp.y / mScaling.z - mAttComp.x / (mScaling.z * mScaling.z);
+		m_att_comp.z = 1.0f / (LIGHT_CUTOFF * m_scaling.z * m_scaling.z) - m_att_comp.y / m_scaling.z - m_att_comp.x / (m_scaling.z * m_scaling.z);
 }

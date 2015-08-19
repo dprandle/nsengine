@@ -1,17 +1,17 @@
 /*! 
 	\file nstform_comp.h
 	
-	\brief Header file for NSTFormComp class
+	\brief Header file for nstform_comp class
 
-	This file contains all of the neccessary declarations for the NSTFormComp class.
+	This file contains all of the neccessary declarations for the nstform_comp class.
 
 	\author Daniel Randle
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSTFORMCOMP_H
-#define NSTFORMCOMP_H
+#ifndef NSTFORM_COMP_H
+#define NSTFORM_COMP_H
 
 #include <nsmath.h>
 #include <nscomponent.h>
@@ -22,350 +22,348 @@
 
 class nstimer;
 
-class NSTFormComp : public NSComponent
+class nstform_comp : public NSComponent
 {
 public:
-	enum Axis {
-		XAxis,
-		YAxis,
-		ZAxis
+	enum world_axis {
+		axis_x,
+		axis_y,
+		axis_z
 	};
 
-	enum DirVec {
-		Right,
-		Up,
-		Target
+	enum dir_vec {
+		dir_right,
+		dir_up,
+		dir_target
 	};
 
-	enum HiddenState
+	enum h_state
 	{
-		LayerHide = 0x01,
-		ObjectHide = 0x02,
-		Show = 0x04,
-		Hide = 0x08
+		hide_layer = 0x01,
+		hide_object = 0x02,
+		hide_none = 0x04,
+		hide_all = 0x08
 	};
 
-	struct XFBBuffer
+	struct xfb_buffer
 	{
-		XFBBuffer():
-			mXFBVAO(NULL),
-			mTFFeedbackObj(NULL),
-			mXBWorldPosBuf(NULL),
-			mXBTexCoordBuf(NULL),
-			mXBNormalBuf(NULL),
-			mXBTangentBuf(NULL),
-			mAllocAmount(0),
-			mInstanceCount(0)
+		xfb_buffer():
+			xfb_vao(NULL),
+			xfb_obj(NULL),
+			xfb_pos_buf(NULL),
+			xfb_texcoord_buf(NULL),
+			xfb_normal_buf(NULL),
+			xfb_tangent_buf(NULL),
+			alloc_amnt(0),
+			instance_count(0)
 		{}
 
-		nsvertex_array_object * mXFBVAO;
-		nsxfb_object * mTFFeedbackObj;
-		nsbuffer_object * mXBWorldPosBuf;
-		nsbuffer_object * mXBTexCoordBuf;
-		nsbuffer_object * mXBNormalBuf;
-		nsbuffer_object * mXBTangentBuf;
-		uint32 mAllocAmount;
-		uint32 mInstanceCount;
+		nsvertex_array_object * xfb_vao;
+		nsxfb_object * xfb_obj;
+		nsbuffer_object * xfb_pos_buf;
+		nsbuffer_object * xfb_texcoord_buf;
+		nsbuffer_object * xfb_normal_buf;
+		nsbuffer_object * xfb_tangent_buf;
+		uint32 alloc_amnt;
+		uint32 instance_count;
 	};
 
-	typedef std::vector<XFBBuffer> XFBBufferArray;
+	typedef std::vector<xfb_buffer> xfb_buffer_array;
 
-	struct XFBData
+	struct xfb_data
 	{
-		XFBData() :
-			mXFBBuffers(),
-			mUpdate(true)
+		xfb_data() :
+			xfb_buffers(),
+			update(true)
 		{}
 
-		XFBBufferArray mXFBBuffers;
-		bool mUpdate;
+		xfb_buffer_array xfb_buffers;
+		bool update;
 	};
 
-	struct InstTrans
+	struct instance_tform
 	{
-		InstTrans() :
-		mHiddenState(0),
-		mOrientation(),
-		mPosition(),
-		mScaling(1.0f, 1.0f, 1.0f),
-		mParentTransform(),
-		mPOVTransform(),
-		mTransform(),
-		mUpdate(true),
-		mRenderID(0),
-		mSnapToGrid(true),
-		mParentEnabled(false),
-		mParentID()
+		instance_tform() :
+		hidden_state(0),
+		orient(),
+		posistion(),
+		scaling(1.0f, 1.0f, 1.0f),
+		parent_tform(),
+		inv_tform(),
+		tform(),
+		update(true),
+		render_id(0),
+		snap_to_grid(true),
+		parent_enabled(false),
+		parent_id()
 		{}
 
 		void compute();
 
-		int32 mHiddenState;
-		fquat mOrientation;
-		fvec3 mPosition;
-		fvec3 mScaling;
-		fmat4 mParentTransform;
-		fmat4 mPOVTransform;
-		fmat4 mTransform;
-		bool mUpdate;
-		uint32 mRenderID;
-		bool mSnapToGrid;
-		bool mParentEnabled;
-		uivec3 mParentID;
+		int32 hidden_state;
+		fquat orient;
+		fvec3 posistion;
+		fvec3 scaling;
+		fmat4 parent_tform;
+		fmat4 inv_tform;
+		fmat4 tform;
+		bool update;
+		uint32 render_id;
+		bool snap_to_grid;
+		bool parent_enabled;
+		uivec3 parent_id;
 	};
 
-	typedef std::vector<InstTrans> InstanceVec;
+	typedef std::vector<instance_tform> instance_vec;
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSTFormComp & tc);
+	friend void pup(PUPer & p, nstform_comp & tc);
 
-	NSTFormComp();
+	nstform_comp();
 
-	~NSTFormComp();
+	~nstform_comp();
 
 	uint32 add();
 
-	uint32 add(const InstTrans & trans);
+	uint32 add(const instance_tform & trans);
 
 	uint32 add(uint32 pHowMany);
 
-	bool bufferResize() const;
+	bool buffer_resized() const;
 
-	void changeScale(const fvec3 & pAmount, uint32 pTransformID=0);
+	void change_scale(const fvec3 & amount_, uint32 tform_id_=0);
 
-	void changeScale(float pX, float pY, float pZ, uint32 pTransformID = 0);
+	void change_scale(float x_, float y_, float z_, uint32 tform_id_ = 0);
 
-	void computeTransform(uint32 pTransformID = 0);
+	void compute_transform(uint32 tform_id_ = 0);
 
-	NSTFormComp * copy(const NSComponent* pToCopy);
+	nstform_comp * copy(const NSComponent* copy_);
 
-	void enableParent(bool pEnable, uint32 pTransformID = 0);
+	void enable_parent(bool enable_, uint32 tform_id_ = 0);
 
-	bool enableTransformFeedback(bool pEnable);
+	bool enable_xfb(bool enable_);
 
-	const fvec3 dirVec(DirVec pDirection, uint32 pTransformID = 0) const;
+	const fvec3 dvec(dir_vec dir_, uint32 tform_id_ = 0) const;
 
-	nsbuffer_object * transformBuffer();
+	nsbuffer_object * transform_buffer();
 
-	nsbuffer_object * transformIDBuffer();
+	nsbuffer_object * transform_id_buffer();
 
-	const InstanceVec & transformVec() const;
+	const instance_vec & transform_array() const;
 
-	const fquat & orientation(uint32 pTransformID = 0) const;
+	const fquat & orientation(uint32 tform_id_ = 0) const;
 
-	const uivec3 & parentid(uint32 pTransformID = 0) const;
+	const uivec3 & parent_id(uint32 tform_id_ = 0) const;
 
-	const fmat4 & parent(uint32 pTransformID = 0) const;
+	const fmat4 & parent(uint32 tform_id_ = 0) const;
 
-	const fvec3 & lpos(uint32 pTransformID = 0) const;
+	const fvec3 & lpos(uint32 tform_id_ = 0) const;
 
-	const fmat4 & pov(uint32 pTransformID = 0) const;
+	const fmat4 & pov(uint32 tform_id_ = 0) const;
 
-	uint32 renderID(uint32 pTransformID) const;
+	uint32 render_id(uint32 tform_id_) const;
 
-	const fvec3 & scaling(uint32 pTransformID = 0) const;
+	const fvec3 & scaling(uint32 tform_id_ = 0) const;
 
-	const fmat4 & transform(uint32 pTransformID = 0) const;
+	const fmat4 & transform(uint32 tform_id_ = 0) const;
 
-	int32 hiddenState(uint32 pTransformID = 0) const;
+	int32 hidden_state(uint32 tform_id_ = 0) const;
 
-	InstTrans & instTrans(uint32 pTransformID = 0);
+	instance_tform & inst_transorm(uint32 tform_id_ = 0);
 
 	uint32 count() const;
 
-	XFBData * xfbData();
+	xfb_data * xfb();
 
-	uint32 visibleCount() const;
+	uint32 visible_count() const;
 
-	fvec3 wpos(uint32 pTransformID = 0);
+	fvec3 wpos(uint32 tform_id_ = 0);
 
 	void init();
 
-	bool snapped(uint32 pTransformID = 0) const;
+	bool snapped(uint32 tform_id_ = 0) const;
 
-	bool calcLocalTForm(uint32 pTransformID = 0) const;
+	bool calc_local_transform(uint32 tform_id_ = 0) const;
 
-	bool parentEnabled(uint32 pTransformID = 0) const;
+	bool parent_enabled(uint32 tform_id_ = 0) const;
 
-	bool transformFeedback();
+	bool xfb_enabled();
 
-	const bool transUpdate(uint32 pTransformID = 0) const;
+	bool transform_update(uint32 tform_id_ = 0) const;
 
 	virtual void pup(nsfile_pupper * p);
 
 	void release();
 
-	uint32 remove(uint32 pTransformID);
+	uint32 remove(uint32 tform_id_);
 
-	uint32 remove(uint32 pFirst, uint32 pLast);
+	uint32 remove(uint32 first_, uint32 last_);
 
-	void rotate(Axis pAxis, float pAngle, uint32 pTransformID);
+	void rotate(world_axis axis_, float angle_, uint32 tform_id_);
 
-	void rotate(Axis pAxis, float pAngle);
+	void rotate(world_axis axis_, float angle_);
 
-	void rotate(const fvec4 & axisAngle, uint32 pTransformID);
+	void rotate(const fvec4 & axis_angle_, uint32 tform_id_);
 
-	void rotate(const fvec4 & axisAngle);
+	void rotate(const fvec4 & axis_angle_);
 
-	void rotate(const fvec3 & euler);
+	void rotate(const fvec3 & euler_);
 
-	void rotate(const fvec3 & euler, uint32 pTransformID);
+	void rotate(const fvec3 & euler_, uint32 tform_id_);
 
-	void rotate(const fquat & pQuat, uint32 pTransformID);
+	void rotate(const fquat & quat_, uint32 tform_id_);
 
-	void rotate(const fquat & pQuat);
+	void rotate(const fquat & quat_);
 
-	void rotate(DirVec dir, float angle, uint32 tformid);
+	void rotate(dir_vec dir_, float angle_, uint32 tform_id_);
 
-	void rotate(DirVec dir, float angle);
+	void rotate(dir_vec dir_, float angle_);
 
-	void scale(const fvec3 & pAmount, uint32 pTransformID);
+	void scale(const fvec3 & amount_, uint32 tform_id_);
 
-	void scale(const fvec3 & pAmount);
+	void scale(const fvec3 & amount_);
 
-	void scale(float pX, float pY, float pZ, uint32 pTransformID);
+	void scale(float x_, float y_, float z_, uint32 tform_id_);
 
-	void scale(float pX, float pY, float pZ);
+	void scale(float x_, float y_, float z_);
 
-	void setBufferResize(bool pResize);
+	void set_buffer_resize(bool resize_);
 
-	void enableSnap(bool pSnap, uint32 pTransformID = 0);
+	void enable_snap(bool snap_, uint32 tform_id_ = 0);
 
-	void enableSnap(bool pSnap);
+	void enable_snap(bool snap_);
 
-	void setHiddenState(HiddenState pState, bool pEnable, uint32 pTransformID);
+	void set_hidden_state(h_state state_, bool enable_, uint32 tform_id_);
 
-	void setHiddenState(HiddenState pState, bool pEnable);
+	void set_hidden_state(h_state state_, bool enable_);
 
-	void setInstTrans(const InstTrans & pInsT, uint32 pTransformID);
+	void set_instance_tform(const instance_tform & inst_tform_, uint32 tform_id_);
 
-	void setInstTrans(const InstTrans & pInsT);
+	void set_instance_tform(const instance_tform & inst_tform_);
 
-	void setOrientation(const fquat & pOrientation, uint32 pTransformID);
+	void set_orientation(const fquat & ornt_, uint32 tform_id_);
 
-	void setOrientation(const fquat & pOrientation);
+	void set_orientation(const fquat & ornt_);
 
-	void setParent(const fmat4 & pTransform, uint32 pTransformID);
+	void set_parent(const fmat4 & tform_, uint32 tform_id_);
 
-	void setParent(const fmat4 & pTransform);
+	void set_parent(const fmat4 & tform_);
 
-	void setParentID(const uivec3 & pParentID, uint32 pTransformID);
+	void set_parent_id(const uivec3 & parent_id_, uint32 tform_id_);
 
-	void setParentID(const uivec3 & pParentID);
+	void set_parent_id(const uivec3 & parent_id_);
 
-	void setpos(const fvec3 & pPosition, uint32 pTransformID);
+	void set_pos(const fvec3 & pos_, uint32 tform_id_);
 
-	void setpos(const fvec3 & pPosition);
+	void set_pos(const fvec3 & pos_);
 
-	void setRenderID(uint32 pRenderID, uint32 pTransformID);
+	void set_render_id(uint32 render_id_, uint32 tform_id_);
 
-	void setRenderID(uint32 pRenderID);
+	void set_render_id(uint32 render_id_);
 
-	void setScale(const fvec3 & pScaling, uint32 pTransformID);
+	void set_scale(const fvec3 & scaling_, uint32 tform_id_);
 
-	void setScale(const fvec3 & pScaling);
+	void set_scale(const fvec3 & scaling_);
 
-	void setTransUpdate(bool pUpdate, uint32 pTransformID);
+	void set_instance_update(bool update_, uint32 tform_id_);
 
-	void setTransUpdate(bool pUpdate);
+	void set_instance_update(bool update_);
 
-	void post_update(bool pUpdate);
+	void post_update(bool update_);
 
-	void setVisibleTransformCount(uint32 pCount);
+	void set_visible_instance_count(uint32 count_);
 
-	void snap(uint32 pTransformID);
+	void snap(uint32 tform_id_);
 
 	void snap();
 
-	void snapX(uint32 pTransformID);
+	void snap_x(uint32 tform_id_);
 
-	void snapX();
+	void snap_x();
 
-	void snapY(uint32 pTransformID);
+	void snap_y(uint32 tform_id_);
 
-	void snapY();
+	void snap_y();
 
-	void snapZ(uint32 pTransformID);
+	void snap_z(uint32 tform_id_);
 
-	void snapZ();
+	void snap_z();
 
-	void toggleGridSnap(uint32 pTransformID);
+	void toggle_snap(uint32 tform_id_);
 
-	void toggleGridSnap();
+	void toggle_snap();
 
-	void toggleHiddenState(HiddenState pState, uint32 pTransformID);
+	void toggle_hidden_state(h_state state_, uint32 tform_id_);
 
-	void toggleHiddenState(HiddenState pState);
+	void toggle_hidden_state(h_state state_);
 
-	void translate(const fvec3 & pAmount, uint32 pTransformID);
+	void translate(const fvec3 & amount_, uint32 tform_id_);
 
-	void translate(const fvec3 & pAmount);
+	void translate(const fvec3 & amount_);
 
-	void translate(float pX, float pY, float pZ, uint32 pTransformID);
+	void translate(float x_, float y_, float z_, uint32 tform_id_);
 
-	void translate(float pX, float pY, float pZ);
+	void translate(float x_, float y_, float z_);
 
-	void translate(DirVec pDirection, float pAmount, uint32 pTransformID);
+	void translate(dir_vec dir_, float amount_, uint32 tform_id_);
 
-	void translate(DirVec pDirection, float pAmount);
+	void translate(dir_vec dir_, float amount_);
 
-	void translate(Axis pDirection, float pAmount, uint32 pTransformID);
+	void translate(world_axis dir_, float amount_, uint32 tform_id_);
 
-	void translate(Axis pDirection, float pAmount);
+	void translate(world_axis dir_, float amount_);
 
-	void translateX(float pAmount, uint32 pTransformID);
+	void translate_x(float amount_, uint32 tform_id_);
 
-	void translateX(float pAmount);
+	void translate_x(float amount_);
 
-	void translateY(float pAmount, uint32 pTransformID);
+	void translate_y(float amount_, uint32 tform_id_);
 
-	void translateY(float pAmount);
+	void translate_y(float amount_);
 
-	void translateZ(float pAmount, uint32 pTransformID );
+	void translate_z(float amount_, uint32 tform_id_ );
 
-	void translateZ(float pAmount);
+	void translate_z(float amount_);
 
-	NSTFormComp & operator=(const NSTFormComp & pRHSComp);
+	nstform_comp & operator=(const nstform_comp & rhs_);
 
 private:
-	InstanceVec mTransforms;
-	nsbuffer_object mTransformBuffer;
-	nsbuffer_object mTransformIDBuffer;
-
-	XFBData mXFBData;
-	
-	bool mBufferResize;
-	bool mTransformFB;
-	uint32 mVisibleCount;
+	instance_vec m_tforms;
+	nsbuffer_object m_tform_buffer;
+	nsbuffer_object m_tform_id_buffer;
+	xfb_data m_xfb_data;
+	bool m_buffer_resized;
+	bool m_xfb;
+	uint32 m_visible_count;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSTFormComp & tc)
+void pup(PUPer & p, nstform_comp & tc)
 {
-	pup(p, tc.mTransforms, "transforms");
-	pup(p, tc.mTransformFB, "transformFB");
+	pup(p, tc.m_tforms, "tforms");
+	pup(p, tc.m_xfb, "xfb");
 	tc.post_update(true);
-	tc.mBufferResize = true;
-	if (tc.mTransformFB)
+	tc.m_buffer_resized = true;
+	if (tc.m_xfb)
 	{
-		tc.enableTransformFeedback(false);
-		tc.enableTransformFeedback(true);
+		tc.enable_xfb(false);
+		tc.enable_xfb(true);
 	}
 }
 
 template <class PUPer>
-void pup(PUPer & p, NSTFormComp::InstTrans & iv, const nsstring & varName)
+void pup(PUPer & p, nstform_comp::instance_tform & iv, const nsstring & varName)
 {
-	pup(p, iv.mHiddenState, varName + ".mHiddenState");
-	pup(p, iv.mOrientation, varName + ".mOrientation");
-	pup(p, iv.mPosition, varName + ".mPosition");
-	pup(p, iv.mScaling, varName + ".mScaling");
-	pup(p, iv.mParentTransform, varName + ".mParentTransform");
-	pup(p, iv.mPOVTransform, varName + ".mPOVTransform");
-	pup(p, iv.mTransform, varName + ".mTransform");
-	pup(p, iv.mRenderID, varName + ".mRenderID");
-	pup(p, iv.mSnapToGrid, varName + ".mSnapToGrid");
-	pup(p, iv.mParentEnabled, varName + ".mParentEnabled");
-	pup(p, iv.mParentID, varName + ".mParentID");
+	pup(p, iv.hidden_state, varName + ".hidden_state");
+	pup(p, iv.orient, varName + ".orient");
+	pup(p, iv.posistion, varName + ".position");
+	pup(p, iv.scaling, varName + ".scaling");
+	pup(p, iv.parent_tform, varName + ".parent_tform");
+	pup(p, iv.inv_tform, varName + ".inv_tform");
+	pup(p, iv.tform, varName + ".tform");
+	pup(p, iv.render_id, varName + ".render_id");
+	pup(p, iv.snap_to_grid, varName + ".snap_to_grid");
+	pup(p, iv.parent_enabled, varName + ".parent_enabled");
+	pup(p, iv.parent_id, varName + ".parent_id");
 }
 #endif

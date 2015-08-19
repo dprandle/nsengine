@@ -1,49 +1,49 @@
 /*!
 \file nsoccupy_comp.h
 
-\brief Header file for NSOccupyComp class
+\brief Header file for nsoccupy_comp class
 
-This file contains all of the neccessary declarations for the NSOccupyComp class.
+This file contains all of the neccessary declarations for the nsoccupy_comp class.
 
 \author Daniel Randle
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSOCCUPYCOMP_H
-#define NSOCCUPYCOMP_H
+#ifndef NSOCCUPY_COMP_H
+#define NSOCCUPY_COMP_H
 
 #include <nscomponent.h>
 #include <nsmath.h>
 
-class NSOccupyComp : public NSComponent
+class nsoccupy_comp : public NSComponent
 {
 public:
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSOccupyComp & oc);
+	friend void pup(PUPer & p, nsoccupy_comp & oc);
 
-	NSOccupyComp();
+	nsoccupy_comp();
 
-	virtual ~NSOccupyComp();
+	virtual ~nsoccupy_comp();
 
-	bool add(int32 x, int32 y, int32 z);
+	bool add(int32 x_, int32 y_, int32 z_);
 
-	bool add(const ivec3 & pGridPos);
+	bool add(const ivec3 & grid_pos_);
 
 	ivec3array::iterator begin();
 
-	void build(const nsbounding_box & pBox);
+	void build(const nsbounding_box & box_);
 
-	bool contains(int32 x, int32 y, int32 z);
+	bool contains(int32 x_, int32 y_, int32 z_);
 
-	bool contains(const ivec3 & pGridPos);
+	bool contains(const ivec3 & grid_pos_);
 
 	void clear();
 
-	virtual NSOccupyComp * copy(const NSComponent* pComp);
+	virtual nsoccupy_comp * copy(const NSComponent* pComp);
 
-	void enableDraw(bool pEnable);
+	void enable_draw(bool enable_);
 
 	ivec3array::iterator end();
 
@@ -51,42 +51,42 @@ public:
 
 	virtual void init();
 
-	bool drawEnabled();
+	bool draw_enabled();
 
-	const uivec2 & matid();
+	const uivec2 & material_id();
 
-	const uivec2 & meshid();
+	const uivec2 & mesh_id();
 
-	virtual void name_change(uint32 plugID, uint32 oldID, uint32 newID);
+	virtual void name_change(uint32 plug_id_, uint32 old_id_, uint32 new_id_);
 
 	virtual void pup(nsfile_pupper * p);
 
-	bool remove(int32 x, int32 y, int32 z);
+	bool remove(int32 x_, int32 y_, int32 z_);
 
-	bool remove(const ivec3 & pGridPos);
+	bool remove(const ivec3 & grid_pos_);
 
 	virtual uivec2array resources();
 
-	void setMeshID(const uivec2 & mesh);
+	void set_mesh_id(const uivec2 & mesh_id_);
 
-	void setMatID(const uivec2 & mat);
+	void set_material_id(const uivec2 & mat_id_);
 
-	NSOccupyComp & operator=(const NSOccupyComp & pRHSComp);
+	nsoccupy_comp & operator=(const nsoccupy_comp & rhs_);
 
 private:
-	ivec3array mSpaces;
-	uivec2 mMeshID;
-	uivec2 mMatID;
-	bool mDrawEnabled;
+	ivec3array m_spaces;
+	uivec2 m_mesh_id;
+	uivec2 m_mat_id;
+	bool m_draw_enabled;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSOccupyComp & oc)
+void pup(PUPer & p, nsoccupy_comp & oc)
 {
-	pup(p, oc.mSpaces, "spaces");
-	pup(p, oc.mMeshID, "meshID");
-	pup(p, oc.mMatID, "matID");
-	pup(p, oc.mDrawEnabled, "drawEnabled");
+	pup(p, oc.m_spaces, "spaces");
+	pup(p, oc.m_mesh_id, "mesh_id");
+	pup(p, oc.m_mat_id, "mat_id");
+	pup(p, oc.m_draw_enabled, "draw_enabled");
 }
 
 #endif

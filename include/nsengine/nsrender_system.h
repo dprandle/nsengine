@@ -197,11 +197,11 @@ public:
 	virtual int32 update_priority();
 
 private:
-	void _blend_dir_light(NSLightComp * pLight);
-	void _blend_point_light(NSLightComp * pLight);
-	void _blend_spot_light(NSLightComp * pLight);
-	void _stencil_point_light(NSLightComp * pLight);
-	void _stencil_spot_light(NSLightComp * pLight);
+	void _blend_dir_light(nslight_comp * pLight);
+	void _blend_point_light(nslight_comp * pLight);
+	void _blend_spot_light(nslight_comp * pLight);
+	void _stencil_point_light(nslight_comp * pLight);
+	void _stencil_spot_light(nslight_comp * pLight);
 	void _draw_geometry();
 	void _draw_xfbs();
 	void _draw_scene_to_depth(nsdepth_shader * pShader);

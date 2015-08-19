@@ -31,9 +31,9 @@
 *** DONE NSAnimationSystem
 *** DONE NSParticleSystem
 *** DONE NSBuildSystem
-** TODO Components [0%]
-*** TODO NSComponent
-*** TODO NSCamComp
+** TODO Components [15%]
+*** DONE NSComponent
+*** DONE NSCamComp
 *** TODO NSInputComp
 *** TODO NSSelComp
 *** TODO NSTFormComp

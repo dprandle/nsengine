@@ -1,17 +1,17 @@
 /*! 
 	\file nsrender_comp.h
 	
-	\brief Header file for NSRenderComp class
+	\brief Header file for nsrender_comp class
 
-	This file contains all of the neccessary declarations for the NSRenderComp class.
+	This file contains all of the neccessary declarations for the nsrender_comp class.
 
 	\author Daniel Randle
 	\date December 17 2013
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSRENDERCOMP_H
-#define NSRENDERCOMP_H
+#ifndef NSRENDER_COMP_H
+#define NSRENDER_COMP_H
 
 #include <vector>
 #include <nscomponent.h>
@@ -22,27 +22,27 @@ class nsmesh;
 class nstimer;
 class nsmaterial;
 
-class NSRenderComp : public NSComponent
+class nsrender_comp : public NSComponent
 {
 public:
 
 	template <class PUPer>
-	friend void pup(PUPer & p, NSRenderComp & rc);
+	friend void pup(PUPer & p, nsrender_comp & rc);
 
-	NSRenderComp();
-	~NSRenderComp();
+	nsrender_comp();
+	~nsrender_comp();
 
-	void clearMats();
+	void clear_mats();
 
-	NSRenderComp* copy(const NSComponent* pToCopy);
+	nsrender_comp* copy(const NSComponent* copy_);
 
-	bool castShadow();
+	bool cast_shadow();
 
-	uivec2 materialID(uint32 subMeshIndex);
+	uivec2 material_id(uint32 submesh_index_);
 
-	const uivec2 & meshID();
+	const uivec2 & mesh_id();
 
-	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
+	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
 	/*!
 	Get the resources that the component uses. The render comp uses a mesh and possibly multiple materials.
@@ -50,62 +50,62 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	bool hasMaterial(uint32 pSubMeshIndex);
+	bool has_material(uint32 submesh_index_);
 
 	void init();
 
-	uivec2uimap::iterator matBegin();
+	uivec2uimap::iterator begin_mat();
 
-	uivec2uimap::const_iterator matBegin() const;
+	uivec2uimap::const_iterator begin_mat() const;
 
-	uivec2uimap::iterator matEnd();
+	uivec2uimap::iterator end_mat();
 
-	uivec2uimap::const_iterator matEnd() const;
+	uivec2uimap::const_iterator end_mat() const;
 
-	bool removeMaterial(uint32 subMeshIndex);
+	bool remove_material(uint32 submesh_index_);
 
-	bool removeMaterialAll(const uivec2 & toremove);
+	bool remove_all_materials(const uivec2 & to_remove_);
 
-	bool replaceMaterial(const uivec2 & oldid, const uivec2 & newid);
+	bool replace_material(const uivec2 & old_id_, const uivec2 & new_id_);
 
-	bool replaceMaterial(uint32 oldplugid, uint32 oldresid, uint32 newplugid, uint32 newresid)
+	bool replace_material(uint32 old_plug_id_, uint32 old_res_id, uint32 new_plug_id, uint32 new_res_id)
 	{
-		return replaceMaterial(uivec2(oldplugid, oldresid), uivec2(newplugid, newresid));
+		return replace_material(uivec2(old_plug_id_, old_res_id), uivec2(new_plug_id, new_res_id));
 	}
 
 	virtual void pup(nsfile_pupper * p);
 
-	void setCastShadow(bool pShadow);
+	void set_cast_shadow(bool enable_);
 
-	bool setMaterial(uint32 pSubMeshIndex, const uivec2 & pMatID, bool pReplace = false);
+	bool set_material(uint32 submesh_index_, const uivec2 & mat_id_, bool replace_ = false);
 
-	bool setMaterial(uint32 pSubMeshIndex, uint32 matplugid, uint32 matresid, bool pReplace = false)
+	bool set_material(uint32 submesh_index_, uint32 mat_plug_id, uint32 mat_id_, bool replace_ = false)
 	{
-		return setMaterial(pSubMeshIndex, uivec2(matplugid, matresid), pReplace);
+		return set_material(submesh_index_, uivec2(mat_plug_id, mat_id_), replace_);
 	}
 
-	void setMeshID(const uivec2 & pMeshID);
+	void set_mesh_id(const uivec2 & mesh_id_);
 
-	void setMeshID(uint32 plugid, uint32 resid)
+	void set_mesh_id(uint32 plug_id_, uint32 res_id_)
 	{
-		mMeshID.x = plugid; mMeshID.y = resid;
+		m_mesh_id.x = plug_id_; m_mesh_id.y = res_id_;
 		post_update(true);
 	}
 
-	NSRenderComp & operator=(const NSRenderComp & pRHSComp);
+	nsrender_comp & operator=(const nsrender_comp & rhs_);
 
 private:
-	bool mCastShadow;
-	uivec2 mMeshID;
-	uivec2uimap mMats;
+	bool m_cast_shadow;
+	uivec2 m_mesh_id;
+	uivec2uimap m_mats;
 };
 
 template <class PUPer>
-void pup(PUPer & p, NSRenderComp & rc)
+void pup(PUPer & p, nsrender_comp & rc)
 {
-	pup(p, rc.mCastShadow, "castShadow");
-	pup(p, rc.mMeshID, "meshID");
-	pup(p, rc.mMats, "mats");
+	pup(p, rc.m_cast_shadow, "cast_shadow");
+	pup(p, rc.m_mesh_id, "mesh_id");
+	pup(p, rc.m_mats, "mats");
 }
 
 #endif

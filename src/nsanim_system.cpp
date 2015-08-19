@@ -58,12 +58,12 @@ void nsanim_system::update()
 	if (scene == NULL)
 		return;
 	
-	nspentityset ents = scene->entities<NSAnimComp>();
+	nspentityset ents = scene->entities<nsanim_comp>();
 	auto entIter = ents.begin();
 	while (entIter != ents.end())
 	{
-		NSAnimComp * animComp = (*entIter)->get<NSAnimComp>();
-		NSRenderComp * renderComp = (*entIter)->get<NSRenderComp>();
+		nsanim_comp * animComp = (*entIter)->get<nsanim_comp>();
+		nsrender_comp * renderComp = (*entIter)->get<nsrender_comp>();
 		if (renderComp == NULL)
 		{
 			dprint("nsanim_system::update Entity has animation comp but no render comp - Cannot update");
@@ -73,9 +73,9 @@ void nsanim_system::update()
 		
 		if (animComp->update_posted())
 		{
-			uivec2 meshID = renderComp->meshID();
-			uivec2 animsetID = animComp->animationSetID();
-			nsstring mCurrentAnim = animComp->currentAnimation();
+			uivec2 meshID = renderComp->mesh_id();
+			uivec2 animsetID = animComp->anim_set_id();
+			nsstring mCurrentAnim = animComp->current_anim_name();
 			if (meshID == 0 || animsetID == 0)
 			{
 				dprint("nsanim_system::update Cannot update animation without AnimSetID and MeshID");
@@ -99,7 +99,7 @@ void nsanim_system::update()
 				continue;
 			}
 
-			auto finalTF = animComp->finalTransforms();
+			auto finalTF = animComp->final_transforms();
 			finalTF->resize(nTree->bone_name_map.size());
 
 			nsanim_set * animset = nsengine.resource<nsanim_set>(animsetID);
@@ -124,17 +124,17 @@ void nsanim_system::update()
 				{
 					if (animComp->elapsed() >= currAnim->duration)
 						animComp->elapsed() = 0.0f;
-					animComp->fillBones(nTree, currAnim);
+					animComp->fill_bones(nTree, currAnim);
 				}
 				else
 				{
 					if (animComp->elapsed() >= currAnim->duration)
 					{
-						animComp->setAnimate(false);
+						animComp->set_animate(false);
 						animComp->elapsed() = 0.0f;
 						return;
 					}
-					animComp->fillBones(nTree, currAnim);
+					animComp->fill_bones(nTree, currAnim);
 				}
 				return;
 			}

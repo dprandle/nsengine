@@ -1,9 +1,9 @@
 /*!
 \file nstilecomp.cpp
 
-\brief Definition file for NSTileComp class
+\brief Definition file for nstile_comp class
 
-This file contains all of the neccessary definitions for the NSTileComp class.
+This file contains all of the neccessary definitions for the nstile_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -13,26 +13,26 @@ This file contains all of the neccessary definitions for the NSTileComp class.
 #include <nstile_comp.h>
 #include <nsentity.h>
 
-NSTileComp::NSTileComp() :NSComponent()
+nstile_comp::nstile_comp() :NSComponent()
 {}
 
-NSTileComp::~NSTileComp()
+nstile_comp::~nstile_comp()
 {}
 
-NSTileComp* NSTileComp::copy(const NSComponent * pToCopy)
+nstile_comp* nstile_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSTileComp * comp = (const NSTileComp*)pToCopy;
+	const nstile_comp * comp = (const nstile_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
-void NSTileComp::init()
+void nstile_comp::init()
 {}
 
 
-void NSTileComp::pup(nsfile_pupper * p)
+void nstile_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -46,7 +46,7 @@ void NSTileComp::pup(nsfile_pupper * p)
 	}
 }
 
-NSTileComp & NSTileComp::operator=(const NSTileComp & pRHSComp)
+nstile_comp & nstile_comp::operator=(const nstile_comp & pRHSComp)
 {
 	post_update(true);
 	return (*this);

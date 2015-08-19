@@ -1,9 +1,9 @@
 /*!
 \file nstilebrushcomp.cpp
 
-\brief Definition file for NSTileBrushComp class
+\brief Definition file for nstile_brush_comp class
 
-This file contains all of the neccessary definitions for the NSTileBrushComp class.
+This file contains all of the neccessary definitions for the nstile_brush_comp class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -14,69 +14,69 @@ This file contains all of the neccessary definitions for the NSTileBrushComp cla
 #include <nstile_brush_comp.h>
 #include <nsentity.h>
 
-NSTileBrushComp::NSTileBrushComp() :
-mBrush(),
-mHeight(1),
+nstile_brush_comp::nstile_brush_comp() :
+m_brush(),
+m_height(1),
 NSComponent()
 {}
 
-NSTileBrushComp::~NSTileBrushComp()
+nstile_brush_comp::~nstile_brush_comp()
 {}
 
-bool NSTileBrushComp::add(int32 x, int32 y)
+bool nstile_brush_comp::add(int32 x, int32 y)
 {
 	return add(ivec2(x, y));
 }
 
-bool NSTileBrushComp::add(const ivec2 & pGridSpace)
+bool nstile_brush_comp::add(const ivec2 & pGridSpace)
 {
 	if (contains(pGridSpace))
 		return false;
 
-	mBrush.push_back(pGridSpace);
+	m_brush.push_back(pGridSpace);
 	return true;
 }
 
-ivec2array::iterator NSTileBrushComp::begin()
+ivec2array::iterator nstile_brush_comp::begin()
 {
-	return mBrush.begin();
+	return m_brush.begin();
 }
 
-void NSTileBrushComp::changeHeight(const int32 & pAmount)
+void nstile_brush_comp::change_height(const int32 & pAmount)
 {
-	mHeight += pAmount;
+	m_height += pAmount;
 }
 
-bool NSTileBrushComp::contains(int32 x, int32 y)
+bool nstile_brush_comp::contains(int32 x, int32 y)
 {
 	return contains(ivec2(x, y));
 }
 
-bool NSTileBrushComp::contains(const ivec2 & pGridSpace)
+bool nstile_brush_comp::contains(const ivec2 & pGridSpace)
 {
-	for (uint32 i = 0; i < mBrush.size(); ++i)
+	for (uint32 i = 0; i < m_brush.size(); ++i)
 	{
-		if (pGridSpace == mBrush[i])
+		if (pGridSpace == m_brush[i])
 			return true;
 	}
 	return false;
 }
 
-NSTileBrushComp* NSTileBrushComp::copy(const NSComponent * pToCopy)
+nstile_brush_comp* nstile_brush_comp::copy(const NSComponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
-	const NSTileBrushComp * comp = (const NSTileBrushComp*)pToCopy;
+	const nstile_brush_comp * comp = (const nstile_brush_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
-ivec2array::iterator NSTileBrushComp::end()
+ivec2array::iterator nstile_brush_comp::end()
 {
-	return mBrush.end();
+	return m_brush.end();
 }
 
-void NSTileBrushComp::pup(nsfile_pupper * p)
+void nstile_brush_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -90,15 +90,15 @@ void NSTileBrushComp::pup(nsfile_pupper * p)
 	}
 }
 
-int32 NSTileBrushComp::height() const
+int32 nstile_brush_comp::height() const
 {
-	return mHeight;
+	return m_height;
 }
 
-void NSTileBrushComp::init()
+void nstile_brush_comp::init()
 {}
 
-bool NSTileBrushComp::remove(int32 x, int32 y)
+bool nstile_brush_comp::remove(int32 x, int32 y)
 {
 	return remove(ivec2(x, y));
 }
@@ -107,14 +107,14 @@ bool NSTileBrushComp::remove(int32 x, int32 y)
 Removes first occurance of pGridPos - should only be 1 occurance as the add function doesn't add if the grid space
 that is being added already exists in the brush.
 */
-bool NSTileBrushComp::remove(const ivec2 & pGridPos)
+bool nstile_brush_comp::remove(const ivec2 & pGridPos)
 {
-	auto iter = mBrush.begin();
-	while (iter != mBrush.end())
+	auto iter = m_brush.begin();
+	while (iter != m_brush.end())
 	{
 		if (*iter == pGridPos)
 		{
-			mBrush.erase(iter);
+			m_brush.erase(iter);
 			return true;
 		}
 		++iter;
@@ -122,17 +122,17 @@ bool NSTileBrushComp::remove(const ivec2 & pGridPos)
 	return false;
 }
 
-void NSTileBrushComp::setHeight(const int32 & pHeight)
+void nstile_brush_comp::set_height(const int32 & pHeight)
 {
-	mHeight = pHeight;
+	m_height = pHeight;
 }
 
-NSTileBrushComp & NSTileBrushComp::operator=(const NSTileBrushComp & pRHSComp)
+nstile_brush_comp & nstile_brush_comp::operator=(const nstile_brush_comp & pRHSComp)
 {
-	mHeight = pRHSComp.mHeight;
-	mBrush.resize(pRHSComp.mBrush.size());
-	for (uint32 i = 0; i < mBrush.size(); ++i)
-		mBrush[i] = pRHSComp.mBrush[i];
+	m_height = pRHSComp.m_height;
+	m_brush.resize(pRHSComp.m_brush.size());
+	for (uint32 i = 0; i < m_brush.size(); ++i)
+		m_brush[i] = pRHSComp.m_brush[i];
 
 	post_update(true);
 	return (*this);

@@ -32,7 +32,7 @@ This file contains all of the neccessary declarations for the nsselection_system
 #define NSSEL_MOVE_TOGGLE "move_selection_toggle"
 
 class nsscene;
-class NSSelComp;
+class nssel_comp;
 class nsselection_shader;
 class nsaction_event;
 class nsstate_event;
@@ -102,13 +102,13 @@ public:
 
 	void rotate(const fvec4 & axisangle);
 
-	void rotate(nsentity * ent, NSTFormComp::DirVec axis, float angle);
+	void rotate(nsentity * ent, nstform_comp::dir_vec axis, float angle);
 
-	void rotate(NSTFormComp::DirVec axis, float angle);
+	void rotate(nstform_comp::dir_vec axis, float angle);
 
-	void rotate(nsentity * ent, NSTFormComp::Axis axis, float angle);
+	void rotate(nsentity * ent, nstform_comp::world_axis axis, float angle);
 
-	void rotate(NSTFormComp::Axis axis, float angle);
+	void rotate(nstform_comp::world_axis axis, float angle);
 
 	void rotate(nsentity * ent, const fvec3 & euler);
 
@@ -134,7 +134,7 @@ public:
 
 	void set_final_fbo(uint32 fbo);
 
-	void set_hidden_state(NSTFormComp::HiddenState pState, bool pSet);
+	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
 
 	void set_layer(int32 pLayer);
 
@@ -168,13 +168,13 @@ public:
 
 	void translate(nsentity * ent, float x, float y, float z);
 
-	void translate(nsentity * ent, NSTFormComp::DirVec pDir, float pAmount);
+	void translate(nsentity * ent, nstform_comp::dir_vec pDir, float pAmount);
 
-	void translate(NSTFormComp::DirVec pDir, float pAmount);
+	void translate(nstform_comp::dir_vec pDir, float pAmount);
 
-	void translate(nsentity * ent, NSTFormComp::Axis pDir, float pAmount);
+	void translate(nsentity * ent, nstform_comp::world_axis pDir, float pAmount);
 
-	void translate(NSTFormComp::Axis pDir, float pAmount);
+	void translate(nstform_comp::world_axis pDir, float pAmount);
 
 	virtual void update();
 

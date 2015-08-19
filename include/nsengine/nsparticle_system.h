@@ -19,7 +19,7 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 #include <nstform_comp.h>
 
 class nsscene;
-class NSSelComp;
+class nssel_comp;
 class nsparticle_process_shader;
 
 class nsparticle_system : public nssystem
