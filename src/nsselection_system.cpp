@@ -77,7 +77,7 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 	// TODO: Make this an event - that is a mirror mode event to put build and sel system in mirror mode
 	if (nsengine.system<nsbuild_system>()->mirror())
 	{
-		nsscene * scn = nsengine.currentScene();
+		nsscene * scn = nsengine.current_scene();
 		if (scn == NULL)
 			return false;
 		
@@ -108,7 +108,7 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 
 bool nsselection_system::add_to_grid()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return false;
 
@@ -204,7 +204,7 @@ void nsselection_system::change_layer(int32 pChange)
 
 bool nsselection_system::collision()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return false;
 
@@ -259,7 +259,7 @@ uivec3 nsselection_system::pick(const fvec2 & mpos)
 
 uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return uivec3();
 
@@ -271,8 +271,8 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 	if (pickingBuf == NULL)
 		return uivec3();
 
-	NSCamComp * cc = cam->get<NSCamComp>();
-	ivec2 dim = cc->dim();
+	nscam_comp * cc = cam->get<nscam_comp>();
+	ivec2 dim = cc->screen_size();
 	float mouseX = mousex * float(dim.w);
 	float mouseY = mousey * float(dim.h);
 
@@ -291,7 +291,7 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 
 void nsselection_system::draw()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
@@ -314,9 +314,9 @@ void nsselection_system::draw()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
-	NSCamComp * camc = cam->get<NSCamComp>();
+	nscam_comp * camc = cam->get<nscam_comp>();
 	m_sel_shader->bind();
-	m_sel_shader->set_proj_cam_mat(camc->projCam());
+	m_sel_shader->set_proj_cam_mat(camc->proj_cam());
 
 	// Go through and stencil each selected item
 	auto iter = m_selected_ents.begin();
@@ -481,10 +481,10 @@ void nsselection_system::draw()
 	// Draw mirror mode center
 	if (nsengine.system<nsbuild_system>()->mirror())
 	{
-		nsmesh * tileM = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
+		nsmesh * tileM = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
 		fvec3 mypos = nsengine.system<nsbuild_system>()->mirror();
 		mypos.z = nsengine.system<nsbuild_system>()->layer() * Z_GRID;
-		m_sel_shader->set_transform(translationMat4(mypos));
+		m_sel_shader->set_transform(translation_mat4(mypos));
 		for (uint32 i = 0; i < tileM->count(); ++i)
 		{
 			nsmesh::submesh * cSub = tileM->sub(i);
@@ -548,7 +548,7 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 					auto spaceIter = occComp->begin();
 					while (spaceIter != occComp->end())
 					{
-						m_sel_shader->set_transform(translationMat4(NSTileGrid::world(*spaceIter, tComp->wpos(*selIter))));
+						m_sel_shader->set_transform(translation_mat4(nstile_grid::world(*spaceIter, tComp->wpos(*selIter))));
 						glDrawElements(occSub->primitive_type,
 									   static_cast<GLsizei>(occSub->indices.size()),
 									   GL_UNSIGNED_INT,
@@ -565,14 +565,14 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 
 void nsselection_system::_draw_occ()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
 	if (!m_draw_occ)
 		return;
 
-	nsmesh * occMesh = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
+	nsmesh * occMesh = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
 	for (uint32 i = 0; i < occMesh->count(); ++i)
 	{
 		nsmesh::submesh * occSub = occMesh->sub(i);
@@ -589,20 +589,20 @@ void nsselection_system::_draw_occ()
 
 		m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-		NSTileGrid::GridBounds g = scene->grid().occupiedGridBounds();
+		nstile_grid::grid_bounds g = scene->grid().occupied_bounds();
 
 
-		for (int32 z = g.minSpace.z; z <= g.maxSpace.z; ++z)
+		for (int32 z = g.min_space.z; z <= g.max_space.z; ++z)
 		{
-			for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+			for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
 			{
-				for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+				for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 				{
 					uivec3 id = scene->grid().get(ivec3(x, y, z));
 					nsentity * ent = nsengine.resource<nsentity>(id.x, id.y);
 					if (ent != NULL)
 					{
-						m_trans.setColumn(3,fvec4(ent->get<NSTFormComp>()->lpos(id.z),1.0f));
+						m_trans.set_column(3,fvec4(ent->get<NSTFormComp>()->lpos(id.z),1.0f));
 						m_sel_shader->set_transform(m_trans);
 						glDrawElements(occSub->primitive_type,
 									   static_cast<GLsizei>(occSub->indices.size()),
@@ -618,7 +618,7 @@ void nsselection_system::_draw_occ()
 
 void nsselection_system::_draw_hidden()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
@@ -696,7 +696,7 @@ void nsselection_system::_draw_hidden()
 
 void nsselection_system::del()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -742,8 +742,8 @@ void nsselection_system::init()
 	//nsengine.events()->addListener(this, NSEvent::SelSet);
 	//nsengine.events()->addListener(this, NSEvent::SelAdd);
 	//nsengine.events()->addListener(this, NSEvent::ClearSelection);
-	registerHandlerFunc(this, &nsselection_system::_handle_action_event);
-	registerHandlerFunc(this, &nsselection_system::_handle_state_event);
+	register_handler_func(this, &nsselection_system::_handle_action_event);
+	register_handler_func(this, &nsselection_system::_handle_state_event);
 
 	add_trigger_hash(selected_entity, NSSEL_SELECT);
 	add_trigger_hash(multi_select, NSSEL_MULTISELECT);
@@ -797,7 +797,7 @@ void nsselection_system::_on_rotate_z(nsentity * ent, bool pPressed)
 
 void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -889,7 +889,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 	if (ent == NULL)
 		return;
 
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -924,7 +924,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 					continue;
 
 				NSTFormComp * tForm = focEnt->get<NSTFormComp>();
-				fvec3 pos = tForm->lpos(m_focus_ent.z) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				fvec3 pos = tForm->lpos(m_focus_ent.z) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				uivec3 refid = scene->ref_id(pos);
 				nsentity * selEnt = nsengine.resource<nsentity>(refid.x, refid.y);
 				if (selEnt == NULL)
@@ -943,7 +943,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 
 void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -956,19 +956,19 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 
 	NSSelComp * sc = ent->get<NSSelComp>();
 	NSTFormComp * camTForm = cam->get<NSTFormComp>();
-	NSCamComp * camc = cam->get<NSCamComp>();
+	nscam_comp * camc = cam->get<nscam_comp>();
 	NSTFormComp * tComp = ent->get<NSTFormComp>();
 
 	// get change in terms of NDC
 	fvec2 delta(pDelta * 2.0f);
 
 	fvec3 originalPos = tComp->wpos(m_focus_ent.z);
-	fvec4 screenSpace = camc->projCam() * fvec4(originalPos, 1.0f);
+	fvec4 screenSpace = camc->proj_cam() * fvec4(originalPos, 1.0f);
 	screenSpace /= screenSpace.w;
 	screenSpace.x += delta.u;
 	screenSpace.y += delta.v;
 
-	fvec4 newPos = camc->invProjCam() * screenSpace;
+	fvec4 newPos = camc->inv_proj_cam() * screenSpace;
 	newPos /= newPos.w;
 
 	fvec3 fpos(newPos.xyz());
@@ -977,12 +977,12 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	float depth = 0.0f;
 	fvec3 normal;
 
-	fvec3 targetVec = (camc->focusOrientation() * camTForm->orientation()).target();
+	fvec3 targetVec = (camc->focus_orientation() * camTForm->orientation()).target();
 	fvec3 projVec = projectPlane(targetVec, fvec3(0.0f,0.0f,-1.0f));
 	fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
 	
-	float angle = targetVec.angleTo(projVec);
-	float angleX = projVec.xy().angleTo(projVecX);
+	float angle = targetVec.angle_to(projVec);
+	float angleX = projVec.xy().angle_to(projVecX);
 
 
 	// Set normal if not moving in a single plane
@@ -1025,7 +1025,7 @@ const uivec3 & nsselection_system::center()
 
 void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const uivec3 & pID)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1125,8 +1125,8 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 		uint closest_tformid = *sel_iter;
 		while (sel_iter != sc->end())
 		{
-			if ( (original_pos - tc->wpos(*sel_iter)).lengthSq() <
-				 (original_pos - tc->wpos(closest_tformid)).lengthSq() )
+			if ( (original_pos - tc->wpos(*sel_iter)).length_sq() <
+				 (original_pos - tc->wpos(closest_tformid)).length_sq() )
 				closest_tformid = *sel_iter;
 			++sel_iter;
 		}
@@ -1161,7 +1161,7 @@ void nsselection_system::remove(nsentity * ent, uint32 pTFormID)
 
 void nsselection_system::remove_from_grid()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1544,7 +1544,7 @@ void nsselection_system::snap_z()
 
 void nsselection_system::tile_swap(nsentity * pNewTile)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1698,19 +1698,19 @@ bool nsselection_system::valid_brush()
 		NSSelComp * selComp = (*iter)->get<NSSelComp>();
 		NSTFormComp * tComp = (*iter)->get<NSTFormComp>();
 
-		int32 newZ = NSTileGrid::indexZ(tComp->wpos().z);
+		int32 newZ = nstile_grid::index_z(tComp->wpos().z);
 
 		auto selIter = selComp->begin();
 		int32 z = 0;
 
 		if (selIter != selComp->end())
-			z = NSTileGrid::indexZ(tComp->wpos(*selIter).z);
+			z = nstile_grid::index_z(tComp->wpos(*selIter).z);
 		else
 			return false;
 
 		while (selIter != selComp->end())
 		{
-			int32 newZ = NSTileGrid::indexZ(tComp->wpos(*selIter).z);
+			int32 newZ = nstile_grid::index_z(tComp->wpos(*selIter).z);
 			if (newZ != z)
 				return false;
 			++selIter;
@@ -1740,7 +1740,7 @@ bool nsselection_system::valid_tile_swap()
 void nsselection_system::update()
 {
 
-	nsscene * scn = nsengine.currentScene();
+	nsscene * scn = nsengine.current_scene();
 	if (scn == NULL)
 		return;
 	nsentity * ent = scn->entity(m_focus_ent.xy());
@@ -1750,7 +1750,7 @@ void nsselection_system::update()
 
 	if (m_send_foc_event)
 	{
-		nsengine.eventDispatch()->push<nssel_focus_event>(m_focus_ent);
+		nsengine.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 		m_send_foc_event = false;
 	}
 
@@ -1782,7 +1782,7 @@ void nsselection_system::update()
 				fvec3 pos = foc_tform->wpos(m_focus_ent.z);
 				scn->grid().snap(pos);
 				add_to_grid();
-				nsengine.eventDispatch()->push<nssel_focus_event>(m_focus_ent);
+				nsengine.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 			}
 			m_cached_point = fvec3();
 		}

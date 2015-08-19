@@ -28,7 +28,7 @@
 #include <iostream>
 #include <iterator>
 
-namespace nsfileio
+namespace nsfile_os
 {
 
 #ifdef WIN32

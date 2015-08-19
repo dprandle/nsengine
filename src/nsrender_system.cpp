@@ -62,7 +62,7 @@ void nsrender_system::blit_final_frame()
 		return;
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_fbo);
-	if (nsengine.currentScene() != NULL)
+	if (nsengine.current_scene() != NULL)
 	{
 		m_final_buf->set_target(nsfb_object::fb_read);
 		m_final_buf->bind();
@@ -154,7 +154,7 @@ void nsrender_system::draw()
 	if (!_valid_check())
 		return;
 
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -162,7 +162,7 @@ void nsrender_system::draw()
 	if (cam == NULL)
 		return;
 
-	NSCamComp * camc = cam->get<NSCamComp>();
+	nscam_comp * camc = cam->get<nscam_comp>();
 
 	m_gbuffer->bind();
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);;
@@ -179,11 +179,11 @@ void nsrender_system::draw()
 		m_gbuffer->enabled_color_write(false);
 
 		m_shaders.early_z->bind();
-		m_shaders.early_z->set_proj_mat(camc->projCam());
+		m_shaders.early_z->set_proj_mat(camc->proj_cam());
 		_draw_scene_to_depth(m_shaders.early_z);
 
 		m_shaders.xfb_earlyz->bind();
-		m_shaders.xfb_earlyz->set_proj_cam_mat(camc->projCam());
+		m_shaders.xfb_earlyz->set_proj_cam_mat(camc->proj_cam());
 		_draw_scene_to_depth_xfb(m_shaders.xfb_earlyz);
 
 		m_gbuffer->enabled_color_write(true);
@@ -205,7 +205,7 @@ void nsrender_system::draw()
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_fbo);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		m_gbuffer->debug_blit(camc->dim());
+		m_gbuffer->debug_blit(camc->screen_size());
 		return;
 	}
 
@@ -257,7 +257,7 @@ void nsrender_system::draw()
 					//mShaders.mXFBSpotShadowMap->setProjLightMat(projLightMat);
 					//_drawSceneToDepthXFB(mShaders.mXFBSpotShadowMap);
 
-					glViewport(0, 0, camc->dim().w, camc->dim().h);
+					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
 
 				m_final_buf->bind();
@@ -271,7 +271,7 @@ void nsrender_system::draw()
 				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 				m_shaders.light_stencil->bind();
-				m_shaders.light_stencil->set_proj_cam_mat(camc->projCam());
+				m_shaders.light_stencil->set_proj_cam_mat(camc->proj_cam());
 				m_shaders.light_stencil->set_transform(lComp->transform(i));
 				_stencil_spot_light(lComp);
 				m_final_buf->set_draw_buffer(nsfb_object::att_color);
@@ -284,7 +284,7 @@ void nsrender_system::draw()
 				m_shaders.spot_light->set_position(tComp->wpos(i));
 				m_shaders.spot_light->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
 				m_shaders.spot_light->set_transform(lComp->transform(i));
-				m_shaders.spot_light->set_proj_cam_mat(camc->projCam());
+				m_shaders.spot_light->set_proj_cam_mat(camc->proj_cam());
 				m_shaders.spot_light->set_proj_light_mat(projLightMat);
 				m_shaders.spot_light->set_direction(tComp->dirVec(NSTFormComp::Target, i));
 				_blend_spot_light(lComp);
@@ -312,7 +312,7 @@ void nsrender_system::draw()
 					m_shaders.point_shadow->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
 					m_shaders.point_shadow->set_proj_mat(proj);
 					fmat4 f;
-					f.setColumn(3,fvec4(tComp->wpos(i)*-1.0f,1.0f));
+					f.set_column(3,fvec4(tComp->wpos(i)*-1.0f,1.0f));
 					m_shaders.point_shadow->set_inverse_trans_mat(f);
 					_draw_scene_to_depth(m_shaders.point_shadow);
 
@@ -323,7 +323,7 @@ void nsrender_system::draw()
 					//mShaders.mXFBPointShadowMap->setInverseTMat(translationMat4(tComp->wpos(i)*-1));
 					//_drawSceneToDepthXFB(mShaders.mXFBPointShadowMap);
 
-					glViewport(0, 0, camc->dim().w, camc->dim().h);
+					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
 
 				m_final_buf->bind();
@@ -336,7 +336,7 @@ void nsrender_system::draw()
 				glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 				m_shaders.light_stencil->bind();
-				m_shaders.light_stencil->set_proj_cam_mat(camc->projCam());
+				m_shaders.light_stencil->set_proj_cam_mat(camc->proj_cam());
 				m_shaders.light_stencil->set_transform(lComp->transform(i));
 				_stencil_point_light(lComp);
 
@@ -350,7 +350,7 @@ void nsrender_system::draw()
 				m_shaders.point_light->set_position(tComp->wpos(i));
 				m_shaders.point_light->set_max_depth(lComp->shadowClipping().y - lComp->shadowClipping().x);
 				m_shaders.point_light->set_transform(lComp->transform(i));
-				m_shaders.point_light->set_proj_cam_mat(camc->projCam());
+				m_shaders.point_light->set_proj_cam_mat(camc->proj_cam());
 				_blend_point_light(lComp);
 			}
 		}
@@ -379,7 +379,7 @@ void nsrender_system::draw()
 					m_shaders.xfb_dir_shadow->set_proj_light_mat(projLightMat);
 					_draw_scene_to_depth_xfb(m_shaders.xfb_dir_shadow);
 
-					glViewport(0, 0, camc->dim().w, camc->dim().h);
+					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
 
 
@@ -422,14 +422,14 @@ uint32 nsrender_system::bound_fbo()
 void nsrender_system::resize_screen(const ivec2 & size)
 {
 	m_screen_size = size;
-	nsscene * scn = nsengine.currentScene();
+	nsscene * scn = nsengine.current_scene();
 	if (scn != NULL)
 	{
 		nsentity * cam = scn->camera();
 		if (cam != NULL)
 		{
-			NSCamComp * cc = cam->get<NSCamComp>();
-			cc->resize(m_screen_size);
+			nscam_comp * cc = cam->get<nscam_comp>();
+			cc->resize_screen(m_screen_size);
 		}
 	}
 }
@@ -489,8 +489,8 @@ void nsrender_system::init()
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthFunc(GL_LEQUAL);
 	glViewport(0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
-	set_gbuffer_fbo(nsengine.createFramebuffer());
-	set_shadow_fbo(nsengine.createFramebuffer(), nsengine.createFramebuffer(), nsengine.createFramebuffer());
+	set_gbuffer_fbo(nsengine.create_framebuffer());
+	set_shadow_fbo(nsengine.create_framebuffer(), nsengine.create_framebuffer(), nsengine.create_framebuffer());
 }
 
 void nsrender_system::enable_debug_draw(bool pDebDraw)
@@ -521,7 +521,7 @@ void nsrender_system::update()
 	//nsengine.events()->process(this);
 
 	// Warning message switches (so they dont appear every frame)
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 	{
 		if (!sceneerr)
@@ -573,15 +573,15 @@ void nsrender_system::update()
 
 		if (lc != NULL)
 		{
-			if (lc->updatePosted())
+			if (lc->update_posted())
 			{
 				//tComp->setScale(lc->scaling());
-				lc->postUpdate(false);
+				lc->post_update(false);
 			}
 		}
 
-		if (rComp->updatePosted())
-			rComp->postUpdate(false);
+		if (rComp->update_posted())
+			rComp->post_update(false);
 
 		if (currentMesh == NULL)
 		{
@@ -797,14 +797,14 @@ void nsrender_system::set_final_fbo(uint32 fbo)
 
 void nsrender_system::_draw_xfbs()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
-	NSCamComp * camc = cam->get<NSCamComp>();
+	nscam_comp * camc = cam->get<nscam_comp>();
 
 	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
 	while (drawIter != m_xfb_draws.end())
@@ -889,7 +889,7 @@ void nsrender_system::_draw_xfbs()
 					shader = m_shaders.xfb_render;
 
 				shader->bind();
-				shader->set_proj_cam_mat(camc->projCam());
+				shader->set_proj_cam_mat(camc->proj_cam());
 				shader->set_lighting_enabled(m_lighting_enabled);
 
 				glCullFace(mat->cull_mode());
@@ -995,14 +995,14 @@ void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)
 
 void nsrender_system::_draw_geometry()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
-	NSCamComp * camc = cam->get<NSCamComp>();
+	nscam_comp * camc = cam->get<nscam_comp>();
 	
 	// Go through each shader in the shader material map.. because each submesh corresponds to exactly one
 	// material we can use this material as the key in to the draw call map minimizing shader switches
@@ -1011,7 +1011,7 @@ void nsrender_system::_draw_geometry()
 	{
 		nsmaterial_shader * currentShader = shaderIter->first;
 		currentShader->bind();
-		currentShader->set_proj_cam_mat(camc->projCam());
+		currentShader->set_proj_cam_mat(camc->proj_cam());
 		currentShader->set_lighting_enabled(m_lighting_enabled);
 		// Now go through each material that is under the current shader, use the material as a key in the draw call map
 		// to get all the draw calls associated with that material, and then draw everything. If a material for some reason

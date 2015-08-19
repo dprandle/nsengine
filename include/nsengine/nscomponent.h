@@ -19,23 +19,23 @@
 
 class nsentity;
 class nsevent;
-class NSTimer;
+class nstimer;
 
 class NSComponent
 {
 public:
 
-	friend class NSCompFactory;
+	friend class nscomp_factory;
 
 	NSComponent();
 
 	virtual ~NSComponent();
 
-	virtual NSComponent * copy(const NSComponent * pComp);
+	virtual NSComponent * copy(const NSComponent * comp_);
 
 	nsentity * owner();
 
-	bool updatePosted() const;
+	bool update_posted() const;
 
 	virtual void init()=0;
 
@@ -49,18 +49,18 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	virtual void pup(NSFilePUPer * p) = 0;
+	virtual void pup(nsfile_pupper * p) = 0;
 
-	virtual void postUpdate(bool pUpdate);
+	virtual void post_update(bool update_);
 
-	void setOwner(nsentity * owner);
+	void set_owner(nsentity * owner_);
 
-	NSComponent & operator=(const NSComponent & pRHSComp);
+	NSComponent & operator=(const NSComponent & rhs_);
 
 protected:
-	nsentity * mOwner;
+	nsentity * m_owner;
 	uint32 m_hashed_type;
-	bool mUpdate;
+	bool m_update;
 };
 
 #endif

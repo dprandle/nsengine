@@ -82,7 +82,7 @@ public:
 	fmat4 anim_bone_transform(const nsstring & anim_name_,
 		const nsstring & node_name_, float time_);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 private:
 	animmap m_animmap;

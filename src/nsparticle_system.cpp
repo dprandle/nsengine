@@ -44,13 +44,13 @@ void nsparticle_system::set_final_fbo(uint32 fbo) { m_final_buf = fbo; }
 
 void nsparticle_system::draw()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
-	NSCamComp * compc = cam->get<NSCamComp>();
+	nscam_comp * compc = cam->get<nscam_comp>();
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 
 	nsfb_object * finalBuf = nsengine.framebuffer(m_final_buf);
@@ -75,7 +75,7 @@ void nsparticle_system::draw()
 		nsparticle_render_shader * renderShader = nsengine.resource<nsparticle_render_shader>(mat->shader_id());
 
 		if (renderShader == NULL)
-			renderShader = nsengine.engplug()->get<nsparticle_render_shader>(DEFAULT_RENDER_PARTICLE_SHADER);
+			renderShader = nsengine.core()->get<nsparticle_render_shader>(DEFAULT_RENDER_PARTICLE_SHADER);
 
 		if (renderShader == NULL || comp->first())
 		{
@@ -117,7 +117,7 @@ void nsparticle_system::draw()
 		glDisable(GL_CULL_FACE);
 
 		renderShader->bind();
-		renderShader->set_proj_cam_mat(compc->projCam());
+		renderShader->set_proj_cam_mat(compc->proj_cam());
 		renderShader->set_cam_right(camTComp->dirVec(NSTFormComp::Right));
 		renderShader->set_cam_up(camTComp->dirVec(NSTFormComp::Up));
 		renderShader->set_cam_target(camTComp->dirVec(NSTFormComp::Target));
@@ -171,13 +171,13 @@ int32 nsparticle_system::update_priority()
 
 void nsparticle_system::update()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
 	if (cam == NULL)
 		return;
-	NSCamComp * compc = cam->get<NSCamComp>();
+	nscam_comp * compc = cam->get<nscam_comp>();
 	NSTFormComp * camTComp = cam->get<NSTFormComp>();
 
 	//nsengine.events()->process(this); // process any events first

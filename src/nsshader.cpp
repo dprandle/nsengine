@@ -187,17 +187,17 @@ bool nsshader::link()
 	return _validate();
 }
 
-void nsshader::pup(NSFilePUPer * p)
+void nsshader::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
 		
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -220,18 +220,18 @@ nsstring nsshader::stage_name(shader_type type)
 	return typestr;
 }
 
-void nsshader::pup(NSFilePUPer * p, shader_type type)
+void nsshader::pup(nsfile_pupper * p, shader_type type)
 {
 	nsstring typestr = stage_name(type);
 
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, _stage(type), typestr);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, _stage(type), typestr);
 	}
 }
@@ -304,9 +304,9 @@ void nsshader::set_uniform(const nsstring & var_name, const fmat4 & data)
 	fmat4 mat = data;
 	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
 	if (iter == m_uniform_locs.end())
-		glUniformMatrix4fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.dataPtr());
+		glUniformMatrix4fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.data_ptr());
 	else
-		glUniformMatrix4fv(iter->second, 1, GL_TRUE, mat.dataPtr());
+		glUniformMatrix4fv(iter->second, 1, GL_TRUE, mat.data_ptr());
 	GLError("nsshader::setUniform");
 }
 
@@ -315,9 +315,9 @@ void nsshader::set_uniform(const nsstring & var_name, const fmat3 & data)
 	fmat3 mat = data;
 	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
 	if (iter == m_uniform_locs.end())
-		glUniformMatrix3fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.dataPtr());
+		glUniformMatrix3fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.data_ptr());
 	else
-		glUniformMatrix3fv(iter->second, 1, GL_TRUE, mat.dataPtr());
+		glUniformMatrix3fv(iter->second, 1, GL_TRUE, mat.data_ptr());
 	GLError("nsshader::setUniform");
 }
 

@@ -35,7 +35,7 @@ bool nsplugin_manager::add(nsresource * res)
 	{
 		nsplugin * plug = static_cast<nsplugin*>(res);
 		plug->set_res_dir(m_owned_plugins_res_dir);
-		plug->set_import_dir(nsengine.importdir());
+		plug->set_import_dir(nsengine.import_dir());
 		return true;
 	}
 	return false;

@@ -19,7 +19,7 @@
 #include <nsmath.h>
 
 class nsmesh;
-class NSTimer;
+class nstimer;
 class nsmaterial;
 
 class NSRenderComp : public NSComponent
@@ -73,7 +73,7 @@ public:
 		return replaceMaterial(uivec2(oldplugid, oldresid), uivec2(newplugid, newresid));
 	}
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	void setCastShadow(bool pShadow);
 
@@ -89,7 +89,7 @@ public:
 	void setMeshID(uint32 plugid, uint32 resid)
 	{
 		mMeshID.x = plugid; mMeshID.y = resid;
-		postUpdate(true);
+		post_update(true);
 	}
 
 	NSRenderComp & operator=(const NSRenderComp & pRHSComp);

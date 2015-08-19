@@ -4,7 +4,7 @@
 #include <nsglobal.h>
 #include <sys/stat.h>
 
-namespace nsfileio
+namespace nsfile_os
 {
 
 bool file_exists(const nsstring & filename);

@@ -7,116 +7,116 @@ class nssystem;
 class nsres_manager;
 class nsresource;
 
-class NSFactory
+class nsfactory
 {
 public:
 
-	enum FactoryType
+	enum factory_t
 	{
-		Component,
-		System,
-		Resource,
-		ResManager
+		f_component,
+		f_system,
+		f_resource,
+		f_res_manager
 	};
 
-	NSFactory(FactoryType t) : mType(t) {}
+	nsfactory(factory_t fac_type_) : m_fac_type(fac_type_) {}
 
-	FactoryType type()
+	factory_t type()
 	{
-		return mType;
+		return m_fac_type;
 	}
 
 private:
-	FactoryType mType;
+	factory_t m_fac_type;
 };
 
-class NSResFactory : public NSFactory
+class nsres_factory : public nsfactory
 {
 	friend class NSEngine;
   public:
-	NSResFactory():
-		NSFactory(Resource)
+	nsres_factory():
+		nsfactory(f_resource)
 	{}
 	virtual nsresource * create() = 0;
-	void setid(nsresource * res);	
+	void set_id(nsresource * res_);	
 	uint32 type_id;
 };
 
-template<class T>
-class NSResFactoryType : public NSResFactory
+template<class obj_type>
+class nsres_factory_type : public nsres_factory
 {
   public:
-	NSResFactoryType() :
-		NSResFactory()
+	nsres_factory_type() :
+		nsres_factory()
 	{}
 	
 	nsresource* create() {
-		nsresource * res = new T();
-		setid(res);
-		return res;
+		nsresource * res_ = new obj_type();
+		set_id(res_);
+		return res_;
 	}
 };
 
-class nsres_managerFactory : public NSFactory
+class nsmanager_factory : public nsfactory
 {
 public:
-	nsres_managerFactory() : NSFactory(ResManager) {}
+	nsmanager_factory() : nsfactory(f_res_manager) {}
 	virtual nsres_manager * create() = 0;
-	void setid(nsres_manager * manager);
+	void set_id(nsres_manager * manager_);
 	uint32 type_id;
 };
 
-template<class T>
-class nsres_managerFactoryType : public nsres_managerFactory
+template<class obj_type>
+class nsmanager_factory_type : public nsmanager_factory
 {
 public:
-	nsres_managerFactoryType() :nsres_managerFactory() {}
+	nsmanager_factory_type() :nsmanager_factory() {}
 	nsres_manager * create() {
-		nsres_manager * rm = new T();
-		setid(rm);
+		nsres_manager * rm = new obj_type();
+		set_id(rm);
 		return rm;
 	}
 };
 
-class NSCompFactory : public NSFactory
+class nscomp_factory : public nsfactory
 {
 public:
-	NSCompFactory() : NSFactory(Component) {}
+	nscomp_factory() : nsfactory(f_component) {}
 	virtual NSComponent * create() = 0;
-	void setid(NSComponent * comp);
+	void set_id(NSComponent * cmp_);
 	uint32 type_id;
 };
 
-template<class T>
-class NSCompFactoryType : public NSCompFactory
+template<class obj_type>
+class nscomp_factory_type : public nscomp_factory
 {
 public:
-	NSCompFactoryType() :NSCompFactory() {}
+	nscomp_factory_type() :nscomp_factory() {}
 	NSComponent* create() {
-		NSComponent * cmp = new T();
-		setid(cmp);
-		return cmp;
+		NSComponent * cmp_ = new obj_type();
+		set_id(cmp_);
+		return cmp_;
 	}
 };
 
-class NSSysFactory : public NSFactory
+class nssys_factory : public nsfactory
 {
 public:
-	NSSysFactory() : NSFactory(System) {}
+	nssys_factory() : nsfactory(f_system) {}
 	virtual nssystem * create() = 0;
-	void setid(nssystem * sys);	
+	void set_id(nssystem * sys_);	
 	uint32 type_id;
 };
 
-template<class T>
-class NSSysFactoryType : public NSSysFactory
+template<class obj_type>
+class nssys_factory_type : public nssys_factory
 {
 public:
-	NSSysFactoryType() :NSSysFactory() {}
+	nssys_factory_type() :nssys_factory() {}
 	nssystem* create() {
-		nssystem * sys = new T();
-		setid(sys);
-		return sys;
+		nssystem * sys_ = new obj_type();
+		set_id(sys_);
+		return sys_;
 	}
 };
 

@@ -111,14 +111,14 @@ public:
 
 	const nspentityset & entities() const;
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	void init();
 
 	template<class CompType>
 	const nspentityset & entities() const
 	{
-		uint32 type_id = nsengine.typeID(std::type_index(typeid(CompType)));
+		uint32 type_id = nsengine.type_id(std::type_index(typeid(CompType)));
 		auto fiter = m_ents_by_comp_type.find(type_id);
 		if (fiter != m_ents_by_comp_type.end())
 			return fiter->second;
@@ -131,7 +131,7 @@ public:
 	*/
 	virtual uivec2array resources();
 
-	NSTileGrid & grid();
+	nstile_grid & grid();
 
 	void hide_layer(int32 pLayer, bool pHide);
 
@@ -244,7 +244,7 @@ private:
 	entities_by_comp m_ents_by_comp_type;
 	nsstring m_notes;
 	nsstring m_creator;
-	NSTileGrid * m_tile_grid;
+	nstile_grid * m_tile_grid;
 	bool m_show_bit;
 
 	uivec2array m_unloaded;

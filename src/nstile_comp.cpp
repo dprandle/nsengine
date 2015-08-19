@@ -32,22 +32,22 @@ void NSTileComp::init()
 {}
 
 
-void NSTileComp::pup(NSFilePUPer * p)
+void NSTileComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
 
 NSTileComp & NSTileComp::operator=(const NSTileComp & pRHSComp)
 {
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }

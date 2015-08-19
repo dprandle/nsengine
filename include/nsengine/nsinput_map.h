@@ -237,7 +237,7 @@ class nsinput_map : public nsresource
 
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
   private:	
 	context_collection m_contexts;

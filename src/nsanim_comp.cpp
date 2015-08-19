@@ -37,16 +37,16 @@ NSAnimComp* NSAnimComp::copy(const NSComponent * pToCopy)
 	return this;
 }
 
-void NSAnimComp::pup(NSFilePUPer * p)
+void NSAnimComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -122,19 +122,19 @@ void NSAnimComp::setCurrentAnimation(const nsstring & pAnimationName)
 void NSAnimComp::setAnimate(bool pAnimate)
 {
 	mAnimating = pAnimate;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSAnimComp::setLoop(bool pLoop)
 {
 	mLooping = pLoop;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSAnimComp::setAnimationSetID(const uivec2 & pID)
 {
 	mAnimSetID = pID;
-	postUpdate(true);
+	post_update(true);
 }
 
 NSAnimComp & NSAnimComp::operator=(const NSAnimComp & pRHSComp)
@@ -144,7 +144,7 @@ NSAnimComp & NSAnimComp::operator=(const NSAnimComp & pRHSComp)
 	mAnimSetID = pRHSComp.mAnimSetID;
 	mCurrentAnim = pRHSComp.mCurrentAnim;
 	mFinalTransforms.clear();
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }
 

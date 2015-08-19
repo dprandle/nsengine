@@ -42,7 +42,7 @@ uint32 NSTFormComp::add()
 uint32 NSTFormComp::add(const InstTrans & trans)
 {
 	mTransforms.push_back(trans);
-	postUpdate(true);
+	post_update(true);
 	mBufferResize = true;
 
 	if (mTransformFB)
@@ -59,7 +59,7 @@ uint32 NSTFormComp::add(uint32 pHowMany)
 	// Get the transformID of the last transform before adding pHowMany and return it
 	uint32 ret = static_cast<uint32>(mTransforms.size()) - 1;
 	mTransforms.resize(mTransforms.size() + pHowMany);
-	postUpdate(true);
+	post_update(true);
 	mBufferResize = true;
 
 	if (mTransformFB)
@@ -85,7 +85,7 @@ void NSTFormComp::changeScale(const fvec3 & pAmount, uint32 pTransformID)
 	}
 	mTransforms[pTransformID].mScaling += pAmount;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::changeScale(float pX, float pY, float pZ, uint32 pTransformID)
@@ -93,16 +93,16 @@ void NSTFormComp::changeScale(float pX, float pY, float pZ, uint32 pTransformID)
 	changeScale(fvec3(pX, pY, pZ), pTransformID);
 }
 
-void NSTFormComp::pup(NSFilePUPer * p)
+void NSTFormComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -136,7 +136,7 @@ void NSTFormComp::enableParent(bool pEnable, uint32 pTransformID)
 
 	mTransforms[pTransformID].mParentEnabled = pEnable;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 /*!
@@ -149,7 +149,7 @@ bool NSTFormComp::enableTransformFeedback(bool pEnable)
 	if (mTransformFB)
 	{
 		// Figure out how much mem to allocate
-		NSRenderComp * mRenComp = mOwner->get<NSRenderComp>();
+		NSRenderComp * mRenComp = m_owner->get<NSRenderComp>();
 		if (mRenComp == NULL || mTransforms.empty())
 			return false;
 
@@ -432,7 +432,7 @@ uint32 NSTFormComp::remove(uint32 pTransformID)
 	mTransforms[pTransformID] = mTransforms.back();
 	mTransforms[pTransformID].mUpdate = true;
 	mTransforms.pop_back();
-	postUpdate(true);
+	post_update(true);
 	mBufferResize = true;
 
 	if (mTransformFB)
@@ -470,7 +470,7 @@ uint32 NSTFormComp::remove(uint32 pFirst, uint32 pLast)
 
 	mTransforms.resize(resizeNum);
 	mBufferResize = true;
-	postUpdate(true);
+	post_update(true);
 
 	if (mTransformFB)
 	{
@@ -491,7 +491,7 @@ void NSTFormComp::rotate(const fvec4 & axisAngle, uint32 tformid)
 
 	mTransforms[tformid].mOrientation = ::orientation(axisAngle) * mTransforms[tformid].mOrientation;
 	mTransforms[tformid].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::rotate(const fvec4 & axisAngle)
@@ -534,7 +534,7 @@ void NSTFormComp::rotate(const fquat & pQuat, uint32 pTransformID)
 
 	mTransforms[pTransformID].mOrientation = pQuat * mTransforms[pTransformID].mOrientation;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::rotate(const fquat & pQuat)
@@ -575,7 +575,7 @@ void NSTFormComp::scale(const fvec3 & pAmount, uint32 pTransformID)
 
 	mTransforms[pTransformID].mScaling %= pAmount;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::scale(float pX, float pY, float pZ, uint32 pTransformID)
@@ -610,7 +610,7 @@ void NSTFormComp::enableSnap(bool pSnap, uint32 pTransformID)
 
 	mTransforms[pTransformID].mSnapToGrid = pSnap;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::enableSnap(bool pSnap)
@@ -633,7 +633,7 @@ void NSTFormComp::setHiddenState(HiddenState pState, bool pEnable, uint32 pTrans
 		mTransforms[pTransformID].mHiddenState &= ~pState;
 	
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setHiddenState(HiddenState pState, bool pEnable)
@@ -658,7 +658,7 @@ void NSTFormComp::setInstTrans(const InstTrans & pInsT, uint32 pTransformID)
 
 	mTransforms[pTransformID] = pInsT;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setOrientation(const fquat & pOrientation)
@@ -677,7 +677,7 @@ void NSTFormComp::setOrientation(const fquat & pOrientation, uint32 pTransformID
 
 	mTransforms[pTransformID].mOrientation = pOrientation;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setParentID(const uivec3 & pParentID)
@@ -696,7 +696,7 @@ void NSTFormComp::setParentID(const uivec3 & pParentID, uint32 pTransformID)
 
 	mTransforms[pTransformID].mParentID = pParentID;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setParent(const fmat4 & pTransform)
@@ -715,7 +715,7 @@ void NSTFormComp::setParent(const fmat4 & pTransform, uint32 pTransformID)
 
 	mTransforms[pTransformID].mParentTransform = pTransform;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setpos(const fvec3 & pPosition, uint32 pTransformID)
@@ -728,7 +728,7 @@ void NSTFormComp::setpos(const fvec3 & pPosition, uint32 pTransformID)
 
 	mTransforms[pTransformID].mPosition = pPosition;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setpos(const fvec3 & pPosition)
@@ -770,7 +770,7 @@ void NSTFormComp::setScale(const fvec3 & pScaling, uint32 pTransformID)
 
 	mTransforms[pTransformID].mScaling = pScaling;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::setTransUpdate(bool pUpdate)
@@ -790,12 +790,12 @@ void NSTFormComp::setTransUpdate(bool pUpdate, uint32 pTransformID)
 	mTransforms[pTransformID].mUpdate = pUpdate;
 }
 
-void NSTFormComp::postUpdate(bool pUpdate)
+void NSTFormComp::post_update(bool pUpdate)
 {
 	if (pUpdate)
 		mXFBData.mUpdate = pUpdate;
 
-	NSComponent::postUpdate(pUpdate);
+	NSComponent::post_update(pUpdate);
 }
 
 void NSTFormComp::setVisibleTransformCount(uint32 pCount)
@@ -818,9 +818,9 @@ void NSTFormComp::snap(uint32 pTransformID)
 	}
 	if (mTransforms[pTransformID].mSnapToGrid)
 	{
-		NSTileGrid::snap(mTransforms[pTransformID].mPosition);
+		nstile_grid::snap(mTransforms[pTransformID].mPosition);
 		mTransforms[pTransformID].mUpdate = true;
-		postUpdate(true);
+		post_update(true);
 	}
 }
 
@@ -834,10 +834,10 @@ void NSTFormComp::snapX(uint32 pTransformID)
 	if (mTransforms[pTransformID].mSnapToGrid)
 	{
 		fvec3 pos = mTransforms[pTransformID].mPosition;
-		NSTileGrid::snap(pos);
+		nstile_grid::snap(pos);
 		mTransforms[pTransformID].mPosition.x = pos.x;
 		mTransforms[pTransformID].mUpdate = true;
-		postUpdate(true);
+		post_update(true);
 	}
 }
 
@@ -851,10 +851,10 @@ void NSTFormComp::snapY(uint32 pTransformID)
 	if (mTransforms[pTransformID].mSnapToGrid)
 	{
 		fvec3 pos = mTransforms[pTransformID].mPosition;
-		NSTileGrid::snap(pos);
+		nstile_grid::snap(pos);
 		mTransforms[pTransformID].mPosition.y = pos.y;
 		mTransforms[pTransformID].mUpdate = true;
-		postUpdate(true);
+		post_update(true);
 	}
 }
 
@@ -868,10 +868,10 @@ void NSTFormComp::snapZ(uint32 pTransformID)
 	if (mTransforms[pTransformID].mSnapToGrid)
 	{
 		fvec3 pos = mTransforms[pTransformID].mPosition;
-		NSTileGrid::snap(pos);
+		nstile_grid::snap(pos);
 		mTransforms[pTransformID].mPosition.z = pos.z;
 		mTransforms[pTransformID].mUpdate = true;
-		postUpdate(true);
+		post_update(true);
 	}
 }
 
@@ -909,7 +909,7 @@ void NSTFormComp::toggleGridSnap(uint32 pTransformID)
 
 	mTransforms[pTransformID].mSnapToGrid = !mTransforms[pTransformID].mSnapToGrid;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::toggleGridSnap()
@@ -928,7 +928,7 @@ void NSTFormComp::toggleHiddenState(HiddenState pState, uint32 pTransformID)
 
 	mTransforms[pTransformID].mHiddenState ^= pState;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::toggleHiddenState(HiddenState pState)
@@ -939,7 +939,7 @@ void NSTFormComp::toggleHiddenState(HiddenState pState)
 		iter->mHiddenState ^= pState;
 		++iter;
 	}
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::translate(const fvec3 & pAmount)
@@ -964,7 +964,7 @@ void NSTFormComp::translate(const fvec3 & pAmount, uint32 pTransformID)
 
 	mTransforms[pTransformID].mPosition += pAmount;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::translate(float pX, float pY, float pZ, uint32 pTransformID)
@@ -1000,7 +1000,7 @@ void NSTFormComp::translate(Axis pDirection, float pAmount, uint32 pTransformID)
 	}
 	mTransforms[pTransformID].mPosition += trans;
 	mTransforms[pTransformID].mUpdate = true;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSTFormComp::translate(Axis pDirection, float pAmount)
@@ -1052,18 +1052,18 @@ NSTFormComp & NSTFormComp::operator=(const NSTFormComp & pRHSComp)
 	mTransforms.resize(pRHSComp.mTransforms.size());
 	for (uint32 i = 0; i < mTransforms.size(); ++i)
 		mTransforms[i] = pRHSComp.mTransforms[i];
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }
 
 void NSTFormComp::InstTrans::compute()
 {
-	mTransform.set(rotationMat3(mOrientation) % mScaling);
-	mTransform.setColumn(3, mPosition.x, mPosition.y, mPosition.z, 1);
+	mTransform.set(rotation_mat3(mOrientation) % mScaling);
+	mTransform.set_column(3, mPosition.x, mPosition.y, mPosition.z, 1);
 
 	fvec4 col3(-mPosition.x, -mPosition.y, -mPosition.z, 1.0f);
-	mPOVTransform.rotationFrom(mOrientation).transpose();
-	mPOVTransform.setColumn(3, mPOVTransform[0] * col3, mPOVTransform[1] * col3, mPOVTransform[2] * col3, 1.0f);
+	mPOVTransform.rotation_from(mOrientation).transpose();
+	mPOVTransform.set_column(3, mPOVTransform[0] * col3, mPOVTransform[1] * col3, mPOVTransform[2] * col3, 1.0f);
 
 	if (mParentEnabled)
 	{

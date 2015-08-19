@@ -1,4 +1,4 @@
-* TODO Rename Everything [37%]
+* TODO Rename Everything [87%]
 ** DONE Managers [100%]
 *** DONE NSResManager
 *** DONE NSMatManager
@@ -45,34 +45,33 @@
 *** TODO NSLightComp
 *** TODO NSOccupyComp
 *** TODO NSParticleComp
-** TODO Math [0%]
-*** TODO NSQuat
-*** TODO NSVec2
-*** TODO NSVec3
-*** TODO NSVec4
-*** TODO NSMat2
-*** TODO NSMat3
-*** TODO NSMat4
-*** TODO NSQuat
-*** TODO Math functions
-** TODO Other OpenGL Classes [100%]
+** DONE Math [100%]
+*** DONE NSQuat
+*** DONE NSVec2
+*** DONE NSVec3
+*** DONE NSVec4
+*** DONE NSMat2
+*** DONE NSMat3
+*** DONE NSMat4
+*** DONE Math functions
+** DONE Other OpenGL Classes [100%]
 *** DONE NSBufferObject
 *** DONE NSGLObject
 *** DONE NSTransformFeedbackObject
 *** DONE NSVertexArrayObject
 *** DONE NSFramebuffer
-** TODO Events [0%]
-*** TODO NSEvent
-*** TODO NSEventDispatcher
-*** TODO NSEventHandler
-** TODO Other [0%]
-*** TODO NSCallback
-*** TODO NSDebug
-*** TODO NSEngine
-*** TODO NSFactory
-*** TODO NSFileos functions
-*** TODO NSLogFile
-*** TODO NSPupper
-*** TODO NSTileGrid
-*** TODO NSTimer
+** DONE Events [100%]
+*** DONE NSEvent
+*** DONE NSEventDispatcher
+*** DONE NSEventHandler
+** DONE Other [100%]
+*** DONE NSCallback
+*** DONE NSDebug
+*** DONE NSEngine
+*** DONE NSFactory
+*** DONE NSFileos functions
+*** DONE NSLogFile
+*** DONE NSPupper
+*** DONE NSTileGrid
+*** DONE NSTimer
 * TODO Redistribute "nsglobal"

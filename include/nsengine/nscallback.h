@@ -11,20 +11,21 @@
 #define NSCALLBACK_H
 
 #include <nsglobal.h>
+#include <nsmath.h>
 
-struct NSCallback
+struct nscallback
 {
 	virtual void run() = 0;
 };
 
-struct NSSaveResCallback : public NSCallback
+struct nssave_resouces_callback : public nscallback
 {
-	NSSaveResCallback():
-		resid(),
+	nssave_resouces_callback():
+		res_id(),
 		saved(false)
 	{}
 	
-	uivec2 resid;
+	uivec2 res_id;
 	bool saved;
 };
 

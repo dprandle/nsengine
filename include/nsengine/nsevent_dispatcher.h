@@ -1,9 +1,9 @@
 /*!
 \file nsevent_handler.h
 
-\brief Header file for NSEventDispatcher class
+\brief Header file for nsevent_dispatcher class
 
-This file contains all of the neccessary declarations for the NSEventDispatcher class.
+This file contains all of the neccessary declarations for the nsevent_dispatcher class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -19,56 +19,56 @@ This file contains all of the neccessary declarations for the NSEventDispatcher 
 #include <deque>
 #include <typeindex>
 
-class NSEventHandler;
+class nsevent_handler;
 
-class NSEventDispatcher
+class nsevent_dispatcher
 {
 public:
-	typedef std::deque<nsevent*> EventQueue;
-	typedef std::unordered_map<NSEventHandler*, EventQueue> ListenerQueue;
+	typedef std::deque<nsevent*> event_queue;
+	typedef std::unordered_map<nsevent_handler*, event_queue> listener_queue;
 
-	typedef std::unordered_set<NSEventHandler *> ListenerSet;
-    typedef std::unordered_map<std::type_index, ListenerSet> ListenerMap;
+	typedef std::unordered_set<nsevent_handler *> listener_set;
+    typedef std::unordered_map<std::type_index, listener_set> listener_map;
 
-	NSEventDispatcher();
+	nsevent_dispatcher();
 
-	~NSEventDispatcher();
+	~nsevent_dispatcher();
 
-	template<class EventType>
-	void registerListener(NSEventHandler * handler)
+	template<class event_type>
+	void register_listener(nsevent_handler * handler_)
 	{
-		std::type_index eventT(typeid(EventType));
-		auto empIter = mListeners.emplace(eventT, ListenerSet());
-		empIter.first->second.emplace(handler);
-		mListenerEvents.emplace(handler, EventQueue());
+		std::type_index eventT(typeid(event_type));
+		auto empIter = m_listeners.emplace(eventT, listener_set());
+		empIter.first->second.emplace(handler_);
+		m_listener_events.emplace(handler_, event_queue());
 	}
 
 	void clear();
 
-	void clear(NSEventHandler * handler);
+	void clear(nsevent_handler * handler_);
 
-	nsevent * next(NSEventHandler * handler);
+	nsevent * next(nsevent_handler * handler_);
 
-	void pop(NSEventHandler * handler);
+	void pop(nsevent_handler * handler_);
 
-	void pop_back(NSEventHandler * handler);
+	void pop_back(nsevent_handler * handler_);
 
-	void process(NSEventHandler * handler);
+	void process(nsevent_handler * handler_);
 	
-	template<class EventType, class ...Types>
-	EventType * push(Types... fargs)
+	template<class event_type, class ...arg_types>
+	event_type * push(arg_types... fargs)
 	{
-		std::type_index eventT(typeid(EventType));
-		auto listenerSetIter = mListeners.find(eventT);
-		if (listenerSetIter == mListeners.end() || listenerSetIter->second.empty())
+		std::type_index eventT(typeid(event_type));
+		auto listenerSetIter = m_listeners.find(eventT);
+		if (listenerSetIter == m_listeners.end() || listenerSetIter->second.empty())
 			return NULL;
 
 		// Go through all of the registered listeners under this evnt ID and add this evnt to their queue
-		EventType * evnt = new EventType(fargs...);
-		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
+		event_type * evnt = new event_type(fargs...);
+		listener_set::iterator currentListener = listenerSetIter->second.begin();
 		while (currentListener != listenerSetIter->second.end())
 		{
-			mListenerEvents[*currentListener].push_back(evnt);
+			m_listener_events[*currentListener].push_back(evnt);
 			++evnt->ref_count;
 			++currentListener;
 		}
@@ -78,42 +78,42 @@ public:
 		return evnt;
 	}
 
-    template<class EventType, class ...Types>
-    EventType * push_front(Types... fargs)
+    template<class event_type, class ...arg_types>
+    event_type * push_front(arg_types... fargs)
 	{
-		std::type_index eventT(typeid(EventType));
-		auto listenerSetIter = mListeners.find(eventT);
-		if (listenerSetIter == mListeners.end() || listenerSetIter->second.empty())
+		std::type_index eventT(typeid(event_type));
+		auto listenerSetIter = m_listeners.find(eventT);
+		if (listenerSetIter == m_listeners.end() || listenerSetIter->second.empty())
 			return NULL;
 
 		// Go through all of the registered listeners under this evnt ID and add this evnt to their queue
-		EventType * evnt = new EventType(fargs...);
-		ListenerSet::iterator currentListener = listenerSetIter->second.begin();
+		event_type * evnt = new event_type(fargs...);
+		listener_set::iterator currentListener = listenerSetIter->second.begin();
 		while (currentListener != listenerSetIter->second.end())
 		{
-			mListenerEvents[*currentListener].push_front(evnt);
+			m_listener_events[*currentListener].push_front(evnt);
 			++evnt->ref_count;
 			++currentListener;
 		}
 		return evnt;
 	}
 
-	template<class EventType>
-	bool unregisterListener(NSEventHandler * handler)
+	template<class event_type>
+	bool unregister_listener(nsevent_handler * handler_)
 	{
-		std::type_index eventT(typeid(EventType));
-		this->clear(handler); // Remove all events for this system
-		auto fiter = mListeners.find(eventT);
-		if (fiter != mListeners.end())
-			return fiter->second.erase(handler) == 1;
+		std::type_index eventT(typeid(event_type));
+		this->clear(handler_); // Remove all events for this system
+		auto fiter = m_listeners.find(eventT);
+		if (fiter != m_listeners.end())
+			return fiter->second.erase(handler_) == 1;
 		return false;
 	}
 
 	bool send(nsevent * pEvent);
 
 private:
-	ListenerQueue mListenerEvents;
-	ListenerMap mListeners;
+	listener_queue m_listener_events;
+	listener_map m_listeners;
 };
 
 

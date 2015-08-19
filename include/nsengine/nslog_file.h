@@ -23,47 +23,56 @@ This file contains all of the neccessary declarations for the NSLogFile class.
 class NSLogFile
 {
 public:
-	enum WriteMode {APPEND,OVERWRITE};
 
-	// Ctors
+	enum write_m {
+		wm_append,
+		wm_overwrite
+	};
+
 	NSLogFile(const nsstring & text="", const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
 	NSLogFile(const nsstringstream & stream, const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
 
-	// Dtor
 	~NSLogFile();
 
 	void clear();
 
-	// set
-	void setFileName(const nsstring & fileName);
-	void setDirectory(const nsstring & directory);
-	void setWriteMode(WriteMode mode);
-	void setTimeStampEnabled(bool);
+	void set_file_name(const nsstring & fileName);
 
-	// get
-	const nsstring & getFileName() const;
-	const nsstring & getDirectory() const;
-	WriteMode getWriteMode() const;
-	bool isTimeStampEnabled() const;
+	void set_dir(const nsstring & directory);
 
-	// functionality
+	void set_write_mode(write_m mode);
+
+	void enable_timestamp(bool enable_);
+
+	const nsstring & file_name() const;
+
+	const nsstring & dir() const;
+
+	write_m write_mode() const;
+
+	bool timestamp() const;
+
 	bool write(const nsstring & text);
+
 	bool write(const nsstringstream & num);
+
 	bool write(float num);
+
 	bool write(int32 num);
 
-	bool writeDate();
+	bool write_date();
 
-	// Static methods
-	static bool writeDate(const nsstring & fname,WriteMode mode = OVERWRITE);
-	static bool writeToCom(const nsstring & text,WriteMode mode = APPEND);
-	static bool writeTo(const nsstring & text, const nsstring &fname, WriteMode = APPEND);
+	static bool write_date(const nsstring & fname,write_m mode = wm_overwrite);
+
+	static bool write_to_com(const nsstring & text,write_m mode = wm_append);
+
+	static bool write_to(const nsstring & text, const nsstring &fname, write_m = wm_append);
 
 private:
-	WriteMode currentWriteMode;
-	nsstring filename;
-	nsstring dir;
-	bool timeStampEnabled;
+	write_m m_current_wm;
+	nsstring m_fname;
+	nsstring m_dir;
+	bool m_ts_enabled;
 };
 
 #endif  // NSLogFile_H

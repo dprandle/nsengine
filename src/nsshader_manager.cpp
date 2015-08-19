@@ -79,16 +79,16 @@ bool nsshader_manager::load_stage(nsshader * sh, const nsstring & fname, nsshade
 		fName = fname;
 	
 	nsfstream file;
-	NSFilePUPer * p;
+	nsfile_pupper * p;
 	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::in | nsfstream::binary);
-		p = new NSBinFilePUPer(file, PUP_IN);
+		p = new nsbinary_file_pupper(file, PUP_IN);
 	}
 	else
 	{
 		file.open(fName, nsfstream::in);
-		p = new NSTextFilePUPer(file, PUP_IN);
+		p = new nstext_file_pupper(file, PUP_IN);
 	}
 
 	if (!file.is_open())
@@ -100,9 +100,9 @@ bool nsshader_manager::load_stage(nsshader * sh, const nsstring & fname, nsshade
 
 	nsstring rt;
 	if (m_save_mode == binary)
-		pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
+		pup(*(static_cast<nsbinary_file_pupper*>(p)), rt, "type");
 	else
-		pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
+		pup(*(static_cast<nstext_file_pupper*>(p)), rt, "type");
 
 	if (rt != nsengine.guid(sh->type()) + "_stage:" + sh->stage_name(stagetype))
 	{
@@ -139,23 +139,23 @@ bool nsshader_manager::save_stage(nsshader * sh, const nsstring & filename, nssh
 	else
 		fName = filename;
 
-	bool fret = nsfileio::create_dir(fName);
+	bool fret = nsfile_os::create_dir(fName);
 	if (fret)
 	{
 		dprint("nsshader_manager::save Created directory " + fName);
 	}
 
 	nsfstream file;
-	NSFilePUPer * p;
+	nsfile_pupper * p;
 	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::out | nsfstream::binary);
-		p = new NSBinFilePUPer(file, PUP_OUT);
+		p = new nsbinary_file_pupper(file, PUP_OUT);
 	}
 	else
 	{
 		file.open(fName, nsfstream::out);
-		p = new NSTextFilePUPer(file, PUP_OUT);
+		p = new nstext_file_pupper(file, PUP_OUT);
 	}
 
 	if (!file.is_open())
@@ -168,9 +168,9 @@ bool nsshader_manager::save_stage(nsshader * sh, const nsstring & filename, nssh
 	nsstring guid_ = nsengine.guid(sh->type());
     std::string savestr = guid_ + "_stage:" + sh->stage_name(stagetype);
 	if (m_save_mode == binary)
-        pup(*(static_cast<NSBinFilePUPer*>(p)), savestr, "type");
+        pup(*(static_cast<nsbinary_file_pupper*>(p)), savestr, "type");
 	else
-        pup(*(static_cast<NSTextFilePUPer*>(p)), savestr, std::string("type"));
+        pup(*(static_cast<nstext_file_pupper*>(p)), savestr, std::string("type"));
 
 	sh->pup(p, stagetype);
 	dprint("nsshader_manager::saveStage - Succesfully saved stage " + sh->stage_name(stagetype) + " to file " + fName);

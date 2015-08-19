@@ -72,7 +72,7 @@ public:
 	template<class comp_type>
 	nspentityset entities()
 	{
-		uint32 hashed_type = nsengine.typeID(std::type_index(typeid(comp_type)));
+		uint32 hashed_type = nsengine.type_id(std::type_index(typeid(comp_type)));
 		return entities(hashed_type);
 	}
 

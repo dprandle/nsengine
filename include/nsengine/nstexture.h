@@ -146,7 +146,7 @@ public:
 	*/
 	void enable_mipmaps(int32 level = 0);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	/*
 	Release the opengl image name
@@ -323,7 +323,7 @@ public:
 	*/
 	bool lock();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	virtual void resize(uint32 w);
 
@@ -414,7 +414,7 @@ public:
 	*/
 	bool lock();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	virtual void resize(uint32 w, uint32 h);
 
@@ -506,7 +506,7 @@ public:
 	*/
 	bool lock();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	/*!
 	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
@@ -621,7 +621,7 @@ public:
 	*/
 	bool lock(cube_face f);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	virtual void resize(uint32 w, uint32 h);
 	

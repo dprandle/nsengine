@@ -29,7 +29,7 @@
 #include <nsplugin_manager.h>
 
 nsscene::nsscene():
-	m_tile_grid(new NSTileGrid()),
+	m_tile_grid(new nstile_grid()),
 	m_camera_id(),
 	m_skydome_id(),
 	m_max_players(0),
@@ -245,16 +245,16 @@ const nsstring & nsscene::creator() const
 	return m_creator;
 }
 
-void nsscene::pup(NSFilePUPer * p)
+void nsscene::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -320,17 +320,17 @@ const nsstring & nsscene::notes() const
 	return m_notes;
 }
 
-NSTileGrid & nsscene::grid()
+nstile_grid & nsscene::grid()
 {
 	return *m_tile_grid;
 }
 
 void nsscene::hide_layer(int32 pLayer, bool pHide)
 {
-	NSTileGrid::GridBounds g = m_tile_grid->occupiedGridBounds();
-	for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
+	for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
 	{
-		for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+		for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 		{
 			uivec3 id = m_tile_grid->get(ivec3(x, y, -pLayer));
 			if (id != uivec3())
@@ -347,14 +347,14 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 
 void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 {
-	NSTileGrid::GridBounds g = m_tile_grid->occupiedGridBounds();
+	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
 	pBaseLayer *= -1;
 
-	for (int32 z = pBaseLayer-1; z >= g.minSpace.z; --z)
+	for (int32 z = pBaseLayer-1; z >= g.min_space.z; --z)
 	{
-		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
 		{
-			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 			{
 				uivec3 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec3())
@@ -371,9 +371,9 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 
 	if (pHide)
 	{
-		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
 		{
-			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 			{
 				uivec3 id = m_tile_grid->get(ivec3(x, y, pBaseLayer));
 				if (id != uivec3())
@@ -391,14 +391,14 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 
 void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 {
-	NSTileGrid::GridBounds g = m_tile_grid->occupiedGridBounds();
+	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
 	pTopLayer *= -1;
 
-	for (int32 z = pTopLayer+1; z <= g.maxSpace.z; ++z)
+	for (int32 z = pTopLayer+1; z <= g.max_space.z; ++z)
 	{
-		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
 		{
-			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 			{
 				uivec3 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec3())
@@ -415,9 +415,9 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 
 	if (pHide)
 	{
-		for (int32 y = g.minSpace.y; y <= g.maxSpace.y; ++y)
+		for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
 		{
-			for (int32 x = g.minSpace.x; x <= g.maxSpace.x; ++x)
+			for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 			{
 				uivec3 id = m_tile_grid->get(ivec3(x, y, pTopLayer));
 				if (id != uivec3())

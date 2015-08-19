@@ -1,15 +1,3 @@
-/* ----------------------------- Noble Steed Engine----------------------------*
-Authors : Daniel Randle, Alex Bourne
-Date Created : Mar 7 2013
-
-File:
-	nsmesh.h
-
-Description:
-	This file contains the nsmesh class which can be used to load meshes in from file
-	and draw them using their attached shader
-*---------------------------------------------------------------------------*/
-
 #ifndef NSMESH_H
 #define NSMESH_H
 
@@ -19,17 +7,6 @@ Description:
 #include <vector>
 #include <nsmaterial.h>
 #include <nsmath.h>
-
-/* ---------------------------------Class nsmesh-----------------------------*
-
-Description:
-	nsmesh will load a mesh from file along with any materials that it may use.
-	File formates supported are defined by the file formats in Assimp library
-	as that is the library this class uses to load meshes from file.
-
-*-------------------------------------------------------------------------------*/
-
-// includes
 #include <nspupper.h>
 #include <nsshader.h>
 #include <assimp/Importer.hpp>
@@ -120,7 +97,7 @@ public:
 		node * node_;
 		nsstring name;
 		nsmesh * parent_mesh;
-		NSBoundingBox bounding_box;
+		nsbounding_box bounding_box;
 		bool has_tex_coords;
 	};
 
@@ -129,7 +106,7 @@ public:
 	nsmesh();
 	~nsmesh();
 
-	const NSBoundingBox & aabb();
+	const nsbounding_box & aabb();
 
 	bool add(submesh * submesh);
 
@@ -201,7 +178,7 @@ public:
 
 	node_tree * tree();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	submesh * remove(submesh * submesh);
 
@@ -224,7 +201,7 @@ private:
 	void _propagate_world_transform(node * child_node);
 	std::vector<submesh*> m_submeshes;
 	node_tree* m_node_tree;
-	NSBoundingBox m_bounding_box;
+	nsbounding_box m_bounding_box;
 };
 
 // This is a special structure to hold a set of bone ids that are each weighted to show how much the bone

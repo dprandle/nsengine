@@ -1,9 +1,9 @@
 /*!
 \file nstimer.cpp
 
-\brief Definition file for NSTimer class
+\brief Definition file for nstimer class
 
-This file contains all of the neccessary definitions for the NSTimer class.
+This file contains all of the neccessary definitions for the nstimer class.
 
 \author Daniel Randle
 \date December 17 2013
@@ -12,64 +12,66 @@ This file contains all of the neccessary definitions for the NSTimer class.
 
 #include <nstimer.h>
 
-NSTimer::NSTimer() : mStart(), mCurrent(), mLast(), mLag(0.0f), mTimer(), mRunning(false)
+nstimer::nstimer() : m_start(), m_current(), m_last(), m_lag(0.0f), m_timer(), m_running(false)
 {
 	reset();
 }
 
-NSTimer::~NSTimer()
+nstimer::~nstimer()
 {}
 
-float NSTimer::dt()
+float nstimer::dt()
 {
-	std::chrono::duration<float> dt = mCurrent - mLast;
+	std::chrono::duration<float> dt = m_current - m_last;
 	return dt.count();
 }
 
-float NSTimer::fixed()
+float nstimer::fixed()
 {
 	return FIXED_TIME_STEP;
 }
 
-float NSTimer::elapsed()
+float nstimer::elapsed()
 {
-	std::chrono::duration<float> elapsed = mCurrent - mStart;
+	std::chrono::duration<float> elapsed = m_current - m_start;
 	return elapsed.count();
 }
 
-float & NSTimer::lag()
+float & nstimer::lag()
 {
-	return mLag;
+	return m_lag;
 }
 
-void NSTimer::pause(bool pPause)
+void nstimer::pause()
 {
-	mRunning = !pPause;
-	if (mRunning)
-	{
-		update();
-		mStart += (mCurrent - mLast);
-	}
+	m_running = false;
 }
 
-void NSTimer::reset()
+void nstimer::resume()
 {
-	mStart = mTimer.now();
-	mCurrent = mTimer.now();
-	mLast = mTimer.now();
+	m_running = true;
+	update();
+	m_start += (m_current - m_last);
 }
 
-void NSTimer::start()
+void nstimer::reset()
 {
-	mStart = mTimer.now();
-	mCurrent = mStart;
-	mRunning = true;
+	m_start = m_timer.now();
+	m_current = m_timer.now();
+	m_last = m_timer.now();
 }
 
-void NSTimer::update()
+void nstimer::start()
 {
-	mLast = mCurrent;
-	if (mRunning)
-		mCurrent = mTimer.now();
-	mLag += dt();
+	m_start = m_timer.now();
+	m_current = m_start;
+	m_running = true;
+}
+
+void nstimer::update()
+{
+	m_last = m_current;
+	if (m_running)
+		m_current = m_timer.now();
+	m_lag += dt();
 }

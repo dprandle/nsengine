@@ -1,9 +1,9 @@
 /*!
 \file nseventhandler.cpp
 
-\brief Definition file for NSEventDispatcher class
+\brief Definition file for nsevent_dispatcher class
 
-This file contains all of the neccessary definitions for the NSEventDispatcher class.
+This file contains all of the neccessary definitions for the nsevent_dispatcher class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -17,29 +17,29 @@ This file contains all of the neccessary definitions for the NSEventDispatcher c
 #include <nssystem.h>
 #include <nsentity.h>
 
-NSEventDispatcher::NSEventDispatcher() : mListenerEvents(), mListeners()
+nsevent_dispatcher::nsevent_dispatcher() : m_listener_events(), m_listeners()
 {}
 
-NSEventDispatcher::~NSEventDispatcher()
+nsevent_dispatcher::~nsevent_dispatcher()
 {
 	clear();
 }
 
-void NSEventDispatcher::clear()
+void nsevent_dispatcher::clear()
 {
-	auto iter = mListenerEvents.begin();
-	while (iter != mListenerEvents.end())
+	auto iter = m_listener_events.begin();
+	while (iter != m_listener_events.end())
 	{
 		clear(iter->first);
 		++iter;
 	}
-	mListenerEvents.clear();
+	m_listener_events.clear();
 }
 
-void NSEventDispatcher::clear(NSEventHandler * handler)
+void nsevent_dispatcher::clear(nsevent_handler * handler)
 {
-	auto fiter = mListenerEvents.find(handler);
-	if (fiter != mListenerEvents.end())
+	auto fiter = m_listener_events.find(handler);
+	if (fiter != m_listener_events.end())
 	{
 		while (fiter->second.begin() != fiter->second.end())
 		{
@@ -52,18 +52,18 @@ void NSEventDispatcher::clear(NSEventHandler * handler)
 }
 
 
-nsevent * NSEventDispatcher::next(NSEventHandler * handler)
+nsevent * nsevent_dispatcher::next(nsevent_handler * handler)
 {
-	auto fiter = mListenerEvents.find(handler);
-	if (fiter != mListenerEvents.end() && !fiter->second.empty())
+	auto fiter = m_listener_events.find(handler);
+	if (fiter != m_listener_events.end() && !fiter->second.empty())
 		return fiter->second.front();
 	return NULL;
 }
 
-void NSEventDispatcher::pop(NSEventHandler * handler)
+void nsevent_dispatcher::pop(nsevent_handler * handler)
 {
-	auto fiter = mListenerEvents.find(handler);
-	if (fiter != mListenerEvents.end() && !fiter->second.empty())
+	auto fiter = m_listener_events.find(handler);
+	if (fiter != m_listener_events.end() && !fiter->second.empty())
 	{
 		--(fiter->second.front()->ref_count); // decrease refcount
 		if (fiter->second.front()->ref_count == 0)
@@ -72,10 +72,10 @@ void NSEventDispatcher::pop(NSEventHandler * handler)
 	}
 }
 
-void NSEventDispatcher::pop_back(NSEventHandler * handler)
+void nsevent_dispatcher::pop_back(nsevent_handler * handler)
 {
-	auto fiter = mListenerEvents.find(handler);
-	if (fiter != mListenerEvents.end() && !fiter->second.empty())
+	auto fiter = m_listener_events.find(handler);
+	if (fiter != m_listener_events.end() && !fiter->second.empty())
 	{
 		--(fiter->second.back()->ref_count); // decrease refcount
 		if (fiter->second.back()->ref_count == 0)
@@ -84,17 +84,17 @@ void NSEventDispatcher::pop_back(NSEventHandler * handler)
 	}
 }
 
-void NSEventDispatcher::process(NSEventHandler * handler)
+void nsevent_dispatcher::process(nsevent_handler * handler)
 {
-	auto events = mListenerEvents.find(handler);
-	if (events == mListenerEvents.end())
+	auto events = m_listener_events.find(handler);
+	if (events == m_listener_events.end())
 		return;
 
 	auto iter = events->second.begin();
 	while (iter != events->second.end())
 	{
         std::type_index ti(typeid(*(*iter)));
-		if (events->first->handleEvent(*iter))
+		if (events->first->handle_event(*iter))
 		{
 			--((*iter)->ref_count);
 			if ((*iter)->ref_count == 0)
@@ -106,7 +106,7 @@ void NSEventDispatcher::process(NSEventHandler * handler)
 	}
 }
 
-bool NSEventDispatcher::send(nsevent * pEvent)
+bool nsevent_dispatcher::send(nsevent * pEvent)
 {
 	// do nothing right now... until observer stuff realized then remove function
 	return true;

@@ -4,111 +4,111 @@
 #include "nsmat2.h"
 
 template <class T>
-NSVec3<T> operator*(const NSVec3<T> & lhs, const NSMat3<T> & rhs);
+nsvec3<T> operator*(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSVec3<T> operator/(const NSVec3<T> & lhs, const NSMat3<T> & rhs);
+nsvec3<T> operator/(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSMat3<T> operator%(const NSVec3<T> & lhs, const NSMat3<T> & rhs);
+nsmat3<T> operator%(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSMat3<T> operator*(const int32 & pLHS, const NSMat3<T> & pRHS);
+nsmat3<T> operator*(const int32 & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSMat3<T> operator*(const float & pLHS, const NSMat3<T> & pRHS);
+nsmat3<T> operator*(const float & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSMat3<T> operator*(const double & pLHS, const NSMat3<T> & pRHS);
+nsmat3<T> operator*(const double & lhs_, const nsmat3<T> & rhs_);
 
 template<class T>
-NSMat3<T> operator/(const int32 & pLHS, const NSMat3<T> & pRHS);
+nsmat3<T> operator/(const int32 & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSMat3<T> operator/(const float & pLHS, const NSMat3<T> & pRHS);
+nsmat3<T> operator/(const float & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-NSMat3<T> operator/(const double & pLHS, const NSMat3<T> & pRHS);
+nsmat3<T> operator/(const double & lhs_, const nsmat3<T> & rhs_);
 
 template <class T>
-T determinant(const NSMat3<T> & mat);
+T determinant(const nsmat3<T> & mat_);
 
 template <class T>
-NSMat3<T> rotation2dMat3(const T angle, bool rads = false);
+nsmat3<T> rotation2d_mat3(const T angle_, bool rads_ = false);
 
 template <class T>
-NSMat3<T> rotation2dMat3(const NSMat3<T> & transform2d);
+nsmat3<T> rotation2d_mat3(const nsmat3<T> & transform2d_);
 
 template <class T>
-NSMat3<T> rotation2dMat3(const NSMat2<T> & transform2d);
+nsmat3<T> rotation2d_mat3(const nsmat2<T> & transform2d_);
 
 template<class T>
-NSMat3<T> rotationMat3(const NSVec4<T> & axisAngle, bool rads = false);
+nsmat3<T> rotation_mat3(const nsvec4<T> & axis_angle_, bool rads_ = false);
 
 template<class T>
-NSMat3<T> rotationMat3(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order , bool rads = false);
+nsmat3<T> rotation_mat3(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false);
 
 template<class T>
-NSMat3<T> rotationMat3(const NSQuat<T> & orientation);
+nsmat3<T> rotation_mat3(const nsquat<T> & orientation_);
 
 template<class T>
-NSMat3<T> rotationMat3(const NSVec3<T> & vec, const NSVec3<T> & toVec);
+nsmat3<T> rotation_mat3(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_);
 
 template<class T>
-NSMat3<T> rotationMat3(const NSMat4<T> & transform);
+nsmat3<T> rotation_mat3(const nsmat4<T> & transform_);
 
 template<class T>
-NSMat3<T> scaling2dMat3(const NSVec2<T> & scale);
+nsmat3<T> scaling2d_mat3(const nsvec2<T> & scale_);
 
 template<class T>
-NSMat3<T> scaling2dMat3(const NSMat2<T> & transform2d);
+nsmat3<T> scaling2d_mat3(const nsmat2<T> & transform2d_);
 
 template<class T>
-NSMat3<T> scaling2dMat3(const NSMat3<T> & transform2d);
+nsmat3<T> scaling2d_mat3(const nsmat3<T> & transform2d_);
 
 template <class T>
-NSMat3<T> scalingMat3(const NSVec3<T> & scale);
+nsmat3<T> scaling_mat3(const nsvec3<T> & scale_);
 
 template <class T>
-NSMat3<T> scalingMat3(const NSMat3<T> & transform);
+nsmat3<T> scaling_mat3(const nsmat3<T> & transform_);
 
 template <class T>
-NSMat3<T> scalingMat3(const NSMat4<T> & transform);
+nsmat3<T> scaling_mat3(const nsmat4<T> & transform_);
 
 template <class T>
-NSMat3<T> translation2dMat3(const NSVec3<T> & v3);
+nsmat3<T> translation2d_mat3(const nsvec3<T> & m3_);
 
 template <class T>
-NSMat3<T> translation2dMat3(const NSVec2<T> & v2);
+nsmat3<T> translation2d_mat3(const nsvec2<T> & m2_);
 
 template <class T>
-NSMat3<T> transpose(const NSMat3<T> mat);
+nsmat3<T> transpose(const nsmat3<T> mat_);
 
 template <class T>
-NSMat3<T> inverse(const NSMat3<T> mat);
+nsmat3<T> inverse(const nsmat3<T> mat_);
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSMat3<T> & m3);
+void pup(PUPer & p, nsmat3<T> & m3);
 
 template <class T>
-struct NSMat3
+struct nsmat3
 {
-	NSMat3()
+	nsmat3()
 	{
-		setIdentity();
+		set_identity();
 	}
 
-	NSMat3(const T & val)
+	nsmat3(const T & val_)
 	{
-		set(val);
+		set(val_);
 	}
 
-	NSMat3(const NSMat3 & copy)
+	nsmat3(const nsmat3 & copy_)
 	{
-		set(copy.data[0], copy.data[1], copy.data[2]);
+		set(copy_.data[0], copy_.data[1], copy_.data[2]);
 	}
 
-	NSMat3(
+	nsmat3(
 		const T & a, const T & b, const T & c,
 		const T & d, const T & e, const T & f,
 		const T & g, const T & h, const T & i)
@@ -116,24 +116,24 @@ struct NSMat3
 		set(a, b, c, d, e, f, g, h, i);
 	}
 
-	NSMat3(const NSVec3<T> & row1, const NSVec3<T> & row2, const NSVec3<T> & row3)
+	nsmat3(const nsvec3<T> & row1, const nsvec3<T> & row2, const nsvec3<T> & row3)
 	{
 		set(row1, row2, row3);
 	}
 
-	NSMat3(const NSMat2<T> & basis)
+	nsmat3(const nsmat2<T> & basis_)
 	{
-		set(basis);
+		set(basis_);
 		data[0][2] = static_cast<T>(0); data[1][2] = static_cast<T>(0);
 		data[2][0] = static_cast<T>(0); data[2][1] = static_cast<T>(0); data[2][2] = static_cast<T>(1);
 	}
 
-	NSMat2<T> basis() const
+	nsmat2<T> basis() const
 	{
-		return NSMat2<T>(data[0][0], data[0][1], data[1][0], data[1][1]);
+		return nsmat2<T>(data[0][0], data[0][1], data[1][0], data[1][1]);
 	}
 
-	T * dataPtr()
+	T * data_ptr()
 	{
 		return &data[0][0];
 	}
@@ -146,14 +146,14 @@ struct NSMat3
 			data[0][2] * data[1][0] * data[2][1] - data[0][2] * data[1][1] * data[2][0];
 	}
 
-	NSMat3<T> & invert()
+	nsmat3<T> & invert()
 	{
 		T det = determinant();
 
 		if (det == static_cast<T>(0))
 			return set(0);
 
-		NSMat3 ret;
+		nsmat3 ret;
 		ret[0].set(
 			data[1][1] * data[2][2] - data[1][2] * data[2][1],
 			data[0][2] * data[2][1] - data[0][1] * data[2][2],
@@ -173,81 +173,81 @@ struct NSMat3
 		return (*this = ret);
 	}
 
-	NSVec3<T> right() const
+	nsvec3<T> right() const
 	{
 		return normalize((*this)(0));
 	}
 
-	NSMat3<T> & rotation2dFrom(const T angle, bool rads = false)
+	nsmat3<T> & rotation2d_from(const T angle_, bool rads_ = false)
 	{
-		if (!rads)
-			angle = radians(angle);
+		if (!rads_)
+			angle_ = radians(angle_);
 
-		data[0][0] = static_cast<T>(std::cos(angle)); data[0][1] = static_cast<T>(std::sin(angle));
-		data[1][0] = static_cast<T>(-std::sin(angle)); data[1][1] = static_cast<T>(std::cos(angle));
+		data[0][0] = static_cast<T>(std::cos(angle_)); data[0][1] = static_cast<T>(std::sin(angle_));
+		data[1][0] = static_cast<T>(-std::sin(angle_)); data[1][1] = static_cast<T>(std::cos(angle_));
 		data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0); data[2][2] = static_cast<T>(1);
 		return *this;
 	}
 
-	NSMat3<T> & rotation2dFrom(const NSMat3<T> & transform2d)
+	nsmat3<T> & rotation2d_from(const nsmat3<T> & transform2d_)
 	{
-		*this = transform2d;
-		data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0); data[2][2] = static_cast<T>(1);
-		data[0].normalize();
-		data[1].normalize();
-		return *this;
-	}
-
-	NSMat3<T> & rotation2dFrom(const NSMat2<T> & transform2d)
-	{
-		set(transform2d);
+		*this = transform2d_;
 		data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0); data[2][2] = static_cast<T>(1);
 		data[0].normalize();
 		data[1].normalize();
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSVec4<T> & axisAngle, bool rads = false)
+	nsmat3<T> & rotation2d_from(const nsmat2<T> & transform2d_)
+	{
+		set(transform2d_);
+		data[0][2] = data[1][2] = data[2][0] = data[2][1] = static_cast<T>(0); data[2][2] = static_cast<T>(1);
+		data[0].normalize();
+		data[1].normalize();
+		return *this;
+	}
+
+	nsmat3<T> & rotation_from(const nsvec4<T> & axis_angle_, bool rads_ = false)
 	{
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToMatrix/index.htm
 
-		T angle = axisAngle.a;
+		T angle_ = axis_angle_.a;
 
-		if (!rads)
-			angle = radians(angle);
+		if (!rads_)
+			angle_ = radians(angle_);
 
-		T c = static_cast<T>(std::cos(angle));
-		T s = static_cast<T>(std::sin(angle));
+		T c = static_cast<T>(std::cos(angle_));
+		T s = static_cast<T>(std::sin(angle_));
 		T t = static_cast<T>(1) - c;
 
-		data[0][0] = c + axisAngle.x * axisAngle.x * t;
-		data[1][1] = c + axisAngle.y * axisAngle.y * t;
-		data[2][2] = c + axisAngle.z * axisAngle.z * t;
+		data[0][0] = c + axis_angle_.x * axis_angle_.x * t;
+		data[1][1] = c + axis_angle_.y * axis_angle_.y * t;
+		data[2][2] = c + axis_angle_.z * axis_angle_.z * t;
 
-		T tmp1 = axisAngle.x * axisAngle.y * t;
-		T tmp2 = axisAngle.z * s;
+		T tmp1 = axis_angle_.x * axis_angle_.y * t;
+		T tmp2 = axis_angle_.z * s;
 		data[1][0] = tmp1 + tmp2;
 		data[0][1] = tmp1 - tmp2;
 
-		tmp1 = axisAngle.x * axisAngle.z * t;
-		tmp2 = axisAngle.y * s;
+		tmp1 = axis_angle_.x * axis_angle_.z * t;
+		tmp2 = axis_angle_.y * s;
 		data[2][0] = tmp1 - tmp2;
 		data[0][2] = tmp1 + tmp2;
 
-		tmp1 = axisAngle.y * axisAngle.z * t;
-		tmp2 = axisAngle.x * s;
+		tmp1 = axis_angle_.y * axis_angle_.z * t;
+		tmp2 = axis_angle_.x * s;
 		data[2][1] = tmp1 + tmp2;
 		data[1][2] = tmp1 - tmp2;
 
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order , bool rads = false)
+	nsmat3<T> & rotation_from(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false)
 	{
 		T cb, sb, ch, sh, ca, sa;
-		if (!rads)
+		if (!rads_)
 		{
-			NSVec3<T> eulRads(radians(euler));
+			nsvec3<T> eulRads(radians(euler_));
 			cb = static_cast<T>(std::cos(eulRads.x));
 			sb = static_cast<T>(std::sin(eulRads.x));
 			ch = static_cast<T>(std::cos(eulRads.y));
@@ -257,17 +257,17 @@ struct NSMat3
 		}
 		else
 		{
-			cb = static_cast<T>(std::cos(euler.x));
-			sb = static_cast<T>(std::sin(euler.x));
-			ch = static_cast<T>(std::cos(euler.y));
-			sh = static_cast<T>(std::sin(euler.y));
-			ca = static_cast<T>(std::cos(euler.z));
-			sa = static_cast<T>(std::sin(euler.z));
+			cb = static_cast<T>(std::cos(euler_.x));
+			sb = static_cast<T>(std::sin(euler_.x));
+			ch = static_cast<T>(std::cos(euler_.y));
+			sh = static_cast<T>(std::sin(euler_.y));
+			ca = static_cast<T>(std::cos(euler_.z));
+			sa = static_cast<T>(std::sin(euler_.z));
 		}
 
-		switch (order)
+		switch (order_)
 		{
-		case(NSVec3<T>::XYZ) :
+		case(nsvec3<T>::XYZ) :
 		{
 			data[0][0] = ch * ca;
 			data[0][1] = -ch * sa;
@@ -282,7 +282,7 @@ struct NSMat3
 			data[2][2] = cb * ch;
 			break;
 		}
-		case(NSVec3<T>::XZY) :
+		case(nsvec3<T>::XZY) :
 		{
 			data[0][0] = ch * ca;
 			data[0][1] = -sa;
@@ -297,7 +297,7 @@ struct NSMat3
 			data[2][2] = sb * sh * sa + cb * ch;
 			break;
 		}
-		case(NSVec3<T>::YXZ) :
+		case(nsvec3<T>::YXZ) :
 		{
 			data[0][0] = ch * ca + sh * sa * sb;
 			data[0][1] = sh * ca * sb - ch * sa;
@@ -312,7 +312,7 @@ struct NSMat3
 			data[2][2] = cb * ch;
 			break;
 		}
-		case(NSVec3<T>::YZX) :
+		case(nsvec3<T>::YZX) :
 		{
 			data[0][0] = ch * ca;
 			data[0][1] = sb * sh - cb * ch * sa;
@@ -327,7 +327,7 @@ struct NSMat3
 			data[2][2] = cb * ch - sb * sh * sa;
 			break;
 		}
-		case(NSVec3<T>::ZXY) :
+		case(nsvec3<T>::ZXY) :
 		{
 			data[0][0] = ch * ca - sh * sa * sb;
 			data[0][1] = -cb * sa;
@@ -342,7 +342,7 @@ struct NSMat3
 			data[2][2] = cb * ch;
 			break;
 		}
-		case(NSVec3<T>::ZYX) :
+		case(nsvec3<T>::ZYX) :
 		{
 			data[0][0] = ch * ca;
 			data[0][1] = sb * ca * sh - cb * sa;
@@ -358,50 +358,50 @@ struct NSMat3
 			break;
 		}
 		}
-		return roundToZero();
+		return round_to_zero();
 	}
 
-	NSMat3<T> & rotationFrom(const NSQuat<T> & ornt)
+	nsmat3<T> & rotation_from(const nsquat<T> & ornt_)
 	{
-		data[0][0] = 1 - 2*(ornt.y*ornt.y + ornt.z*ornt.z);
-		data[0][1] = 2*(ornt.x*ornt.y - ornt.z*ornt.w);
-		data[0][2] = 2*(ornt.x*ornt.z + ornt.y*ornt.w);
+		data[0][0] = 1 - 2*(ornt_.y*ornt_.y + ornt_.z*ornt_.z);
+		data[0][1] = 2*(ornt_.x*ornt_.y - ornt_.z*ornt_.w);
+		data[0][2] = 2*(ornt_.x*ornt_.z + ornt_.y*ornt_.w);
 
-		data[1][0] = 2*(ornt.x*ornt.y + ornt.z*ornt.w);
-		data[1][1] = 1 - 2*(ornt.x*ornt.x + ornt.z*ornt.z);
-		data[1][2] = 2*(ornt.y*ornt.z - ornt.x*ornt.w);
+		data[1][0] = 2*(ornt_.x*ornt_.y + ornt_.z*ornt_.w);
+		data[1][1] = 1 - 2*(ornt_.x*ornt_.x + ornt_.z*ornt_.z);
+		data[1][2] = 2*(ornt_.y*ornt_.z - ornt_.x*ornt_.w);
 
-		data[2][0] = 2*(ornt.x*ornt.z - ornt.y*ornt.w);
-		data[2][1] = 2*(ornt.y*ornt.z + ornt.x*ornt.w);
-		data[2][2] = 1 - 2*(ornt.x*ornt.x + ornt.y*ornt.y);
+		data[2][0] = 2*(ornt_.x*ornt_.z - ornt_.y*ornt_.w);
+		data[2][1] = 2*(ornt_.y*ornt_.z + ornt_.x*ornt_.w);
+		data[2][2] = 1 - 2*(ornt_.x*ornt_.x + ornt_.y*ornt_.y);
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSMat3<T> & transform)
+	nsmat3<T> & rotation_from(const nsmat3<T> & transform_)
 	{
-		*this = transform;
+		*this = transform_;
 		data[0].normalize();
 		data[1].normalize();
 		data[2].normalize();
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSMat4<T> & transform)
+	nsmat3<T> & rotation_from(const nsmat4<T> & transform_)
 	{
-		*this = transform.basis();
+		*this = transform_.basis();
 		data[0].normalize();
 		data[1].normalize();
 		data[2].normalize();
 		return *this;
 	}
 
-	NSMat3<T> & rotationFrom(const NSVec3<T> & vec, const NSVec3<T> & toVec)
+	nsmat3<T> & rotation_from(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_)
 	{
 		/* http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm */
-		NSVec3<T> vs = cross(vec, toVec);
-		T ca = vec * toVec;
-		NSVec3<T> v = normalize(vs);
-		NSVec3<T> vt = v * (static_cast<T>(1) - ca);
+		nsvec3<T> vs = cross(vec_, to_vec_);
+		T ca = vec_ * to_vec_;
+		nsvec3<T> v = normalize(vs);
+		nsvec3<T> vt = v * (static_cast<T>(1) - ca);
 
 		data[0][0] = vt.x * v.x + ca;
 		data[1][1] = vt.y * v.y + ca;
@@ -418,7 +418,7 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & roundToZero()
+	nsmat3<T> & round_to_zero()
 	{
 		data[0].roundToZero();
 		data[1].roundToZero();
@@ -426,50 +426,50 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & scaling2dFrom(const NSVec2<T> & scale)
+	nsmat3<T> & scaling2d_from(const nsvec2<T> & scale_)
 	{
-		setIdentity();
-		data[0][0] = scale.x; data[1][1] = scale.y;
+		set_identity();
+		data[0][0] = scale_.x; data[1][1] = scale_.y;
 		return *this;
 	}
 
-	NSMat3<T> & scaling2dFrom(const NSMat2<T> & transform2d)
+	nsmat3<T> & scaling2d_from(const nsmat2<T> & transform2d_)
 	{
-		NSVec2<T> scalingVec(transform2d[0].length(), transform2d[1].length());
-		return scalingFrom(scalingVec);
+		nsvec2<T> scalingVec(transform2d_[0].length(), transform2d_[1].length());
+		return scaling_from(scalingVec);
 	}
 
-	NSMat3<T> & scaling2dFrom(const NSMat3<T> & transform2d)
+	nsmat3<T> & scaling2d_from(const nsmat3<T> & transform2d_)
 	{
-		NSVec2<T> scalingVec;
-		scalingVec.x = sqrt(transform2d[0][0] * transform2d[0][0] + transform2d[0][1] * transform2d[0][1]);
-		scalingVec.y = sqrt(transform2d[1][0] * transform2d[1][0] + transform2d[1][1] * transform2d[1][1]);
-		return scalingFrom(scalingVec);
+		nsvec2<T> scalingVec;
+		scalingVec.x = sqrt(transform2d_[0][0] * transform2d_[0][0] + transform2d_[0][1] * transform2d_[0][1]);
+		scalingVec.y = sqrt(transform2d_[1][0] * transform2d_[1][0] + transform2d_[1][1] * transform2d_[1][1]);
+		return scaling_from(scalingVec);
 	}
 
-	NSMat3<T> & scalingFrom(const NSVec3<T> & scale)
+	nsmat3<T> & scaling_from(const nsvec3<T> & scale_)
 	{
-		setIdentity();
-		data[0][0] = scale.x; data[1][1] = scale.y; data[2][2] = scale.z;
+		set_identity();
+		data[0][0] = scale_.x; data[1][1] = scale_.y; data[2][2] = scale_.z;
 		return *this;
 	}
 
-	NSMat3<T> & scalingFrom(const NSMat3<T> & transform)
+	nsmat3<T> & scaling_from(const nsmat3<T> & transform_)
 	{
-		NSVec3<T> scalingVec(transform[0].length(), transform[1].length(), transform[2].length());		
-		return scalingFrom(scalingVec);
+		nsvec3<T> scalingVec(transform_[0].length(), transform_[1].length(), transform_[2].length());		
+		return scaling_from(scalingVec);
 	}
 
-	NSMat3<T> & scalingFrom(const NSMat4<T> & transform)
+	nsmat3<T> & scaling_from(const nsmat4<T> & transform_)
 	{
-		NSVec3<T> scalingVec;
-		scalingVec.x = sqrt(transform[0][0] * transform[0][0] + transform[0][1] * transform[0][1] + transform[0][2] * transform[0][2]);
-		scalingVec.y = sqrt(transform[1][0] * transform[1][0] + transform[1][1] * transform[1][1] + transform[1][2] * transform[1][2]);
-		scalingVec.z = sqrt(transform[2][0] * transform[2][0] + transform[2][1] * transform[2][1] + transform[2][2] * transform[2][2]);
-		return scalingFrom(scalingVec);
+		nsvec3<T> scalingVec;
+		scalingVec.x = sqrt(transform_[0][0] * transform_[0][0] + transform_[0][1] * transform_[0][1] + transform_[0][2] * transform_[0][2]);
+		scalingVec.y = sqrt(transform_[1][0] * transform_[1][0] + transform_[1][1] * transform_[1][1] + transform_[1][2] * transform_[1][2]);
+		scalingVec.z = sqrt(transform_[2][0] * transform_[2][0] + transform_[2][1] * transform_[2][1] + transform_[2][2] * transform_[2][2]);
+		return scaling_from(scalingVec);
 	}
 
-	NSMat3<T> & set(
+	nsmat3<T> & set(
 		const T & a, const T & b, const T & c,
 		const T & d, const T & e, const T & f,
 		const T & g, const T & h, const T & i)
@@ -480,15 +480,15 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & set(const T & val)
+	nsmat3<T> & set(const T & val_)
 	{
-		data[0].set(val);
-		data[1].set(val);
-		data[2].set(val);
+		data[0].set(val_);
+		data[1].set(val_);
+		data[2].set(val_);
 		return *this;
 	}
 
-	NSMat3<T> & set(const NSVec3<T> & row1, const NSVec3<T> & row2, const NSVec3<T> & row3)
+	nsmat3<T> & set(const nsvec3<T> & row1, const nsvec3<T> & row2, const nsvec3<T> & row3)
 	{
 		data[0] = row1;
 		data[1] = row2;
@@ -496,26 +496,26 @@ struct NSMat3
 		return *this;
 	}
 
-	NSMat3<T> & set(const NSMat2<T> & basis)
+	nsmat3<T> & set(const nsmat2<T> & basis_)
 	{
-		data[0][0] = basis[0][0]; data[0][1] = basis[0][1];
-		data[1][0] = basis[1][0]; data[1][1] = basis[1][1];
+		data[0][0] = basis_[0][0]; data[0][1] = basis_[0][1];
+		data[1][0] = basis_[1][0]; data[1][1] = basis_[1][1];
 		return *this;
 	}
 
-	NSMat3<T> & setColumn(const uint32 & i, const T & x, const T & y,const T & z)
+	nsmat3<T> & set_column(const uint32 & i, const T & x, const T & y,const T & z)
 	{
 		(*this)[0][i] = x; (*this)[1][i] = y; (*this)[2][i] = z;
 		return *this;
 	}
 
-	NSMat3<T> & setColumn(const uint32 & i, const NSVec3<T> & col)
+	nsmat3<T> & set_column(const uint32 & i, const nsvec3<T> & col)
 	{
 		(*this)[0][i] = col.x; (*this)[1][i] = col.y; (*this)[2][i] = col.z;
 		return *this;
 	}
 
-	NSMat3<T> & setIdentity()
+	nsmat3<T> & set_identity()
 	{
 		data[0].set(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0));
 		data[1].set(static_cast<T>(0), static_cast<T>(1), static_cast<T>(0));
@@ -523,24 +523,24 @@ struct NSMat3
 		return *this;
 	}
 
-	NSVec3<T> target() const
+	nsvec3<T> target() const
 	{
 		return normalize((*this)(2));			
 	}
 
-	NSMat3<T> & translation2dFrom(const NSVec3<T> & v3)
+	nsmat3<T> & translation2d_from(const nsvec3<T> & m3_)
 	{
-		setIdentity();
-		return setColumn(2, v3.x, v3.y, 1);
+		set_identity();
+		return set_column(2, m3_.x, m3_.y, 1);
 	}
 
-	NSMat3<T> & translation2dFrom(const NSVec2<T> & v2)
+	nsmat3<T> & translation2d_from(const nsvec2<T> & m2_)
 	{
-		setIdentity();
-		return setColumn(2, v2.x, v2.y, 1);
+		set_identity();
+		return set_column(2, m2_.x, m2_.y, 1);
 	}
 
-	NSMat3<T> & transpose()
+	nsmat3<T> & transpose()
 	{
 		T tmp;
 		tmp = data[1][0]; data[1][0] = data[0][1]; data[0][1] = tmp;
@@ -549,12 +549,12 @@ struct NSMat3
 		return *this;
 	}
 
-	nsstring toString(bool newline=true) const
+	nsstring to_string(bool newline_=true) const
 	{
 		nsstringstream ss;
 		nsstring lc = ";";
 
-		if (newline)
+		if (newline_)
 			lc += '\n';
 
 		ss << "[" << data[0][0] << " " << data[0][1] << " " << data[0][2] << lc;
@@ -563,403 +563,403 @@ struct NSMat3
 		return ss.str();
 	}
 
-	NSVec3<T> up() const
+	nsvec3<T> up() const
 	{
 		return normalize((*this)(1));
 	}
 
 	// Overloaded operators
-	NSMat3<T> operator*(const NSMat3<T> & rhs) const
+	nsmat3<T> operator*(const nsmat3<T> & rhs_) const
 	{
-		NSMat3<T> ret;
+		nsmat3<T> ret;
 		
-		ret.data[0][0] = data[0][0] * rhs.data[0][0] + data[0][1] * rhs.data[1][0] + data[0][2] * rhs.data[2][0];
-		ret.data[0][1] = data[0][0] * rhs.data[0][1] + data[0][1] * rhs.data[1][1] + data[0][2] * rhs.data[2][1];
-		ret.data[0][2] = data[0][0] * rhs.data[0][2] + data[0][1] * rhs.data[1][2] + data[0][2] * rhs.data[2][2];
+		ret.data[0][0] = data[0][0] * rhs_.data[0][0] + data[0][1] * rhs_.data[1][0] + data[0][2] * rhs_.data[2][0];
+		ret.data[0][1] = data[0][0] * rhs_.data[0][1] + data[0][1] * rhs_.data[1][1] + data[0][2] * rhs_.data[2][1];
+		ret.data[0][2] = data[0][0] * rhs_.data[0][2] + data[0][1] * rhs_.data[1][2] + data[0][2] * rhs_.data[2][2];
 
-		ret.data[1][0] = data[1][0] * rhs.data[0][0] + data[1][1] * rhs.data[1][0] + data[1][2] * rhs.data[2][0];
-		ret.data[1][1] = data[1][0] * rhs.data[0][1] + data[1][1] * rhs.data[1][1] + data[1][2] * rhs.data[2][1];
-		ret.data[1][2] = data[1][0] * rhs.data[0][2] + data[1][1] * rhs.data[1][2] + data[1][2] * rhs.data[2][2];
+		ret.data[1][0] = data[1][0] * rhs_.data[0][0] + data[1][1] * rhs_.data[1][0] + data[1][2] * rhs_.data[2][0];
+		ret.data[1][1] = data[1][0] * rhs_.data[0][1] + data[1][1] * rhs_.data[1][1] + data[1][2] * rhs_.data[2][1];
+		ret.data[1][2] = data[1][0] * rhs_.data[0][2] + data[1][1] * rhs_.data[1][2] + data[1][2] * rhs_.data[2][2];
 
-		ret.data[2][0] = data[2][0] * rhs.data[0][0] + data[2][1] * rhs.data[1][0] + data[2][2] * rhs.data[2][0];
-		ret.data[2][1] = data[2][0] * rhs.data[0][1] + data[2][1] * rhs.data[1][1] + data[2][2] * rhs.data[2][1];
-		ret.data[2][2] = data[2][0] * rhs.data[0][2] + data[2][1] * rhs.data[1][2] + data[2][2] * rhs.data[2][2];
+		ret.data[2][0] = data[2][0] * rhs_.data[0][0] + data[2][1] * rhs_.data[1][0] + data[2][2] * rhs_.data[2][0];
+		ret.data[2][1] = data[2][0] * rhs_.data[0][1] + data[2][1] * rhs_.data[1][1] + data[2][2] * rhs_.data[2][1];
+		ret.data[2][2] = data[2][0] * rhs_.data[0][2] + data[2][1] * rhs_.data[1][2] + data[2][2] * rhs_.data[2][2];
 
 		return ret;
 	}
 
-	NSMat3<T> operator/(const NSMat3<T> & rhs) const
+	nsmat3<T> operator/(const nsmat3<T> & rhs_) const
 	{
-		return *this * inverse(rhs);
+		return *this * inverse(rhs_);
 	}
 
-	NSMat3<T> operator%(const NSMat3<T> & rhs) const
+	nsmat3<T> operator%(const nsmat3<T> & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret.data[0] = data[0] % rhs.data[0];
-		ret.data[1] = data[1] % rhs.data[1];
-		ret.data[2] = data[2] % rhs.data[2];
+		nsmat3<T> ret;
+		ret.data[0] = data[0] % rhs_.data[0];
+		ret.data[1] = data[1] % rhs_.data[1];
+		ret.data[2] = data[2] % rhs_.data[2];
 		return ret;
 	}
 
-	NSVec3<T> operator*(const NSVec3<T> & rhs) const
+	nsvec3<T> operator*(const nsvec3<T> & rhs_) const
 	{
-		return NSVec3<T>(data[0] * rhs, data[1] * rhs, data[2] * rhs);
+		return nsvec3<T>(data[0] * rhs_, data[1] * rhs_, data[2] * rhs_);
 	}
 
-	NSMat3<T> operator%(const NSVec3<T> & rhs) const
+	nsmat3<T> operator%(const nsvec3<T> & rhs_) const
 	{
-		return NSMat3<T>(data[0] % rhs, data[1] % rhs, data[2] % rhs);
+		return nsmat3<T>(data[0] % rhs_, data[1] % rhs_, data[2] % rhs_);
 	}
 
-	NSMat3<T> operator/(const NSVec3<T> & rhs) const
+	nsmat3<T> operator/(const nsvec3<T> & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret.data[0] = data[0] / rhs[0];
-		ret.data[1] = data[1] / rhs[1];
-		ret.data[2] = data[2] / rhs[2];
+		nsmat3<T> ret;
+		ret.data[0] = data[0] / rhs_[0];
+		ret.data[1] = data[1] / rhs_[1];
+		ret.data[2] = data[2] / rhs_[2];
 		return ret;
 	}
 
-	NSMat3<T> operator*(const T & rhs) const
+	nsmat3<T> operator*(const T & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret.data[0] = data[0] * rhs;
-		ret.data[1] = data[1] * rhs;
-		ret.data[2] = data[2] * rhs;
+		nsmat3<T> ret;
+		ret.data[0] = data[0] * rhs_;
+		ret.data[1] = data[1] * rhs_;
+		ret.data[2] = data[2] * rhs_;
 		return ret;
 	}
 
-	NSMat3<T> operator/(const T & rhs) const
+	nsmat3<T> operator/(const T & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret.data[0] = data[0] / rhs;
-		ret.data[1] = data[1] / rhs;
-		ret.data[2] = data[2] / rhs;
+		nsmat3<T> ret;
+		ret.data[0] = data[0] / rhs_;
+		ret.data[1] = data[1] / rhs_;
+		ret.data[2] = data[2] / rhs_;
 		return ret;
 	}
 	
-	NSMat3<T> operator+(const NSMat3<T> & rhs) const
+	nsmat3<T> operator+(const nsmat3<T> & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret.data[0] = data[0] + rhs.data[0];
-		ret.data[1] = data[1] + rhs.data[1];
-		ret.data[2] = data[2] + rhs.data[2];
+		nsmat3<T> ret;
+		ret.data[0] = data[0] + rhs_.data[0];
+		ret.data[1] = data[1] + rhs_.data[1];
+		ret.data[2] = data[2] + rhs_.data[2];
 		return ret;
 	}
 
-	NSMat3<T> operator-(const NSMat3<T> & rhs) const
+	nsmat3<T> operator-(const nsmat3<T> & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret.data[0] = data[0] - rhs.data[0];
-		ret.data[1] = data[1] - rhs.data[1];
-		ret.data[2] = data[2] - rhs.data[2];
+		nsmat3<T> ret;
+		ret.data[0] = data[0] - rhs_.data[0];
+		ret.data[1] = data[1] - rhs_.data[1];
+		ret.data[2] = data[2] - rhs_.data[2];
 		return ret;
 	}
 
-	bool operator==(const NSMat3<T> & rhs) const
+	bool operator==(const nsmat3<T> & rhs_) const
 	{
-		return (data[0] == rhs.data[0] && data[1] == rhs.data[1] && data[2] == rhs.data[2]);
+		return (data[0] == rhs_.data[0] && data[1] == rhs_.data[1] && data[2] == rhs_.data[2]);
 	}
 
-	bool operator!=(const NSMat3<T> & rhs) const
+	bool operator!=(const nsmat3<T> & rhs_) const
 	{
-		return !(*this == rhs);
+		return !(*this == rhs_);
 	}
 
-	NSMat3<T> & operator=(const NSMat3<T> & rhs)
+	nsmat3<T> & operator=(const nsmat3<T> & rhs_)
 	{
-		if (this == &rhs)
+		if (this == &rhs_)
 			return *this;
 
-		data[0] = rhs.data[0];
-		data[1] = rhs.data[1];
-		data[2] = rhs.data[2];
+		data[0] = rhs_.data[0];
+		data[1] = rhs_.data[1];
+		data[2] = rhs_.data[2];
 		return *this;
 	}
 
-	NSMat3<T> & operator*=(const NSMat3<T> & rhs)
+	nsmat3<T> & operator*=(const nsmat3<T> & rhs_)
 	{
-		*this = *this * rhs;
+		*this = *this * rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator/=(const NSMat3<T> & rhs)
+	nsmat3<T> & operator/=(const nsmat3<T> & rhs_)
 	{
-		*this = *this / rhs;
+		*this = *this / rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator%=(const NSMat3<T> & rhs)
+	nsmat3<T> & operator%=(const nsmat3<T> & rhs_)
 	{
-		*this = *this % rhs;
+		*this = *this % rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator%=(const NSVec3<T> & rhs)
+	nsmat3<T> & operator%=(const nsvec3<T> & rhs_)
 	{
-		*this = *this % rhs;
+		*this = *this % rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator/=(const NSVec3<T> & rhs)
+	nsmat3<T> & operator/=(const nsvec3<T> & rhs_)
 	{
-		*this = *this / rhs;
+		*this = *this / rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator*=(const T & rhs)
+	nsmat3<T> & operator*=(const T & rhs_)
 	{
-		*this = *this % rhs;
+		*this = *this % rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator/=(const T & rhs)
+	nsmat3<T> & operator/=(const T & rhs_)
 	{
-		*this = *this / rhs;
+		*this = *this / rhs_;
 		return *this;
 	}
 
-	NSMat3<T> operator++(int32)
+	nsmat3<T> operator++(int32)
 	{
-		NSMat3<T> ret(*this);
+		nsmat3<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSMat3<T> operator--(int32)
+	nsmat3<T> operator--(int32)
 	{
-		NSMat3<T> ret(*this);
+		nsmat3<T> ret(*this);
 		--(*this);
 		return ret;
 	}
 
-	NSMat3<T> & operator++()
+	nsmat3<T> & operator++()
 	{
 		++data[0]; ++data[1]; ++data[2];
 		return *this;
 	}
 
-	NSMat3<T> & operator--()
+	nsmat3<T> & operator--()
 	{
 		--data[0]; --data[1]; --data[2];
 		return *this;
 	}
 
-	NSMat3<T> & operator+=(const NSMat3<T> & rhs)
+	nsmat3<T> & operator+=(const nsmat3<T> & rhs_)
 	{
-		*this = *this + rhs;
+		*this = *this + rhs_;
 		return *this;
 	}
 
-	NSMat3<T> & operator-=(const NSMat3<T> & rhs)
+	nsmat3<T> & operator-=(const nsmat3<T> & rhs_)
 	{
-		*this = *this - rhs;
+		*this = *this - rhs_;
 		return *this;
 	}
 
-	const NSVec3<T> & operator[](const uint32 & pVal) const
+	const nsvec3<T> & operator[](const uint32 & val_) const
 	{
-		if (pVal > 2)
+		if (val_ > 2)
 			throw(std::out_of_range("mat3 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
-	NSVec3<T> & operator[](const uint32 & pVal)
+	nsvec3<T> & operator[](const uint32 & val_)
 	{
-		if (pVal > 2)
+		if (val_ > 2)
 			throw(std::out_of_range("mat3 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
-	NSVec3<T> operator()(uint32 pVal) const
+	nsvec3<T> operator()(uint32 val_) const
 	{
-		return NSVec3<T>(data[0][pVal], data[1][pVal], data[2][pVal]);
+		return nsvec3<T>(data[0][val_], data[1][val_], data[2][val_]);
 	}
 
 private:
-	NSVec3<T> data[3];
+	nsvec3<T> data[3];
 };
 
 template <class T>
-NSMat3<T> operator*(const int32 & pLHS, const NSMat3<T> & pRHS)
+nsmat3<T> operator*(const int32 & lhs_, const nsmat3<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSMat3<T> operator*(const float & pLHS, const NSMat3<T> & pRHS)
+nsmat3<T> operator*(const float & lhs_, const nsmat3<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSMat3<T> operator*(const double & pLHS, const NSMat3<T> & pRHS)
+nsmat3<T> operator*(const double & lhs_, const nsmat3<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template<class T>
-NSMat3<T> operator/(const int32 & pLHS, const NSMat3<T> & pRHS)
+nsmat3<T> operator/(const int32 & lhs_, const nsmat3<T> & rhs_)
 {
-	return NSMat3<T>(pLHS / pRHS[0], pLHS / pRHS[1], pLHS / pRHS[2]);
+	return nsmat3<T>(lhs_ / rhs_[0], lhs_ / rhs_[1], lhs_ / rhs_[2]);
 }
 
 template <class T>
-NSMat3<T> operator/(const float & pLHS, const NSMat3<T> & pRHS)
+nsmat3<T> operator/(const float & lhs_, const nsmat3<T> & rhs_)
 {
-	return NSMat3<T>(pLHS / pRHS[0], pLHS / pRHS[1], pLHS / pRHS[2]);
+	return nsmat3<T>(lhs_ / rhs_[0], lhs_ / rhs_[1], lhs_ / rhs_[2]);
 }
 
 template <class T>
-NSMat3<T> operator/(const double & pLHS, const NSMat3<T> & pRHS)
+nsmat3<T> operator/(const double & lhs_, const nsmat3<T> & rhs_)
 {
-	return NSMat3<T>(pLHS / pRHS[0], pLHS / pRHS[1], pLHS / pRHS[2]);
+	return nsmat3<T>(lhs_ / rhs_[0], lhs_ / rhs_[1], lhs_ / rhs_[2]);
 }
 
 template <class T>
-NSVec3<T> operator*(const NSVec3<T> & lhs, const NSMat3<T> & rhs)
+nsvec3<T> operator*(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_)
 {
-	return NSVec3<T>(
-		lhs[0] * rhs[0][0] + lhs[1] * rhs[1][0] + lhs[2] * rhs[2][0],
-		lhs[0] * rhs[0][1] + lhs[1] * rhs[1][1] + lhs[2] * rhs[2][1],
-		lhs[0] * rhs[0][2] + lhs[1] * rhs[1][2] + lhs[2] * rhs[2][2]);
+	return nsvec3<T>(
+		lhs_[0] * rhs_[0][0] + lhs_[1] * rhs_[1][0] + lhs_[2] * rhs_[2][0],
+		lhs_[0] * rhs_[0][1] + lhs_[1] * rhs_[1][1] + lhs_[2] * rhs_[2][1],
+		lhs_[0] * rhs_[0][2] + lhs_[1] * rhs_[1][2] + lhs_[2] * rhs_[2][2]);
 }
 
 template <class T>
-NSVec3<T> operator/(const NSVec3<T> & lhs, const NSMat3<T> & rhs)
+nsvec3<T> operator/(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_)
 {
-	return lhs * inverse(rhs);
+	return lhs_ * inverse(rhs_);
 }
 
 template <class T>
-NSMat3<T> operator%(const NSVec3<T> & lhs, const NSMat3<T> & rhs)
+nsmat3<T> operator%(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_)
 {
-	return NSMat3<T>(rhs[0] * lhs[0], rhs[1] * lhs[1], rhs[2] * lhs[2]);
+	return nsmat3<T>(rhs_[0] * lhs_[0], rhs_[1] * lhs_[1], rhs_[2] * lhs_[2]);
 }
 
 template <class T>
-T determinant(const NSMat3<T> & mat)
+T determinant(const nsmat3<T> & mat_)
 {
-	return mat.determinant();
+	return mat_.determinant();
 }
 
 template <class T>
-NSMat3<T> rotation2dMat3(const T angle, bool rads)
+nsmat3<T> rotation2d_mat3(const T angle_, bool rads_)
 {
-	return NSMat3<T>().rotation2dFrom(angle, rads);
+	return nsmat3<T>().rotation2d_from(angle_, rads_);
 }
 
 template <class T>
-NSMat3<T> rotation2dMat3(const NSMat3<T> & transform2d)
+nsmat3<T> rotation2d_mat3(const nsmat3<T> & transform2d_)
 {
-	return NSMat3<T>().rotation2dFrom(transform2d);
+	return nsmat3<T>().rotation2d_from(transform2d_);
 }
 
 template <class T>
-NSMat3<T> rotation2dMat3(const NSMat2<T> & transform2d)
+nsmat3<T> rotation2d_mat3(const nsmat2<T> & transform2d_)
 {
-	return NSMat3<T>().rotation2dFrom(transform2d);
+	return nsmat3<T>().rotation2d_from(transform2d_);
 }
 
 template<class T>
-NSMat3<T> rotationMat3(const NSVec4<T> & axisAngle, bool rads)
+nsmat3<T> rotation_mat3(const nsvec4<T> & axis_angle_, bool rads_)
 {
-	return NSMat3<T>().rotationFrom(axisAngle, rads);
+	return nsmat3<T>().rotation_from(axis_angle_, rads_);
 }
 
 template<class T>
-NSMat3<T> rotationMat3(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order, bool rads)
+nsmat3<T> rotation_mat3(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSMat3<T>().rotationFrom(euler,order, rads);
+	return nsmat3<T>().rotation_from(euler_,order_, rads_);
 }
 
 template<class T>
-NSMat3<T> rotationMat3(const NSQuat<T> & orientation)
+nsmat3<T> rotation_mat3(const nsquat<T> & orientation_)
 {
-	return NSMat3<T>().rotationFrom(orientation);
+	return nsmat3<T>().rotation_from(orientation_);
 }
 
 template<class T>
-NSMat3<T> rotationMat3(const NSVec3<T> & vec, const NSVec3<T> & toVec)
+nsmat3<T> rotation_mat3(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_)
 {
-	return NSMat3<T>().rotationFrom(vec, toVec);
+	return nsmat3<T>().rotation_from(vec_, to_vec_);
 }
 
 template<class T>
-NSMat3<T> rotationMat3(const NSMat4<T> & transform)
+nsmat3<T> rotation_mat3(const nsmat4<T> & transform_)
 {
-	return NSMat3<T>().rotationFrom(transform);
+	return nsmat3<T>().rotation_from(transform_);
 }
 
 template<class T>
-NSMat3<T> rotationMat3(const NSMat3<T> & transform)
+nsmat3<T> rotation_mat3(const nsmat3<T> & transform_)
 {
-	return NSMat3<T>().rotationFrom(transform);
+	return nsmat3<T>().rotation_from(transform_);
 }
 
 template<class T>
-NSMat3<T> scaling2dMat3(const NSVec2<T> & scale)
+nsmat3<T> scaling2d_mat3(const nsvec2<T> & scale_)
 {
-	return NSMat3<T>().scaling2dFrom(scale);
+	return nsmat3<T>().scaling2d_from(scale_);
 }
 
 template<class T>
-NSMat3<T> scaling2dMat3(const NSMat2<T> & transform2d)
+nsmat3<T> scaling2d_mat3(const nsmat2<T> & transform2d_)
 {
-	return NSMat3<T>().scaling2dFrom(transform2d);
+	return nsmat3<T>().scaling2d_from(transform2d_);
 }
 
 template<class T>
-NSMat3<T> scaling2dMat3(const NSMat3<T> & transform2d)
+nsmat3<T> scaling2d_mat3(const nsmat3<T> & transform2d_)
 {
-	return NSMat3<T>().scaling2dFrom(transform2d);
+	return nsmat3<T>().scaling2d_from(transform2d_);
 }
 
 template <class T>
-NSMat3<T> scalingMat3(const NSVec3<T> & scale)
+nsmat3<T> scaling_mat3(const nsvec3<T> & scale_)
 {
-	return NSMat3<T>().scalingFrom(scale);
+	return nsmat3<T>().scaling_from(scale_);
 }
 
 template <class T>
-NSMat3<T> scalingMat3(const NSMat3<T> & transform)
+nsmat3<T> scaling_mat3(const nsmat3<T> & transform_)
 {
-	return NSMat3<T>().scalingFrom(transform);
+	return nsmat3<T>().scaling_from(transform_);
 }
 
 template <class T>
-NSMat3<T> scalingMat3(const NSMat4<T> & transform)
+nsmat3<T> scaling_mat3(const nsmat4<T> & transform_)
 {
-	return NSMat3<T>().scalingFrom(transform);
+	return nsmat3<T>().scaling_from(transform_);
 }
 
 template <class T>
-NSMat3<T> translation2dMat3(const NSVec3<T> & v3)
+nsmat3<T> translation2d_mat3(const nsvec3<T> & m3_)
 {
-	return NSMat3<T>().translation2dFrom(v3);
+	return nsmat3<T>().translation2d_from(m3_);
 }
 
 template <class T>
-NSMat3<T> translation2dMat3(const NSVec2<T> & v2)
+nsmat3<T> translation2d_mat3(const nsvec2<T> & m2_)
 {
-	return NSMat3<T>().translation2dFrom(v2);
+	return nsmat3<T>().translation2d_from(m2_);
 }
 
 template <class T>
-NSMat3<T> transpose(NSMat3<T> mat)
+nsmat3<T> transpose(nsmat3<T> mat_)
 {
-	return mat.transpose();
+	return mat_.transpose();
 }
 
 template <class T>
-NSMat3<T> inverse(NSMat3<T> mat)
+nsmat3<T> inverse(nsmat3<T> mat_)
 {
-	return mat.invert();
+	return mat_.invert();
 }
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSMat3<T> & m3, const nsstring & varName)
+void pup(PUPer & p, nsmat3<T> & m3, const nsstring & varName)
 {
 	pup(p, m3[0], varName + "[0]"); pup(p, m3[1], varName + "[1]"); pup(p, m3[2], varName + "[2]");
 }

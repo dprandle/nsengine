@@ -29,20 +29,20 @@ Parameters:
 	directory : the directory where the logfile is stored
 */
 NSLogFile::NSLogFile(const nsstring & text, const nsstring & fileName, const nsstring & directory):
-currentWriteMode(APPEND),
-filename(fileName),
-dir(directory),
-timeStampEnabled(false)
+m_current_wm(wm_append),
+m_fname(fileName),
+m_dir(directory),
+m_ts_enabled(false)
 {
 	if (text != "")
 		write(text);
 }
 
 NSLogFile::NSLogFile(const nsstringstream & stream, const nsstring & fileName, const nsstring & directory):
-currentWriteMode(APPEND),
-filename(fileName),
-dir(directory),
-timeStampEnabled(false)
+m_current_wm(wm_append),
+m_fname(fileName),
+m_dir(directory),
+m_ts_enabled(false)
 {
 	write(stream);
 }
@@ -54,11 +54,11 @@ NSLogFile::~NSLogFile()
 
 void NSLogFile::clear()
 {
-	WriteMode t = currentWriteMode;
-	currentWriteMode = OVERWRITE;
+	write_m t = m_current_wm;
+	m_current_wm = wm_overwrite;
 
-	writeDate();
-	currentWriteMode = t;
+	write_date();
+	m_current_wm = t;
 }
 
 
@@ -75,10 +75,10 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::setFileName(const nsstring & fileName)
+void NSLogFile::set_file_name(const nsstring & fileName)
 {
 
-	filename = fileName;
+	m_fname = fileName;
 }
 
 
@@ -91,10 +91,10 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::setDirectory(const nsstring & directory)
+void NSLogFile::set_dir(const nsstring & directory)
 {
 
-	dir = directory;
+	m_dir = directory;
 }
 
 
@@ -111,9 +111,9 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::setWriteMode(WriteMode mode)
+void NSLogFile::set_write_mode(write_m mode)
 {
-	currentWriteMode = mode;
+	m_current_wm = mode;
 }
 
 
@@ -128,10 +128,10 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::setTimeStampEnabled(bool enabled)
+void NSLogFile::enable_timestamp(bool enabled)
 {
 
-	timeStampEnabled = enabled;
+	m_ts_enabled = enabled;
 }
 
 
@@ -148,10 +148,10 @@ Parameters:
 Return:
 	const QString & : unmodifiable reference to the filename
 */
-const nsstring & NSLogFile::getFileName() const
+const nsstring & NSLogFile::file_name() const
 {
 
-	return filename;
+	return m_fname;
 }
 
 
@@ -165,9 +165,9 @@ Parameters:
 Return:
 	const QString & : unmodifiable reference to the directory
 */
-const nsstring & NSLogFile::getDirectory() const
+const nsstring & NSLogFile::dir() const
 {
-	return dir;
+	return m_dir;
 }
 
 
@@ -181,10 +181,10 @@ Parameters:
 Return:
 	NSLogFile::WriteMode is the write mode type defined by the enum in nslogfile
 */
-NSLogFile::WriteMode NSLogFile::getWriteMode() const
+NSLogFile::write_m NSLogFile::write_mode() const
 {
 
-	return currentWriteMode;
+	return m_current_wm;
 }
 
 
@@ -198,10 +198,10 @@ Parameters:
 Return:
 	bool
 */
-bool NSLogFile::isTimeStampEnabled() const
+bool NSLogFile::timestamp() const
 {
 
-	return timeStampEnabled;
+	return m_ts_enabled;
 }
 
 
@@ -226,19 +226,19 @@ bool NSLogFile::write(const nsstring & text)
 	nsstring fullFileName;
 
 	// If there is a directory stored then use it for the log file, otherwise use the current directory
-	if ( dir != "" )
-		fullFileName = dir + "/" + filename;
+	if ( m_dir != "" )
+		fullFileName = m_dir + "/" + m_fname;
 	else
-		fullFileName = filename;
+		fullFileName = m_fname;
 
 	nsfstream outFile;
 	
-	switch (currentWriteMode)
+	switch (m_current_wm)
 	{
-	case (APPEND):
+	case (wm_append):
 		outFile.open(fullFileName,nsfstream::app);
 		break;
-	case (OVERWRITE):
+	case (wm_overwrite):
 		outFile.open(fullFileName,nsfstream::out);
 		break;
 	}
@@ -289,25 +289,25 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::writeDate()
+bool NSLogFile::write_date()
 {
 	nsstring fullFileName;
 
 	// If there is a directory stored then use it for the log file, otherwise use the current directory
-	if ( dir != "" )
+	if ( m_dir != "" )
 	{
-		fullFileName = dir + "/" + filename;
+		fullFileName = m_dir + "/" + m_fname;
 	}
 	else
-		fullFileName = filename;
+		fullFileName = m_fname;
 
 	nsfstream outFile;
-	switch (currentWriteMode)
+	switch (m_current_wm)
 	{
-	case (APPEND):
+	case (wm_append):
 		outFile.open(fullFileName,nsfstream::app);
 		break;
-	case (OVERWRITE):
+	case (wm_overwrite):
 		outFile.open(fullFileName,nsfstream::out);
 		break;
 	}
@@ -338,7 +338,7 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::writeTo(const nsstring & text, const nsstring &fname, WriteMode mode)
+bool NSLogFile::write_to(const nsstring & text, const nsstring &fname, write_m mode)
 {
 	if (fname.empty())
 		return false;
@@ -346,10 +346,10 @@ bool NSLogFile::writeTo(const nsstring & text, const nsstring &fname, WriteMode 
 	nsfstream outFile(fname);
 	switch (mode)
 	{
-	case (APPEND):
+	case (wm_append):
 		outFile.open(fname,nsfstream::app);
 		break;
-	case (OVERWRITE):
+	case (wm_overwrite):
 		outFile.open(fname,nsfstream::out);
 		break;
 	}
@@ -375,15 +375,15 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::writeDate(const nsstring & fname, WriteMode mode)
+bool NSLogFile::write_date(const nsstring & fname, write_m mode)
 {
 	nsfstream outFile(fname);
 	switch (mode)
 	{
-	case (APPEND):
+	case (wm_append):
 		outFile.open(fname,nsfstream::app);
 		break;
-	case (OVERWRITE):
+	case (wm_overwrite):
 		outFile.open(fname,nsfstream::out);
 		break;
 	}
@@ -411,9 +411,9 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::writeToCom(const nsstring & text, WriteMode mode )
+bool NSLogFile::write_to_com(const nsstring & text, write_m mode )
 {
-	return writeTo(text, "Logs/debugcom.log",mode);
+	return write_to(text, "Logs/debugcom.log",mode);
 }
 
 /*----------------------*

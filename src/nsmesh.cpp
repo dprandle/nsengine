@@ -45,11 +45,11 @@ void nsmesh::bake_rotation(uint32 subindex, const fquat & pRot)
 		return;
 	for (uint32 i = 0; i < sb->positions.size(); ++i)
 	{
-		sb->positions[i] = rotationMat3(pRot) * sb->positions[i];
+		sb->positions[i] = rotation_mat3(pRot) * sb->positions[i];
 		if (sb->normals.size() == sb->positions.size())
-			sb->normals[i] = rotationMat3(pRot) * sb->normals[i];
+			sb->normals[i] = rotation_mat3(pRot) * sb->normals[i];
 		if (sb->tangents.size() == sb->positions.size())
-			sb->tangents[i] = rotationMat3(pRot) * sb->tangents[i];
+			sb->tangents[i] = rotation_mat3(pRot) * sb->tangents[i];
 	}
 	sb->allocate_buffers();
 	calc_aabb();
@@ -118,11 +118,11 @@ void nsmesh::bake_rotation(const fquat & pRot)
 			return;
 		for (uint32 i = 0; i < sb->positions.size(); ++i)
 		{
-			sb->positions[i] = rotationMat3(pRot) * sb->positions[i];
+			sb->positions[i] = rotation_mat3(pRot) * sb->positions[i];
 			if (sb->normals.size() == sb->positions.size())
-				sb->normals[i] = rotationMat3(pRot) * sb->normals[i];
+				sb->normals[i] = rotation_mat3(pRot) * sb->normals[i];
 			if (sb->tangents.size() == sb->positions.size())
-				sb->tangents[i] = rotationMat3(pRot) * sb->tangents[i];
+				sb->tangents[i] = rotation_mat3(pRot) * sb->tangents[i];
 		}
 		sb->allocate_buffers();
 	}
@@ -171,19 +171,19 @@ void nsmesh::bake_translation(const fvec3 & pTrans)
 
 void nsmesh::bake_node_rotation(const fquat & pRot)
 {
-	transform_node(m_node_tree->root_node, fmat4(rotationMat3(pRot)));
+	transform_node(m_node_tree->root_node, fmat4(rotation_mat3(pRot)));
 	calc_aabb();
 }
 
 void nsmesh::bake_node_scaling(const fvec3 & pScaling)
 {
-	transform_node(m_node_tree->root_node, scalingMat4(pScaling));
+	transform_node(m_node_tree->root_node, scaling_mat4(pScaling));
 	calc_aabb();
 }
 
 void nsmesh::bake_node_translation(const fvec3 & pTrans)
 {
-	transform_node(m_node_tree->root_node, translationMat4(pTrans));
+	transform_node(m_node_tree->root_node, translation_mat4(pTrans));
 	calc_aabb();
 }
 
@@ -226,16 +226,16 @@ void nsmesh::flip_uv(uint32 pSubIndex)
 	sb->tex_buf.unbind();
 }
 
-void nsmesh::pup(NSFilePUPer * p)
+void nsmesh::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -337,7 +337,7 @@ void nsmesh::init_gl(uint32 subindex)
 	sub(subindex)->init_gl();
 }
 
-const NSBoundingBox & nsmesh::aabb()
+const nsbounding_box & nsmesh::aabb()
 {
 	return m_bounding_box;
 }

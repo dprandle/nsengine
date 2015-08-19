@@ -53,8 +53,8 @@ void nsanim_system::init()
 
 void nsanim_system::update()
 {
-	nsscene * scene = nsengine.currentScene();
-	NSTimer * timer = nsengine.timer();
+	nsscene * scene = nsengine.current_scene();
+	nstimer * timer = nsengine.timer();
 	if (scene == NULL)
 		return;
 	
@@ -71,7 +71,7 @@ void nsanim_system::update()
 			continue;
 		}
 		
-		if (animComp->updatePosted())
+		if (animComp->update_posted())
 		{
 			uivec2 meshID = renderComp->meshID();
 			uivec2 animsetID = animComp->animationSetID();
@@ -86,7 +86,7 @@ void nsanim_system::update()
 			nsmesh * msh = nsengine.resource<nsmesh>(meshID);
 			if (msh == NULL)
 			{
-				dprint("nsanim_system::update mesh with id " + meshID.toString() + " is null in anim ent " + (*entIter)->name());
+				dprint("nsanim_system::update mesh with id " + meshID.to_string() + " is null in anim ent " + (*entIter)->name());
 				++entIter;
 				continue;
 			}
@@ -138,7 +138,7 @@ void nsanim_system::update()
 				}
 				return;
 			}
-			animComp->postUpdate(false);
+			animComp->post_update(false);
 		}
 		++entIter;
 	}

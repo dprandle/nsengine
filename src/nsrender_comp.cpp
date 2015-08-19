@@ -109,16 +109,16 @@ uivec2array NSRenderComp::resources()
 	return ret;
 }
 
-void NSRenderComp::pup(NSFilePUPer * p)
+void NSRenderComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -227,6 +227,6 @@ NSRenderComp & NSRenderComp::operator=(const NSRenderComp & pRHSComp)
 	
 	mMats.clear();
 	mMats.insert(pRHSComp.mMats.begin(), pRHSComp.mMats.end());
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }

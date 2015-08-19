@@ -175,7 +175,7 @@ public:
 
 	void setFirst(bool pSet);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	nsxfb_object * transformFeedbackObject();
 
@@ -200,7 +200,7 @@ public:
 	void setShaderID(uint32 plugid, uint32 resid)
 	{
 		mXFBShaderID.x = plugid; mXFBShaderID.y = resid;
-		postUpdate(true);
+		post_update(true);
 	}
 
 	void setShaderID(const uivec2 &);
@@ -208,7 +208,7 @@ public:
 	void setMaterialID(uint32 plugid, uint32 resid)
 	{
 		mMatID.x = plugid; mMatID.y = resid;
-		postUpdate(true);
+		post_update(true);
 	}
 
 	void setMaterialID(const uivec2 & pID);
@@ -218,7 +218,7 @@ public:
 	void setRandTextureID(uint32 plugid, uint32 resid)
 	{
 		mRandTextID.x = plugid; mRandTextID.y = resid;
-		postUpdate(true);
+		post_update(true);
 	}
 
 	void setAngularVelocity(int32 pVel);
@@ -326,7 +326,7 @@ void pup(PUPer & p, NSParticleComp & pc)
 	pup(p, pc.mInitVelocityMult, "initVelocityMult");
 	pup(p, pc.mMaxMotionKeys, "maxMotionKeys");
 	pup(p, pc.mMaxVisualKeys, "maxVisualKeys");
-	pc.postUpdate(true);
+	pc.post_update(true);
 }
 
 #endif

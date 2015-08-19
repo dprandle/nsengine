@@ -57,7 +57,7 @@ void nsbuild_system::change_layer(const int32 & pAmount)
 
 void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 	
@@ -74,7 +74,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 
 			if (m_mirror_mode)
 			{
-				m_mirror_brush = nsengine.engplug()->create<nsentity>("MirrorBrush");
+				m_mirror_brush = nsengine.core()->create<nsentity>("MirrorBrush");
 				*m_mirror_brush = *m_tile_brush;
 			}
 
@@ -87,7 +87,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 			auto brushIter = brushComp->begin();
 			while (brushIter != brushComp->end())
 			{
-				fvec3 pos = NSTileGrid::world(ivec3(brushIter->x, brushIter->y, m_layer)); // add in height when get working
+				fvec3 pos = nstile_grid::world(ivec3(brushIter->x, brushIter->y, m_layer)); // add in height when get working
 				uint32 tFormID = scene->add(m_tile_brush, pos);
 
 				// This tmp thing is a hack to get around added the mirrored guys to the selection
@@ -164,7 +164,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 
 		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
-		nsengine.engplug()->destroy<nsentity>("MirrorBrush");
+		nsengine.core()->destroy<nsentity>("MirrorBrush");
 		m_mirror_brush = NULL;
 	}
 }
@@ -181,7 +181,7 @@ void nsbuild_system::enable_mirror(bool pEnable)
 
 void nsbuild_system::erase()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -199,7 +199,7 @@ void nsbuild_system::erase()
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				fvec3 pos = m_tile_brush->get<NSTFormComp>()->lpos(m_tile_brush_center_tform_id) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				fvec3 pos = m_tile_brush->get<NSTFormComp>()->lpos(m_tile_brush_center_tform_id) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				scene->remove(pos);
 
 				if (m_mirror_mode)
@@ -297,7 +297,7 @@ bool nsbuild_system::mirror() const
 
 void nsbuild_system::to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -306,7 +306,7 @@ void nsbuild_system::to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 		return;
 
 	NSTFormComp * camTForm = camera->get<NSTFormComp>();
-	NSCamComp * camc = camera->get<NSCamComp>();
+	nscam_comp * camc = camera->get<nscam_comp>();
 
 	NSTFormComp * brushTForm = NULL;
 	fvec3 originalPos;
@@ -335,7 +335,7 @@ void nsbuild_system::to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 	if (pUpdateCamFirst)
 		camTForm->computeTransform();
 
-	fvec4 screenSpace = camc->projCam() * fvec4(originalPos, 1.0f);
+	fvec4 screenSpace = camc->proj_cam() * fvec4(originalPos, 1.0f);
 
 	if (abs(screenSpace.w) <= EPS)
 		return;
@@ -344,7 +344,7 @@ void nsbuild_system::to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 	screenSpace.x = (2*pCursorPos.u-1);
 	screenSpace.y = (2*pCursorPos.v-1);
 
-	fvec4 newPos = camc->invProjCam() * screenSpace;
+	fvec4 newPos = camc->inv_proj_cam() * screenSpace;
 
 	if (abs(newPos.w) <= EPS)
 		return;
@@ -391,7 +391,7 @@ nsentity * nsbuild_system::object_brush()
 
 void nsbuild_system::paint()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -412,7 +412,7 @@ void nsbuild_system::paint()
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				fvec3 pos = m_tile_brush->get<NSTFormComp>()->lpos(m_tile_brush_center_tform_id) + NSTileGrid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				fvec3 pos = m_tile_brush->get<NSTFormComp>()->lpos(m_tile_brush_center_tform_id) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				
 				if (m_overwrite)
 				{
@@ -563,11 +563,11 @@ int32 nsbuild_system::update_priority()
 
 void nsbuild_system::update()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
-	nsengine.eventDispatch()->process(this);
+	nsengine.event_dispatch()->process(this);
 	if (scene == NULL)
 		return;
 

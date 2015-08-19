@@ -24,7 +24,7 @@ This file contains all of the neccessary declarations for the NSLightComp class.
 
 class nsmesh;
 class nsentity;
-class NSTimer;
+class nstimer;
 
 class NSLightComp : public NSComponent
 {
@@ -90,7 +90,7 @@ public:
 
 	const fvec3 & scaling() const;
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	float shadowDarkness() const;
 
@@ -117,10 +117,10 @@ public:
 	void setMeshID(uint32 plugid, uint32 resid)
 	{
 		mBoundingMeshID.x = plugid; mBoundingMeshID.y = resid;
-		postUpdate(true);
+		post_update(true);
 	}
 
-	void setShadowClipping(const fvec2 & shadowclip) { mshadowclip = shadowclip; postUpdate(true); }
+	void setShadowClipping(const fvec2 & shadowclip) { mshadowclip = shadowclip; post_update(true); }
 
 	void setMeshID(const uivec2 & pID);
 
@@ -181,7 +181,7 @@ void pup(PUPer & p, NSLightComp & lc)
 	pup(p, lc.mShadowSamples, "shadowSamples");
 	pup(p, lc.mBoundingMeshID, "boundingMeshID");
 	pup(p, lc.mScaling, "scaling");
-	lc.postUpdate(true);
+	lc.post_update(true);
 }
 
 template<class PUPer>

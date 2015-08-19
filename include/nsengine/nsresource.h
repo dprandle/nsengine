@@ -20,7 +20,7 @@ class nsresource
 {
 public:
 	friend class nsres_manager;
-	friend class NSResFactory;
+	friend class nsres_factory;
 
 	nsresource();
 	virtual ~nsresource();
@@ -55,7 +55,7 @@ public:
 	*/
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
-	virtual void pup(NSFilePUPer * p) = 0;
+	virtual void pup(nsfile_pupper * p) = 0;
 
 	bool owned() { return m_owned; }
 

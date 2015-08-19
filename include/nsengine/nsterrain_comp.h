@@ -36,7 +36,7 @@ public:
 
 	const fvec2 & heightBounds() const;
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	NSTerrainComp & operator=(const NSTerrainComp & pRHSComp);
 

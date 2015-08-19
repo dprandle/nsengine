@@ -30,7 +30,7 @@ public:
 
 	virtual void init();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	NSTileComp & operator=(const NSTileComp & pRHSComp);
 

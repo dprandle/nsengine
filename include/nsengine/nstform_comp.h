@@ -20,7 +20,7 @@
 #include <nsxfb_object.h>
 #include <nsvertex_array_object.h>
 
-class NSTimer;
+class nstimer;
 
 class NSTFormComp : public NSComponent
 {
@@ -191,7 +191,7 @@ public:
 
 	const bool transUpdate(uint32 pTransformID = 0) const;
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	void release();
 
@@ -269,7 +269,7 @@ public:
 
 	void setTransUpdate(bool pUpdate);
 
-	void postUpdate(bool pUpdate);
+	void post_update(bool pUpdate);
 
 	void setVisibleTransformCount(uint32 pCount);
 
@@ -344,7 +344,7 @@ void pup(PUPer & p, NSTFormComp & tc)
 {
 	pup(p, tc.mTransforms, "transforms");
 	pup(p, tc.mTransformFB, "transformFB");
-	tc.postUpdate(true);
+	tc.post_update(true);
 	tc.mBufferResize = true;
 	if (tc.mTransformFB)
 	{

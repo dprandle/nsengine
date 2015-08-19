@@ -55,7 +55,7 @@ public:
 
 	void clear();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	bool contains(const nsstring & pTriggerName);
 

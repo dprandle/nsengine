@@ -90,7 +90,7 @@ public:
 
 	const texmap_map & tex_maps() const;
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	const specular_comp & specular() const;
 

@@ -116,14 +116,14 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 void nsinput_system::_create_action_event(nsinput_map::trigger & trigger)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	nsaction_event * evnt = nsengine.eventDispatch()->push<nsaction_event>(trigger.hash_name);
+	nsaction_event * evnt = nsengine.event_dispatch()->push<nsaction_event>(trigger.hash_name);
 	_set_axis_from_trigger(evnt->axes, trigger);
 }
 
 void nsinput_system::_create_state_event(nsinput_map::trigger & trigger, bool toggle)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	nsstate_event * evnt = nsengine.eventDispatch()->push<nsstate_event>(trigger.hash_name, toggle);
+	nsstate_event * evnt = nsengine.event_dispatch()->push<nsstate_event>(trigger.hash_name, toggle);
 	_set_axis_from_trigger(evnt->axes, trigger);
 }
 
@@ -336,10 +336,10 @@ void nsinput_system::push_context(const nsstring & pName)
 
 void nsinput_system::init()
 {
-    registerHandlerFunc(this, &nsinput_system::key_event);
-    registerHandlerFunc(this, &nsinput_system::mouse_button_event);
-    registerHandlerFunc(this, &nsinput_system::mouse_scroll_event);
-    registerHandlerFunc(this, &nsinput_system::mouse_move_event);
+    register_handler_func(this, &nsinput_system::key_event);
+    register_handler_func(this, &nsinput_system::mouse_button_event);
+    register_handler_func(this, &nsinput_system::mouse_scroll_event);
+    register_handler_func(this, &nsinput_system::mouse_move_event);
 }
 
 int32 nsinput_system::update_priority()
@@ -359,7 +359,7 @@ const uivec2 & nsinput_system::input_map()
 
 void nsinput_system::update()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 
 	if (scene == NULL)
 		return;

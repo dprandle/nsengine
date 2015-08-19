@@ -15,59 +15,67 @@
 
 #include <nsglobal.h>
 
-class SomeClass;
 class NSLogFile;
 
-typedef void* ClassInstancePointer;
-typedef void (*MessageCallback)(const nsstring &, ClassInstancePointer);
+typedef void (*message_callback)(const nsstring &, void *);
 
 /*!
 NSDebug handles all debug operations
 
 \bug No known bugs.
 */
-class NSDebug
+class nsdebug
 {
 public:
-	enum DebugLevel {
-		Low,
-		Medium,
-		High };
+	enum debug_level {
+		deb_low,
+		deb_medium,
+		deb_high };
 
-	NSDebug();
-	~NSDebug();
+	nsdebug();
+
+	~nsdebug();
 	
-	void clearLog();
+	void clear_log();
 
-	DebugLevel getDebugLevel() const;
-	const nsstring & getLogFile() const;
-	const MessageCallback getMessageCallback() const;
+	debug_level get_debug_level() const;
 
-	bool isConsoleOpen() const;
-	bool isLogMessages() const;
-	bool isRenderMessages() const;
+	const nsstring & get_log_file() const;
+
+	const message_callback get_message_callback() const;
+
+	bool console_open() const;
+
+	bool log_messages() const;
+	
+	bool render_messages() const;
 
 	void log(const nsstring & pMessage) const;
 
 	void print(const nsstring & pMessage) const;
 
-	void setConsoleOpen(bool pConsoleOpen);
-	void setDebugLevel(DebugLevel pLevel);
-	void setLogFile(const nsstring & pFileName);
-	void setLogDir(const nsstring & directory);
-	void setLogMessages(bool pLogMessages);
-	void setMessageCallback(MessageCallback pMessageCallback, ClassInstancePointer pMessageClassInstance=NULL);
-	void setRenderMessages(bool pRenderMessages);
+	void set_console_open(bool pConsoleOpen);
+
+	void set_debug_level(debug_level pLevel);
+
+	void set_log_file(const nsstring & pFileName);
+
+	void set_log_dir(const nsstring & directory);
+
+	void set_log_messages(bool pLogMessages);
+
+	void set_message_callback(message_callback pMessageCallback, void * pMessageClassInstance=NULL);
+
+	void set_render_messages(bool pRenderMessages);
 
 private:
-	bool mConsoleOpen;
-	bool mLogMessages;
-	bool mRenderMessages;
-	DebugLevel mLevel;
-	MessageCallback mMessageCallback;
-	ClassInstancePointer mMessageClassInstance;
-
-	NSLogFile* mLogFile;
+	bool m_console_open;
+	bool m_logging_messages;
+	bool m_render_messages;
+	debug_level m_deb_level;
+	message_callback m_msg_cb;
+	void * m_msg_inst;
+	NSLogFile* m_log_file;
 };
 
 #endif

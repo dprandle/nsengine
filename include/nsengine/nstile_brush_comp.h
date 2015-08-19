@@ -40,7 +40,7 @@ public:
 
 	virtual NSTileBrushComp * copy(const NSComponent* pComp);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	ivec2array::iterator end();
 

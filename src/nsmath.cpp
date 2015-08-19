@@ -57,7 +57,7 @@ float lerp(uint32 low, uint32 high, uint32 middle)
 /*!
 Calculates the box given a set of vertices.. if no vertices are given then will set everything to zero.
 */
-NSBoundingBox::NSBoundingBox(
+nsbounding_box::nsbounding_box(
 	const std::vector<fvec3> & pVertices
 	)
 {
@@ -67,7 +67,7 @@ NSBoundingBox::NSBoundingBox(
 /*!
 Find the min and max of a set of vertices and use that to make the bounding box.
 */
-void NSBoundingBox::calculate(
+void nsbounding_box::calculate(
 	const std::vector<fvec3> & pVertices,
 	const fmat4 & pTransform
 	)
@@ -80,30 +80,30 @@ void NSBoundingBox::calculate(
 Returns the center of the box or the center of a face of the box if pFace is specified as something
 other than None.
 */
-fvec3 NSBoundingBox::center(const Face & pFace)
+fvec3 nsbounding_box::center(const box_face & pFace)
 {
 	fvec3 center;
 	switch (pFace)
 	{
-	case (None) :
+	case (f_none) :
 		center.set(dx() / 2.0f, dy() / 2.0f, dz() / 2.0f);
 		break;
-	case (Bottom) :
+	case (f_bottom) :
 		center.set(dx() / 2.0f, dy() / 2.0f, mMin.z);
 		break;
-	case (Top) :
+	case (f_top) :
 		center.set(dx() / 2.0f, dy() / 2.0f, mMax.z);
 		break;
-	case (Left) :
+	case (f_left) :
 		center.set(mMin.x, dy() / 2.0f, dz() / 2.0f);
 		break;
-	case (Right) :
+	case (f_right) :
 		center.set(mMax.x, dy() / 2.0f, dz() / 2.0f);
 		break;
-	case (Back) :
+	case (f_back) :
 		center.set(dx() / 2.0f, mMin.y, dz() / 2.0f);
 		break;
-	case (Front) :
+	case (f_front) :
 		center.set(dx() / 2.0f, mMax.y, dz() / 2.0f);
 		break;
 	}
@@ -113,7 +113,7 @@ fvec3 NSBoundingBox::center(const Face & pFace)
 /*!
 Clears the verts and the min/max to 0.
 */
-void NSBoundingBox::clear()
+void nsbounding_box::clear()
 {
 	mMin = fvec3();
 	mMax = fvec3();
@@ -124,7 +124,7 @@ void NSBoundingBox::clear()
 /*!
 Length of box in x direction.
 */
-float NSBoundingBox::dx()
+float nsbounding_box::dx()
 {
 	return mMax.x - mMin.x;
 }
@@ -132,7 +132,7 @@ float NSBoundingBox::dx()
 /*!
 Length of box in y direction.
 */
-float NSBoundingBox::dy()
+float nsbounding_box::dy()
 {
 	return mMax.y - mMin.y;
 }
@@ -140,12 +140,12 @@ float NSBoundingBox::dy()
 /*!
 Length of box in z direction.
 */
-float NSBoundingBox::dz()
+float nsbounding_box::dz()
 {
 	return mMax.z - mMin.z;
 }
 
-void NSBoundingBox::extend(
+void nsbounding_box::extend(
 	const std::vector<fvec3> & pVertices,
 	const fmat4 & pTransform
 	)
@@ -169,32 +169,32 @@ void NSBoundingBox::extend(
 		if (tVert.z < mMin.z)
 			mMin.z = tVert.z;
 	}
-	_updateVerts();
+	_update_verts();
 }
 
 /*!
 Set the min and max - will update the verts based on this new min and max.
 */
-void NSBoundingBox::set(
+void nsbounding_box::set(
 	const fvec3 & pMin,
 	const fvec3 pMax
 	)
 {
 	mMin = pMin;
 	mMax = pMax;
-	_updateVerts();
+	_update_verts();
 }
 
 /*!
 The volume in whatever units the world is represented in. The cartesian coordinate x = 1, y = 1, z = 1 would
 represent a point that is 1 unit away from each axis and 1.41 units away from the origin.
 */
-float NSBoundingBox::volume()
+float nsbounding_box::volume()
 {
 	return (dx() * dy() * dz());
 }
 
-void NSBoundingBox::_updateVerts()
+void nsbounding_box::_update_verts()
 {
 	mVerts[0] = mMin;
 	mVerts[1] = fvec3(mMax.x, mMin.y, mMin.z);
@@ -206,7 +206,7 @@ void NSBoundingBox::_updateVerts()
 	mVerts[7] = mMax;
 }
 
-float RandomFloat(float pHigh, float pLow)
+float random_float(float pHigh, float pLow)
 {
 	return pLow + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (pHigh - pLow)));
 }

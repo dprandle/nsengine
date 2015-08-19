@@ -17,7 +17,7 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 #include <nsentity_manager.h>
 #include <nsinput_comp.h>
 #include <nsfile_os.h>
-using namespace nsfileio;
+using namespace nsfile_os;
 
 nsscene_manager::nsscene_manager() : 
 mCurrentScene(NULL)
@@ -105,16 +105,16 @@ bool nsscene_manager::save(nsresource * res, const nsstring & path)
 		return true;
 
 	nsfstream file;
-	NSFilePUPer * p;
+	nsfile_pupper * p;
 	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::out | nsfstream::binary);
-		p = new NSBinFilePUPer(file, PUP_OUT);
+		p = new nsbinary_file_pupper(file, PUP_OUT);
 	}
 	else
 	{
 		file.open(fName, nsfstream::out);
-		p = new NSTextFilePUPer(file, PUP_OUT);
+		p = new nstext_file_pupper(file, PUP_OUT);
 	}
 
 	if (!file.is_open())
@@ -125,9 +125,9 @@ bool nsscene_manager::save(nsresource * res, const nsstring & path)
 	}
 	nsstring rest = nsengine.guid(scene->type());
 	if (m_save_mode == binary)
-		pup(*(static_cast<NSBinFilePUPer*>(p)), rest, "type");
+		pup(*(static_cast<nsbinary_file_pupper*>(p)), rest, "type");
 	else
-		pup(*(static_cast<NSTextFilePUPer*>(p)), rest, "type");
+		pup(*(static_cast<nstext_file_pupper*>(p)), rest, "type");
 	
 	scene->pup(p);
 	delete p;
@@ -144,16 +144,16 @@ bool nsscene_manager::set_current(nsscene * sc, bool newScene, bool savePrevious
 
 		nsstring fName = m_res_dir + m_local_dir + sc->subdir() + sc->name() + sc->extension();
 		nsfstream file;
-		NSFilePUPer * p;
+		nsfile_pupper * p;
 		if (m_save_mode == binary)
 		{
 			file.open(fName, nsfstream::in | nsfstream::binary);
-			p = new NSBinFilePUPer(file, PUP_IN);
+			p = new nsbinary_file_pupper(file, PUP_IN);
 		}
 		else
 		{
 			file.open(fName, nsfstream::in);
-			p = new NSTextFilePUPer(file, PUP_IN);
+			p = new nstext_file_pupper(file, PUP_IN);
 		}
 
 		// If file is not open that means scene has not yet been saved and therefor there is nothing to pup
@@ -169,9 +169,9 @@ bool nsscene_manager::set_current(nsscene * sc, bool newScene, bool savePrevious
 
 		nsstring rt;
 		if (m_save_mode == binary)
-			pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
+			pup(*(static_cast<nsbinary_file_pupper*>(p)), rt, "type");
 		else
-			pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
+			pup(*(static_cast<nstext_file_pupper*>(p)), rt, "type");
 
 		nsstring guid_ = nsengine.guid(sc->type());
 		if (rt != guid_)

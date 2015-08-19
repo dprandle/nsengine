@@ -26,32 +26,31 @@ class nsmesh_manager;
 class nstex_manager;
 class nsmat_manager;
 class nsshader_manager;
-class NSInputManager;
-class NSEventHandler;
+class nsevent_handler;
 class nsanim_system;
 class nsmovement_system;
-class NSTimer;
+class nstimer;
 class nsplugin_manager;
 class nssystem;
 class nsplugin;
-class NSEventDispatcher;
-struct NSSaveResCallback;
+class nsevent_dispatcher;
+struct nssave_resouces_callback;
 class nsres_manager;
 
 #ifdef NSDEBUG
-class NSDebug;
+class nsdebug;
 #endif
 
-struct GLContext;
+struct gl_ctxt;
 class nsfb_object;
 
-typedef std::unordered_map<uint32, nssystem*> SystemMap;
-typedef std::unordered_map<uint32, uint32> ResManagerMap;
-typedef std::unordered_map<std::type_index, uint32> TypeHashMap;
-typedef std::unordered_map<uint32, nsstring> HashMap;
-typedef std::unordered_map<uint32, NSFactory*> FactoryMap;
-typedef std::unordered_map<uint32, GLContext*> ContextMap;
-typedef std::unordered_map<uint32, nsfb_object*> FramebufferMap;
+typedef std::unordered_map<uint32, nssystem*> system_hash_map;
+typedef std::unordered_map<uint32, uint32> res_manager_type_map;
+typedef std::unordered_map<std::type_index, uint32> type_hash_map;
+typedef std::unordered_map<uint32, nsstring> hash_string_map;
+typedef std::unordered_map<uint32, nsfactory*> hash_factory_map;
+typedef std::unordered_map<uint32, gl_ctxt*> gl_context_map;
+typedef std::unordered_map<uint32, nsfb_object*> framebuffer_map;
 
 uint32 hash_id(const nsstring & str);
 
@@ -59,10 +58,10 @@ uint32 hash_id(const nsstring & str);
 #define nsengine NSEngine::inst()
 #define type_to_guid(type) nsengine.guid(std::type_index(typeid(type)))
 #define hash_to_guid(hash) nsengine.guid(hash)
-#define type_to_hash(type) nsengine.typeID(std::type_index(typeid(type)))
+#define type_to_hash(type) nsengine.type_id(std::type_index(typeid(type)))
 
 #ifdef NSDEBUG
-#define dprint(str) nsengine.debugPrint(str)
+#define dprint(str) nsengine.debug_print(str)
 #else
 #define dprint(str) COMMENT
 #endif
@@ -115,18 +114,18 @@ class NSEngine
 public:
 	NSEngine();
 	~NSEngine();
-	typedef std::map<int32, uint32> SystemPriorityMap;
+	typedef std::map<int32, uint32> sys_priority_map;
 
-	bool addPlugin(nsplugin * plug);
+	bool add_plugin(nsplugin * plug);
 
 	/* Add a system to the current context */
-	bool addSystem(nssystem * pSystem);
+	bool add_system(nssystem * pSystem);
 
 	nsplugin * active();
 
-	FactoryMap::iterator beginFac();
+	hash_factory_map::iterator begin_factory();
 
-	SystemMap::iterator beginSys();
+	system_hash_map::iterator begin_system();
 
 	/*!
 	Create a GLContext and return a unique id - this id can be used to set the current context and
@@ -137,140 +136,140 @@ public:
 
 	The newly created context will be set as the current context.
 	*/
-	uint32 createContext(bool addDefaultFactories = true //<! Add the normal system/component/resource/resource manager factories
+	uint32 create_context(bool addDefaultFactories = true //<! Add the normal system/component/resource/resource manager factories
 		);
 
-	uint32 createFramebuffer();
+	uint32 create_framebuffer();
 
-	nsplugin * createPlugin(const nsstring & plugname, bool makeactive=true);
+	nsplugin * create_plugin(const nsstring & plugname, bool makeactive=true);
 
-	template<class SysType>
-	SysType * createSystem()
+	template<class sys_type>
+	sys_type * create_system()
 	{
-		uint32 tid = typeID(std::type_index(typeid(SysType)));
-		return static_cast<SysType*>(createSystem(tid));
+		uint32 tid = type_id(std::type_index(typeid(sys_type)));
+		return static_cast<sys_type*>(create_system(tid));
 	}
 
-	nssystem * createSystem(uint32 type_id);
+	nssystem * create_system(uint32 type_id);
 	
-	nssystem * createSystem(const nsstring & guid_);
+	nssystem * create_system(const nsstring & guid_);
 
-	GLContext * current();
+	gl_ctxt * current();
 
-	uint32 currentid();
+	uint32 current_id();
 
-	nsscene * currentScene();
+	nsscene * current_scene();
 
 	/*!
 	Delete the context with ID cID
 	Make sure shutdown has been called with the context to be deleted set as the current context
 	*/
-	bool destroyContext(uint32 cID);
+	bool destroy_context(uint32 cID);
 
 	template<class T>
-	bool delPlugin(const T & name)
+	bool del_plugin(const T & name)
 	{
 		nsplugin * plg = plugin(name);
-		return delPlugin(plg);
+		return del_plugin(plg);
 	}
 
-	bool delPlugin(nsplugin * plg);
+	bool del_plugin(nsplugin * plg);
 
-	bool delFramebuffer(uint32 fbid);
+	bool del_framebuffer(uint32 fbid);
 
-	template<class SysType>
-	bool destroySystem()
+	template<class sys_type>
+	bool destroy_system()
 	{
-		uint32 tid = typeID(std::type_index(typeid(SysType)));
-		return destroySystem(tid);
+		uint32 tid = type_id(std::type_index(typeid(sys_type)));
+		return destroy_system(tid);
 	}
 
-	bool destroySystem(uint32 type_id);
+	bool destroy_system(uint32 type_id);
 
-	bool destroySystem(const nsstring & guid_);
+	bool destroy_system(const nsstring & guid_);
 
 #ifdef NSDEBUG
-	void debugPrint(const nsstring & str);
+	void debug_print(const nsstring & str);
 #endif
 
-	FactoryMap::iterator endFac();
+	hash_factory_map::iterator end_factory();
 
-	SystemMap::iterator endSys();
+	system_hash_map::iterator end_system();
 
-	nsplugin * engplug();
+	nsplugin * core();
 
 	nsplugin_manager * plugins();
 
-	NSEventDispatcher * eventDispatch();
+	nsevent_dispatcher * event_dispatch();
 
 	template<class T>
-	bool hasPlugin(const T & name)
+	bool has_plugin(const T & name)
 	{
 		nsplugin * plg = plugin(name);
-		return hasPlugin(plg);
+		return has_plugin(plg);
 	}
 
-	bool hasPlugin(nsplugin * plg);
+	bool has_plugin(nsplugin * plg);
 
-	template<class ObjType>
-	NSFactory * factory()
+	template<class obj_type>
+	nsfactory * factory()
 	{
-		uint32 hashed_type = typeID(std::type_index(typeid(ObjType)));
+		uint32 hashed_type = type_id(std::type_index(typeid(obj_type)));
 		return factory(hashed_type);
 	}
 
-	NSFactory * factory(uint32 hashid);
+	nsfactory * factory(uint32 hashid);
 
-	template<class BaseFacType>
-	BaseFacType * factory(uint32 hashid)
+	template<class base_fac_type>
+	base_fac_type * factory(uint32 hashid)
 	{
-		return static_cast<BaseFacType*>(factory(hashid));
+		return static_cast<base_fac_type*>(factory(hashid));
 	}
 
-	template<class BaseFacType>
-	BaseFacType * factory(const nsstring & guid_)
+	template<class base_fac_type>
+	base_fac_type * factory(const nsstring & guid_)
 	{
-		return factory<BaseFacType>(hash_id(guid_)) ;
+		return factory<base_fac_type>(hash_id(guid_)) ;
 	}
 
-	template<class BaseFacType, class ObjType>
-	BaseFacType * factory()
+	template<class base_fac_type, class obj_type>
+	base_fac_type * factory()
 	{
-		uint32 hashed_type = typeID(std::type_index(typeid(ObjType)));
-		return static_cast<BaseFacType*>(factory(hashed_type));
+		uint32 hashed_type = type_id(std::type_index(typeid(obj_type)));
+		return static_cast<base_fac_type*>(factory(hashed_type));
 	}
 
 	nsfb_object * framebuffer(uint32 id);
 
-	template<class SysType>
-	bool hasSystem()
+	template<class sys_type>
+	bool has_system()
 	{
-		uint32 hashed_type = typeID(std::type_index(typeid(SysType)));
-		return hasSystem(hashed_type);
+		uint32 hashed_type = type_id(std::type_index(typeid(sys_type)));
+		return has_system(hashed_type);
 	}
 
-	bool hasSystem(uint32 type_id);
+	bool has_system(uint32 type_id);
 	
-	bool hasSystem(const nsstring & guid_);
+	bool has_system(const nsstring & guid_);
 
-	nsplugin * loadPlugin(const nsstring & fname);
+	nsplugin * load_plugin(const nsstring & fname);
 
-	template<class ManagerType, class T>
-	ManagerType * manager(const T & plugname)
+	template<class manager_type, class T>
+	manager_type * manager(const T & plugname)
 	{
-		uint32 hashed_type = type_to_hash(ManagerType);
-		return static_cast<ManagerType*>(manager(hashed_type, plugin(plugname)));
+		uint32 hashed_type = type_to_hash(manager_type);
+		return static_cast<manager_type*>(manager(hashed_type, plugin(plugname)));
 	}
 
 	nsres_manager * manager(uint32 manager_typeid, nsplugin * plg);
 
 	nsres_manager * manager(const nsstring & manager_guid, nsplugin * plg);
 
-	template<class CompType>
-	bool registerComponentType(const nsstring & guid_)
+	template<class comp_type>
+	bool register_component(const nsstring & guid_)
 	{
 		uint32 hashed = hash_id(guid_);
-		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		auto ret = m_obj_type_names.emplace(hashed, guid_);
 		
 		if (!ret.second)
 		{
@@ -278,8 +277,8 @@ public:
 			return false;
 		}
 
-		std::type_index ti(typeid(CompType));
-		auto check = mObjTypeHashes.emplace(ti, hashed);
+		std::type_index ti(typeid(comp_type));
+		auto check = m_obj_type_hashes.emplace(ti, hashed);
 
 		if (!check.second)
 		{
@@ -287,7 +286,7 @@ public:
 			return false;
 		}
 
-		auto rf = createFactory<NSCompFactoryType<CompType>,CompType>();
+		auto rf = _create_factory<nscomp_factory_type<comp_type>,comp_type>();
 		if (rf == NULL)
 			return false;
 		
@@ -295,11 +294,11 @@ public:
 		return true;
 	}
 
-	template<class SysType>
-	bool registerSystemType(const nsstring & guid_)
+	template<class sys_type>
+	bool register_system(const nsstring & guid_)
 	{
 		uint32 hashed = hash_id(guid_);
-		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		auto ret = m_obj_type_names.emplace(hashed, guid_);
 		
 		if (!ret.second)
 		{
@@ -307,8 +306,8 @@ public:
 			return false;
 		}
 
-		std::type_index ti(typeid(SysType));
-		auto check = mObjTypeHashes.emplace(ti, hashed);
+		std::type_index ti(typeid(sys_type));
+		auto check = m_obj_type_hashes.emplace(ti, hashed);
 
 		if (!check.second)
 		{
@@ -316,7 +315,7 @@ public:
 			return false;
 		}
 
-		auto rf = createFactory<NSSysFactoryType<SysType>,SysType>();
+		auto rf = _create_factory<nssys_factory_type<sys_type>,sys_type>();
 		if (rf == NULL)
 			return false;
 		
@@ -324,11 +323,11 @@ public:
 		return true;
 	}
 
-	template<class ResType, class ManagerType>
-	bool registerResourceType(const nsstring & guid_)
+	template<class res_type, class manager_type>
+	bool register_resource(const nsstring & guid_)
 	{
 		uint32 hashed = hash_id(guid_);
-		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		auto ret = m_obj_type_names.emplace(hashed, guid_);
 		
 		if (!ret.second)
 		{
@@ -336,8 +335,8 @@ public:
 			return false;
 		}
 
-		std::type_index ti(typeid(ResType));
-		auto check = mObjTypeHashes.emplace(ti, hashed);
+		std::type_index ti(typeid(res_type));
+		auto check = m_obj_type_hashes.emplace(ti, hashed);
 
 		if (!check.second)
 		{
@@ -345,30 +344,30 @@ public:
 			return false;
 		}
 
-		std::type_index tim(typeid(ManagerType));
-		auto fiter = mObjTypeHashes.find(tim);
+		std::type_index tim(typeid(manager_type));
+		auto fiter = m_obj_type_hashes.find(tim);
 
-		if (fiter == mObjTypeHashes.end())
+		if (fiter == m_obj_type_hashes.end())
 		{
 			dprint(nsstring("registerResourceType - Could not find hash_id for ") + tim.name() + nsstring(" - did you forget to register the manager first?"));
 			return false;
 		}
 
 
-		NSResFactoryType<ResType> * rf = createFactory<NSResFactoryType<ResType>, ResType>();
+		nsres_factory_type<res_type> * rf = _create_factory<nsres_factory_type<res_type>, res_type>();
 		if (rf == NULL)
 			return false;
 		
 		rf->type_id = hashed;
-		mResManagerMap.emplace(hashed, fiter->second);
+		m_res_manager_map.emplace(hashed, fiter->second);
 		return true;
 	}
 
-	template<class ResType, class ManagerType>
-	bool registerAbstractResourceType(const nsstring & guid_)
+	template<class res_type, class manager_type>
+	bool register_abstract_resource(const nsstring & guid_)
 	{
 		uint32 hashed = hash_id(guid_);
-		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		auto ret = m_obj_type_names.emplace(hashed, guid_);
 		
 		if (!ret.second)
 		{
@@ -376,8 +375,8 @@ public:
 			return false;
 		}
 
-		std::type_index ti(typeid(ResType));
-		auto check = mObjTypeHashes.emplace(ti, hashed);
+		std::type_index ti(typeid(res_type));
+		auto check = m_obj_type_hashes.emplace(ti, hashed);
 
 		if (!check.second)
 		{
@@ -385,24 +384,24 @@ public:
 			return false;
 		}
 
-		std::type_index tim(typeid(ManagerType));
-		auto fiter = mObjTypeHashes.find(tim);
+		std::type_index tim(typeid(manager_type));
+		auto fiter = m_obj_type_hashes.find(tim);
 
-		if (fiter == mObjTypeHashes.end())
+		if (fiter == m_obj_type_hashes.end())
 		{
 			dprint(nsstring("registerResourceType - Could not find hash_id for ") + tim.name() + nsstring(" - did you forget to register the manager first?"));
 			return false;
 		}
 
-		mResManagerMap.emplace(hashed, fiter->second);
+		m_res_manager_map.emplace(hashed, fiter->second);
 		return true;
 	}
 
-	template<class ManagerType>
-	bool registerResourceManagerType(const nsstring & guid_)
+	template<class manager_type>
+	bool register_manager(const nsstring & guid_)
 	{
 		uint32 hashed = hash_id(guid_);
-		auto ret = mObjTypeNames.emplace(hashed, guid_);
+		auto ret = m_obj_type_names.emplace(hashed, guid_);
 		
 		if (!ret.second)
 		{
@@ -410,8 +409,8 @@ public:
 			return false;
 		}
 
-		std::type_index ti(typeid(ManagerType));
-		auto check = mObjTypeHashes.emplace(ti, hashed);
+		std::type_index ti(typeid(manager_type));
+		auto check = m_obj_type_hashes.emplace(ti, hashed);
 
 		if (!check.second)
 		{
@@ -419,7 +418,7 @@ public:
 			return false;
 		}
 
-		auto rf = createFactory<nsres_managerFactoryType<ManagerType>,ManagerType>();
+		auto rf = _create_factory<nsmanager_factory_type<manager_type>,manager_type>();
 		if (rf == NULL)
 			return false;
 		
@@ -427,35 +426,35 @@ public:
 		return true;
 	}
 
-	void saveCore(NSSaveResCallback * scallback=NULL);
+	void save_core(nssave_resouces_callback * scallback=NULL);
 
-	bool savePlugin(nsplugin * plg, bool saveOwnedResources=false, NSSaveResCallback * scallback=NULL);
+	bool save_plugin(nsplugin * plg, bool saveOwnedResources=false, nssave_resouces_callback * scallback=NULL);
 
-	void savePlugins(bool saveOwnedResources=false, NSSaveResCallback * scallback = NULL);
+	void save_plugins(bool saveOwnedResources=false, nssave_resouces_callback * scallback = NULL);
 
-	void setPluginDirectory(const nsstring & plugdir);
+	void set_plugin_dir(const nsstring & plugdir);
 
-	const nsstring & pluginDirectory();
+	const nsstring & plugin_dir();
 
 	template<class T>
-	nsplugin * removePlugin(const T & name)
+	nsplugin * remove_plugin(const T & name)
 	{
 		nsplugin * plg = plugin(name);
-		return removePlugin(plg);
+		return remove_plugin(plg);
 	}
 
-	nsplugin * removePlugin(nsplugin * plg);
+	nsplugin * remove_plugin(nsplugin * plg);
 
-	template<class SysType>
-	SysType * removeSystem()
+	template<class sys_type>
+	sys_type * remove_system()
 	{
-		uint32 hashed_type = typeID(std::type_index(typeid(SysType)));
-		return static_cast<SysType*>(removeSystem(hashed_type));
+		uint32 hashed_type = type_id(std::type_index(typeid(sys_type)));
+		return static_cast<sys_type*>(remove_system(hashed_type));
 	}
 
-	nssystem * removeSystem(uint32 type_id);
+	nssystem * remove_system(uint32 type_id);
 
-	nssystem * removeSystem(const nsstring & gui);
+	nssystem * remove_system(const nsstring & gui);
 
 	nsplugin * plugin(const nsstring & name);
 
@@ -464,25 +463,25 @@ public:
 	nsplugin * plugin(nsplugin * plg);
 
 	template<class T>
-	bool destroyPlugin(const T & name)
+	bool destroy_plugin(const T & name)
 	{
-		return destroyPlugin(plugin(name));
+		return destroy_plugin(plugin(name));
 	}
 
-	bool destroyPlugin(nsplugin * plug);
+	bool destroy_plugin(nsplugin * plug);
 
-	template<class ResType>
-	ResType * resource(const uivec2 & resID)
+	template<class res_type>
+	res_type * resource(const uivec2 & resID)
 	{
-		uint32 hashed_type = type_to_hash(ResType);
-		return static_cast<ResType*>(_resource(hashed_type,resID));
+		uint32 hashed_type = type_to_hash(res_type);
+		return static_cast<res_type*>(_resource(hashed_type,resID));
 	}
 
-	template<class ResType,class T1, class T2>
-	ResType * resource(const T1 & plg, const T2 & res)
+	template<class res_type,class T1, class T2>
+	res_type * resource(const T1 & plg, const T2 & res)
 	{
 		nsplugin * plug = plugin(plg);
-		return static_cast<ResType*>(resource(type_to_hash(ResType),plug,res));
+		return static_cast<res_type*>(resource(type_to_hash(res_type),plug,res));
 	}
 
 	nsresource * resource(uint32 res_typeid, nsplugin * plg, uint32 resid);
@@ -500,57 +499,57 @@ public:
 
 	nsstring guid(std::type_index type);
 
-	uint32 managerID(uint32 res_id);
+	uint32 manager_id(uint32 res_id);
 
-	uint32 managerID(std::type_index res_type);
+	uint32 manager_id(std::type_index res_type);
 
-	uint32 managerID(const nsstring & res_guid);
+	uint32 manager_id(const nsstring & res_guid);
 
-	uint32 typeID(std::type_index type);
+	uint32 type_id(std::type_index type);
 	
-	void setActive(const nsstring & plugname);
+	void set_active(const nsstring & plugname);
 
-	void setActive(nsplugin * plug);
+	void set_active(nsplugin * plug);
 
-	void setActive(uint32 plugid);
+	void set_active(uint32 plugid);
 
-	void setCurrentScene(const nsstring & scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void set_current_scene(const nsstring & scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	void setCurrentScene(nsscene * scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void set_current_scene(nsscene * scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	void setCurrentScene(uint32 scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void set_current_scene(uint32 scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
 
-	bool makeCurrent(uint32 cID);
+	bool make_current(uint32 cID);
 
-	const nsstring & importdir();
+	const nsstring & import_dir();
 
-	void setImportDir(const nsstring & dir);
+	void set_import_dir(const nsstring & dir);
 
-	void setResourceDir(const nsstring & dir);
+	void set_res_dir(const nsstring & dir);
 
 	void shutdown();
 
 	void start();
 
-	template<class SysType>
-	SysType * system()
+	template<class sys_type>
+	sys_type * system()
 	{
-		uint32 hashed_type = typeID(std::type_index(typeid(SysType)));
-		return static_cast<SysType*>(system(hashed_type));
+		uint32 hashed_type = type_id(std::type_index(typeid(sys_type)));
+		return static_cast<sys_type*>(system(hashed_type));
 	}
 
 	nssystem * system(uint32 type_id);
 
 	nssystem * system(const nsstring & guid_);
 
-	NSTimer * timer();
+	nstimer * timer();
 
 	void update();
 
 	const nsstring & cwd();
 
 #ifdef NSDEBUG
-	NSDebug * debug();
+	nsdebug * debug();
 #endif
 
 	/*!
@@ -560,27 +559,27 @@ public:
 
 private:
 
-	template<class ObjType>
-	bool addFactory(NSFactory * fac)
+	template<class obj_type>
+	bool _add_factory(nsfactory * fac)
 	{
 		if (fac == NULL)
 			return false;
 
-		std::type_index ti = std::type_index(typeid(ObjType));
-		auto iter = mObjTypeHashes.find(ti);
+		std::type_index ti = std::type_index(typeid(obj_type));
+		auto iter = m_obj_type_hashes.find(ti);
 
-		if (iter == mObjTypeHashes.end())
+		if (iter == m_obj_type_hashes.end())
 			return false;
 		
-		auto it = mFactories.emplace(iter->second, fac);
+		auto it = m_factories.emplace(iter->second, fac);
 		return it.second;
 	}
 	
-	template<class BaseFacType, class ObjType>
-	BaseFacType * createFactory()
+	template<class base_fac_type, class obj_type>
+	base_fac_type * _create_factory()
 	{
-		BaseFacType * fac = new BaseFacType;
-		if (!addFactory<ObjType>(fac))
+		base_fac_type * fac = new base_fac_type;
+		if (!_add_factory<obj_type>(fac))
 		{
 			delete fac;
 			return NULL;
@@ -588,77 +587,77 @@ private:
 		return fac;
 	}
 	
-	template<class ObjType>
-	bool destroyFactory()
+	template<class obj_type>
+	bool _destroy_factory()
 	{
-		std::type_index ti = std::type_index(typeid(ObjType));
-		auto iter = mObjTypeHashes.find(ti);
+		std::type_index ti = std::type_index(typeid(obj_type));
+		auto iter = m_obj_type_hashes.find(ti);
 
-		if (iter == mObjTypeHashes.end())
+		if (iter == m_obj_type_hashes.end())
 			return false;
 
-        return destroyFactory(iter->second);
+        return _destroy_factory(iter->second);
 	}
 
-	bool destroyFactory(uint32 hashid);
+	bool _destroy_factory(uint32 hashid);
 
-	NSFactory * removeFactory(uint32 hashid);
+	nsfactory * _remove_factory(uint32 hashid);
 	
-	template<class BaseFacType,class ObjType>
-	BaseFacType * removeFactory()
+	template<class base_fac_type,class obj_type>
+	base_fac_type * _remove_factory()
 	{
-		std::type_index ti = std::type_index(typeid(ObjType));
-		auto iter = mObjTypeHashes.find(ti);
+		std::type_index ti = std::type_index(typeid(obj_type));
+		auto iter = m_obj_type_hashes.find(ti);
 
-		if (iter == mObjTypeHashes.end())
+		if (iter == m_obj_type_hashes.end())
 			return false;
 
-        return static_cast<BaseFacType*>(removeFactory(iter->second));
+        return static_cast<base_fac_type*>(_remove_factory(iter->second));
 	}
 
 
-	void _initSystems();
-	void _initShaders();
-	void _initMaterials();
-	void _initMeshes();
-	void _initInputMaps();
-	void _initEntities();
-	void _initDefaultFactories();
-	void _removeSys(uint32 type_id);
+	void _init_systems();
+	void _init_shaders();
+	void _init_materials();
+	void _init_meshes();
+	void _init_input_maps();
+	void _init_entities();
+	void _init_factories();
+	void _remove_sys(uint32 type_id);
 
 	nsresource * _resource(uint32 restype_id, const uivec2 & resid);
 	
 	nsstring m_res_dir;
-	nsstring mImportDirectory;
+	nsstring m_import_dir;
 	
-	SystemPriorityMap mSystemUpdateOrder;
-	SystemPriorityMap mSystemDrawOrder;
+	sys_priority_map m_sys_update_order;
+	sys_priority_map m_sys_draw_order;
 
-	TypeHashMap mObjTypeHashes;
-	HashMap mObjTypeNames;
-	FactoryMap mFactories;
-	ResManagerMap mResManagerMap;
+	type_hash_map m_obj_type_hashes;
+	hash_string_map m_obj_type_names;
+	hash_factory_map m_factories;
+	res_manager_type_map m_res_manager_map;
 	
-	ContextMap mContexts;
-	uint32 mCurrentContext;
-	nsstring mCwd;
+	gl_context_map m_contexts;
+	uint32 m_current_context;
+	nsstring m_cwd;
 };
 
-struct GLContext
+struct gl_ctxt
 {
-	GLContext(uint32 id);
-	~GLContext();
-	GLEWContext * glewContext;
-	nsplugin * engplug;
-	SystemMap * systems;
+	gl_ctxt(uint32 id);
+	~gl_ctxt();
+	GLEWContext * glew_context;
+	nsplugin * core_plugin;
+	system_hash_map * systems;
 	nsplugin_manager * plugins;
-	NSEventDispatcher * mEvents;
-	FramebufferMap fbmap;
-	NSTimer * timer;
-	uint32 compositeBuf;
+	nsevent_dispatcher * event_disp;
+	framebuffer_map fb_map;
+	nstimer * timer;
+	uint32 composite_buf;
 	uint32 context_id;
 #ifdef NSDEBUG
-	NSDebug * mDebug;
+	nsdebug * deb;
 #endif
 	
 };

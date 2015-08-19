@@ -54,7 +54,7 @@ bool nsentity::add(NSComponent * pComp)
 	auto ret = m_components.emplace(hashed_type, pComp);
 	if (ret.second)
 	{
-		pComp->setOwner(this);
+		pComp->set_owner(this);
 		update_scene();
 	}
 	return ret.second;
@@ -106,7 +106,7 @@ nsentity::comp_set::iterator nsentity::end()
 
 NSComponent * nsentity::create(uint32 type_id)
 {
-	NSComponent * comp_t = nsengine.factory<NSCompFactory>(type_id)->create();
+	NSComponent * comp_t = nsengine.factory<nscomp_factory>(type_id)->create();
 	if (!add(comp_t))
 	{
 		dprint(nsstring("nsentity::createComponent - Failed adding comp_t type ") + nsengine.guid(type_id) +
@@ -142,16 +142,16 @@ bool nsentity::del(uint32 type_id)
 	return false;
 }
 
-void nsentity::pup(NSFilePUPer * p)
+void nsentity::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -225,7 +225,7 @@ NSComponent * nsentity::remove(uint32 type_id)
 	if (iter != m_components.end())
 	{
 		comp_t = iter->second;
-		comp_t->setOwner(NULL);
+		comp_t->set_owner(NULL);
 		m_components.erase(iter);
 		update_scene();
 		dprint("nsentity::remove - Removing \"" + nsengine.guid(type_id) + "\" from Entity " + m_name + "\"");
@@ -249,7 +249,7 @@ void nsentity::post_update_all(bool pUpdate)
 	auto iter = m_components.begin();
 	while (iter != m_components.end());
 	{
-		iter->second->postUpdate(pUpdate);
+		iter->second->post_update(pUpdate);
 		++iter;
 	}
 }
@@ -258,20 +258,20 @@ void nsentity::post_update(const nsstring & compType, bool update)
 {
 	NSComponent * comp_t = get(compType);
 	if (comp_t != NULL)
-		comp_t->postUpdate(update);
+		comp_t->post_update(update);
 }
 
 bool nsentity::update_posted(const nsstring & compType)
 {
 	NSComponent * comp_t = get(compType);
 	if (comp_t != NULL)
-		return comp_t->updatePosted();
+		return comp_t->update_posted();
 	return false;
 }
 
 void nsentity::update_scene()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene != NULL)
 		scene->update_comp_maps(m_plugin_id, m_id);
 }

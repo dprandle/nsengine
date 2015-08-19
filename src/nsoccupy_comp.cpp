@@ -23,7 +23,7 @@ mMatID(),
 NSComponent()
 {
 	add(0, 0, 0);
-	nsmesh * occ = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
+	nsmesh * occ = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
 	if (occ == NULL)
 	{
 		dprint("NSOccupyComp::NSOccupyComp Could not get occupy mesh");
@@ -62,7 +62,7 @@ origin is the center of the object. This should be true for any object imported 
 This calculation is very basic and the actual tiles occupied should be refined - That is the algorithm
 uses the bounding box of the entire mesh.
 */
-void NSOccupyComp::build(const NSBoundingBox & pBox)
+void NSOccupyComp::build(const nsbounding_box & pBox)
 {
 	int32 zCountUp = int32(abs(pBox.mMax.z) / Z_GRID);
 	if (fmod(abs(pBox.mMax.z), Z_GRID) > 0.01)
@@ -227,16 +227,16 @@ void NSOccupyComp::build(const NSBoundingBox & pBox)
 	}
 }
 
-void NSOccupyComp::pup(NSFilePUPer * p)
+void NSOccupyComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -342,13 +342,13 @@ uivec2array NSOccupyComp::resources()
 void NSOccupyComp::setMeshID(const uivec2 & mesh)
 {
 	mMeshID = mesh;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSOccupyComp::setMatID(const uivec2 & mat)
 {
 	mMatID = mat;
-	postUpdate(true);
+	post_update(true);
 }
 
 NSOccupyComp & NSOccupyComp::operator=(const NSOccupyComp & pRHSComp)
@@ -359,6 +359,6 @@ NSOccupyComp & NSOccupyComp::operator=(const NSOccupyComp & pRHSComp)
 	mMeshID = pRHSComp.mMeshID;
 	mMatID = pRHSComp.mMatID;
 	mDrawEnabled = pRHSComp.mDrawEnabled;
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }

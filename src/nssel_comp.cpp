@@ -33,7 +33,7 @@ NSSelComp::~NSSelComp()
 bool NSSelComp::add(uint32 pTransformID)
 {
 
-	if (pTransformID >= mOwner->get<NSTFormComp>()->count())
+	if (pTransformID >= m_owner->get<NSTFormComp>()->count())
 	{
 		dprint("NSSelComp::add - TransformID out of bounds");
 		return false;
@@ -76,16 +76,16 @@ void NSSelComp::enableDraw(bool pEnable)
 	mDrawEnabled = pEnable;
 }
 
-void NSSelComp::pup(NSFilePUPer * p)
+void NSSelComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -187,6 +187,6 @@ NSSelComp & NSSelComp::operator=(const NSSelComp & pRHSComp)
 	mDefaultSelColor = pRHSComp.mSelColor;
 	mMaskAlpha = pRHSComp.mMaskAlpha;
 	mDrawEnabled = pRHSComp.mDrawEnabled;
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }

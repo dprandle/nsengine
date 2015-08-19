@@ -1,9 +1,9 @@
 /*!
 \file nscamcomp.cpp
 
-\brief Definition file for NSCamComp class
+\brief Definition file for nscam_comp class
 
-This file contains all of the neccessary definitions for the NSCamComp class.
+This file contains all of the neccessary definitions for the nscam_comp class.
 
 \author Daniel Randle
 \date December 17 2013
@@ -15,335 +15,294 @@ This file contains all of the neccessary definitions for the NSCamComp class.
 #include <nstimer.h>
 #include <nstform_comp.h>
 
-/*
-class NSCamComp
-
-This class is implemented by keeping track of the camera. It uses the transform component
-of the reference owner to manipulate its position and look angle etc.
-The camera component will only work correctly after the base entity has been added to the scene - if
-most of these functions are called without the entity being added to the scene (or without a reference owner assigned
-to the component) they will not work.
-
-Sensitivity effects the mouse movement speed of the camera and speed effects
-the animation speed of movement.
-
-Every frame (or update call on camera) the camera's timer has a certain value
-that is compared to the timers value of the previous frame. This time difference
-dt is multiplied by the speed to get the movement for that frame. Therefor,
-speed units are simply units per second.
-*/
-
-NSCamComp::NSCamComp():
-mFlying(),
-mStrafing(),
-mElevating(),
-mFocPoint(),
-mFocRot(),
-mSpeed(DEFAULT_CAM_SPEED),
-mFovAngle(0.0f),
-mPersNFClip(),
-mProjMode(Persp),
-mDim(),
-mFocTForm(),
+nscam_comp::nscam_comp():
+m_flying(),
+m_strafing(),
+m_elevating(),
+m_focus_point(),
+m_focus_orientation(),
+m_speed(DEFAULT_CAM_SPEED),
+m_fov_angle(0.0f),
+m_persp_nf_clip(),
+m_proj_mode(proj_persp),
+m_screen_size(),
+m_focus_transform(),
 NSComponent()
 {}
 
-NSCamComp::~NSCamComp()
+nscam_comp::~nscam_comp()
 {}
 
-void NSCamComp::changeSpeed(float pAmount)
+void nscam_comp::change_speed(float pAmount)
 {
-	mSpeed += pAmount;
-	postUpdate(true);
+	m_speed += pAmount;
+	post_update(true);
 }
 
-NSCamComp* NSCamComp::copy(const NSComponent * pToCopy)
+nscam_comp* nscam_comp::copy(const NSComponent * pToCopy)
 {
-	// TODO: Fix the bla bla bla
 	if (pToCopy == NULL)
 		return NULL;
-	const NSCamComp * comp = (const NSCamComp*)pToCopy;
+	const nscam_comp * comp = (const nscam_comp*)pToCopy;
 	(*this) = (*comp);
 	return this;
 }
 
-const fvec2 & NSCamComp::orthoTBClip()
+const fvec2 & nscam_comp::ortho_tb_clip()
 {
-	return mTBClip;
+	return m_tb_clip;
 }
 
-const fvec2 & NSCamComp::orthoLRClip()
+const fvec2 & nscam_comp::ortho_lr_clip()
 {
-	return mLRClip;
+	return m_lr_clip;
 }
 
-const fvec2 & NSCamComp::orthoNFClip()
+const fvec2 & nscam_comp::ortho_nf_clip()
 {
-	return mNFClip;
+	return m_nf_clip;
 }
 
-const fvec2 & NSCamComp::perspNFClip()
+const fvec2 & nscam_comp::persp_nf_clip()
 {
-	return mPersNFClip;
+	return m_persp_nf_clip;
 }
 
-void NSCamComp::setPerspNFClip(const fvec2 & nf)
+void nscam_comp::set_persp_nf_clip(const fvec2 & nf)
 {
-	mPersNFClip = nf;
-	_updateProj();
+	m_persp_nf_clip = nf;
+	_update_proj();
 }
 
-const fmat4 & NSCamComp::proj()
+const fmat4 & nscam_comp::proj()
 {
-	return mProjMat;
+	return m_proj_mat;
 }
 
-float NSCamComp::fov()
+float nscam_comp::fov()
 {
-	return mFovAngle;
+	return m_fov_angle;
 }
 
-void NSCamComp::setfov(float angledeg)
+void nscam_comp::set_fov(float angledeg)
 {
-	mFovAngle = angledeg;
-	_updateProj();
+	m_fov_angle = angledeg;
+	_update_proj();
 }
 
-float NSCamComp::aspectRatio()
+float nscam_comp::aspect_ratio()
 {
-	return float(mDim.w) / float(mDim.h);
+	return float(m_screen_size.w) / float(m_screen_size.h);
 }
 
-const fmat4 & NSCamComp::invproj()
+const fmat4 & nscam_comp::inv_proj()
 {
-	return mInverseProjMat;
+	return m_inv_proj_mat;
 }
 
-NSCamComp::ProjectionMode NSCamComp::projectionMode()
+nscam_comp::projection_mode nscam_comp::proj_mode()
 {
-	return mProjMode;
+	return m_proj_mode;
 }
 
-void NSCamComp::setOrthoTBClip(const fvec2 & tb)
+void nscam_comp::set_ortho_tb_clip(const fvec2 & tb)
 {
-	mTBClip = tb;
-	_updateProj();
+	m_tb_clip = tb;
+	_update_proj();
 }
 
-void NSCamComp::setOrthoLRClip(const fvec2 & lr)
+void nscam_comp::set_ortho_lr_clip(const fvec2 & lr)
 {
-	mLRClip = lr;
-	_updateProj();
+	m_lr_clip = lr;
+	_update_proj();
 }
 
-void NSCamComp::setOrthoNFClip(const fvec2 & nf)
+void nscam_comp::set_ortho_nf_clip(const fvec2 & nf)
 {
-	mNFClip = nf;
-	_updateProj();
+	m_nf_clip = nf;
+	_update_proj();
 }
 
-void NSCamComp::setProjectionMode(ProjectionMode mode)
+void nscam_comp::set_proj_mode(projection_mode mode)
 {
-	mProjMode = mode;
-	_updateProj();
+	m_proj_mode = mode;
+	_update_proj();
 }
 
-const fquat & NSCamComp::focusOrientation()
+const fquat & nscam_comp::focus_orientation()
 {
-	return mFocRot;
+	return m_focus_orientation;
 }
 
-const fvec3 & NSCamComp::focusPoint()
+const fvec3 & nscam_comp::focus_point()
 {
-	return mFocPoint;
+	return m_focus_point;
 }
 
-void NSCamComp::toggleProjectionMode()
+void nscam_comp::toggle_projection_mode()
 {
-	if (mProjMode == Persp)
-		setProjectionMode(Ortho);
+	if (m_proj_mode == proj_persp)
+		set_proj_mode(proj_ortho);
 	else
-		setProjectionMode(Persp);
+		set_proj_mode(proj_persp);
 }
 
-void NSCamComp::rotateFocus(const fquat & pQuat)
+void nscam_comp::set_focus_orientation(const fquat & pFocRot)
 {
-	mFocRot *= pQuat;
-	computeFocusTransform();
+	m_focus_orientation = pFocRot;
+	compute_focus_transform();
 }
 
-void NSCamComp::rotateFocus(float pX, float pY, float pZ, float pAngle)
+fmat4 nscam_comp::focus_transform()
 {
-	rotateFocus(fvec3(pX, pY, pZ), pAngle);
+	return m_focus_transform;
 }
 
-void NSCamComp::rotateFocus(const fvec3 & pAxis, float pAngle)
+void nscam_comp::resize_screen(int32 w, int32 h)
 {
-	mFocRot = orientation(fvec4(pAxis, pAngle)) * mFocRot;
-	computeFocusTransform();
+	m_screen_size.set(w,h);
+	_update_proj();
 }
 
-void NSCamComp::translateFocus(const fvec3 & pAmount)
+void nscam_comp::resize_screen(const ivec2 & dim)
 {
-	mFocPoint += pAmount;
-	computeFocusTransform();
+	m_screen_size = dim;
+	_update_proj();
 }
 
-void NSCamComp::setFocusRot(const fquat & pFocRot)
+void nscam_comp::compute_focus_transform()
 {
-	mFocRot = pFocRot;
+	m_focus_transform.set(rotation_mat3(m_focus_orientation));
+	m_focus_transform.set_column(3, m_focus_point.x, m_focus_point.y, m_focus_point.z, 1);
+	m_focus_transform[3].x = 0; m_focus_transform[3].y = 0; m_focus_transform[3].z = 0;
 }
 
-fmat4 NSCamComp::camFocusTForm()
+const ivec2 & nscam_comp::screen_size()
 {
-	return mFocTForm;
+	return m_screen_size;
 }
 
-void NSCamComp::resize(int32 w, int32 h)
+const nscam_comp::movement_t & nscam_comp::elevate() const
 {
-	mDim.set(w,h);
-	_updateProj();
+	return m_elevating;
 }
 
-void NSCamComp::resize(const ivec2 & dim)
+const nscam_comp::movement_t & nscam_comp::fly() const
 {
-	mDim = dim;
-	_updateProj();
+	return m_flying;
 }
 
-void NSCamComp::computeFocusTransform()
+float nscam_comp::speed() const
 {
-	mFocTForm.set(rotationMat3(mFocRot));
-	mFocTForm.setColumn(3, mFocPoint.x, mFocPoint.y, mFocPoint.z, 1);
-	mFocTForm[3].x = 0; mFocTForm[3].y = 0; mFocTForm[3].z = 0;
+	return m_speed;
 }
 
-const ivec2 & NSCamComp::dim()
+const nscam_comp::movement_t & nscam_comp::strafe() const
 {
-	return mDim;
+	return m_strafing;
 }
 
-const NSCamComp::Movement & NSCamComp::elevate() const
-{
-	return mElevating;
-}
-
-const NSCamComp::Movement & NSCamComp::fly() const
-{
-	return mFlying;
-}
-
-float NSCamComp::speed() const
-{
-	return mSpeed;
-}
-
-const NSCamComp::Movement & NSCamComp::strafe() const
-{
-	return mStrafing;
-}
-
-void NSCamComp::init()
+void nscam_comp::init()
 {}
 
-const fmat4 & NSCamComp::projCam()
+const fmat4 & nscam_comp::proj_cam()
 {
-	return mProjCam;
+	return m_proj_cam;
 }
 
-const fmat4 & NSCamComp::invProjCam()
+const fmat4 & nscam_comp::inv_proj_cam()
 {
-	return mInvProjCam;
+	return m_inv_proj_cam;
 }
 
-void NSCamComp::setElevate(Direction pDir, bool pAnimate)
+void nscam_comp::set_elevate(dir_t pDir, bool pAnimate)
 {
-	if (mElevating.mDir != pDir)
+	if (m_elevating.direction != pDir)
 	{
 		if (!pAnimate)
 			return;
-		mElevating.mDir = pDir;
-		mElevating.mAnimate = pAnimate;
+		m_elevating.direction = pDir;
+		m_elevating.animating = pAnimate;
 	}
 	else
-		mElevating.mAnimate = pAnimate;
-	postUpdate(true);
+		m_elevating.animating = pAnimate;
+	post_update(true);
 }
 
-void NSCamComp::pup(NSFilePUPer * p)
+void nscam_comp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
 
-void NSCamComp::setFly(Direction pDir, bool pAnimate)
+void nscam_comp::set_fly(dir_t pDir, bool pAnimate)
 {
-	if (mFlying.mDir != pDir)
+	if (m_flying.direction != pDir)
 	{
 		if (!pAnimate)
 			return;
-		mFlying.mDir = pDir;
-		mFlying.mAnimate = pAnimate;
+		m_flying.direction = pDir;
+		m_flying.animating = pAnimate;
 	}
 	else
-		mFlying.mAnimate = pAnimate;
-	postUpdate(true);
+		m_flying.animating = pAnimate;
+	post_update(true);
 }
 
-void NSCamComp::setFocusPoint(const fvec3 & pFocPoint)
+void nscam_comp::set_focus_point(const fvec3 & pFocPoint)
 {
-	mFocPoint = pFocPoint;
-	computeFocusTransform();
-	postUpdate(true);
+	m_focus_point = pFocPoint;
+	compute_focus_transform();
+	post_update(true);
 }
 
-void NSCamComp::setSpeed(float pUnitsPerSecond)
+void nscam_comp::set_speed(float pUnitsPerSecond)
 {
-	mSpeed = pUnitsPerSecond;
-	postUpdate(true);
+	m_speed = pUnitsPerSecond;
+	post_update(true);
 }
 
-void NSCamComp::setStrafe(Direction pDir, bool pAnimate)
+void nscam_comp::set_strafe(dir_t pDir, bool pAnimate)
 {
-	if (mStrafing.mDir != pDir)
+	if (m_strafing.direction != pDir)
 	{
 		if (!pAnimate)
 			return;
-		mStrafing.mDir = pDir;
-		mStrafing.mAnimate = pAnimate;
+		m_strafing.direction = pDir;
+		m_strafing.animating = pAnimate;
 	}
 	else
-		mStrafing.mAnimate = pAnimate;
+		m_strafing.animating = pAnimate;
 
-	postUpdate(true);
+	post_update(true);
 }
 
-NSCamComp & NSCamComp::operator=(const NSCamComp & pRHSComp)
+nscam_comp & nscam_comp::operator=(const nscam_comp & pRHSComp)
 {
-	mFlying = pRHSComp.mFlying;
-	mElevating = pRHSComp.mElevating;
-	mStrafing = pRHSComp.mStrafing;
-	mSpeed = pRHSComp.mSpeed;
-	mFocPoint = pRHSComp.mFocPoint;
-	mFocRot = pRHSComp.mFocRot;
-	postUpdate(true);
+	m_flying = pRHSComp.m_flying;
+	m_elevating = pRHSComp.m_elevating;
+	m_strafing = pRHSComp.m_strafing;
+	m_speed = pRHSComp.m_speed;
+	m_focus_point = pRHSComp.m_focus_point;
+	m_focus_orientation = pRHSComp.m_focus_orientation;
+	post_update(true);
 	return (*this);
 }
 
-void NSCamComp::_updateProj()
+void nscam_comp::_update_proj()
 {
-	if (mProjMode == Persp)
-		mProjMat = perspective(mFovAngle, aspectRatio(), mPersNFClip.x, mPersNFClip.y);
+	if (m_proj_mode == proj_persp)
+		m_proj_mat = perspective(m_fov_angle, aspect_ratio(), m_persp_nf_clip.x, m_persp_nf_clip.y);
 	else
-		mProjMat = ortho(mLRClip.x, mLRClip.y, mTBClip.x, mTBClip.y, mNFClip.x, mNFClip.y);
-	mInverseProjMat = inverse(mProjMat);
-	postUpdate(true);
+		m_proj_mat = ortho(m_lr_clip.x, m_lr_clip.y, m_tb_clip.x, m_tb_clip.y, m_nf_clip.x, m_nf_clip.y);
+	m_inv_proj_mat = inverse(m_proj_mat);
+	post_update(true);
 }

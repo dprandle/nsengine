@@ -13,8 +13,8 @@
 #include <nscomponent.h>
 
 NSComponent::NSComponent(): 
-mOwner(NULL),
-mUpdate(true),
+m_owner(NULL),
+m_update(true),
 m_hashed_type(0)
 {}
 
@@ -30,17 +30,17 @@ NSComponent * NSComponent::copy(const NSComponent * pComp)
 
 nsentity * NSComponent::owner()
 {
-	return mOwner;
+	return m_owner;
 }
 
-bool NSComponent::updatePosted() const
+bool NSComponent::update_posted() const
 {
-	return mUpdate;
+	return m_update;
 }
 
-void NSComponent::postUpdate(bool pUpdate)
+void NSComponent::post_update(bool pUpdate)
 {
-	mUpdate = pUpdate;
+	m_update = pUpdate;
 }
 
 uint32 NSComponent::type()
@@ -67,7 +67,7 @@ uivec2array NSComponent::resources()
 	return uivec2array();
 }
 
-void NSComponent::setOwner(nsentity * owner)
+void NSComponent::set_owner(nsentity * owner)
 {
-	mOwner = owner;
+	m_owner = owner;
 }

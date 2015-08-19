@@ -4,103 +4,103 @@
 #include "nsvec2.h"
 
 template <class T>
-NSVec3<T> operator*(const int32 & pLHS, const NSVec3<T> & pRHS);
+nsvec3<T> operator*(const int32 & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> operator*(const float & pLHS, const NSVec3<T> & pRHS);
+nsvec3<T> operator*(const float & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> operator*(const double & pLHS, const NSVec3<T> & pRHS);
+nsvec3<T> operator*(const double & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> operator/(const int32 & pLHS, const NSVec3<T> & pRHS);
+nsvec3<T> operator/(const int32 & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> operator/(const float & pLHS, const NSVec3<T> & pRHS);
+nsvec3<T> operator/(const float & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> operator/(const double & pLHS, const NSVec3<T> & pRHS);
+nsvec3<T> operator/(const double & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> abs(const NSVec3<T> & pVec);
+nsvec3<T> abs(const nsvec3<T> & vec_);
 
 template <class T>
-NSVec3<T> ceil(const NSVec3<T> & pVec);
+nsvec3<T> ceil(const nsvec3<T> & vec_);
 
 template <class T>
-NSVec3<T> clamp(const NSVec3<T> & pVec, const T & pMin, const T & pMax);
+nsvec3<T> clamp(const nsvec3<T> & vec_, const T & min_, const T & max_);
 
 template <class T>
-NSVec3<T> cross(const NSVec3<T> & pLeft, const NSVec3<T> & pRight);
+nsvec3<T> cross(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-T distance(const NSVec3<T> & lvec, const NSVec3<T> & rvec);
+T distance(const nsvec3<T> & lvec_, const nsvec3<T> & rvec_);
 
 template <class T>
-T dot(const NSVec3<T> & pLeft, const NSVec3<T> & pRight);
+T dot(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> euler(const NSVec4<T> & axisAngle, typename NSVec3<T>::EulerOrder order , bool pRads = false);
+nsvec3<T> euler(const nsvec4<T> & axis_angle_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false);
 
 template <class T>
-NSVec3<T> euler(const NSQuat<T> & orientation, typename NSVec3<T>::EulerOrder order , bool rads = false);
+nsvec3<T> euler(const nsquat<T> & orientation_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false);
 
 template <class T>
-NSVec3<T> euler(const NSMat3<T> & rotationMat3, typename NSVec3<T>::EulerOrder order , bool pRads = false);
+nsvec3<T> euler(const nsmat3<T> & rotation_mat3_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false);
 
 template <class T>
-NSVec3<T> euler(const NSMat4<T> & transform, typename NSVec3<T>::EulerOrder order , bool pRads = false);
+nsvec3<T> euler(const nsmat4<T> & transform_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false);
 
 template <class T>
-NSVec3<T> euler(const NSVec3<T> & vec, const NSVec3<T> & toVec, typename NSVec3<T>::EulerOrder order , bool pRads = false);
+nsvec3<T> euler(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, typename nsvec3<T>::EulerOrder order_ , bool rads_ = false);
 
 template <class T>
-NSVec3<T> floor(const NSVec3<T> & pVec);
+nsvec3<T> floor(const nsvec3<T> & vec_);
 
 template <class T>
-NSVec3<T> fract(const NSVec3<T> & vec);
+nsvec3<T> fract(const nsvec3<T> & vec_);
 
 template <class T>
-T length(const NSVec3<T> & pVec);
+T length(const nsvec3<T> & vec_);
 
 template <class T, class T2>
-NSVec3<T> lerp(const NSVec3<T> & lhs, const NSVec3<T> & rhs, T2 scalingFactor);
+nsvec3<T> lerp(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_, T2 scaling_factor_);
 
 template <class T>
-NSVec3<T> min(const NSVec3<T> & pLeft, const NSVec3<T> & pRight);
+nsvec3<T> min(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> max(const NSVec3<T> & pLeft, const NSVec3<T> & pRight);
+nsvec3<T> max(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> normalize(const NSVec3<T> & pRHS);
+nsvec3<T> normalize(const nsvec3<T> & rhs_);
 
 template <class T>
-NSVec3<T> project(const NSVec3<T> & a, const NSVec3<T> & b);
+nsvec3<T> project(const nsvec3<T> & a, const nsvec3<T> & b);
 
 template <class T>
-NSVec3<T> projectPlane(const NSVec3<T> & a, const NSVec3<T> & normal);
+nsvec3<T> projectPlane(const nsvec3<T> & a, const nsvec3<T> & normal_);
 
 template <class T>
-NSVec3<T> reflect(const NSVec3<T> & incident, const NSVec3<T> & normal);
+nsvec3<T> reflect(const nsvec3<T> & incident_, const nsvec3<T> & normal_);
 
 template <class T>
-NSVec3<T> round(const NSVec3<T> & pVec);
+nsvec3<T> round(const nsvec3<T> & vec_);
 
 template <class T>
-NSVec3<T> scalingVec(const NSMat3<T> & transform);
+nsvec3<T> scaling_vec(const nsmat3<T> & transform_);
 
 template <class T>
-NSVec3<T> scalingVec(const NSMat4<T> & transform);
+nsvec3<T> scaling_vec(const nsmat4<T> & transform_);
 
 template <class T>
-NSVec3<T> translationVec(const NSMat4<T> & transform);
+nsvec3<T> translation_vec(const nsmat4<T> & transform_);
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSVec3<T> & v3);
+void pup(PUPer & p, nsvec3<T> & v3);
 
 template <class T>
-struct NSVec3
+struct nsvec3
 {
 	enum CoordSys
 	{
@@ -119,13 +119,13 @@ struct NSVec3
 		ZYX
 	};
 
-	NSVec3(const NSVec3<T> & copy) : x(copy.x), y(copy.y), z(copy.z) {}
-	NSVec3(const T & val = static_cast<T>(0)) : x(val), y(val), z(val) {}
-	NSVec3(const NSVec2<T> & xy, const T & z_) : x(xy.x), y(xy.y), z(z_) {}
-	NSVec3(const T & x_, const NSVec2<T> & yz) : x(x_), y(yz.y), z(yz.z) {}
-	NSVec3(const T & x_, const T & y_, const T & z_ = static_cast<T>(0)) : x(x_), y(y_), z(z_) {}
+	nsvec3(const nsvec3<T> & copy_) : x(copy_.x), y(copy_.y), z(copy_.z) {}
+	nsvec3(const T & val_ = static_cast<T>(0)) : x(val_), y(val_), z(val_) {}
+	nsvec3(const nsvec2<T> & xy, const T & z_) : x(xy.x), y(xy.y), z(z_) {}
+	nsvec3(const T & x_, const nsvec2<T> & yz) : x(x_), y(yz.y), z(yz.z) {}
+	nsvec3(const T & x_, const T & y_, const T & z_ = static_cast<T>(0)) : x(x_), y(y_), z(z_) {}
 
-	NSVec3<T> & abs()
+	nsvec3<T> & abs()
 	{
 		x = static_cast<T>(std::abs(x));
 		y = static_cast<T>(std::abs(y));
@@ -133,23 +133,23 @@ struct NSVec3
 		return *this;
 	}
 
-	T angleTo(const NSVec3<T> pVec, bool pRads = false) const
+	T angle_to(const nsvec3<T> vec_, bool rads_ = false) const
 	{
-		T dotP = (*this) * pVec;
-		T l = length() * pVec.length();
+		T dotP = (*this) * vec_;
+		T l = length() * vec_.length();
 
 		if (l == static_cast<T>(0))
 			return static_cast<T>(0);
 
 		dotP /= l;
 
-		if (pRads)
+		if (rads_)
 			return T(acos(dotP));
 		else
 			return T(degrees(acos(dotP)));
 	}
 
-	NSVec3<T> & ceil()
+	nsvec3<T> & ceil()
 	{
 		x = static_cast<T>(std::ceil(x));
 		y = static_cast<T>(std::ceil(y));
@@ -157,35 +157,35 @@ struct NSVec3
 		return *this;
 	}
 
-	NSVec3<T> & clamp(const T & min = static_cast<T>(0), const T & max = static_cast<T>(0))
+	nsvec3<T> & clamp(const T & min_ = static_cast<T>(0), const T & max_ = static_cast<T>(0))
 	{
-		if (x < min)
-			x = min;
-		if (y < min)
-			y = min;
-		if (z < min)
-			z = min;
-		if (x > max)
-			x = max;
-		if (y > max)
-			y = max;
-		if (z > max)
-			z = max;
+		if (x < min_)
+			x = min_;
+		if (y < min_)
+			y = min_;
+		if (z < min_)
+			z = min_;
+		if (x > max_)
+			x = max_;
+		if (y > max_)
+			y = max_;
+		if (z > max_)
+			z = max_;
 		return *this;
 	}
 
-	NSVec3<T> & cross(const NSVec3<T> & crossWith)
+	nsvec3<T> & cross(const nsvec3<T> & cross_with_)
 	{
 		T tmpx = x, tmpy = y;
-		x = y * crossWith.z - z * crossWith.y;
-		y = z * crossWith.x - tmpx * crossWith.z;
-		z = tmpx * crossWith.y - tmpy * crossWith.x;
+		x = y * cross_with_.z - z * cross_with_.y;
+		y = z * cross_with_.x - tmpx * cross_with_.z;
+		z = tmpx * cross_with_.y - tmpy * cross_with_.x;
 		return *this;
 	}
 
-	NSVec3<T> cylindrical(bool pRads = false) const
+	nsvec3<T> cylindrical(bool rads_ = false) const
 	{
-		NSVec3<T> ret;
+		nsvec3<T> ret;
 		ret.x = sqrt(x*x + y*y);
 
 		if (x == static_cast<T>(0))
@@ -199,128 +199,128 @@ struct NSVec3
 
 		ret.z = z;
 
-		if (!pRads)
+		if (!rads_)
 			ret.y = degrees(ret.y);
 
 		return ret;
 	}
 
-	T distanceTo(const NSVec3<T> & pVec) const
+	T distance_to(const nsvec3<T> & vec_) const
 	{
-		return ((pVec - *this).length());
+		return ((vec_ - *this).length());
 	}
 
-	NSVec3<T> & eulerFrom(const NSVec4<T> & axisAngle, EulerOrder order = XYZ, bool pRads = false)
+	nsvec3<T> & euler_from(const nsvec4<T> & axis_angle_, EulerOrder order_ = XYZ, bool rads_ = false)
 	{
-		return eulerFrom(NSQuat<T>().from(axisAngle, pRads), order, pRads);
+		return euler_from(nsquat<T>().from(axis_angle_, rads_), order_, rads_);
 	}
 
-	NSVec3<T> & eulerFrom(const NSQuat<T> & orientation, EulerOrder order, bool rads)
+	nsvec3<T> & euler_from(const nsquat<T> & orientation_, EulerOrder order_, bool rads_)
 	{
-		return eulerFrom(NSMat3<T>().rotationFrom(orientation), order, rads);
+		return euler_from(nsmat3<T>().rotationFrom(orientation_), order_, rads_);
 	}
 
-	NSVec3<T> & eulerFrom(const NSMat3<T> & rotationMat3, EulerOrder order = XYZ, bool pRads = false)
+	nsvec3<T> & euler_from(const nsmat3<T> & rotation_mat3_, EulerOrder order_ = XYZ, bool rads_ = false)
 	{
 		// https://github.com/mrdoob/three.js/blob/master/src/math/Euler.js
 		T ep = static_cast<T>(1) - EPS;
-		switch (order)
+		switch (order_)
 		{
 		case(XYZ) :
-			y = std::asin(rotationMat3[0][2]);
-			if (std::abs(rotationMat3[0][2]) < ep)
+			y = std::asin(rotation_mat3_[0][2]);
+			if (std::abs(rotation_mat3_[0][2]) < ep)
 			{
-				x = std::atan2(-rotationMat3[1][2], rotationMat3[2][2]);
-				z = std::atan2(-rotationMat3[0][1], rotationMat3[0][0]);
+				x = std::atan2(-rotation_mat3_[1][2], rotation_mat3_[2][2]);
+				z = std::atan2(-rotation_mat3_[0][1], rotation_mat3_[0][0]);
 			}
 			else
 			{
-				x = std::atan2(rotationMat3[2][1], rotationMat3[1][1]);
+				x = std::atan2(rotation_mat3_[2][1], rotation_mat3_[1][1]);
 				z = 0;
 			}
 			break;
 		case(XZY) :
-			z = std::asin(rotationMat3[0][1]);
-			if (std::abs(rotationMat3[0][1]) < ep)
+			z = std::asin(rotation_mat3_[0][1]);
+			if (std::abs(rotation_mat3_[0][1]) < ep)
 			{
-				x = std::atan2(rotationMat3[2][1], rotationMat3[1][1]);
-				y = std::atan2(rotationMat3[0][2], rotationMat3[0][0]);
+				x = std::atan2(rotation_mat3_[2][1], rotation_mat3_[1][1]);
+				y = std::atan2(rotation_mat3_[0][2], rotation_mat3_[0][0]);
 			}
 			else
 			{
-				x = std::atan2(-rotationMat3[1][2], rotationMat3[2][2]);
+				x = std::atan2(-rotation_mat3_[1][2], rotation_mat3_[2][2]);
 				y = 0;
 			}
 			break;
 		case(YXZ) :
-			x = std::asin(rotationMat3[1][2]);
-			if (std::abs(rotationMat3[1][2]) < ep)
+			x = std::asin(rotation_mat3_[1][2]);
+			if (std::abs(rotation_mat3_[1][2]) < ep)
 			{
-				y = std::atan2(rotationMat3[0][2], rotationMat3[2][2]);
-				z = std::atan2(rotationMat3[1][0], rotationMat3[1][1]);
+				y = std::atan2(rotation_mat3_[0][2], rotation_mat3_[2][2]);
+				z = std::atan2(rotation_mat3_[1][0], rotation_mat3_[1][1]);
 			}
 			else
 			{
-				y = std::atan2(-rotationMat3[2][0], rotationMat3[0][0]);
+				y = std::atan2(-rotation_mat3_[2][0], rotation_mat3_[0][0]);
 				z = 0;
 			}
 			break;
 		case(YZX) :
-			z = std::asin(rotationMat3[1][0]);
-			if (std::abs(rotationMat3[1][0]) < ep)
+			z = std::asin(rotation_mat3_[1][0]);
+			if (std::abs(rotation_mat3_[1][0]) < ep)
 			{
-				x = std::atan2(-rotationMat3[1][2], rotationMat3[1][1]);
-				y = std::atan2(-rotationMat3[2][0], rotationMat3[0][0]);
+				x = std::atan2(-rotation_mat3_[1][2], rotation_mat3_[1][1]);
+				y = std::atan2(-rotation_mat3_[2][0], rotation_mat3_[0][0]);
 			}
 			else
 			{
 				x = 0;
-				y = std::atan2(rotationMat3[0][2], rotationMat3[2][2]);
+				y = std::atan2(rotation_mat3_[0][2], rotation_mat3_[2][2]);
 			}
 			break;
 		case(ZXY) :
-			x = std::asin(rotationMat3[2][1]);
-			if (std::abs(rotationMat3[2][1]) < ep)
+			x = std::asin(rotation_mat3_[2][1]);
+			if (std::abs(rotation_mat3_[2][1]) < ep)
 			{
-				y = std::atan2(-rotationMat3[2][0], rotationMat3[2][2]);
-				z = std::atan2(-rotationMat3[0][1], rotationMat3[1][1]);
+				y = std::atan2(-rotation_mat3_[2][0], rotation_mat3_[2][2]);
+				z = std::atan2(-rotation_mat3_[0][1], rotation_mat3_[1][1]);
 			}
 			else
 			{
 				y = 0;
-				z = std::atan2(rotationMat3[1][0], rotationMat3[0][0]);
+				z = std::atan2(rotation_mat3_[1][0], rotation_mat3_[0][0]);
 			}
 			break;
 		case(ZYX) :
-			y = std::asin(rotationMat3[2][0]);
-			if (std::abs(rotationMat3[2][0]) < ep)
+			y = std::asin(rotation_mat3_[2][0]);
+			if (std::abs(rotation_mat3_[2][0]) < ep)
 			{
-				x = std::atan2(rotationMat3[2][1], rotationMat3[2][2]);
-				z = std::atan2(rotationMat3[1][0], rotationMat3[0][0]);
+				x = std::atan2(rotation_mat3_[2][1], rotation_mat3_[2][2]);
+				z = std::atan2(rotation_mat3_[1][0], rotation_mat3_[0][0]);
 			}
 			else
 			{
 				x = 0;
-				z = std::atan2(-rotationMat3[0][1], rotationMat3[1][1]);
+				z = std::atan2(-rotation_mat3_[0][1], rotation_mat3_[1][1]);
 			}
 			break;
 		}
-		if (!pRads)
+		if (!rads_)
 			*this = degrees(*this);
 		return *this;
 	}
 
-	NSVec3<T> & eulerFrom(const NSMat4<T> & transform, EulerOrder order = XYZ, bool pRads = false)
+	nsvec3<T> & euler_from(const nsmat4<T> & transform_, EulerOrder order_ = XYZ, bool rads_ = false)
 	{
-		return eulerFrom(rotationMat3(transform), order, pRads);
+		return euler_from(rotation_mat3_(transform_), order_, rads_);
 	}
 
-	NSVec3<T> & eulerFrom(const NSVec3<T> & vec, const NSVec3<T> & toVec, EulerOrder order = XYZ, bool pRads = false)
+	nsvec3<T> & euler_from(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, EulerOrder order_ = XYZ, bool rads_ = false)
 	{
-		return eulerFrom(NSQuat<T>().from(vec, toVec), order, pRads);
+		return euler_from(nsquat<T>().from(vec_, to_vec_), order_, rads_);
 	}
 
-	NSVec3<T> & floor()
+	nsvec3<T> & floor()
 	{
 		x = static_cast<T>(std::floor(x));
 		y = static_cast<T>(std::floor(y));
@@ -328,7 +328,7 @@ struct NSVec3
 		return *this;
 	}
 
-	NSVec3<T> & fract()
+	nsvec3<T> & fract()
 	{
 		x -= static_cast<T>(std::floor(x));
 		y -= static_cast<T>(std::floor(y));
@@ -336,35 +336,35 @@ struct NSVec3
 		return *this;
 	}
 
-	NSVec3<T> & from(CoordSys coordSys, const NSVec3<T> & vec, bool pRads = false)
+	nsvec3<T> & from(CoordSys coord_sys_, const nsvec3<T> & vec_, bool rads_ = false)
 	{
-		switch (coordSys)
+		switch (coord_sys_)
 		{
 		case(Cylindrical) :
 		{
-			T theta = vec.y;
-			if (!pRads)
+			T theta = vec_.y;
+			if (!rads_)
 				theta = radians(theta);
-			x = vec.x*cos(theta);
-			y = vec.x*sin(theta);
-			z = vec.z;
+			x = vec_.x*cos(theta);
+			y = vec_.x*sin(theta);
+			z = vec_.z;
 			break;
 		}
 		case(Spherical) :
 		{
-			T theta = vec.y; T phi = vec.z;
-			if (!pRads)
+			T theta = vec_.y; T phi = vec_.z;
+			if (!rads_)
 			{
 				theta = radians(theta);
 				phi = radians(phi);
 			}
-			x = vec.x*cos(theta)*sin(phi);
-			y = vec.x*sin(theta)*sin(phi);
-			z = vec.x*cos(phi);
+			x = vec_.x*cos(theta)*sin(phi);
+			y = vec_.x*sin(theta)*sin(phi);
+			z = vec_.x*cos(phi);
 			break;
 		}
 		default:
-			*this = vec;
+			*this = vec_;
 		}
 		return *this;
 	}
@@ -374,17 +374,17 @@ struct NSVec3
 		return static_cast<T>(sqrt(x*x + y*y + z*z));
 	}
 
-	T lengthSq() const
+	T length_sq() const
 	{
 		return x*x + y*y + z*z;
 	}
 
 	template<class T2 >
-	NSVec3<T> & lerp(const NSVec3<T> & vec, const T2 & scalingFactor)
+	nsvec3<T> & lerp(const nsvec3<T> & vec_, const T2 & scaling_factor_)
 	{
-		x += static_cast<T>((vec.x - x)*scalingFactor);
-		y += static_cast<T>((vec.y - y)*scalingFactor);
-		z += static_cast<T>((vec.z - z)*scalingFactor);
+		x += static_cast<T>((vec_.x - x)*scaling_factor_);
+		y += static_cast<T>((vec_.y - y)*scaling_factor_);
+		z += static_cast<T>((vec_.z - z)*scaling_factor_);
 		return *this;
 	}
 
@@ -406,14 +406,14 @@ struct NSVec3
 		}
 	}
 
-	NSVec3<T> & minimize(const NSVec3<T> & rhs)
+	nsvec3<T> & minimize(const nsvec3<T> & rhs_)
 	{
-		if (x < rhs.x)
-			x = rhs.x;
-		if (y < rhs.y)
-			y = rhs.y;
-		if (z < rhs.z)
-			z = rhs.z;
+		if (x < rhs_.x)
+			x = rhs_.x;
+		if (y < rhs_.y)
+			y = rhs_.y;
+		if (z < rhs_.z)
+			z = rhs_.z;
 		return *this;
 	}
 
@@ -435,18 +435,18 @@ struct NSVec3
 		}
 	}
 
-	NSVec3<T> & maximize(const NSVec3<T> & rhs)
+	nsvec3<T> & maximize(const nsvec3<T> & rhs_)
 	{
-		if (x > rhs.x)
-			x = rhs.x;
-		if (y > rhs.y)
-			y = rhs.y;
-		if (z > rhs.z)
-			z = rhs.z;
+		if (x > rhs_.x)
+			x = rhs_.x;
+		if (y > rhs_.y)
+			y = rhs_.y;
+		if (z > rhs_.z)
+			z = rhs_.z;
 		return *this;
 	}
 
-	NSVec3<T> & normalize()
+	nsvec3<T> & normalize()
 	{
 		T l = length();
 		if (l <= EPS)
@@ -454,31 +454,31 @@ struct NSVec3
 		return *this *= (1 / l);
 	}
 
-	NSVec3<T> & projectOn(const NSVec3<T> & vec)
+	nsvec3<T> & project(const nsvec3<T> & vec_)
 	{
-		T denom = vec * vec;
+		T denom = vec_ * vec_;
 		if (denom == static_cast<T>(0))
 			return *this;
-		(*this) = ((*this * vec) / denom) * vec;
+		(*this) = ((*this * vec_) / denom) * vec_;
 		return *this;
 	}
 
-	NSVec3<T> & projectOnPlane(const NSVec3<T> & planeNormal)
+	nsvec3<T> & project_plane(const nsvec3<T> & plane_normal_)
 	{
-		NSVec3<T> aonb(*this);
-		aonb.projectOn(planeNormal);
+		nsvec3<T> aonb(*this);
+		aonb.project(plane_normal_);
 		(*this) -= aonb;
 		return *this;
 	}
 
-	NSVec3<T> & reflect(const NSVec3<T> & normal)
+	nsvec3<T> & reflect(const nsvec3<T> & normal_)
 	{
 
-		(*this) = (*this) - (static_cast<T>(2) * (normal * *this)) * normal;
+		(*this) = (*this) - (static_cast<T>(2) * (normal_ * *this)) * normal_;
 		return *this;
 	}
 
-	NSVec3<T> & round()
+	nsvec3<T> & round()
 	{
 		x = static_cast<T>(std::round(x));
 		y = static_cast<T>(std::round(y));
@@ -486,7 +486,7 @@ struct NSVec3
 		return *this;
 	}
 
-	NSVec3<T> & roundToZero()
+	nsvec3<T> & round_to_zero()
 	{
 		if (::abs(x) < EPS)
 			x = 0;
@@ -497,66 +497,66 @@ struct NSVec3
 		return *this;
 	}
 
-	NSVec3<T> & scalingFrom(const NSMat3<T> & transform)
+	nsvec3<T> & scaling_from(const nsmat3<T> & transform_)
 	{
-		x = transform[0].length();
-		y = transform[1].length();
-		z = transform[2].length();
+		x = transform_[0].length();
+		y = transform_[1].length();
+		z = transform_[2].length();
 		return *this;
 	}
 
-	NSVec3<T> & scalingFrom(const NSMat4<T> & transform)
+	nsvec3<T> & scaling_from(const nsmat4<T> & transform_)
 	{
-		x = sqrt(transform[0][0] * transform[0][0] + transform[0][1] * transform[0][1] + transform[0][2] * transform[0][2]);
-		y = sqrt(transform[1][0] * transform[1][0] + transform[1][1] * transform[1][1] + transform[1][2] * transform[1][2]);
-		z = sqrt(transform[2][0] * transform[2][0] + transform[2][1] * transform[2][1] + transform[2][2] * transform[2][2]);
+		x = sqrt(transform_[0][0] * transform_[0][0] + transform_[0][1] * transform_[0][1] + transform_[0][2] * transform_[0][2]);
+		y = sqrt(transform_[1][0] * transform_[1][0] + transform_[1][1] * transform_[1][1] + transform_[1][2] * transform_[1][2]);
+		z = sqrt(transform_[2][0] * transform_[2][0] + transform_[2][1] * transform_[2][1] + transform_[2][2] * transform_[2][2]);
 		return *this;
 	}
 
-	NSVec3<T> & translationFrom(const NSMat4<T> & transform)
+	nsvec3<T> & translation_from(const nsmat4<T> & transform_)
 	{
-		return *this = transform(3).xyz();
+		return *this = transform_(3).xyz();
 	}
 
-	NSVec3<T> & set(const T & pVal)
+	nsvec3<T> & set(const T & val_)
 	{
-		x = y = z = pVal;
+		x = y = z = val_;
 		return *this;
 	}
 
-	NSVec3<T> & set(const T & pX, const T & pY, const T & pZ)
+	nsvec3<T> & set(const T & x_, const T & y_, const T & z_)
 	{
-		x = pX; y = pY; z = pZ;
+		x = x_; y = y_; z = z_;
 		return *this;
 	}
 
-	NSVec3<T> & set(const NSVec2<T> & xy, const T & pZ)
+	nsvec3<T> & set(const nsvec2<T> & xy, const T & z_)
 	{
-		x = xy.x; y = xy.y; z = pZ;
+		x = xy.x; y = xy.y; z = z_;
 		return *this;
 	}
 
-	NSVec3<T> & set(const T & pX, const NSVec2<T> & yz)
+	nsvec3<T> & set(const T & x_, const nsvec2<T> & yz)
 	{
-		x = pX; y = yz.x; z = yz.y;
+		x = x_; y = yz.x; z = yz.y;
 		return *this;
 	}
 
-	NSVec3<T> & setLength(const T & len)
+	nsvec3<T> & set_length(const T & len_)
 	{
 		T l = length();
 
 		if (l == static_cast<T>(0))
 			return *this;
 
-		T mult = len / l;
+		T mult = len_ / l;
 		(*this) *= mult;
 		return *this;
 	}
 
-	NSVec3<T> spherical(bool pRads = false) const
+	nsvec3<T> spherical(bool rads_ = false) const
 	{
-		NSVec3<T> ret;
+		nsvec3<T> ret;
 		ret.x = length();
 
 		if (x == static_cast<T>(0))
@@ -573,7 +573,7 @@ struct NSVec3
 		else
 			ret.z = acos(z / ret.x);
 
-		if (!pRads)
+		if (!rads_)
 		{
 			ret.y = degrees(ret.y);
 			ret.z = degrees(ret.z);
@@ -582,296 +582,296 @@ struct NSVec3
 		return ret;
 	}
 
-	nsstring toString(CoordSys disp = Cartesian) const
+	nsstring to_string(CoordSys disp_ = Cartesian) const
 	{
 		nsstringstream ss;
-		if (disp == Cartesian)
+		if (disp_ == Cartesian)
 			ss  << "[" << x << " " << y << " " << z << "]";
-		else if (disp == Cylindrical)
+		else if (disp_ == Cylindrical)
 		{
-			NSVec3<T> cyl = cylindrical();
+			nsvec3<T> cyl = cylindrical();
 			ss << "[" << cyl.x << " " << cyl.y << " " << cyl.z << "]";
 		}
 		else
 		{
-			NSVec3<T> sph = spherical();
+			nsvec3<T> sph = spherical();
 			ss << "[" << sph.x << " " << sph.y << " " << sph.z << "]";
 		}
 		return ss.str();
 	}
 
 	// overloaded operators
-	NSVec3<T> operator+(const NSVec3<T> & rhs) const
+	nsvec3<T> operator+(const nsvec3<T> & rhs_) const
 	{
-		return NSVec3<T>(x + rhs.x, y + rhs.y, z + rhs.z);
+		return nsvec3<T>(x + rhs_.x, y + rhs_.y, z + rhs_.z);
 	}
 
-	NSVec3<T> operator-(const NSVec3<T> & rhs) const
+	nsvec3<T> operator-(const nsvec3<T> & rhs_) const
 	{
-		return NSVec3<T>(x - rhs.x, y - rhs.y, z - rhs.z);
+		return nsvec3<T>(x - rhs_.x, y - rhs_.y, z - rhs_.z);
 	}
 
-	T operator*(const NSVec3<T> & rhs) const // dot product
+	T operator*(const nsvec3<T> & rhs_) const // dot product
 	{
-		return x*rhs.x + y*rhs.y + z*rhs.z;
+		return x*rhs_.x + y*rhs_.y + z*rhs_.z;
 	}
 
-	NSMat3<T> operator^(const NSVec3<T> & pRHS) const
+	nsmat3<T> operator^(const nsvec3<T> & rhs_) const
 	{
-		NSMat3<T> ret;
-		ret[0] = x * pRHS;
-		ret[1] = y * pRHS;
-		ret[2] = z * pRHS;
+		nsmat3<T> ret;
+		ret[0] = x * rhs_;
+		ret[1] = y * rhs_;
+		ret[2] = z * rhs_;
 		return ret;
 	}
 
-	NSVec3<T> operator%(const NSVec3<T> & rhs) const // component wise scalar product
+	nsvec3<T> operator%(const nsvec3<T> & rhs_) const // component wise scalar product
 	{
-		return NSVec3<T>(x*rhs.x, y*rhs.y, z*rhs.z);
+		return nsvec3<T>(x*rhs_.x, y*rhs_.y, z*rhs_.z);
 	}
 
-	NSVec3<T> operator/(const NSVec3<T> & rhs) const
+	nsvec3<T> operator/(const nsvec3<T> & rhs_) const
 	{
-		return NSVec3<T>(x/rhs.x, y/rhs.y, z/rhs.z);
+		return nsvec3<T>(x/rhs_.x, y/rhs_.y, z/rhs_.z);
 	}
 
-	NSVec3<T> operator*(const T & rhs) const
+	nsvec3<T> operator*(const T & rhs_) const
 	{
-		return NSVec3<T>(x * rhs, y * rhs, z * rhs);
+		return nsvec3<T>(x * rhs_, y * rhs_, z * rhs_);
 	}
 
-	NSVec3<T> operator/(const T & rhs) const
+	nsvec3<T> operator/(const T & rhs_) const
 	{
-		return NSVec3<T>(x / rhs, y / rhs, z / rhs);
+		return nsvec3<T>(x / rhs_, y / rhs_, z / rhs_);
 	}
 
-	NSVec3<T> & operator=(const NSVec3<T> & rhs)
+	nsvec3<T> & operator=(const nsvec3<T> & rhs_)
 	{
-		if (this == &rhs)
+		if (this == &rhs_)
 			return *this;
-		x = rhs.x;
-		y = rhs.y;
-		z = rhs.z;
+		x = rhs_.x;
+		y = rhs_.y;
+		z = rhs_.z;
 		return *this;
 	}
 
-	NSVec3<T> operator++(int32)
+	nsvec3<T> operator++(int32)
 	{
-		NSVec3<T> ret(*this);
+		nsvec3<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSVec3<T> operator--(int32)
+	nsvec3<T> operator--(int32)
 	{
-		NSVec3<T> ret(*this);
+		nsvec3<T> ret(*this);
 		--(*this);
 		return ret;
 	}
 
-	NSVec3<T> & operator++()
+	nsvec3<T> & operator++()
 	{
 		++x; ++y; ++z;
 		return *this;
 	}
 
-	NSVec3<T> & operator--()
+	nsvec3<T> & operator--()
 	{
 		--x; --y; --z;
 		return *this;
 	}
 
-	NSVec3<T> & operator+=(const NSVec3<T> & rhs)
+	nsvec3<T> & operator+=(const nsvec3<T> & rhs_)
 	{
-		x += rhs.x; y += rhs.y; z += rhs.z;
+		x += rhs_.x; y += rhs_.y; z += rhs_.z;
 		return *this;
 	}
 
-	NSVec3<T> & operator-=(const NSVec3<T> & rhs)
+	nsvec3<T> & operator-=(const nsvec3<T> & rhs_)
 	{
-		x -= rhs.x; y -= rhs.y; z -= rhs.z;
+		x -= rhs_.x; y -= rhs_.y; z -= rhs_.z;
 		return *this;
 	}
 
-	NSVec3<T> & operator%=(const NSVec3<T> & rhs)
+	nsvec3<T> & operator%=(const nsvec3<T> & rhs_)
 	{
-		x *= rhs.x; y *= rhs.y; z *= rhs.z;
+		x *= rhs_.x; y *= rhs_.y; z *= rhs_.z;
 		return *this;
 	}
 
-	NSVec3<T> & operator/=(const NSVec3<T> & rhs)
+	nsvec3<T> & operator/=(const nsvec3<T> & rhs_)
 	{
-		x /= rhs.x; y /= rhs.y; z /= rhs.z;
+		x /= rhs_.x; y /= rhs_.y; z /= rhs_.z;
 		return *this;
 	}
 
-	NSVec3<T> & operator*=(const T & rhs)
+	nsvec3<T> & operator*=(const T & rhs_)
 	{
-		x *= rhs; y *= rhs; z *= rhs;
+		x *= rhs_; y *= rhs_; z *= rhs_;
 		return *this;
 	}
 
-	NSVec3<T> & operator/=(const T & rhs)
+	nsvec3<T> & operator/=(const T & rhs_)
 	{
-		x /= rhs; y /= rhs; z /= rhs;
+		x /= rhs_; y /= rhs_; z /= rhs_;
 		return *this;
 	}
 
-	bool operator==(const NSVec3<T> & rhs) const
+	bool operator==(const nsvec3<T> & rhs_) const
 	{
-		return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z));
+		return ((x == rhs_.x) && (y == rhs_.y) && (z == rhs_.z));
 	}
 
-	bool operator!=(const NSVec3<T> & rhs) const
+	bool operator!=(const nsvec3<T> & rhs_) const
 	{
-		return !(*this == rhs);
+		return !(*this == rhs_);
 	}
 
-	bool operator==(const T & rhs) const
+	bool operator==(const T & rhs_) const
 	{
-		return ((x == rhs) && (y == rhs) && (z == rhs));
+		return ((x == rhs_) && (y == rhs_) && (z == rhs_));
 	}
 
-	bool operator!=(const T & rhs) const
+	bool operator!=(const T & rhs_) const
 	{
-		return !(*this == rhs);
+		return !(*this == rhs_);
 	}
 
-	const T & operator[](const uint32 & pVal) const
+	const T & operator[](const uint32 & val_) const
 	{
-		if (pVal > 2)
+		if (val_ > 2)
 			throw(std::out_of_range("vec3 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
-	T & operator[](const uint32 & pVal)
+	T & operator[](const uint32 & val_)
 	{
-		if (pVal > 2)
+		if (val_ > 2)
 			throw(std::out_of_range("vec3 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
 
 	// Swizzle operations
-	inline NSVec3<T> xxx() const { return NSVec3<T>(x, x, x); }
-	inline NSVec3<T> xxy() const { return NSVec3<T>(x, x, y); }
-	inline NSVec3<T> xxz() const { return NSVec3<T>(x, x, z); }
-	inline NSVec3<T> xyx() const { return NSVec3<T>(x, y, x); }
-	inline NSVec3<T> xyy() const { return NSVec3<T>(x, y, y); }
-	inline NSVec3<T> xzx() const { return NSVec3<T>(x, z, x); }
-	inline NSVec3<T> xzy() const { return NSVec3<T>(x, z, y); }
-	inline NSVec3<T> xzz() const { return NSVec3<T>(x, z, z); }
+	inline nsvec3<T> xxx() const { return nsvec3<T>(x, x, x); }
+	inline nsvec3<T> xxy() const { return nsvec3<T>(x, x, y); }
+	inline nsvec3<T> xxz() const { return nsvec3<T>(x, x, z); }
+	inline nsvec3<T> xyx() const { return nsvec3<T>(x, y, x); }
+	inline nsvec3<T> xyy() const { return nsvec3<T>(x, y, y); }
+	inline nsvec3<T> xzx() const { return nsvec3<T>(x, z, x); }
+	inline nsvec3<T> xzy() const { return nsvec3<T>(x, z, y); }
+	inline nsvec3<T> xzz() const { return nsvec3<T>(x, z, z); }
 
-	inline NSVec3<T> yxx() const { return NSVec3<T>(y, x, x); }
-	inline NSVec3<T> yxy() const { return NSVec3<T>(y, x, y); }
-	inline NSVec3<T> yxz() const { return NSVec3<T>(y, x, z); }
-	inline NSVec3<T> yyx() const { return NSVec3<T>(y, y, x); }
-	inline NSVec3<T> yyy() const { return NSVec3<T>(y, y, y); }
-	inline NSVec3<T> yyz() const { return NSVec3<T>(y, y, z); }
-	inline NSVec3<T> yzx() const { return NSVec3<T>(y, z, x); }
-	inline NSVec3<T> yzy() const { return NSVec3<T>(y, z, y); }
-	inline NSVec3<T> yzz() const { return NSVec3<T>(y, z, z); }
+	inline nsvec3<T> yxx() const { return nsvec3<T>(y, x, x); }
+	inline nsvec3<T> yxy() const { return nsvec3<T>(y, x, y); }
+	inline nsvec3<T> yxz() const { return nsvec3<T>(y, x, z); }
+	inline nsvec3<T> yyx() const { return nsvec3<T>(y, y, x); }
+	inline nsvec3<T> yyy() const { return nsvec3<T>(y, y, y); }
+	inline nsvec3<T> yyz() const { return nsvec3<T>(y, y, z); }
+	inline nsvec3<T> yzx() const { return nsvec3<T>(y, z, x); }
+	inline nsvec3<T> yzy() const { return nsvec3<T>(y, z, y); }
+	inline nsvec3<T> yzz() const { return nsvec3<T>(y, z, z); }
 
-	inline NSVec3<T> zxx() const { return NSVec3<T>(z, x, x); }
-	inline NSVec3<T> zxy() const { return NSVec3<T>(z, x, y); }
-	inline NSVec3<T> zxz() const { return NSVec3<T>(z, x, z); }
-	inline NSVec3<T> zyx() const { return NSVec3<T>(z, y, x); }
-	inline NSVec3<T> zyy() const { return NSVec3<T>(z, y, y); }
-	inline NSVec3<T> zyz() const { return NSVec3<T>(z, y, z); }
-	inline NSVec3<T> zzx() const { return NSVec3<T>(z, z, x); }
-	inline NSVec3<T> zzy() const { return NSVec3<T>(z, z, y); }
-	inline NSVec3<T> zzz() const { return NSVec3<T>(z, z, z); }
-
-
-	inline NSVec3<T> rrr() const { return NSVec3<T>(x, x, x); }
-	inline NSVec3<T> rrg() const { return NSVec3<T>(x, x, y); }
-	inline NSVec3<T> rrb() const { return NSVec3<T>(x, x, z); }
-	inline NSVec3<T> rgr() const { return NSVec3<T>(x, y, x); }
-	inline NSVec3<T> rgg() const { return NSVec3<T>(x, y, y); }
-	inline NSVec3<T> rbr() const { return NSVec3<T>(x, z, x); }
-	inline NSVec3<T> rbg() const { return NSVec3<T>(x, z, y); }
-	inline NSVec3<T> rbb() const { return NSVec3<T>(x, z, z); }
-
-	inline NSVec3<T> grr() const { return NSVec3<T>(y, x, x); }
-	inline NSVec3<T> grg() const { return NSVec3<T>(y, x, y); }
-	inline NSVec3<T> grb() const { return NSVec3<T>(y, x, z); }
-	inline NSVec3<T> ggr() const { return NSVec3<T>(y, y, x); }
-	inline NSVec3<T> ggg() const { return NSVec3<T>(y, y, y); }
-	inline NSVec3<T> ggb() const { return NSVec3<T>(y, y, z); }
-	inline NSVec3<T> gbr() const { return NSVec3<T>(y, z, x); }
-	inline NSVec3<T> gbg() const { return NSVec3<T>(y, z, y); }
-	inline NSVec3<T> gbb() const { return NSVec3<T>(y, z, z); }
-
-	inline NSVec3<T> brr() const { return NSVec3<T>(z, x, x); }
-	inline NSVec3<T> brg() const { return NSVec3<T>(z, x, y); }
-	inline NSVec3<T> brb() const { return NSVec3<T>(z, x, z); }
-	inline NSVec3<T> bgr() const { return NSVec3<T>(z, y, x); }
-	inline NSVec3<T> bgg() const { return NSVec3<T>(z, y, y); }
-	inline NSVec3<T> bgb() const { return NSVec3<T>(z, y, z); }
-	inline NSVec3<T> bbr() const { return NSVec3<T>(z, z, x); }
-	inline NSVec3<T> bbg() const { return NSVec3<T>(z, z, y); }
-	inline NSVec3<T> bbb() const { return NSVec3<T>(z, z, z); }
+	inline nsvec3<T> zxx() const { return nsvec3<T>(z, x, x); }
+	inline nsvec3<T> zxy() const { return nsvec3<T>(z, x, y); }
+	inline nsvec3<T> zxz() const { return nsvec3<T>(z, x, z); }
+	inline nsvec3<T> zyx() const { return nsvec3<T>(z, y, x); }
+	inline nsvec3<T> zyy() const { return nsvec3<T>(z, y, y); }
+	inline nsvec3<T> zyz() const { return nsvec3<T>(z, y, z); }
+	inline nsvec3<T> zzx() const { return nsvec3<T>(z, z, x); }
+	inline nsvec3<T> zzy() const { return nsvec3<T>(z, z, y); }
+	inline nsvec3<T> zzz() const { return nsvec3<T>(z, z, z); }
 
 
-	inline NSVec3<T> sss() const { return NSVec3<T>(x, x, x); }
-	inline NSVec3<T> sst() const { return NSVec3<T>(x, x, y); }
-	inline NSVec3<T> ssp() const { return NSVec3<T>(x, x, z); }
-	inline NSVec3<T> sts() const { return NSVec3<T>(x, y, x); }
-	inline NSVec3<T> stt() const { return NSVec3<T>(x, y, y); }
-	inline NSVec3<T> sps() const { return NSVec3<T>(x, z, x); }
-	inline NSVec3<T> spt() const { return NSVec3<T>(x, z, y); }
-	inline NSVec3<T> spp() const { return NSVec3<T>(x, z, z); }
+	inline nsvec3<T> rrr() const { return nsvec3<T>(x, x, x); }
+	inline nsvec3<T> rrg() const { return nsvec3<T>(x, x, y); }
+	inline nsvec3<T> rrb() const { return nsvec3<T>(x, x, z); }
+	inline nsvec3<T> rgr() const { return nsvec3<T>(x, y, x); }
+	inline nsvec3<T> rgg() const { return nsvec3<T>(x, y, y); }
+	inline nsvec3<T> rbr() const { return nsvec3<T>(x, z, x); }
+	inline nsvec3<T> rbg() const { return nsvec3<T>(x, z, y); }
+	inline nsvec3<T> rbb() const { return nsvec3<T>(x, z, z); }
 
-	inline NSVec3<T> tss() const { return NSVec3<T>(y, x, x); }
-	inline NSVec3<T> tst() const { return NSVec3<T>(y, x, y); }
-	inline NSVec3<T> tsp() const { return NSVec3<T>(y, x, z); }
-	inline NSVec3<T> tts() const { return NSVec3<T>(y, y, x); }
-	inline NSVec3<T> ttt() const { return NSVec3<T>(y, y, y); }
-	inline NSVec3<T> ttp() const { return NSVec3<T>(y, y, z); }
-	inline NSVec3<T> tps() const { return NSVec3<T>(y, z, x); }
-	inline NSVec3<T> tpt() const { return NSVec3<T>(y, z, y); }
-	inline NSVec3<T> tpp() const { return NSVec3<T>(y, z, z); }
+	inline nsvec3<T> grr() const { return nsvec3<T>(y, x, x); }
+	inline nsvec3<T> grg() const { return nsvec3<T>(y, x, y); }
+	inline nsvec3<T> grb() const { return nsvec3<T>(y, x, z); }
+	inline nsvec3<T> ggr() const { return nsvec3<T>(y, y, x); }
+	inline nsvec3<T> ggg() const { return nsvec3<T>(y, y, y); }
+	inline nsvec3<T> ggb() const { return nsvec3<T>(y, y, z); }
+	inline nsvec3<T> gbr() const { return nsvec3<T>(y, z, x); }
+	inline nsvec3<T> gbg() const { return nsvec3<T>(y, z, y); }
+	inline nsvec3<T> gbb() const { return nsvec3<T>(y, z, z); }
 
-	inline NSVec3<T> pss() const { return NSVec3<T>(z, x, x); }
-	inline NSVec3<T> pst() const { return NSVec3<T>(z, x, y); }
-	inline NSVec3<T> psp() const { return NSVec3<T>(z, x, z); }
-	inline NSVec3<T> pts() const { return NSVec3<T>(z, y, x); }
-	inline NSVec3<T> ptt() const { return NSVec3<T>(z, y, y); }
-	inline NSVec3<T> ptp() const { return NSVec3<T>(z, y, z); }
-	inline NSVec3<T> pps() const { return NSVec3<T>(z, z, x); }
-	inline NSVec3<T> ppt() const { return NSVec3<T>(z, z, y); }
-	inline NSVec3<T> ppp() const { return NSVec3<T>(z, z, z); }
+	inline nsvec3<T> brr() const { return nsvec3<T>(z, x, x); }
+	inline nsvec3<T> brg() const { return nsvec3<T>(z, x, y); }
+	inline nsvec3<T> brb() const { return nsvec3<T>(z, x, z); }
+	inline nsvec3<T> bgr() const { return nsvec3<T>(z, y, x); }
+	inline nsvec3<T> bgg() const { return nsvec3<T>(z, y, y); }
+	inline nsvec3<T> bgb() const { return nsvec3<T>(z, y, z); }
+	inline nsvec3<T> bbr() const { return nsvec3<T>(z, z, x); }
+	inline nsvec3<T> bbg() const { return nsvec3<T>(z, z, y); }
+	inline nsvec3<T> bbb() const { return nsvec3<T>(z, z, z); }
 
 
-	inline NSVec2<T> xx() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> xy() const { return NSVec2<T>(x, y); }
-	inline NSVec2<T> xz() const { return NSVec2<T>(x, z); }
-	inline NSVec2<T> yx() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> yy() const { return NSVec2<T>(y, y); }
-	inline NSVec2<T> yz() const { return NSVec2<T>(y, z); }
-	inline NSVec2<T> zx() const { return NSVec2<T>(z, x); }
-	inline NSVec2<T> zy() const { return NSVec2<T>(z, y); }
-	inline NSVec2<T> zz() const { return NSVec2<T>(z, z); }
+	inline nsvec3<T> sss() const { return nsvec3<T>(x, x, x); }
+	inline nsvec3<T> sst() const { return nsvec3<T>(x, x, y); }
+	inline nsvec3<T> ssp() const { return nsvec3<T>(x, x, z); }
+	inline nsvec3<T> sts() const { return nsvec3<T>(x, y, x); }
+	inline nsvec3<T> stt() const { return nsvec3<T>(x, y, y); }
+	inline nsvec3<T> sps() const { return nsvec3<T>(x, z, x); }
+	inline nsvec3<T> spt() const { return nsvec3<T>(x, z, y); }
+	inline nsvec3<T> spp() const { return nsvec3<T>(x, z, z); }
 
-	inline NSVec2<T> rr() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> rg() const { return NSVec2<T>(x, y); }
-	inline NSVec2<T> rb() const { return NSVec2<T>(x, z); }
-	inline NSVec2<T> gr() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> gg() const { return NSVec2<T>(y, y); }
-	inline NSVec2<T> gb() const { return NSVec2<T>(y, z); }
-	inline NSVec2<T> br() const { return NSVec2<T>(z, x); }
-	inline NSVec2<T> bg() const { return NSVec2<T>(z, y); }
-	inline NSVec2<T> bb() const { return NSVec2<T>(z, z); }
+	inline nsvec3<T> tss() const { return nsvec3<T>(y, x, x); }
+	inline nsvec3<T> tst() const { return nsvec3<T>(y, x, y); }
+	inline nsvec3<T> tsp() const { return nsvec3<T>(y, x, z); }
+	inline nsvec3<T> tts() const { return nsvec3<T>(y, y, x); }
+	inline nsvec3<T> ttt() const { return nsvec3<T>(y, y, y); }
+	inline nsvec3<T> ttp() const { return nsvec3<T>(y, y, z); }
+	inline nsvec3<T> tps() const { return nsvec3<T>(y, z, x); }
+	inline nsvec3<T> tpt() const { return nsvec3<T>(y, z, y); }
+	inline nsvec3<T> tpp() const { return nsvec3<T>(y, z, z); }
 
-	inline NSVec2<T> ss() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> st() const { return NSVec2<T>(x, y); }
-	inline NSVec2<T> sp() const { return NSVec2<T>(x, z); }
-	inline NSVec2<T> ts() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> tt() const { return NSVec2<T>(y, y); }
-	inline NSVec2<T> tp() const { return NSVec2<T>(y, z); }
-	inline NSVec2<T> ps() const { return NSVec2<T>(z, x); }
-	inline NSVec2<T> pt() const { return NSVec2<T>(z, y); }
-	inline NSVec2<T> pp() const { return NSVec2<T>(z, z); }
+	inline nsvec3<T> pss() const { return nsvec3<T>(z, x, x); }
+	inline nsvec3<T> pst() const { return nsvec3<T>(z, x, y); }
+	inline nsvec3<T> psp() const { return nsvec3<T>(z, x, z); }
+	inline nsvec3<T> pts() const { return nsvec3<T>(z, y, x); }
+	inline nsvec3<T> ptt() const { return nsvec3<T>(z, y, y); }
+	inline nsvec3<T> ptp() const { return nsvec3<T>(z, y, z); }
+	inline nsvec3<T> pps() const { return nsvec3<T>(z, z, x); }
+	inline nsvec3<T> ppt() const { return nsvec3<T>(z, z, y); }
+	inline nsvec3<T> ppp() const { return nsvec3<T>(z, z, z); }
+
+
+	inline nsvec2<T> xx() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> xy() const { return nsvec2<T>(x, y); }
+	inline nsvec2<T> xz() const { return nsvec2<T>(x, z); }
+	inline nsvec2<T> yx() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> yy() const { return nsvec2<T>(y, y); }
+	inline nsvec2<T> yz() const { return nsvec2<T>(y, z); }
+	inline nsvec2<T> zx() const { return nsvec2<T>(z, x); }
+	inline nsvec2<T> zy() const { return nsvec2<T>(z, y); }
+	inline nsvec2<T> zz() const { return nsvec2<T>(z, z); }
+
+	inline nsvec2<T> rr() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> rg() const { return nsvec2<T>(x, y); }
+	inline nsvec2<T> rb() const { return nsvec2<T>(x, z); }
+	inline nsvec2<T> gr() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> gg() const { return nsvec2<T>(y, y); }
+	inline nsvec2<T> gb() const { return nsvec2<T>(y, z); }
+	inline nsvec2<T> br() const { return nsvec2<T>(z, x); }
+	inline nsvec2<T> bg() const { return nsvec2<T>(z, y); }
+	inline nsvec2<T> bb() const { return nsvec2<T>(z, z); }
+
+	inline nsvec2<T> ss() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> st() const { return nsvec2<T>(x, y); }
+	inline nsvec2<T> sp() const { return nsvec2<T>(x, z); }
+	inline nsvec2<T> ts() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> tt() const { return nsvec2<T>(y, y); }
+	inline nsvec2<T> tp() const { return nsvec2<T>(y, z); }
+	inline nsvec2<T> ps() const { return nsvec2<T>(z, x); }
+	inline nsvec2<T> pt() const { return nsvec2<T>(z, y); }
+	inline nsvec2<T> pp() const { return nsvec2<T>(z, z); }
 
 
 	union
@@ -902,221 +902,221 @@ struct NSVec3
 };
 
 template <class T>
-NSVec3<T> operator*(const int32 & pLHS, const NSVec3<T> & pRHS)
+nsvec3<T> operator*(const int32 & lhs_, const nsvec3<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec3<T> operator*(const float & pLHS, const NSVec3<T> & pRHS)
+nsvec3<T> operator*(const float & lhs_, const nsvec3<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec3<T> operator*(const double & pLHS, const NSVec3<T> & pRHS)
+nsvec3<T> operator*(const double & lhs_, const nsvec3<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec3<T> operator/(const int32 & pLHS, const NSVec3<T> & pRHS)
+nsvec3<T> operator/(const int32 & lhs_, const nsvec3<T> & rhs_)
 {
-	return NSVec3<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z);
+	return nsvec3<T>(lhs_ / rhs_.x, lhs_ / rhs_.y, lhs_ / rhs_.z);
 }
 
 template <class T>
-NSVec3<T> operator/(const float & pLHS, const NSVec3<T> & pRHS)
+nsvec3<T> operator/(const float & lhs_, const nsvec3<T> & rhs_)
 {
-	return NSVec3<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z);
+	return nsvec3<T>(lhs_ / rhs_.x, lhs_ / rhs_.y, lhs_ / rhs_.z);
 }
 
 template <class T>
-NSVec3<T> operator/(const double & pLHS, const NSVec3<T> & pRHS)
+nsvec3<T> operator/(const double & lhs_, const nsvec3<T> & rhs_)
 {
-	return NSVec3<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z);
+	return nsvec3<T>(lhs_ / rhs_.x, lhs_ / rhs_.y, lhs_ / rhs_.z);
 }
 
 template <class T>
-NSVec3<T> abs(const NSVec3<T> & pVec)
+nsvec3<T> abs(const nsvec3<T> & vec_)
 {
-	return NSVec3<T>(pVec).abs();
+	return nsvec3<T>(vec_).abs();
 }
 
 template <class T>
-NSVec3<T> ceil(const NSVec3<T> & pVec)
+nsvec3<T> ceil(const nsvec3<T> & vec_)
 {
-	NSVec3<T> ret(pVec);
+	nsvec3<T> ret(vec_);
 	ret.ceiling();
 	return ret;
 }
 
 template <class T>
-NSVec3<T> clamp(const NSVec3<T> & pVec, const T & pMin, const T & pMax)
+nsvec3<T> clamp(const nsvec3<T> & vec_, const T & min_, const T & max_)
 {
-	NSVec3<T> ret(pVec);
-	ret.clamp(pMin, pMax);
+	nsvec3<T> ret(vec_);
+	ret.clamp(min_, max_);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> cross(const NSVec3<T> & pLeft, const NSVec3<T> & pRight)
+nsvec3<T> cross(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_)
 {
-	NSVec3<T> ret;
-	ret.x = pLeft.y * pRight.z - pLeft.z * pRight.y;
-	ret.y = pLeft.z * pRight.x - pLeft.x * pRight.z;
-	ret.z = pLeft.x * pRight.y - pLeft.y * pRight.x;
+	nsvec3<T> ret;
+	ret.x = lhs_.y * rhs_.z - lhs_.z * rhs_.y;
+	ret.y = lhs_.z * rhs_.x - lhs_.x * rhs_.z;
+	ret.z = lhs_.x * rhs_.y - lhs_.y * rhs_.x;
 	return ret;
 }
 
 template <class T>
-T distance(const NSVec3<T> & lvec, const NSVec3<T> & rvec)
+T distance(const nsvec3<T> & lvec_, const nsvec3<T> & rvec_)
 {
-	return lvec.distanceTo(rvec);
+	return lvec_.distanceTo(rvec_);
 }
 
 template <class T>
-T dot(const NSVec3<T> & pLeft, const NSVec3<T> & pRight)
+T dot(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_)
 {
-	return pLeft * pRight;
+	return lhs_ * rhs_;
 }
 
 template <class T>
-NSVec3<T> euler(const NSVec4<T> & axisAngle, typename NSVec3<T>::EulerOrder order, bool pRads)
+nsvec3<T> euler(const nsvec4<T> & axis_angle_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSVec3<T>().eulerFrom(NSQuat<T>().from(axisAngle, pRads), order, pRads);
+	return nsvec3<T>().eulerFrom(nsquat<T>().from(axis_angle_, rads_), order_, rads_);
 }
 
 template <class T>
-NSVec3<T> euler(const NSQuat<T> & orientation, typename NSVec3<T>::EulerOrder order, bool rads)
+nsvec3<T> euler(const nsquat<T> & orientation_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSVec3<T>().eulerFrom(NSMat3<T>().rotationFrom(orientation), order, rads);
+	return nsvec3<T>().eulerFrom(nsmat3<T>().rotationFrom(orientation_), order_, rads_);
 }
 
 template <class T>
-NSVec3<T> euler(const NSMat3<T> & rotationMat3, typename NSVec3<T>::EulerOrder order, bool pRads)
+nsvec3<T> euler(const nsmat3<T> & rotation_mat3_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSVec3<T>().eulerFrom(rotationMat3, order, pRads);
+	return nsvec3<T>().eulerFrom(rotation_mat3_, order_, rads_);
 }
 
 template <class T>
-NSVec3<T> euler(const NSMat4<T> & transform, typename NSVec3<T>::EulerOrder order, bool pRads)
+nsvec3<T> euler(const nsmat4<T> & transform_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSVec3<T>().eulerFrom(transform, order, pRads);
+	return nsvec3<T>().eulerFrom(transform_, order_, rads_);
 }
 
 template <class T>
-NSVec3<T> euler(const NSVec3<T> & vec, const NSVec3<T> & toVec, typename NSVec3<T>::EulerOrder order, bool pRads)
+nsvec3<T> euler(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSVec3<T>().eulerFrom(NSQuat<T>().from(vec, toVec), order, pRads);
+	return nsvec3<T>().eulerFrom(nsquat<T>().from(vec_, to_vec_), order_, rads_);
 }
 
 template <class T>
-NSVec3<T> floor(const NSVec3<T> & pVec)
+nsvec3<T> floor(const nsvec3<T> & vec_)
 {
-	NSVec3<T> ret(pVec);
+	nsvec3<T> ret(vec_);
 	ret.floor();
 	return ret;
 }
 
 template <class T>
-NSVec3<T> fract(const NSVec3<T> & vec)
+nsvec3<T> fract(const nsvec3<T> & vec_)
 {
-	return vec - floor(vec);
+	return vec_ - floor(vec_);
 }
 
 template <class T>
-T length(const NSVec3<T> & pVec)
+T length(const nsvec3<T> & vec_)
 {
-	return pVec.length();
+	return vec_.length();
 }
 
 template <class T, class T2>
-NSVec3<T> lerp(const NSVec3<T> & lhs, const NSVec3<T> & rhs, T2 scalingFactor)
+nsvec3<T> lerp(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_, T2 scaling_factor_)
 {
-	NSVec3<T> ret(lhs);
-	ret.lerp(rhs, scalingFactor);
+	nsvec3<T> ret(lhs_);
+	ret.lerp(rhs_, scaling_factor_);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> min(const NSVec3<T> & pLeft, const NSVec3<T> & pRight)
+nsvec3<T> min(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_)
 {
-	NSVec2<T> ret(pLeft);
-	ret.minimize(pRight);
+	nsvec2<T> ret(lhs_);
+	ret.minimize(rhs_);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> max(const NSVec3<T> & pLeft, const NSVec3<T> & pRight)
+nsvec3<T> max(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_)
 {
-	NSVec2<T> ret(pLeft);
-	ret.maximize(pRight);
+	nsvec2<T> ret(lhs_);
+	ret.maximize(rhs_);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> normalize(const NSVec3<T> & pRHS)
+nsvec3<T> normalize(const nsvec3<T> & rhs_)
 {
-	NSVec3<T> ret(pRHS);
+	nsvec3<T> ret(rhs_);
 	ret.normalize();
 	return ret;
 }
 
 template <class T>
-NSVec3<T> project(const NSVec3<T> & a, const NSVec3<T> & b)
+nsvec3<T> project(const nsvec3<T> & a, const nsvec3<T> & b)
 {
-	NSVec3<T> ret(a);
-	ret.projectOn(b);
+	nsvec3<T> ret(a);
+	ret.project(b);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> projectPlane(const NSVec3<T> & a, const NSVec3<T> & normal)
+nsvec3<T> projectPlane(const nsvec3<T> & a, const nsvec3<T> & normal_)
 {
-	NSVec3<T> ret(a);
-	ret.projectOnPlane(normal);
+	nsvec3<T> ret(a);
+	ret.project_plane(normal_);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> reflect(const NSVec3<T> & incident, const NSVec3<T> & normal)
+nsvec3<T> reflect(const nsvec3<T> & incident_, const nsvec3<T> & normal_)
 {
-	NSVec3<T> ret(incident);
-	ret.reflect(normal);
+	nsvec3<T> ret(incident_);
+	ret.reflect(normal_);
 	return ret;
 }
 
 template <class T>
-NSVec3<T> round(const NSVec3<T> & pVec)
+nsvec3<T> round(const nsvec3<T> & vec_)
 {
-	NSVec3<T> ret(pVec);
+	nsvec3<T> ret(vec_);
 	ret.round();
 	return ret;
 }
 
 template <class T>
-NSVec3<T> scalingVec(const NSMat3<T> & transform)
+nsvec3<T> scaling_vec(const nsmat3<T> & transform_)
 {
-	return NSVec3<T>().scalingFrom(transform);
+	return nsvec3<T>().scalingFrom(transform_);
 }
 
 template <class T>
-NSVec3<T> scalingVec(const NSMat4<T> & transform)
+nsvec3<T> scaling_vec(const nsmat4<T> & transform_)
 {
-	return NSVec3<T>().scalingFrom(transform);
+	return nsvec3<T>().scalingFrom(transform_);
 }
 
 template <class T>
-NSVec3<T> translationVec(const NSMat4<T> & transform)
+nsvec3<T> translation_vec(const nsmat4<T> & transform_)
 {
-	return NSVec3<T>().translationFrom(transform);
+	return nsvec3<T>().translationFrom(transform_);
 }
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSVec3<T> & v3, const nsstring & varName)
+void pup(PUPer & p, nsvec3<T> & v3, const nsstring & var_name_)
 {
-	pup(p, v3.x, varName + "[0]"); pup(p, v3.y, varName + "[1]"); pup(p, v3.z, varName + "[2]");
+	pup(p, v3.x, var_name_ + "[0]"); pup(p, v3.y, var_name_ + "[1]"); pup(p, v3.z, var_name_ + "[2]");
 }
 
 #endif

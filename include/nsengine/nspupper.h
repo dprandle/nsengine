@@ -12,151 +12,150 @@ who is responsible for the entire pup design concept
 
 #include <nsglobal.h>
 
-
-class NSFilePUPer
+class nsfile_pupper
 {
 public:
-	enum PupType {
-		Binary,
-		Text
+	enum pup_t {
+		pup_binary,
+		pup_text
 	};
 
-	NSFilePUPer(PupType t_, nsfstream & fileStream, const uint32 & _io);
+	nsfile_pupper(pup_t t_, nsfstream & file_stream_, const uint32 & _io);
 	const uint32 & mode() const;
-	PupType type();
+	pup_t type();
 
 	nsfstream & fs;
 
 protected:
-	uint32 io;
-	PupType t;
+	uint32 m_io;
+	pup_t m_type;
 };
 
-class NSBinFilePUPer : public NSFilePUPer
+class nsbinary_file_pupper : public nsfile_pupper
 {
 public:
 
-	NSBinFilePUPer(nsfstream & fileStream, const uint32 & _io);
-	friend void pup(NSBinFilePUPer & p, char & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, wchar & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, char16 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, char32 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, int8 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, int16 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, int32 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, int64 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, uint8 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, uint16 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, uint32 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, uint64 & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, float & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, double & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, ldouble & val, const nsstring & varName);
-	friend void pup(NSBinFilePUPer & p, bool & val, const nsstring & varName);
+	nsbinary_file_pupper(nsfstream & file_stream_, const uint32 & _io);
+	friend void pup(nsbinary_file_pupper & p_, char & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, char16 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, int8 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, int16 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, int32 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, int64 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, uint8 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, uint16 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, uint32 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, uint64 & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, float & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, double & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, ldouble & val_, const nsstring & var_name_);
+	friend void pup(nsbinary_file_pupper & p_, bool & val_, const nsstring & var_name_);
 
 	template <class T>
-	friend void pupbytes(NSBinFilePUPer & p, T & val);
+	friend void pup_bytes(nsbinary_file_pupper & p_, T & val_);
 };
 
-class NSTextFilePUPer : public NSFilePUPer
+class nstext_file_pupper : public nsfile_pupper
 {
 public:
 
-	NSTextFilePUPer(nsfstream & fileStream, const uint32 & _io);
-	friend void pup(NSTextFilePUPer & p, char & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, wchar & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, char16 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, char32 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, int8 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, int16 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, int32 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, int64 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, uint8 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, uint16 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, uint32 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, uint64 & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, float & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, double & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, ldouble & val, const nsstring & varName);
-	friend void pup(NSTextFilePUPer & p, bool & val, const nsstring & varName);
+	nstext_file_pupper(nsfstream & file_stream_, const uint32 & _io);
+	friend void pup(nstext_file_pupper & p_, char & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, char16 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, int8 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, int16 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, int32 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, int64 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, uint8 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, uint16 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, uint32 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, uint64 & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, float & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, double & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, ldouble & val_, const nsstring & var_name_);
+	friend void pup(nstext_file_pupper & p_, bool & val_, const nsstring & var_name_);
 	
 	template<class PUPer>
-	friend void pup(PUPer & p, nsstring & str, const nsstring & varName);
+	friend void pup(PUPer & p_, nsstring & str, const nsstring & var_name_);
 };
 
-void pup(NSBinFilePUPer & p, char & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, wchar & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, char16 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, char32 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, int8 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, int16 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, int32 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, int64 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, uint8 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, uint16 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, uint32 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, uint64 & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, float & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, double & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, ldouble & val, const nsstring & varName);
-void pup(NSBinFilePUPer & p, bool & val, const nsstring & varName);
+void pup(nsbinary_file_pupper & p_, char & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, char16 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, int8 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, int16 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, int32 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, int64 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, uint8 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, uint16 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, uint32 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, uint64 & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, float & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, double & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, ldouble & val_, const nsstring & var_name_);
+void pup(nsbinary_file_pupper & p_, bool & val_, const nsstring & var_name_);
 
-void pup(NSTextFilePUPer & p, char & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, wchar & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, char16 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, char32 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, int8 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, int16 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, int32 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, int64 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, uint8 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, uint16 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, uint32 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, uint64 & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, float & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, double & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, ldouble & val, const nsstring & varName);
-void pup(NSTextFilePUPer & p, bool & val, const nsstring & varName);
+void pup(nstext_file_pupper & p_, char & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, char16 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, int8 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, int16 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, int32 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, int64 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, uint8 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, uint16 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, uint32 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, uint64 & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, float & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, double & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, ldouble & val_, const nsstring & var_name_);
+void pup(nstext_file_pupper & p_, bool & val_, const nsstring & var_name_);
 
 template <class T>
-void pupbytes(NSBinFilePUPer & p, T & val)
+void pup_bytes(nsbinary_file_pupper & p_, T & val_)
 {
-	if (p.io == PUP_IN)
-		p.fs.read((char*)&val, sizeof(T));
+	if (p_.m_io == PUP_IN)
+		p_.fs.read((char*)&val_, sizeof(T));
 	else
-		p.fs.write((char*)&val, sizeof(T));
+		p_.fs.write((char*)&val_, sizeof(T));
 }
 
 // STL Types
 template<class PUPer, class T>
-void pup(PUPer & p, std::vector<T> & vec, const nsstring & varName)
+void pup(PUPer & p_, std::vector<T> & vec, const nsstring & var_name_)
 {
 	uint32 size = static_cast<uint32>(vec.size());
-	pup(p, size, varName + ".size");
+	pup(p_, size, var_name_ + ".size");
 	vec.resize(size);
 	for (uint32 i = 0; i < size; ++i)
-		pup(p, vec[i], varName + "[" + std::to_string(i) + "]");
+		pup(p_, vec[i], var_name_ + "[" + std::to_string(i) + "]");
 }
 
 template<class PUPer, class T1, class T2>
-void pup(PUPer & p, std::pair<T1,T2> & pr, const nsstring & varName)
+void pup(PUPer & p_, std::pair<T1,T2> & pr, const nsstring & var_name_)
 {
-	pup(p, pr.first, varName + ".first");
-	pup(p, pr.second, varName + ".second");
+	pup(p_, pr.first, var_name_ + ".first");
+	pup(p_, pr.second, var_name_ + ".second");
 }
 
 template<class PUPer, class Key, class Val>
-void pup(PUPer & p, std::map<Key, Val> & m, const nsstring & varName)
+void pup(PUPer & p_, std::map<Key, Val> & m, const nsstring & var_name_)
 {
 	uint32 size = static_cast<uint32>(m.size());
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
 			Key k; Val v;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			m.emplace(k, v);
 		}
 	}
@@ -166,25 +165,25 @@ void pup(PUPer & p, std::map<Key, Val> & m, const nsstring & varName)
 		while (iter != m.end())
 		{
 			Key k = iter->first; Val v = iter->second;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			++iter;
 		}
 	}
 }
 
 template<class PUPer, class Key, class Val, class EH>
-void pup(PUPer & p, std::unordered_map<Key, Val, EH> & m, const nsstring & varName = "")
+void pup(PUPer & p_, std::unordered_map<Key, Val, EH> & m, const nsstring & var_name_ = "")
 {
 	uint32 size = static_cast<uint32>(m.size());
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
 			Key k = Key(); Val v = Val();
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			m.emplace(k, v);
 		}
 	}
@@ -194,25 +193,25 @@ void pup(PUPer & p, std::unordered_map<Key, Val, EH> & m, const nsstring & varNa
 		while (iter != m.end())
 		{
 			Key k = iter->first; Val v = iter->second;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			++iter;
 		}
 	}
 }
 
 template<class PUPer, class Key, class Val>
-void pup(PUPer & p, std::multimap<Key, Val> & m, const nsstring & varName = "")
+void pup(PUPer & p_, std::multimap<Key, Val> & m, const nsstring & var_name_ = "")
 {
 	uint32 size = m.size();
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
 			Key k; Val v;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			m.emplace(k, v);
 		}
 	}
@@ -222,25 +221,25 @@ void pup(PUPer & p, std::multimap<Key, Val> & m, const nsstring & varName = "")
 		while (iter != m.end())
 		{
 			Key k = iter->first; Val v = iter->second;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			++iter;
 		}
 	}
 }
 
 template<class PUPer, class Key, class Val, class EH>
-void pup(PUPer & p, std::unordered_multimap<Key, Val, EH> & m, const nsstring & varName = "")
+void pup(PUPer & p_, std::unordered_multimap<Key, Val, EH> & m, const nsstring & var_name_ = "")
 {
 	uint32 size = static_cast<uint32>(m.size());
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
 			Key k; Val v;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			m.emplace(k, v);
 		}
 	}
@@ -250,8 +249,8 @@ void pup(PUPer & p, std::unordered_multimap<Key, Val, EH> & m, const nsstring & 
 		while (iter != m.end())
 		{
 			Key k = iter->first; Val v = iter->second;
-			pup(p, k, varName + ".key");
-			pup(p, v, varName + "[Key]");
+			pup(p_, k, var_name_ + ".key");
+			pup(p_, v, var_name_ + "[Key]");
 			++iter;
 		}
 	}
@@ -261,38 +260,38 @@ template<class PUPer>
 struct Helper;
 
 template<class PUPer>
-void pup(PUPer & p, nsstring & str, const nsstring & varName) { Helper<PUPer>::pup(p, str, varName); }
+void pup(PUPer & p_, nsstring & str, const nsstring & var_name_) { Helper<PUPer>::pup(p_, str, var_name_); }
 
 template<class PUPer>
 struct Helper
 {
-	static void pup(PUPer & p, nsstring & str, const nsstring & varName)
+	static void pup(PUPer & p_, nsstring & str, const nsstring & var_name_)
 	{
 		uint32 size = static_cast<uint32>(str.size());
-		::pup(p, size, varName);
+		::pup(p_, size, var_name_);
 		str.resize(size);
 		for (uint32 i = 0; i < size; ++i)
-			::pup(p, str[i], varName);
+			::pup(p_, str[i], var_name_);
 	}
 };
 
 template<>
-struct Helper<NSTextFilePUPer>
+struct Helper<nstext_file_pupper>
 {
-	static void pup(NSTextFilePUPer & p, nsstring & str, const nsstring & varName)
+	static void pup(nstext_file_pupper & p_, nsstring & str, const nsstring & var_name_)
 	{
 		nsstring begtag, endtag;
-		begtag = varName + ":<nsstring>"; endtag = "</nsstring>";
+		begtag = var_name_ + ":<nsstring>"; endtag = "</nsstring>";
 
-		if (p.mode() == PUP_OUT)
+		if (p_.mode() == PUP_OUT)
 		{
-			p.fs << begtag << str << endtag << "\n";
+			p_.fs << begtag << str << endtag << "\n";
 		}
 		else
 		{
 			nsstring line;
 			size_t loc = 0;
-			std::getline(p.fs, line);
+			std::getline(p_.fs, line);
 		    size_t beg = begtag.size(); loc = line.find(endtag);
 			if (loc != nsstring::npos)
 			{
@@ -307,7 +306,7 @@ struct Helper<NSTextFilePUPer>
 
 			while (loc == nsstring::npos)
 			{
-				std::getline(p.fs, line);
+				std::getline(p_.fs, line);
 				loc = line.find(endtag);
 				if (loc != nsstring::npos)
 					line = line.substr(0, loc);
@@ -321,17 +320,17 @@ struct Helper<NSTextFilePUPer>
 
 
 template<class PUPer, class T>
-void pup(PUPer & p, std::set<T> & s, const nsstring & varName)
+void pup(PUPer & p_, std::set<T> & s, const nsstring & var_name_)
 {
 	uint32 size = static_cast<uint32>(s.size());
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
-			T val;
-			pup(p, val, varName);
-			s.emplace(val);
+			T val_;
+			pup(p_, val_, var_name_);
+			s.emplace(val_);
 		}
 	}
 	else
@@ -339,25 +338,25 @@ void pup(PUPer & p, std::set<T> & s, const nsstring & varName)
 		auto iter = s.begin();
 		while (iter != s.end())
 		{
-			T val = *iter;
-			pup(p, val, varName);
+			T val_ = *iter;
+			pup(p_, val_, var_name_);
 			++iter;
 		}
 	}
 }
 
 template<class PUPer, class T, class EH>
-void pup(PUPer & p, std::unordered_set<T, EH> & s, const nsstring & varName)
+void pup(PUPer & p_, std::unordered_set<T, EH> & s, const nsstring & var_name_)
 {
 	uint32 size = static_cast<uint32>(s.size());
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
-			T val;
-			pup(p, val, varName);
-			s.emplace(val);
+			T val_;
+			pup(p_, val_, var_name_);
+			s.emplace(val_);
 		}
 	}
 	else
@@ -365,25 +364,25 @@ void pup(PUPer & p, std::unordered_set<T, EH> & s, const nsstring & varName)
 		auto iter = s.begin();
 		while (iter != s.end())
 		{
-			T val = *iter;
-			pup(p, val, varName);
+			T val_ = *iter;
+			pup(p_, val_, var_name_);
 			++iter;
 		}
 	}
 }
 
 template<class PUPer, class T>
-void pup(PUPer & p, std::multiset<T> & s, const nsstring & varName)
+void pup(PUPer & p_, std::multiset<T> & s, const nsstring & var_name_)
 {
 	uint32 size = s.size();
-	pup(p, size, varName + ".size");
-	if (p.mode() == PUP_IN)
+	pup(p_, size, var_name_ + ".size");
+	if (p_.mode() == PUP_IN)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
-			T val;
-			pup(p, val, varName);
-			s.emplace(val);
+			T val_;
+			pup(p_, val_, var_name_);
+			s.emplace(val_);
 		}
 	}
 	else
@@ -391,8 +390,8 @@ void pup(PUPer & p, std::multiset<T> & s, const nsstring & varName)
 		auto iter = s.begin();
 		while (iter != s.end())
 		{
-			T val = *iter;
-			pup(p, val, varName);
+			T val_ = *iter;
+			pup(p_, val_, var_name_);
 			++iter;
 		}
 	}

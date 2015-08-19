@@ -19,7 +19,7 @@ This file contains all of the neccessary declarations for the NSSelComp class.
 
 
 class nsshader;
-class NSTimer;
+class nstimer;
 
 class NSSelComp : public NSComponent
 {
@@ -68,7 +68,7 @@ public:
 
 	bool set(uint32 pTransformID);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	void setDefaultColor(const fvec4 & pColor);
 

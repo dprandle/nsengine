@@ -242,7 +242,7 @@ public:
 
 	const nsstringset & parents();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	const nsstring & creation_date();
 
@@ -280,15 +280,15 @@ public:
 	bool save(nsresource * res, const nsstring & path="");
 
 	template<class ResType>
-	void save_all(const nsstring & path="", NSSaveResCallback * scallback = NULL)
+	void save_all(const nsstring & path="", nssave_resouces_callback * scallback = NULL)
 	{
 		uint32 hashed_type = type_to_hash(ResType);
 		return save_all(hashed_type, path, scallback);
 	}
 
-	void save_all(const nsstring & path="", NSSaveResCallback * scallback = NULL);
+	void save_all(const nsstring & path="", nssave_resouces_callback * scallback = NULL);
 
-	void save_all(uint32 res_typeid, const nsstring & path, NSSaveResCallback * scallback);
+	void save_all(uint32 res_typeid, const nsstring & path, nssave_resouces_callback * scallback);
 	
 	template<class ResType, class T>
 	bool save_as(const T & resname, const nsstring & fname)

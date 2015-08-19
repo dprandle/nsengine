@@ -4,174 +4,174 @@
 #include <cmath>
 
 template <class T>
-struct NSVec3;
+struct nsvec3;
 
 template <class T>
-struct NSVec4;
+struct nsvec4;
 
 template <class T>
-struct NSQuat;
+struct nsquat;
 
 template <class T>
-struct NSMat2;
+struct nsmat2;
 
 template <class T>
-struct NSMat3;
+struct nsmat3;
 
 template <class T>
-struct NSMat4;
+struct nsmat4;
 
 template <class T>
-struct NSVec2;
+struct nsvec2;
 
 template <class T>
-NSVec2<T> operator*(const int32 & pLHS, const NSVec2<T> & pRHS);
+nsvec2<T> operator*(const int32 & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> operator*(const float & pLHS, const NSVec2<T> & pRHS);
+nsvec2<T> operator*(const float & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> operator*(const double & pLHS, const NSVec2<T> & pRHS);
+nsvec2<T> operator*(const double & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> operator/(const int32 & pLHS, const NSVec2<T> & pRHS);
+nsvec2<T> operator/(const int32 & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> operator/(const float & pLHS, const NSVec2<T> & pRHS);
+nsvec2<T> operator/(const float & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> operator/(const double & pLHS, const NSVec2<T> & pRHS);
+nsvec2<T> operator/(const double & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> abs(const NSVec2<T> & pVec);
+nsvec2<T> abs(const nsvec2<T> & vec_);
 
 template <class T>
-NSVec2<T> ceil(const NSVec2<T> & pVec);
+nsvec2<T> ceil(const nsvec2<T> & vec_);
 
 template <class T>
-NSVec2<T> clamp(const NSVec2<T> & pVec, const T & pMin, const T & pMax);
+nsvec2<T> clamp(const nsvec2<T> & vec_, const T & min_, const T & max_);
 
 template <class T>
-T distance(const NSVec2<T> & lvec, const NSVec2<T> & rvec);
+T distance(const nsvec2<T> & lvec_, const nsvec2<T> & rvec_);
 
 template <class T>
-T dot(const NSVec2<T> & pLeft, const NSVec2<T> & pRight);
+T dot(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> floor(const NSVec2<T> & pVec);
+nsvec2<T> floor(const nsvec2<T> & vec_);
 
 template <class T>
-NSVec2<T> fract(const NSVec2<T> & vec);
+nsvec2<T> fract(const nsvec2<T> & vec_);
 
 template <class T>
-T length(const NSVec2<T> & pVec);
+T length(const nsvec2<T> & vec_);
 
 template <class T, class T2>
-NSVec2<T> lerp(const NSVec2<T> & lhs, const NSVec2<T> & rhs, T2 scalingFactor);
+nsvec2<T> lerp(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_, T2 scaling_factor_);
 
 template <class T>
-NSVec2<T> min(const NSVec2<T> & pLeft, const NSVec2<T> & pRight);
+nsvec2<T> min(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> max(const NSVec2<T> & pLeft, const NSVec2<T> & pRight);
+nsvec2<T> max(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> normalize(const NSVec2<T> & pRHS);
+nsvec2<T> normalize(const nsvec2<T> & rhs_);
 
 template <class T>
-NSVec2<T> project(const NSVec2<T> & a, const NSVec2<T> & b);
+nsvec2<T> project(const nsvec2<T> & a, const nsvec2<T> & b);
 
 template <class T>
-NSVec2<T> projectPlane(const NSVec2<T> & a, const NSVec2<T> & normal);
+nsvec2<T> project_plane(const nsvec2<T> & a, const nsvec2<T> & normal_);
 
 template <class T>
-NSVec2<T> reflect(const NSVec2<T> & incident, const NSVec2<T> & normal);
+nsvec2<T> reflect(const nsvec2<T> & incident_, const nsvec2<T> & normal_);
 
 template <class T>
-NSVec2<T> round(const NSVec2<T> & pVec);
+nsvec2<T> round(const nsvec2<T> & vec_);
 
 template <class T>
-NSVec2<T> scaling2dVec(const NSMat2<T> & transform2d);
+nsvec2<T> scaling2d_vec(const nsmat2<T> & transform2d_);
 
 template <class T>
-NSVec2<T> scaling2dVec(const NSMat3<T> & transform2d);
+nsvec2<T> scaling2d_vec(const nsmat3<T> & transform2d_);
 
 template <class T>
-NSVec2<T> translation2dVec(const NSMat3<T> & transform2d);
+nsvec2<T> translation2d_vec(const nsmat3<T> & transform2d_);
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSVec2<T> & v2);
+void pup(PUPer & p, nsvec2<T> & v2);
 
 template <class T>
-struct NSVec2
+struct nsvec2
 {
-	NSVec2(const NSVec2<T> & pCopy) : x(pCopy.x), y(pCopy.y) {}
+	nsvec2(const nsvec2<T> & copy_) : x(copy_.x), y(copy_.y) {}
 
-	NSVec2(const T & pInit=static_cast<T>(0)) : x(pInit), y(pInit) {}
+	nsvec2(const T & init_=static_cast<T>(0)) : x(init_), y(init_) {}
 
-	NSVec2(const T & pX,const T & pY) : x(pX), y(pY) {}
+	nsvec2(const T & x_,const T & y_) : x(x_), y(y_) {}
 
-	NSVec2<T> & abs()
+	nsvec2<T> & abs()
 	{
 		x = static_cast<T>(std::abs(x));
 		y = static_cast<T>(std::abs(y));
 		return *this;
 	}
 
-	T angle(bool pRads = false) const
+	T angle(bool rads_ = false) const
 	{
-		return angleTo(NSVec2<T>(1, 0),pRads);
+		return angle_to(nsvec2<T>(1, 0),rads_);
 	}
 
-	T angleTo(const NSVec2<T> & pVec, bool pRads = false) const
+	T angle_to(const nsvec2<T> & vec_, bool rads_ = false) const
 	{
-		T dotP = (*this) * pVec;
-		T l = length() * pVec.length();
+		T dotP = (*this) * vec_;
+		T l = length() * vec_.length();
 
 		if (l == static_cast<T>(0))
 			return static_cast<T>(0);
 
 		dotP /= l;
 
-		if (pRads)
+		if (rads_)
 			return T(acos(dotP));
 		else
 			return T(degrees(acos(dotP)));
 	}
 
-	NSVec2<T> & ceil()
+	nsvec2<T> & ceil()
 	{
 		x = static_cast<T>(std::ceil(x));
 		y = static_cast<T>(std::ceil(y));
 		return *this;
 	}
 
-	NSVec2<T> & clamp(const T & pMin = static_cast<T>(0), const T & pMax = static_cast<T>(1))
+	nsvec2<T> & clamp(const T & min_ = static_cast<T>(0), const T & max_ = static_cast<T>(1))
 	{
-		if (x < pMin)
-			x = pMin;
-		if (y < pMin)
-			y = pMin;
-		if (x > pMax)
-			x = pMax;
-		if (y > pMax)
-			y = pMax;
+		if (x < min_)
+			x = min_;
+		if (y < min_)
+			y = min_;
+		if (x > max_)
+			x = max_;
+		if (y > max_)
+			y = max_;
 		return *this;
 	}
 
-	T distanceTo(const NSVec2<T> & pVec) const
+	T distance_to(const nsvec2<T> & vec_) const
 	{
-		return ((pVec - *this).length());
+		return ((vec_ - *this).length());
 	}
 
-	NSVec2<T> & floor()
+	nsvec2<T> & floor()
 	{
 		x = static_cast<T>(std::floor(x));
 		y = static_cast<T>(std::floor(y));
 		return *this;
 	}
 
-	NSVec2<T> & fract()
+	nsvec2<T> & fract()
 	{
 		x -= static_cast<T>(std::floor(x));
 		y -= static_cast<T>(std::floor(y));
@@ -183,16 +183,16 @@ struct NSVec2
 		return static_cast<T>(sqrt(x*x + y*y));
 	}
 
-	T lengthSq() const
+	T length_sq() const
 	{
 		return x*x + y*y;
 	}
 
 	template<class T2>
-	NSVec2<T> & lerp(const NSVec2<T> & vec, const T2 & scalingFactor)
+	nsvec2<T> & lerp(const nsvec2<T> & vec_, const T2 & scaling_factor_)
 	{
-		x += static_cast<T>((vec.x - x)*scalingFactor);
-		y += static_cast<T>((vec.y - y)*scalingFactor);
+		x += static_cast<T>((vec_.x - x)*scaling_factor_);
+		y += static_cast<T>((vec_.y - y)*scaling_factor_);
 		return *this;
 	}
 
@@ -204,12 +204,12 @@ struct NSVec2
 			return y;
 	}
 
-	NSVec2<T> & minimize(const NSVec2<T> & rhs)
+	nsvec2<T> & minimize(const nsvec2<T> & rhs_)
 	{
-		if (x < rhs.x)
-			x = rhs.x;
-		if (y < rhs.y)
-			y = rhs.y;
+		if (x < rhs_.x)
+			x = rhs_.x;
+		if (y < rhs_.y)
+			y = rhs_.y;
 		return *this;
 	}
 
@@ -221,16 +221,16 @@ struct NSVec2
 			return y;
 	}
 
-	NSVec2<T> & maximize(const NSVec2<T> & rhs)
+	nsvec2<T> & maximize(const nsvec2<T> & rhs_)
 	{
-		if (x > rhs.x)
-			x = rhs.x;
-		if (y > rhs.y)
-			y = rhs.y;
+		if (x > rhs_.x)
+			x = rhs_.x;
+		if (y > rhs_.y)
+			y = rhs_.y;
 		return *this;
 	}
 
-	NSVec2<T> & normalize()
+	nsvec2<T> & normalize()
 	{
 		T l = length();
 		if (l == 0)
@@ -238,51 +238,51 @@ struct NSVec2
 		return *this *= (1 / l);
 	}
 
-	NSVec2<T> polar(bool pRads = false) const
+	nsvec2<T> polar(bool rads_ = false) const
 	{
-		return NSVec2<T>(length(), angle(pRads));
+		return nsvec2<T>(length(), angle(rads_));
 	}
 	
-	NSVec2<T> & projectOn(const NSVec2<T> & vec)
+	nsvec2<T> & project(const nsvec2<T> & vec_)
 	{
-		T denom = vec * vec;
+		T denom = vec_ * vec_;
 		if (denom == static_cast<T>(0))
 			return *this;
-		(*this) = ((*this * vec) / denom) * vec;
+		(*this) = ((*this * vec_) / denom) * vec_;
 		return *this;
 	}
 
-	NSVec2<T> & projectOnPlane(const NSVec2<T> & planeNormal)
+	nsvec2<T> & project_plane(const nsvec2<T> & normal_)
 	{
-		NSVec2<T> aonb(*this);
-		aonb.projectOn(planeNormal);
+		nsvec2<T> aonb(*this);
+		aonb.project(normal_);
 		(*this) -= aonb;
 		return *this;
 	}
 	
-	NSVec2<T> & reflect(const NSVec2<T> & normal)
+	nsvec2<T> & reflect(const nsvec2<T> & normal_)
 	{
-		(*this) = (*this) - (static_cast<T>(2) * (normal * *this)) * normal;
+		(*this) = (*this) - (static_cast<T>(2) * (normal_ * *this)) * normal_;
 		return *this;
 	}
 
 	template<class T2>
-	NSVec2<T> & rotate(const T2 & pAngle)
+	nsvec2<T> & rotate(const T2 & angle_)
 	{
-		T2 newangle = pAngle + static_cast<T2>(angle());
-		x = length()*static_cast<T>(std::cos(pAngle + angle()));
-		y = length()*static_cast<T>(std::sin(pAngle + angle()));
+		T2 newangle = angle_ + static_cast<T2>(angle());
+		x = length()*static_cast<T>(std::cos(angle_ + angle()));
+		y = length()*static_cast<T>(std::sin(angle_ + angle()));
 		return *this;
 	}
 
-	NSVec2<T> & round()
+	nsvec2<T> & round()
 	{
 		x = static_cast<T>(std::round(x));
 		y = static_cast<T>(std::round(y));
 		return *this;
 	}
 
-	NSVec2<T> & roundToZero()
+	nsvec2<T> & round_to_zero()
 	{
 		if (::abs(x) < EPS)
 			x = 0;
@@ -291,246 +291,246 @@ struct NSVec2
 		return *this;
 	}
 
-	NSVec2<T> & scalingFrom(const NSMat2<T> & transform2d)
+	nsvec2<T> & scaling_from(const nsmat2<T> & transform2d_)
 	{
-		x = transform2d[0].length();
-		y = transform2d[1].length();
+		x = transform2d_[0].length();
+		y = transform2d_[1].length();
 		return *this;
 	}
 
-	NSVec2<T> & scalingFrom(const NSMat3<T> & transform2d)
+	nsvec2<T> & scaling_from(const nsmat3<T> & transform2d_)
 	{
-		x = sqrt(transform2d[0][0] * transform2d[0][0] + transform2d[0][1] * transform2d[0][1]);
-		y = sqrt(transform2d[1][0] * transform2d[1][0] + transform2d[1][1] * transform2d[1][1]);
+		x = sqrt(transform2d_[0][0] * transform2d_[0][0] + transform2d_[0][1] * transform2d_[0][1]);
+		y = sqrt(transform2d_[1][0] * transform2d_[1][0] + transform2d_[1][1] * transform2d_[1][1]);
 		return *this;
 	}
 
-	NSVec2<T> & set(const T & pVal)
+	nsvec2<T> & set(const T & val_)
 	{
-		x = y = pVal;
+		x = y = val_;
 		return *this;
 	}
 
-	NSVec2<T> & set(const T & pX, const T & pY)
+	nsvec2<T> & set(const T & x_, const T & y_)
 	{
-		x = pX; y = pY;
+		x = x_; y = y_;
 		return *this;
 	}
 
-	NSVec2<T> & setFromPolar(const T & pMag, const T & pAngle, bool pRads = false)
+	nsvec2<T> & from_polar(const T & pMag, const T & angle_, bool rads_ = false)
 	{
-		if (!pRads)
-			pAngle = radians(pAngle);
+		if (!rads_)
+			angle_ = radians(angle_);
 
-		x = static_cast<T>(pMag*std::cos(pAngle));
-		y = static_cast<T>(pMag*std::sin(pAngle));
+		x = static_cast<T>(pMag*std::cos(angle_));
+		y = static_cast<T>(pMag*std::sin(angle_));
 		return *this;
 	}
 
-	NSVec2<T> & setFromPolar(const NSVec2<T> & pVec, bool pRads = false)
+	nsvec2<T> & from_polar(const nsvec2<T> & vec_, bool rads_ = false)
 	{
-		T ang = pVec.y;
+		T ang = vec_.y;
 
-		if (!pRads)
+		if (!rads_)
 			ang = radians(ang);
 
-		x = static_cast<T>(pVec.x*std::cos(ang));
-		y = static_cast<T>(pVec.x*std::sin(ang));
+		x = static_cast<T>(vec_.x*std::cos(ang));
+		y = static_cast<T>(vec_.x*std::sin(ang));
 		return *this;
 	}
 
-	NSVec2<T> & setLength(const T & len)
+	nsvec2<T> & set_length(const T & len_)
 	{
 		T l = length();
 
 		if (l == static_cast<T>(0))
 			return *this;
 
-		T mult = len / l;
+		T mult = len_ / l;
 		(*this) *= mult;
 		return *this;
 	}
 
-	NSVec2<T> & translationFrom(const NSMat3<T> & transform2d)
+	nsvec2<T> & translation_from(const nsmat3<T> & transform2d_)
 	{
-		return *this = transform2d(2).xy();
+		return *this = transform2d_(2).xy();
 	}
 
-	nsstring toString(bool pPolar = false)
+	nsstring to_string(bool polar_ = false)
 	{
 		nsstringstream ss;
-		if (pPolar)
+		if (polar_)
 			ss << "[" << length() << " " << angle() << "]";
 		else
 			ss << "[" << x << " " << y << "]";
 		return ss.str();
 	}
 
-	NSVec2<T> operator+(const NSVec2<T> & pRHS) const
+	nsvec2<T> operator+(const nsvec2<T> & rhs_) const
 	{
-		return NSVec2<T>(x + pRHS.x, y + pRHS.y);
+		return nsvec2<T>(x + rhs_.x, y + rhs_.y);
 	}
 
-	NSVec2<T> operator-(const NSVec2<T> & pRHS) const
+	nsvec2<T> operator-(const nsvec2<T> & rhs_) const
 	{
-		return NSVec2<T>(x - pRHS.x, y - pRHS.y);
+		return nsvec2<T>(x - rhs_.x, y - rhs_.y);
 	}
 
-	T operator*(const NSVec2<T> & pRHS) const
+	T operator*(const nsvec2<T> & rhs_) const
 	{
-		return x*pRHS.x + y*pRHS.y;
+		return x*rhs_.x + y*rhs_.y;
 	}
 
-	NSMat2<T> operator^(const NSVec2<T> & pRHS) const
+	nsmat2<T> operator^(const nsvec2<T> & rhs_) const
 	{
-		NSMat2<T> ret;
-		ret[0] = x * pRHS;
-		ret[1] = y * pRHS;
+		nsmat2<T> ret;
+		ret[0] = x * rhs_;
+		ret[1] = y * rhs_;
 		return ret;
 	}
 
-	NSVec2<T> operator%(const NSVec2<T> & pRHS) const
+	nsvec2<T> operator%(const nsvec2<T> & rhs_) const
 	{
-		return NSVec2<T>(x*pRHS.x, y*pRHS.y);
+		return nsvec2<T>(x*rhs_.x, y*rhs_.y);
 	}
 
-	NSVec2<T> operator/(const NSVec2<T> & pRHS) const
+	nsvec2<T> operator/(const nsvec2<T> & rhs_) const
 	{
-		return NSVec2<T>(x / pRHS.x, y / pRHS.y);
+		return nsvec2<T>(x / rhs_.x, y / rhs_.y);
 	}
 
-	NSVec2<T> operator*(const T & pRHS) const
+	nsvec2<T> operator*(const T & rhs_) const
 	{
-		return NSVec2<T>(x * pRHS, y * pRHS);
+		return nsvec2<T>(x * rhs_, y * rhs_);
 	}
 
-	NSVec2<T> operator/(const T & pRHS) const
+	nsvec2<T> operator/(const T & rhs_) const
 	{
-		return NSVec2<T>(x / pRHS, y / pRHS);
+		return nsvec2<T>(x / rhs_, y / rhs_);
 	}
 
-	NSVec2<T> & operator=(const NSVec2<T> & pRHS)
+	nsvec2<T> & operator=(const nsvec2<T> & rhs_)
 	{
-		if (this == &pRHS)
+		if (this == &rhs_)
 			return *this;
-		x = pRHS.x;
-		y = pRHS.y;
+		x = rhs_.x;
+		y = rhs_.y;
 		return *this;
 	}
 
-	NSVec2<T> operator++(int32)
+	nsvec2<T> operator++(int32)
 	{
-		NSVec2<T> ret(*this);
+		nsvec2<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSVec2<T> operator--(int32)
+	nsvec2<T> operator--(int32)
 	{
-		NSVec2<T> ret(*this);
+		nsvec2<T> ret(*this);
 		--(*this);
 		return ret;
 	}
 
-	NSVec2<T> & operator++()
+	nsvec2<T> & operator++()
 	{
 		++x; ++y;
 		return *this;
 	}
 
-	NSVec2<T> & operator--()
+	nsvec2<T> & operator--()
 	{
 		--x; --y;
 		return *this;
 	}
 
-	NSVec2<T> & operator+=(const NSVec2<T> & pRHS)
+	nsvec2<T> & operator+=(const nsvec2<T> & rhs_)
 	{
-		x += pRHS.x; y += pRHS.y;
+		x += rhs_.x; y += rhs_.y;
 		return *this;
 	}
 
-	NSVec2<T> & operator-=(const NSVec2<T> & pRHS)
+	nsvec2<T> & operator-=(const nsvec2<T> & rhs_)
 	{
-		x -= pRHS.x; y -= pRHS.y;
+		x -= rhs_.x; y -= rhs_.y;
 		return *this;
 	}
 
-	NSVec2<T> & operator%=(const NSVec2<T> & pRHS)
+	nsvec2<T> & operator%=(const nsvec2<T> & rhs_)
 	{
-		x *= pRHS.x; y *= pRHS.y;
+		x *= rhs_.x; y *= rhs_.y;
 		return *this;
 	}
 
-	NSVec2<T> & operator/=(const NSVec2<T> & pRHS)
+	nsvec2<T> & operator/=(const nsvec2<T> & rhs_)
 	{
-		x /= pRHS.x; y /= pRHS.y;
+		x /= rhs_.x; y /= rhs_.y;
 		return *this;
 	}
 
-	NSVec2<T> & operator*=(const T & pRHS)
+	nsvec2<T> & operator*=(const T & rhs_)
 	{
-		x *= pRHS; y *= pRHS;
+		x *= rhs_; y *= rhs_;
 		return *this;
 	}
 
-	NSVec2<T> & operator/=(const T & pRHS)
+	nsvec2<T> & operator/=(const T & rhs_)
 	{
-		x /= pRHS; y /= pRHS;
+		x /= rhs_; y /= rhs_;
 		return *this;
 	}
 
-	bool operator==(const NSVec2<T> & pRHS) const
+	bool operator==(const nsvec2<T> & rhs_) const
 	{
-		return ((x == pRHS.x) && (y == pRHS.y));
+		return ((x == rhs_.x) && (y == rhs_.y));
 	}
 
-	bool operator!=(const NSVec2<T> & pRHS) const
+	bool operator!=(const nsvec2<T> & rhs_) const
 	{
-		return !(*this == pRHS);
+		return !(*this == rhs_);
 	}
 
-	bool operator==(const T & pRHS) const
+	bool operator==(const T & rhs_) const
 	{
-		return ((x == pRHS) && (y == pRHS));
+		return ((x == rhs_) && (y == rhs_));
 	}
 
-	bool operator!=(const T & pRHS) const
+	bool operator!=(const T & rhs_) const
 	{
-		return !(*this == pRHS);
+		return !(*this == rhs_);
 	}
 
-	const T & operator[](const uint32 & pVal) const
+	const T & operator[](const uint32 & val_) const
 	{
-		if (pVal > 1)
+		if (val_ > 1)
 			throw(std::out_of_range("vec2 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
-	T & operator[](const uint32 & pVal)
+	T & operator[](const uint32 & val_)
 	{
-		if (pVal > 1)
+		if (val_ > 1)
 			throw(std::out_of_range("vec2 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
 
 	// Swizzle operations
-	inline NSVec2<T> xx() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> yx() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> yy() const { return NSVec2<T>(y, y); }
+	inline nsvec2<T> xx() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> yx() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> yy() const { return nsvec2<T>(y, y); }
 
-	inline NSVec2<T> ss() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> ts() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> tt() const { return NSVec2<T>(y, y); }
+	inline nsvec2<T> ss() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> ts() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> tt() const { return nsvec2<T>(y, y); }
 
-	inline NSVec2<T> uu() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> vu() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> vv() const { return NSVec2<T>(y, y); }
+	inline nsvec2<T> uu() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> vu() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> vv() const { return nsvec2<T>(y, y); }
 
-	inline NSVec2<T> ww() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> hw() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> hh() const { return NSVec2<T>(y, y); }
+	inline nsvec2<T> ww() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> hw() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> hh() const { return nsvec2<T>(y, y); }
 
 	union
 	{
@@ -563,180 +563,180 @@ struct NSVec2
 };
 
 template <class T>
-NSVec2<T> operator*(const int32 & pLHS, const NSVec2<T> & pRHS)
+nsvec2<T> operator*(const int32 & lhs_, const nsvec2<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec2<T> operator*(const float & pLHS, const NSVec2<T> & pRHS)
+nsvec2<T> operator*(const float & lhs_, const nsvec2<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec2<T> operator*(const double & pLHS, const NSVec2<T> & pRHS)
+nsvec2<T> operator*(const double & lhs_, const nsvec2<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec2<T> operator/(const int32 & pLHS, const NSVec2<T> & pRHS)
+nsvec2<T> operator/(const int32 & lhs_, const nsvec2<T> & rhs_)
 {
-	return NSVec2<T>(pLHS / pRHS.x, pLHS / pRHS.y);
+	return nsvec2<T>(lhs_ / rhs_.x, lhs_ / rhs_.y);
 }
 
 template <class T>
-NSVec2<T> operator/(const float & pLHS, const NSVec2<T> & pRHS)
+nsvec2<T> operator/(const float & lhs_, const nsvec2<T> & rhs_)
 {
-	return NSVec2<T>(pLHS / pRHS.x, pLHS / pRHS.y);
+	return nsvec2<T>(lhs_ / rhs_.x, lhs_ / rhs_.y);
 }
 
 template <class T>
-NSVec2<T> operator/(const double & pLHS, const NSVec2<T> & pRHS)
+nsvec2<T> operator/(const double & lhs_, const nsvec2<T> & rhs_)
 {
-	return NSVec2<T>(pLHS / pRHS.x, pLHS / pRHS.y);
+	return nsvec2<T>(lhs_ / rhs_.x, lhs_ / rhs_.y);
 }
 
 template <class T>
-NSVec2<T> abs(const NSVec2<T> & pVec)
+nsvec2<T> abs(const nsvec2<T> & vec_)
 {
-	return NSVec2<T>(pVec).abs();
+	return nsvec2<T>(vec_).abs();
 }
 
 template <class T>
-NSVec2<T> ceil(const NSVec2<T> & pVec)
+nsvec2<T> ceil(const nsvec2<T> & vec_)
 {
-	NSVec2<T> ret(pVec);
+	nsvec2<T> ret(vec_);
 	ret.ceiling();
 	return ret;
 }
 
 template <class T>
-NSVec2<T> clamp(const NSVec2<T> & pVec, const T & pMin, const T & pMax)
+nsvec2<T> clamp(const nsvec2<T> & vec_, const T & min_, const T & max_)
 {
-	NSVec2<T> ret(pVec);
-	ret.clamp(pMin, pMax);
+	nsvec2<T> ret(vec_);
+	ret.clamp(min_, max_);
 	return ret;
 }
 
 template <class T>
-T distance(const NSVec2<T> & lvec, const NSVec2<T> & rvec)
+T distance(const nsvec2<T> & lvec_, const nsvec2<T> & rvec_)
 {
-	return lvec.distanceTo(rvec);
+	return lvec_.distanceTo(rvec_);
 }
 
 template <class T>
-T dot(const NSVec2<T> & pLeft, const NSVec2<T> & pRight)
+T dot(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_)
 {
-	return pLeft * pRight;
+	return lhs_ * rhs_;
 }
 
 template <class T>
-NSVec2<T> floor(const NSVec2<T> & pVec)
+nsvec2<T> floor(const nsvec2<T> & vec_)
 {
-	NSVec2<T> ret(pVec);
+	nsvec2<T> ret(vec_);
 	ret.floor();
 	return ret;
 }
 
 template <class T>
-NSVec2<T> fract(const NSVec2<T> & vec)
+nsvec2<T> fract(const nsvec2<T> & vec_)
 {
-	return vec - floor(vec);
+	return vec_ - floor(vec_);
 }
 
 template <class T>
-T length(const NSVec2<T> & pVec)
+T length(const nsvec2<T> & vec_)
 {
-	return pVec.length();
+	return vec_.length();
 }
 
 template <class T, class T2>
-NSVec2<T> lerp(const NSVec2<T> & lhs, const NSVec2<T> & rhs, T2 scalingFactor)
+nsvec2<T> lerp(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_, T2 scaling_factor_)
 {
-	NSVec2<T> ret(lhs);
-	ret.lerp(rhs, scalingFactor);
+	nsvec2<T> ret(lhs_);
+	ret.lerp(rhs_, scaling_factor_);
 	return ret;
 }
 
 template <class T>
-NSVec2<T> min(const NSVec2<T> & pLeft, const NSVec2<T> & pRight)
+nsvec2<T> min(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_)
 {
-	NSVec2<T> ret(pLeft);
-	ret.minimize(pRight);
+	nsvec2<T> ret(lhs_);
+	ret.minimize(rhs_);
 	return ret;
 }
 
 template <class T>
-NSVec2<T> max(const NSVec2<T> & pLeft, const NSVec2<T> & pRight)
+nsvec2<T> max(const nsvec2<T> & lhs_, const nsvec2<T> & rhs_)
 {
-	NSVec2<T> ret(pLeft);
-	ret.maximize(pRight);
+	nsvec2<T> ret(lhs_);
+	ret.maximize(rhs_);
 	return ret;
 }
 
 template <class T>
-NSVec2<T> normalize(const NSVec2<T> & pRHS)
+nsvec2<T> normalize(const nsvec2<T> & rhs_)
 {
-	NSVec2<T> ret(pRHS);
+	nsvec2<T> ret(rhs_);
 	ret.normalize();
 	return ret;
 }
 
 template <class T>
-NSVec2<T> project(const NSVec2<T> & a, const NSVec2<T> & b)
+nsvec2<T> project(const nsvec2<T> & a, const nsvec2<T> & b)
 {
-	NSVec2<T> ret(a);
-	ret.projectOn(b);
+	nsvec2<T> ret(a);
+	ret.project(b);
 	return ret;
 }
 
 template <class T>
-NSVec2<T> projectPlane(const NSVec2<T> & a, const NSVec2<T> & normal)
+nsvec2<T> project_plane(const nsvec2<T> & a, const nsvec2<T> & normal_)
 {
-	NSVec2<T> ret(a);
-	ret.projectOnPlane(normal);
+	nsvec2<T> ret(a);
+	ret.project_plane(normal_);
 	return ret;
 }
 
 template <class T>
-NSVec2<T> reflect(const NSVec2<T> & incident, const NSVec2<T> & normal)
+nsvec2<T> reflect(const nsvec2<T> & incident_, const nsvec2<T> & normal_)
 {
-	NSVec2<T> ret(incident);
-	incident.reflect(normal);
+	nsvec2<T> ret(incident_);
+	incident_.reflect(normal_);
 	return ret;
 }
 
 template <class T>
-NSVec2<T> round(const NSVec2<T> & pVec)
+nsvec2<T> round(const nsvec2<T> & vec_)
 {
-	NSVec2<T> ret(pVec);
+	nsvec2<T> ret(vec_);
 	ret.round();
 	return ret;
 }
 
 template <class T>
-NSVec2<T> scaling2dVec(const NSMat2<T> & transform2d)
+nsvec2<T> scaling2d_vec(const nsmat2<T> & transform2d_)
 {
-	return NSVec2<T>().scalingFrom(transform2d);
+	return nsvec2<T>().scalingFrom(transform2d_);
 }
 
 template <class T>
-NSVec2<T> scaling2dVec(const NSMat3<T> & transform2d)
+nsvec2<T> scaling2d_vec(const nsmat3<T> & transform2d_)
 {
-	return NSVec2<T>().scalingFrom(transform2d);
+	return nsvec2<T>().scalingFrom(transform2d_);
 }
 
 template <class T>
-NSVec2<T> translation2dVec(const NSMat3<T> & transform2d)
+nsvec2<T> translation2d_vec(const nsmat3<T> & transform2d_)
 {
-	return NSVec2<T>().translationFrom(transform2d);
+	return nsvec2<T>().translationFrom(transform2d_);
 }
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSVec2<T> & v2, const nsstring & varName)
+void pup(PUPer & p, nsvec2<T> & v2, const nsstring & var_name_)
 {
-	pup(p, v2.x, varName + "[0]"); pup(p, v2.y, varName + "[1]");
+	pup(p, v2.x, var_name_ + "[0]"); pup(p, v2.y, var_name_ + "[1]");
 }
 #endif

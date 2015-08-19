@@ -44,16 +44,16 @@ void nsanim_set::clear()
 	m_animmap.clear();
 }
 
-void nsanim_set::pup(NSFilePUPer * p)
+void nsanim_set::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -185,5 +185,5 @@ fmat4 nsanim_set::animation_data::animation_node::transform(float pTime, float p
 	else
 		scaleInter = scaling_keys.rbegin()->second;
 
-	return ( fmat4(rotationMat3(interQ) % scaleInter).setColumn(3, transInter.x, transInter.y, transInter.z, 1) );
+	return ( fmat4(rotation_mat3(interQ) % scaleInter).set_column(3, transInter.x, transInter.y, transInter.z, 1) );
 }

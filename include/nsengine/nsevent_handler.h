@@ -20,76 +20,76 @@ This file contains all of the neccessary declarations for the NSEventHandler cla
 #include <nsengine.h>
 #include <nsevent_dispatcher.h>
 
-class NSHandlerFunc
+class nshandler_func
 {
   public:
-	virtual ~NSHandlerFunc() {}
+	virtual ~nshandler_func() {}
 	virtual bool exec(nsevent * evnt)=0;
 };
 
-template<class ClassType, class EventType>
-class NSHandlerFuncType : public NSHandlerFunc
+template<class class_type, class event_type>
+class nshandler_func_type : public nshandler_func
 {
   public:
-	typedef bool (ClassType::*MemberFunc)(EventType *);
+	typedef bool (class_type::*member_func_t)(event_type *);
 
-	NSHandlerFuncType(ClassType * inst, MemberFunc mf):
-		class_instance(inst),
-		member(mf)
+	nshandler_func_type(class_type * class_inst_, member_func_t member_func_):
+		m_cls_instance(class_inst_),
+		m_member_func(member_func_)
 	{}
 
 	bool exec(nsevent * evnt)
 	{
-		EventType * cast_evnt = static_cast<EventType*>(evnt);
-        return (class_instance->*member)(cast_evnt);
+		event_type * cast_evnt = static_cast<event_type*>(evnt);
+        return (m_cls_instance->*m_member_func)(cast_evnt);
 	}
 
   private:
 	
-	ClassType * class_instance;
-	MemberFunc member;
+	class_type * m_cls_instance;
+	member_func_t m_member_func;
 };
 
-class NSEventHandler
+class nsevent_handler
 {
   public:
 	
-	typedef std::unordered_map<std::type_index, NSHandlerFunc*> HandlerMap;
+	typedef std::unordered_map<std::type_index, nshandler_func*> handler_map;
 	
-	NSEventHandler();
-	~NSEventHandler();
+	nsevent_handler();
+	~nsevent_handler();
 	
-	bool handleEvent(nsevent * event);
+	bool handle_event(nsevent * event);
 
-	template<class ClassType,class EventType>
-	bool registerHandlerFunc(ClassType * inst, bool (ClassType::*memberFunc)(EventType*))
+	template<class class_type,class event_type>
+	bool register_handler_func(class_type * class_inst_, bool (class_type::*memberFunc)(event_type*))
 	{
-		std::type_index ti(typeid(EventType));
-		NSHandlerFunc * hf = new NSHandlerFuncType<ClassType,EventType>(inst,memberFunc);
-		if (!mHandlers.emplace(ti, hf).second)
+		std::type_index ti(typeid(event_type));
+		nshandler_func * hf = new nshandler_func_type<class_type,event_type>(class_inst_,memberFunc);
+		if (!m_handlers.emplace(ti, hf).second)
 		{
 			delete hf;
 			return false;
 		}
-		nsengine.eventDispatch()->registerListener<EventType>(inst);
+		nsengine.event_dispatch()->register_listener<event_type>(class_inst_);
 		return true;
 	}
 
-	template<class EventType>
-	bool unregisterHandlerFunc()
+	template<class event_type>
+	bool unregister_handler_func()
 	{
-		std::type_index ti(typeid(EventType));
-		auto fiter = mHandlers.find(ti);
-		if (fiter != mHandlers.end())
+		std::type_index ti(typeid(event_type));
+		auto fiter = m_handlers.find(ti);
+		if (fiter != m_handlers.end())
 		{
 			delete fiter->second;
-			mHandlers.erase(fiter);
+			m_handlers.erase(fiter);
 			return true;
 		}
 		return false;
 	}
 
   private:
-	HandlerMap mHandlers;
+	handler_map m_handlers;
 };
 #endif

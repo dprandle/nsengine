@@ -96,9 +96,9 @@ public:
 
 	bool link();
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
-	virtual void pup(NSFilePUPer * p, shader_type type);
+	virtual void pup(nsfile_pupper * p, shader_type type);
 
 	void release();
 

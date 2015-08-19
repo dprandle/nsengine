@@ -16,15 +16,15 @@ This file contains all of the neccessary declartations for the nssystem class.
 #include <nsglobal.h>
 #include <nsevent_handler.h>
 
-class NSTimer;
+class nstimer;
 class nsscene;
 class nsevent;
 
-class nssystem : public NSEventHandler
+class nssystem : public nsevent_handler
 {
 public:
 
-	friend class NSSysFactory;
+	friend class nssys_factory;
 	
 	nssystem();
 

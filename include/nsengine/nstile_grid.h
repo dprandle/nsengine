@@ -1,9 +1,9 @@
 /*!
 \file nstile_grid.h
 
-\brief Header file for NSTileGrid class
+\brief Header file for nstile_grid class
 
-This file contains all of the neccessary declarations for the NSTileGrid class.
+This file contains all of the neccessary declarations for the nstile_grid class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -18,129 +18,129 @@ This file contains all of the neccessary declarations for the NSTileGrid class.
 #include <nsglobal.h>
 #include <nsmath.h>
 
-class NSTileGrid
+class nstile_grid
 {
 public:
-	typedef std::vector<uivec3array> Layer;
-	typedef std::vector<Layer> Quadrant;
-	typedef std::vector<Quadrant> Map;
+	typedef std::vector<uivec3array> map_layer;
+	typedef std::vector<map_layer> map_quadrant;
+	typedef std::vector<map_quadrant> map_world;
 
-	enum QuadrantIndex
+	enum quadrant_index
 	{
-		TopRightFront,
-		TopLeftFront,
-		TopRightBack,
-		TopLeftBack,
-		BottomRightFront,
-		BottomLeftFront,
-		BottomRightBack,
-		BottomLeftBack
+		top_right_front,
+		top_left_front,
+		top_right_back,
+		top_left_back,
+		bottom_right_front,
+		bottom_left_front,
+		bottom_right_back,
+		bottom_left_back
 	};
 
-	struct GridBounds
+	struct grid_bounds
 	{
-		ivec3 minSpace;
-		ivec3 maxSpace;
+		ivec3 min_space;
+		ivec3 max_space;
 	};
 
-	struct Index
+	struct map_index
 	{
-		Index(uint32 pQuad = 0, uint32 pX = 0, uint32 pY = 0, uint32 pZ = 0) :
-		mQuad(QuadrantIndex(pQuad)),
-		mIndex(pX, pY, pZ)
+		map_index(uint32 quadrant_ = 0, uint32 x_ = 0, uint32 y_ = 0, uint32 z_ = 0) :
+		quad_index(quadrant_index(quadrant_)),
+		raw_index(x_, y_, z_)
 		{}
 
-		Index(uint32 pQuad, const uivec3 & pInd) :
-			mQuad(QuadrantIndex(pQuad)),
-			mIndex(pInd)
+		map_index(uint32 quadrant_, const uivec3 & pInd) :
+			quad_index(quadrant_index(quadrant_)),
+			raw_index(pInd)
 		{}
 
 
-		QuadrantIndex mQuad;
-		uivec3 mIndex;
+		quadrant_index quad_index;
+		uivec3 raw_index;
 	};
 
-	NSTileGrid();
-	~NSTileGrid();
+	nstile_grid();
+	~nstile_grid();
 
-	bool add(const uivec3 & pItem, const fvec3 & pPos);
+	bool add(const uivec3 & item_, const fvec3 & pos_);
 
-	bool add(const uivec3 & pItem, const ivec3 & pSpace, const fvec3 & pOrigin = fvec3());
+	bool add(const uivec3 & item_, const ivec3 & space_, const fvec3 & origin_ = fvec3());
 
-	bool add(const uivec3 pItem, const ivec3array & pSpaces, const fvec3 & pOrigin = fvec3());
+	bool add(const uivec3 item_, const ivec3array & spaces_, const fvec3 & origin_ = fvec3());
 
-	const uivec3 & at(const Index & pSpace) const;
+	const uivec3 & at(const map_index & space_) const;
 
-	uivec3 get(const fvec3 & pPos) const;
+	uivec3 get(const fvec3 & pos_) const;
 
-	uivec3 get(const ivec3 & pSpace, const fvec3 & pOrigin = fvec3()) const;
+	uivec3 get(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;
 
-	uivec3array boundedSet(const fvec3 & pPoint1, const fvec3 & pPoint2);
+	uivec3array bounded_set(const fvec3 & point1_, const fvec3 & point2_);
 
-	GridBounds occupiedGridBounds();
+	grid_bounds occupied_bounds();
 
-	int32 minLayer();
+	int32 min_layer();
 
-	int32 maxLayer();
+	int32 max_layer();
 
-	int32 minY();
+	int32 min_y();
 
-	int32 maxY();
+	int32 max_y();
 
-	int32 minX();
+	int32 min_x();
 
-	int32 maxX();
+	int32 max_x();
 
-	bool occupied(const fvec3 & pPos) const;
+	bool occupied(const fvec3 & pos_) const;
 
-	bool occupied(const ivec3 & pSpace, const fvec3 & pOrigin = fvec3()) const;
+	bool occupied(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;
 
-	bool occupied(const ivec3array & pSpaces, const fvec3 & pOrigin = fvec3()) const;
+	bool occupied(const ivec3array & spaces_, const fvec3 & origin_ = fvec3()) const;
 
-	bool remove(const fvec3 & pPos);
+	bool remove(const fvec3 & pos_);
 
-	bool remove(const ivec3 & pSpace, const fvec3 & pOrigin = fvec3());
+	bool remove(const ivec3 & space_, const fvec3 & origin_ = fvec3());
 
 	/*!
-	Go through entire grid and remove any occurances that have this transform ID
+	Go through entire grid_ and remove any occurances that have this transform ID
 	*/
 	void remove(const uivec3 & id);
 
 	/*!
-	Go through entire grid and remove any occurances that have this entity ID
+	Go through entire grid_ and remove any occurances that have this entity ID
 	*/
 	void remove(const uivec2 & id);
 
 	/*!
-	Go through entire grid and remove any occurances that have this plugin ID
+	Go through entire grid_ and remove any occurances that have this plugin ID
 	*/
-	void remove(uint32 plugid);
+	void remove(uint32 plug_id_);
 
-	bool remove(const ivec3array & pSpaces, const fvec3 & pOrigin = fvec3());
+	bool remove(const ivec3array & spaces_, const fvec3 & origin_ = fvec3());
 
-	void name_change(const uivec2 & oldid, const uivec2 newid);
+	void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
-	static int32 indexX(float pX, bool pOffset);
-	static int32 indexY(float pY);
-	static int32 indexZ(float pZ);
+	static int32 index_x(float x_, bool offset_);
+	static int32 index_y(float y_);
+	static int32 index_z(float z_);
 
-	static ivec3 grid(const fvec3 & world);
-	static ivec3 grid(const Index & index);
+	static ivec3 grid(const fvec3 & world_);
+	static ivec3 grid(const map_index & index_);
 
-	static Index index(const ivec3 & grid);
-	static Index index(const fvec3 & world);
+	static map_index index(const ivec3 & grid_);
+	static map_index index(const fvec3 & world_);
 
-	static fvec3 world(const Index & index);
-	static fvec3 world(const ivec3 & grid, const fvec3 & pOrigin = fvec3());
+	static fvec3 world(const map_index & index_);
+	static fvec3 world(const ivec3 & grid_, const fvec3 & origin_ = fvec3());
 
-	static void snap(fvec3 & world);
+	static void snap(fvec3 & world_);
 
 private:
-	bool _checkBounds(const Index & pIndex) const;
-	void _resizeForSpace(const Index & pIndex);
-	const uivec3 & _getID(const Index & pIndex);
+	bool _check_bounds(const map_index & index_) const;
+	void _resize_for_space(const map_index & index_);
+	const uivec3 & _get_id(const map_index & index_);
 
-	Map mMap;
+	map_world m_world_map;
 };
 
 

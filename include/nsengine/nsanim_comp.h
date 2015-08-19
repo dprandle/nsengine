@@ -20,7 +20,7 @@
 #include <nsanim_set.h>
 #include <nsmesh.h>
 
-class NSTimer;
+class nstimer;
 
 
 class NSAnimComp : public NSComponent
@@ -58,12 +58,12 @@ public:
 
 	bool looping() const;
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	void setAnimationSetID(uint32 plugid, uint32 resid)
 	{
 		mAnimSetID.x = plugid; mAnimSetID.y = resid;
-		postUpdate(true);
+		post_update(true);
 	}
 
 	void setAnimationSetID(const uivec2 & pID);

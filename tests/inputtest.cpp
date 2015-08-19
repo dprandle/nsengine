@@ -19,14 +19,14 @@ int main()
 {
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
 
-    uint32 i = nsengine.createContext();
+    uint32 i = nsengine.create_context();
     nsengine.start();
 
     nsplugin * plg = setup_basic_plugin();
     setup_input_map(plg);
 
-    nsengine.engplug()->manager<nsmesh_manager>()->set_save_mode(nsres_manager::text);
-    nsengine.engplug()->save_all<nsmesh>();
+    nsengine.core()->manager<nsmesh_manager>()->set_save_mode(nsres_manager::text);
+    nsengine.core()->save_all<nsmesh>();
     while (glfw_window_open())
     {
         nsengine.update();
@@ -40,16 +40,16 @@ int main()
 
 nsplugin * setup_basic_plugin()
 {
-    nsplugin * plg = nsengine.createPlugin("sillyplug");
+    nsplugin * plg = nsengine.create_plugin("sillyplug");
     nsscene * scn = plg->create<nsscene>("mainscene");
 	scn->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-	nsengine.setCurrentScene(scn, true);
+	nsengine.set_current_scene(scn, true);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
 	nsentity * dirl = plg->create_dir_light("dirlight", 0.8f, 0.2f);
 	scn->set_camera(cam);
 	scn->add(dirl, fvec3(20.0f, 20.0f, -20.0f));
-    nsentity * tile = plg->create_tile("grasstile", nsengine.importdir() + "diffuseGrass.png", nsengine.importdir() + "normalGrass.png", fvec3(1.0, 1.0, 0.0), 16.0f, 0.5f, fvec3(1.0f), true);
+    nsentity * tile = plg->create_tile("grasstile", nsengine.import_dir() + "diffuseGrass.png", nsengine.import_dir() + "normalGrass.png", fvec3(1.0, 1.0, 0.0), 16.0f, 0.5f, fvec3(1.0f), true);
     scn->add_gridded(tile, ivec3(32, 32, 2), fvec3(0.0f,0.0f,0.0f));
 	return plg;
 }

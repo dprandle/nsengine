@@ -63,7 +63,7 @@ void NSLightComp::changeAtten(float constant, float lin, float exp)
 void NSLightComp::changeColor(float pRedAmount, float pGreenAmount, float pBlueAmount)
 {
 	mColor += fvec3(pRedAmount, pGreenAmount, pBlueAmount);
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::changeAngle(float pAmount)
@@ -172,7 +172,7 @@ float NSLightComp::shadowDarkness() const
 
 const fmat4 & NSLightComp::pov(uint32 pIndex) const
 {
-	return mOwner->get<NSTFormComp>()->pov(pIndex);
+	return m_owner->get<NSTFormComp>()->pov(pIndex);
 }
 
 const int32 & NSLightComp::shadowSamples() const
@@ -182,11 +182,11 @@ const int32 & NSLightComp::shadowSamples() const
 
 const fmat4 & NSLightComp::transform(uint32 pIndex)
 {
-	NSTFormComp * tc = mOwner->get<NSTFormComp>();
+	NSTFormComp * tc = m_owner->get<NSTFormComp>();
 	if (tc == NULL)
-		return tmpret.setIdentity();
-	tmpret.set(rotationMat3(tc->orientation(pIndex)) % mScaling);
-	tmpret.setColumn(3, tc->lpos(pIndex).x, tc->lpos(pIndex).y, tc->lpos(pIndex).z, 1);
+		return tmpret.set_identity();
+	tmpret.set(rotation_mat3(tc->orientation(pIndex)) % mScaling);
+	tmpret.set_column(3, tc->lpos(pIndex).x, tc->lpos(pIndex).y, tc->lpos(pIndex).z, 1);
 	return tmpret;
 }
 
@@ -210,19 +210,19 @@ void NSLightComp::setAtten(const fvec3 & pAttComp)
 	mAttComp = pAttComp;
 	_updateMeshLength();
 	_updateMeshRadius();
-	postUpdate(true);
+	post_update(true);
 }
 
-void NSLightComp::pup(NSFilePUPer * p)
+void NSLightComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -232,25 +232,25 @@ void NSLightComp::setAtten(float pConst, float pLin, float pExp)
 	mAttComp.set(pConst, pLin, pExp);
 	_updateMeshLength();
 	_updateMeshRadius();
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setMeshID(const uivec2 & pID)
 {
 	mBoundingMeshID = pID;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setCastShadows(bool pCastShadows)
 {
 	mCastShadows = pCastShadows;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setColor(const fvec3 & pColor)
 {
 	mColor = pColor;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setColor(float pRed, float pGreen, float pBlue)
@@ -262,7 +262,7 @@ void NSLightComp::setAngle(float angle)
 {
 	mAngle = clampf(angle,0.0f,180.0f);
 	_updateMeshRadius();
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setCutoff(float cutoff)
@@ -282,20 +282,20 @@ void NSLightComp::setDistance(float pDistance, Adjustment pAdjustment)
 		mScaling.set(pDistance, pDistance, pDistance);
 
 	_updateAttComp(pAdjustment);
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setType(LightType pType)
 {
 	mLightType = pType;
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setIntensity(const fvec2 & intensity, Adjustment pAdjustment)
 {
 	mIntensityComp = intensity;
 	_updateAttComp(pAdjustment);
-	postUpdate(true);
+	post_update(true);
 }
 
 void NSLightComp::setIntensity(float pDiffuse, float pAmbient, Adjustment pAdjustment)
@@ -327,7 +327,7 @@ void NSLightComp::setShadowDarkness(float pVal)
 void NSLightComp::setShadowSamples(int32 pNumSamples)
 {
 	mShadowSamples = pNumSamples;
-	postUpdate(true);
+	post_update(true);
 }
 
 NSLightComp & NSLightComp::operator=(const NSLightComp & pRHSComp)
@@ -340,7 +340,7 @@ NSLightComp & NSLightComp::operator=(const NSLightComp & pRHSComp)
 	mBoundingMeshID = pRHSComp.mBoundingMeshID;
 	mShadowSamples = pRHSComp.mShadowSamples;
 	mShadowDarkness = pRHSComp.mShadowDarkness;
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }
 

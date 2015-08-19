@@ -12,24 +12,24 @@ This file contains all of the neccessary definitions for the NSEventHandler clas
 
 #include <nsevent_handler.h>
 
-NSEventHandler::NSEventHandler()
+nsevent_handler::nsevent_handler()
 {}
 
-NSEventHandler::~NSEventHandler()
+nsevent_handler::~nsevent_handler()
 {
-	auto iter = mHandlers.begin();
-	while (iter != mHandlers.end())
+	auto iter = m_handlers.begin();
+	while (iter != m_handlers.end())
 	{
 		delete iter->second;
 		++iter;
 	}
 }
 	
-bool NSEventHandler::handleEvent(nsevent * event)
+bool nsevent_handler::handle_event(nsevent * event)
 {
     std::type_index ti(typeid(*event));
-    auto fiter = mHandlers.find(ti);
-	if (fiter != mHandlers.end())
+    auto fiter = m_handlers.find(ti);
+	if (fiter != m_handlers.end())
 		return fiter->second->exec(event);
 	return false;
 }

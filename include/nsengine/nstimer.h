@@ -1,9 +1,9 @@
 /*!
 \file nstimer.h
 
-\brief Header file for NSTimer class
+\brief Header file for nstimer class
 
-This file contains all of the neccessary declarations for the NSTimer class.
+This file contains all of the neccessary declarations for the nstimer class.
 
 \author Daniel Randle
 \date December 17 2013
@@ -15,11 +15,11 @@ This file contains all of the neccessary declarations for the NSTimer class.
 #include <chrono>
 #include <nsglobal.h>
 
-class NSTimer 
+class nstimer 
 {
 public:
-	NSTimer();
-	~NSTimer();
+	nstimer();
+	~nstimer();
 
 	float dt();
 
@@ -29,7 +29,9 @@ public:
 
 	float & lag();
 
-	void pause(bool pPause);
+	void pause();
+
+	void resume();
 
 	void reset();
 
@@ -38,11 +40,11 @@ public:
 	void update();
 
 private:
-	std::chrono::time_point<std::chrono::high_resolution_clock> mStart;
-	std::chrono::time_point<std::chrono::high_resolution_clock> mCurrent;
-	std::chrono::time_point<std::chrono::high_resolution_clock> mLast;
-	std::chrono::high_resolution_clock mTimer;
-	bool mRunning;
-	float mLag;
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_current;
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_last;
+	std::chrono::high_resolution_clock m_timer;
+	bool m_running;
+	float m_lag;
 };
 #endif

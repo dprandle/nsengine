@@ -26,7 +26,7 @@ public:
 
 	virtual ~nsres_manager();
 	
-	friend class nsres_managerFactory;
+	friend class nsmanager_factory;
 	
 	enum s_mode
 	{
@@ -151,7 +151,7 @@ public:
 	
 	virtual bool save(nsresource * res,const nsstring & path);
 
-	virtual void save_all(const nsstring & path="", NSSaveResCallback * scallback = NULL);
+	virtual void save_all(const nsstring & path="", nssave_resouces_callback * scallback = NULL);
 
 	virtual bool save_as(nsresource * res, const nsstring & fname);
 

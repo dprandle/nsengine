@@ -56,7 +56,7 @@ bool nsplugin::add(nsresource * res)
 	if (res == NULL)
 		return false;
 
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->add(res);
 }
 
@@ -99,7 +99,7 @@ bool nsplugin::add_manager(nsres_manager * manag)
 
 nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res_typeid));
+	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
 	return rm->create(res_typeid, resName);
 }
 
@@ -108,14 +108,14 @@ nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec
 	nsentity * cament = create<nsentity>(name);
 	if (cament == NULL)
 		return NULL;
-	NSCamComp * camc = cament->create<NSCamComp>();
+	nscam_comp * camc = cament->create<nscam_comp>();
 	if (camc == NULL)
 		return NULL;
 
-	camc->setfov(fov);
-	camc->resize(screenDim.w, screenDim.h);
-	camc->setPerspNFClip(clipnf);
-	camc->setProjectionMode(NSCamComp::Persp);
+	camc->set_fov(fov);
+	camc->resize_screen(screenDim.w, screenDim.h);
+	camc->set_persp_nf_clip(clipnf);
+	camc->set_proj_mode(nscam_comp::proj_persp);
 
 	NSInputComp *ic = cament->create<NSInputComp>();
 	ic->add(CAM_BACKWARD);
@@ -130,7 +130,7 @@ nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec
 
 bool nsplugin::contains(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->contains(res);
 }
 
@@ -140,14 +140,14 @@ nsentity * nsplugin::create_camera(const nsstring & name, const fvec2 & lrclip, 
 	if (cament == NULL)
 		return NULL;
 
-	NSCamComp * camc = cament->create<NSCamComp>();
+	nscam_comp * camc = cament->create<nscam_comp>();
 	if (camc == NULL)
 		return NULL;
 
-	camc->setOrthoLRClip(lrclip);
-	camc->setOrthoTBClip(tbclip);
-	camc->setOrthoNFClip(nfclip);
-	camc->setProjectionMode(NSCamComp::Ortho);
+	camc->set_ortho_lr_clip(lrclip);
+	camc->set_ortho_tb_clip(tbclip);
+	camc->set_ortho_nf_clip(nfclip);
+	camc->set_proj_mode(nscam_comp::proj_ortho);
 	NSInputComp *ic = cament->create<NSInputComp>();
 	ic->add(CAM_BACKWARD);
 	ic->add(CAM_FORWARD);
@@ -167,7 +167,7 @@ nsentity * nsplugin::create_dir_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
-	nsmesh * bounds = nsengine.engplug()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
+	nsmesh * bounds = nsengine.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	nsentity * lt = create<nsentity>(name);
@@ -199,7 +199,7 @@ nsentity * nsplugin::create_point_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
-	nsmesh * bounds = nsengine.engplug()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
+	nsmesh * bounds = nsengine.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	nsentity * lt = create<nsentity>(name);
@@ -249,7 +249,7 @@ bool castshadows,
 float shadowdarkness,
 int32 shadowsamples)
 {
-	nsmesh * bounds = nsengine.engplug()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
+	nsmesh * bounds = nsengine.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	nsentity * lt = create<nsentity>(name);
@@ -298,7 +298,7 @@ nsres_manager * nsplugin::create_manager(const nsstring & manager_guid)
 
 nsres_manager * nsplugin::create_manager(uint32 manager_typeid)
 {
-	nsres_managerFactory * factory = nsengine.factory<nsres_managerFactory>(manager_typeid);
+	nsmanager_factory * factory = nsengine.factory<nsmanager_factory>(manager_typeid);
 	nsres_manager * man = factory->create();
 	if (!add_manager(man))
 	{
@@ -358,9 +358,9 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 
 	nsmesh * msh = NULL;
 	if (type == tile_full)
-		msh = nsengine.engplug()->get<nsmesh>(MESH_FULL_TILE);
+		msh = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
 	else
-		msh = nsengine.engplug()->get<nsmesh>(MESH_HALF_TILE);
+		msh = nsengine.core()->get<nsmesh>(MESH_HALF_TILE);
 
 	if (collides)
 	{
@@ -413,7 +413,7 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	tc->setHeightBounds(hmin, hmax);
 	NSRenderComp * rc = terr->create<NSRenderComp>();
 	rc->setCastShadow(true);
-	rc->setMeshID(nsengine.engplug()->get<nsmesh>(MESH_TERRAIN)->full_id());
+	rc->setMeshID(nsengine.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
 	
 	nsmaterial * termat = create<nsmaterial>(name);
 	if (termat == NULL)
@@ -505,7 +505,7 @@ bool nsplugin::destroy_manager(uint32 manager_typeid)
 
 bool nsplugin::del(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->del(res);
 }
 
@@ -533,24 +533,24 @@ void nsplugin::name_change(const uivec2 & oldid, const uivec2 newid)
 
 nsresource * nsplugin::get(uint32 res_typeid, uint32 resid)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res_typeid));
+	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
 	return rm->get(resid);
 }
 
 nsresource * nsplugin::get(uint32 res_typeid, const nsstring & resName)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res_typeid));
+	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
 	return rm->get(resName);
 }
 
 void nsplugin::init()
 {
-	auto fiter = nsengine.beginFac();
+	auto fiter = nsengine.begin_factory();
 	nsres_manager * rm = NULL;
-	while (fiter != nsengine.endFac())
+	while (fiter != nsengine.end_factory())
 	{
-		NSFactory * plug_man_fac = nsengine.factory<nsplugin_manager>();
-		if (fiter->second->type() == NSFactory::ResManager && fiter->second != plug_man_fac)
+		nsfactory * plug_man_fac = nsengine.factory<nsplugin_manager>();
+		if (fiter->second->type() == nsfactory::f_res_manager && fiter->second != plug_man_fac)
 		{
 			rm = create_manager(nsengine.guid(fiter->first));
 
@@ -566,7 +566,7 @@ void nsplugin::init()
 
 nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res_typeid));
+	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
 	return rm->load(res_typeid, fname);
 }
 
@@ -808,7 +808,7 @@ bool nsplugin::unbind()
 	return !m_bound;
 }
 
-void nsplugin::save_all(const nsstring & path, NSSaveResCallback * scallback)
+void nsplugin::save_all(const nsstring & path, nssave_resouces_callback * scallback)
 {
 	auto iter = m_managers.begin();
 	while (iter != m_managers.end())
@@ -818,15 +818,15 @@ void nsplugin::save_all(const nsstring & path, NSSaveResCallback * scallback)
 	}
 }
 
-void nsplugin::save_all(uint32 res_typeid, const nsstring & path, NSSaveResCallback * scallback)
+void nsplugin::save_all(uint32 res_typeid, const nsstring & path, nssave_resouces_callback * scallback)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res_typeid));
+	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
 	return rm->save_all(path, scallback);	
 }
 
 bool nsplugin::save_as(nsresource * res, const nsstring & fname)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->save_as(res, fname);
 }
 
@@ -874,7 +874,7 @@ void nsplugin::set_edit_date(const nsstring & pEditDate)
 
 bool nsplugin::save(nsresource * res, const nsstring & path)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->save(res, path);
 }
 
@@ -890,7 +890,7 @@ const nsstring & nsplugin::res_dir()
 
 bool nsplugin::resource_changed(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->changed(res);
 }
 
@@ -903,7 +903,7 @@ uint32 nsplugin::resource_count()
 
 bool nsplugin::destroy(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->destroy(res);
 }
 
@@ -921,25 +921,25 @@ void nsplugin::set_res_dir(const nsstring & dir)
 	}
 }
 
-void nsplugin::pup(NSFilePUPer * p)
+void nsplugin::pup(nsfile_pupper * p)
 {
 	_update_parents();
 	_update_res_map();
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
 
 nsresource * nsplugin::remove(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.managerID(res->type()));
+	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
 	return rm->remove(res);
 }
 
@@ -968,7 +968,7 @@ void nsplugin::_update_parents()
 		if (resIter->x != m_id) // if the owning plugin of this get is not us, then add it to parents
 		{
 			nsplugin * plug = nsengine.plugin(resIter->x);
-			if (plug != NULL && plug->id() != nsengine.engplug()->id())
+			if (plug != NULL && plug->id() != nsengine.core()->id())
 				m_parents.insert(plug->name());
 		}
 		++resIter;

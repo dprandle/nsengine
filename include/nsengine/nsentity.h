@@ -50,7 +50,7 @@ public:
 	template<class comp_type>
 	comp_type * create()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(create(tid));
 	}
 
@@ -61,7 +61,7 @@ public:
 	template<class comp_type>
 	bool del()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
 		return del(tid);
 	}
 
@@ -72,7 +72,7 @@ public:
 	template<class comp_type>
 	comp_type * get()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(get(tid));
 	}
 
@@ -93,7 +93,7 @@ public:
 	template<class comp_type>
 	bool has()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
 		return (has(tid));
 	}
 
@@ -106,7 +106,7 @@ public:
 	template<class comp_type>
 	comp_type * remove()
 	{
-		uint32 tid = nsengine.typeID(std::type_index(typeid(comp_type)));
+		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(remove(tid));
 	}
 
@@ -125,7 +125,7 @@ public:
 
 	void post_update(const nsstring & compType, bool update);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	void update_scene();
 
@@ -168,7 +168,7 @@ void pup(PUPer & p, nsentity & ent)
 		auto iter = ent.m_components.begin();
 		while (iter != ent.m_components.end())
 		{
-			uint32 tform_typeid = nsengine.typeID(std::type_index(typeid(NSTFormComp)));
+			uint32 tform_typeid = nsengine.type_id(std::type_index(typeid(NSTFormComp)));
 			if (iter->first != tform_typeid)
 			{
 				nsstring k = nsengine.guid(iter->first);

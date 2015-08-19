@@ -18,7 +18,7 @@ This file contains all of the neccessary definitions for the nsres_manager class
 #include <nscallback.h>
 #include <hash/sha256.h>
 
-using namespace nsfileio;
+using namespace nsfile_os;
 
 nsres_manager::nsres_manager():
 m_res_dir(),
@@ -71,8 +71,8 @@ bool nsres_manager::changed(nsresource * res, nsstring fname)
 	save_as(res, ".tmp");
 
 	nschararray v1, v2;
-	nsfileio::read(".tmp",&v1);
-	nsfileio::read(fname, &v2);
+	nsfile_os::read(".tmp",&v1);
+	nsfile_os::read(fname, &v2);
 
 	if (v1.empty() || v2.empty())
 		return true;
@@ -80,7 +80,7 @@ bool nsres_manager::changed(nsresource * res, nsstring fname)
 	SHA256 sha256;
 	std::string s1 = sha256(&v1[0], v1.size());
 	std::string s2 = sha256(&v2[0], v2.size());
-	nsfileio::remove_file(".tmp");
+	nsfile_os::remove_file(".tmp");
 	return (s1 != s2);
 }
 
@@ -98,7 +98,7 @@ nsresource * nsres_manager::create(uint32 res_type_id, const nsstring & resName)
 {
 	// Create the resource and add it to the map - if there is a resource with the same name already
 	// in the map then insertion will have failed, so delete the created resource and retun NULL
-	nsresource * res = nsengine.factory<NSResFactory>(res_type_id)->create();
+	nsresource * res = nsengine.factory<nsres_factory>(res_type_id)->create();
 	res->rename(resName);
 	if (!add(res))
 	{
@@ -218,16 +218,16 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 		fName = fname;
 
 	nsfstream file;
-	NSFilePUPer * p;
+	nsfile_pupper * p;
 	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::in | nsfstream::binary);
-		p = new NSBinFilePUPer(file, PUP_IN);
+		p = new nsbinary_file_pupper(file, PUP_IN);
 	}
 	else
 	{
 		file.open(fName, nsfstream::in);
-		p = new NSTextFilePUPer(file, PUP_IN);
+		p = new nstext_file_pupper(file, PUP_IN);
 	}
 
 	if (!file.is_open())
@@ -255,9 +255,9 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 	nsstring rt;
 
 	if (m_save_mode == binary)
-		pup(*(static_cast<NSBinFilePUPer*>(p)), rt, "type");
+		pup(*(static_cast<nsbinary_file_pupper*>(p)), rt, "type");
 	else
-		pup(*(static_cast<NSTextFilePUPer*>(p)), rt, "type");
+		pup(*(static_cast<nstext_file_pupper*>(p)), rt, "type");
 
 	if (rt != nsengine.guid(res_type_id))
 	{
@@ -365,7 +365,7 @@ bool nsres_manager::rename(const nsstring & oldName, const nsstring & newName)
 	return (ret == 0);
 }
 
-void nsres_manager::save_all(const nsstring & path, NSSaveResCallback * scallback)
+void nsres_manager::save_all(const nsstring & path, nssave_resouces_callback * scallback)
 {
 	// Iterate through resources
 	map_type::iterator iter = m_id_resmap.begin();
@@ -376,7 +376,7 @@ void nsres_manager::save_all(const nsstring & path, NSSaveResCallback * scallbac
 		if (scallback != NULL)
 		{
 			scallback->saved = success;
-			scallback->resid = iter->second->full_id();
+			scallback->res_id = iter->second->full_id();
 			scallback->run();
 		}
 		++iter;
@@ -406,16 +406,16 @@ bool nsres_manager::save(nsresource * res,const nsstring & path)
 	}
 
 	nsfstream file;
-	NSFilePUPer * p;
+	nsfile_pupper * p;
 	if (m_save_mode == binary)
 	{
 		file.open(fName, nsfstream::out | nsfstream::binary);
-		p = new NSBinFilePUPer(file, PUP_OUT);
+		p = new nsbinary_file_pupper(file, PUP_OUT);
 	}
 	else
 	{
 		file.open(fName, nsfstream::out);
-		p = new NSTextFilePUPer(file, PUP_OUT);
+		p = new nstext_file_pupper(file, PUP_OUT);
 	}
 
 	if (!file.is_open())
@@ -429,9 +429,9 @@ bool nsres_manager::save(nsresource * res,const nsstring & path)
 	nsstring rest = nsengine.guid(hashed_type);
 
 	if (m_save_mode == binary)
-		pup(*(static_cast<NSBinFilePUPer*>(p)), rest, "type");
+		pup(*(static_cast<nsbinary_file_pupper*>(p)), rest, "type");
 	else
-		pup(*(static_cast<NSTextFilePUPer*>(p)), rest, "type");
+		pup(*(static_cast<nstext_file_pupper*>(p)), rest, "type");
 
 	res->pup(p);
 	dprint("nsres_manager::save - Succesfully saved " + rest + " to file " + fName);

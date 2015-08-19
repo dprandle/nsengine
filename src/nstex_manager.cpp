@@ -17,7 +17,7 @@
 #include <soil/SOIL.h>
 #include <nsfile_os.h>
 
-using namespace nsfileio;
+using namespace nsfile_os;
 
 nstex_manager::nstex_manager(): nsres_manager()
 {

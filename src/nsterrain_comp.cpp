@@ -47,16 +47,16 @@ const fvec2 & NSTerrainComp::heightBounds() const
 }
 
 
-void NSTerrainComp::pup(NSFilePUPer * p)
+void NSTerrainComp::pup(nsfile_pupper * p)
 {
-	if (p->type() == NSFilePUPer::Binary)
+	if (p->type() == nsfile_pupper::pup_binary)
 	{
-		NSBinFilePUPer * bf = static_cast<NSBinFilePUPer *>(p);
+		nsbinary_file_pupper * bf = static_cast<nsbinary_file_pupper *>(p);
 		::pup(*bf, *this);
 	}
 	else
 	{
-		NSTextFilePUPer * tf = static_cast<NSTextFilePUPer *>(p);
+		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
 }
@@ -64,6 +64,6 @@ void NSTerrainComp::pup(NSFilePUPer * p)
 NSTerrainComp & NSTerrainComp::operator=(const NSTerrainComp & pRHSComp)
 {
 	minmax = pRHSComp.minmax;
-	postUpdate(true);
+	post_update(true);
 	return (*this);
 }

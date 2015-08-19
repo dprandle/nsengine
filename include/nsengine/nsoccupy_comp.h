@@ -33,7 +33,7 @@ public:
 
 	ivec3array::iterator begin();
 
-	void build(const NSBoundingBox & pBox);
+	void build(const nsbounding_box & pBox);
 
 	bool contains(int32 x, int32 y, int32 z);
 
@@ -59,7 +59,7 @@ public:
 
 	virtual void name_change(uint32 plugID, uint32 oldID, uint32 newID);
 
-	virtual void pup(NSFilePUPer * p);
+	virtual void pup(nsfile_pupper * p);
 
 	bool remove(int32 x, int32 y, int32 z);
 

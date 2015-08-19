@@ -13,103 +13,103 @@
 #include <nsdebug.h>
 #include <nslog_file.h>
 
-NSDebug::NSDebug() : mConsoleOpen(false),
-	mLogMessages(true), 
-	mRenderMessages(true),
-	mLevel(High),
-	mMessageCallback(NULL),
-	mMessageClassInstance(NULL),
-	mLogFile(new NSLogFile())
+nsdebug::nsdebug() : m_console_open(false),
+	m_logging_messages(true), 
+	m_render_messages(true),
+	m_deb_level(deb_high),
+	m_msg_cb(NULL),
+	m_msg_inst(NULL),
+	m_log_file(new NSLogFile())
 {
-	setLogFile(DEFAULT_DEBUG_LOG);
+	set_log_file(DEFAULT_DEBUG_LOG);
 }
 
-NSDebug::~NSDebug()
+nsdebug::~nsdebug()
 {
-	delete mLogFile;
+	delete m_log_file;
 }
-void NSDebug::clearLog()
+void nsdebug::clear_log()
 {
-	mLogFile->clear();
-}
-
-NSDebug::DebugLevel NSDebug::getDebugLevel() const
-{
-	return mLevel;
+	m_log_file->clear();
 }
 
-const nsstring & NSDebug::getLogFile() const
+nsdebug::debug_level nsdebug::get_debug_level() const
 {
-	return mLogFile->getFileName();
+	return m_deb_level;
 }
 
-const MessageCallback NSDebug::getMessageCallback() const
+const nsstring & nsdebug::get_log_file() const
 {
-	return mMessageCallback;
+	return m_log_file->file_name();
 }
 
-bool NSDebug::isConsoleOpen() const
+const message_callback nsdebug::get_message_callback() const
 {
-	return mConsoleOpen;
+	return m_msg_cb;
 }
 
-void NSDebug::setLogDir(const nsstring & directory)
+bool nsdebug::console_open() const
 {
-	mLogFile->setDirectory(directory);
+	return m_console_open;
 }
 
-bool NSDebug::isLogMessages() const
+void nsdebug::set_log_dir(const nsstring & directory)
 {
-	return mLogMessages;
+	m_log_file->set_dir(directory);
 }
 
-bool NSDebug::isRenderMessages() const
+bool nsdebug::log_messages() const
 {
-	return mRenderMessages;
+	return m_logging_messages;
 }
 
-void NSDebug::log(const nsstring & pMessage) const
+bool nsdebug::render_messages() const
 {
-	mLogFile->write(pMessage);
+	return m_render_messages;
 }
 
-void NSDebug::print(const nsstring & pMessage) const
+void nsdebug::log(const nsstring & pMessage) const
 {
-	if (mMessageCallback)
-		mMessageCallback(pMessage,mMessageClassInstance);
+	m_log_file->write(pMessage);
+}
+
+void nsdebug::print(const nsstring & pMessage) const
+{
+	if (m_msg_cb)
+		m_msg_cb(pMessage,m_msg_inst);
 	//if (mRenderMessages)
 		//; write later
-	if (mLogMessages)
+	if (m_logging_messages)
 		log(pMessage);
 }
 
-void NSDebug::setConsoleOpen(bool pConsoleOpen)
+void nsdebug::set_console_open(bool pConsoleOpen)
 {
-	mConsoleOpen = pConsoleOpen;
+	m_console_open = pConsoleOpen;
 }
 
-void NSDebug::setDebugLevel(DebugLevel pLevel)
+void nsdebug::set_debug_level(debug_level pLevel)
 {
-	mLevel = pLevel;
+	m_deb_level = pLevel;
 }
 
-void NSDebug::setLogFile(const nsstring & pFileName)
+void nsdebug::set_log_file(const nsstring & pFileName)
 {
-	mLogFile->setFileName(pFileName);
+	m_log_file->set_file_name(pFileName);
 }
 
-void NSDebug::setLogMessages(bool pLogMessages)
+void nsdebug::set_log_messages(bool pLogMessages)
 {
-	mLogMessages = pLogMessages;
+	m_logging_messages = pLogMessages;
 }
 
-void NSDebug::setMessageCallback(MessageCallback pMessageCallback, ClassInstancePointer pMessageClassInstance)
+void nsdebug::set_message_callback(message_callback pMessageCallback, void * pMessageClassInstance)
 {
-	mMessageCallback = pMessageCallback;
-	mMessageClassInstance = pMessageClassInstance;
+	m_msg_cb = pMessageCallback;
+	m_msg_inst = pMessageClassInstance;
 }
 
-void NSDebug::setRenderMessages(bool pRenderMessages)
+void nsdebug::set_render_messages(bool pRenderMessages)
 {
-	mRenderMessages = pRenderMessages;
+	m_render_messages = pRenderMessages;
 }

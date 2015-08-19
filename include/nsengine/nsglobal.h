@@ -245,7 +245,7 @@
 
 // Component Typenames
 #define ANIM_COMP_TYPESTRING "NSAnimComp"
-#define CAM_COMP_TYPESTRING "NSCamComp"
+#define CAM_COMP_TYPESTRING "nscam_comp"
 #define ICON_COMP_TYPESTRING "NSIconComp"
 #define INPUT_COMP_TYPESTRING "NSInputComp"
 #define LIGHT_COMP_TYPESTRING "NSLightComp"

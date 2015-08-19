@@ -26,7 +26,7 @@ void nsmovement_system::init()
 
 void nsmovement_system::update()
 {
-	nsscene * scene = nsengine.currentScene();
+	nsscene * scene = nsengine.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -34,7 +34,7 @@ void nsmovement_system::update()
 	while (entIter != scene->entities().end())
 	{
 		NSTFormComp * tForm = (*entIter)->get<NSTFormComp>();
-		if (tForm->updatePosted())
+		if (tForm->update_posted())
 		{
 			nsbuffer_object & tFormBuf = *tForm->transformBuffer();
 			nsbuffer_object & tFormIDBuf = *tForm->transformIDBuffer();
@@ -95,7 +95,7 @@ void nsmovement_system::update()
 			tFormIDBuf.bind();
 			tFormIDBuf.unmap();
 			tFormIDBuf.unbind();
-			tForm->postUpdate(tForm->bufferResize());
+			tForm->post_update(tForm->bufferResize());
 			tForm->setBufferResize(false);
 		}
 		++entIter;

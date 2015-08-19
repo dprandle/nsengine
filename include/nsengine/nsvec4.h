@@ -5,93 +5,93 @@
 #include "nsvec3.h"
 
 template <class T>
-NSVec4<T> operator*(const int32 & pLHS, const NSVec4<T> & pRHS);
+nsvec4<T> operator*(const int32 & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> operator*(const float & pLHS, const NSVec4<T> & pRHS);
+nsvec4<T> operator*(const float & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> operator*(const double & pLHS, const NSVec4<T> & pRHS);
+nsvec4<T> operator*(const double & lhs_, const nsvec4<T> & rhs_);
 
 template<class T>
-NSVec4<T> operator/(const int32 & pLHS, const NSVec4<T> & pRHS);
+nsvec4<T> operator/(const int32 & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> operator/(const float & pLHS, const NSVec4<T> & pRHS);
+nsvec4<T> operator/(const float & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> operator/(const double & pLHS, const NSVec4<T> & pRHS);
+nsvec4<T> operator/(const double & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> abs(const NSVec4<T> & pVec);
+nsvec4<T> abs(const nsvec4<T> & vec_);
 
 template <class T>
-NSVec4<T> axisAngle(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order, bool rads = false);
+nsvec4<T> axis_angle(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_, bool rads_ = false);
 
 template <class T>
-NSVec4<T> axisAngle(const NSQuat<T> & orientation, bool rads = false);
+nsvec4<T> axis_angle(const nsquat<T> & orientation_, bool rads_ = false);
 
 template <class T>
-NSVec4<T> axisAngle(const NSMat3<T> & rotationMat3, bool rads = false);
+nsvec4<T> axis_angle(const nsmat3<T> & rotation_mat3_, bool rads_ = false);
 
 template <class T>
-NSVec4<T> axisAngle(const NSMat4<T> & transform, bool rads = false);
+nsvec4<T> axis_angle(const nsmat4<T> & transform_, bool rads_ = false);
 
 template <class T>
-NSVec4<T> axisAngle(const NSVec3<T> & vec, const NSVec3<T> & toVec, bool rads = false);
+nsvec4<T> axis_angle(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, bool rads_ = false);
 
 template <class T>
-NSVec4<T> ceil(const NSVec4<T> & pVec);
+nsvec4<T> ceil(const nsvec4<T> & vec_);
 
 template <class T>
-NSVec4<T> clamp(const NSVec4<T> & pVec, const T & pMin, const T & pMax);
+nsvec4<T> clamp(const nsvec4<T> & vec_, const T & min_, const T & max_);
 
 template <class T>
-T distance(const NSVec4<T> & lvec, const NSVec4<T> & rvec);
+T distance(const nsvec4<T> & lvec_, const nsvec4<T> & rvec_);
 
 template <class T>
-T dot(const NSVec4<T> & pLeft, const NSVec4<T> & pRight);
+T dot(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> floor(const NSVec4<T> & pVec);
+nsvec4<T> floor(const nsvec4<T> & vec_);
 
 template <class T>
-NSVec4<T> fract(const NSVec4<T> & vec);
+nsvec4<T> fract(const nsvec4<T> & vec_);
 
 template <class T>
-T length(const NSVec4<T> & pVec);
+T length(const nsvec4<T> & vec_);
 
 template <class T, class T2>
-NSVec4<T> lerp(const NSVec4<T> & lhs, const NSVec4<T> & rhs, T2 scalingFactor);
+nsvec4<T> lerp(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_, T2 scaling_factor_);
 
 template <class T>
-NSVec4<T> min(const NSVec4<T> & pLeft, const NSVec4<T> & pRight);
+nsvec4<T> min(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> max(const NSVec4<T> & pLeft, const NSVec4<T> & pRight);
+nsvec4<T> max(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> normalize(const NSVec4<T> & pRHS);
+nsvec4<T> normalize(const nsvec4<T> & rhs_);
 
 template <class T>
-NSVec4<T> round(const NSVec4<T> & pVec);
+nsvec4<T> round(const nsvec4<T> & vec_);
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSVec4<T> & v4);
+void pup(PUPer & p, nsvec4<T> & v4);
 
 template <class T>
-struct NSVec4
+struct nsvec4
 {
-	NSVec4(const NSVec4<T> & copy) : x(copy.x), y(copy.y), z(copy.z), w(copy.w) {}
-	NSVec4(const T & val = static_cast<T>(0)) : x(val), y(val), z(val), w(val) {}
-	NSVec4(const T & pX, const T & pY, const T & pZ = static_cast<T>(0), const T & pW = static_cast<T>(0)) : x(pX), y(pY), z(pZ), w(pW) {}
-	NSVec4(const NSVec3<T> & xyz, const T & pW = static_cast<T>(1)) : x(xyz.x), y(xyz.y), z(xyz.z), w(pW) {}
-	NSVec4(const T & pX, const NSVec3<T> & yzw) : x(pX), y(yzw.x), z(yzw.y), w(yzw.z) {}
-	NSVec4(const NSVec2<T> & xy, const T & pZ = static_cast<T>(0), const T & pW = static_cast<T>(0)) : x(xy.x), y(xy.y), z(pZ), w(pW) {}
-	NSVec4(const T & pX, const NSVec2<T> & yz, const T & pW = static_cast<T>(0)) : x(pX), y(yz.x), z(yz.z), w(pW) {}
-	NSVec4(const T & pX, const T & pY, const NSVec2<T> & zw) : x(pX), y(pY), z(zw.x), w(zw.y) {}
+	nsvec4(const nsvec4<T> & copy_) : x(copy_.x), y(copy_.y), z(copy_.z), w(copy_.w) {}
+	nsvec4(const T & val = static_cast<T>(0)) : x(val), y(val), z(val), w(val) {}
+	nsvec4(const T & x_, const T & y_, const T & z_ = static_cast<T>(0), const T & w_ = static_cast<T>(0)) : x(x_), y(y_), z(z_), w(w_) {}
+	nsvec4(const nsvec3<T> & xyz, const T & w_ = static_cast<T>(1)) : x(xyz.x), y(xyz.y), z(xyz.z), w(w_) {}
+	nsvec4(const T & x_, const nsvec3<T> & yzw) : x(x_), y(yzw.x), z(yzw.y), w(yzw.z) {}
+	nsvec4(const nsvec2<T> & xy, const T & z_ = static_cast<T>(0), const T & w_ = static_cast<T>(0)) : x(xy.x), y(xy.y), z(z_), w(w_) {}
+	nsvec4(const T & x_, const nsvec2<T> & yz, const T & w_ = static_cast<T>(0)) : x(x_), y(yz.x), z(yz.z), w(w_) {}
+	nsvec4(const T & x_, const T & y_, const nsvec2<T> & zw) : x(x_), y(y_), z(zw.x), w(zw.y) {}
 
-	NSVec3<T> & abs()
+	nsvec3<T> & abs()
 	{
 		x = static_cast<T>(std::abs(x));
 		y = static_cast<T>(std::abs(y));
@@ -100,51 +100,51 @@ struct NSVec4
 		return *this;
 	}
 
-	NSVec4<T> & axisAngleFrom(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order, bool rads = false)
+	nsvec4<T> & axis_angle_from(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_, bool rads_ = false)
 	{
-		return axisAngleFrom(NSQuat<T>().from(euler, order, rads), rads);
+		return axis_angle_from(nsquat<T>().from(euler_, order_, rads_), rads_);
 	}
 
-	NSVec4<T> & axisAngleFrom(const NSQuat<T> & orientation, bool rads = false)
+	nsvec4<T> & axis_angle_from(const nsquat<T> & orientation_, bool rads_ = false)
 	{
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
-		w = static_cast<T>(2 * std::acos(orientation.w));
+		w = static_cast<T>(2 * std::acos(orientation_.w));
 
-		if (!rads)
+		if (!rads_)
 			w = degrees(w);
 
-		T den = static_cast<T>(std::sqrt(1 - orientation.w*orientation.w));
+		T den = static_cast<T>(std::sqrt(1 - orientation_.w*orientation_.w));
 		if (den < EPS)
 		{
-			x = orientation.x;
-			y = orientation.y;
-			z = orientation.z;
+			x = orientation_.x;
+			y = orientation_.y;
+			z = orientation_.z;
 		}
 		else
 		{
-			x = orientation.x / den;
-			y = orientation.y / den;
-			z = orientation.z / den;
+			x = orientation_.x / den;
+			y = orientation_.y / den;
+			z = orientation_.z / den;
 		}
 		return *this;
 	}
 
-	NSVec4<T> & axisAngleFrom(const NSMat3<T> & rotationMat3, bool rads = false)
+	nsvec4<T> & axis_angle_from(const nsmat3<T> & rotation_mat3_, bool rads_ = false)
 	{
-		return axisAngleFrom(NSQuat<T>().from(rotationMat3), rads);
+		return axis_angle_from(nsquat<T>().from(rotation_mat3_), rads_);
 	}
 
-	NSVec4<T> & axisAngleFrom(const NSMat4<T> & transform, bool rads = false)
+	nsvec4<T> & axis_angle_from(const nsmat4<T> & transform_, bool rads_ = false)
 	{
-		return axisAngleFrom(NSQuat<T>().from(transform), rads);
+		return axis_angle_from(nsquat<T>().from(transform_), rads_);
 	}
 
-	NSVec4<T> & axisAngleFrom(const NSVec3<T> & vec, const NSVec3<T> & toVec, bool rads = false)
+	nsvec4<T> & axis_angle_from(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, bool rads_ = false)
 	{
-		return axisAngleFrom(NSQuat<T>().from(vec, toVec), rads);
+		return axis_angle_from(nsquat<T>().from(vec_, to_vec_), rads_);
 	}
 
-	NSVec4<T> & ceil()
+	nsvec4<T> & ceil()
 	{
 		x = static_cast<T>(std::ceil(x));
 		y = static_cast<T>(std::ceil(y));
@@ -153,33 +153,33 @@ struct NSVec4
 		return *this;
 	}
 
-	NSVec4<T> & clamp(const T & min = static_cast<T>(0), const T & max = static_cast<T>(0))
+	nsvec4<T> & clamp(const T & min_ = static_cast<T>(0), const T & max_ = static_cast<T>(0))
 	{
-		if (x < min)
-			x = min;
-		if (y < min)
-			y = min;
-		if (z < min)
-			z = min;
-		if (w < min)
-			w = min;
-		if (x > max)
-			x = max;
-		if (y > max)
-			y = max;
-		if (z > max)
-			z = max;
-		if (w > max)
-			w = max;
+		if (x < min_)
+			x = min_;
+		if (y < min_)
+			y = min_;
+		if (z < min_)
+			z = min_;
+		if (w < min_)
+			w = min_;
+		if (x > max_)
+			x = max_;
+		if (y > max_)
+			y = max_;
+		if (z > max_)
+			z = max_;
+		if (w > max_)
+			w = max_;
 		return *this;
 	}
 
-	T distanceTo(const NSVec4<T> & pVec) const
+	T distance_to(const nsvec4<T> & vec_) const
 	{
-		return ((pVec - *this).length());
+		return ((vec_ - *this).length());
 	}
 
-	NSVec4<T> & floor()
+	nsvec4<T> & floor()
 	{
 		x = static_cast<T>(std::floor(x));
 		y = static_cast<T>(std::floor(y));
@@ -188,7 +188,7 @@ struct NSVec4
 		return *this;
 	}
 
-	NSVec4<T> & fract()
+	nsvec4<T> & fract()
 	{
 		x -= static_cast<T>(std::floor(x));
 		y -= static_cast<T>(std::floor(y));
@@ -202,18 +202,18 @@ struct NSVec4
 		return static_cast<T>(sqrt(x*x + y*y + z*z + w*w));
 	}
 
-	T lengthSq() const
+	T length_sq() const
 	{
 		return x*x + y*y + z*z + w*w;
 	}
 
 	template<class T2 >
-	NSVec4<T> & lerp(const NSVec4<T> & vec, const T2 & scalingFactor)
+	nsvec4<T> & lerp(const nsvec4<T> & vec_, const T2 & scaling_factor_)
 	{
-		x += static_cast<T>((vec.x - x)*scalingFactor);
-		y += static_cast<T>((vec.y - y)*scalingFactor);
-		z += static_cast<T>((vec.z - z)*scalingFactor);
-		w += static_cast<T>((vec.w - w)*scalingFactor);
+		x += static_cast<T>((vec_.x - x)*scaling_factor_);
+		y += static_cast<T>((vec_.y - y)*scaling_factor_);
+		z += static_cast<T>((vec_.z - z)*scaling_factor_);
+		w += static_cast<T>((vec_.w - w)*scaling_factor_);
 		return *this;
 	}
 
@@ -225,16 +225,16 @@ struct NSVec4
 		return w;
 	}
 
-	NSVec4<T> & minimize(const NSVec4<T> & rhs)
+	nsvec4<T> & minimize(const nsvec4<T> & rhs_)
 	{
-		if (x < rhs.x)
-			x = rhs.x;
-		if (y < rhs.y)
-			y = rhs.y;
-		if (z < rhs.z)
-			z = rhs.z;
-		if (w < rhs.w)
-			w = rhs.w;
+		if (x < rhs_.x)
+			x = rhs_.x;
+		if (y < rhs_.y)
+			y = rhs_.y;
+		if (z < rhs_.z)
+			z = rhs_.z;
+		if (w < rhs_.w)
+			w = rhs_.w;
 		return *this;
 	}
 
@@ -246,20 +246,20 @@ struct NSVec4
 		return w;
 	}
 
-	NSVec4<T> & maximize(const NSVec4<T> & rhs)
+	nsvec4<T> & maximize(const nsvec4<T> & rhs_)
 	{
-		if (x > rhs.x)
-			x = rhs.x;
-		if (y > rhs.y)
-			y = rhs.y;
-		if (z > rhs.z)
-			z = rhs.z;
-		if (w > rhs.w)
-			w = rhs.w;
+		if (x > rhs_.x)
+			x = rhs_.x;
+		if (y > rhs_.y)
+			y = rhs_.y;
+		if (z > rhs_.z)
+			z = rhs_.z;
+		if (w > rhs_.w)
+			w = rhs_.w;
 		return *this;
 	}
 
-	NSVec4<T> & normalize()
+	nsvec4<T> & normalize()
 	{
 		T l = length();
 		if (l == 0)
@@ -267,7 +267,7 @@ struct NSVec4
 		return *this *= (1 / l);
 	}
 
-	NSVec4<T> & round()
+	nsvec4<T> & round()
 	{
 		x = static_cast<T>(std::round(x));
 		y = static_cast<T>(std::round(y));
@@ -276,7 +276,7 @@ struct NSVec4
 		return *this;
 	}
 
-	NSVec4<T> & roundToZero()
+	nsvec4<T> & round_to_zero()
 	{
 		if (::abs(x) < EPS)
 			x = 0;
@@ -289,1258 +289,1258 @@ struct NSVec4
 		return *this;
 	}
 
-	NSVec3<T> & scalingFrom(const NSMat3<T> & transform)
+	nsvec3<T> & scaling_from(const nsmat3<T> & transform_)
 	{
-		x = transform[0].length();
-		y = transform[1].length();
-		z = transform[2].length();
+		x = transform_[0].length();
+		y = transform_[1].length();
+		z = transform_[2].length();
 		w = static_cast<T>(1);
 		return *this;
 	}
 
-	NSVec3<T> & scalingFrom(const NSMat4<T> & transform)
+	nsvec3<T> & scaling_from(const nsmat4<T> & transform_)
 	{
-		x = sqrt(transform[0][0] * transform[0][0] + transform[0][1] * transform[0][1] + transform[0][2] * transform[0][2]);
-		y = sqrt(transform[1][0] * transform[1][0] + transform[1][1] * transform[1][1] + transform[1][2] * transform[1][2]);
-		z = sqrt(transform[2][0] * transform[2][0] + transform[2][1] * transform[2][1] + transform[2][2] * transform[2][2]);
+		x = sqrt(transform_[0][0] * transform_[0][0] + transform_[0][1] * transform_[0][1] + transform_[0][2] * transform_[0][2]);
+		y = sqrt(transform_[1][0] * transform_[1][0] + transform_[1][1] * transform_[1][1] + transform_[1][2] * transform_[1][2]);
+		z = sqrt(transform_[2][0] * transform_[2][0] + transform_[2][1] * transform_[2][1] + transform_[2][2] * transform_[2][2]);
 		w = static_cast<T>(1);
 		return *this;
 	}
 
-	NSVec4<T> & set(const T & pVal)
+	nsvec4<T> & set(const T & val_)
 	{
-		x = y = z = w = pVal;
+		x = y = z = w = val_;
 		return *this;
 	}
 
-	NSVec4<T> & set(const T & pX, const T & pY, const T & pZ, const T & pW)
+	nsvec4<T> & set(const T & x_, const T & y_, const T & z_, const T & w_)
 	{
-		x = pX; y = pY; z = pZ; w = pW;
+		x = x_; y = y_; z = z_; w = w_;
 		return *this;
 	}
 
-	NSVec4<T> & set(const NSVec3<T> & xyz, const T & pW)
+	nsvec4<T> & set(const nsvec3<T> & xyz, const T & w_)
 	{
-		x = xyz.x; y = xyz.y; z = xyz.z; w = pW;
+		x = xyz.x; y = xyz.y; z = xyz.z; w = w_;
 		return *this;
 	}
 
-	NSVec4<T> & set(const T & pX, const NSVec3<T> & yzw)
+	nsvec4<T> & set(const T & x_, const nsvec3<T> & yzw)
 	{
-		x = pX; y = yzw.x; z = yzw.y; w = yzw.z;
+		x = x_; y = yzw.x; z = yzw.y; w = yzw.z;
 		return *this;
 	}
 
-	NSVec4<T> & set(const NSVec2<T> & xy, const T & pZ, const T & pW)
+	nsvec4<T> & set(const nsvec2<T> & xy, const T & z_, const T & w_)
 	{
-		x = xy.x; y = xy.y; z = pZ; w = pW;
+		x = xy.x; y = xy.y; z = z_; w = w_;
 		return *this;
 	}
 
-	NSVec4<T> & set(const T & pX, const NSVec2<T> & yz, const T & pW)
+	nsvec4<T> & set(const T & x_, const nsvec2<T> & yz, const T & w_)
 	{
-		x = pX; y = yz.x; z = yz.y; w = pW;
+		x = x_; y = yz.x; z = yz.y; w = w_;
 		return *this;
 	}
 
-	NSVec4<T> & set(const T & pX, const T & pY, const NSVec2<T> & zw)
+	nsvec4<T> & set(const T & x_, const T & y_, const nsvec2<T> & zw)
 	{
-		x = pX; y = pY; z = zw.x; w = zw.y;
+		x = x_; y = y_; z = zw.x; w = zw.y;
 		return *this;
 	}
 
-	NSVec4<T> & setLength(const T & len)
+	nsvec4<T> & set_length(const T & len_)
 	{
 		T l = length();
 
 		if (l == static_cast<T>(0))
 			return *this;
 
-		T mult = len / l;
+		T mult = len_ / l;
 		(*this) *= mult;
 		return *this;
 	}
 
-	nsstring toString()
+	nsstring to_string()
 	{
 		nsstringstream ss;
 		ss << "[" << x << " " << y << " " << z << " " << w << "]";
 		return ss.str();
 	}
 
-	NSVec4<T> & translationFrom(const NSMat4<T> & transform)
+	nsvec4<T> & translation_from(const nsmat4<T> & transform_)
 	{
-		*this = transform(3);
+		*this = transform_(3);
 		w = static_cast<T>(1);
 		return *this;
 	}
 
 	// overloaded operators
-	NSVec4<T> operator+(const NSVec4<T> & rhs) const
+	nsvec4<T> operator+(const nsvec4<T> & rhs_) const
 	{
-		return NSVec4<T>(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
+		return nsvec4<T>(x + rhs_.x, y + rhs_.y, z + rhs_.z, w + rhs_.w);
 	}
 
-	NSVec4<T> operator-(const NSVec4<T> & rhs) const
+	nsvec4<T> operator-(const nsvec4<T> & rhs_) const
 	{
-		return NSVec4<T>(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w);
+		return nsvec4<T>(x - rhs_.x, y - rhs_.y, z - rhs_.z, w - rhs_.w);
 	}
 
-	T operator*(const NSVec4<T> & rhs) const // dot product
+	T operator*(const nsvec4<T> & rhs_) const // dot product
 	{
-		return x*rhs.x + y*rhs.y + z*rhs.z + w*rhs.w;
+		return x*rhs_.x + y*rhs_.y + z*rhs_.z + w*rhs_.w;
 	}
 
-	NSMat4<T> operator^(const NSVec4<T> & pRHS) const
+	nsmat4<T> operator^(const nsvec4<T> & rhs_) const
 	{
-		NSMat4<T> ret;
-		ret[0] = x * pRHS;
-		ret[1] = y * pRHS;
-		ret[2] = z * pRHS;
-		ret[3] = w * pRHS;
+		nsmat4<T> ret;
+		ret[0] = x * rhs_;
+		ret[1] = y * rhs_;
+		ret[2] = z * rhs_;
+		ret[3] = w * rhs_;
 		return ret;
 	}
 
-	NSVec4<T> operator%(const NSVec4<T> & rhs) const // component wise scalar product
+	nsvec4<T> operator%(const nsvec4<T> & rhs_) const // component wise scalar product
 	{
-		return NSVec4<T>(x*rhs.x, y*rhs.y, z*rhs.z, w*rhs.w);
+		return nsvec4<T>(x*rhs_.x, y*rhs_.y, z*rhs_.z, w*rhs_.w);
 	}
 
-	NSVec4<T> operator/(const NSVec4<T> & rhs) const
+	nsvec4<T> operator/(const nsvec4<T> & rhs_) const
 	{
-		return NSVec4<T>(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w);
+		return nsvec4<T>(x / rhs_.x, y / rhs_.y, z / rhs_.z, w / rhs_.w);
 	}
 
-	NSVec4<T> operator*(const T & rhs) const
+	nsvec4<T> operator*(const T & rhs_) const
 	{
-		return NSVec4<T>(x * rhs, y * rhs, z * rhs, w * rhs);
+		return nsvec4<T>(x * rhs_, y * rhs_, z * rhs_, w * rhs_);
 	}
 
-	NSVec4<T> operator/(const T & rhs) const
+	nsvec4<T> operator/(const T & rhs_) const
 	{
-		return NSVec4<T>(x / rhs, y / rhs, z / rhs, w / rhs);
+		return nsvec4<T>(x / rhs_, y / rhs_, z / rhs_, w / rhs_);
 	}
 
-	NSVec4<T> & operator=(const NSVec4<T> & rhs)
+	nsvec4<T> & operator=(const nsvec4<T> & rhs_)
 	{
-		if (this == &rhs)
+		if (this == &rhs_)
 			return *this;
-		x = rhs.x;
-		y = rhs.y;
-		z = rhs.z;
-		w = rhs.w;
+		x = rhs_.x;
+		y = rhs_.y;
+		z = rhs_.z;
+		w = rhs_.w;
 		return *this;
 	}
 
-	NSVec4<T> operator++(int32)
+	nsvec4<T> operator++(int32)
 	{
-		NSVec4<T> ret(*this);
+		nsvec4<T> ret(*this);
 		++(*this);
 		return ret;
 	}
 
-	NSVec4<T> operator--(int32)
+	nsvec4<T> operator--(int32)
 	{
-		NSVec4<T> ret(*this);
+		nsvec4<T> ret(*this);
 		--(*this);
 		return ret;
 	}
 
-	NSVec4<T> & operator++()
+	nsvec4<T> & operator++()
 	{
 		++x; ++y; ++z; ++w;
 		return *this;
 	}
 
-	NSVec4<T> & operator--()
+	nsvec4<T> & operator--()
 	{
 		--x; --y; --z; --w;
 		return *this;
 	}
 
-	NSVec4<T> & operator+=(const NSVec4<T> & rhs)
+	nsvec4<T> & operator+=(const nsvec4<T> & rhs_)
 	{
-		x += rhs.x; y += rhs.y; z += rhs.z; w += rhs.w;
+		x += rhs_.x; y += rhs_.y; z += rhs_.z; w += rhs_.w;
 		return *this;
 	}
 
-	NSVec4<T> & operator-=(const NSVec4<T> & rhs)
+	nsvec4<T> & operator-=(const nsvec4<T> & rhs_)
 	{
-		x -= rhs.x; y -= rhs.y; z -= rhs.z; w -= rhs.w;
+		x -= rhs_.x; y -= rhs_.y; z -= rhs_.z; w -= rhs_.w;
 		return *this;
 	}
 
-	NSVec4<T> & operator%=(const NSVec4<T> & rhs)
+	nsvec4<T> & operator%=(const nsvec4<T> & rhs_)
 	{
-		x *= rhs.x; y *= rhs.y; z *= rhs.z; w *= rhs.w;
+		x *= rhs_.x; y *= rhs_.y; z *= rhs_.z; w *= rhs_.w;
 		return *this;
 	}
 
-	NSVec4<T> & operator/=(const NSVec4<T> & rhs)
+	nsvec4<T> & operator/=(const nsvec4<T> & rhs_)
 	{
-		x /= rhs.x; y /= rhs.y; z /= rhs.z; w /= rhs.w;
+		x /= rhs_.x; y /= rhs_.y; z /= rhs_.z; w /= rhs_.w;
 		return *this;
 	}
 
-	NSVec4<T> & operator*=(const T & rhs)
+	nsvec4<T> & operator*=(const T & rhs_)
 	{
-		x *= rhs; y *= rhs; z *= rhs; w *= rhs;
+		x *= rhs_; y *= rhs_; z *= rhs_; w *= rhs_;
 		return *this;
 	}
 
-	NSVec4<T> & operator/=(const T & rhs)
+	nsvec4<T> & operator/=(const T & rhs_)
 	{
-		x /= rhs; y /= rhs; z /= rhs; w /= rhs;
+		x /= rhs_; y /= rhs_; z /= rhs_; w /= rhs_;
 		return *this;
 	}
 
-	bool operator==(const NSVec4<T> & rhs) const
+	bool operator==(const nsvec4<T> & rhs_) const
 	{
-		return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z) && (w == rhs.w));
+		return ((x == rhs_.x) && (y == rhs_.y) && (z == rhs_.z) && (w == rhs_.w));
 	}
 
-	bool operator!=(const NSVec4<T> & rhs) const
+	bool operator!=(const nsvec4<T> & rhs_) const
 	{
-		return !(*this == rhs);
+		return !(*this == rhs_);
 	}
 
-	bool operator==(const T & rhs) const
+	bool operator==(const T & rhs_) const
 	{
-		return ((x == rhs) && (y == rhs) && (z == rhs) && (w == rhs));
+		return ((x == rhs_) && (y == rhs_) && (z == rhs_) && (w == rhs_));
 	}
 
-	bool operator!=(const T & rhs) const
+	bool operator!=(const T & rhs_) const
 	{
-		return !(*this == rhs);
+		return !(*this == rhs_);
 	}
 
-	const T & operator[](const uint32 & pVal) const
+	const T & operator[](const uint32 & val_) const
 	{
-		if (pVal > 3)
+		if (val_ > 3)
 			throw(std::out_of_range("vec4 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
-	T & operator[](const uint32 & pVal)
+	T & operator[](const uint32 & val_)
 	{
-		if (pVal > 3)
+		if (val_ > 3)
 			throw(std::out_of_range("vec4 index out of range"));
-		return data[pVal];
+		return data[val_];
 	}
 
 	// Vec4 Swizzles
-	inline NSVec4<T> xxxx() const { return NSVec4<T>(x, x, x, x); }
-	inline NSVec4<T> xxxy() const { return NSVec4<T>(x, x, x, y); }
-	inline NSVec4<T> xxxz() const { return NSVec4<T>(x, x, x, z); }
-	inline NSVec4<T> xxxw() const { return NSVec4<T>(x, x, x, w); }
-	inline NSVec4<T> xxyx() const { return NSVec4<T>(x, x, y, x); }
-	inline NSVec4<T> xxyy() const { return NSVec4<T>(x, x, y, y); }
-	inline NSVec4<T> xxyz() const { return NSVec4<T>(x, x, y, z); }
-	inline NSVec4<T> xxyw() const { return NSVec4<T>(x, x, y, w); }
-	inline NSVec4<T> xxzx() const { return NSVec4<T>(x, x, z, x); }
-	inline NSVec4<T> xxzy() const { return NSVec4<T>(x, x, z, y); }
-	inline NSVec4<T> xxzz() const { return NSVec4<T>(x, x, z, z); }
-	inline NSVec4<T> xxzw() const { return NSVec4<T>(x, x, z, w); }
-	inline NSVec4<T> xxwx() const { return NSVec4<T>(x, x, w, x); }
-	inline NSVec4<T> xxwy() const { return NSVec4<T>(x, x, w, y); }
-	inline NSVec4<T> xxwz() const { return NSVec4<T>(x, x, w, z); }
-	inline NSVec4<T> xxww() const { return NSVec4<T>(x, x, w, w); }
-	inline NSVec4<T> xyxx() const { return NSVec4<T>(x, y, x, x); }
-	inline NSVec4<T> xyxy() const { return NSVec4<T>(x, y, x, y); }
-	inline NSVec4<T> xyxz() const { return NSVec4<T>(x, y, x, z); }
-	inline NSVec4<T> xyxw() const { return NSVec4<T>(x, y, x, w); }
-	inline NSVec4<T> xyyx() const { return NSVec4<T>(x, y, y, x); }
-	inline NSVec4<T> xyyy() const { return NSVec4<T>(x, y, y, y); }
-	inline NSVec4<T> xyyz() const { return NSVec4<T>(x, y, y, z); }
-	inline NSVec4<T> xyyw() const { return NSVec4<T>(x, y, y, w); }
-	inline NSVec4<T> xywx() const { return NSVec4<T>(x, y, w, x); }
-	inline NSVec4<T> xywy() const { return NSVec4<T>(x, y, w, y); }
-	inline NSVec4<T> xywz() const { return NSVec4<T>(x, y, w, z); }
-	inline NSVec4<T> xyww() const { return NSVec4<T>(x, y, w, w); }
-	inline NSVec4<T> xzxx() const { return NSVec4<T>(x, z, x, x); }
-	inline NSVec4<T> xzxy() const { return NSVec4<T>(x, z, x, y); }
-	inline NSVec4<T> xzxz() const { return NSVec4<T>(x, z, x, z); }
-	inline NSVec4<T> xzxw() const { return NSVec4<T>(x, z, x, w); }
-	inline NSVec4<T> xzyx() const { return NSVec4<T>(x, z, y, x); }
-	inline NSVec4<T> xzyy() const { return NSVec4<T>(x, z, y, y); }
-	inline NSVec4<T> xzyz() const { return NSVec4<T>(x, z, y, z); }
-	inline NSVec4<T> xzyw() const { return NSVec4<T>(x, z, y, w); }
-	inline NSVec4<T> xzzx() const { return NSVec4<T>(x, z, z, x); }
-	inline NSVec4<T> xzzy() const { return NSVec4<T>(x, z, z, y); }
-	inline NSVec4<T> xzzz() const { return NSVec4<T>(x, z, z, z); }
-	inline NSVec4<T> xzzw() const { return NSVec4<T>(x, z, z, w); }
-	inline NSVec4<T> xzwx() const { return NSVec4<T>(x, z, w, x); }
-	inline NSVec4<T> xzwy() const { return NSVec4<T>(x, z, w, y); }
-	inline NSVec4<T> xzwz() const { return NSVec4<T>(x, z, w, z); }
-	inline NSVec4<T> xzww() const { return NSVec4<T>(x, z, w, w); }
-	inline NSVec4<T> xwxx() const { return NSVec4<T>(x, w, x, x); }
-	inline NSVec4<T> xwxy() const { return NSVec4<T>(x, w, x, y); }
-	inline NSVec4<T> xwxz() const { return NSVec4<T>(x, w, x, z); }
-	inline NSVec4<T> xwxw() const { return NSVec4<T>(x, w, x, w); }
-	inline NSVec4<T> xwyx() const { return NSVec4<T>(x, w, y, x); }
-	inline NSVec4<T> xwyy() const { return NSVec4<T>(x, w, y, y); }
-	inline NSVec4<T> xwyz() const { return NSVec4<T>(x, w, y, z); }
-	inline NSVec4<T> xwyw() const { return NSVec4<T>(x, w, y, w); }
-	inline NSVec4<T> xwzx() const { return NSVec4<T>(x, w, z, x); }
-	inline NSVec4<T> xwzy() const { return NSVec4<T>(x, w, z, y); }
-	inline NSVec4<T> xwzz() const { return NSVec4<T>(x, w, z, z); }
-	inline NSVec4<T> xwzw() const { return NSVec4<T>(x, w, z, w); }
-	inline NSVec4<T> xwwx() const { return NSVec4<T>(x, w, w, x); }
-	inline NSVec4<T> xwwy() const { return NSVec4<T>(x, w, w, y); }
-	inline NSVec4<T> xwwz() const { return NSVec4<T>(x, w, w, z); }
-	inline NSVec4<T> xwww() const { return NSVec4<T>(x, w, w, w); }
-	inline NSVec4<T> yxxx() const { return NSVec4<T>(y, x, x, x); }
-	inline NSVec4<T> yxxy() const { return NSVec4<T>(y, x, x, y); }
-	inline NSVec4<T> yxxz() const { return NSVec4<T>(y, x, x, z); }
-	inline NSVec4<T> yxxw() const { return NSVec4<T>(y, x, x, w); }
-	inline NSVec4<T> yxyx() const { return NSVec4<T>(y, x, y, x); }
-	inline NSVec4<T> yxyy() const { return NSVec4<T>(y, x, y, y); }
-	inline NSVec4<T> yxyz() const { return NSVec4<T>(y, x, y, z); }
-	inline NSVec4<T> yxyw() const { return NSVec4<T>(y, x, y, w); }
-	inline NSVec4<T> yxzx() const { return NSVec4<T>(y, x, z, x); }
-	inline NSVec4<T> yxzy() const { return NSVec4<T>(y, x, z, y); }
-	inline NSVec4<T> yxzz() const { return NSVec4<T>(y, x, z, z); }
-	inline NSVec4<T> yxzw() const { return NSVec4<T>(y, x, z, w); }
-	inline NSVec4<T> yxwx() const { return NSVec4<T>(y, x, w, x); }
-	inline NSVec4<T> yxwy() const { return NSVec4<T>(y, x, w, y); }
-	inline NSVec4<T> yxwz() const { return NSVec4<T>(y, x, w, z); }
-	inline NSVec4<T> yxww() const { return NSVec4<T>(y, x, w, w); }
-	inline NSVec4<T> yyxx() const { return NSVec4<T>(y, y, x, x); }
-	inline NSVec4<T> yyxy() const { return NSVec4<T>(y, y, x, y); }
-	inline NSVec4<T> yyxz() const { return NSVec4<T>(y, y, x, z); }
-	inline NSVec4<T> yyxw() const { return NSVec4<T>(y, y, x, w); }
-	inline NSVec4<T> yyyx() const { return NSVec4<T>(y, y, y, x); }
-	inline NSVec4<T> yyyy() const { return NSVec4<T>(y, y, y, y); }
-	inline NSVec4<T> yyyz() const { return NSVec4<T>(y, y, y, z); }
-	inline NSVec4<T> yyyw() const { return NSVec4<T>(y, y, y, w); }
-	inline NSVec4<T> yyzx() const { return NSVec4<T>(y, y, z, x); }
-	inline NSVec4<T> yyzy() const { return NSVec4<T>(y, y, z, y); }
-	inline NSVec4<T> yyzz() const { return NSVec4<T>(y, y, z, z); }
-	inline NSVec4<T> yyzw() const { return NSVec4<T>(y, y, z, w); }
-	inline NSVec4<T> yywx() const { return NSVec4<T>(y, y, w, x); }
-	inline NSVec4<T> yywy() const { return NSVec4<T>(y, y, w, y); }
-	inline NSVec4<T> yywz() const { return NSVec4<T>(y, y, w, z); }
-	inline NSVec4<T> yyww() const { return NSVec4<T>(y, y, w, w); }
-	inline NSVec4<T> yzxx() const { return NSVec4<T>(y, z, x, x); }
-	inline NSVec4<T> yzxy() const { return NSVec4<T>(y, z, x, y); }
-	inline NSVec4<T> yzxz() const { return NSVec4<T>(y, z, x, z); }
-	inline NSVec4<T> yzxw() const { return NSVec4<T>(y, z, x, w); }
-	inline NSVec4<T> yzyx() const { return NSVec4<T>(y, z, y, x); }
-	inline NSVec4<T> yzyy() const { return NSVec4<T>(y, z, y, y); }
-	inline NSVec4<T> yzyz() const { return NSVec4<T>(y, z, y, z); }
-	inline NSVec4<T> yzyw() const { return NSVec4<T>(y, z, y, w); }
-	inline NSVec4<T> yzzx() const { return NSVec4<T>(y, z, z, x); }
-	inline NSVec4<T> yzzy() const { return NSVec4<T>(y, z, z, y); }
-	inline NSVec4<T> yzzz() const { return NSVec4<T>(y, z, z, z); }
-	inline NSVec4<T> yzzw() const { return NSVec4<T>(y, z, z, w); }
-	inline NSVec4<T> yzwx() const { return NSVec4<T>(y, z, w, x); }
-	inline NSVec4<T> yzwy() const { return NSVec4<T>(y, z, w, y); }
-	inline NSVec4<T> yzwz() const { return NSVec4<T>(y, z, w, z); }
-	inline NSVec4<T> yzww() const { return NSVec4<T>(y, z, w, w); }
-	inline NSVec4<T> ywxx() const { return NSVec4<T>(y, w, x, x); }
-	inline NSVec4<T> ywxy() const { return NSVec4<T>(y, w, x, y); }
-	inline NSVec4<T> ywxz() const { return NSVec4<T>(y, w, x, z); }
-	inline NSVec4<T> ywxw() const { return NSVec4<T>(y, w, x, w); }
-	inline NSVec4<T> ywyx() const { return NSVec4<T>(y, w, y, x); }
-	inline NSVec4<T> ywyy() const { return NSVec4<T>(y, w, y, y); }
-	inline NSVec4<T> ywyz() const { return NSVec4<T>(y, w, y, z); }
-	inline NSVec4<T> ywyw() const { return NSVec4<T>(y, w, y, w); }
-	inline NSVec4<T> ywzx() const { return NSVec4<T>(y, w, z, x); }
-	inline NSVec4<T> ywzy() const { return NSVec4<T>(y, w, z, y); }
-	inline NSVec4<T> ywzz() const { return NSVec4<T>(y, w, z, z); }
-	inline NSVec4<T> ywzw() const { return NSVec4<T>(y, w, z, w); }
-	inline NSVec4<T> ywwx() const { return NSVec4<T>(y, w, w, x); }
-	inline NSVec4<T> ywwy() const { return NSVec4<T>(y, w, w, y); }
-	inline NSVec4<T> ywwz() const { return NSVec4<T>(y, w, w, z); }
-	inline NSVec4<T> ywww() const { return NSVec4<T>(y, w, w, w); }
-	inline NSVec4<T> zxxx() const { return NSVec4<T>(z, x, x, x); }
-	inline NSVec4<T> zxxy() const { return NSVec4<T>(z, x, x, y); }
-	inline NSVec4<T> zxxz() const { return NSVec4<T>(z, x, x, z); }
-	inline NSVec4<T> zxxw() const { return NSVec4<T>(z, x, x, w); }
-	inline NSVec4<T> zxyx() const { return NSVec4<T>(z, x, y, x); }
-	inline NSVec4<T> zxyy() const { return NSVec4<T>(z, x, y, y); }
-	inline NSVec4<T> zxyz() const { return NSVec4<T>(z, x, y, z); }
-	inline NSVec4<T> zxyw() const { return NSVec4<T>(z, x, y, w); }
-	inline NSVec4<T> zxzx() const { return NSVec4<T>(z, x, z, x); }
-	inline NSVec4<T> zxzy() const { return NSVec4<T>(z, x, z, y); }
-	inline NSVec4<T> zxzz() const { return NSVec4<T>(z, x, z, z); }
-	inline NSVec4<T> zxzw() const { return NSVec4<T>(z, x, z, w); }
-	inline NSVec4<T> zxwx() const { return NSVec4<T>(z, x, w, x); }
-	inline NSVec4<T> zxwy() const { return NSVec4<T>(z, x, w, y); }
-	inline NSVec4<T> zxwz() const { return NSVec4<T>(z, x, w, z); }
-	inline NSVec4<T> zxww() const { return NSVec4<T>(z, x, w, w); }
-	inline NSVec4<T> zyxx() const { return NSVec4<T>(z, y, x, x); }
-	inline NSVec4<T> zyxy() const { return NSVec4<T>(z, y, x, y); }
-	inline NSVec4<T> zyxz() const { return NSVec4<T>(z, y, x, z); }
-	inline NSVec4<T> zyxw() const { return NSVec4<T>(z, y, x, w); }
-	inline NSVec4<T> zyyx() const { return NSVec4<T>(z, y, y, x); }
-	inline NSVec4<T> zyyy() const { return NSVec4<T>(z, y, y, y); }
-	inline NSVec4<T> zyyz() const { return NSVec4<T>(z, y, y, z); }
-	inline NSVec4<T> zyyw() const { return NSVec4<T>(z, y, y, w); }
-	inline NSVec4<T> zyzx() const { return NSVec4<T>(z, y, z, x); }
-	inline NSVec4<T> zyzy() const { return NSVec4<T>(z, y, z, y); }
-	inline NSVec4<T> zyzz() const { return NSVec4<T>(z, y, z, z); }
-	inline NSVec4<T> zyzw() const { return NSVec4<T>(z, y, z, w); }
-	inline NSVec4<T> zywx() const { return NSVec4<T>(z, y, w, x); }
-	inline NSVec4<T> zywy() const { return NSVec4<T>(z, y, w, y); }
-	inline NSVec4<T> zywz() const { return NSVec4<T>(z, y, w, z); }
-	inline NSVec4<T> zyww() const { return NSVec4<T>(z, y, w, w); }
-	inline NSVec4<T> zzxx() const { return NSVec4<T>(z, z, x, x); }
-	inline NSVec4<T> zzxy() const { return NSVec4<T>(z, z, x, y); }
-	inline NSVec4<T> zzxz() const { return NSVec4<T>(z, z, x, z); }
-	inline NSVec4<T> zzxw() const { return NSVec4<T>(z, z, x, w); }
-	inline NSVec4<T> zzyx() const { return NSVec4<T>(z, z, y, x); }
-	inline NSVec4<T> zzyy() const { return NSVec4<T>(z, z, y, y); }
-	inline NSVec4<T> zzyz() const { return NSVec4<T>(z, z, y, z); }
-	inline NSVec4<T> zzyw() const { return NSVec4<T>(z, z, y, w); }
-	inline NSVec4<T> zzzx() const { return NSVec4<T>(z, z, z, x); }
-	inline NSVec4<T> zzzy() const { return NSVec4<T>(z, z, z, y); }
-	inline NSVec4<T> zzzz() const { return NSVec4<T>(z, z, z, z); }
-	inline NSVec4<T> zzzw() const { return NSVec4<T>(z, z, z, w); }
-	inline NSVec4<T> zzwx() const { return NSVec4<T>(z, z, w, x); }
-	inline NSVec4<T> zzwy() const { return NSVec4<T>(z, z, w, y); }
-	inline NSVec4<T> zzwz() const { return NSVec4<T>(z, z, w, z); }
-	inline NSVec4<T> zzww() const { return NSVec4<T>(z, z, w, w); }
-	inline NSVec4<T> zwxx() const { return NSVec4<T>(z, w, x, x); }
-	inline NSVec4<T> zwxy() const { return NSVec4<T>(z, w, x, y); }
-	inline NSVec4<T> zwxz() const { return NSVec4<T>(z, w, x, z); }
-	inline NSVec4<T> zwxw() const { return NSVec4<T>(z, w, x, w); }
-	inline NSVec4<T> zwyx() const { return NSVec4<T>(z, w, y, x); }
-	inline NSVec4<T> zwyy() const { return NSVec4<T>(z, w, y, y); }
-	inline NSVec4<T> zwyz() const { return NSVec4<T>(z, w, y, z); }
-	inline NSVec4<T> zwyw() const { return NSVec4<T>(z, w, y, w); }
-	inline NSVec4<T> zwzx() const { return NSVec4<T>(z, w, z, x); }
-	inline NSVec4<T> zwzy() const { return NSVec4<T>(z, w, z, y); }
-	inline NSVec4<T> zwzz() const { return NSVec4<T>(z, w, z, z); }
-	inline NSVec4<T> zwzw() const { return NSVec4<T>(z, w, z, w); }
-	inline NSVec4<T> zwwx() const { return NSVec4<T>(z, w, w, x); }
-	inline NSVec4<T> zwwy() const { return NSVec4<T>(z, w, w, y); }
-	inline NSVec4<T> zwwz() const { return NSVec4<T>(z, w, w, z); }
-	inline NSVec4<T> zwww() const { return NSVec4<T>(z, w, w, w); }
-	inline NSVec4<T> wxxx() const { return NSVec4<T>(w, x, x, x); }
-	inline NSVec4<T> wxxy() const { return NSVec4<T>(w, x, x, y); }
-	inline NSVec4<T> wxxz() const { return NSVec4<T>(w, x, x, z); }
-	inline NSVec4<T> wxxw() const { return NSVec4<T>(w, x, x, w); }
-	inline NSVec4<T> wxyx() const { return NSVec4<T>(w, x, y, x); }
-	inline NSVec4<T> wxyy() const { return NSVec4<T>(w, x, y, y); }
-	inline NSVec4<T> wxyz() const { return NSVec4<T>(w, x, y, z); }
-	inline NSVec4<T> wxyw() const { return NSVec4<T>(w, x, y, w); }
-	inline NSVec4<T> wxzx() const { return NSVec4<T>(w, x, z, x); }
-	inline NSVec4<T> wxzy() const { return NSVec4<T>(w, x, z, y); }
-	inline NSVec4<T> wxzz() const { return NSVec4<T>(w, x, z, z); }
-	inline NSVec4<T> wxzw() const { return NSVec4<T>(w, x, z, w); }
-	inline NSVec4<T> wxwx() const { return NSVec4<T>(w, x, w, x); }
-	inline NSVec4<T> wxwy() const { return NSVec4<T>(w, x, w, y); }
-	inline NSVec4<T> wxwz() const { return NSVec4<T>(w, x, w, z); }
-	inline NSVec4<T> wxww() const { return NSVec4<T>(w, x, w, w); }
-	inline NSVec4<T> wyxx() const { return NSVec4<T>(w, y, x, x); }
-	inline NSVec4<T> wyxy() const { return NSVec4<T>(w, y, x, y); }
-	inline NSVec4<T> wyxz() const { return NSVec4<T>(w, y, x, z); }
-	inline NSVec4<T> wyxw() const { return NSVec4<T>(w, y, x, w); }
-	inline NSVec4<T> wyyx() const { return NSVec4<T>(w, y, y, x); }
-	inline NSVec4<T> wyyy() const { return NSVec4<T>(w, y, y, y); }
-	inline NSVec4<T> wyyz() const { return NSVec4<T>(w, y, y, z); }
-	inline NSVec4<T> wyyw() const { return NSVec4<T>(w, y, y, w); }
-	inline NSVec4<T> wyzx() const { return NSVec4<T>(w, y, z, x); }
-	inline NSVec4<T> wyzy() const { return NSVec4<T>(w, y, z, y); }
-	inline NSVec4<T> wyzz() const { return NSVec4<T>(w, y, z, z); }
-	inline NSVec4<T> wyzw() const { return NSVec4<T>(w, y, z, w); }
-	inline NSVec4<T> wywx() const { return NSVec4<T>(w, y, w, x); }
-	inline NSVec4<T> wywy() const { return NSVec4<T>(w, y, w, y); }
-	inline NSVec4<T> wywz() const { return NSVec4<T>(w, y, w, z); }
-	inline NSVec4<T> wyww() const { return NSVec4<T>(w, y, w, w); }
-	inline NSVec4<T> wzxx() const { return NSVec4<T>(w, z, x, x); }
-	inline NSVec4<T> wzxy() const { return NSVec4<T>(w, z, x, y); }
-	inline NSVec4<T> wzxz() const { return NSVec4<T>(w, z, x, z); }
-	inline NSVec4<T> wzxw() const { return NSVec4<T>(w, z, x, w); }
-	inline NSVec4<T> wzyx() const { return NSVec4<T>(w, z, y, x); }
-	inline NSVec4<T> wzyy() const { return NSVec4<T>(w, z, y, y); }
-	inline NSVec4<T> wzyz() const { return NSVec4<T>(w, z, y, z); }
-	inline NSVec4<T> wzyw() const { return NSVec4<T>(w, z, y, w); }
-	inline NSVec4<T> wzzx() const { return NSVec4<T>(w, z, z, x); }
-	inline NSVec4<T> wzzy() const { return NSVec4<T>(w, z, z, y); }
-	inline NSVec4<T> wzzz() const { return NSVec4<T>(w, z, z, z); }
-	inline NSVec4<T> wzzw() const { return NSVec4<T>(w, z, z, w); }
-	inline NSVec4<T> wzwx() const { return NSVec4<T>(w, z, w, x); }
-	inline NSVec4<T> wzwy() const { return NSVec4<T>(w, z, w, y); }
-	inline NSVec4<T> wzwz() const { return NSVec4<T>(w, z, w, z); }
-	inline NSVec4<T> wzww() const { return NSVec4<T>(w, z, w, w); }
-	inline NSVec4<T> wwxx() const { return NSVec4<T>(w, w, x, x); }
-	inline NSVec4<T> wwxy() const { return NSVec4<T>(w, w, x, y); }
-	inline NSVec4<T> wwxz() const { return NSVec4<T>(w, w, x, z); }
-	inline NSVec4<T> wwxw() const { return NSVec4<T>(w, w, x, w); }
-	inline NSVec4<T> wwyx() const { return NSVec4<T>(w, w, y, x); }
-	inline NSVec4<T> wwyy() const { return NSVec4<T>(w, w, y, y); }
-	inline NSVec4<T> wwyz() const { return NSVec4<T>(w, w, y, z); }
-	inline NSVec4<T> wwyw() const { return NSVec4<T>(w, w, y, w); }
-	inline NSVec4<T> wwzx() const { return NSVec4<T>(w, w, z, x); }
-	inline NSVec4<T> wwzy() const { return NSVec4<T>(w, w, z, y); }
-	inline NSVec4<T> wwzz() const { return NSVec4<T>(w, w, z, z); }
-	inline NSVec4<T> wwzw() const { return NSVec4<T>(w, w, z, w); }
-	inline NSVec4<T> wwwx() const { return NSVec4<T>(w, w, w, x); }
-	inline NSVec4<T> wwwy() const { return NSVec4<T>(w, w, w, y); }
-	inline NSVec4<T> wwwz() const { return NSVec4<T>(w, w, w, z); }
-	inline NSVec4<T> wwww() const { return NSVec4<T>(w, w, w, w); }
+	inline nsvec4<T> xxxx() const { return nsvec4<T>(x, x, x, x); }
+	inline nsvec4<T> xxxy() const { return nsvec4<T>(x, x, x, y); }
+	inline nsvec4<T> xxxz() const { return nsvec4<T>(x, x, x, z); }
+	inline nsvec4<T> xxxw() const { return nsvec4<T>(x, x, x, w); }
+	inline nsvec4<T> xxyx() const { return nsvec4<T>(x, x, y, x); }
+	inline nsvec4<T> xxyy() const { return nsvec4<T>(x, x, y, y); }
+	inline nsvec4<T> xxyz() const { return nsvec4<T>(x, x, y, z); }
+	inline nsvec4<T> xxyw() const { return nsvec4<T>(x, x, y, w); }
+	inline nsvec4<T> xxzx() const { return nsvec4<T>(x, x, z, x); }
+	inline nsvec4<T> xxzy() const { return nsvec4<T>(x, x, z, y); }
+	inline nsvec4<T> xxzz() const { return nsvec4<T>(x, x, z, z); }
+	inline nsvec4<T> xxzw() const { return nsvec4<T>(x, x, z, w); }
+	inline nsvec4<T> xxwx() const { return nsvec4<T>(x, x, w, x); }
+	inline nsvec4<T> xxwy() const { return nsvec4<T>(x, x, w, y); }
+	inline nsvec4<T> xxwz() const { return nsvec4<T>(x, x, w, z); }
+	inline nsvec4<T> xxww() const { return nsvec4<T>(x, x, w, w); }
+	inline nsvec4<T> xyxx() const { return nsvec4<T>(x, y, x, x); }
+	inline nsvec4<T> xyxy() const { return nsvec4<T>(x, y, x, y); }
+	inline nsvec4<T> xyxz() const { return nsvec4<T>(x, y, x, z); }
+	inline nsvec4<T> xyxw() const { return nsvec4<T>(x, y, x, w); }
+	inline nsvec4<T> xyyx() const { return nsvec4<T>(x, y, y, x); }
+	inline nsvec4<T> xyyy() const { return nsvec4<T>(x, y, y, y); }
+	inline nsvec4<T> xyyz() const { return nsvec4<T>(x, y, y, z); }
+	inline nsvec4<T> xyyw() const { return nsvec4<T>(x, y, y, w); }
+	inline nsvec4<T> xywx() const { return nsvec4<T>(x, y, w, x); }
+	inline nsvec4<T> xywy() const { return nsvec4<T>(x, y, w, y); }
+	inline nsvec4<T> xywz() const { return nsvec4<T>(x, y, w, z); }
+	inline nsvec4<T> xyww() const { return nsvec4<T>(x, y, w, w); }
+	inline nsvec4<T> xzxx() const { return nsvec4<T>(x, z, x, x); }
+	inline nsvec4<T> xzxy() const { return nsvec4<T>(x, z, x, y); }
+	inline nsvec4<T> xzxz() const { return nsvec4<T>(x, z, x, z); }
+	inline nsvec4<T> xzxw() const { return nsvec4<T>(x, z, x, w); }
+	inline nsvec4<T> xzyx() const { return nsvec4<T>(x, z, y, x); }
+	inline nsvec4<T> xzyy() const { return nsvec4<T>(x, z, y, y); }
+	inline nsvec4<T> xzyz() const { return nsvec4<T>(x, z, y, z); }
+	inline nsvec4<T> xzyw() const { return nsvec4<T>(x, z, y, w); }
+	inline nsvec4<T> xzzx() const { return nsvec4<T>(x, z, z, x); }
+	inline nsvec4<T> xzzy() const { return nsvec4<T>(x, z, z, y); }
+	inline nsvec4<T> xzzz() const { return nsvec4<T>(x, z, z, z); }
+	inline nsvec4<T> xzzw() const { return nsvec4<T>(x, z, z, w); }
+	inline nsvec4<T> xzwx() const { return nsvec4<T>(x, z, w, x); }
+	inline nsvec4<T> xzwy() const { return nsvec4<T>(x, z, w, y); }
+	inline nsvec4<T> xzwz() const { return nsvec4<T>(x, z, w, z); }
+	inline nsvec4<T> xzww() const { return nsvec4<T>(x, z, w, w); }
+	inline nsvec4<T> xwxx() const { return nsvec4<T>(x, w, x, x); }
+	inline nsvec4<T> xwxy() const { return nsvec4<T>(x, w, x, y); }
+	inline nsvec4<T> xwxz() const { return nsvec4<T>(x, w, x, z); }
+	inline nsvec4<T> xwxw() const { return nsvec4<T>(x, w, x, w); }
+	inline nsvec4<T> xwyx() const { return nsvec4<T>(x, w, y, x); }
+	inline nsvec4<T> xwyy() const { return nsvec4<T>(x, w, y, y); }
+	inline nsvec4<T> xwyz() const { return nsvec4<T>(x, w, y, z); }
+	inline nsvec4<T> xwyw() const { return nsvec4<T>(x, w, y, w); }
+	inline nsvec4<T> xwzx() const { return nsvec4<T>(x, w, z, x); }
+	inline nsvec4<T> xwzy() const { return nsvec4<T>(x, w, z, y); }
+	inline nsvec4<T> xwzz() const { return nsvec4<T>(x, w, z, z); }
+	inline nsvec4<T> xwzw() const { return nsvec4<T>(x, w, z, w); }
+	inline nsvec4<T> xwwx() const { return nsvec4<T>(x, w, w, x); }
+	inline nsvec4<T> xwwy() const { return nsvec4<T>(x, w, w, y); }
+	inline nsvec4<T> xwwz() const { return nsvec4<T>(x, w, w, z); }
+	inline nsvec4<T> xwww() const { return nsvec4<T>(x, w, w, w); }
+	inline nsvec4<T> yxxx() const { return nsvec4<T>(y, x, x, x); }
+	inline nsvec4<T> yxxy() const { return nsvec4<T>(y, x, x, y); }
+	inline nsvec4<T> yxxz() const { return nsvec4<T>(y, x, x, z); }
+	inline nsvec4<T> yxxw() const { return nsvec4<T>(y, x, x, w); }
+	inline nsvec4<T> yxyx() const { return nsvec4<T>(y, x, y, x); }
+	inline nsvec4<T> yxyy() const { return nsvec4<T>(y, x, y, y); }
+	inline nsvec4<T> yxyz() const { return nsvec4<T>(y, x, y, z); }
+	inline nsvec4<T> yxyw() const { return nsvec4<T>(y, x, y, w); }
+	inline nsvec4<T> yxzx() const { return nsvec4<T>(y, x, z, x); }
+	inline nsvec4<T> yxzy() const { return nsvec4<T>(y, x, z, y); }
+	inline nsvec4<T> yxzz() const { return nsvec4<T>(y, x, z, z); }
+	inline nsvec4<T> yxzw() const { return nsvec4<T>(y, x, z, w); }
+	inline nsvec4<T> yxwx() const { return nsvec4<T>(y, x, w, x); }
+	inline nsvec4<T> yxwy() const { return nsvec4<T>(y, x, w, y); }
+	inline nsvec4<T> yxwz() const { return nsvec4<T>(y, x, w, z); }
+	inline nsvec4<T> yxww() const { return nsvec4<T>(y, x, w, w); }
+	inline nsvec4<T> yyxx() const { return nsvec4<T>(y, y, x, x); }
+	inline nsvec4<T> yyxy() const { return nsvec4<T>(y, y, x, y); }
+	inline nsvec4<T> yyxz() const { return nsvec4<T>(y, y, x, z); }
+	inline nsvec4<T> yyxw() const { return nsvec4<T>(y, y, x, w); }
+	inline nsvec4<T> yyyx() const { return nsvec4<T>(y, y, y, x); }
+	inline nsvec4<T> yyyy() const { return nsvec4<T>(y, y, y, y); }
+	inline nsvec4<T> yyyz() const { return nsvec4<T>(y, y, y, z); }
+	inline nsvec4<T> yyyw() const { return nsvec4<T>(y, y, y, w); }
+	inline nsvec4<T> yyzx() const { return nsvec4<T>(y, y, z, x); }
+	inline nsvec4<T> yyzy() const { return nsvec4<T>(y, y, z, y); }
+	inline nsvec4<T> yyzz() const { return nsvec4<T>(y, y, z, z); }
+	inline nsvec4<T> yyzw() const { return nsvec4<T>(y, y, z, w); }
+	inline nsvec4<T> yywx() const { return nsvec4<T>(y, y, w, x); }
+	inline nsvec4<T> yywy() const { return nsvec4<T>(y, y, w, y); }
+	inline nsvec4<T> yywz() const { return nsvec4<T>(y, y, w, z); }
+	inline nsvec4<T> yyww() const { return nsvec4<T>(y, y, w, w); }
+	inline nsvec4<T> yzxx() const { return nsvec4<T>(y, z, x, x); }
+	inline nsvec4<T> yzxy() const { return nsvec4<T>(y, z, x, y); }
+	inline nsvec4<T> yzxz() const { return nsvec4<T>(y, z, x, z); }
+	inline nsvec4<T> yzxw() const { return nsvec4<T>(y, z, x, w); }
+	inline nsvec4<T> yzyx() const { return nsvec4<T>(y, z, y, x); }
+	inline nsvec4<T> yzyy() const { return nsvec4<T>(y, z, y, y); }
+	inline nsvec4<T> yzyz() const { return nsvec4<T>(y, z, y, z); }
+	inline nsvec4<T> yzyw() const { return nsvec4<T>(y, z, y, w); }
+	inline nsvec4<T> yzzx() const { return nsvec4<T>(y, z, z, x); }
+	inline nsvec4<T> yzzy() const { return nsvec4<T>(y, z, z, y); }
+	inline nsvec4<T> yzzz() const { return nsvec4<T>(y, z, z, z); }
+	inline nsvec4<T> yzzw() const { return nsvec4<T>(y, z, z, w); }
+	inline nsvec4<T> yzwx() const { return nsvec4<T>(y, z, w, x); }
+	inline nsvec4<T> yzwy() const { return nsvec4<T>(y, z, w, y); }
+	inline nsvec4<T> yzwz() const { return nsvec4<T>(y, z, w, z); }
+	inline nsvec4<T> yzww() const { return nsvec4<T>(y, z, w, w); }
+	inline nsvec4<T> ywxx() const { return nsvec4<T>(y, w, x, x); }
+	inline nsvec4<T> ywxy() const { return nsvec4<T>(y, w, x, y); }
+	inline nsvec4<T> ywxz() const { return nsvec4<T>(y, w, x, z); }
+	inline nsvec4<T> ywxw() const { return nsvec4<T>(y, w, x, w); }
+	inline nsvec4<T> ywyx() const { return nsvec4<T>(y, w, y, x); }
+	inline nsvec4<T> ywyy() const { return nsvec4<T>(y, w, y, y); }
+	inline nsvec4<T> ywyz() const { return nsvec4<T>(y, w, y, z); }
+	inline nsvec4<T> ywyw() const { return nsvec4<T>(y, w, y, w); }
+	inline nsvec4<T> ywzx() const { return nsvec4<T>(y, w, z, x); }
+	inline nsvec4<T> ywzy() const { return nsvec4<T>(y, w, z, y); }
+	inline nsvec4<T> ywzz() const { return nsvec4<T>(y, w, z, z); }
+	inline nsvec4<T> ywzw() const { return nsvec4<T>(y, w, z, w); }
+	inline nsvec4<T> ywwx() const { return nsvec4<T>(y, w, w, x); }
+	inline nsvec4<T> ywwy() const { return nsvec4<T>(y, w, w, y); }
+	inline nsvec4<T> ywwz() const { return nsvec4<T>(y, w, w, z); }
+	inline nsvec4<T> ywww() const { return nsvec4<T>(y, w, w, w); }
+	inline nsvec4<T> zxxx() const { return nsvec4<T>(z, x, x, x); }
+	inline nsvec4<T> zxxy() const { return nsvec4<T>(z, x, x, y); }
+	inline nsvec4<T> zxxz() const { return nsvec4<T>(z, x, x, z); }
+	inline nsvec4<T> zxxw() const { return nsvec4<T>(z, x, x, w); }
+	inline nsvec4<T> zxyx() const { return nsvec4<T>(z, x, y, x); }
+	inline nsvec4<T> zxyy() const { return nsvec4<T>(z, x, y, y); }
+	inline nsvec4<T> zxyz() const { return nsvec4<T>(z, x, y, z); }
+	inline nsvec4<T> zxyw() const { return nsvec4<T>(z, x, y, w); }
+	inline nsvec4<T> zxzx() const { return nsvec4<T>(z, x, z, x); }
+	inline nsvec4<T> zxzy() const { return nsvec4<T>(z, x, z, y); }
+	inline nsvec4<T> zxzz() const { return nsvec4<T>(z, x, z, z); }
+	inline nsvec4<T> zxzw() const { return nsvec4<T>(z, x, z, w); }
+	inline nsvec4<T> zxwx() const { return nsvec4<T>(z, x, w, x); }
+	inline nsvec4<T> zxwy() const { return nsvec4<T>(z, x, w, y); }
+	inline nsvec4<T> zxwz() const { return nsvec4<T>(z, x, w, z); }
+	inline nsvec4<T> zxww() const { return nsvec4<T>(z, x, w, w); }
+	inline nsvec4<T> zyxx() const { return nsvec4<T>(z, y, x, x); }
+	inline nsvec4<T> zyxy() const { return nsvec4<T>(z, y, x, y); }
+	inline nsvec4<T> zyxz() const { return nsvec4<T>(z, y, x, z); }
+	inline nsvec4<T> zyxw() const { return nsvec4<T>(z, y, x, w); }
+	inline nsvec4<T> zyyx() const { return nsvec4<T>(z, y, y, x); }
+	inline nsvec4<T> zyyy() const { return nsvec4<T>(z, y, y, y); }
+	inline nsvec4<T> zyyz() const { return nsvec4<T>(z, y, y, z); }
+	inline nsvec4<T> zyyw() const { return nsvec4<T>(z, y, y, w); }
+	inline nsvec4<T> zyzx() const { return nsvec4<T>(z, y, z, x); }
+	inline nsvec4<T> zyzy() const { return nsvec4<T>(z, y, z, y); }
+	inline nsvec4<T> zyzz() const { return nsvec4<T>(z, y, z, z); }
+	inline nsvec4<T> zyzw() const { return nsvec4<T>(z, y, z, w); }
+	inline nsvec4<T> zywx() const { return nsvec4<T>(z, y, w, x); }
+	inline nsvec4<T> zywy() const { return nsvec4<T>(z, y, w, y); }
+	inline nsvec4<T> zywz() const { return nsvec4<T>(z, y, w, z); }
+	inline nsvec4<T> zyww() const { return nsvec4<T>(z, y, w, w); }
+	inline nsvec4<T> zzxx() const { return nsvec4<T>(z, z, x, x); }
+	inline nsvec4<T> zzxy() const { return nsvec4<T>(z, z, x, y); }
+	inline nsvec4<T> zzxz() const { return nsvec4<T>(z, z, x, z); }
+	inline nsvec4<T> zzxw() const { return nsvec4<T>(z, z, x, w); }
+	inline nsvec4<T> zzyx() const { return nsvec4<T>(z, z, y, x); }
+	inline nsvec4<T> zzyy() const { return nsvec4<T>(z, z, y, y); }
+	inline nsvec4<T> zzyz() const { return nsvec4<T>(z, z, y, z); }
+	inline nsvec4<T> zzyw() const { return nsvec4<T>(z, z, y, w); }
+	inline nsvec4<T> zzzx() const { return nsvec4<T>(z, z, z, x); }
+	inline nsvec4<T> zzzy() const { return nsvec4<T>(z, z, z, y); }
+	inline nsvec4<T> zzzz() const { return nsvec4<T>(z, z, z, z); }
+	inline nsvec4<T> zzzw() const { return nsvec4<T>(z, z, z, w); }
+	inline nsvec4<T> zzwx() const { return nsvec4<T>(z, z, w, x); }
+	inline nsvec4<T> zzwy() const { return nsvec4<T>(z, z, w, y); }
+	inline nsvec4<T> zzwz() const { return nsvec4<T>(z, z, w, z); }
+	inline nsvec4<T> zzww() const { return nsvec4<T>(z, z, w, w); }
+	inline nsvec4<T> zwxx() const { return nsvec4<T>(z, w, x, x); }
+	inline nsvec4<T> zwxy() const { return nsvec4<T>(z, w, x, y); }
+	inline nsvec4<T> zwxz() const { return nsvec4<T>(z, w, x, z); }
+	inline nsvec4<T> zwxw() const { return nsvec4<T>(z, w, x, w); }
+	inline nsvec4<T> zwyx() const { return nsvec4<T>(z, w, y, x); }
+	inline nsvec4<T> zwyy() const { return nsvec4<T>(z, w, y, y); }
+	inline nsvec4<T> zwyz() const { return nsvec4<T>(z, w, y, z); }
+	inline nsvec4<T> zwyw() const { return nsvec4<T>(z, w, y, w); }
+	inline nsvec4<T> zwzx() const { return nsvec4<T>(z, w, z, x); }
+	inline nsvec4<T> zwzy() const { return nsvec4<T>(z, w, z, y); }
+	inline nsvec4<T> zwzz() const { return nsvec4<T>(z, w, z, z); }
+	inline nsvec4<T> zwzw() const { return nsvec4<T>(z, w, z, w); }
+	inline nsvec4<T> zwwx() const { return nsvec4<T>(z, w, w, x); }
+	inline nsvec4<T> zwwy() const { return nsvec4<T>(z, w, w, y); }
+	inline nsvec4<T> zwwz() const { return nsvec4<T>(z, w, w, z); }
+	inline nsvec4<T> zwww() const { return nsvec4<T>(z, w, w, w); }
+	inline nsvec4<T> wxxx() const { return nsvec4<T>(w, x, x, x); }
+	inline nsvec4<T> wxxy() const { return nsvec4<T>(w, x, x, y); }
+	inline nsvec4<T> wxxz() const { return nsvec4<T>(w, x, x, z); }
+	inline nsvec4<T> wxxw() const { return nsvec4<T>(w, x, x, w); }
+	inline nsvec4<T> wxyx() const { return nsvec4<T>(w, x, y, x); }
+	inline nsvec4<T> wxyy() const { return nsvec4<T>(w, x, y, y); }
+	inline nsvec4<T> wxyz() const { return nsvec4<T>(w, x, y, z); }
+	inline nsvec4<T> wxyw() const { return nsvec4<T>(w, x, y, w); }
+	inline nsvec4<T> wxzx() const { return nsvec4<T>(w, x, z, x); }
+	inline nsvec4<T> wxzy() const { return nsvec4<T>(w, x, z, y); }
+	inline nsvec4<T> wxzz() const { return nsvec4<T>(w, x, z, z); }
+	inline nsvec4<T> wxzw() const { return nsvec4<T>(w, x, z, w); }
+	inline nsvec4<T> wxwx() const { return nsvec4<T>(w, x, w, x); }
+	inline nsvec4<T> wxwy() const { return nsvec4<T>(w, x, w, y); }
+	inline nsvec4<T> wxwz() const { return nsvec4<T>(w, x, w, z); }
+	inline nsvec4<T> wxww() const { return nsvec4<T>(w, x, w, w); }
+	inline nsvec4<T> wyxx() const { return nsvec4<T>(w, y, x, x); }
+	inline nsvec4<T> wyxy() const { return nsvec4<T>(w, y, x, y); }
+	inline nsvec4<T> wyxz() const { return nsvec4<T>(w, y, x, z); }
+	inline nsvec4<T> wyxw() const { return nsvec4<T>(w, y, x, w); }
+	inline nsvec4<T> wyyx() const { return nsvec4<T>(w, y, y, x); }
+	inline nsvec4<T> wyyy() const { return nsvec4<T>(w, y, y, y); }
+	inline nsvec4<T> wyyz() const { return nsvec4<T>(w, y, y, z); }
+	inline nsvec4<T> wyyw() const { return nsvec4<T>(w, y, y, w); }
+	inline nsvec4<T> wyzx() const { return nsvec4<T>(w, y, z, x); }
+	inline nsvec4<T> wyzy() const { return nsvec4<T>(w, y, z, y); }
+	inline nsvec4<T> wyzz() const { return nsvec4<T>(w, y, z, z); }
+	inline nsvec4<T> wyzw() const { return nsvec4<T>(w, y, z, w); }
+	inline nsvec4<T> wywx() const { return nsvec4<T>(w, y, w, x); }
+	inline nsvec4<T> wywy() const { return nsvec4<T>(w, y, w, y); }
+	inline nsvec4<T> wywz() const { return nsvec4<T>(w, y, w, z); }
+	inline nsvec4<T> wyww() const { return nsvec4<T>(w, y, w, w); }
+	inline nsvec4<T> wzxx() const { return nsvec4<T>(w, z, x, x); }
+	inline nsvec4<T> wzxy() const { return nsvec4<T>(w, z, x, y); }
+	inline nsvec4<T> wzxz() const { return nsvec4<T>(w, z, x, z); }
+	inline nsvec4<T> wzxw() const { return nsvec4<T>(w, z, x, w); }
+	inline nsvec4<T> wzyx() const { return nsvec4<T>(w, z, y, x); }
+	inline nsvec4<T> wzyy() const { return nsvec4<T>(w, z, y, y); }
+	inline nsvec4<T> wzyz() const { return nsvec4<T>(w, z, y, z); }
+	inline nsvec4<T> wzyw() const { return nsvec4<T>(w, z, y, w); }
+	inline nsvec4<T> wzzx() const { return nsvec4<T>(w, z, z, x); }
+	inline nsvec4<T> wzzy() const { return nsvec4<T>(w, z, z, y); }
+	inline nsvec4<T> wzzz() const { return nsvec4<T>(w, z, z, z); }
+	inline nsvec4<T> wzzw() const { return nsvec4<T>(w, z, z, w); }
+	inline nsvec4<T> wzwx() const { return nsvec4<T>(w, z, w, x); }
+	inline nsvec4<T> wzwy() const { return nsvec4<T>(w, z, w, y); }
+	inline nsvec4<T> wzwz() const { return nsvec4<T>(w, z, w, z); }
+	inline nsvec4<T> wzww() const { return nsvec4<T>(w, z, w, w); }
+	inline nsvec4<T> wwxx() const { return nsvec4<T>(w, w, x, x); }
+	inline nsvec4<T> wwxy() const { return nsvec4<T>(w, w, x, y); }
+	inline nsvec4<T> wwxz() const { return nsvec4<T>(w, w, x, z); }
+	inline nsvec4<T> wwxw() const { return nsvec4<T>(w, w, x, w); }
+	inline nsvec4<T> wwyx() const { return nsvec4<T>(w, w, y, x); }
+	inline nsvec4<T> wwyy() const { return nsvec4<T>(w, w, y, y); }
+	inline nsvec4<T> wwyz() const { return nsvec4<T>(w, w, y, z); }
+	inline nsvec4<T> wwyw() const { return nsvec4<T>(w, w, y, w); }
+	inline nsvec4<T> wwzx() const { return nsvec4<T>(w, w, z, x); }
+	inline nsvec4<T> wwzy() const { return nsvec4<T>(w, w, z, y); }
+	inline nsvec4<T> wwzz() const { return nsvec4<T>(w, w, z, z); }
+	inline nsvec4<T> wwzw() const { return nsvec4<T>(w, w, z, w); }
+	inline nsvec4<T> wwwx() const { return nsvec4<T>(w, w, w, x); }
+	inline nsvec4<T> wwwy() const { return nsvec4<T>(w, w, w, y); }
+	inline nsvec4<T> wwwz() const { return nsvec4<T>(w, w, w, z); }
+	inline nsvec4<T> wwww() const { return nsvec4<T>(w, w, w, w); }
 
-	inline NSVec4<T> rrrr() const { return NSVec4<T>(r, r, r, r); }
-	inline NSVec4<T> rrrg() const { return NSVec4<T>(r, r, r, g); }
-	inline NSVec4<T> rrrb() const { return NSVec4<T>(r, r, r, b); }
-	inline NSVec4<T> rrra() const { return NSVec4<T>(r, r, r, a); }
-	inline NSVec4<T> rrgr() const { return NSVec4<T>(r, r, g, r); }
-	inline NSVec4<T> rrgg() const { return NSVec4<T>(r, r, g, g); }
-	inline NSVec4<T> rrgb() const { return NSVec4<T>(r, r, g, b); }
-	inline NSVec4<T> rrga() const { return NSVec4<T>(r, r, g, a); }
-	inline NSVec4<T> rrbr() const { return NSVec4<T>(r, r, b, r); }
-	inline NSVec4<T> rrbg() const { return NSVec4<T>(r, r, b, g); }
-	inline NSVec4<T> rrbb() const { return NSVec4<T>(r, r, b, b); }
-	inline NSVec4<T> rrba() const { return NSVec4<T>(r, r, b, a); }
-	inline NSVec4<T> rrar() const { return NSVec4<T>(r, r, a, r); }
-	inline NSVec4<T> rrag() const { return NSVec4<T>(r, r, a, g); }
-	inline NSVec4<T> rrab() const { return NSVec4<T>(r, r, a, b); }
-	inline NSVec4<T> rraa() const { return NSVec4<T>(r, r, a, a); }
-	inline NSVec4<T> rgrr() const { return NSVec4<T>(r, g, r, r); }
-	inline NSVec4<T> rgrg() const { return NSVec4<T>(r, g, r, g); }
-	inline NSVec4<T> rgrb() const { return NSVec4<T>(r, g, r, b); }
-	inline NSVec4<T> rgra() const { return NSVec4<T>(r, g, r, a); }
-	inline NSVec4<T> rggr() const { return NSVec4<T>(r, g, g, r); }
-	inline NSVec4<T> rggg() const { return NSVec4<T>(r, g, g, g); }
-	inline NSVec4<T> rggb() const { return NSVec4<T>(r, g, g, b); }
-	inline NSVec4<T> rgga() const { return NSVec4<T>(r, g, g, a); }
-	inline NSVec4<T> rgbr() const { return NSVec4<T>(r, g, b, r); }
-	inline NSVec4<T> rgbg() const { return NSVec4<T>(r, g, b, g); }
-	inline NSVec4<T> rgbb() const { return NSVec4<T>(r, g, b, b); }
-	inline NSVec4<T> rgar() const { return NSVec4<T>(r, g, a, r); }
-	inline NSVec4<T> rgag() const { return NSVec4<T>(r, g, a, g); }
-	inline NSVec4<T> rgab() const { return NSVec4<T>(r, g, a, b); }
-	inline NSVec4<T> rgaa() const { return NSVec4<T>(r, g, a, a); }
-	inline NSVec4<T> rbrr() const { return NSVec4<T>(r, b, r, r); }
-	inline NSVec4<T> rbrg() const { return NSVec4<T>(r, b, r, g); }
-	inline NSVec4<T> rbrb() const { return NSVec4<T>(r, b, r, b); }
-	inline NSVec4<T> rbra() const { return NSVec4<T>(r, b, r, a); }
-	inline NSVec4<T> rbgr() const { return NSVec4<T>(r, b, g, r); }
-	inline NSVec4<T> rbgg() const { return NSVec4<T>(r, b, g, g); }
-	inline NSVec4<T> rbgb() const { return NSVec4<T>(r, b, g, b); }
-	inline NSVec4<T> rbga() const { return NSVec4<T>(r, b, g, a); }
-	inline NSVec4<T> rbbr() const { return NSVec4<T>(r, b, b, r); }
-	inline NSVec4<T> rbbg() const { return NSVec4<T>(r, b, b, g); }
-	inline NSVec4<T> rbbb() const { return NSVec4<T>(r, b, b, b); }
-	inline NSVec4<T> rbba() const { return NSVec4<T>(r, b, b, a); }
-	inline NSVec4<T> rbar() const { return NSVec4<T>(r, b, a, r); }
-	inline NSVec4<T> rbag() const { return NSVec4<T>(r, b, a, g); }
-	inline NSVec4<T> rbab() const { return NSVec4<T>(r, b, a, b); }
-	inline NSVec4<T> rbaa() const { return NSVec4<T>(r, b, a, a); }
-	inline NSVec4<T> rarr() const { return NSVec4<T>(r, a, r, r); }
-	inline NSVec4<T> rarg() const { return NSVec4<T>(r, a, r, g); }
-	inline NSVec4<T> rarb() const { return NSVec4<T>(r, a, r, b); }
-	inline NSVec4<T> rara() const { return NSVec4<T>(r, a, r, a); }
-	inline NSVec4<T> ragr() const { return NSVec4<T>(r, a, g, r); }
-	inline NSVec4<T> ragg() const { return NSVec4<T>(r, a, g, g); }
-	inline NSVec4<T> ragb() const { return NSVec4<T>(r, a, g, b); }
-	inline NSVec4<T> raga() const { return NSVec4<T>(r, a, g, a); }
-	inline NSVec4<T> rabr() const { return NSVec4<T>(r, a, b, r); }
-	inline NSVec4<T> rabg() const { return NSVec4<T>(r, a, b, g); }
-	inline NSVec4<T> rabb() const { return NSVec4<T>(r, a, b, b); }
-	inline NSVec4<T> raba() const { return NSVec4<T>(r, a, b, a); }
-	inline NSVec4<T> raar() const { return NSVec4<T>(r, a, a, r); }
-	inline NSVec4<T> raag() const { return NSVec4<T>(r, a, a, g); }
-	inline NSVec4<T> raab() const { return NSVec4<T>(r, a, a, b); }
-	inline NSVec4<T> raaa() const { return NSVec4<T>(r, a, a, a); }
-	inline NSVec4<T> grrr() const { return NSVec4<T>(g, r, r, r); }
-	inline NSVec4<T> grrg() const { return NSVec4<T>(g, r, r, g); }
-	inline NSVec4<T> grrb() const { return NSVec4<T>(g, r, r, b); }
-	inline NSVec4<T> grra() const { return NSVec4<T>(g, r, r, a); }
-	inline NSVec4<T> grgr() const { return NSVec4<T>(g, r, g, r); }
-	inline NSVec4<T> grgg() const { return NSVec4<T>(g, r, g, g); }
-	inline NSVec4<T> grgb() const { return NSVec4<T>(g, r, g, b); }
-	inline NSVec4<T> grga() const { return NSVec4<T>(g, r, g, a); }
-	inline NSVec4<T> grbr() const { return NSVec4<T>(g, r, b, r); }
-	inline NSVec4<T> grbg() const { return NSVec4<T>(g, r, b, g); }
-	inline NSVec4<T> grbb() const { return NSVec4<T>(g, r, b, b); }
-	inline NSVec4<T> grba() const { return NSVec4<T>(g, r, b, a); }
-	inline NSVec4<T> grar() const { return NSVec4<T>(g, r, a, r); }
-	inline NSVec4<T> grag() const { return NSVec4<T>(g, r, a, g); }
-	inline NSVec4<T> grab() const { return NSVec4<T>(g, r, a, b); }
-	inline NSVec4<T> graa() const { return NSVec4<T>(g, r, a, a); }
-	inline NSVec4<T> ggrr() const { return NSVec4<T>(g, g, r, r); }
-	inline NSVec4<T> ggrg() const { return NSVec4<T>(g, g, r, g); }
-	inline NSVec4<T> ggrb() const { return NSVec4<T>(g, g, r, b); }
-	inline NSVec4<T> ggra() const { return NSVec4<T>(g, g, r, a); }
-	inline NSVec4<T> gggr() const { return NSVec4<T>(g, g, g, r); }
-	inline NSVec4<T> gggg() const { return NSVec4<T>(g, g, g, g); }
-	inline NSVec4<T> gggb() const { return NSVec4<T>(g, g, g, b); }
-	inline NSVec4<T> ggga() const { return NSVec4<T>(g, g, g, a); }
-	inline NSVec4<T> ggbr() const { return NSVec4<T>(g, g, b, r); }
-	inline NSVec4<T> ggbg() const { return NSVec4<T>(g, g, b, g); }
-	inline NSVec4<T> ggbb() const { return NSVec4<T>(g, g, b, b); }
-	inline NSVec4<T> ggba() const { return NSVec4<T>(g, g, b, a); }
-	inline NSVec4<T> ggar() const { return NSVec4<T>(g, g, a, r); }
-	inline NSVec4<T> ggag() const { return NSVec4<T>(g, g, a, g); }
-	inline NSVec4<T> ggab() const { return NSVec4<T>(g, g, a, b); }
-	inline NSVec4<T> ggaa() const { return NSVec4<T>(g, g, a, a); }
-	inline NSVec4<T> gbrr() const { return NSVec4<T>(g, b, r, r); }
-	inline NSVec4<T> gbrg() const { return NSVec4<T>(g, b, r, g); }
-	inline NSVec4<T> gbrb() const { return NSVec4<T>(g, b, r, b); }
-	inline NSVec4<T> gbra() const { return NSVec4<T>(g, b, r, a); }
-	inline NSVec4<T> gbgr() const { return NSVec4<T>(g, b, g, r); }
-	inline NSVec4<T> gbgg() const { return NSVec4<T>(g, b, g, g); }
-	inline NSVec4<T> gbgb() const { return NSVec4<T>(g, b, g, b); }
-	inline NSVec4<T> gbga() const { return NSVec4<T>(g, b, g, a); }
-	inline NSVec4<T> gbbr() const { return NSVec4<T>(g, b, b, r); }
-	inline NSVec4<T> gbbg() const { return NSVec4<T>(g, b, b, g); }
-	inline NSVec4<T> gbbb() const { return NSVec4<T>(g, b, b, b); }
-	inline NSVec4<T> gbba() const { return NSVec4<T>(g, b, b, a); }
-	inline NSVec4<T> gbar() const { return NSVec4<T>(g, b, a, r); }
-	inline NSVec4<T> gbag() const { return NSVec4<T>(g, b, a, g); }
-	inline NSVec4<T> gbab() const { return NSVec4<T>(g, b, a, b); }
-	inline NSVec4<T> gbaa() const { return NSVec4<T>(g, b, a, a); }
-	inline NSVec4<T> garr() const { return NSVec4<T>(g, a, r, r); }
-	inline NSVec4<T> garg() const { return NSVec4<T>(g, a, r, g); }
-	inline NSVec4<T> garb() const { return NSVec4<T>(g, a, r, b); }
-	inline NSVec4<T> gara() const { return NSVec4<T>(g, a, r, a); }
-	inline NSVec4<T> gagr() const { return NSVec4<T>(g, a, g, r); }
-	inline NSVec4<T> gagg() const { return NSVec4<T>(g, a, g, g); }
-	inline NSVec4<T> gagb() const { return NSVec4<T>(g, a, g, b); }
-	inline NSVec4<T> gaga() const { return NSVec4<T>(g, a, g, a); }
-	inline NSVec4<T> gabr() const { return NSVec4<T>(g, a, b, r); }
-	inline NSVec4<T> gabg() const { return NSVec4<T>(g, a, b, g); }
-	inline NSVec4<T> gabb() const { return NSVec4<T>(g, a, b, b); }
-	inline NSVec4<T> gaba() const { return NSVec4<T>(g, a, b, a); }
-	inline NSVec4<T> gaar() const { return NSVec4<T>(g, a, a, r); }
-	inline NSVec4<T> gaag() const { return NSVec4<T>(g, a, a, g); }
-	inline NSVec4<T> gaab() const { return NSVec4<T>(g, a, a, b); }
-	inline NSVec4<T> gaaa() const { return NSVec4<T>(g, a, a, a); }
-	inline NSVec4<T> brrr() const { return NSVec4<T>(b, r, r, r); }
-	inline NSVec4<T> brrg() const { return NSVec4<T>(b, r, r, g); }
-	inline NSVec4<T> brrb() const { return NSVec4<T>(b, r, r, b); }
-	inline NSVec4<T> brra() const { return NSVec4<T>(b, r, r, a); }
-	inline NSVec4<T> brgr() const { return NSVec4<T>(b, r, g, r); }
-	inline NSVec4<T> brgg() const { return NSVec4<T>(b, r, g, g); }
-	inline NSVec4<T> brgb() const { return NSVec4<T>(b, r, g, b); }
-	inline NSVec4<T> brga() const { return NSVec4<T>(b, r, g, a); }
-	inline NSVec4<T> brbr() const { return NSVec4<T>(b, r, b, r); }
-	inline NSVec4<T> brbg() const { return NSVec4<T>(b, r, b, g); }
-	inline NSVec4<T> brbb() const { return NSVec4<T>(b, r, b, b); }
-	inline NSVec4<T> brba() const { return NSVec4<T>(b, r, b, a); }
-	inline NSVec4<T> brar() const { return NSVec4<T>(b, r, a, r); }
-	inline NSVec4<T> brag() const { return NSVec4<T>(b, r, a, g); }
-	inline NSVec4<T> brab() const { return NSVec4<T>(b, r, a, b); }
-	inline NSVec4<T> braa() const { return NSVec4<T>(b, r, a, a); }
-	inline NSVec4<T> bgrr() const { return NSVec4<T>(b, g, r, r); }
-	inline NSVec4<T> bgrg() const { return NSVec4<T>(b, g, r, g); }
-	inline NSVec4<T> bgrb() const { return NSVec4<T>(b, g, r, b); }
-	inline NSVec4<T> bgra() const { return NSVec4<T>(b, g, r, a); }
-	inline NSVec4<T> bggr() const { return NSVec4<T>(b, g, g, r); }
-	inline NSVec4<T> bggg() const { return NSVec4<T>(b, g, g, g); }
-	inline NSVec4<T> bggb() const { return NSVec4<T>(b, g, g, b); }
-	inline NSVec4<T> bgga() const { return NSVec4<T>(b, g, g, a); }
-	inline NSVec4<T> bgbr() const { return NSVec4<T>(b, g, b, r); }
-	inline NSVec4<T> bgbg() const { return NSVec4<T>(b, g, b, g); }
-	inline NSVec4<T> bgbb() const { return NSVec4<T>(b, g, b, b); }
-	inline NSVec4<T> bgba() const { return NSVec4<T>(b, g, b, a); }
-	inline NSVec4<T> bgar() const { return NSVec4<T>(b, g, a, r); }
-	inline NSVec4<T> bgag() const { return NSVec4<T>(b, g, a, g); }
-	inline NSVec4<T> bgab() const { return NSVec4<T>(b, g, a, b); }
-	inline NSVec4<T> bgaa() const { return NSVec4<T>(b, g, a, a); }
-	inline NSVec4<T> bbrr() const { return NSVec4<T>(b, b, r, r); }
-	inline NSVec4<T> bbrg() const { return NSVec4<T>(b, b, r, g); }
-	inline NSVec4<T> bbrb() const { return NSVec4<T>(b, b, r, b); }
-	inline NSVec4<T> bbra() const { return NSVec4<T>(b, b, r, a); }
-	inline NSVec4<T> bbgr() const { return NSVec4<T>(b, b, g, r); }
-	inline NSVec4<T> bbgg() const { return NSVec4<T>(b, b, g, g); }
-	inline NSVec4<T> bbgb() const { return NSVec4<T>(b, b, g, b); }
-	inline NSVec4<T> bbga() const { return NSVec4<T>(b, b, g, a); }
-	inline NSVec4<T> bbbr() const { return NSVec4<T>(b, b, b, r); }
-	inline NSVec4<T> bbbg() const { return NSVec4<T>(b, b, b, g); }
-	inline NSVec4<T> bbbb() const { return NSVec4<T>(b, b, b, b); }
-	inline NSVec4<T> bbba() const { return NSVec4<T>(b, b, b, a); }
-	inline NSVec4<T> bbar() const { return NSVec4<T>(b, b, a, r); }
-	inline NSVec4<T> bbag() const { return NSVec4<T>(b, b, a, g); }
-	inline NSVec4<T> bbab() const { return NSVec4<T>(b, b, a, b); }
-	inline NSVec4<T> bbaa() const { return NSVec4<T>(b, b, a, a); }
-	inline NSVec4<T> barr() const { return NSVec4<T>(b, a, r, r); }
-	inline NSVec4<T> barg() const { return NSVec4<T>(b, a, r, g); }
-	inline NSVec4<T> barb() const { return NSVec4<T>(b, a, r, b); }
-	inline NSVec4<T> bara() const { return NSVec4<T>(b, a, r, a); }
-	inline NSVec4<T> bagr() const { return NSVec4<T>(b, a, g, r); }
-	inline NSVec4<T> bagg() const { return NSVec4<T>(b, a, g, g); }
-	inline NSVec4<T> bagb() const { return NSVec4<T>(b, a, g, b); }
-	inline NSVec4<T> baga() const { return NSVec4<T>(b, a, g, a); }
-	inline NSVec4<T> babr() const { return NSVec4<T>(b, a, b, r); }
-	inline NSVec4<T> babg() const { return NSVec4<T>(b, a, b, g); }
-	inline NSVec4<T> babb() const { return NSVec4<T>(b, a, b, b); }
-	inline NSVec4<T> baba() const { return NSVec4<T>(b, a, b, a); }
-	inline NSVec4<T> baar() const { return NSVec4<T>(b, a, a, r); }
-	inline NSVec4<T> baag() const { return NSVec4<T>(b, a, a, g); }
-	inline NSVec4<T> baab() const { return NSVec4<T>(b, a, a, b); }
-	inline NSVec4<T> baaa() const { return NSVec4<T>(b, a, a, a); }
-	inline NSVec4<T> arrr() const { return NSVec4<T>(a, r, r, r); }
-	inline NSVec4<T> arrg() const { return NSVec4<T>(a, r, r, g); }
-	inline NSVec4<T> arrb() const { return NSVec4<T>(a, r, r, b); }
-	inline NSVec4<T> arra() const { return NSVec4<T>(a, r, r, a); }
-	inline NSVec4<T> argr() const { return NSVec4<T>(a, r, g, r); }
-	inline NSVec4<T> argg() const { return NSVec4<T>(a, r, g, g); }
-	inline NSVec4<T> argb() const { return NSVec4<T>(a, r, g, b); }
-	inline NSVec4<T> arga() const { return NSVec4<T>(a, r, g, a); }
-	inline NSVec4<T> arbr() const { return NSVec4<T>(a, r, b, r); }
-	inline NSVec4<T> arbg() const { return NSVec4<T>(a, r, b, g); }
-	inline NSVec4<T> arbb() const { return NSVec4<T>(a, r, b, b); }
-	inline NSVec4<T> arba() const { return NSVec4<T>(a, r, b, a); }
-	inline NSVec4<T> arar() const { return NSVec4<T>(a, r, a, r); }
-	inline NSVec4<T> arag() const { return NSVec4<T>(a, r, a, g); }
-	inline NSVec4<T> arab() const { return NSVec4<T>(a, r, a, b); }
-	inline NSVec4<T> araa() const { return NSVec4<T>(a, r, a, a); }
-	inline NSVec4<T> agrr() const { return NSVec4<T>(a, g, r, r); }
-	inline NSVec4<T> agrg() const { return NSVec4<T>(a, g, r, g); }
-	inline NSVec4<T> agrb() const { return NSVec4<T>(a, g, r, b); }
-	inline NSVec4<T> agra() const { return NSVec4<T>(a, g, r, a); }
-	inline NSVec4<T> aggr() const { return NSVec4<T>(a, g, g, r); }
-	inline NSVec4<T> aggg() const { return NSVec4<T>(a, g, g, g); }
-	inline NSVec4<T> aggb() const { return NSVec4<T>(a, g, g, b); }
-	inline NSVec4<T> agga() const { return NSVec4<T>(a, g, g, a); }
-	inline NSVec4<T> agbr() const { return NSVec4<T>(a, g, b, r); }
-	inline NSVec4<T> agbg() const { return NSVec4<T>(a, g, b, g); }
-	inline NSVec4<T> agbb() const { return NSVec4<T>(a, g, b, b); }
-	inline NSVec4<T> agba() const { return NSVec4<T>(a, g, b, a); }
-	inline NSVec4<T> agar() const { return NSVec4<T>(a, g, a, r); }
-	inline NSVec4<T> agag() const { return NSVec4<T>(a, g, a, g); }
-	inline NSVec4<T> agab() const { return NSVec4<T>(a, g, a, b); }
-	inline NSVec4<T> agaa() const { return NSVec4<T>(a, g, a, a); }
-	inline NSVec4<T> abrr() const { return NSVec4<T>(a, b, r, r); }
-	inline NSVec4<T> abrg() const { return NSVec4<T>(a, b, r, g); }
-	inline NSVec4<T> abrb() const { return NSVec4<T>(a, b, r, b); }
-	inline NSVec4<T> abra() const { return NSVec4<T>(a, b, r, a); }
-	inline NSVec4<T> abgr() const { return NSVec4<T>(a, b, g, r); }
-	inline NSVec4<T> abgg() const { return NSVec4<T>(a, b, g, g); }
-	inline NSVec4<T> abgb() const { return NSVec4<T>(a, b, g, b); }
-	inline NSVec4<T> abga() const { return NSVec4<T>(a, b, g, a); }
-	inline NSVec4<T> abbr() const { return NSVec4<T>(a, b, b, r); }
-	inline NSVec4<T> abbg() const { return NSVec4<T>(a, b, b, g); }
-	inline NSVec4<T> abbb() const { return NSVec4<T>(a, b, b, b); }
-	inline NSVec4<T> abba() const { return NSVec4<T>(a, b, b, a); }
-	inline NSVec4<T> abar() const { return NSVec4<T>(a, b, a, r); }
-	inline NSVec4<T> abag() const { return NSVec4<T>(a, b, a, g); }
-	inline NSVec4<T> abab() const { return NSVec4<T>(a, b, a, b); }
-	inline NSVec4<T> abaa() const { return NSVec4<T>(a, b, a, a); }
-	inline NSVec4<T> aarr() const { return NSVec4<T>(a, a, r, r); }
-	inline NSVec4<T> aarg() const { return NSVec4<T>(a, a, r, g); }
-	inline NSVec4<T> aarb() const { return NSVec4<T>(a, a, r, b); }
-	inline NSVec4<T> aara() const { return NSVec4<T>(a, a, r, a); }
-	inline NSVec4<T> aagr() const { return NSVec4<T>(a, a, g, r); }
-	inline NSVec4<T> aagg() const { return NSVec4<T>(a, a, g, g); }
-	inline NSVec4<T> aagb() const { return NSVec4<T>(a, a, g, b); }
-	inline NSVec4<T> aaga() const { return NSVec4<T>(a, a, g, a); }
-	inline NSVec4<T> aabr() const { return NSVec4<T>(a, a, b, r); }
-	inline NSVec4<T> aabg() const { return NSVec4<T>(a, a, b, g); }
-	inline NSVec4<T> aabb() const { return NSVec4<T>(a, a, b, b); }
-	inline NSVec4<T> aaba() const { return NSVec4<T>(a, a, b, a); }
-	inline NSVec4<T> aaar() const { return NSVec4<T>(a, a, a, r); }
-	inline NSVec4<T> aaag() const { return NSVec4<T>(a, a, a, g); }
-	inline NSVec4<T> aaab() const { return NSVec4<T>(a, a, a, b); }
-	inline NSVec4<T> aaaa() const { return NSVec4<T>(a, a, a, a); }
+	inline nsvec4<T> rrrr() const { return nsvec4<T>(r, r, r, r); }
+	inline nsvec4<T> rrrg() const { return nsvec4<T>(r, r, r, g); }
+	inline nsvec4<T> rrrb() const { return nsvec4<T>(r, r, r, b); }
+	inline nsvec4<T> rrra() const { return nsvec4<T>(r, r, r, a); }
+	inline nsvec4<T> rrgr() const { return nsvec4<T>(r, r, g, r); }
+	inline nsvec4<T> rrgg() const { return nsvec4<T>(r, r, g, g); }
+	inline nsvec4<T> rrgb() const { return nsvec4<T>(r, r, g, b); }
+	inline nsvec4<T> rrga() const { return nsvec4<T>(r, r, g, a); }
+	inline nsvec4<T> rrbr() const { return nsvec4<T>(r, r, b, r); }
+	inline nsvec4<T> rrbg() const { return nsvec4<T>(r, r, b, g); }
+	inline nsvec4<T> rrbb() const { return nsvec4<T>(r, r, b, b); }
+	inline nsvec4<T> rrba() const { return nsvec4<T>(r, r, b, a); }
+	inline nsvec4<T> rrar() const { return nsvec4<T>(r, r, a, r); }
+	inline nsvec4<T> rrag() const { return nsvec4<T>(r, r, a, g); }
+	inline nsvec4<T> rrab() const { return nsvec4<T>(r, r, a, b); }
+	inline nsvec4<T> rraa() const { return nsvec4<T>(r, r, a, a); }
+	inline nsvec4<T> rgrr() const { return nsvec4<T>(r, g, r, r); }
+	inline nsvec4<T> rgrg() const { return nsvec4<T>(r, g, r, g); }
+	inline nsvec4<T> rgrb() const { return nsvec4<T>(r, g, r, b); }
+	inline nsvec4<T> rgra() const { return nsvec4<T>(r, g, r, a); }
+	inline nsvec4<T> rggr() const { return nsvec4<T>(r, g, g, r); }
+	inline nsvec4<T> rggg() const { return nsvec4<T>(r, g, g, g); }
+	inline nsvec4<T> rggb() const { return nsvec4<T>(r, g, g, b); }
+	inline nsvec4<T> rgga() const { return nsvec4<T>(r, g, g, a); }
+	inline nsvec4<T> rgbr() const { return nsvec4<T>(r, g, b, r); }
+	inline nsvec4<T> rgbg() const { return nsvec4<T>(r, g, b, g); }
+	inline nsvec4<T> rgbb() const { return nsvec4<T>(r, g, b, b); }
+	inline nsvec4<T> rgar() const { return nsvec4<T>(r, g, a, r); }
+	inline nsvec4<T> rgag() const { return nsvec4<T>(r, g, a, g); }
+	inline nsvec4<T> rgab() const { return nsvec4<T>(r, g, a, b); }
+	inline nsvec4<T> rgaa() const { return nsvec4<T>(r, g, a, a); }
+	inline nsvec4<T> rbrr() const { return nsvec4<T>(r, b, r, r); }
+	inline nsvec4<T> rbrg() const { return nsvec4<T>(r, b, r, g); }
+	inline nsvec4<T> rbrb() const { return nsvec4<T>(r, b, r, b); }
+	inline nsvec4<T> rbra() const { return nsvec4<T>(r, b, r, a); }
+	inline nsvec4<T> rbgr() const { return nsvec4<T>(r, b, g, r); }
+	inline nsvec4<T> rbgg() const { return nsvec4<T>(r, b, g, g); }
+	inline nsvec4<T> rbgb() const { return nsvec4<T>(r, b, g, b); }
+	inline nsvec4<T> rbga() const { return nsvec4<T>(r, b, g, a); }
+	inline nsvec4<T> rbbr() const { return nsvec4<T>(r, b, b, r); }
+	inline nsvec4<T> rbbg() const { return nsvec4<T>(r, b, b, g); }
+	inline nsvec4<T> rbbb() const { return nsvec4<T>(r, b, b, b); }
+	inline nsvec4<T> rbba() const { return nsvec4<T>(r, b, b, a); }
+	inline nsvec4<T> rbar() const { return nsvec4<T>(r, b, a, r); }
+	inline nsvec4<T> rbag() const { return nsvec4<T>(r, b, a, g); }
+	inline nsvec4<T> rbab() const { return nsvec4<T>(r, b, a, b); }
+	inline nsvec4<T> rbaa() const { return nsvec4<T>(r, b, a, a); }
+	inline nsvec4<T> rarr() const { return nsvec4<T>(r, a, r, r); }
+	inline nsvec4<T> rarg() const { return nsvec4<T>(r, a, r, g); }
+	inline nsvec4<T> rarb() const { return nsvec4<T>(r, a, r, b); }
+	inline nsvec4<T> rara() const { return nsvec4<T>(r, a, r, a); }
+	inline nsvec4<T> ragr() const { return nsvec4<T>(r, a, g, r); }
+	inline nsvec4<T> ragg() const { return nsvec4<T>(r, a, g, g); }
+	inline nsvec4<T> ragb() const { return nsvec4<T>(r, a, g, b); }
+	inline nsvec4<T> raga() const { return nsvec4<T>(r, a, g, a); }
+	inline nsvec4<T> rabr() const { return nsvec4<T>(r, a, b, r); }
+	inline nsvec4<T> rabg() const { return nsvec4<T>(r, a, b, g); }
+	inline nsvec4<T> rabb() const { return nsvec4<T>(r, a, b, b); }
+	inline nsvec4<T> raba() const { return nsvec4<T>(r, a, b, a); }
+	inline nsvec4<T> raar() const { return nsvec4<T>(r, a, a, r); }
+	inline nsvec4<T> raag() const { return nsvec4<T>(r, a, a, g); }
+	inline nsvec4<T> raab() const { return nsvec4<T>(r, a, a, b); }
+	inline nsvec4<T> raaa() const { return nsvec4<T>(r, a, a, a); }
+	inline nsvec4<T> grrr() const { return nsvec4<T>(g, r, r, r); }
+	inline nsvec4<T> grrg() const { return nsvec4<T>(g, r, r, g); }
+	inline nsvec4<T> grrb() const { return nsvec4<T>(g, r, r, b); }
+	inline nsvec4<T> grra() const { return nsvec4<T>(g, r, r, a); }
+	inline nsvec4<T> grgr() const { return nsvec4<T>(g, r, g, r); }
+	inline nsvec4<T> grgg() const { return nsvec4<T>(g, r, g, g); }
+	inline nsvec4<T> grgb() const { return nsvec4<T>(g, r, g, b); }
+	inline nsvec4<T> grga() const { return nsvec4<T>(g, r, g, a); }
+	inline nsvec4<T> grbr() const { return nsvec4<T>(g, r, b, r); }
+	inline nsvec4<T> grbg() const { return nsvec4<T>(g, r, b, g); }
+	inline nsvec4<T> grbb() const { return nsvec4<T>(g, r, b, b); }
+	inline nsvec4<T> grba() const { return nsvec4<T>(g, r, b, a); }
+	inline nsvec4<T> grar() const { return nsvec4<T>(g, r, a, r); }
+	inline nsvec4<T> grag() const { return nsvec4<T>(g, r, a, g); }
+	inline nsvec4<T> grab() const { return nsvec4<T>(g, r, a, b); }
+	inline nsvec4<T> graa() const { return nsvec4<T>(g, r, a, a); }
+	inline nsvec4<T> ggrr() const { return nsvec4<T>(g, g, r, r); }
+	inline nsvec4<T> ggrg() const { return nsvec4<T>(g, g, r, g); }
+	inline nsvec4<T> ggrb() const { return nsvec4<T>(g, g, r, b); }
+	inline nsvec4<T> ggra() const { return nsvec4<T>(g, g, r, a); }
+	inline nsvec4<T> gggr() const { return nsvec4<T>(g, g, g, r); }
+	inline nsvec4<T> gggg() const { return nsvec4<T>(g, g, g, g); }
+	inline nsvec4<T> gggb() const { return nsvec4<T>(g, g, g, b); }
+	inline nsvec4<T> ggga() const { return nsvec4<T>(g, g, g, a); }
+	inline nsvec4<T> ggbr() const { return nsvec4<T>(g, g, b, r); }
+	inline nsvec4<T> ggbg() const { return nsvec4<T>(g, g, b, g); }
+	inline nsvec4<T> ggbb() const { return nsvec4<T>(g, g, b, b); }
+	inline nsvec4<T> ggba() const { return nsvec4<T>(g, g, b, a); }
+	inline nsvec4<T> ggar() const { return nsvec4<T>(g, g, a, r); }
+	inline nsvec4<T> ggag() const { return nsvec4<T>(g, g, a, g); }
+	inline nsvec4<T> ggab() const { return nsvec4<T>(g, g, a, b); }
+	inline nsvec4<T> ggaa() const { return nsvec4<T>(g, g, a, a); }
+	inline nsvec4<T> gbrr() const { return nsvec4<T>(g, b, r, r); }
+	inline nsvec4<T> gbrg() const { return nsvec4<T>(g, b, r, g); }
+	inline nsvec4<T> gbrb() const { return nsvec4<T>(g, b, r, b); }
+	inline nsvec4<T> gbra() const { return nsvec4<T>(g, b, r, a); }
+	inline nsvec4<T> gbgr() const { return nsvec4<T>(g, b, g, r); }
+	inline nsvec4<T> gbgg() const { return nsvec4<T>(g, b, g, g); }
+	inline nsvec4<T> gbgb() const { return nsvec4<T>(g, b, g, b); }
+	inline nsvec4<T> gbga() const { return nsvec4<T>(g, b, g, a); }
+	inline nsvec4<T> gbbr() const { return nsvec4<T>(g, b, b, r); }
+	inline nsvec4<T> gbbg() const { return nsvec4<T>(g, b, b, g); }
+	inline nsvec4<T> gbbb() const { return nsvec4<T>(g, b, b, b); }
+	inline nsvec4<T> gbba() const { return nsvec4<T>(g, b, b, a); }
+	inline nsvec4<T> gbar() const { return nsvec4<T>(g, b, a, r); }
+	inline nsvec4<T> gbag() const { return nsvec4<T>(g, b, a, g); }
+	inline nsvec4<T> gbab() const { return nsvec4<T>(g, b, a, b); }
+	inline nsvec4<T> gbaa() const { return nsvec4<T>(g, b, a, a); }
+	inline nsvec4<T> garr() const { return nsvec4<T>(g, a, r, r); }
+	inline nsvec4<T> garg() const { return nsvec4<T>(g, a, r, g); }
+	inline nsvec4<T> garb() const { return nsvec4<T>(g, a, r, b); }
+	inline nsvec4<T> gara() const { return nsvec4<T>(g, a, r, a); }
+	inline nsvec4<T> gagr() const { return nsvec4<T>(g, a, g, r); }
+	inline nsvec4<T> gagg() const { return nsvec4<T>(g, a, g, g); }
+	inline nsvec4<T> gagb() const { return nsvec4<T>(g, a, g, b); }
+	inline nsvec4<T> gaga() const { return nsvec4<T>(g, a, g, a); }
+	inline nsvec4<T> gabr() const { return nsvec4<T>(g, a, b, r); }
+	inline nsvec4<T> gabg() const { return nsvec4<T>(g, a, b, g); }
+	inline nsvec4<T> gabb() const { return nsvec4<T>(g, a, b, b); }
+	inline nsvec4<T> gaba() const { return nsvec4<T>(g, a, b, a); }
+	inline nsvec4<T> gaar() const { return nsvec4<T>(g, a, a, r); }
+	inline nsvec4<T> gaag() const { return nsvec4<T>(g, a, a, g); }
+	inline nsvec4<T> gaab() const { return nsvec4<T>(g, a, a, b); }
+	inline nsvec4<T> gaaa() const { return nsvec4<T>(g, a, a, a); }
+	inline nsvec4<T> brrr() const { return nsvec4<T>(b, r, r, r); }
+	inline nsvec4<T> brrg() const { return nsvec4<T>(b, r, r, g); }
+	inline nsvec4<T> brrb() const { return nsvec4<T>(b, r, r, b); }
+	inline nsvec4<T> brra() const { return nsvec4<T>(b, r, r, a); }
+	inline nsvec4<T> brgr() const { return nsvec4<T>(b, r, g, r); }
+	inline nsvec4<T> brgg() const { return nsvec4<T>(b, r, g, g); }
+	inline nsvec4<T> brgb() const { return nsvec4<T>(b, r, g, b); }
+	inline nsvec4<T> brga() const { return nsvec4<T>(b, r, g, a); }
+	inline nsvec4<T> brbr() const { return nsvec4<T>(b, r, b, r); }
+	inline nsvec4<T> brbg() const { return nsvec4<T>(b, r, b, g); }
+	inline nsvec4<T> brbb() const { return nsvec4<T>(b, r, b, b); }
+	inline nsvec4<T> brba() const { return nsvec4<T>(b, r, b, a); }
+	inline nsvec4<T> brar() const { return nsvec4<T>(b, r, a, r); }
+	inline nsvec4<T> brag() const { return nsvec4<T>(b, r, a, g); }
+	inline nsvec4<T> brab() const { return nsvec4<T>(b, r, a, b); }
+	inline nsvec4<T> braa() const { return nsvec4<T>(b, r, a, a); }
+	inline nsvec4<T> bgrr() const { return nsvec4<T>(b, g, r, r); }
+	inline nsvec4<T> bgrg() const { return nsvec4<T>(b, g, r, g); }
+	inline nsvec4<T> bgrb() const { return nsvec4<T>(b, g, r, b); }
+	inline nsvec4<T> bgra() const { return nsvec4<T>(b, g, r, a); }
+	inline nsvec4<T> bggr() const { return nsvec4<T>(b, g, g, r); }
+	inline nsvec4<T> bggg() const { return nsvec4<T>(b, g, g, g); }
+	inline nsvec4<T> bggb() const { return nsvec4<T>(b, g, g, b); }
+	inline nsvec4<T> bgga() const { return nsvec4<T>(b, g, g, a); }
+	inline nsvec4<T> bgbr() const { return nsvec4<T>(b, g, b, r); }
+	inline nsvec4<T> bgbg() const { return nsvec4<T>(b, g, b, g); }
+	inline nsvec4<T> bgbb() const { return nsvec4<T>(b, g, b, b); }
+	inline nsvec4<T> bgba() const { return nsvec4<T>(b, g, b, a); }
+	inline nsvec4<T> bgar() const { return nsvec4<T>(b, g, a, r); }
+	inline nsvec4<T> bgag() const { return nsvec4<T>(b, g, a, g); }
+	inline nsvec4<T> bgab() const { return nsvec4<T>(b, g, a, b); }
+	inline nsvec4<T> bgaa() const { return nsvec4<T>(b, g, a, a); }
+	inline nsvec4<T> bbrr() const { return nsvec4<T>(b, b, r, r); }
+	inline nsvec4<T> bbrg() const { return nsvec4<T>(b, b, r, g); }
+	inline nsvec4<T> bbrb() const { return nsvec4<T>(b, b, r, b); }
+	inline nsvec4<T> bbra() const { return nsvec4<T>(b, b, r, a); }
+	inline nsvec4<T> bbgr() const { return nsvec4<T>(b, b, g, r); }
+	inline nsvec4<T> bbgg() const { return nsvec4<T>(b, b, g, g); }
+	inline nsvec4<T> bbgb() const { return nsvec4<T>(b, b, g, b); }
+	inline nsvec4<T> bbga() const { return nsvec4<T>(b, b, g, a); }
+	inline nsvec4<T> bbbr() const { return nsvec4<T>(b, b, b, r); }
+	inline nsvec4<T> bbbg() const { return nsvec4<T>(b, b, b, g); }
+	inline nsvec4<T> bbbb() const { return nsvec4<T>(b, b, b, b); }
+	inline nsvec4<T> bbba() const { return nsvec4<T>(b, b, b, a); }
+	inline nsvec4<T> bbar() const { return nsvec4<T>(b, b, a, r); }
+	inline nsvec4<T> bbag() const { return nsvec4<T>(b, b, a, g); }
+	inline nsvec4<T> bbab() const { return nsvec4<T>(b, b, a, b); }
+	inline nsvec4<T> bbaa() const { return nsvec4<T>(b, b, a, a); }
+	inline nsvec4<T> barr() const { return nsvec4<T>(b, a, r, r); }
+	inline nsvec4<T> barg() const { return nsvec4<T>(b, a, r, g); }
+	inline nsvec4<T> barb() const { return nsvec4<T>(b, a, r, b); }
+	inline nsvec4<T> bara() const { return nsvec4<T>(b, a, r, a); }
+	inline nsvec4<T> bagr() const { return nsvec4<T>(b, a, g, r); }
+	inline nsvec4<T> bagg() const { return nsvec4<T>(b, a, g, g); }
+	inline nsvec4<T> bagb() const { return nsvec4<T>(b, a, g, b); }
+	inline nsvec4<T> baga() const { return nsvec4<T>(b, a, g, a); }
+	inline nsvec4<T> babr() const { return nsvec4<T>(b, a, b, r); }
+	inline nsvec4<T> babg() const { return nsvec4<T>(b, a, b, g); }
+	inline nsvec4<T> babb() const { return nsvec4<T>(b, a, b, b); }
+	inline nsvec4<T> baba() const { return nsvec4<T>(b, a, b, a); }
+	inline nsvec4<T> baar() const { return nsvec4<T>(b, a, a, r); }
+	inline nsvec4<T> baag() const { return nsvec4<T>(b, a, a, g); }
+	inline nsvec4<T> baab() const { return nsvec4<T>(b, a, a, b); }
+	inline nsvec4<T> baaa() const { return nsvec4<T>(b, a, a, a); }
+	inline nsvec4<T> arrr() const { return nsvec4<T>(a, r, r, r); }
+	inline nsvec4<T> arrg() const { return nsvec4<T>(a, r, r, g); }
+	inline nsvec4<T> arrb() const { return nsvec4<T>(a, r, r, b); }
+	inline nsvec4<T> arra() const { return nsvec4<T>(a, r, r, a); }
+	inline nsvec4<T> argr() const { return nsvec4<T>(a, r, g, r); }
+	inline nsvec4<T> argg() const { return nsvec4<T>(a, r, g, g); }
+	inline nsvec4<T> argb() const { return nsvec4<T>(a, r, g, b); }
+	inline nsvec4<T> arga() const { return nsvec4<T>(a, r, g, a); }
+	inline nsvec4<T> arbr() const { return nsvec4<T>(a, r, b, r); }
+	inline nsvec4<T> arbg() const { return nsvec4<T>(a, r, b, g); }
+	inline nsvec4<T> arbb() const { return nsvec4<T>(a, r, b, b); }
+	inline nsvec4<T> arba() const { return nsvec4<T>(a, r, b, a); }
+	inline nsvec4<T> arar() const { return nsvec4<T>(a, r, a, r); }
+	inline nsvec4<T> arag() const { return nsvec4<T>(a, r, a, g); }
+	inline nsvec4<T> arab() const { return nsvec4<T>(a, r, a, b); }
+	inline nsvec4<T> araa() const { return nsvec4<T>(a, r, a, a); }
+	inline nsvec4<T> agrr() const { return nsvec4<T>(a, g, r, r); }
+	inline nsvec4<T> agrg() const { return nsvec4<T>(a, g, r, g); }
+	inline nsvec4<T> agrb() const { return nsvec4<T>(a, g, r, b); }
+	inline nsvec4<T> agra() const { return nsvec4<T>(a, g, r, a); }
+	inline nsvec4<T> aggr() const { return nsvec4<T>(a, g, g, r); }
+	inline nsvec4<T> aggg() const { return nsvec4<T>(a, g, g, g); }
+	inline nsvec4<T> aggb() const { return nsvec4<T>(a, g, g, b); }
+	inline nsvec4<T> agga() const { return nsvec4<T>(a, g, g, a); }
+	inline nsvec4<T> agbr() const { return nsvec4<T>(a, g, b, r); }
+	inline nsvec4<T> agbg() const { return nsvec4<T>(a, g, b, g); }
+	inline nsvec4<T> agbb() const { return nsvec4<T>(a, g, b, b); }
+	inline nsvec4<T> agba() const { return nsvec4<T>(a, g, b, a); }
+	inline nsvec4<T> agar() const { return nsvec4<T>(a, g, a, r); }
+	inline nsvec4<T> agag() const { return nsvec4<T>(a, g, a, g); }
+	inline nsvec4<T> agab() const { return nsvec4<T>(a, g, a, b); }
+	inline nsvec4<T> agaa() const { return nsvec4<T>(a, g, a, a); }
+	inline nsvec4<T> abrr() const { return nsvec4<T>(a, b, r, r); }
+	inline nsvec4<T> abrg() const { return nsvec4<T>(a, b, r, g); }
+	inline nsvec4<T> abrb() const { return nsvec4<T>(a, b, r, b); }
+	inline nsvec4<T> abra() const { return nsvec4<T>(a, b, r, a); }
+	inline nsvec4<T> abgr() const { return nsvec4<T>(a, b, g, r); }
+	inline nsvec4<T> abgg() const { return nsvec4<T>(a, b, g, g); }
+	inline nsvec4<T> abgb() const { return nsvec4<T>(a, b, g, b); }
+	inline nsvec4<T> abga() const { return nsvec4<T>(a, b, g, a); }
+	inline nsvec4<T> abbr() const { return nsvec4<T>(a, b, b, r); }
+	inline nsvec4<T> abbg() const { return nsvec4<T>(a, b, b, g); }
+	inline nsvec4<T> abbb() const { return nsvec4<T>(a, b, b, b); }
+	inline nsvec4<T> abba() const { return nsvec4<T>(a, b, b, a); }
+	inline nsvec4<T> abar() const { return nsvec4<T>(a, b, a, r); }
+	inline nsvec4<T> abag() const { return nsvec4<T>(a, b, a, g); }
+	inline nsvec4<T> abab() const { return nsvec4<T>(a, b, a, b); }
+	inline nsvec4<T> abaa() const { return nsvec4<T>(a, b, a, a); }
+	inline nsvec4<T> aarr() const { return nsvec4<T>(a, a, r, r); }
+	inline nsvec4<T> aarg() const { return nsvec4<T>(a, a, r, g); }
+	inline nsvec4<T> aarb() const { return nsvec4<T>(a, a, r, b); }
+	inline nsvec4<T> aara() const { return nsvec4<T>(a, a, r, a); }
+	inline nsvec4<T> aagr() const { return nsvec4<T>(a, a, g, r); }
+	inline nsvec4<T> aagg() const { return nsvec4<T>(a, a, g, g); }
+	inline nsvec4<T> aagb() const { return nsvec4<T>(a, a, g, b); }
+	inline nsvec4<T> aaga() const { return nsvec4<T>(a, a, g, a); }
+	inline nsvec4<T> aabr() const { return nsvec4<T>(a, a, b, r); }
+	inline nsvec4<T> aabg() const { return nsvec4<T>(a, a, b, g); }
+	inline nsvec4<T> aabb() const { return nsvec4<T>(a, a, b, b); }
+	inline nsvec4<T> aaba() const { return nsvec4<T>(a, a, b, a); }
+	inline nsvec4<T> aaar() const { return nsvec4<T>(a, a, a, r); }
+	inline nsvec4<T> aaag() const { return nsvec4<T>(a, a, a, g); }
+	inline nsvec4<T> aaab() const { return nsvec4<T>(a, a, a, b); }
+	inline nsvec4<T> aaaa() const { return nsvec4<T>(a, a, a, a); }
 
-	inline NSVec4<T> ssss() const { return NSVec4<T>(s, s, s, s); }
-	inline NSVec4<T> ssst() const { return NSVec4<T>(s, s, s, t); }
-	inline NSVec4<T> sssp() const { return NSVec4<T>(s, s, s, p); }
-	inline NSVec4<T> sssq() const { return NSVec4<T>(s, s, s, q); }
-	inline NSVec4<T> ssts() const { return NSVec4<T>(s, s, t, s); }
-	inline NSVec4<T> sstt() const { return NSVec4<T>(s, s, t, t); }
-	inline NSVec4<T> sstp() const { return NSVec4<T>(s, s, t, p); }
-	inline NSVec4<T> sstq() const { return NSVec4<T>(s, s, t, q); }
-	inline NSVec4<T> ssps() const { return NSVec4<T>(s, s, p, s); }
-	inline NSVec4<T> sspt() const { return NSVec4<T>(s, s, p, t); }
-	inline NSVec4<T> sspp() const { return NSVec4<T>(s, s, p, p); }
-	inline NSVec4<T> sspq() const { return NSVec4<T>(s, s, p, q); }
-	inline NSVec4<T> ssqs() const { return NSVec4<T>(s, s, q, s); }
-	inline NSVec4<T> ssqt() const { return NSVec4<T>(s, s, q, t); }
-	inline NSVec4<T> ssqp() const { return NSVec4<T>(s, s, q, p); }
-	inline NSVec4<T> ssqq() const { return NSVec4<T>(s, s, q, q); }
-	inline NSVec4<T> stss() const { return NSVec4<T>(s, t, s, s); }
-	inline NSVec4<T> stst() const { return NSVec4<T>(s, t, s, t); }
-	inline NSVec4<T> stsp() const { return NSVec4<T>(s, t, s, p); }
-	inline NSVec4<T> stsq() const { return NSVec4<T>(s, t, s, q); }
-	inline NSVec4<T> stts() const { return NSVec4<T>(s, t, t, s); }
-	inline NSVec4<T> sttt() const { return NSVec4<T>(s, t, t, t); }
-	inline NSVec4<T> sttp() const { return NSVec4<T>(s, t, t, p); }
-	inline NSVec4<T> sttq() const { return NSVec4<T>(s, t, t, q); }
-	inline NSVec4<T> stps() const { return NSVec4<T>(s, t, p, s); }
-	inline NSVec4<T> stpt() const { return NSVec4<T>(s, t, p, t); }
-	inline NSVec4<T> stpp() const { return NSVec4<T>(s, t, p, p); }
-	inline NSVec4<T> stqs() const { return NSVec4<T>(s, t, q, s); }
-	inline NSVec4<T> stqt() const { return NSVec4<T>(s, t, q, t); }
-	inline NSVec4<T> stqp() const { return NSVec4<T>(s, t, q, p); }
-	inline NSVec4<T> stqq() const { return NSVec4<T>(s, t, q, q); }
-	inline NSVec4<T> spss() const { return NSVec4<T>(s, p, s, s); }
-	inline NSVec4<T> spst() const { return NSVec4<T>(s, p, s, t); }
-	inline NSVec4<T> spsp() const { return NSVec4<T>(s, p, s, p); }
-	inline NSVec4<T> spsq() const { return NSVec4<T>(s, p, s, q); }
-	inline NSVec4<T> spts() const { return NSVec4<T>(s, p, t, s); }
-	inline NSVec4<T> sptt() const { return NSVec4<T>(s, p, t, t); }
-	inline NSVec4<T> sptp() const { return NSVec4<T>(s, p, t, p); }
-	inline NSVec4<T> sptq() const { return NSVec4<T>(s, p, t, q); }
-	inline NSVec4<T> spps() const { return NSVec4<T>(s, p, p, s); }
-	inline NSVec4<T> sppt() const { return NSVec4<T>(s, p, p, t); }
-	inline NSVec4<T> sppp() const { return NSVec4<T>(s, p, p, p); }
-	inline NSVec4<T> sppq() const { return NSVec4<T>(s, p, p, q); }
-	inline NSVec4<T> spqs() const { return NSVec4<T>(s, p, q, s); }
-	inline NSVec4<T> spqt() const { return NSVec4<T>(s, p, q, t); }
-	inline NSVec4<T> spqp() const { return NSVec4<T>(s, p, q, p); }
-	inline NSVec4<T> spqq() const { return NSVec4<T>(s, p, q, q); }
-	inline NSVec4<T> sqss() const { return NSVec4<T>(s, q, s, s); }
-	inline NSVec4<T> sqst() const { return NSVec4<T>(s, q, s, t); }
-	inline NSVec4<T> sqsp() const { return NSVec4<T>(s, q, s, p); }
-	inline NSVec4<T> sqsq() const { return NSVec4<T>(s, q, s, q); }
-	inline NSVec4<T> sqts() const { return NSVec4<T>(s, q, t, s); }
-	inline NSVec4<T> sqtt() const { return NSVec4<T>(s, q, t, t); }
-	inline NSVec4<T> sqtp() const { return NSVec4<T>(s, q, t, p); }
-	inline NSVec4<T> sqtq() const { return NSVec4<T>(s, q, t, q); }
-	inline NSVec4<T> sqps() const { return NSVec4<T>(s, q, p, s); }
-	inline NSVec4<T> sqpt() const { return NSVec4<T>(s, q, p, t); }
-	inline NSVec4<T> sqpp() const { return NSVec4<T>(s, q, p, p); }
-	inline NSVec4<T> sqpq() const { return NSVec4<T>(s, q, p, q); }
-	inline NSVec4<T> sqqs() const { return NSVec4<T>(s, q, q, s); }
-	inline NSVec4<T> sqqt() const { return NSVec4<T>(s, q, q, t); }
-	inline NSVec4<T> sqqp() const { return NSVec4<T>(s, q, q, p); }
-	inline NSVec4<T> sqqq() const { return NSVec4<T>(s, q, q, q); }
-	inline NSVec4<T> tsss() const { return NSVec4<T>(t, s, s, s); }
-	inline NSVec4<T> tsst() const { return NSVec4<T>(t, s, s, t); }
-	inline NSVec4<T> tssp() const { return NSVec4<T>(t, s, s, p); }
-	inline NSVec4<T> tssq() const { return NSVec4<T>(t, s, s, q); }
-	inline NSVec4<T> tsts() const { return NSVec4<T>(t, s, t, s); }
-	inline NSVec4<T> tstt() const { return NSVec4<T>(t, s, t, t); }
-	inline NSVec4<T> tstp() const { return NSVec4<T>(t, s, t, p); }
-	inline NSVec4<T> tstq() const { return NSVec4<T>(t, s, t, q); }
-	inline NSVec4<T> tsps() const { return NSVec4<T>(t, s, p, s); }
-	inline NSVec4<T> tspt() const { return NSVec4<T>(t, s, p, t); }
-	inline NSVec4<T> tspp() const { return NSVec4<T>(t, s, p, p); }
-	inline NSVec4<T> tspq() const { return NSVec4<T>(t, s, p, q); }
-	inline NSVec4<T> tsqs() const { return NSVec4<T>(t, s, q, s); }
-	inline NSVec4<T> tsqt() const { return NSVec4<T>(t, s, q, t); }
-	inline NSVec4<T> tsqp() const { return NSVec4<T>(t, s, q, p); }
-	inline NSVec4<T> tsqq() const { return NSVec4<T>(t, s, q, q); }
-	inline NSVec4<T> ttss() const { return NSVec4<T>(t, t, s, s); }
-	inline NSVec4<T> ttst() const { return NSVec4<T>(t, t, s, t); }
-	inline NSVec4<T> ttsp() const { return NSVec4<T>(t, t, s, p); }
-	inline NSVec4<T> ttsq() const { return NSVec4<T>(t, t, s, q); }
-	inline NSVec4<T> ttts() const { return NSVec4<T>(t, t, t, s); }
-	inline NSVec4<T> tttt() const { return NSVec4<T>(t, t, t, t); }
-	inline NSVec4<T> tttp() const { return NSVec4<T>(t, t, t, p); }
-	inline NSVec4<T> tttq() const { return NSVec4<T>(t, t, t, q); }
-	inline NSVec4<T> ttps() const { return NSVec4<T>(t, t, p, s); }
-	inline NSVec4<T> ttpt() const { return NSVec4<T>(t, t, p, t); }
-	inline NSVec4<T> ttpp() const { return NSVec4<T>(t, t, p, p); }
-	inline NSVec4<T> ttpq() const { return NSVec4<T>(t, t, p, q); }
-	inline NSVec4<T> ttqs() const { return NSVec4<T>(t, t, q, s); }
-	inline NSVec4<T> ttqt() const { return NSVec4<T>(t, t, q, t); }
-	inline NSVec4<T> ttqp() const { return NSVec4<T>(t, t, q, p); }
-	inline NSVec4<T> ttqq() const { return NSVec4<T>(t, t, q, q); }
-	inline NSVec4<T> tpss() const { return NSVec4<T>(t, p, s, s); }
-	inline NSVec4<T> tpst() const { return NSVec4<T>(t, p, s, t); }
-	inline NSVec4<T> tpsp() const { return NSVec4<T>(t, p, s, p); }
-	inline NSVec4<T> tpsq() const { return NSVec4<T>(t, p, s, q); }
-	inline NSVec4<T> tpts() const { return NSVec4<T>(t, p, t, s); }
-	inline NSVec4<T> tptt() const { return NSVec4<T>(t, p, t, t); }
-	inline NSVec4<T> tptp() const { return NSVec4<T>(t, p, t, p); }
-	inline NSVec4<T> tptq() const { return NSVec4<T>(t, p, t, q); }
-	inline NSVec4<T> tpps() const { return NSVec4<T>(t, p, p, s); }
-	inline NSVec4<T> tppt() const { return NSVec4<T>(t, p, p, t); }
-	inline NSVec4<T> tppp() const { return NSVec4<T>(t, p, p, p); }
-	inline NSVec4<T> tppq() const { return NSVec4<T>(t, p, p, q); }
-	inline NSVec4<T> tpqs() const { return NSVec4<T>(t, p, q, s); }
-	inline NSVec4<T> tpqt() const { return NSVec4<T>(t, p, q, t); }
-	inline NSVec4<T> tpqp() const { return NSVec4<T>(t, p, q, p); }
-	inline NSVec4<T> tpqq() const { return NSVec4<T>(t, p, q, q); }
-	inline NSVec4<T> tqss() const { return NSVec4<T>(t, q, s, s); }
-	inline NSVec4<T> tqst() const { return NSVec4<T>(t, q, s, t); }
-	inline NSVec4<T> tqsp() const { return NSVec4<T>(t, q, s, p); }
-	inline NSVec4<T> tqsq() const { return NSVec4<T>(t, q, s, q); }
-	inline NSVec4<T> tqts() const { return NSVec4<T>(t, q, t, s); }
-	inline NSVec4<T> tqtt() const { return NSVec4<T>(t, q, t, t); }
-	inline NSVec4<T> tqtp() const { return NSVec4<T>(t, q, t, p); }
-	inline NSVec4<T> tqtq() const { return NSVec4<T>(t, q, t, q); }
-	inline NSVec4<T> tqps() const { return NSVec4<T>(t, q, p, s); }
-	inline NSVec4<T> tqpt() const { return NSVec4<T>(t, q, p, t); }
-	inline NSVec4<T> tqpp() const { return NSVec4<T>(t, q, p, p); }
-	inline NSVec4<T> tqpq() const { return NSVec4<T>(t, q, p, q); }
-	inline NSVec4<T> tqqs() const { return NSVec4<T>(t, q, q, s); }
-	inline NSVec4<T> tqqt() const { return NSVec4<T>(t, q, q, t); }
-	inline NSVec4<T> tqqp() const { return NSVec4<T>(t, q, q, p); }
-	inline NSVec4<T> tqqq() const { return NSVec4<T>(t, q, q, q); }
-	inline NSVec4<T> psss() const { return NSVec4<T>(p, s, s, s); }
-	inline NSVec4<T> psst() const { return NSVec4<T>(p, s, s, t); }
-	inline NSVec4<T> pssp() const { return NSVec4<T>(p, s, s, p); }
-	inline NSVec4<T> pssq() const { return NSVec4<T>(p, s, s, q); }
-	inline NSVec4<T> psts() const { return NSVec4<T>(p, s, t, s); }
-	inline NSVec4<T> pstt() const { return NSVec4<T>(p, s, t, t); }
-	inline NSVec4<T> pstp() const { return NSVec4<T>(p, s, t, p); }
-	inline NSVec4<T> pstq() const { return NSVec4<T>(p, s, t, q); }
-	inline NSVec4<T> psps() const { return NSVec4<T>(p, s, p, s); }
-	inline NSVec4<T> pspt() const { return NSVec4<T>(p, s, p, t); }
-	inline NSVec4<T> pspp() const { return NSVec4<T>(p, s, p, p); }
-	inline NSVec4<T> pspq() const { return NSVec4<T>(p, s, p, q); }
-	inline NSVec4<T> psqs() const { return NSVec4<T>(p, s, q, s); }
-	inline NSVec4<T> psqt() const { return NSVec4<T>(p, s, q, t); }
-	inline NSVec4<T> psqp() const { return NSVec4<T>(p, s, q, p); }
-	inline NSVec4<T> psqq() const { return NSVec4<T>(p, s, q, q); }
-	inline NSVec4<T> ptss() const { return NSVec4<T>(p, t, s, s); }
-	inline NSVec4<T> ptst() const { return NSVec4<T>(p, t, s, t); }
-	inline NSVec4<T> ptsp() const { return NSVec4<T>(p, t, s, p); }
-	inline NSVec4<T> ptsq() const { return NSVec4<T>(p, t, s, q); }
-	inline NSVec4<T> ptts() const { return NSVec4<T>(p, t, t, s); }
-	inline NSVec4<T> pttt() const { return NSVec4<T>(p, t, t, t); }
-	inline NSVec4<T> pttp() const { return NSVec4<T>(p, t, t, p); }
-	inline NSVec4<T> pttq() const { return NSVec4<T>(p, t, t, q); }
-	inline NSVec4<T> ptps() const { return NSVec4<T>(p, t, p, s); }
-	inline NSVec4<T> ptpt() const { return NSVec4<T>(p, t, p, t); }
-	inline NSVec4<T> ptpp() const { return NSVec4<T>(p, t, p, p); }
-	inline NSVec4<T> ptpq() const { return NSVec4<T>(p, t, p, q); }
-	inline NSVec4<T> ptqs() const { return NSVec4<T>(p, t, q, s); }
-	inline NSVec4<T> ptqt() const { return NSVec4<T>(p, t, q, t); }
-	inline NSVec4<T> ptqp() const { return NSVec4<T>(p, t, q, p); }
-	inline NSVec4<T> ptqq() const { return NSVec4<T>(p, t, q, q); }
-	inline NSVec4<T> ppss() const { return NSVec4<T>(p, p, s, s); }
-	inline NSVec4<T> ppst() const { return NSVec4<T>(p, p, s, t); }
-	inline NSVec4<T> ppsp() const { return NSVec4<T>(p, p, s, p); }
-	inline NSVec4<T> ppsq() const { return NSVec4<T>(p, p, s, q); }
-	inline NSVec4<T> ppts() const { return NSVec4<T>(p, p, t, s); }
-	inline NSVec4<T> pptt() const { return NSVec4<T>(p, p, t, t); }
-	inline NSVec4<T> pptp() const { return NSVec4<T>(p, p, t, p); }
-	inline NSVec4<T> pptq() const { return NSVec4<T>(p, p, t, q); }
-	inline NSVec4<T> ppps() const { return NSVec4<T>(p, p, p, s); }
-	inline NSVec4<T> pppt() const { return NSVec4<T>(p, p, p, t); }
-	inline NSVec4<T> pppp() const { return NSVec4<T>(p, p, p, p); }
-	inline NSVec4<T> pppq() const { return NSVec4<T>(p, p, p, q); }
-	inline NSVec4<T> ppqs() const { return NSVec4<T>(p, p, q, s); }
-	inline NSVec4<T> ppqt() const { return NSVec4<T>(p, p, q, t); }
-	inline NSVec4<T> ppqp() const { return NSVec4<T>(p, p, q, p); }
-	inline NSVec4<T> ppqq() const { return NSVec4<T>(p, p, q, q); }
-	inline NSVec4<T> pqss() const { return NSVec4<T>(p, q, s, s); }
-	inline NSVec4<T> pqst() const { return NSVec4<T>(p, q, s, t); }
-	inline NSVec4<T> pqsp() const { return NSVec4<T>(p, q, s, p); }
-	inline NSVec4<T> pqsq() const { return NSVec4<T>(p, q, s, q); }
-	inline NSVec4<T> pqts() const { return NSVec4<T>(p, q, t, s); }
-	inline NSVec4<T> pqtt() const { return NSVec4<T>(p, q, t, t); }
-	inline NSVec4<T> pqtp() const { return NSVec4<T>(p, q, t, p); }
-	inline NSVec4<T> pqtq() const { return NSVec4<T>(p, q, t, q); }
-	inline NSVec4<T> pqps() const { return NSVec4<T>(p, q, p, s); }
-	inline NSVec4<T> pqpt() const { return NSVec4<T>(p, q, p, t); }
-	inline NSVec4<T> pqpp() const { return NSVec4<T>(p, q, p, p); }
-	inline NSVec4<T> pqpq() const { return NSVec4<T>(p, q, p, q); }
-	inline NSVec4<T> pqqs() const { return NSVec4<T>(p, q, q, s); }
-	inline NSVec4<T> pqqt() const { return NSVec4<T>(p, q, q, t); }
-	inline NSVec4<T> pqqp() const { return NSVec4<T>(p, q, q, p); }
-	inline NSVec4<T> pqqq() const { return NSVec4<T>(p, q, q, q); }
-	inline NSVec4<T> qsss() const { return NSVec4<T>(q, s, s, s); }
-	inline NSVec4<T> qsst() const { return NSVec4<T>(q, s, s, t); }
-	inline NSVec4<T> qssp() const { return NSVec4<T>(q, s, s, p); }
-	inline NSVec4<T> qssq() const { return NSVec4<T>(q, s, s, q); }
-	inline NSVec4<T> qsts() const { return NSVec4<T>(q, s, t, s); }
-	inline NSVec4<T> qstt() const { return NSVec4<T>(q, s, t, t); }
-	inline NSVec4<T> qstp() const { return NSVec4<T>(q, s, t, p); }
-	inline NSVec4<T> qstq() const { return NSVec4<T>(q, s, t, q); }
-	inline NSVec4<T> qsps() const { return NSVec4<T>(q, s, p, s); }
-	inline NSVec4<T> qspt() const { return NSVec4<T>(q, s, p, t); }
-	inline NSVec4<T> qspp() const { return NSVec4<T>(q, s, p, p); }
-	inline NSVec4<T> qspq() const { return NSVec4<T>(q, s, p, q); }
-	inline NSVec4<T> qsqs() const { return NSVec4<T>(q, s, q, s); }
-	inline NSVec4<T> qsqt() const { return NSVec4<T>(q, s, q, t); }
-	inline NSVec4<T> qsqp() const { return NSVec4<T>(q, s, q, p); }
-	inline NSVec4<T> qsqq() const { return NSVec4<T>(q, s, q, q); }
-	inline NSVec4<T> qtss() const { return NSVec4<T>(q, t, s, s); }
-	inline NSVec4<T> qtst() const { return NSVec4<T>(q, t, s, t); }
-	inline NSVec4<T> qtsp() const { return NSVec4<T>(q, t, s, p); }
-	inline NSVec4<T> qtsq() const { return NSVec4<T>(q, t, s, q); }
-	inline NSVec4<T> qtts() const { return NSVec4<T>(q, t, t, s); }
-	inline NSVec4<T> qttt() const { return NSVec4<T>(q, t, t, t); }
-	inline NSVec4<T> qttp() const { return NSVec4<T>(q, t, t, p); }
-	inline NSVec4<T> qttq() const { return NSVec4<T>(q, t, t, q); }
-	inline NSVec4<T> qtps() const { return NSVec4<T>(q, t, p, s); }
-	inline NSVec4<T> qtpt() const { return NSVec4<T>(q, t, p, t); }
-	inline NSVec4<T> qtpp() const { return NSVec4<T>(q, t, p, p); }
-	inline NSVec4<T> qtpq() const { return NSVec4<T>(q, t, p, q); }
-	inline NSVec4<T> qtqs() const { return NSVec4<T>(q, t, q, s); }
-	inline NSVec4<T> qtqt() const { return NSVec4<T>(q, t, q, t); }
-	inline NSVec4<T> qtqp() const { return NSVec4<T>(q, t, q, p); }
-	inline NSVec4<T> qtqq() const { return NSVec4<T>(q, t, q, q); }
-	inline NSVec4<T> qpss() const { return NSVec4<T>(q, p, s, s); }
-	inline NSVec4<T> qpst() const { return NSVec4<T>(q, p, s, t); }
-	inline NSVec4<T> qpsp() const { return NSVec4<T>(q, p, s, p); }
-	inline NSVec4<T> qpsq() const { return NSVec4<T>(q, p, s, q); }
-	inline NSVec4<T> qpts() const { return NSVec4<T>(q, p, t, s); }
-	inline NSVec4<T> qptt() const { return NSVec4<T>(q, p, t, t); }
-	inline NSVec4<T> qptp() const { return NSVec4<T>(q, p, t, p); }
-	inline NSVec4<T> qptq() const { return NSVec4<T>(q, p, t, q); }
-	inline NSVec4<T> qpps() const { return NSVec4<T>(q, p, p, s); }
-	inline NSVec4<T> qppt() const { return NSVec4<T>(q, p, p, t); }
-	inline NSVec4<T> qppp() const { return NSVec4<T>(q, p, p, p); }
-	inline NSVec4<T> qppq() const { return NSVec4<T>(q, p, p, q); }
-	inline NSVec4<T> qpqs() const { return NSVec4<T>(q, p, q, s); }
-	inline NSVec4<T> qpqt() const { return NSVec4<T>(q, p, q, t); }
-	inline NSVec4<T> qpqp() const { return NSVec4<T>(q, p, q, p); }
-	inline NSVec4<T> qpqq() const { return NSVec4<T>(q, p, q, q); }
-	inline NSVec4<T> qqss() const { return NSVec4<T>(q, q, s, s); }
-	inline NSVec4<T> qqst() const { return NSVec4<T>(q, q, s, t); }
-	inline NSVec4<T> qqsp() const { return NSVec4<T>(q, q, s, p); }
-	inline NSVec4<T> qqsq() const { return NSVec4<T>(q, q, s, q); }
-	inline NSVec4<T> qqts() const { return NSVec4<T>(q, q, t, s); }
-	inline NSVec4<T> qqtt() const { return NSVec4<T>(q, q, t, t); }
-	inline NSVec4<T> qqtp() const { return NSVec4<T>(q, q, t, p); }
-	inline NSVec4<T> qqtq() const { return NSVec4<T>(q, q, t, q); }
-	inline NSVec4<T> qqps() const { return NSVec4<T>(q, q, p, s); }
-	inline NSVec4<T> qqpt() const { return NSVec4<T>(q, q, p, t); }
-	inline NSVec4<T> qqpp() const { return NSVec4<T>(q, q, p, p); }
-	inline NSVec4<T> qqpq() const { return NSVec4<T>(q, q, p, q); }
-	inline NSVec4<T> qqqs() const { return NSVec4<T>(q, q, q, s); }
-	inline NSVec4<T> qqqt() const { return NSVec4<T>(q, q, q, t); }
-	inline NSVec4<T> qqqp() const { return NSVec4<T>(q, q, q, p); }
-	inline NSVec4<T> qqqq() const { return NSVec4<T>(q, q, q, q); }
+	inline nsvec4<T> ssss() const { return nsvec4<T>(s, s, s, s); }
+	inline nsvec4<T> ssst() const { return nsvec4<T>(s, s, s, t); }
+	inline nsvec4<T> sssp() const { return nsvec4<T>(s, s, s, p); }
+	inline nsvec4<T> sssq() const { return nsvec4<T>(s, s, s, q); }
+	inline nsvec4<T> ssts() const { return nsvec4<T>(s, s, t, s); }
+	inline nsvec4<T> sstt() const { return nsvec4<T>(s, s, t, t); }
+	inline nsvec4<T> sstp() const { return nsvec4<T>(s, s, t, p); }
+	inline nsvec4<T> sstq() const { return nsvec4<T>(s, s, t, q); }
+	inline nsvec4<T> ssps() const { return nsvec4<T>(s, s, p, s); }
+	inline nsvec4<T> sspt() const { return nsvec4<T>(s, s, p, t); }
+	inline nsvec4<T> sspp() const { return nsvec4<T>(s, s, p, p); }
+	inline nsvec4<T> sspq() const { return nsvec4<T>(s, s, p, q); }
+	inline nsvec4<T> ssqs() const { return nsvec4<T>(s, s, q, s); }
+	inline nsvec4<T> ssqt() const { return nsvec4<T>(s, s, q, t); }
+	inline nsvec4<T> ssqp() const { return nsvec4<T>(s, s, q, p); }
+	inline nsvec4<T> ssqq() const { return nsvec4<T>(s, s, q, q); }
+	inline nsvec4<T> stss() const { return nsvec4<T>(s, t, s, s); }
+	inline nsvec4<T> stst() const { return nsvec4<T>(s, t, s, t); }
+	inline nsvec4<T> stsp() const { return nsvec4<T>(s, t, s, p); }
+	inline nsvec4<T> stsq() const { return nsvec4<T>(s, t, s, q); }
+	inline nsvec4<T> stts() const { return nsvec4<T>(s, t, t, s); }
+	inline nsvec4<T> sttt() const { return nsvec4<T>(s, t, t, t); }
+	inline nsvec4<T> sttp() const { return nsvec4<T>(s, t, t, p); }
+	inline nsvec4<T> sttq() const { return nsvec4<T>(s, t, t, q); }
+	inline nsvec4<T> stps() const { return nsvec4<T>(s, t, p, s); }
+	inline nsvec4<T> stpt() const { return nsvec4<T>(s, t, p, t); }
+	inline nsvec4<T> stpp() const { return nsvec4<T>(s, t, p, p); }
+	inline nsvec4<T> stqs() const { return nsvec4<T>(s, t, q, s); }
+	inline nsvec4<T> stqt() const { return nsvec4<T>(s, t, q, t); }
+	inline nsvec4<T> stqp() const { return nsvec4<T>(s, t, q, p); }
+	inline nsvec4<T> stqq() const { return nsvec4<T>(s, t, q, q); }
+	inline nsvec4<T> spss() const { return nsvec4<T>(s, p, s, s); }
+	inline nsvec4<T> spst() const { return nsvec4<T>(s, p, s, t); }
+	inline nsvec4<T> spsp() const { return nsvec4<T>(s, p, s, p); }
+	inline nsvec4<T> spsq() const { return nsvec4<T>(s, p, s, q); }
+	inline nsvec4<T> spts() const { return nsvec4<T>(s, p, t, s); }
+	inline nsvec4<T> sptt() const { return nsvec4<T>(s, p, t, t); }
+	inline nsvec4<T> sptp() const { return nsvec4<T>(s, p, t, p); }
+	inline nsvec4<T> sptq() const { return nsvec4<T>(s, p, t, q); }
+	inline nsvec4<T> spps() const { return nsvec4<T>(s, p, p, s); }
+	inline nsvec4<T> sppt() const { return nsvec4<T>(s, p, p, t); }
+	inline nsvec4<T> sppp() const { return nsvec4<T>(s, p, p, p); }
+	inline nsvec4<T> sppq() const { return nsvec4<T>(s, p, p, q); }
+	inline nsvec4<T> spqs() const { return nsvec4<T>(s, p, q, s); }
+	inline nsvec4<T> spqt() const { return nsvec4<T>(s, p, q, t); }
+	inline nsvec4<T> spqp() const { return nsvec4<T>(s, p, q, p); }
+	inline nsvec4<T> spqq() const { return nsvec4<T>(s, p, q, q); }
+	inline nsvec4<T> sqss() const { return nsvec4<T>(s, q, s, s); }
+	inline nsvec4<T> sqst() const { return nsvec4<T>(s, q, s, t); }
+	inline nsvec4<T> sqsp() const { return nsvec4<T>(s, q, s, p); }
+	inline nsvec4<T> sqsq() const { return nsvec4<T>(s, q, s, q); }
+	inline nsvec4<T> sqts() const { return nsvec4<T>(s, q, t, s); }
+	inline nsvec4<T> sqtt() const { return nsvec4<T>(s, q, t, t); }
+	inline nsvec4<T> sqtp() const { return nsvec4<T>(s, q, t, p); }
+	inline nsvec4<T> sqtq() const { return nsvec4<T>(s, q, t, q); }
+	inline nsvec4<T> sqps() const { return nsvec4<T>(s, q, p, s); }
+	inline nsvec4<T> sqpt() const { return nsvec4<T>(s, q, p, t); }
+	inline nsvec4<T> sqpp() const { return nsvec4<T>(s, q, p, p); }
+	inline nsvec4<T> sqpq() const { return nsvec4<T>(s, q, p, q); }
+	inline nsvec4<T> sqqs() const { return nsvec4<T>(s, q, q, s); }
+	inline nsvec4<T> sqqt() const { return nsvec4<T>(s, q, q, t); }
+	inline nsvec4<T> sqqp() const { return nsvec4<T>(s, q, q, p); }
+	inline nsvec4<T> sqqq() const { return nsvec4<T>(s, q, q, q); }
+	inline nsvec4<T> tsss() const { return nsvec4<T>(t, s, s, s); }
+	inline nsvec4<T> tsst() const { return nsvec4<T>(t, s, s, t); }
+	inline nsvec4<T> tssp() const { return nsvec4<T>(t, s, s, p); }
+	inline nsvec4<T> tssq() const { return nsvec4<T>(t, s, s, q); }
+	inline nsvec4<T> tsts() const { return nsvec4<T>(t, s, t, s); }
+	inline nsvec4<T> tstt() const { return nsvec4<T>(t, s, t, t); }
+	inline nsvec4<T> tstp() const { return nsvec4<T>(t, s, t, p); }
+	inline nsvec4<T> tstq() const { return nsvec4<T>(t, s, t, q); }
+	inline nsvec4<T> tsps() const { return nsvec4<T>(t, s, p, s); }
+	inline nsvec4<T> tspt() const { return nsvec4<T>(t, s, p, t); }
+	inline nsvec4<T> tspp() const { return nsvec4<T>(t, s, p, p); }
+	inline nsvec4<T> tspq() const { return nsvec4<T>(t, s, p, q); }
+	inline nsvec4<T> tsqs() const { return nsvec4<T>(t, s, q, s); }
+	inline nsvec4<T> tsqt() const { return nsvec4<T>(t, s, q, t); }
+	inline nsvec4<T> tsqp() const { return nsvec4<T>(t, s, q, p); }
+	inline nsvec4<T> tsqq() const { return nsvec4<T>(t, s, q, q); }
+	inline nsvec4<T> ttss() const { return nsvec4<T>(t, t, s, s); }
+	inline nsvec4<T> ttst() const { return nsvec4<T>(t, t, s, t); }
+	inline nsvec4<T> ttsp() const { return nsvec4<T>(t, t, s, p); }
+	inline nsvec4<T> ttsq() const { return nsvec4<T>(t, t, s, q); }
+	inline nsvec4<T> ttts() const { return nsvec4<T>(t, t, t, s); }
+	inline nsvec4<T> tttt() const { return nsvec4<T>(t, t, t, t); }
+	inline nsvec4<T> tttp() const { return nsvec4<T>(t, t, t, p); }
+	inline nsvec4<T> tttq() const { return nsvec4<T>(t, t, t, q); }
+	inline nsvec4<T> ttps() const { return nsvec4<T>(t, t, p, s); }
+	inline nsvec4<T> ttpt() const { return nsvec4<T>(t, t, p, t); }
+	inline nsvec4<T> ttpp() const { return nsvec4<T>(t, t, p, p); }
+	inline nsvec4<T> ttpq() const { return nsvec4<T>(t, t, p, q); }
+	inline nsvec4<T> ttqs() const { return nsvec4<T>(t, t, q, s); }
+	inline nsvec4<T> ttqt() const { return nsvec4<T>(t, t, q, t); }
+	inline nsvec4<T> ttqp() const { return nsvec4<T>(t, t, q, p); }
+	inline nsvec4<T> ttqq() const { return nsvec4<T>(t, t, q, q); }
+	inline nsvec4<T> tpss() const { return nsvec4<T>(t, p, s, s); }
+	inline nsvec4<T> tpst() const { return nsvec4<T>(t, p, s, t); }
+	inline nsvec4<T> tpsp() const { return nsvec4<T>(t, p, s, p); }
+	inline nsvec4<T> tpsq() const { return nsvec4<T>(t, p, s, q); }
+	inline nsvec4<T> tpts() const { return nsvec4<T>(t, p, t, s); }
+	inline nsvec4<T> tptt() const { return nsvec4<T>(t, p, t, t); }
+	inline nsvec4<T> tptp() const { return nsvec4<T>(t, p, t, p); }
+	inline nsvec4<T> tptq() const { return nsvec4<T>(t, p, t, q); }
+	inline nsvec4<T> tpps() const { return nsvec4<T>(t, p, p, s); }
+	inline nsvec4<T> tppt() const { return nsvec4<T>(t, p, p, t); }
+	inline nsvec4<T> tppp() const { return nsvec4<T>(t, p, p, p); }
+	inline nsvec4<T> tppq() const { return nsvec4<T>(t, p, p, q); }
+	inline nsvec4<T> tpqs() const { return nsvec4<T>(t, p, q, s); }
+	inline nsvec4<T> tpqt() const { return nsvec4<T>(t, p, q, t); }
+	inline nsvec4<T> tpqp() const { return nsvec4<T>(t, p, q, p); }
+	inline nsvec4<T> tpqq() const { return nsvec4<T>(t, p, q, q); }
+	inline nsvec4<T> tqss() const { return nsvec4<T>(t, q, s, s); }
+	inline nsvec4<T> tqst() const { return nsvec4<T>(t, q, s, t); }
+	inline nsvec4<T> tqsp() const { return nsvec4<T>(t, q, s, p); }
+	inline nsvec4<T> tqsq() const { return nsvec4<T>(t, q, s, q); }
+	inline nsvec4<T> tqts() const { return nsvec4<T>(t, q, t, s); }
+	inline nsvec4<T> tqtt() const { return nsvec4<T>(t, q, t, t); }
+	inline nsvec4<T> tqtp() const { return nsvec4<T>(t, q, t, p); }
+	inline nsvec4<T> tqtq() const { return nsvec4<T>(t, q, t, q); }
+	inline nsvec4<T> tqps() const { return nsvec4<T>(t, q, p, s); }
+	inline nsvec4<T> tqpt() const { return nsvec4<T>(t, q, p, t); }
+	inline nsvec4<T> tqpp() const { return nsvec4<T>(t, q, p, p); }
+	inline nsvec4<T> tqpq() const { return nsvec4<T>(t, q, p, q); }
+	inline nsvec4<T> tqqs() const { return nsvec4<T>(t, q, q, s); }
+	inline nsvec4<T> tqqt() const { return nsvec4<T>(t, q, q, t); }
+	inline nsvec4<T> tqqp() const { return nsvec4<T>(t, q, q, p); }
+	inline nsvec4<T> tqqq() const { return nsvec4<T>(t, q, q, q); }
+	inline nsvec4<T> psss() const { return nsvec4<T>(p, s, s, s); }
+	inline nsvec4<T> psst() const { return nsvec4<T>(p, s, s, t); }
+	inline nsvec4<T> pssp() const { return nsvec4<T>(p, s, s, p); }
+	inline nsvec4<T> pssq() const { return nsvec4<T>(p, s, s, q); }
+	inline nsvec4<T> psts() const { return nsvec4<T>(p, s, t, s); }
+	inline nsvec4<T> pstt() const { return nsvec4<T>(p, s, t, t); }
+	inline nsvec4<T> pstp() const { return nsvec4<T>(p, s, t, p); }
+	inline nsvec4<T> pstq() const { return nsvec4<T>(p, s, t, q); }
+	inline nsvec4<T> psps() const { return nsvec4<T>(p, s, p, s); }
+	inline nsvec4<T> pspt() const { return nsvec4<T>(p, s, p, t); }
+	inline nsvec4<T> pspp() const { return nsvec4<T>(p, s, p, p); }
+	inline nsvec4<T> pspq() const { return nsvec4<T>(p, s, p, q); }
+	inline nsvec4<T> psqs() const { return nsvec4<T>(p, s, q, s); }
+	inline nsvec4<T> psqt() const { return nsvec4<T>(p, s, q, t); }
+	inline nsvec4<T> psqp() const { return nsvec4<T>(p, s, q, p); }
+	inline nsvec4<T> psqq() const { return nsvec4<T>(p, s, q, q); }
+	inline nsvec4<T> ptss() const { return nsvec4<T>(p, t, s, s); }
+	inline nsvec4<T> ptst() const { return nsvec4<T>(p, t, s, t); }
+	inline nsvec4<T> ptsp() const { return nsvec4<T>(p, t, s, p); }
+	inline nsvec4<T> ptsq() const { return nsvec4<T>(p, t, s, q); }
+	inline nsvec4<T> ptts() const { return nsvec4<T>(p, t, t, s); }
+	inline nsvec4<T> pttt() const { return nsvec4<T>(p, t, t, t); }
+	inline nsvec4<T> pttp() const { return nsvec4<T>(p, t, t, p); }
+	inline nsvec4<T> pttq() const { return nsvec4<T>(p, t, t, q); }
+	inline nsvec4<T> ptps() const { return nsvec4<T>(p, t, p, s); }
+	inline nsvec4<T> ptpt() const { return nsvec4<T>(p, t, p, t); }
+	inline nsvec4<T> ptpp() const { return nsvec4<T>(p, t, p, p); }
+	inline nsvec4<T> ptpq() const { return nsvec4<T>(p, t, p, q); }
+	inline nsvec4<T> ptqs() const { return nsvec4<T>(p, t, q, s); }
+	inline nsvec4<T> ptqt() const { return nsvec4<T>(p, t, q, t); }
+	inline nsvec4<T> ptqp() const { return nsvec4<T>(p, t, q, p); }
+	inline nsvec4<T> ptqq() const { return nsvec4<T>(p, t, q, q); }
+	inline nsvec4<T> ppss() const { return nsvec4<T>(p, p, s, s); }
+	inline nsvec4<T> ppst() const { return nsvec4<T>(p, p, s, t); }
+	inline nsvec4<T> ppsp() const { return nsvec4<T>(p, p, s, p); }
+	inline nsvec4<T> ppsq() const { return nsvec4<T>(p, p, s, q); }
+	inline nsvec4<T> ppts() const { return nsvec4<T>(p, p, t, s); }
+	inline nsvec4<T> pptt() const { return nsvec4<T>(p, p, t, t); }
+	inline nsvec4<T> pptp() const { return nsvec4<T>(p, p, t, p); }
+	inline nsvec4<T> pptq() const { return nsvec4<T>(p, p, t, q); }
+	inline nsvec4<T> ppps() const { return nsvec4<T>(p, p, p, s); }
+	inline nsvec4<T> pppt() const { return nsvec4<T>(p, p, p, t); }
+	inline nsvec4<T> pppp() const { return nsvec4<T>(p, p, p, p); }
+	inline nsvec4<T> pppq() const { return nsvec4<T>(p, p, p, q); }
+	inline nsvec4<T> ppqs() const { return nsvec4<T>(p, p, q, s); }
+	inline nsvec4<T> ppqt() const { return nsvec4<T>(p, p, q, t); }
+	inline nsvec4<T> ppqp() const { return nsvec4<T>(p, p, q, p); }
+	inline nsvec4<T> ppqq() const { return nsvec4<T>(p, p, q, q); }
+	inline nsvec4<T> pqss() const { return nsvec4<T>(p, q, s, s); }
+	inline nsvec4<T> pqst() const { return nsvec4<T>(p, q, s, t); }
+	inline nsvec4<T> pqsp() const { return nsvec4<T>(p, q, s, p); }
+	inline nsvec4<T> pqsq() const { return nsvec4<T>(p, q, s, q); }
+	inline nsvec4<T> pqts() const { return nsvec4<T>(p, q, t, s); }
+	inline nsvec4<T> pqtt() const { return nsvec4<T>(p, q, t, t); }
+	inline nsvec4<T> pqtp() const { return nsvec4<T>(p, q, t, p); }
+	inline nsvec4<T> pqtq() const { return nsvec4<T>(p, q, t, q); }
+	inline nsvec4<T> pqps() const { return nsvec4<T>(p, q, p, s); }
+	inline nsvec4<T> pqpt() const { return nsvec4<T>(p, q, p, t); }
+	inline nsvec4<T> pqpp() const { return nsvec4<T>(p, q, p, p); }
+	inline nsvec4<T> pqpq() const { return nsvec4<T>(p, q, p, q); }
+	inline nsvec4<T> pqqs() const { return nsvec4<T>(p, q, q, s); }
+	inline nsvec4<T> pqqt() const { return nsvec4<T>(p, q, q, t); }
+	inline nsvec4<T> pqqp() const { return nsvec4<T>(p, q, q, p); }
+	inline nsvec4<T> pqqq() const { return nsvec4<T>(p, q, q, q); }
+	inline nsvec4<T> qsss() const { return nsvec4<T>(q, s, s, s); }
+	inline nsvec4<T> qsst() const { return nsvec4<T>(q, s, s, t); }
+	inline nsvec4<T> qssp() const { return nsvec4<T>(q, s, s, p); }
+	inline nsvec4<T> qssq() const { return nsvec4<T>(q, s, s, q); }
+	inline nsvec4<T> qsts() const { return nsvec4<T>(q, s, t, s); }
+	inline nsvec4<T> qstt() const { return nsvec4<T>(q, s, t, t); }
+	inline nsvec4<T> qstp() const { return nsvec4<T>(q, s, t, p); }
+	inline nsvec4<T> qstq() const { return nsvec4<T>(q, s, t, q); }
+	inline nsvec4<T> qsps() const { return nsvec4<T>(q, s, p, s); }
+	inline nsvec4<T> qspt() const { return nsvec4<T>(q, s, p, t); }
+	inline nsvec4<T> qspp() const { return nsvec4<T>(q, s, p, p); }
+	inline nsvec4<T> qspq() const { return nsvec4<T>(q, s, p, q); }
+	inline nsvec4<T> qsqs() const { return nsvec4<T>(q, s, q, s); }
+	inline nsvec4<T> qsqt() const { return nsvec4<T>(q, s, q, t); }
+	inline nsvec4<T> qsqp() const { return nsvec4<T>(q, s, q, p); }
+	inline nsvec4<T> qsqq() const { return nsvec4<T>(q, s, q, q); }
+	inline nsvec4<T> qtss() const { return nsvec4<T>(q, t, s, s); }
+	inline nsvec4<T> qtst() const { return nsvec4<T>(q, t, s, t); }
+	inline nsvec4<T> qtsp() const { return nsvec4<T>(q, t, s, p); }
+	inline nsvec4<T> qtsq() const { return nsvec4<T>(q, t, s, q); }
+	inline nsvec4<T> qtts() const { return nsvec4<T>(q, t, t, s); }
+	inline nsvec4<T> qttt() const { return nsvec4<T>(q, t, t, t); }
+	inline nsvec4<T> qttp() const { return nsvec4<T>(q, t, t, p); }
+	inline nsvec4<T> qttq() const { return nsvec4<T>(q, t, t, q); }
+	inline nsvec4<T> qtps() const { return nsvec4<T>(q, t, p, s); }
+	inline nsvec4<T> qtpt() const { return nsvec4<T>(q, t, p, t); }
+	inline nsvec4<T> qtpp() const { return nsvec4<T>(q, t, p, p); }
+	inline nsvec4<T> qtpq() const { return nsvec4<T>(q, t, p, q); }
+	inline nsvec4<T> qtqs() const { return nsvec4<T>(q, t, q, s); }
+	inline nsvec4<T> qtqt() const { return nsvec4<T>(q, t, q, t); }
+	inline nsvec4<T> qtqp() const { return nsvec4<T>(q, t, q, p); }
+	inline nsvec4<T> qtqq() const { return nsvec4<T>(q, t, q, q); }
+	inline nsvec4<T> qpss() const { return nsvec4<T>(q, p, s, s); }
+	inline nsvec4<T> qpst() const { return nsvec4<T>(q, p, s, t); }
+	inline nsvec4<T> qpsp() const { return nsvec4<T>(q, p, s, p); }
+	inline nsvec4<T> qpsq() const { return nsvec4<T>(q, p, s, q); }
+	inline nsvec4<T> qpts() const { return nsvec4<T>(q, p, t, s); }
+	inline nsvec4<T> qptt() const { return nsvec4<T>(q, p, t, t); }
+	inline nsvec4<T> qptp() const { return nsvec4<T>(q, p, t, p); }
+	inline nsvec4<T> qptq() const { return nsvec4<T>(q, p, t, q); }
+	inline nsvec4<T> qpps() const { return nsvec4<T>(q, p, p, s); }
+	inline nsvec4<T> qppt() const { return nsvec4<T>(q, p, p, t); }
+	inline nsvec4<T> qppp() const { return nsvec4<T>(q, p, p, p); }
+	inline nsvec4<T> qppq() const { return nsvec4<T>(q, p, p, q); }
+	inline nsvec4<T> qpqs() const { return nsvec4<T>(q, p, q, s); }
+	inline nsvec4<T> qpqt() const { return nsvec4<T>(q, p, q, t); }
+	inline nsvec4<T> qpqp() const { return nsvec4<T>(q, p, q, p); }
+	inline nsvec4<T> qpqq() const { return nsvec4<T>(q, p, q, q); }
+	inline nsvec4<T> qqss() const { return nsvec4<T>(q, q, s, s); }
+	inline nsvec4<T> qqst() const { return nsvec4<T>(q, q, s, t); }
+	inline nsvec4<T> qqsp() const { return nsvec4<T>(q, q, s, p); }
+	inline nsvec4<T> qqsq() const { return nsvec4<T>(q, q, s, q); }
+	inline nsvec4<T> qqts() const { return nsvec4<T>(q, q, t, s); }
+	inline nsvec4<T> qqtt() const { return nsvec4<T>(q, q, t, t); }
+	inline nsvec4<T> qqtp() const { return nsvec4<T>(q, q, t, p); }
+	inline nsvec4<T> qqtq() const { return nsvec4<T>(q, q, t, q); }
+	inline nsvec4<T> qqps() const { return nsvec4<T>(q, q, p, s); }
+	inline nsvec4<T> qqpt() const { return nsvec4<T>(q, q, p, t); }
+	inline nsvec4<T> qqpp() const { return nsvec4<T>(q, q, p, p); }
+	inline nsvec4<T> qqpq() const { return nsvec4<T>(q, q, p, q); }
+	inline nsvec4<T> qqqs() const { return nsvec4<T>(q, q, q, s); }
+	inline nsvec4<T> qqqt() const { return nsvec4<T>(q, q, q, t); }
+	inline nsvec4<T> qqqp() const { return nsvec4<T>(q, q, q, p); }
+	inline nsvec4<T> qqqq() const { return nsvec4<T>(q, q, q, q); }
 
 	// Vec 3 Swizzles
-	inline NSVec3<T> xxx() const { return NSVec3<T>(x, x, x); }
-	inline NSVec3<T> xxy() const { return NSVec3<T>(x, x, y); }
-	inline NSVec3<T> xxz() const { return NSVec3<T>(x, x, z); }
-	inline NSVec3<T> xxw() const { return NSVec3<T>(x, x, w); }
-	inline NSVec3<T> xyx() const { return NSVec3<T>(x, y, x); }
-	inline NSVec3<T> xyy() const { return NSVec3<T>(x, y, y); }
-	inline NSVec3<T> xyz() const { return NSVec3<T>(x, y, z); }
-	inline NSVec3<T> xyw() const { return NSVec3<T>(x, y, w); }
-	inline NSVec3<T> xzx() const { return NSVec3<T>(x, z, x); }
-	inline NSVec3<T> xzy() const { return NSVec3<T>(x, z, y); }
-	inline NSVec3<T> xzz() const { return NSVec3<T>(x, z, z); }
-	inline NSVec3<T> xzw() const { return NSVec3<T>(x, z, w); }
-	inline NSVec3<T> xwx() const { return NSVec3<T>(x, w, x); }
-	inline NSVec3<T> xwy() const { return NSVec3<T>(x, w, y); }
-	inline NSVec3<T> xwz() const { return NSVec3<T>(x, w, z); }
-	inline NSVec3<T> xww() const { return NSVec3<T>(x, w, w); }
-	inline NSVec3<T> yxx() const { return NSVec3<T>(y, x, x); }
-	inline NSVec3<T> yxy() const { return NSVec3<T>(y, x, y); }
-	inline NSVec3<T> yxz() const { return NSVec3<T>(y, x, z); }
-	inline NSVec3<T> yxw() const { return NSVec3<T>(y, x, w); }
-	inline NSVec3<T> yyx() const { return NSVec3<T>(y, y, x); }
-	inline NSVec3<T> yyy() const { return NSVec3<T>(y, y, y); }
-	inline NSVec3<T> yyz() const { return NSVec3<T>(y, y, z); }
-	inline NSVec3<T> yyw() const { return NSVec3<T>(y, y, w); }
-	inline NSVec3<T> yzx() const { return NSVec3<T>(y, z, x); }
-	inline NSVec3<T> yzy() const { return NSVec3<T>(y, z, y); }
-	inline NSVec3<T> yzz() const { return NSVec3<T>(y, z, z); }
-	inline NSVec3<T> yzw() const { return NSVec3<T>(y, z, w); }
-	inline NSVec3<T> ywx() const { return NSVec3<T>(y, w, x); }
-	inline NSVec3<T> ywy() const { return NSVec3<T>(y, w, y); }
-	inline NSVec3<T> ywz() const { return NSVec3<T>(y, w, z); }
-	inline NSVec3<T> yww() const { return NSVec3<T>(y, w, w); }
-	inline NSVec3<T> zxx() const { return NSVec3<T>(z, x, x); }
-	inline NSVec3<T> zxy() const { return NSVec3<T>(z, x, y); }
-	inline NSVec3<T> zxz() const { return NSVec3<T>(z, x, z); }
-	inline NSVec3<T> zxw() const { return NSVec3<T>(z, x, w); }
-	inline NSVec3<T> zyx() const { return NSVec3<T>(z, y, x); }
-	inline NSVec3<T> zyy() const { return NSVec3<T>(z, y, y); }
-	inline NSVec3<T> zyz() const { return NSVec3<T>(z, y, z); }
-	inline NSVec3<T> zyw() const { return NSVec3<T>(z, y, w); }
-	inline NSVec3<T> zzx() const { return NSVec3<T>(z, z, x); }
-	inline NSVec3<T> zzy() const { return NSVec3<T>(z, z, y); }
-	inline NSVec3<T> zzz() const { return NSVec3<T>(z, z, z); }
-	inline NSVec3<T> zzw() const { return NSVec3<T>(z, z, w); }
-	inline NSVec3<T> zwx() const { return NSVec3<T>(z, w, x); }
-	inline NSVec3<T> zwy() const { return NSVec3<T>(z, w, y); }
-	inline NSVec3<T> zwz() const { return NSVec3<T>(z, w, z); }
-	inline NSVec3<T> zww() const { return NSVec3<T>(z, w, w); }
-	inline NSVec3<T> wxx() const { return NSVec3<T>(w, x, x); }
-	inline NSVec3<T> wxy() const { return NSVec3<T>(w, x, y); }
-	inline NSVec3<T> wxz() const { return NSVec3<T>(w, x, z); }
-	inline NSVec3<T> wxw() const { return NSVec3<T>(w, x, w); }
-	inline NSVec3<T> wyx() const { return NSVec3<T>(w, y, x); }
-	inline NSVec3<T> wyy() const { return NSVec3<T>(w, y, y); }
-	inline NSVec3<T> wyz() const { return NSVec3<T>(w, y, z); }
-	inline NSVec3<T> wyw() const { return NSVec3<T>(w, y, w); }
-	inline NSVec3<T> wzx() const { return NSVec3<T>(w, z, x); }
-	inline NSVec3<T> wzy() const { return NSVec3<T>(w, z, y); }
-	inline NSVec3<T> wzz() const { return NSVec3<T>(w, z, z); }
-	inline NSVec3<T> wzw() const { return NSVec3<T>(w, z, w); }
-	inline NSVec3<T> wwx() const { return NSVec3<T>(w, w, x); }
-	inline NSVec3<T> wwy() const { return NSVec3<T>(w, w, y); }
-	inline NSVec3<T> wwz() const { return NSVec3<T>(w, w, z); }
-	inline NSVec3<T> www() const { return NSVec3<T>(w, w, w); }
+	inline nsvec3<T> xxx() const { return nsvec3<T>(x, x, x); }
+	inline nsvec3<T> xxy() const { return nsvec3<T>(x, x, y); }
+	inline nsvec3<T> xxz() const { return nsvec3<T>(x, x, z); }
+	inline nsvec3<T> xxw() const { return nsvec3<T>(x, x, w); }
+	inline nsvec3<T> xyx() const { return nsvec3<T>(x, y, x); }
+	inline nsvec3<T> xyy() const { return nsvec3<T>(x, y, y); }
+	inline nsvec3<T> xyz() const { return nsvec3<T>(x, y, z); }
+	inline nsvec3<T> xyw() const { return nsvec3<T>(x, y, w); }
+	inline nsvec3<T> xzx() const { return nsvec3<T>(x, z, x); }
+	inline nsvec3<T> xzy() const { return nsvec3<T>(x, z, y); }
+	inline nsvec3<T> xzz() const { return nsvec3<T>(x, z, z); }
+	inline nsvec3<T> xzw() const { return nsvec3<T>(x, z, w); }
+	inline nsvec3<T> xwx() const { return nsvec3<T>(x, w, x); }
+	inline nsvec3<T> xwy() const { return nsvec3<T>(x, w, y); }
+	inline nsvec3<T> xwz() const { return nsvec3<T>(x, w, z); }
+	inline nsvec3<T> xww() const { return nsvec3<T>(x, w, w); }
+	inline nsvec3<T> yxx() const { return nsvec3<T>(y, x, x); }
+	inline nsvec3<T> yxy() const { return nsvec3<T>(y, x, y); }
+	inline nsvec3<T> yxz() const { return nsvec3<T>(y, x, z); }
+	inline nsvec3<T> yxw() const { return nsvec3<T>(y, x, w); }
+	inline nsvec3<T> yyx() const { return nsvec3<T>(y, y, x); }
+	inline nsvec3<T> yyy() const { return nsvec3<T>(y, y, y); }
+	inline nsvec3<T> yyz() const { return nsvec3<T>(y, y, z); }
+	inline nsvec3<T> yyw() const { return nsvec3<T>(y, y, w); }
+	inline nsvec3<T> yzx() const { return nsvec3<T>(y, z, x); }
+	inline nsvec3<T> yzy() const { return nsvec3<T>(y, z, y); }
+	inline nsvec3<T> yzz() const { return nsvec3<T>(y, z, z); }
+	inline nsvec3<T> yzw() const { return nsvec3<T>(y, z, w); }
+	inline nsvec3<T> ywx() const { return nsvec3<T>(y, w, x); }
+	inline nsvec3<T> ywy() const { return nsvec3<T>(y, w, y); }
+	inline nsvec3<T> ywz() const { return nsvec3<T>(y, w, z); }
+	inline nsvec3<T> yww() const { return nsvec3<T>(y, w, w); }
+	inline nsvec3<T> zxx() const { return nsvec3<T>(z, x, x); }
+	inline nsvec3<T> zxy() const { return nsvec3<T>(z, x, y); }
+	inline nsvec3<T> zxz() const { return nsvec3<T>(z, x, z); }
+	inline nsvec3<T> zxw() const { return nsvec3<T>(z, x, w); }
+	inline nsvec3<T> zyx() const { return nsvec3<T>(z, y, x); }
+	inline nsvec3<T> zyy() const { return nsvec3<T>(z, y, y); }
+	inline nsvec3<T> zyz() const { return nsvec3<T>(z, y, z); }
+	inline nsvec3<T> zyw() const { return nsvec3<T>(z, y, w); }
+	inline nsvec3<T> zzx() const { return nsvec3<T>(z, z, x); }
+	inline nsvec3<T> zzy() const { return nsvec3<T>(z, z, y); }
+	inline nsvec3<T> zzz() const { return nsvec3<T>(z, z, z); }
+	inline nsvec3<T> zzw() const { return nsvec3<T>(z, z, w); }
+	inline nsvec3<T> zwx() const { return nsvec3<T>(z, w, x); }
+	inline nsvec3<T> zwy() const { return nsvec3<T>(z, w, y); }
+	inline nsvec3<T> zwz() const { return nsvec3<T>(z, w, z); }
+	inline nsvec3<T> zww() const { return nsvec3<T>(z, w, w); }
+	inline nsvec3<T> wxx() const { return nsvec3<T>(w, x, x); }
+	inline nsvec3<T> wxy() const { return nsvec3<T>(w, x, y); }
+	inline nsvec3<T> wxz() const { return nsvec3<T>(w, x, z); }
+	inline nsvec3<T> wxw() const { return nsvec3<T>(w, x, w); }
+	inline nsvec3<T> wyx() const { return nsvec3<T>(w, y, x); }
+	inline nsvec3<T> wyy() const { return nsvec3<T>(w, y, y); }
+	inline nsvec3<T> wyz() const { return nsvec3<T>(w, y, z); }
+	inline nsvec3<T> wyw() const { return nsvec3<T>(w, y, w); }
+	inline nsvec3<T> wzx() const { return nsvec3<T>(w, z, x); }
+	inline nsvec3<T> wzy() const { return nsvec3<T>(w, z, y); }
+	inline nsvec3<T> wzz() const { return nsvec3<T>(w, z, z); }
+	inline nsvec3<T> wzw() const { return nsvec3<T>(w, z, w); }
+	inline nsvec3<T> wwx() const { return nsvec3<T>(w, w, x); }
+	inline nsvec3<T> wwy() const { return nsvec3<T>(w, w, y); }
+	inline nsvec3<T> wwz() const { return nsvec3<T>(w, w, z); }
+	inline nsvec3<T> www() const { return nsvec3<T>(w, w, w); }
 
-	inline NSVec3<T> rrr() const { return NSVec3<T>(r, r, r); }
-	inline NSVec3<T> rrg() const { return NSVec3<T>(r, r, g); }
-	inline NSVec3<T> rrb() const { return NSVec3<T>(r, r, b); }
-	inline NSVec3<T> rra() const { return NSVec3<T>(r, r, a); }
-	inline NSVec3<T> rgr() const { return NSVec3<T>(r, g, r); }
-	inline NSVec3<T> rgg() const { return NSVec3<T>(r, g, g); }
-	inline NSVec3<T> rgb() const { return NSVec3<T>(r, g, b); }
-	inline NSVec3<T> rga() const { return NSVec3<T>(r, g, a); }
-	inline NSVec3<T> rbr() const { return NSVec3<T>(r, b, r); }
-	inline NSVec3<T> rbg() const { return NSVec3<T>(r, b, g); }
-	inline NSVec3<T> rbb() const { return NSVec3<T>(r, b, b); }
-	inline NSVec3<T> rba() const { return NSVec3<T>(r, b, a); }
-	inline NSVec3<T> rar() const { return NSVec3<T>(r, a, r); }
-	inline NSVec3<T> rag() const { return NSVec3<T>(r, a, g); }
-	inline NSVec3<T> rab() const { return NSVec3<T>(r, a, b); }
-	inline NSVec3<T> raa() const { return NSVec3<T>(r, a, a); }
-	inline NSVec3<T> grr() const { return NSVec3<T>(g, r, r); }
-	inline NSVec3<T> grg() const { return NSVec3<T>(g, r, g); }
-	inline NSVec3<T> grb() const { return NSVec3<T>(g, r, b); }
-	inline NSVec3<T> gra() const { return NSVec3<T>(g, r, a); }
-	inline NSVec3<T> ggr() const { return NSVec3<T>(g, g, r); }
-	inline NSVec3<T> ggg() const { return NSVec3<T>(g, g, g); }
-	inline NSVec3<T> ggb() const { return NSVec3<T>(g, g, b); }
-	inline NSVec3<T> gga() const { return NSVec3<T>(g, g, a); }
-	inline NSVec3<T> gbr() const { return NSVec3<T>(g, b, r); }
-	inline NSVec3<T> gbg() const { return NSVec3<T>(g, b, g); }
-	inline NSVec3<T> gbb() const { return NSVec3<T>(g, b, b); }
-	inline NSVec3<T> gba() const { return NSVec3<T>(g, b, a); }
-	inline NSVec3<T> gar() const { return NSVec3<T>(g, a, r); }
-	inline NSVec3<T> gag() const { return NSVec3<T>(g, a, g); }
-	inline NSVec3<T> gab() const { return NSVec3<T>(g, a, b); }
-	inline NSVec3<T> gaa() const { return NSVec3<T>(g, a, a); }
-	inline NSVec3<T> brr() const { return NSVec3<T>(b, r, r); }
-	inline NSVec3<T> brg() const { return NSVec3<T>(b, r, g); }
-	inline NSVec3<T> brb() const { return NSVec3<T>(b, r, b); }
-	inline NSVec3<T> bra() const { return NSVec3<T>(b, r, a); }
-	inline NSVec3<T> bgr() const { return NSVec3<T>(b, g, r); }
-	inline NSVec3<T> bgg() const { return NSVec3<T>(b, g, g); }
-	inline NSVec3<T> bgb() const { return NSVec3<T>(b, g, b); }
-	inline NSVec3<T> bga() const { return NSVec3<T>(b, g, a); }
-	inline NSVec3<T> bbr() const { return NSVec3<T>(b, b, r); }
-	inline NSVec3<T> bbg() const { return NSVec3<T>(b, b, g); }
-	inline NSVec3<T> bbb() const { return NSVec3<T>(b, b, b); }
-	inline NSVec3<T> bba() const { return NSVec3<T>(b, b, a); }
-	inline NSVec3<T> bar() const { return NSVec3<T>(b, a, r); }
-	inline NSVec3<T> bag() const { return NSVec3<T>(b, a, g); }
-	inline NSVec3<T> bab() const { return NSVec3<T>(b, a, b); }
-	inline NSVec3<T> baa() const { return NSVec3<T>(b, a, a); }
-	inline NSVec3<T> arr() const { return NSVec3<T>(a, r, r); }
-	inline NSVec3<T> arg() const { return NSVec3<T>(a, r, g); }
-	inline NSVec3<T> arb() const { return NSVec3<T>(a, r, b); }
-	inline NSVec3<T> ara() const { return NSVec3<T>(a, r, a); }
-	inline NSVec3<T> agr() const { return NSVec3<T>(a, g, r); }
-	inline NSVec3<T> agg() const { return NSVec3<T>(a, g, g); }
-	inline NSVec3<T> agb() const { return NSVec3<T>(a, g, b); }
-	inline NSVec3<T> aga() const { return NSVec3<T>(a, g, a); }
-	inline NSVec3<T> abr() const { return NSVec3<T>(a, b, r); }
-	inline NSVec3<T> abg() const { return NSVec3<T>(a, b, g); }
-	inline NSVec3<T> abb() const { return NSVec3<T>(a, b, b); }
-	inline NSVec3<T> aba() const { return NSVec3<T>(a, b, a); }
-	inline NSVec3<T> aar() const { return NSVec3<T>(a, a, r); }
-	inline NSVec3<T> aag() const { return NSVec3<T>(a, a, g); }
-	inline NSVec3<T> aab() const { return NSVec3<T>(a, a, b); }
-	inline NSVec3<T> aaa() const { return NSVec3<T>(a, a, a); }
+	inline nsvec3<T> rrr() const { return nsvec3<T>(r, r, r); }
+	inline nsvec3<T> rrg() const { return nsvec3<T>(r, r, g); }
+	inline nsvec3<T> rrb() const { return nsvec3<T>(r, r, b); }
+	inline nsvec3<T> rra() const { return nsvec3<T>(r, r, a); }
+	inline nsvec3<T> rgr() const { return nsvec3<T>(r, g, r); }
+	inline nsvec3<T> rgg() const { return nsvec3<T>(r, g, g); }
+	inline nsvec3<T> rgb() const { return nsvec3<T>(r, g, b); }
+	inline nsvec3<T> rga() const { return nsvec3<T>(r, g, a); }
+	inline nsvec3<T> rbr() const { return nsvec3<T>(r, b, r); }
+	inline nsvec3<T> rbg() const { return nsvec3<T>(r, b, g); }
+	inline nsvec3<T> rbb() const { return nsvec3<T>(r, b, b); }
+	inline nsvec3<T> rba() const { return nsvec3<T>(r, b, a); }
+	inline nsvec3<T> rar() const { return nsvec3<T>(r, a, r); }
+	inline nsvec3<T> rag() const { return nsvec3<T>(r, a, g); }
+	inline nsvec3<T> rab() const { return nsvec3<T>(r, a, b); }
+	inline nsvec3<T> raa() const { return nsvec3<T>(r, a, a); }
+	inline nsvec3<T> grr() const { return nsvec3<T>(g, r, r); }
+	inline nsvec3<T> grg() const { return nsvec3<T>(g, r, g); }
+	inline nsvec3<T> grb() const { return nsvec3<T>(g, r, b); }
+	inline nsvec3<T> gra() const { return nsvec3<T>(g, r, a); }
+	inline nsvec3<T> ggr() const { return nsvec3<T>(g, g, r); }
+	inline nsvec3<T> ggg() const { return nsvec3<T>(g, g, g); }
+	inline nsvec3<T> ggb() const { return nsvec3<T>(g, g, b); }
+	inline nsvec3<T> gga() const { return nsvec3<T>(g, g, a); }
+	inline nsvec3<T> gbr() const { return nsvec3<T>(g, b, r); }
+	inline nsvec3<T> gbg() const { return nsvec3<T>(g, b, g); }
+	inline nsvec3<T> gbb() const { return nsvec3<T>(g, b, b); }
+	inline nsvec3<T> gba() const { return nsvec3<T>(g, b, a); }
+	inline nsvec3<T> gar() const { return nsvec3<T>(g, a, r); }
+	inline nsvec3<T> gag() const { return nsvec3<T>(g, a, g); }
+	inline nsvec3<T> gab() const { return nsvec3<T>(g, a, b); }
+	inline nsvec3<T> gaa() const { return nsvec3<T>(g, a, a); }
+	inline nsvec3<T> brr() const { return nsvec3<T>(b, r, r); }
+	inline nsvec3<T> brg() const { return nsvec3<T>(b, r, g); }
+	inline nsvec3<T> brb() const { return nsvec3<T>(b, r, b); }
+	inline nsvec3<T> bra() const { return nsvec3<T>(b, r, a); }
+	inline nsvec3<T> bgr() const { return nsvec3<T>(b, g, r); }
+	inline nsvec3<T> bgg() const { return nsvec3<T>(b, g, g); }
+	inline nsvec3<T> bgb() const { return nsvec3<T>(b, g, b); }
+	inline nsvec3<T> bga() const { return nsvec3<T>(b, g, a); }
+	inline nsvec3<T> bbr() const { return nsvec3<T>(b, b, r); }
+	inline nsvec3<T> bbg() const { return nsvec3<T>(b, b, g); }
+	inline nsvec3<T> bbb() const { return nsvec3<T>(b, b, b); }
+	inline nsvec3<T> bba() const { return nsvec3<T>(b, b, a); }
+	inline nsvec3<T> bar() const { return nsvec3<T>(b, a, r); }
+	inline nsvec3<T> bag() const { return nsvec3<T>(b, a, g); }
+	inline nsvec3<T> bab() const { return nsvec3<T>(b, a, b); }
+	inline nsvec3<T> baa() const { return nsvec3<T>(b, a, a); }
+	inline nsvec3<T> arr() const { return nsvec3<T>(a, r, r); }
+	inline nsvec3<T> arg() const { return nsvec3<T>(a, r, g); }
+	inline nsvec3<T> arb() const { return nsvec3<T>(a, r, b); }
+	inline nsvec3<T> ara() const { return nsvec3<T>(a, r, a); }
+	inline nsvec3<T> agr() const { return nsvec3<T>(a, g, r); }
+	inline nsvec3<T> agg() const { return nsvec3<T>(a, g, g); }
+	inline nsvec3<T> agb() const { return nsvec3<T>(a, g, b); }
+	inline nsvec3<T> aga() const { return nsvec3<T>(a, g, a); }
+	inline nsvec3<T> abr() const { return nsvec3<T>(a, b, r); }
+	inline nsvec3<T> abg() const { return nsvec3<T>(a, b, g); }
+	inline nsvec3<T> abb() const { return nsvec3<T>(a, b, b); }
+	inline nsvec3<T> aba() const { return nsvec3<T>(a, b, a); }
+	inline nsvec3<T> aar() const { return nsvec3<T>(a, a, r); }
+	inline nsvec3<T> aag() const { return nsvec3<T>(a, a, g); }
+	inline nsvec3<T> aab() const { return nsvec3<T>(a, a, b); }
+	inline nsvec3<T> aaa() const { return nsvec3<T>(a, a, a); }
 
-	inline NSVec3<T> sss() const { return NSVec3<T>(s, s, s); }
-	inline NSVec3<T> sst() const { return NSVec3<T>(s, s, t); }
-	inline NSVec3<T> ssp() const { return NSVec3<T>(s, s, p); }
-	inline NSVec3<T> ssq() const { return NSVec3<T>(s, s, q); }
-	inline NSVec3<T> sts() const { return NSVec3<T>(s, t, s); }
-	inline NSVec3<T> stt() const { return NSVec3<T>(s, t, t); }
-	inline NSVec3<T> stp() const { return NSVec3<T>(s, t, p); }
-	inline NSVec3<T> stq() const { return NSVec3<T>(s, t, q); }
-	inline NSVec3<T> sps() const { return NSVec3<T>(s, p, s); }
-	inline NSVec3<T> spt() const { return NSVec3<T>(s, p, t); }
-	inline NSVec3<T> spp() const { return NSVec3<T>(s, p, p); }
-	inline NSVec3<T> spq() const { return NSVec3<T>(s, p, q); }
-	inline NSVec3<T> sqs() const { return NSVec3<T>(s, q, s); }
-	inline NSVec3<T> sqt() const { return NSVec3<T>(s, q, t); }
-	inline NSVec3<T> sqp() const { return NSVec3<T>(s, q, p); }
-	inline NSVec3<T> sqq() const { return NSVec3<T>(s, q, q); }
-	inline NSVec3<T> tss() const { return NSVec3<T>(t, s, s); }
-	inline NSVec3<T> tst() const { return NSVec3<T>(t, s, t); }
-	inline NSVec3<T> tsp() const { return NSVec3<T>(t, s, p); }
-	inline NSVec3<T> tsq() const { return NSVec3<T>(t, s, q); }
-	inline NSVec3<T> tts() const { return NSVec3<T>(t, t, s); }
-	inline NSVec3<T> ttt() const { return NSVec3<T>(t, t, t); }
-	inline NSVec3<T> ttp() const { return NSVec3<T>(t, t, p); }
-	inline NSVec3<T> ttq() const { return NSVec3<T>(t, t, q); }
-	inline NSVec3<T> tps() const { return NSVec3<T>(t, p, s); }
-	inline NSVec3<T> tpt() const { return NSVec3<T>(t, p, t); }
-	inline NSVec3<T> tpp() const { return NSVec3<T>(t, p, p); }
-	inline NSVec3<T> tpq() const { return NSVec3<T>(t, p, q); }
-	inline NSVec3<T> tqs() const { return NSVec3<T>(t, q, s); }
-	inline NSVec3<T> tqt() const { return NSVec3<T>(t, q, t); }
-	inline NSVec3<T> tqp() const { return NSVec3<T>(t, q, p); }
-	inline NSVec3<T> tqq() const { return NSVec3<T>(t, q, q); }
-	inline NSVec3<T> pss() const { return NSVec3<T>(p, s, s); }
-	inline NSVec3<T> pst() const { return NSVec3<T>(p, s, t); }
-	inline NSVec3<T> psp() const { return NSVec3<T>(p, s, p); }
-	inline NSVec3<T> psq() const { return NSVec3<T>(p, s, q); }
-	inline NSVec3<T> pts() const { return NSVec3<T>(p, t, s); }
-	inline NSVec3<T> ptt() const { return NSVec3<T>(p, t, t); }
-	inline NSVec3<T> ptp() const { return NSVec3<T>(p, t, p); }
-	inline NSVec3<T> ptq() const { return NSVec3<T>(p, t, q); }
-	inline NSVec3<T> pps() const { return NSVec3<T>(p, p, s); }
-	inline NSVec3<T> ppt() const { return NSVec3<T>(p, p, t); }
-	inline NSVec3<T> ppp() const { return NSVec3<T>(p, p, p); }
-	inline NSVec3<T> ppq() const { return NSVec3<T>(p, p, q); }
-	inline NSVec3<T> pqs() const { return NSVec3<T>(p, q, s); }
-	inline NSVec3<T> pqt() const { return NSVec3<T>(p, q, t); }
-	inline NSVec3<T> pqp() const { return NSVec3<T>(p, q, p); }
-	inline NSVec3<T> pqq() const { return NSVec3<T>(p, q, q); }
-	inline NSVec3<T> qss() const { return NSVec3<T>(q, s, s); }
-	inline NSVec3<T> qst() const { return NSVec3<T>(q, s, t); }
-	inline NSVec3<T> qsp() const { return NSVec3<T>(q, s, p); }
-	inline NSVec3<T> qsq() const { return NSVec3<T>(q, s, q); }
-	inline NSVec3<T> qts() const { return NSVec3<T>(q, t, s); }
-	inline NSVec3<T> qtt() const { return NSVec3<T>(q, t, t); }
-	inline NSVec3<T> qtp() const { return NSVec3<T>(q, t, p); }
-	inline NSVec3<T> qtq() const { return NSVec3<T>(q, t, q); }
-	inline NSVec3<T> qps() const { return NSVec3<T>(q, p, s); }
-	inline NSVec3<T> qpt() const { return NSVec3<T>(q, p, t); }
-	inline NSVec3<T> qpp() const { return NSVec3<T>(q, p, p); }
-	inline NSVec3<T> qpq() const { return NSVec3<T>(q, p, q); }
-	inline NSVec3<T> qqs() const { return NSVec3<T>(q, q, s); }
-	inline NSVec3<T> qqt() const { return NSVec3<T>(q, q, t); }
-	inline NSVec3<T> qqp() const { return NSVec3<T>(q, q, p); }
-	inline NSVec3<T> qqq() const { return NSVec3<T>(q, q, q); }
+	inline nsvec3<T> sss() const { return nsvec3<T>(s, s, s); }
+	inline nsvec3<T> sst() const { return nsvec3<T>(s, s, t); }
+	inline nsvec3<T> ssp() const { return nsvec3<T>(s, s, p); }
+	inline nsvec3<T> ssq() const { return nsvec3<T>(s, s, q); }
+	inline nsvec3<T> sts() const { return nsvec3<T>(s, t, s); }
+	inline nsvec3<T> stt() const { return nsvec3<T>(s, t, t); }
+	inline nsvec3<T> stp() const { return nsvec3<T>(s, t, p); }
+	inline nsvec3<T> stq() const { return nsvec3<T>(s, t, q); }
+	inline nsvec3<T> sps() const { return nsvec3<T>(s, p, s); }
+	inline nsvec3<T> spt() const { return nsvec3<T>(s, p, t); }
+	inline nsvec3<T> spp() const { return nsvec3<T>(s, p, p); }
+	inline nsvec3<T> spq() const { return nsvec3<T>(s, p, q); }
+	inline nsvec3<T> sqs() const { return nsvec3<T>(s, q, s); }
+	inline nsvec3<T> sqt() const { return nsvec3<T>(s, q, t); }
+	inline nsvec3<T> sqp() const { return nsvec3<T>(s, q, p); }
+	inline nsvec3<T> sqq() const { return nsvec3<T>(s, q, q); }
+	inline nsvec3<T> tss() const { return nsvec3<T>(t, s, s); }
+	inline nsvec3<T> tst() const { return nsvec3<T>(t, s, t); }
+	inline nsvec3<T> tsp() const { return nsvec3<T>(t, s, p); }
+	inline nsvec3<T> tsq() const { return nsvec3<T>(t, s, q); }
+	inline nsvec3<T> tts() const { return nsvec3<T>(t, t, s); }
+	inline nsvec3<T> ttt() const { return nsvec3<T>(t, t, t); }
+	inline nsvec3<T> ttp() const { return nsvec3<T>(t, t, p); }
+	inline nsvec3<T> ttq() const { return nsvec3<T>(t, t, q); }
+	inline nsvec3<T> tps() const { return nsvec3<T>(t, p, s); }
+	inline nsvec3<T> tpt() const { return nsvec3<T>(t, p, t); }
+	inline nsvec3<T> tpp() const { return nsvec3<T>(t, p, p); }
+	inline nsvec3<T> tpq() const { return nsvec3<T>(t, p, q); }
+	inline nsvec3<T> tqs() const { return nsvec3<T>(t, q, s); }
+	inline nsvec3<T> tqt() const { return nsvec3<T>(t, q, t); }
+	inline nsvec3<T> tqp() const { return nsvec3<T>(t, q, p); }
+	inline nsvec3<T> tqq() const { return nsvec3<T>(t, q, q); }
+	inline nsvec3<T> pss() const { return nsvec3<T>(p, s, s); }
+	inline nsvec3<T> pst() const { return nsvec3<T>(p, s, t); }
+	inline nsvec3<T> psp() const { return nsvec3<T>(p, s, p); }
+	inline nsvec3<T> psq() const { return nsvec3<T>(p, s, q); }
+	inline nsvec3<T> pts() const { return nsvec3<T>(p, t, s); }
+	inline nsvec3<T> ptt() const { return nsvec3<T>(p, t, t); }
+	inline nsvec3<T> ptp() const { return nsvec3<T>(p, t, p); }
+	inline nsvec3<T> ptq() const { return nsvec3<T>(p, t, q); }
+	inline nsvec3<T> pps() const { return nsvec3<T>(p, p, s); }
+	inline nsvec3<T> ppt() const { return nsvec3<T>(p, p, t); }
+	inline nsvec3<T> ppp() const { return nsvec3<T>(p, p, p); }
+	inline nsvec3<T> ppq() const { return nsvec3<T>(p, p, q); }
+	inline nsvec3<T> pqs() const { return nsvec3<T>(p, q, s); }
+	inline nsvec3<T> pqt() const { return nsvec3<T>(p, q, t); }
+	inline nsvec3<T> pqp() const { return nsvec3<T>(p, q, p); }
+	inline nsvec3<T> pqq() const { return nsvec3<T>(p, q, q); }
+	inline nsvec3<T> qss() const { return nsvec3<T>(q, s, s); }
+	inline nsvec3<T> qst() const { return nsvec3<T>(q, s, t); }
+	inline nsvec3<T> qsp() const { return nsvec3<T>(q, s, p); }
+	inline nsvec3<T> qsq() const { return nsvec3<T>(q, s, q); }
+	inline nsvec3<T> qts() const { return nsvec3<T>(q, t, s); }
+	inline nsvec3<T> qtt() const { return nsvec3<T>(q, t, t); }
+	inline nsvec3<T> qtp() const { return nsvec3<T>(q, t, p); }
+	inline nsvec3<T> qtq() const { return nsvec3<T>(q, t, q); }
+	inline nsvec3<T> qps() const { return nsvec3<T>(q, p, s); }
+	inline nsvec3<T> qpt() const { return nsvec3<T>(q, p, t); }
+	inline nsvec3<T> qpp() const { return nsvec3<T>(q, p, p); }
+	inline nsvec3<T> qpq() const { return nsvec3<T>(q, p, q); }
+	inline nsvec3<T> qqs() const { return nsvec3<T>(q, q, s); }
+	inline nsvec3<T> qqt() const { return nsvec3<T>(q, q, t); }
+	inline nsvec3<T> qqp() const { return nsvec3<T>(q, q, p); }
+	inline nsvec3<T> qqq() const { return nsvec3<T>(q, q, q); }
 
 	// Vec 2 Swizzles
-	inline NSVec2<T> xx() const { return NSVec2<T>(x, x); }
-	inline NSVec2<T> xy() const { return NSVec2<T>(x, y); }
-	inline NSVec2<T> xz() const { return NSVec2<T>(x, z); }
-	inline NSVec2<T> xw() const { return NSVec2<T>(x, w); }
-	inline NSVec2<T> yx() const { return NSVec2<T>(y, x); }
-	inline NSVec2<T> yy() const { return NSVec2<T>(y, y); }
-	inline NSVec2<T> yz() const { return NSVec2<T>(y, z); }
-	inline NSVec2<T> yw() const { return NSVec2<T>(y, w); }
-	inline NSVec2<T> zx() const { return NSVec2<T>(z, x); }
-	inline NSVec2<T> zy() const { return NSVec2<T>(z, y); }
-	inline NSVec2<T> zz() const { return NSVec2<T>(z, z); }
-	inline NSVec2<T> zw() const { return NSVec2<T>(z, w); }
-	inline NSVec2<T> wx() const { return NSVec2<T>(w, x); }
-	inline NSVec2<T> wy() const { return NSVec2<T>(w, y); }
-	inline NSVec2<T> wz() const { return NSVec2<T>(w, z); }
-	inline NSVec2<T> ww() const { return NSVec2<T>(w, w); }
+	inline nsvec2<T> xx() const { return nsvec2<T>(x, x); }
+	inline nsvec2<T> xy() const { return nsvec2<T>(x, y); }
+	inline nsvec2<T> xz() const { return nsvec2<T>(x, z); }
+	inline nsvec2<T> xw() const { return nsvec2<T>(x, w); }
+	inline nsvec2<T> yx() const { return nsvec2<T>(y, x); }
+	inline nsvec2<T> yy() const { return nsvec2<T>(y, y); }
+	inline nsvec2<T> yz() const { return nsvec2<T>(y, z); }
+	inline nsvec2<T> yw() const { return nsvec2<T>(y, w); }
+	inline nsvec2<T> zx() const { return nsvec2<T>(z, x); }
+	inline nsvec2<T> zy() const { return nsvec2<T>(z, y); }
+	inline nsvec2<T> zz() const { return nsvec2<T>(z, z); }
+	inline nsvec2<T> zw() const { return nsvec2<T>(z, w); }
+	inline nsvec2<T> wx() const { return nsvec2<T>(w, x); }
+	inline nsvec2<T> wy() const { return nsvec2<T>(w, y); }
+	inline nsvec2<T> wz() const { return nsvec2<T>(w, z); }
+	inline nsvec2<T> ww() const { return nsvec2<T>(w, w); }
 
-	inline NSVec2<T> rr() const { return NSVec2<T>(r, r); }
-	inline NSVec2<T> rg() const { return NSVec2<T>(r, g); }
-	inline NSVec2<T> rb() const { return NSVec2<T>(r, b); }
-	inline NSVec2<T> ra() const { return NSVec2<T>(r, a); }
-	inline NSVec2<T> gr() const { return NSVec2<T>(g, r); }
-	inline NSVec2<T> gg() const { return NSVec2<T>(g, g); }
-	inline NSVec2<T> gb() const { return NSVec2<T>(g, b); }
-	inline NSVec2<T> ga() const { return NSVec2<T>(g, a); }
-	inline NSVec2<T> br() const { return NSVec2<T>(b, r); }
-	inline NSVec2<T> bg() const { return NSVec2<T>(b, g); }
-	inline NSVec2<T> bb() const { return NSVec2<T>(b, b); }
-	inline NSVec2<T> ba() const { return NSVec2<T>(b, a); }
-	inline NSVec2<T> ar() const { return NSVec2<T>(a, r); }
-	inline NSVec2<T> ag() const { return NSVec2<T>(a, g); }
-	inline NSVec2<T> ab() const { return NSVec2<T>(a, b); }
-	inline NSVec2<T> aa() const { return NSVec2<T>(a, a); }
+	inline nsvec2<T> rr() const { return nsvec2<T>(r, r); }
+	inline nsvec2<T> rg() const { return nsvec2<T>(r, g); }
+	inline nsvec2<T> rb() const { return nsvec2<T>(r, b); }
+	inline nsvec2<T> ra() const { return nsvec2<T>(r, a); }
+	inline nsvec2<T> gr() const { return nsvec2<T>(g, r); }
+	inline nsvec2<T> gg() const { return nsvec2<T>(g, g); }
+	inline nsvec2<T> gb() const { return nsvec2<T>(g, b); }
+	inline nsvec2<T> ga() const { return nsvec2<T>(g, a); }
+	inline nsvec2<T> br() const { return nsvec2<T>(b, r); }
+	inline nsvec2<T> bg() const { return nsvec2<T>(b, g); }
+	inline nsvec2<T> bb() const { return nsvec2<T>(b, b); }
+	inline nsvec2<T> ba() const { return nsvec2<T>(b, a); }
+	inline nsvec2<T> ar() const { return nsvec2<T>(a, r); }
+	inline nsvec2<T> ag() const { return nsvec2<T>(a, g); }
+	inline nsvec2<T> ab() const { return nsvec2<T>(a, b); }
+	inline nsvec2<T> aa() const { return nsvec2<T>(a, a); }
 
-	inline NSVec2<T> ss() const { return NSVec2<T>(s, s); }
-	inline NSVec2<T> st() const { return NSVec2<T>(s, t); }
-	inline NSVec2<T> sp() const { return NSVec2<T>(s, p); }
-	inline NSVec2<T> sq() const { return NSVec2<T>(s, q); }
-	inline NSVec2<T> ts() const { return NSVec2<T>(t, s); }
-	inline NSVec2<T> tt() const { return NSVec2<T>(t, t); }
-	inline NSVec2<T> tp() const { return NSVec2<T>(t, p); }
-	inline NSVec2<T> tq() const { return NSVec2<T>(t, q); }
-	inline NSVec2<T> ps() const { return NSVec2<T>(p, s); }
-	inline NSVec2<T> pt() const { return NSVec2<T>(p, t); }
-	inline NSVec2<T> pp() const { return NSVec2<T>(p, p); }
-	inline NSVec2<T> pq() const { return NSVec2<T>(p, q); }
-	inline NSVec2<T> qs() const { return NSVec2<T>(q, s); }
-	inline NSVec2<T> qt() const { return NSVec2<T>(q, t); }
-	inline NSVec2<T> qp() const { return NSVec2<T>(q, p); }
-	inline NSVec2<T> qq() const { return NSVec2<T>(q, q); }
+	inline nsvec2<T> ss() const { return nsvec2<T>(s, s); }
+	inline nsvec2<T> st() const { return nsvec2<T>(s, t); }
+	inline nsvec2<T> sp() const { return nsvec2<T>(s, p); }
+	inline nsvec2<T> sq() const { return nsvec2<T>(s, q); }
+	inline nsvec2<T> ts() const { return nsvec2<T>(t, s); }
+	inline nsvec2<T> tt() const { return nsvec2<T>(t, t); }
+	inline nsvec2<T> tp() const { return nsvec2<T>(t, p); }
+	inline nsvec2<T> tq() const { return nsvec2<T>(t, q); }
+	inline nsvec2<T> ps() const { return nsvec2<T>(p, s); }
+	inline nsvec2<T> pt() const { return nsvec2<T>(p, t); }
+	inline nsvec2<T> pp() const { return nsvec2<T>(p, p); }
+	inline nsvec2<T> pq() const { return nsvec2<T>(p, q); }
+	inline nsvec2<T> qs() const { return nsvec2<T>(q, s); }
+	inline nsvec2<T> qt() const { return nsvec2<T>(q, t); }
+	inline nsvec2<T> qp() const { return nsvec2<T>(q, p); }
+	inline nsvec2<T> qq() const { return nsvec2<T>(q, q); }
 
 	union
 	{
@@ -1573,169 +1573,169 @@ struct NSVec4
 };
 
 template <class T>
-NSVec4<T> operator*(const int32 & pLHS, const NSVec4<T> & pRHS)
+nsvec4<T> operator*(const int32 & lhs_, const nsvec4<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec4<T> operator*(const float & pLHS, const NSVec4<T> & pRHS)
+nsvec4<T> operator*(const float & lhs_, const nsvec4<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template <class T>
-NSVec4<T> operator*(const double & pLHS, const NSVec4<T> & pRHS)
+nsvec4<T> operator*(const double & lhs_, const nsvec4<T> & rhs_)
 {
-	return pRHS * static_cast<T>(pLHS);
+	return rhs_ * static_cast<T>(lhs_);
 }
 
 template<class T>
-NSVec4<T> operator/(const int32 & pLHS, const NSVec4<T> & pRHS)
+nsvec4<T> operator/(const int32 & lhs_, const nsvec4<T> & rhs_)
 {
-	return NSVec4<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z, pLHS / pRHS.w);
+	return nsvec4<T>(lhs_ / rhs_.x, lhs_ / rhs_.y, lhs_ / rhs_.z, lhs_ / rhs_.w);
 }
 
 template <class T>
-NSVec4<T> operator/(const float & pLHS, const NSVec4<T> & pRHS)
+nsvec4<T> operator/(const float & lhs_, const nsvec4<T> & rhs_)
 {
-	return NSVec4<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z, pLHS / pRHS.w);
+	return nsvec4<T>(lhs_ / rhs_.x, lhs_ / rhs_.y, lhs_ / rhs_.z, lhs_ / rhs_.w);
 }
 
 template <class T>
-NSVec4<T> operator/(const double & pLHS, const NSVec4<T> & pRHS)
+nsvec4<T> operator/(const double & lhs_, const nsvec4<T> & rhs_)
 {
-	return NSVec4<T>(pLHS / pRHS.x, pLHS / pRHS.y, pLHS / pRHS.z, pLHS / pRHS.w);
+	return nsvec4<T>(lhs_ / rhs_.x, lhs_ / rhs_.y, lhs_ / rhs_.z, lhs_ / rhs_.w);
 }
 
 template <class T>
-NSVec4<T> abs(const NSVec4<T> & pVec)
+nsvec4<T> abs(const nsvec4<T> & vec_)
 {
-	return NSVec4<T>(pVec).abs();
+	return nsvec4<T>(vec_).abs();
 }
 
 template <class T>
-NSVec4<T> axisAngle(const NSVec3<T> & euler, typename NSVec3<T>::EulerOrder order, bool rads)
+nsvec4<T> axis_angle(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return NSVec4<T>().axisAngleFrom(NSQuat<T>().from(euler, order, rads), rads);
+	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(euler_, order_, rads_), rads_);
 }
 
 template <class T>
-NSVec4<T> axisAngle(const NSQuat<T> & orientation, bool rads)
+nsvec4<T> axis_angle(const nsquat<T> & orientation_, bool rads_)
 {
-	return NSVec4<T>().axisAngleFrom(orientation, rads);
+	return nsvec4<T>().axisAngleFrom(orientation_, rads_);
 }
 
 template <class T>
-NSVec4<T> axisAngle(const NSMat3<T> & rotationMat3, bool rads)
+nsvec4<T> axis_angle(const nsmat3<T> & rotation_mat3_, bool rads_)
 {
-	return NSVec4<T>().axisAngleFrom(NSQuat<T>().from(rotationMat3), rads);
+	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(rotation_mat3_), rads_);
 }
 
 template <class T>
-NSVec4<T> axisAngle(const NSMat4<T> & transform, bool rads)
+nsvec4<T> axis_angle(const nsmat4<T> & transform_, bool rads_)
 {
-	return NSVec4<T>().axisAngleFrom(NSQuat<T>().from(transform), rads);
+	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(transform_), rads_);
 }
 
 template <class T>
-NSVec4<T> axisAngle(const NSVec3<T> & vec, const NSVec3<T> & toVec, bool rads)
+nsvec4<T> axis_angle(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, bool rads_)
 {
-	return NSVec4<T>().axisAngleFrom(NSQuat<T>().from(vec, toVec), rads);
+	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(vec_, to_vec_), rads_);
 }
 
 template <class T>
-NSVec4<T> ceil(const NSVec4<T> & pVec)
+nsvec4<T> ceil(const nsvec4<T> & vec_)
 {
-	NSVec4<T> ret(pVec);
+	nsvec4<T> ret(vec_);
 	ret.ceiling();
 	return ret;
 }
 
 template <class T>
-NSVec4<T> clamp(const NSVec4<T> & pVec, const T & pMin, const T & pMax)
+nsvec4<T> clamp(const nsvec4<T> & vec_, const T & min_, const T & max_)
 {
-	NSVec4<T> ret(pVec);
-	ret.clamp(pMin, pMax);
+	nsvec4<T> ret(vec_);
+	ret.clamp(min_, max_);
 	return ret;
 }
 
 template <class T>
-T distance(const NSVec4<T> & lvec, const NSVec4<T> & rvec)
+T distance(const nsvec4<T> & lvec_, const nsvec4<T> & rvec_)
 {
-	return lvec.distanceTo(rvec);
+	return lvec_.distanceTo(rvec_);
 }
 
 template <class T>
-T dot(const NSVec4<T> & pLeft, const NSVec4<T> & pRight)
+T dot(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_)
 {
-	return pLeft * pRight;
+	return lhs_ * rhs_;
 }
 
 template <class T>
-NSVec4<T> floor(const NSVec4<T> & pVec)
+nsvec4<T> floor(const nsvec4<T> & vec_)
 {
-	NSVec4<T> ret(pVec);
+	nsvec4<T> ret(vec_);
 	ret.floor();
 	return ret;
 }
 
 template <class T>
-NSVec4<T> fract(const NSVec4<T> & vec)
+nsvec4<T> fract(const nsvec4<T> & vec_)
 {
-	return vec - floor(vec);
+	return vec_ - floor(vec_);
 }
 
 template <class T>
-T length(const NSVec4<T> & pVec)
+T length(const nsvec4<T> & vec_)
 {
-	return pVec.length();
+	return vec_.length();
 }
 
 template <class T, class T2>
-NSVec4<T> lerp(const NSVec4<T> & lhs, const NSVec4<T> & rhs, T2 scalingFactor)
+nsvec4<T> lerp(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_, T2 scaling_factor_)
 {
-	NSVec4<T> ret(lhs);
-	ret.lerp(rhs, scalingFactor);
+	nsvec4<T> ret(lhs_);
+	ret.lerp(rhs_, scaling_factor_);
 	return ret;
 }
 
 template <class T>
-NSVec4<T> min(const NSVec4<T> & pLeft, const NSVec4<T> & pRight)
+nsvec4<T> min(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_)
 {
-	NSVec2<T> ret(pLeft);
-	ret.minimize(pRight);
+	nsvec2<T> ret(lhs_);
+	ret.minimize(rhs_);
 	return ret;
 }
 
 template <class T>
-NSVec4<T> max(const NSVec4<T> & pLeft, const NSVec4<T> & pRight)
+nsvec4<T> max(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_)
 {
-	NSVec2<T> ret(pLeft);
-	ret.maximize(pRight);
+	nsvec2<T> ret(lhs_);
+	ret.maximize(rhs_);
 	return ret;
 }
 
 template <class T>
-NSVec4<T> normalize(const NSVec4<T> & pRHS)
+nsvec4<T> normalize(const nsvec4<T> & rhs_)
 {
-	NSVec4<T> ret(pRHS);
+	nsvec4<T> ret(rhs_);
 	ret.normalize();
 	return ret;
 }
 
 template <class T>
-NSVec4<T> round(const NSVec4<T> & pVec)
+nsvec4<T> round(const nsvec4<T> & vec_)
 {
-	NSVec4<T> ret(pVec);
+	nsvec4<T> ret(vec_);
 	ret.round();
 	return ret;
 }
 
 template<class PUPer, class T>
-void pup(PUPer & p, NSVec4<T> & v4, const nsstring & varName)
+void pup(PUPer & p, nsvec4<T> & v4, const nsstring & var_name_)
 {
-	pup(p, v4.x, varName + "[0]"); pup(p, v4.y, varName + "[1]"); pup(p, v4.z, varName + "[2]"); pup(p, v4.w, varName + "[3]");
+	pup(p, v4.x, var_name_ + "[0]"); pup(p, v4.y, var_name_ + "[1]"); pup(p, v4.z, var_name_ + "[2]"); pup(p, v4.w, var_name_ + "[3]");
 }
 
 #endif
