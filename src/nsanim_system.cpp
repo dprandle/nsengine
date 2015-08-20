@@ -14,7 +14,6 @@ This file contains all of the neccessary definitions for the nsanim_system class
 #include <nsanim_comp.h>
 #include <nsentity.h>
 #include <nsscene.h>
-#include <nsglobal.h>
 #include <nsanim_manager.h>
 #include <nsmesh_manager.h>
 #include <nsengine.h>

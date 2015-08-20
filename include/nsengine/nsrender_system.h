@@ -13,6 +13,46 @@
 #ifndef NSRENDERSYSTEM_H
 #define NSRENDERSYSTEM_H
 
+// Default shaders
+#define DEFAULT_GBUFFER_SHADER "gbufferdefault"
+#define DEFAULT_XFBGBUFFER_SHADER "gbufferxtf"
+#define DEFAULT_XFBGBUFFER_RENDER_SHADER "gbufferxtfrender"
+#define DEFAULT_EARLYZ_SHADER "earlyz"
+#define DEFAULT_XFBEARLYZ_SHADER "xfbearlyz"
+#define DEFAULT_LIGHTSTENCIL_SHADER "lightstencil"
+#define DEFAULT_SPOTLIGHT_SHADER "spotlight"
+#define DEFAULT_DIRLIGHT_SHADER "directionlight"
+#define DEFAULT_POINTLIGHT_SHADER "pointlight"
+#define DEFAULT_POINTSHADOWMAP_SHADER "pointshadowmap"
+#define DEFAULT_SPOTSHADOWMAP_SHADER "spotshadowmap"
+#define DEFAULT_DIRSHADOWMAP_SHADER "dirshadowmap"
+#define DEFAULT_XFBPOINTSHADOWMAP_SHADER "xfbpointshadowmap"
+#define DEFAULT_XFBSPOTSHADOWMAP_SHADER "xfbspotshadowmap"
+#define DEFAULT_XFBDIRSHADOWMAP_SHADER "xfbdirshadowmap"
+#define DEFAULT_SKYBOX_SHADER "skybox"
+
+// Default checkered material
+#define DEFAULT_MATERIAL "default"
+
+// Light bounds, skydome, and tile meshes
+#define MESH_FULL_TILE "fulltile"
+#define MESH_HALF_TILE "halftile"
+#define MESH_DIRLIGHT_BOUNDS "dirlightbounds"
+#define MESH_SPOTLIGHT_BOUNDS "spotlightbounds"
+#define MESH_POINTLIGHT_BOUNDS "pointlightbounds"
+#define MESH_TERRAIN "terrain"
+#define MESH_SKYDOME "skydome"
+
+// Framebuffer sizes
+#define DEFAULT_SPOTLIGHT_SHADOW_W 1024
+#define DEFAULT_SPOTLIGHT_SHADOW_H 1024
+#define DEFAULT_POINTLIGHT_SHADOW_W 1024
+#define DEFAULT_POINTLIGHT_SHADOW_H 1024
+#define DEFAULT_DIRLIGHT_SHADOW_W 2048
+#define DEFAULT_DIRLIGHT_SHADOW_H 2048
+#define DEFAULT_FB_RES_X 1920
+#define DEFAULT_FB_RES_Y 1080
+
 #include <nssystem.h>
 #include <nsmesh.h>
 

@@ -14,7 +14,6 @@ This file contains all of the neccessary declarations for the NSEventHandler cla
 #define NSEVENTSYSTEM_H
 
 #include <vector>
-#include <nsglobal.h>
 #include <nsevent.h>
 #include <typeindex>
 #include <nsengine.h>

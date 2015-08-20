@@ -13,41 +13,12 @@ This file contains all of the neccessary declartations for the nsengine class.
 #ifndef NSENGINE_H
 #define NSENGINE_H
 
-#define ENGINE_PLUG "engplug"
+#define ENGINE_PLUG "engine_core"
 
-#define DEFAULT_GBUFFER_SHADER "gbufferdefault"
-#define DEFAULT_XFBGBUFFER_SHADER "gbufferxtf"
-#define DEFAULT_XFBGBUFFER_RENDER_SHADER "gbufferxtfrender"
-#define DEFAULT_EARLYZ_SHADER "earlyz"
-#define DEFAULT_XFBEARLYZ_SHADER "xfbearlyz"
-#define DEFAULT_LIGHTSTENCIL_SHADER "lightstencil"
-#define DEFAULT_SPOTLIGHT_SHADER "spotlight"
-#define DEFAULT_DIRLIGHT_SHADER "directionlight"
-#define DEFAULT_POINTLIGHT_SHADER "pointlight"
-#define DEFAULT_SELECTION_SHADER "selectionsolid"
-#define DEFAULT_POINTSHADOWMAP_SHADER "pointshadowmap"
-#define DEFAULT_SPOTSHADOWMAP_SHADER "spotshadowmap"
-#define DEFAULT_DIRSHADOWMAP_SHADER "dirshadowmap"
-#define DEFAULT_XFBPOINTSHADOWMAP_SHADER "xfbpointshadowmap"
-#define DEFAULT_XFBSPOTSHADOWMAP_SHADER "xfbspotshadowmap"
-#define DEFAULT_XFBDIRSHADOWMAP_SHADER "xfbdirshadowmap"
-#define DEFAULT_RENDER_PARTICLE_SHADER "renderparticle"
-#define DEFAULT_PROCESS_PARTICLE_SHADER "xfbparticle"
-#define DEFAULT_SKYBOX_SHADER "skybox"
-
-#define DEFAULT_MATERIAL_NAME "default"
-#define DEFAULT_MATERIAL_DIFFUSE "default"
-#define DEFAULT_ENGINE_INPUT "enginedefault.nsi"
-#define ENT_OBJECT_BRUSH "objectbrush"
-
-#define MESH_FULL_TILE "fulltile"
-#define MESH_HALF_TILE "halftile"
-#define MESH_DIRLIGHT_BOUNDS "dirlightbounds"
-#define MESH_SPOTLIGHT_BOUNDS "spotlightbounds"
-#define MESH_POINTLIGHT_BOUNDS "pointlightbounds"
-#define MESH_TERRAIN "terrain"
-#define MESH_SKYDOME "skydome"
-
+// Default relative directories
+#define DEFAULT_RESOURCE_DIR "resources/"
+#define DEFAULT_IMPORT_DIR "import/"
+#define DEFAULT_CORE_DIR "core/"
 
 // Resource typenames
 // Must add entry here for any custom resource types
@@ -144,33 +115,26 @@ This file contains all of the neccessary declartations for the nsengine class.
 #define UI_SYS_DRAW_PR 40000
 #define NO_DRAW_PR 0
 
-// Fixed time step
-#define FIXED_TIME_STEP 0.01f
-
-
-
-#include <map>
-//#include <nsglobal.h>
-#include <nsfactory.h>
-#include <typeindex>
-#include <nsmath.h>
-#include <unordered_map>
-
-
-//#define NSDEBUG
-#define NSDEBUG_RT
-
+// Engine macros
 #define nse nsengine::inst()
 #define type_to_guid(type) nse.guid(std::type_index(typeid(type)))
 #define hash_to_guid(hash) nse.guid(hash)
 #define type_to_hash(type) nse.type_id(std::type_index(typeid(type)))
 
+// Debuggin setup
+//#define NSDEBUG
+#define NSDEBUG_RT
 #ifdef NSDEBUG
 #define dprint(str) nse.debug_print(str)
 #else
 #define dprint(str)
 #endif
 
+#include <map>
+#include <nsfactory.h>
+#include <typeindex>
+#include <nsmath.h>
+#include <unordered_map>
 
 class nsscene;
 class nsrender_system;
@@ -265,6 +229,8 @@ public:
 	hash_factory_map::iterator begin_factory();
 
 	system_hash_map::iterator begin_system();
+
+	uint32 composite_framebuffer();
 
 	/*!
 	Create a GLContext and return a unique id - this id can be used to set the current context and
@@ -754,13 +720,7 @@ private:
         return static_cast<base_fac_type*>(_remove_factory(iter->second));
 	}
 
-
 	void _init_systems();
-	void _init_shaders();
-	void _init_materials();
-	void _init_meshes();
-	void _init_input_maps();
-	void _init_entities();
 	void _init_factories();
 	void _remove_sys(uint32 type_id);
 

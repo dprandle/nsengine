@@ -2,8 +2,6 @@
 #define NSINPUTMAP_H
 
 #include <nsresource.h>
-#include <nsglobal.h>
-#include <nspupper.h>
 
 class nsinput_map : public nsresource
 {

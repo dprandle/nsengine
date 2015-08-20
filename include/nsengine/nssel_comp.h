@@ -13,6 +13,12 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 #ifndef NSSELCOMP_H
 #define NSSELCOMP_H
 
+#define DEFAULT_SEL_R 0.0f
+#define DEFAULT_SEL_G 1.0f
+#define DEFAULT_SEL_B 1.0f
+#define DEFAULT_SEL_A 0.5f
+#define DEFAULT_SEL_MASK_A 0.2f
+
 #include <nscomponent.h>
 #include <nsunordered_set.h>
 

@@ -12,7 +12,6 @@ This file contains all of the neccessary definitions for the nsengine class.
 
 #include <hash/crc32.h>
 #include <nsfile_os.h>
-#include <nsglobal.h>
 #include <nsengine.h>
 #include <nsrender_system.h>
 #include <nsscene.h>
@@ -83,6 +82,11 @@ bool nsengine::add_plugin(nsplugin * plugin)
 		return false;
 
 	return current()->plugins->add(plugin);
+}
+
+uint32 nsengine::composite_framebuffer()
+{
+	return current()->composite_buf;
 }
 
 void nsengine::set_current_scene(const nsstring & scn, bool newSceneOverwriteFile, bool saveprevious)
@@ -479,20 +483,14 @@ void nsengine::start()
 	set_import_dir(m_cwd + nsstring(DEFAULT_IMPORT_DIR));
 	set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
 
-	nsplugin * plg = core();
-	
+	nsplugin * plg = core();	
 	plg->init();
 	plg->bind();
-	plg->set_res_dir(m_cwd + nsstring("core/"));
+	plg->set_res_dir(m_cwd + DEFAULT_CORE_DIR);
 	plg->add_name_to_res_path(false);
 	
 	current()->composite_buf = create_framebuffer();
 	_init_systems();
-	_init_shaders();
-	_init_materials();
-	_init_meshes();
-	_init_entities();
-	//_initInputMaps();
 	timer()->start();
 }
 
@@ -588,7 +586,6 @@ void nsengine::update()
 	
 	while (timer()->lag() >= timer()->fixed())
 	{
-		// Go through each system and update
 		auto sysUpdateIter = m_sys_update_order.begin();
 		while (sysUpdateIter != m_sys_update_order.end())
 		{
@@ -600,7 +597,6 @@ void nsengine::update()
 		timer()->lag() -= timer()->fixed();
 	}
 
-	// Go through each system and draw
 	auto sysDrawIter = m_sys_draw_order.begin();
 	while (sysDrawIter != m_sys_draw_order.end())
 	{
@@ -609,54 +605,6 @@ void nsengine::update()
 		++sysDrawIter;
 	}
 	system<nsrender_system>()->blit_final_frame();
-}
-
-void nsengine::_init_input_maps()
-{
-}
-
-void nsengine::_init_shaders()
-{
-	nsshader_manager * mShaders = core()->manager<nsshader_manager>();
-	nsrender_system::RenderShaders renShaders;
-	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-	renShaders.deflt = mShaders->load<nsmaterial_shader>(nsstring(DEFAULT_GBUFFER_SHADER) + shext);
-	renShaders.early_z = mShaders->load<nsearlyz_shader>(nsstring(DEFAULT_EARLYZ_SHADER) + shext);
-	renShaders.light_stencil = mShaders->load<nslight_stencil_shader>(nsstring(DEFAULT_LIGHTSTENCIL_SHADER) + shext);
-	renShaders.dir_light = mShaders->load<nsdir_light_shader>(nsstring(DEFAULT_DIRLIGHT_SHADER) + shext);
-	renShaders.point_light = mShaders->load<nspoint_light_shader>(nsstring(DEFAULT_POINTLIGHT_SHADER) + shext);
-	renShaders.spot_light = mShaders->load<nsspot_light_shader>(nsstring(DEFAULT_SPOTLIGHT_SHADER) + shext);
-	renShaders.point_shadow = mShaders->load<nspoint_shadowmap_shader>(nsstring(DEFAULT_POINTSHADOWMAP_SHADER) + shext);
-	renShaders.spot_shadow = mShaders->load<nsspot_shadowmap_shader>(nsstring(DEFAULT_SPOTSHADOWMAP_SHADER) + shext);
-	renShaders.dir_shadow = mShaders->load<nsdir_shadowmap_shader>(nsstring(DEFAULT_DIRSHADOWMAP_SHADER) + shext);
-	renShaders.xfb_default = mShaders->load<nsxfb_shader>(nsstring(DEFAULT_XFBGBUFFER_SHADER) + shext);
-	renShaders.xfb_render = mShaders->load<nsrender_xfb_shader>(nsstring(DEFAULT_XFBGBUFFER_RENDER_SHADER) + shext);
-	renShaders.xfb_earlyz = mShaders->load<nsearlyz_xfb_shader>(nsstring(DEFAULT_XFBEARLYZ_SHADER) + shext);
-	renShaders.xfb_dir_shadow = mShaders->load<nsdir_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBDIRSHADOWMAP_SHADER) + shext);
-	renShaders.xfb_point_shadow = mShaders->load<nspoint_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBPOINTSHADOWMAP_SHADER) + shext);
-	renShaders.xfb_spot_shadow = mShaders->load<nsspot_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBSPOTSHADOWMAP_SHADER) + shext);
-	nsparticle_process_shader * xfsparticle = mShaders->load<nsparticle_process_shader>(nsstring(DEFAULT_PROCESS_PARTICLE_SHADER) + shext);
-	nsparticle_render_shader * renderparticle = mShaders->load<nsparticle_render_shader>(nsstring(DEFAULT_RENDER_PARTICLE_SHADER) + shext);
-	nsselection_shader * selshader = mShaders->load<nsselection_shader>(nsstring(DEFAULT_SELECTION_SHADER) + shext);
-	nsskybox_shader * skysh = mShaders->load<nsskybox_shader>(nsstring(DEFAULT_SKYBOX_SHADER) + shext);
-	system<nsrender_system>()->set_shaders(renShaders);
-	system<nsselection_system>()->set_shader(selshader);
-	system<nsparticle_system>()->set_process_shader(xfsparticle);
-	mShaders->compile_all();
-	mShaders->link_all();
-	mShaders->init_uniforms_all();
-}
-
-void nsengine::_init_entities()
-{
-	nsentity * objBrush = core()->create<nsentity>(ENT_OBJECT_BRUSH);
-	nssel_comp * sc = objBrush->create<nssel_comp>();
-	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_mask_alpha(0.2f);
-	sc->enable_draw(true);
-	sc->enable_move(true);
-	system<nsbuild_system>()->set_object_brush(objBrush);
 }
 
 void nsengine::_remove_sys(uint32 type_id)
@@ -684,25 +632,6 @@ void nsengine::_remove_sys(uint32 type_id)
 	}
 }
 
-void nsengine::_init_materials()
-{
-	nstexture * tex = core()->load<nstex2d>(nsstring(DEFAULT_MATERIAL_DIFFUSE) + nsstring(DEFAULT_TEX_EXTENSION));
-	nsmaterial * def = core()->load<nsmaterial>(nsstring(DEFAULT_MATERIAL_NAME) + nsstring(DEFAULT_MAT_EXTENSION));
-	system<nsrender_system>()->set_default_mat(def);
-}
-
-void nsengine::_init_meshes()
-{
-	nsmesh * msh = core()->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	//msh->bake_node_rotation(orientation(fvec4(1, 0, 0, -90.0f)));
-	core()->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
-	core()->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	core()->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	core()->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	core()->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	core()->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
-}
-
 void nsengine::_init_systems()
 {
 	auto fiter = nse.begin_factory();
@@ -712,10 +641,6 @@ void nsengine::_init_systems()
 			create_system(guid(fiter->first));
 		++fiter;
 	}
-	system<nsrender_system>()->set_final_fbo(current()->composite_buf);
-	system<nsselection_system>()->set_final_fbo(current()->composite_buf);
-	system<nsselection_system>()->set_picking_fbo(system<nsrender_system>()->gbuffer_fbo());
-	system<nsparticle_system>()->set_final_fbo(current()->composite_buf);
 }
 
 bool nsengine::make_current(uint32 cID)

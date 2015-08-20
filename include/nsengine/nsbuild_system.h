@@ -13,6 +13,8 @@ This file contains all of the neccessary declarations for the nsbuild_system cla
 #ifndef NSBUILDSYSTEM_H
 #define NSBUILDSYSTEM_H
 
+#define ENT_OBJECT_BRUSH "objectbrush"
+
 #include <nssystem.h>
 
 class nsentity;

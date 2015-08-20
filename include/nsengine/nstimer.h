@@ -12,8 +12,10 @@ This file contains all of the neccessary declarations for the nstimer class.
 
 #ifndef NSTIMER_H
 #define NSTIMER_H
+
+#define FIXED_TIME_STEP 0.01f
+
 #include <chrono>
-#include <nsglobal.h>
 
 class nstimer 
 {

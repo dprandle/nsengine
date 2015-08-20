@@ -10,6 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <nsplugin.h>
 #include <nsrender_system.h>
 #include <nslight_comp.h>
 #include <nssel_comp.h>
@@ -261,9 +262,9 @@ void nsrender_system::draw()
 					m_shaders.spot_shadow->set_proj_mat(projLightMat);
 					_draw_scene_to_depth(m_shaders.spot_shadow);
 
-					//mShaders.mXFBSpotShadowMap->bind();
-					//mShaders.mXFBSpotShadowMap->setProjLightMat(projLightMat);
-					//_drawSceneToDepthXFB(mShaders.mXFBSpotShadowMap);
+					//cplg.mXFBSpotShadowMap->bind();
+					//cplg.mXFBSpotShadowMap->setProjLightMat(projLightMat);
+					//_drawSceneToDepthXFB(cplg.mXFBSpotShadowMap);
 
 					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
@@ -324,12 +325,12 @@ void nsrender_system::draw()
 					m_shaders.point_shadow->set_inverse_trans_mat(f);
 					_draw_scene_to_depth(m_shaders.point_shadow);
 
-					//mShaders.mXFBPointShadowMap->bind();
-					//mShaders.mXFBPointShadowMap->setLightPos(tComp->wpos(i));
-					//mShaders.mXFBPointShadowMap->setMaxDepth(lComp->shadowClipping().y - lComp->shadowClipping().x);
-					//mShaders.mXFBPointShadowMap->setProjMat(proj);
-					//mShaders.mXFBPointShadowMap->setInverseTMat(translationMat4(tComp->wpos(i)*-1));
-					//_drawSceneToDepthXFB(mShaders.mXFBPointShadowMap);
+					//cplg.mXFBPointShadowMap->bind();
+					//cplg.mXFBPointShadowMap->setLightPos(tComp->wpos(i));
+					//cplg.mXFBPointShadowMap->setMaxDepth(lComp->shadowClipping().y - lComp->shadowClipping().x);
+					//cplg.mXFBPointShadowMap->setProjMat(proj);
+					//cplg.mXFBPointShadowMap->setInverseTMat(translationMat4(tComp->wpos(i)*-1));
+					//_drawSceneToDepthXFB(cplg.mXFBPointShadowMap);
 
 					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
@@ -457,39 +458,9 @@ nsmaterial * nsrender_system::default_mat()
 	return m_default_mat;
 }
 
-
-// bool nsrender_system::handleEvent(NSEvent * pEvent)
-// {
-// 	nsscene * scene = nse.currentScene();
-// 	if (scene == NULL)
-// 		return false;
-	
-// 	if (pEvent == NULL)
-// 	{
-// 		dprint("nsrender_system::handleEvent Event is NULL - bad bad bad");
-// 		return false;
-// 	}
-
-// 	bool handled = false;
-
-// 	if (pEvent->mName == RENDER_DEBUG)
-// 	{
-// 		NSInputKeyEvent * kEvent = static_cast<NSInputKeyEvent*>(pEvent);
-
-// 		// a lot of nonsense to get to this point - just put in debug mode if the debug
-// 		// mode event is received
-// 		if (kEvent->mPorR == 1)
-// 		{
-// 			toggleDebugDraw();
-// 			handled = true;
-// 		}
-// 	}
-// 	return handled;
-// }
-
 void nsrender_system::init()
 {
-	//nse.events()->addListener(this, NSEvent::InputKey);
+	// GL setup
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
@@ -497,8 +468,47 @@ void nsrender_system::init()
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthFunc(GL_LEQUAL);
 	glViewport(0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
+
+	// Frambuffer setup
 	set_gbuffer_fbo(nse.create_framebuffer());
 	set_shadow_fbo(nse.create_framebuffer(), nse.create_framebuffer(), nse.create_framebuffer());
+	set_final_fbo(nse.composite_framebuffer());
+
+	// Load default shaders
+	nsplugin * cplg = nse.core();	
+	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
+	m_shaders.deflt = cplg->load<nsmaterial_shader>(nsstring(DEFAULT_GBUFFER_SHADER) + shext);
+	m_shaders.early_z = cplg->load<nsearlyz_shader>(nsstring(DEFAULT_EARLYZ_SHADER) + shext);
+	m_shaders.light_stencil = cplg->load<nslight_stencil_shader>(nsstring(DEFAULT_LIGHTSTENCIL_SHADER) + shext);
+	m_shaders.dir_light = cplg->load<nsdir_light_shader>(nsstring(DEFAULT_DIRLIGHT_SHADER) + shext);
+	m_shaders.point_light = cplg->load<nspoint_light_shader>(nsstring(DEFAULT_POINTLIGHT_SHADER) + shext);
+	m_shaders.spot_light = cplg->load<nsspot_light_shader>(nsstring(DEFAULT_SPOTLIGHT_SHADER) + shext);
+	m_shaders.point_shadow = cplg->load<nspoint_shadowmap_shader>(nsstring(DEFAULT_POINTSHADOWMAP_SHADER) + shext);
+	m_shaders.spot_shadow = cplg->load<nsspot_shadowmap_shader>(nsstring(DEFAULT_SPOTSHADOWMAP_SHADER) + shext);
+	m_shaders.dir_shadow = cplg->load<nsdir_shadowmap_shader>(nsstring(DEFAULT_DIRSHADOWMAP_SHADER) + shext);
+	m_shaders.xfb_default = cplg->load<nsxfb_shader>(nsstring(DEFAULT_XFBGBUFFER_SHADER) + shext);
+	m_shaders.xfb_render = cplg->load<nsrender_xfb_shader>(nsstring(DEFAULT_XFBGBUFFER_RENDER_SHADER) + shext);
+	m_shaders.xfb_earlyz = cplg->load<nsearlyz_xfb_shader>(nsstring(DEFAULT_XFBEARLYZ_SHADER) + shext);
+	m_shaders.xfb_dir_shadow = cplg->load<nsdir_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBDIRSHADOWMAP_SHADER) + shext);
+	m_shaders.xfb_point_shadow = cplg->load<nspoint_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBPOINTSHADOWMAP_SHADER) + shext);
+	m_shaders.xfb_spot_shadow = cplg->load<nsspot_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBSPOTSHADOWMAP_SHADER) + shext);
+	cplg->load<nsskybox_shader>(nsstring(DEFAULT_SKYBOX_SHADER) + shext);
+	cplg->manager<nsshader_manager>()->compile_all();
+	cplg->manager<nsshader_manager>()->link_all();
+	cplg->manager<nsshader_manager>()->init_uniforms_all();
+
+	// Default material
+	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION));
+	m_default_mat = cplg->load<nsmaterial>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_MAT_EXTENSION));
+
+	// Light bounds, skydome, and tile meshes
+	cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
 }
 
 void nsrender_system::enable_debug_draw(bool pDebDraw)

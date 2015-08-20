@@ -17,6 +17,7 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 #include <nsplugin.h>
 #include <cmath>
 #include <nsmesh.h>
+#include <nsrender_system.h>
 
 nsoccupy_comp::nsoccupy_comp() :
 m_draw_enabled(false),

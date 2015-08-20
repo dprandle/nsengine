@@ -16,6 +16,7 @@ This file contains all of the neccessary declarations for the nsselection_system
 #include <nssystem.h>
 #include <nsentity_manager.h>
 
+#define DEFAULT_SELECTION_SHADER "selectionsolid"
 #define NSSEL_SELECT "select_entity"
 #define NSSEL_SHIFTSELECT "shift_select"
 #define NSSEL_MULTISELECT "multi_select"

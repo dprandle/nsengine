@@ -14,24 +14,29 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 
-#include <nscam_comp.h>
-#include <nsplugin.h>
 #include <nsengine.h>
+#include <nsfactory.h>
+
+#include <nsrender_system.h>
+
+#include <nsplugin.h>
+#include <nsentity.h>
+#include <nstexture.h>
+
 #include <nsres_manager.h>
 #include <nsscene_manager.h>
-#include <nsfactory.h>
-#include <nsentity.h>
-#include <nsanim_comp.h>
 #include <nsmat_manager.h>
 #include <nsanim_manager.h>
+#include <nsmesh_manager.h>
+#include <nsplugin_manager.h>
+
+#include <nscam_comp.h>
+#include <nsanim_comp.h>
 #include <nsoccupy_comp.h>
 #include <nsrender_comp.h>
 #include <nsterrain_comp.h>
-#include <nsmesh_manager.h>
 #include <nssel_comp.h>
 #include <nstile_comp.h>
-#include <nsplugin_manager.h>
-#include <nstexture.h>
 #include <nslight_comp.h>
 
 nsplugin::nsplugin() : 

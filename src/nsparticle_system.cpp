@@ -35,11 +35,6 @@ nssystem()
 nsparticle_system::~nsparticle_system()
 {}
 
-// bool nsparticle_system::handleEvent(NSEvent * pEvent)
-// {
-// 	return false;
-// }
-
 uint32 nsparticle_system::final_fbo() { return m_final_buf; }
 
 void nsparticle_system::set_final_fbo(uint32 fbo) { m_final_buf = fbo; }
@@ -159,6 +154,13 @@ void nsparticle_system::draw()
 
 void nsparticle_system::init()
 {
+	set_final_fbo(nse.composite_framebuffer());
+
+	nsplugin * cplg = nse.core();
+	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
+	
+	m_process_shader = cplg->load<nsparticle_process_shader>(nsstring(DEFAULT_PROCESS_PARTICLE_SHADER) + shext);
+	nsparticle_render_shader * renderparticle = cplg->load<nsparticle_render_shader>(nsstring(DEFAULT_RENDER_PARTICLE_SHADER) + shext);
 }
 
 int32 nsparticle_system::draw_priority()

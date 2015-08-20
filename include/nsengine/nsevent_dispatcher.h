@@ -14,7 +14,6 @@ This file contains all of the neccessary declarations for the nsevent_dispatcher
 #define NSEVENTDISPATCHER_H
 
 #include <vector>
-#include <nsglobal.h>
 #include <nsevent.h>
 #include <deque>
 #include <typeindex>

@@ -13,6 +13,9 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 #ifndef NSPARTICLESYSTEM_H
 #define NSPARTICLESYSTEM_H
 
+#define DEFAULT_RENDER_PARTICLE_SHADER "renderparticle"
+#define DEFAULT_PROCESS_PARTICLE_SHADER "xfbparticle"
+
 #include <nssystem.h>
 
 class nsscene;

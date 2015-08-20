@@ -13,6 +13,7 @@ This file contains all of the neccessary declarations for the nslight_comp class
 #ifndef NSLIGHT_COMP_H
 #define NSLIGHT_COMP_H
 
+#define LIGHT_ATTENUATION_CUTOFF 0.01f
 #define SHADOW_LOWER_LIMIT 0.0
 #define SHADOW_UPPER_LIMIT 1.0
 #define LIGHT_CUTOFF 0.1f

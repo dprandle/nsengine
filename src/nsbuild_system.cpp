@@ -252,7 +252,14 @@ const nsbuild_system::mode_t & nsbuild_system::mode() const
 
 void nsbuild_system::init()
 {
-	//nse.eventDispatch()->addListener(this, NSEvent::InputKey);
+	m_object_brush = nse.core()->create<nsentity>(ENT_OBJECT_BRUSH);
+	nssel_comp * sc = m_object_brush->create<nssel_comp>();
+	
+	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	sc->set_mask_alpha(0.2f);
+	sc->enable_draw(true);
+	sc->enable_move(true);
 }
 
 bool nsbuild_system::enabled() const

@@ -732,10 +732,15 @@ void nsselection_system::enable_layer_mode(const bool & pMode)
 
 void nsselection_system::init()
 {
-	//nse.events()->addListener(this, NSEvent::SelPick);
-	//nse.events()->addListener(this, NSEvent::SelSet);
-	//nse.events()->addListener(this, NSEvent::SelAdd);
-	//nse.events()->addListener(this, NSEvent::ClearSelection);
+	set_final_fbo(nse.composite_framebuffer());
+	set_picking_fbo(nse.system<nsrender_system>()->gbuffer_fbo());
+
+	m_sel_shader = nse.core()->load<nsselection_shader>(
+		nsstring(DEFAULT_SELECTION_SHADER) + nsstring(DEFAULT_SHADER_EXTENSION));
+	m_sel_shader->compile();
+	m_sel_shader->link();
+	m_sel_shader->init_uniforms();
+	
 	register_handler_func(this, &nsselection_system::_handle_action_event);
 	register_handler_func(this, &nsselection_system::_handle_state_event);
 
