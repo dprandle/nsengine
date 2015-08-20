@@ -13,11 +13,13 @@ This file contains all of the neccessary declarations for the nsplugin class.
 #ifndef NSPLUGIN_H
 #define NSPLUGIN_H
 
-#include <nsglobal.h>
 #include <nsres_manager.h>
 #include <nsresource.h>
+#include <nsset.h>
+
 class nsentity;
 class nsscene;
+class nsmaterial;
 
 class nsplugin : public nsresource
 {
@@ -240,7 +242,7 @@ public:
 
 	const nsstring & edit_date();
 
-	const nsstringset & parents();
+	const nsstring_set & parents();
 
 	virtual void pup(nsfile_pupper * p);
 
@@ -344,7 +346,7 @@ private:
 
 	bool m_bound;
 	manager_map m_managers;
-	nsstringset m_parents;
+	nsstring_set m_parents;
 	res_type_map m_resmap;
 	res_type_map m_unloaded;
 	bool m_add_name;

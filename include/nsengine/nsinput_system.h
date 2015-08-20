@@ -15,12 +15,6 @@ This file contains all of the neccessary declarations for the nsinput_system cla
 
 #include <nssystem.h>
 #include <nsinput_map.h>
-#include <nsmath.h>
-
-struct NSInputKeyEvent;
-struct NSInputMouseButtonEvent;
-struct NSInputMouseMoveEvent;
-struct NSInputMouseScrollEvent;
 
 class nsinput_system : public nssystem
 {
@@ -36,7 +30,7 @@ public:
 
 	bool mouse_button_event(nsmouse_button_event * evnt);
 
-	bool mouse_move_event(NSMouseMoveEvent * evnt);
+	bool mouse_move_event(nsmouse_move_event * evnt);
 
 	bool mouse_scroll_event(nsmouse_scroll_event * evnt);
 	

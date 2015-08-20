@@ -10,7 +10,11 @@ who is responsible for the entire pup design concept
 #define PUP_IN 0
 #define PUP_OUT 1
 
-#include <nsglobal.h>
+#include <nsfstream.h>
+#include <nsset.h>
+#include <nsunordered_set.h>
+#include <nsmap.h>
+#include <nsunordered_map.h>
 
 class nsfile_pupper
 {

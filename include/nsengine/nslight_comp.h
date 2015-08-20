@@ -18,15 +18,12 @@ This file contains all of the neccessary declarations for the nslight_comp class
 #define LIGHT_CUTOFF 0.1f
 
 #include <nscomponent.h>
-#include <nsglobal.h>
-#include <nsmath.h>
-#include <nstform_comp.h>
 
 class nsmesh;
 class nsentity;
 class nstimer;
 
-class nslight_comp : public NSComponent
+class nslight_comp : public nscomponent
 {
 public:
 	template <class PUPer>
@@ -66,7 +63,7 @@ public:
 
 	void change_radius(float amount_);
 
-	nslight_comp* copy(const NSComponent* copy_);
+	nslight_comp* copy(const nscomponent* copy_);
 
 	const fvec3 & atten() const;
 
@@ -100,7 +97,7 @@ public:
 
 	const fmat4 & transform(uint32 index_);
 
-	fmat4array & transforms();
+	fmat4_vector & transforms();
 
 	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
@@ -108,7 +105,7 @@ public:
 	Get the resources that the component uses. The light comp uses a bounding mesh.
 	/return Map of resource ID to resource type containing bounding mesh ID.
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	void set_attenuation(const fvec3 & atten_);
 

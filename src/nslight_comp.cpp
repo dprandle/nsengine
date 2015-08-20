@@ -19,6 +19,7 @@ This file contains all of the neccessary definitions for the nslight_comp class.
 #include <nstform_comp.h>
 #include <nsengine.h>
 #include <nsmesh_manager.h>
+#include <nscam_comp.h>
 
 nslight_comp::nslight_comp() : 
 m_light_type(l_point),
@@ -32,13 +33,13 @@ m_shadow_samples(0),
 m_bounding_mesh_id(0),
 m_scaling(1.0f, 1.0f, 1.0f),
 m_shadow_clip(DEFAULT_Z_NEAR, DEFAULT_Z_FAR),
-NSComponent()
+nscomponent()
 {}
 
 nslight_comp::~nslight_comp()
 {}
 
-nslight_comp* nslight_comp::copy(const NSComponent * copy_)
+nslight_comp* nslight_comp::copy(const nscomponent * copy_)
 {
 	if (copy_ == NULL)
 		return NULL;
@@ -193,10 +194,10 @@ const fmat4 & nslight_comp::transform(uint32 index_)
 /*!
 Get the resources that the component uses. The light comp uses a bounding mesh.
 */
-uivec2array nslight_comp::resources()
+uivec2_vector nslight_comp::resources()
 {
 	// Build map
-	uivec2array ret;
+	uivec2_vector ret;
 
 	// only add if not 0
 	if (m_bounding_mesh_id != 0)

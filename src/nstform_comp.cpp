@@ -13,11 +13,12 @@
 #include <nstform_comp.h>
 #include <nsrender_comp.h>
 #include <nsentity.h>
-#include <nstimer.h>
 #include <nstile_grid.h>
-#include <nsmesh_manager.h>
-#include <nsmesh.h>
 #include <nsengine.h>
+#include <nsxfb_object.h>
+#include <nsvertex_array_object.h>
+#include <nsshader.h>
+#include <nsmesh.h>
 
 nstform_comp::nstform_comp():
 m_tform_buffer(nsbuffer_object::array, nsbuffer_object::storage_mutable),
@@ -25,7 +26,7 @@ m_tform_id_buffer(nsbuffer_object::array, nsbuffer_object::storage_mutable),
 m_xfb_data(),
 m_buffer_resized(false),
 m_xfb(false),
-NSComponent(),
+nscomponent(),
 m_visible_count(0)
 {}
 
@@ -117,7 +118,7 @@ void nstform_comp::compute_transform(uint32 tform_id_)
 	m_tforms[tform_id_].compute();
 }
 
-nstform_comp* nstform_comp::copy(const NSComponent * pToCopy)
+nstform_comp* nstform_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -153,7 +154,7 @@ bool nstform_comp::enable_xfb(bool enable_)
 		if (mRenComp == NULL || m_tforms.empty())
 			return false;
 
-		nsmesh * mesh = nsengine.resource<nsmesh>(mRenComp->mesh_id());
+		nsmesh * mesh = nse.resource<nsmesh>(mRenComp->mesh_id());
 		if (mesh == NULL)
 			return false;
 
@@ -795,7 +796,7 @@ void nstform_comp::post_update(bool update_)
 	if (update_)
 		m_xfb_data.update = update_;
 
-	NSComponent::post_update(update_);
+	nscomponent::post_update(update_);
 }
 
 void nstform_comp::set_visible_instance_count(uint32 count_)

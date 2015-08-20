@@ -1,4 +1,6 @@
 #include <nsgbuf_object.h>
+#include <nsshader.h>
+#include <nsengine.h>
 
 nsgbuf_object::nsgbuf_object() :
 m_tex_fb(NULL),

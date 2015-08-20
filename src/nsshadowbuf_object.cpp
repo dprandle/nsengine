@@ -1,4 +1,5 @@
 #include <nsshadowbuf_object.h>
+#include <nsshader.h>
 #include <nsfb_object.h>
 
 nsshadowbuf_object::nsshadowbuf_object() :

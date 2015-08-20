@@ -55,10 +55,10 @@ public:
 	bool pressed;
 };
 
-class NSMouseMoveEvent : public nsevent
+class nsmouse_move_event : public nsevent
 {
 public:
-	NSMouseMoveEvent(const fvec2 & normalized_mpos_) :
+	nsmouse_move_event(const fvec2 & normalized_mpos_) :
 		normalized_mpos(normalized_mpos_),
 		nsevent()
 	{}

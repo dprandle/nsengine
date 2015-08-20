@@ -14,14 +14,12 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 #define NSSELCOMP_H
 
 #include <nscomponent.h>
-#include <unordered_set>
-#include <nstform_comp.h>
-
+#include <nsunordered_set.h>
 
 class nsshader;
 class nstimer;
 
-class nssel_comp : public NSComponent
+class nssel_comp : public nscomponent
 {
 public:
 	template <class PUPer>
@@ -32,11 +30,11 @@ public:
 
 	bool add(uint32 tform_id_);
 
-	uint32u_set::iterator begin();
+	ui_uset::iterator begin();
 
 	bool contains(uint32 tform_id_);
 
-	nssel_comp * copy(const NSComponent* copy_);
+	nssel_comp * copy(const nscomponent* copy_);
 
 	uint32 count();
 
@@ -46,7 +44,7 @@ public:
 
 	void enable_move(const bool & enable_);
 
-	uint32u_set::iterator end();
+	ui_uset::iterator end();
 
 	bool empty();
 
@@ -87,7 +85,7 @@ private:
 	bool m_selected;
 	bool m_draw_enabled;
 	bool m_move_with_input;
-	uint32u_set m_selection;
+	ui_uset m_selection;
 };
 
 template <class PUPer>

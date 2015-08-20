@@ -1,8 +1,8 @@
 #ifndef NSFILEOS_H
 #define NSFILEOS_H
 
-#include <nsglobal.h>
 #include <sys/stat.h>
+#include <nsvector.h>
 
 namespace nsfile_os
 {
@@ -20,7 +20,7 @@ bool rename_file(const nsstring & oldname, const nsstring & newname);
 
 nsstring cwd();
 
-void read(const nsstring & fname, nschararray * contents);
+void read(const nsstring & fname, ui8_vector * contents);
 
 }
 

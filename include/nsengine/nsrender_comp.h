@@ -13,16 +13,14 @@
 #ifndef NSRENDER_COMP_H
 #define NSRENDER_COMP_H
 
-#include <vector>
 #include <nscomponent.h>
-#include <map>
-#include <nsmath.h>
+#include <nsmap.h>
 
 class nsmesh;
 class nstimer;
 class nsmaterial;
 
-class nsrender_comp : public NSComponent
+class nsrender_comp : public nscomponent
 {
 public:
 
@@ -34,7 +32,7 @@ public:
 
 	void clear_mats();
 
-	nsrender_comp* copy(const NSComponent* copy_);
+	nsrender_comp* copy(const nscomponent* copy_);
 
 	bool cast_shadow();
 
@@ -48,19 +46,19 @@ public:
 	Get the resources that the component uses. The render comp uses a mesh and possibly multiple materials.
 	/return Map of resource ID to resource type containing mesh ID and all material IDs.
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	bool has_material(uint32 submesh_index_);
 
 	void init();
 
-	uivec2uimap::iterator begin_mat();
+	ui_uivec2_map::iterator begin_mat();
 
-	uivec2uimap::const_iterator begin_mat() const;
+	ui_uivec2_map::const_iterator begin_mat() const;
 
-	uivec2uimap::iterator end_mat();
+	ui_uivec2_map::iterator end_mat();
 
-	uivec2uimap::const_iterator end_mat() const;
+	ui_uivec2_map::const_iterator end_mat() const;
 
 	bool remove_material(uint32 submesh_index_);
 
@@ -97,7 +95,7 @@ public:
 private:
 	bool m_cast_shadow;
 	uivec2 m_mesh_id;
-	uivec2uimap m_mats;
+	ui_uivec2_map m_mats;
 };
 
 template <class PUPer>

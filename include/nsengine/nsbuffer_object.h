@@ -10,12 +10,9 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSBUFFEROBJECT_H
-#define NSBUFFEROBJECT_H
+#ifndef NSBUFFER_OBJECT_H
+#define NSBUFFER_OBJECT_H
 
-#include <nsglobal.h>
-#include <myGL/glew.h>
-#include <vector>
 #include <nsgl_object.h>
 
 class nsbuffer_object : public nsgl_object

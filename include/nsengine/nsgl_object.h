@@ -10,10 +10,13 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#ifndef NSBUFFER_H
-#define NSBUFFER_H
+#ifndef NSGL_OBJECT_H
+#define NSGL_OBJECT_H
 
-#include <nsglobal.h>
+#include <myGL/glew.h>
+#include <nsvector.h>
+
+bool GLError(nsstring errorMessage);
 
 class nsgl_object
 {

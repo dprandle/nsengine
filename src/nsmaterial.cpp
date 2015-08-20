@@ -97,7 +97,7 @@ const fvec4 & nsmaterial::color()
 	return m_color;
 }
 
-const GLenum & nsmaterial::cull_mode() const
+const uint32 & nsmaterial::cull_mode() const
 {
 	return m_cull_mode;
 }
@@ -162,9 +162,9 @@ const nsmaterial::texmap_map & nsmaterial::tex_maps() const
 /*!
 Get the other resources that this Material uses. This includes all texture maps.
 */
-uivec2array nsmaterial::resources()
+uivec2_vector nsmaterial::resources()
 {
-	uivec2array ret;
+	uivec2_vector ret;
 
 	// add all texture maps that are available
 	auto iter = m_tex_maps.begin();
@@ -238,7 +238,7 @@ void nsmaterial::set_alpha_blend(bool pBlend)
 	m_alpha_blend = pBlend;
 }
 
-void nsmaterial::set_cull_mode(GLenum pMode)
+void nsmaterial::set_cull_mode(uint32 pMode)
 {
 	m_cull_mode = pMode;
 }

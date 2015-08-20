@@ -14,10 +14,7 @@ This file contains all of the neccessary declarations for the nsselection_system
 #define NSSELECTION_SYSTEM_H
 
 #include <nssystem.h>
-#include <nsglobal.h>
-#include <nsevent.h>
-#include <nstform_comp.h>
-#include <nsmath.h>
+#include <nsentity_manager.h>
 
 #define NSSEL_SELECT "select_entity"
 #define NSSEL_SHIFTSELECT "shift_select"
@@ -244,7 +241,7 @@ protected:
 	void _draw_hidden();
 
 	uivec3 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
-	nspentityset m_selected_ents;
+	entity_ptr_set m_selected_ents;
 	nsselection_shader * m_sel_shader;
 	fvec3 m_total_frame_translation;
 	bool m_moving;

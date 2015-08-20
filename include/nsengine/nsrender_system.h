@@ -12,18 +12,34 @@
 
 #ifndef NSRENDERSYSTEM_H
 #define NSRENDERSYSTEM_H
-#include <nsglobal.h>
+
 #include <nssystem.h>
-#include <nsrender_comp.h>
-#include <nsanim_comp.h>
-#include <nstform_comp.h>
-#include <nsbuffer_object.h>
-#include <map>
+#include <nsmesh.h>
 
-#include <nsfb_object.h>
-
+class nsmaterial;
+class nsfb_object;
 class nsshadowbuf_object;
 class nsgbuf_object;
+class nsbuffer_object;
+class nsentity;
+class nsmaterial_shader;
+class nsearlyz_shader;
+class nslight_stencil_shader;
+class nsdir_light_shader;
+class nspoint_light_shader;
+class nsspot_light_shader;
+class nspoint_shadowmap_shader;
+class nsspot_shadowmap_shader;
+class nsdir_shadowmap_shader;
+class nsxfb_shader;
+class nsrender_xfb_shader;
+class nsearlyz_xfb_shader;
+class nsdir_shadowmap_xfb_shader;
+class nspoint_shadowmap_xfb_shader;
+class nsspot_shadowmap_xfb_shader;
+class nslight_comp;
+class nsdepth_shader;
+class nsshader;
 
 class nsrender_system : public nssystem
 {
@@ -31,7 +47,7 @@ public:
 	struct draw_call
 	{
 		draw_call(nsmesh::submesh * submesh_,
-				  fmat4array * anim_transforms_,
+				  fmat4_vector * anim_transforms_,
 				  nsbuffer_object * transform_buffer_,
 				  nsbuffer_object * transform_id_buffer_,
 				  const fvec2 & height_minmax_,
@@ -42,7 +58,7 @@ public:
 		~draw_call();
 
 		nsmesh::submesh * submesh;
-		fmat4array * anim_transforms;
+		fmat4_vector * anim_transforms;
 		nsbuffer_object * transform_buffer;
 		nsbuffer_object * transform_id_buffer;
 		fvec2 height_minmax;
@@ -95,50 +111,14 @@ public:
 		nspoint_shadowmap_xfb_shader * xfb_point_shadow;
 		nsspot_shadowmap_xfb_shader * xfb_spot_shadow;
 
-		bool error()
-		{
-			return (
-				deflt->error() != nsshader::error_none ||
-				early_z->error() != nsshader::error_none ||
-				light_stencil->error() != nsshader::error_none ||
-				dir_light->error() != nsshader::error_none ||
-				point_light->error() != nsshader::error_none ||
-				spot_light->error() != nsshader::error_none ||
-				point_shadow->error() != nsshader::error_none ||
-				spot_shadow->error() != nsshader::error_none ||
-				dir_shadow->error() != nsshader::error_none ||
-				xfb_default->error() != nsshader::error_none ||
-				xfb_earlyz->error() != nsshader::error_none ||
-				xfb_dir_shadow->error() != nsshader::error_none ||
-				xfb_point_shadow->error() != nsshader::error_none ||
-				xfb_spot_shadow->error() != nsshader::error_none ||
-				xfb_render->error() != nsshader::error_none);
-		}
-
-		bool valid()
-		{
-			return (
-				deflt != NULL &&
-				early_z != NULL &&
-				light_stencil != NULL &&
-				dir_light != NULL &&
-				point_light != NULL &&
-				spot_light != NULL &&
-				point_shadow != NULL &&
-				spot_shadow != NULL &&
-				dir_shadow != NULL &&
-				xfb_default != NULL &&
-				xfb_earlyz != NULL &&
-				xfb_dir_shadow != NULL &&
-				xfb_point_shadow != NULL &&
-				xfb_spot_shadow != NULL &&
-				xfb_render != NULL);
-		}
+		bool error();
+		bool valid();
 	};
 
+	typedef std::set<nsmaterial*> pmatset;
 	typedef std::set<draw_call> drawcall_set;
 	typedef std::map<nsmaterial*, drawcall_set> mat_drawcall_map;
-	typedef std::map<nsmaterial_shader*, nspmatset> shader_mat_map;
+	typedef std::map<nsmaterial_shader*, pmatset> shader_mat_map;
 	typedef std::set<nsentity*> xfb_draw_set;
 
 	nsrender_system();

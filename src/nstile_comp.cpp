@@ -13,13 +13,13 @@ This file contains all of the neccessary definitions for the nstile_comp class.
 #include <nstile_comp.h>
 #include <nsentity.h>
 
-nstile_comp::nstile_comp() :NSComponent()
+nstile_comp::nstile_comp() :nscomponent()
 {}
 
 nstile_comp::~nstile_comp()
 {}
 
-nstile_comp* nstile_comp::copy(const NSComponent * pToCopy)
+nstile_comp* nstile_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;

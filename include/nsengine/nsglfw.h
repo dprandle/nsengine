@@ -2,9 +2,12 @@
 #define NSGLFW_H
 
 #include <nsmath.h>
-#include <GLFW/glfw3.h>
+
+struct GLFWwindow;
 
 bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title);
+
+void glfw_shutdown();
 
 bool glfw_window_open();
 

@@ -233,7 +233,7 @@ class nsinput_map : public nsresource
 
 	virtual void init();
 
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
@@ -299,6 +299,8 @@ void pup(PUPer & p, nsinput_map::t_state & en, const nsstring & var_name)
 	pup(p, in, var_name);
 	en = static_cast<nsinput_map::t_state>(in);
 }
+
+uint32 hash_id(const nsstring & );
 
 template <class PUPer>
 void pup(PUPer & p, nsinput_map::trigger & t, const nsstring & var_name)

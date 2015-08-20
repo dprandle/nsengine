@@ -274,9 +274,9 @@ void nsinput_map::init()
 	m_allowed_mods.insert(key_y);
 }
 
-uivec2array nsinput_map::resources()
+uivec2_vector nsinput_map::resources()
 {
-	return uivec2array();
+	return uivec2_vector();
 }
 
 void nsinput_map::name_change(const uivec2 & oldid, const uivec2 newid)

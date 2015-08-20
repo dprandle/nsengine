@@ -199,7 +199,7 @@ nsstring cwd()
 
 #endif
 
-void read(const nsstring & fname, nschararray * contents)
+void read(const nsstring & fname, ui8_vector * contents)
 {
 	// open the file:
     std::ifstream file(fname, std::ios::binary);
@@ -218,7 +218,7 @@ void read(const nsstring & fname, nschararray * contents)
     file.seekg(0, std::ios::beg);
 
     // reserve capacity
-    contents->reserve(static_cast<nschararray::size_type>(fileSize));
+    contents->reserve(static_cast<ui8_vector::size_type>(fileSize));
 
     // read the data:
     contents->insert(contents->begin(),

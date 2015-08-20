@@ -53,7 +53,7 @@ bool nstile_grid::add(const uivec3 & pItem, const ivec3 & pSpace, const fvec3 & 
 	return true;
 }
 
-bool nstile_grid::add(const uivec3 pItem, const ivec3array & pSpaces, const fvec3 & pOrigin)
+bool nstile_grid::add(const uivec3 pItem, const ivec3_vector & pSpaces, const fvec3 & pOrigin)
 {
 	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
@@ -325,7 +325,7 @@ bool nstile_grid::occupied(const ivec3 & pSpace, const fvec3 & pOrigin) const
 	return (m_world_map[ind.quad_index][ind.raw_index.z][ind.raw_index.y][ind.raw_index.x] != uivec3());
 }
 
-bool nstile_grid::occupied(const ivec3array & pSpaces, const fvec3 & pOrigin) const
+bool nstile_grid::occupied(const ivec3_vector & pSpaces, const fvec3 & pOrigin) const
 {
 	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
@@ -380,7 +380,7 @@ void nstile_grid::remove(const uint32 plugid)
 /*!
 Remove multiple tiles from the grid - each space will be shifted by the grid position of the origin
 */
-bool nstile_grid::remove(const ivec3array & pSpaces, const fvec3 & pOrigin)
+bool nstile_grid::remove(const ivec3_vector & pSpaces, const fvec3 & pOrigin)
 {
 	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
@@ -438,9 +438,9 @@ void nstile_grid::name_change(const uivec2 & oldid, const uivec2 newid)
 }
 
 
-uivec3array nstile_grid::bounded_set(const fvec3 & pPoint1, const fvec3 & pPoint2)
+uivec3_vector nstile_grid::bounded_set(const fvec3 & pPoint1, const fvec3 & pPoint2)
 {
-	uivec3array retSet;
+	uivec3_vector retSet;
 	fvec3 min(pPoint1);
 	fvec3 max(pPoint2);
 

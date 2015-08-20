@@ -26,8 +26,6 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 #define NSCAM_TOGGLEMODE "camera_toggle_mode"
 
 #include <nssystem.h>
-#include <nsglobal.h>
-#include <nsmath.h>
 
 class nscam_comp;
 class nstform_comp;

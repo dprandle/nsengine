@@ -1,4 +1,5 @@
 #include <nsrenderbuf_object.h>
+#include <myGL/glew.h>
 
 nsrenderbuf_object::nsrenderbuf_object() :
 m_sample_number(0),

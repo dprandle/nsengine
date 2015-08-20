@@ -26,6 +26,14 @@
 #include <nsterrain_comp.h>
 #include <nsshadowbuf_object.h>
 #include <nsgbuf_object.h>
+#include <nsxfb_object.h>
+#include <nsrender_comp.h>
+#include <nsanim_comp.h>
+#include <nstform_comp.h>
+#include <nsbuffer_object.h>
+#include <nsfb_object.h>
+#include <nsshader.h>
+#include <nscam_comp.h>
 
 nsrender_system::nsrender_system() :
 m_drawcall_map(),
@@ -62,7 +70,7 @@ void nsrender_system::blit_final_frame()
 		return;
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_fbo);
-	if (nsengine.current_scene() != NULL)
+	if (nse.current_scene() != NULL)
 	{
 		m_final_buf->set_target(nsfb_object::fb_read);
 		m_final_buf->bind();
@@ -89,7 +97,7 @@ void nsrender_system::enable_earlyz(bool pEnable)
 void nsrender_system::enable_lighting(bool pEnable)
 {
 	m_lighting_enabled = pEnable;
-	nsfb_object * mCur = nsengine.framebuffer(bound_fbo());
+	nsfb_object * mCur = nse.framebuffer(bound_fbo());
 
 	m_gbuffer->bind();
 	if (pEnable)
@@ -154,7 +162,7 @@ void nsrender_system::draw()
 	if (!_valid_check())
 		return;
 
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -422,7 +430,7 @@ uint32 nsrender_system::bound_fbo()
 void nsrender_system::resize_screen(const ivec2 & size)
 {
 	m_screen_size = size;
-	nsscene * scn = nsengine.current_scene();
+	nsscene * scn = nse.current_scene();
 	if (scn != NULL)
 	{
 		nsentity * cam = scn->camera();
@@ -452,7 +460,7 @@ nsmaterial * nsrender_system::default_mat()
 
 // bool nsrender_system::handleEvent(NSEvent * pEvent)
 // {
-// 	nsscene * scene = nsengine.currentScene();
+// 	nsscene * scene = nse.currentScene();
 // 	if (scene == NULL)
 // 		return false;
 	
@@ -481,7 +489,7 @@ nsmaterial * nsrender_system::default_mat()
 
 void nsrender_system::init()
 {
-	//nsengine.events()->addListener(this, NSEvent::InputKey);
+	//nse.events()->addListener(this, NSEvent::InputKey);
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
@@ -489,8 +497,8 @@ void nsrender_system::init()
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glDepthFunc(GL_LEQUAL);
 	glViewport(0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
-	set_gbuffer_fbo(nsengine.create_framebuffer());
-	set_shadow_fbo(nsengine.create_framebuffer(), nsengine.create_framebuffer(), nsengine.create_framebuffer());
+	set_gbuffer_fbo(nse.create_framebuffer());
+	set_shadow_fbo(nse.create_framebuffer(), nse.create_framebuffer(), nse.create_framebuffer());
 }
 
 void nsrender_system::enable_debug_draw(bool pDebDraw)
@@ -518,10 +526,10 @@ void nsrender_system::update()
 	static bool sceneerr = false;
 	static bool camerr = false;
 
-	//nsengine.events()->process(this);
+	//nse.events()->process(this);
 
 	// Warning message switches (so they dont appear every frame)
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 	{
 		if (!sceneerr)
@@ -569,7 +577,7 @@ void nsrender_system::update()
 		lc = (*iter)->get<nslight_comp>();
 		animComp = (*iter)->get<nsanim_comp>();
 		terComp = (*iter)->get<nsterrain_comp>();
-		currentMesh = nsengine.resource<nsmesh>(rComp->mesh_id());
+		currentMesh = nse.resource<nsmesh>(rComp->mesh_id());
 
 		if (lc != NULL)
 		{
@@ -595,17 +603,17 @@ void nsrender_system::update()
 		{
 			nsmesh::submesh * mSMesh = NULL;
 			nsmaterial * mat = NULL;
-			fmat4array * fTForms = NULL;
+			fmat4_vector * fTForms = NULL;
 			nsmaterial_shader * shader = NULL;
 			for (uint32 i = 0; i < currentMesh->count(); ++i)
 			{
 				mSMesh = currentMesh->sub(i);
-				mat = nsengine.resource<nsmaterial>(rComp->material_id(i));
+				mat = nse.resource<nsmaterial>(rComp->material_id(i));
 
 				if (mat == NULL)
 					mat = m_default_mat;
 
-				shader = nsengine.resource<nsmaterial_shader>(mat->shader_id());
+				shader = nse.resource<nsmaterial_shader>(mat->shader_id());
 				fTForms = NULL;
 
 				if (shader == NULL)
@@ -647,7 +655,7 @@ void nsrender_system::_blend_dir_light(nslight_comp * pLight)
 	m_shaders.dir_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->size().x), static_cast<float>(m_final_buf->size().y)));
 	m_shaders.dir_light->set_shadow_tex_size(fvec2(static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).w), static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).y)));
 
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
+	nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -677,7 +685,7 @@ void nsrender_system::_blend_point_light(nslight_comp * pLight)
 	m_shaders.point_light->set_exp_atten(pLight->atten().z);
 
 
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
+	nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -714,7 +722,7 @@ void nsrender_system::_blend_spot_light(nslight_comp * pLight)
 	m_shaders.spot_light->set_exp_atten(pLight->atten().z);
 	m_shaders.spot_light->set_cutoff(pLight->cutoff());
 
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
+	nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -765,9 +773,9 @@ uint32 nsrender_system::gbuffer_fbo()
 
 void nsrender_system::set_shadow_fbo(uint32 fbodir, uint32 fbospot, uint32 fbopoint)
 {
-	m_shadow_buf->set_fb(nsengine.framebuffer(fbodir), nsshadowbuf_object::Direction);
-	m_shadow_buf->set_fb(nsengine.framebuffer(fbospot), nsshadowbuf_object::Spot);
-	m_shadow_buf->set_fb(nsengine.framebuffer(fbopoint), nsshadowbuf_object::Point);
+	m_shadow_buf->set_fb(nse.framebuffer(fbodir), nsshadowbuf_object::Direction);
+	m_shadow_buf->set_fb(nse.framebuffer(fbospot), nsshadowbuf_object::Spot);
+	m_shadow_buf->set_fb(nse.framebuffer(fbopoint), nsshadowbuf_object::Point);
 	m_shadow_buf->resize(nsshadowbuf_object::Direction, DEFAULT_DIRLIGHT_SHADOW_W, DEFAULT_DIRLIGHT_SHADOW_H);
 	m_shadow_buf->resize(nsshadowbuf_object::Spot, DEFAULT_SPOTLIGHT_SHADOW_W, DEFAULT_SPOTLIGHT_SHADOW_H);
 	m_shadow_buf->resize(nsshadowbuf_object::Point, DEFAULT_POINTLIGHT_SHADOW_W, DEFAULT_POINTLIGHT_SHADOW_H);
@@ -776,14 +784,14 @@ void nsrender_system::set_shadow_fbo(uint32 fbodir, uint32 fbospot, uint32 fbopo
 
 void nsrender_system::set_gbuffer_fbo(uint32 fbo)
 {
-	m_gbuffer->set_fb(nsengine.framebuffer(fbo));
+	m_gbuffer->set_fb(nse.framebuffer(fbo));
 	m_gbuffer->resize_fb(uivec2(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y));
 	m_gbuffer->init();
 }
 
 void nsrender_system::set_final_fbo(uint32 fbo)
 {
-	m_final_buf = nsengine.framebuffer(fbo);
+	m_final_buf = nse.framebuffer(fbo);
 	if (m_final_buf == NULL)
 		return;
 
@@ -797,7 +805,7 @@ void nsrender_system::set_final_fbo(uint32 fbo)
 
 void nsrender_system::_draw_xfbs()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
@@ -811,7 +819,7 @@ void nsrender_system::_draw_xfbs()
 	{
 		nsrender_comp * rComp = (*drawIter)->get<nsrender_comp>();
 		nstform_comp * tComp = (*drawIter)->get<nstform_comp>();
-		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->mesh_id());
+		nsmesh * mesh = nse.resource<nsmesh>(rComp->mesh_id());
 		if (mesh == NULL)
 			return;
 
@@ -880,11 +888,11 @@ void nsrender_system::_draw_xfbs()
 			{
 				nsmesh::submesh * subMesh = mesh->sub(subI);
 
-				nsmaterial * mat = nsengine.resource<nsmaterial>(rComp->material_id(subI));
+				nsmaterial * mat = nse.resource<nsmaterial>(rComp->material_id(subI));
 				if (mat == NULL)
 					mat = m_default_mat;
 
-				nsmaterial_shader * shader = nsengine.resource<nsmaterial_shader>(mat->shader_id());
+				nsmaterial_shader * shader = nse.resource<nsmaterial_shader>(mat->shader_id());
 				if (shader == NULL)
 					shader = m_shaders.xfb_render;
 
@@ -912,7 +920,7 @@ void nsrender_system::_draw_xfbs()
 				nsmaterial::texmap_map_const_iter cIter = mat->begin();
 				while (cIter != mat->end())
 				{
-					nstexture * t = nsengine.resource<nstexture>(cIter->second);
+					nstexture * t = nse.resource<nstexture>(cIter->second);
 					if (t != NULL)
 						t->enable(cIter->first);
 					else
@@ -940,7 +948,7 @@ void nsrender_system::_draw_xfbs()
 				nsmaterial::texmap_map_const_iter eIter = mat->begin();
 				while (eIter != mat->end())
 				{
-					nstexture * t = nsengine.resource<nstexture>(eIter->second);
+					nstexture * t = nse.resource<nstexture>(eIter->second);
 					if (t != NULL)
 						t->enable(eIter->first);
 					else
@@ -995,7 +1003,7 @@ void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)
 
 void nsrender_system::_draw_geometry()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
@@ -1040,7 +1048,7 @@ void nsrender_system::_draw_geometry()
 			nsmaterial::texmap_map_const_iter cIter = (*matIter)->begin();
 			while (cIter != (*matIter)->end())
 			{
-				nstexture * t = nsengine.resource<nstexture>(cIter->second);
+				nstexture * t = nse.resource<nstexture>(cIter->second);
 				if (t != NULL)
 					t->enable(cIter->first);
 				else
@@ -1087,7 +1095,7 @@ void nsrender_system::_draw_geometry()
 			nsmaterial::texmap_map_const_iter eIter = (*matIter)->begin();
 			while (eIter != (*matIter)->end())
 			{
-				nstexture * t = nsengine.resource<nstexture>(eIter->second);
+				nstexture * t = nse.resource<nstexture>(eIter->second);
 				if (t != NULL)
 					t->disable(eIter->first);
 				else
@@ -1107,7 +1115,7 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 	while (matIter != m_drawcall_map.end())
 	{
 		pShader->set_height_map_enabled(false);
-		nstexture * tex = nsengine.resource<nstexture>(matIter->first->map_tex_id(nsmaterial::height));
+		nstexture * tex = nse.resource<nstexture>(matIter->first->map_tex_id(nsmaterial::height));
 		if (tex != NULL)
 		{
 			pShader->set_height_map_enabled(true);
@@ -1159,7 +1167,7 @@ void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
 	{
 		nsrender_comp * rComp = (*drawIter)->get<nsrender_comp>();
 		nstform_comp * tComp = (*drawIter)->get<nstform_comp>();
-		nsmesh * mesh = nsengine.resource<nsmesh>(rComp->mesh_id());
+		nsmesh * mesh = nse.resource<nsmesh>(rComp->mesh_id());
 		if (mesh == NULL)
 			return;
 
@@ -1188,7 +1196,7 @@ void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
 
 void nsrender_system::_stencil_point_light(nslight_comp * pLight)
 {
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
+	nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -1209,7 +1217,7 @@ void nsrender_system::_stencil_point_light(nslight_comp * pLight)
 
 void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 {
-	nsmesh * boundingMesh = nsengine.resource<nsmesh>(pLight->mesh_id());
+	nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
@@ -1229,7 +1237,7 @@ void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 }
 
 nsrender_system::draw_call::draw_call(nsmesh::submesh * pSubMesh, 
-	fmat4array * pAnimTransforms,
+	fmat4_vector * pAnimTransforms,
 	nsbuffer_object * pTransformBuffer,
 	nsbuffer_object * pTransformIDBuffer,
 	const fvec2 & heightMinMax,
@@ -1293,4 +1301,46 @@ int32 nsrender_system::draw_priority()
 int32 nsrender_system::update_priority()
 {
 	return RENDER_SYS_UPDATE_PR;
+}
+
+
+
+bool nsrender_system::RenderShaders::error()
+{
+	return (
+		deflt->error() != nsshader::error_none ||
+		early_z->error() != nsshader::error_none ||
+		light_stencil->error() != nsshader::error_none ||
+		dir_light->error() != nsshader::error_none ||
+		point_light->error() != nsshader::error_none ||
+		spot_light->error() != nsshader::error_none ||
+		point_shadow->error() != nsshader::error_none ||
+		spot_shadow->error() != nsshader::error_none ||
+		dir_shadow->error() != nsshader::error_none ||
+		xfb_default->error() != nsshader::error_none ||
+		xfb_earlyz->error() != nsshader::error_none ||
+		xfb_dir_shadow->error() != nsshader::error_none ||
+		xfb_point_shadow->error() != nsshader::error_none ||
+		xfb_spot_shadow->error() != nsshader::error_none ||
+		xfb_render->error() != nsshader::error_none);
+}
+
+bool nsrender_system::RenderShaders::valid()
+{
+	return (
+		deflt != NULL &&
+		early_z != NULL &&
+		light_stencil != NULL &&
+		dir_light != NULL &&
+		point_light != NULL &&
+		spot_light != NULL &&
+		point_shadow != NULL &&
+		spot_shadow != NULL &&
+		dir_shadow != NULL &&
+		xfb_default != NULL &&
+		xfb_earlyz != NULL &&
+		xfb_dir_shadow != NULL &&
+		xfb_point_shadow != NULL &&
+		xfb_spot_shadow != NULL &&
+		xfb_render != NULL);
 }

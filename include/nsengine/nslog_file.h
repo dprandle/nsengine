@@ -14,9 +14,8 @@ This file contains all of the neccessary declarations for the NSLogFile class.
 #define NSLOGFILE_H
 
 // Inlcudes
-#include <nsglobal.h>
-#include <string>
-#include <sstream>
+#include <nstypes.h>
+#include <nsstring.h>
 
 // Class Forward Declarations
 

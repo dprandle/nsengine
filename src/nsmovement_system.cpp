@@ -26,7 +26,7 @@ void nsmovement_system::init()
 
 void nsmovement_system::update()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 

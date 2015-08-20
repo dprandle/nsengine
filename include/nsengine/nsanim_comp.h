@@ -13,17 +13,14 @@
 #ifndef NSANIM_COMP_H
 #define NSANIM_COMP_H
 
-#include <vector>
-#include <nsmath.h>
 #include <nscomponent.h>
-#include <nspupper.h>
 #include <nsanim_set.h>
 #include <nsmesh.h>
 
 class nstimer;
 
 
-class nsanim_comp : public NSComponent
+class nsanim_comp : public nscomponent
 {
 public:
 	nsanim_comp();
@@ -32,7 +29,7 @@ public:
 	template <class PUPer>
 	friend void pup(PUPer & p, nsanim_comp & anim);
 
-	virtual nsanim_comp* copy(const NSComponent* copy_);
+	virtual nsanim_comp* copy(const nscomponent* copy_);
 
 	float & elapsed();
 
@@ -42,7 +39,7 @@ public:
 
 	const nsstring & current_anim_name();
 
-	fmat4array * final_transforms();
+	fmat4_vector * final_transforms();
 
 	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
@@ -50,7 +47,7 @@ public:
 	Get the resources that the component uses. For the animation component that is simply an AnimSet
 	/return Map of resource ID to resource type containing AnimSet used
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	void init();
 
@@ -86,7 +83,7 @@ private:
 
 	uivec2 m_anim_set_id; //! AnimSet resource used
 	nsstring m_current_anim; //! Current animation within the animation set
-	fmat4array m_final_transforms;
+	fmat4_vector m_final_transforms;
 };
 
 template <class PUPer>

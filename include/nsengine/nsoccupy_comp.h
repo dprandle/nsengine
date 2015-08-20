@@ -14,9 +14,8 @@ This file contains all of the neccessary declarations for the nsoccupy_comp clas
 #define NSOCCUPY_COMP_H
 
 #include <nscomponent.h>
-#include <nsmath.h>
 
-class nsoccupy_comp : public NSComponent
+class nsoccupy_comp : public nscomponent
 {
 public:
 
@@ -31,7 +30,7 @@ public:
 
 	bool add(const ivec3 & grid_pos_);
 
-	ivec3array::iterator begin();
+	ivec3_vector::iterator begin();
 
 	void build(const nsbounding_box & box_);
 
@@ -41,13 +40,13 @@ public:
 
 	void clear();
 
-	virtual nsoccupy_comp * copy(const NSComponent* pComp);
+	virtual nsoccupy_comp * copy(const nscomponent* pComp);
 
 	void enable_draw(bool enable_);
 
-	ivec3array::iterator end();
+	ivec3_vector::iterator end();
 
-	const ivec3array & spaces() const;
+	const ivec3_vector & spaces() const;
 
 	virtual void init();
 
@@ -65,7 +64,7 @@ public:
 
 	bool remove(const ivec3 & grid_pos_);
 
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	void set_mesh_id(const uivec2 & mesh_id_);
 
@@ -74,7 +73,7 @@ public:
 	nsoccupy_comp & operator=(const nsoccupy_comp & rhs_);
 
 private:
-	ivec3array m_spaces;
+	ivec3_vector m_spaces;
 	uivec2 m_mesh_id;
 	uivec2 m_mat_id;
 	bool m_draw_enabled;

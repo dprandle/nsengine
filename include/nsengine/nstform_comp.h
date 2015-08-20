@@ -13,16 +13,17 @@
 #ifndef NSTFORM_COMP_H
 #define NSTFORM_COMP_H
 
-#include <nsmath.h>
-#include <nscomponent.h>
-#include <vector>
-#include <nsbuffer_object.h>
-#include <nsxfb_object.h>
-#include <nsvertex_array_object.h>
+#define MAX_TF_BUFFER_SIZE 10048576
+#define MAX_TF_BUFFER_COUNT 32 // about 100 mb
 
+#include <nscomponent.h>
+#include <nsbuffer_object.h>
+
+class nsvertex_array_object;
+class nsxfb_object;
 class nstimer;
 
-class nstform_comp : public NSComponent
+class nstform_comp : public nscomponent
 {
 public:
 	enum world_axis {
@@ -137,7 +138,7 @@ public:
 
 	void compute_transform(uint32 tform_id_ = 0);
 
-	nstform_comp * copy(const NSComponent* copy_);
+	nstform_comp * copy(const nscomponent* copy_);
 
 	void enable_parent(bool enable_, uint32 tform_id_ = 0);
 

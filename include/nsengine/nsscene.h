@@ -13,14 +13,12 @@
 #ifndef NSSCENE_H
 #define NSSCENE_H
 
-#include <vector>
-#include <map>
+#define SCENE_MAX_PLAYERS 16
+
 #include <nsresource.h>
-#include <nsentity.h>
 #include <nsentity_manager.h>
-#include <nsglobal.h>
-#include <nsoccupy_comp.h>
 #include <nstile_grid.h>
+#include <nsoccupy_comp.h>
 
 class nsrender_comp;
 class nsrender_system;
@@ -28,7 +26,7 @@ class nsrender_system;
 class nsscene : public nsresource
 {
 public:
-	typedef std::map<uint32, nspentityset> entities_by_comp;
+	typedef std::map<uint32, entity_ptr_set> entities_by_comp;
 
 	template<class PUPer>
 	friend void pup(PUPer & p, nsscene & sc);
@@ -52,7 +50,7 @@ public:
 		const fvec3 & scale_ = fvec3(1.0f, 1.0f, 1.0f)
 		)
 	{
-		return add(nsengine.resource<nsentity>(plug_, ref_), pos_, rot_, scale_);
+		return add(nse.resource<nsentity>(plug_, ref_), pos_, rot_, scale_);
 	}
 
 	uint32 add_gridded(
@@ -73,7 +71,7 @@ public:
 		const fvec3 & scale_ = fvec3(1.0f, 1.0f, 1.0f)
 		)
 	{
-		return add_gridded(nsengine.resource<nsentity>(plug_, ref_), bounds_, starting_pos_, rot_, scale_);
+		return add_gridded(nse.resource<nsentity>(plug_, ref_), bounds_, starting_pos_, rot_, scale_);
 	}
 
 	void change_max_players(int32 amount_);
@@ -85,7 +83,7 @@ public:
 	template<class T1, class T2>
 	nsentity * entity(const T1 & plug_, const T2 & res_) const
 	{
-		nsentity * ent = nsengine.resource<nsentity>(plug_, res_);
+		nsentity * ent = nse.resource<nsentity>(plug_, res_);
 		if (ent == NULL || !ent->has<nstform_comp>())
 			return NULL;
 		return ent;
@@ -109,16 +107,16 @@ public:
 
 	nsentity * skydome() const;
 
-	const nspentityset & entities() const;
+	const entity_ptr_set & entities() const;
 
 	virtual void pup(nsfile_pupper * p);
 
 	void init();
 
 	template<class CompType>
-	const nspentityset & entities() const
+	const entity_ptr_set & entities() const
 	{
-		uint32 type_id = nsengine.type_id(std::type_index(typeid(CompType)));
+		uint32 type_id = nse.type_id(std::type_index(typeid(CompType)));
 		auto fiter = m_ents_by_comp_type.find(type_id);
 		if (fiter != m_ents_by_comp_type.end())
 			return fiter->second;
@@ -129,7 +127,7 @@ public:
 	Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
 	\return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	nstile_grid & grid();
 
@@ -216,7 +214,7 @@ public:
 	template<class T1, class T2>
 	void set_camera(const T1 & plug_, const T2 & camid, bool addToSceneIfNeeded = true)
 	{
-		set_camera(nsengine.resource<nsentity>(plug_, camid), addToSceneIfNeeded);
+		set_camera(nse.resource<nsentity>(plug_, camid), addToSceneIfNeeded);
 	}
 
 	void set_max_players(uint32 pMaxPlayers);
@@ -226,14 +224,14 @@ public:
 	template<class T1, class T2>
 	void set_skydome(const T1 & plug_, const T2 & skyid, bool addToSceneIfNeeded = true)
 	{
-		set_skydome(nsengine.resource<nsentity>(plug_, skyid), addToSceneIfNeeded);
+		set_skydome(nse.resource<nsentity>(plug_, skyid), addToSceneIfNeeded);
 	}
 
 	void set_skydome(nsentity * skydome, bool addToSceneIfNeeded = true);
 
 	void update_comp_maps(uint32 plugid, uint32 entid);
 
-	uivec2array & unloaded();
+	uivec2_vector & unloaded();
 
 private:
 
@@ -247,8 +245,8 @@ private:
 	nstile_grid * m_tile_grid;
 	bool m_show_bit;
 
-	uivec2array m_unloaded;
-	nspentityset m_dummyret;
+	uivec2_vector m_unloaded;
+	entity_ptr_set m_dummyret;
 };
 
 
@@ -264,7 +262,7 @@ void pup(PUPer & p, nsscene & sc)
 	pup(p, sc.m_show_bit, "show_bit");
 
 	sc.unloaded().clear();
-	uivec2array entids;
+	uivec2_vector entids;
 
 
 	auto iter = sc.entities().begin();
@@ -278,7 +276,7 @@ void pup(PUPer & p, nsscene & sc)
 
 	for (uint32 i = 0; i < entids.size(); ++i)
 	{
-		nsentity * ent = nsengine.resource<nsentity>(entids[i]);
+		nsentity * ent = nse.resource<nsentity>(entids[i]);
 
 		if (ent == NULL)
 		{

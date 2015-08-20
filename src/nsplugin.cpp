@@ -9,6 +9,12 @@ This file contains all of the neccessary definitions for the nsplugin class.
 \date August 23 2014
 \copywrite Earth Banana Games 2013
 */
+
+#include <assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+
+#include <nscam_comp.h>
 #include <nsplugin.h>
 #include <nsengine.h>
 #include <nsres_manager.h>
@@ -25,6 +31,8 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nssel_comp.h>
 #include <nstile_comp.h>
 #include <nsplugin_manager.h>
+#include <nstexture.h>
+#include <nslight_comp.h>
 
 nsplugin::nsplugin() : 
 	m_notes(),
@@ -55,7 +63,7 @@ bool nsplugin::add(nsresource * res)
 	if (res == NULL)
 		return false;
 
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->add(res);
 }
 
@@ -98,7 +106,7 @@ bool nsplugin::add_manager(nsres_manager * manag)
 
 nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
+	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->create(res_typeid, resName);
 }
 
@@ -120,7 +128,7 @@ nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec
 
 bool nsplugin::contains(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->contains(res);
 }
 
@@ -149,7 +157,7 @@ nsentity * nsplugin::create_dir_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
-	nsmesh * bounds = nsengine.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
+	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	nsentity * lt = create<nsentity>(name);
@@ -181,7 +189,7 @@ nsentity * nsplugin::create_point_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
-	nsmesh * bounds = nsengine.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
+	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	nsentity * lt = create<nsentity>(name);
@@ -219,7 +227,7 @@ bool castshadows,
 float shadowdarkness,
 int32 shadowsamples)
 {
-	nsmesh * bounds = nsengine.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
+	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
 	nsentity * lt = create<nsentity>(name);
@@ -258,7 +266,7 @@ nsres_manager * nsplugin::create_manager(const nsstring & manager_guid)
 
 nsres_manager * nsplugin::create_manager(uint32 manager_typeid)
 {
-	nsmanager_factory * factory = nsengine.factory<nsmanager_factory>(manager_typeid);
+	nsmanager_factory * factory = nse.factory<nsmanager_factory>(manager_typeid);
 	nsres_manager * man = factory->create();
 	if (!add_manager(man))
 	{
@@ -317,9 +325,9 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 
 	nsmesh * msh = NULL;
 	if (type == tile_full)
-		msh = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
+		msh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
 	else
-		msh = nsengine.core()->get<nsmesh>(MESH_HALF_TILE);
+		msh = nse.core()->get<nsmesh>(MESH_HALF_TILE);
 
 	if (collides)
 	{
@@ -355,12 +363,15 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	bool importdir)
 {
 	nsentity * terr = create<nsentity>(name);
-	nullchkn(terr);
+
+	if (terr == NULL)
+		return NULL;
+
 	nsterrain_comp * tc = terr->create<nsterrain_comp>();
 	tc->set_height_bounds(hmin, hmax);
 	nsrender_comp * rc = terr->create<nsrender_comp>();
 	rc->set_cast_shadow(true);
-	rc->set_mesh_id(nsengine.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
+	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
 	
 	nsmaterial * termat = create<nsmaterial>(name);
 	if (termat == NULL)
@@ -452,7 +463,7 @@ bool nsplugin::destroy_manager(uint32 manager_typeid)
 
 bool nsplugin::del(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->del(res);
 }
 
@@ -480,26 +491,26 @@ void nsplugin::name_change(const uivec2 & oldid, const uivec2 newid)
 
 nsresource * nsplugin::get(uint32 res_typeid, uint32 resid)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
+	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->get(resid);
 }
 
 nsresource * nsplugin::get(uint32 res_typeid, const nsstring & resName)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
+	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->get(resName);
 }
 
 void nsplugin::init()
 {
-	auto fiter = nsengine.begin_factory();
+	auto fiter = nse.begin_factory();
 	nsres_manager * rm = NULL;
-	while (fiter != nsengine.end_factory())
+	while (fiter != nse.end_factory())
 	{
-		nsfactory * plug_man_fac = nsengine.factory<nsplugin_manager>();
+		nsfactory * plug_man_fac = nse.factory<nsplugin_manager>();
 		if (fiter->second->type() == nsfactory::f_res_manager && fiter->second != plug_man_fac)
 		{
-			rm = create_manager(nsengine.guid(fiter->first));
+			rm = create_manager(nse.guid(fiter->first));
 
 			if (m_add_name)
 				rm->set_res_dir(m_res_dir + m_name + "/");
@@ -513,9 +524,10 @@ void nsplugin::init()
 
 nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
+	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->load(res_typeid, fname);
 }
+
 
 nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool prefixWithImportDir, const nsstring & meshname, bool flipuv)
 {
@@ -709,7 +721,7 @@ const nsstring & nsplugin::creation_date()
 	return m_creation_date;
 }
 
-const nsstringset & nsplugin::parents()
+const nsstring_set & nsplugin::parents()
 {
 	if (m_bound)
 		_update_parents();
@@ -756,13 +768,13 @@ void nsplugin::save_all(const nsstring & path, nssave_resouces_callback * scallb
 
 void nsplugin::save_all(uint32 res_typeid, const nsstring & path, nssave_resouces_callback * scallback)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res_typeid));
+	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->save_all(path, scallback);	
 }
 
 bool nsplugin::save_as(nsresource * res, const nsstring & fname)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->save_as(res, fname);
 }
 
@@ -810,7 +822,7 @@ void nsplugin::set_edit_date(const nsstring & pEditDate)
 
 bool nsplugin::save(nsresource * res, const nsstring & path)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->save(res, path);
 }
 
@@ -826,7 +838,7 @@ const nsstring & nsplugin::res_dir()
 
 bool nsplugin::resource_changed(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->changed(res);
 }
 
@@ -839,7 +851,7 @@ uint32 nsplugin::resource_count()
 
 bool nsplugin::destroy(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->destroy(res);
 }
 
@@ -875,14 +887,14 @@ void nsplugin::pup(nsfile_pupper * p)
 
 nsresource * nsplugin::remove(nsresource * res)
 {
-	nsres_manager * rm = manager(nsengine.manager_id(res->type()));
+	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->remove(res);
 }
 
 void nsplugin::_update_parents()
 {
 	// Get all get parents - only do immediate parents (not recursive)
-	uivec2array usedResources;
+	uivec2_vector usedResources;
 	m_parents.clear();
 
 	auto iter = m_managers.begin();
@@ -891,7 +903,7 @@ void nsplugin::_update_parents()
 		auto iter2 = iter->second->begin();
 		while (iter2 != iter->second->end())
 		{
-			uivec2array ret = iter2->second->resources();
+			uivec2_vector ret = iter2->second->resources();
 			usedResources.insert(usedResources.end(), ret.begin(), ret.end());
 			++iter2;
 		}
@@ -903,8 +915,8 @@ void nsplugin::_update_parents()
 	{
 		if (resIter->x != m_id) // if the owning plugin of this get is not us, then add it to parents
 		{
-			nsplugin * plug = nsengine.plugin(resIter->x);
-			if (plug != NULL && plug->id() != nsengine.core()->id())
+			nsplugin * plug = nse.plugin(resIter->x);
+			if (plug != NULL && plug->id() != nse.core()->id())
 				m_parents.insert(plug->name());
 		}
 		++resIter;
@@ -935,7 +947,7 @@ bool nsplugin::parents_loaded()
 	auto piter = m_parents.begin();
 	while (piter != m_parents.end())
 	{
-		nsplugin * parent = nsengine.plugin(*piter);
+		nsplugin * parent = nse.plugin(*piter);
 		if (parent == NULL || !parent->bound())
 			return false;
 		++piter;

@@ -82,9 +82,9 @@ const uivec2 & nsresource::icon_tex_id()
 /*!
 Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
 */
-uivec2array  nsresource::resources()
+uivec2_vector  nsresource::resources()
 {
-	return uivec2array();
+	return uivec2_vector();
 }
 
 /*!
@@ -115,7 +115,7 @@ void nsresource::rename(const nsstring & pRefName)
 
 #ifdef NOTIFY_ENGINE_NAME_CHANGE
 	if (m_owned) // if a manager owns this resource - otherwise we dont care
-		nsengine.name_change(uivec2(m_plugin_id, tmp),uivec2(m_plugin_id, m_id));
+		nse.name_change(uivec2(m_plugin_id, tmp),uivec2(m_plugin_id, m_id));
 #endif
 }
 

@@ -122,7 +122,7 @@ bool nsscene_manager::save(nsresource * res, const nsstring & path)
 		delete p;
 		return false;
 	}
-	nsstring rest = nsengine.guid(scene->type());
+	nsstring rest = nse.guid(scene->type());
 	if (m_save_mode == binary)
 		pup(*(static_cast<nsbinary_file_pupper*>(p)), rest, "type");
 	else
@@ -172,7 +172,7 @@ bool nsscene_manager::set_current(nsscene * sc, bool newScene, bool savePrevious
 		else
 			pup(*(static_cast<nstext_file_pupper*>(p)), rt, "type");
 
-		nsstring guid_ = nsengine.guid(sc->type());
+		nsstring guid_ = nse.guid(sc->type());
 		if (rt != guid_)
 		{
 			dprint("nsscene::setCurrent Loaded scene file: " + fName + " is not a scene file type - removing from scenes.");

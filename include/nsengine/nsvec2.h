@@ -1,7 +1,9 @@
 #ifndef NSVEC2_H
 #define NSVEC2_H
 
+#include <nsstring.h>
 #include <cmath>
+#include <stdexcept>
 
 template <class T>
 struct nsvec3;

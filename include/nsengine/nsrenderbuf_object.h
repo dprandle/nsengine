@@ -2,7 +2,6 @@
 #define NSRENDERBUF_OBJECT_H
 
 #include <nsgl_object.h>
-#include <nsmath.h>
 
 class nsrenderbuf_object : public nsgl_object
 {

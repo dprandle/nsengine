@@ -274,12 +274,12 @@ void nsshader::_setup_xfb()
 	delete[] varyings;
 }
 
-void nsshader::set_xfb(xfb_mode pMode, nsstringarray * pOutLocs)
+void nsshader::set_xfb(xfb_mode pMode, nsstring_vector * pOutLocs)
 {
 	// Need to link after doing this - if shader has been linked already then just re-link (ie call link again)
 	m_xfb_mode = pMode;
 	m_xfb_locs.clear();
-	nsstringarray::iterator sIter = pOutLocs->begin();
+	nsstring_vector::iterator sIter = pOutLocs->begin();
 	while (sIter != pOutLocs->end())
 	{
 		m_xfb_locs.push_back(*sIter);
@@ -673,7 +673,7 @@ nsmaterial_shader::~nsmaterial_shader(){}
 
 void nsmaterial_shader::init_uniforms()
 {
-	fmat4array b;
+	fmat4_vector b;
 	b.resize(MAX_BONE_TFORMS);
 	set_diffuse_sampler(DIFFUSE_TEX_UNIT);
 	set_normal_sampler(NORMAL_TEX_UNIT);
@@ -784,7 +784,7 @@ void nsmaterial_shader::set_proj_cam_mat(const fmat4 & projCam)
 }
 
 
-void nsmaterial_shader::set_bone_transforms(const fmat4array & transforms)
+void nsmaterial_shader::set_bone_transforms(const fmat4_vector & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
 		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
@@ -896,10 +896,10 @@ void nsparticle_process_shader::set_initial_vel_mult(const fvec3 & mult)
 	set_uniform("initVelocityMult", mult);
 }
 
-void nsparticle_process_shader::set_motion_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
+void nsparticle_process_shader::set_motion_keys(const ui_fvec3_map & keys, uint32 maxKeys, uint32 lifetime)
 {
 	uint32 index = 0;
-	fvec3uimap::const_iterator keyIter = keys.begin();
+	ui_fvec3_map::const_iterator keyIter = keys.begin();
 	while (keyIter != keys.end())
 	{
 		set_uniform("forceKeys[" + std::to_string(index) + "].time", float(keyIter->first) / float(maxKeys * 1000) * float(lifetime));
@@ -909,10 +909,10 @@ void nsparticle_process_shader::set_motion_keys(const fvec3uimap & keys, uint32 
 	}
 }
 
-void nsparticle_process_shader::set_visual_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime)
+void nsparticle_process_shader::set_visual_keys(const ui_fvec3_map & keys, uint32 maxKeys, uint32 lifetime)
 {
 	uint32 index = 0;
-	fvec3uimap::const_iterator keyIter = keys.begin();
+	ui_fvec3_map::const_iterator keyIter = keys.begin();
 	while (keyIter != keys.end())
 	{
 		set_uniform("sizeKeys[" + std::to_string(index) + "].time", float(keyIter->first) / float(maxKeys * 1000) * float(lifetime));
@@ -1003,7 +1003,7 @@ nsdepth_shader::~nsdepth_shader() {}
 
 void nsdepth_shader::init_uniforms()
 {
-	fmat4array b;
+	fmat4_vector b;
 	b.resize(MAX_BONE_TFORMS);
 	set_height_sampler(HEIGHT_TEX_UNIT);
 	set_height_map_enabled(false);
@@ -1019,7 +1019,7 @@ void nsdepth_shader::set_node_transform(const fmat4 & tform)
 	set_uniform("nodeTransform", tform);
 }
 
-void nsdepth_shader::set_bone_transform(const fmat4array & transforms)
+void nsdepth_shader::set_bone_transform(const fmat4_vector & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
 		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
@@ -1122,7 +1122,7 @@ nsselection_shader::~nsselection_shader() {}
 
 void nsselection_shader::init_uniforms()
 {
-	fmat4array b;
+	fmat4_vector b;
 	b.resize(MAX_BONE_TFORMS);
 	set_height_sampler(HEIGHT_TEX_UNIT);
 	set_heightmap_enabled(false);
@@ -1152,7 +1152,7 @@ void nsselection_shader::set_proj_cam_mat(const fmat4 & projCam)
 	set_uniform("projCamMat", projCam);
 }
 
-void nsselection_shader::set_bone_transform(const fmat4array & transforms)
+void nsselection_shader::set_bone_transform(const fmat4_vector & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
 		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);

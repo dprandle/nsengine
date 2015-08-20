@@ -28,7 +28,7 @@ nsmat_manager::~nsmat_manager()
 nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir)
 {
 	nsmaterial * mat = create(pMaterialName);
-	nstex_manager * texmanager = nsengine.manager<nstex_manager>(m_plugin_id);
+	nstex_manager * texmanager = nse.manager<nstex_manager>(m_plugin_id);
 	
 	bool ret = false;
 

@@ -14,13 +14,8 @@
 #define NSMATERIAL_H
 
 // Inlcudes
-#include <vector>
-#include <nsglobal.h>
-#include <nstexture.h>
 #include <nsresource.h>
-#include <unordered_map>
-#include <nsmath.h>
-#include <nspupper.h>
+#include <nsunordered_map.h>
 
 class nsmaterial : public nsresource
 {
@@ -82,7 +77,7 @@ public:
 
 	bool color_mode();
 
-	const GLenum & cull_mode() const;
+	const uint32 & cull_mode() const;
 
 	uivec2 map_tex_id(map_type pMapType);
 
@@ -104,7 +99,7 @@ public:
 	Get the other resources that this Material uses. This includes all texture maps.
 	\return Map of resource ID to resource type containing all other used texture map IDs and a shader ID
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	void init();
 
@@ -128,7 +123,7 @@ public:
 
 	void set_color_mode(bool pEnable);
 
-	void set_cull_mode(GLenum pMode);
+	void set_cull_mode(uint32 pMode);
 
 	bool set_map_tex_id(map_type pMapType, const uivec2 & resID, bool pOverwrite = false);
 
@@ -160,7 +155,7 @@ private:
 	fvec4 m_color;
 	bool m_color_mode;
 	bool m_culling_enabled;
-	GLenum m_cull_mode;
+	uint32 m_cull_mode;
 	specular_comp m_spec_comp;
 	texmap_map m_tex_maps;
 	bool m_wireframe;

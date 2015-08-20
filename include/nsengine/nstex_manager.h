@@ -19,7 +19,6 @@
 #ifndef NSTEX_MANAGER_H
 #define NSTEX_MANAGER_H
 
-#include <nsglobal.h>
 #include <nsres_manager.h>
 #include <nstexture.h>
 

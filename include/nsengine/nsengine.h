@@ -1,9 +1,9 @@
 /*!
 \file nsengine.h
 
-\brief Header file for NSEngine class
+\brief Header file for nsengine class
 
-This file contains all of the neccessary declartations for the NSEngine class.
+This file contains all of the neccessary declartations for the nsengine class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -13,11 +13,164 @@ This file contains all of the neccessary declartations for the NSEngine class.
 #ifndef NSENGINE_H
 #define NSENGINE_H
 
+#define ENGINE_PLUG "engplug"
+
+#define DEFAULT_GBUFFER_SHADER "gbufferdefault"
+#define DEFAULT_XFBGBUFFER_SHADER "gbufferxtf"
+#define DEFAULT_XFBGBUFFER_RENDER_SHADER "gbufferxtfrender"
+#define DEFAULT_EARLYZ_SHADER "earlyz"
+#define DEFAULT_XFBEARLYZ_SHADER "xfbearlyz"
+#define DEFAULT_LIGHTSTENCIL_SHADER "lightstencil"
+#define DEFAULT_SPOTLIGHT_SHADER "spotlight"
+#define DEFAULT_DIRLIGHT_SHADER "directionlight"
+#define DEFAULT_POINTLIGHT_SHADER "pointlight"
+#define DEFAULT_SELECTION_SHADER "selectionsolid"
+#define DEFAULT_POINTSHADOWMAP_SHADER "pointshadowmap"
+#define DEFAULT_SPOTSHADOWMAP_SHADER "spotshadowmap"
+#define DEFAULT_DIRSHADOWMAP_SHADER "dirshadowmap"
+#define DEFAULT_XFBPOINTSHADOWMAP_SHADER "xfbpointshadowmap"
+#define DEFAULT_XFBSPOTSHADOWMAP_SHADER "xfbspotshadowmap"
+#define DEFAULT_XFBDIRSHADOWMAP_SHADER "xfbdirshadowmap"
+#define DEFAULT_RENDER_PARTICLE_SHADER "renderparticle"
+#define DEFAULT_PROCESS_PARTICLE_SHADER "xfbparticle"
+#define DEFAULT_SKYBOX_SHADER "skybox"
+
+#define DEFAULT_MATERIAL_NAME "default"
+#define DEFAULT_MATERIAL_DIFFUSE "default"
+#define DEFAULT_ENGINE_INPUT "enginedefault.nsi"
+#define ENT_OBJECT_BRUSH "objectbrush"
+
+#define MESH_FULL_TILE "fulltile"
+#define MESH_HALF_TILE "halftile"
+#define MESH_DIRLIGHT_BOUNDS "dirlightbounds"
+#define MESH_SPOTLIGHT_BOUNDS "spotlightbounds"
+#define MESH_POINTLIGHT_BOUNDS "pointlightbounds"
+#define MESH_TERRAIN "terrain"
+#define MESH_SKYDOME "skydome"
+
+
+// Resource typenames
+// Must add entry here for any custom resource types
+#define ANIM_TYPESTRING "nsanim_set"
+#define ENTITY_TYPESTRING "nsentity"
+#define MATERIAL_TYPESTRING "nsmaterial"
+#define MESH_TYPESTRING "nsmesh"
+#define INPUTMAP_TYPESTRING "nsinput_map"
+#define TEX1D_TYPESTRING "nstex1d"
+#define TEX1DARRAY_TYPESTRING "nstex1d_array"
+#define TEX2D_TYPESTRING "nstex2d"
+#define TEXRECTANGLE_TYPESTRING "nstex_rectangle"
+#define TEX2DMULTISAMPLE_TYPESTRING "nstex2d_multisample"
+#define TEX2DMULTISAMPLEARRAY_TYPESTRING "nstex2d_multisample_array"
+#define TEXBUFFER_TYPESTRING "nstex_buffer"
+#define TEX2DARRAY_TYPESTRING "nstex2d_array"
+#define TEX3D_TYPESTRING "nstex3d"
+#define TEXCUBEMAP_TYPESTRING "nstex_cubemap"
+#define TEXCUBEMAPARRAY_TYPESTRING "nstex_cubemap_array"
+#define SHADER_TYPESTRING "nsshader"
+#define DIRLIGHTSHADER_TYPESTRING "nsdir_light_shader"
+#define POINTLIGHTSHADER_TYPESTRING "nspoint_light_shader"
+#define SPOTLIGHTSHADER_TYPESTRING "nsspot_light_shader"
+#define MATERIALSHADER_TYPESTRING "nsmaterial_shader"
+#define PARTICLEPROCESSSHADER_TYPESTRING "nsparticle_process_shader"
+#define PARTICLERENDERSHADER_TYPESTRING "nsparticle_render_shader"
+#define DIR_SHADOWMAP_SHADER_TYPESTRING "nsdir_shadowmap_shader"
+#define DIR_SHADOWMAPXFB_SHADER_TYPESTRING "nsdir_shadowmap_xfb_shader"
+#define POINT_SHADOWMAP_SHADER_TYPESTRING "nspoint_shadowmap_shader"
+#define POINT_SHADOWMAPXFB_SHADER_TYPESTRING "nspoint_shadowmap_xfb_shader"
+#define SPOT_SHADOWMAP_SHADER_TYPESTRING "nsspot_shadowmap_shader"
+#define SPOT_SHADOWMAPXFB_SHADER_TYPESTRING "nsspot_shadowmap_xfb_shader"
+#define EARLYZ_SHADER_TYPESTRING "nsearlyz_shader"
+#define EARLYZXFB_SHADER_TYPESTRING "nsearlyz_xfb_shader"
+#define RENDERXFB_SHADER_TYPESTRING "nsrender_xfb_shader"
+#define XFB_SHADER_TYPESTRING "nsxfb_shader"
+#define LIGHTSTENCIL_SHADER_TYPESTRING "nslight_stencil_shader"
+#define SKYBOX_SHADER_TYPESTRING "nsskybox_shader"
+#define TRANSPARENCY_SHADER_TYPESTRING "nstransparency_shader"
+#define SELECTION_SHADER_TYPESTRING "nsselection_shader"
+#define SCENE_TYPESTRING "nsscene"
+#define PLUGIN_TYPESTRING "nsplugin"
+
+// Manager Typenames
+#define ANIM_MANAGER_TYPESTRING "nsanim_manager"
+#define ENTITY_MANAGER_TYPESTRING "nsentity_manager"
+#define MAT_MANAGER_TYPESTRING "nsmat_manager"
+#define MESH_MANAGER_TYPESTRING "nsmesh_manager"
+#define TEX_MANAGER_TYPESTRING "nstex_manager"
+#define SHADER_MANAGER_TYPESTRING "nsshader_manager"
+#define SCENE_MANAGER_TYPESTRING "nsscene_manager"
+#define PLUGIN_MANAGER_TYPESTRING "nsplugin_manager"
+#define INPUTMAP_MANAGER_TYPESTRING "nsinput_map_manager"
+
+// Component Typenames
+#define ANIM_COMP_TYPESTRING "nsanim_comp"
+#define CAM_COMP_TYPESTRING "nscam_comp"
+#define LIGHT_COMP_TYPESTRING "nslight_comp"
+#define OCCUPY_COMP_TYPESTRING "nsoccupy_comp"
+#define RENDER_COMP_TYPESTRING "nsrender_comp"
+#define SEL_COMP_TYPESTRING "nssel_comp"
+#define TFORM_COMP_TYPESTRING "nstform_comp"
+#define TILEBRUSH_COMP_TYPESTRING "nstile_brush_comp"
+#define TILE_COMP_TYPESTRING "nstile_comp"
+#define PARTICLE_COMP_TYPESTRING "nsparticle_comp"
+#define TERRAIN_COMP_TYPESTRING "nsterrain_comp"
+
+// System Typenames
+#define ANIM_SYS_TYPESTRING "nsanim_system"
+#define CAM_SYS_TYPESTRING "nscamera_system"
+#define BUILD_SYS_TYPESTRING "nsbuild_system"
+#define MOVE_SYS_TYPESTRING "nsmovement_system"
+#define RENDER_SYS_TYPESTRING "nsrender_system"
+#define SEL_SYS_TYPESTRING "nsselection_system"
+#define UI_SYS_TYPESTRING "NSUISystem"
+#define INP_SYS_TYPESTRING "nsinput_system"
+#define PARTICLE_SYS_TYPESTRING "nsparticle_system"
+
+// System update priority
+#define ANIM_SYS_UPDATE_PR 70000
+#define CAM_SYS_UPDATE_PR 40000
+#define BUILD_SYS_UPDATE_PR 50000
+#define MOVE_SYS_UPDATE_PR 60000
+#define PARTICLE_SYS_UPDATE_PR 80000
+#define RENDER_SYS_UPDATE_PR 90000
+#define SEL_SYS_UPDATE_PR 30000
+#define INP_SYS_UPDATE_PR 10000
+#define UI_SYS_UPDATE_PR 20000
+
+// System draw priority
+#define RENDER_SYS_DRAW_PR 10000
+#define PARTICLE_SYS_DRAW_PR 20000
+#define SEL_SYS_DRAW_PR 30000
+#define UI_SYS_DRAW_PR 40000
+#define NO_DRAW_PR 0
+
+// Fixed time step
+#define FIXED_TIME_STEP 0.01f
+
+
+
 #include <map>
-#include <nsglobal.h>
+//#include <nsglobal.h>
 #include <nsfactory.h>
 #include <typeindex>
 #include <nsmath.h>
+#include <unordered_map>
+
+
+//#define NSDEBUG
+#define NSDEBUG_RT
+
+#define nse nsengine::inst()
+#define type_to_guid(type) nse.guid(std::type_index(typeid(type)))
+#define hash_to_guid(hash) nse.guid(hash)
+#define type_to_hash(type) nse.type_id(std::type_index(typeid(type)))
+
+#ifdef NSDEBUG
+#define dprint(str) nse.debug_print(str)
+#else
+#define dprint(str)
+#endif
+
 
 class nsscene;
 class nsrender_system;
@@ -36,13 +189,11 @@ class nsplugin;
 class nsevent_dispatcher;
 struct nssave_resouces_callback;
 class nsres_manager;
-
+struct gl_ctxt;
+class nsfb_object;
 #ifdef NSDEBUG
 class nsdebug;
 #endif
-
-struct gl_ctxt;
-class nsfb_object;
 
 typedef std::unordered_map<uint32, nssystem*> system_hash_map;
 typedef std::unordered_map<uint32, uint32> res_manager_type_map;
@@ -53,18 +204,6 @@ typedef std::unordered_map<uint32, gl_ctxt*> gl_context_map;
 typedef std::unordered_map<uint32, nsfb_object*> framebuffer_map;
 
 uint32 hash_id(const nsstring & str);
-
-
-#define nsengine NSEngine::inst()
-#define type_to_guid(type) nsengine.guid(std::type_index(typeid(type)))
-#define hash_to_guid(hash) nsengine.guid(hash)
-#define type_to_hash(type) nsengine.type_id(std::type_index(typeid(type)))
-
-#ifdef NSDEBUG
-#define dprint(str) nsengine.debug_print(str)
-#else
-#define dprint(str) COMMENT
-#endif
 
 // make sure all directories end with "/"
 
@@ -109,11 +248,11 @@ We dont share resources between contexts in the engine, because VAOs are used fo
 sharing - we could if we really wanted make everything just use VBOs, then a different context could do its thing, but thats annoying
 Its easier to just not allow sharing
 */
-class NSEngine
+class nsengine
 {
 public:
-	NSEngine();
-	~NSEngine();
+	nsengine();
+	~nsengine();
 	typedef std::map<int32, uint32> sys_priority_map;
 
 	bool add_plugin(nsplugin * plug);
@@ -555,7 +694,7 @@ public:
 	/*!
 	Get engine instance.. if this is the first call then a new instance is created (static)
 	*/
-	static NSEngine & inst();
+	static nsengine & inst();
 
 private:
 
@@ -641,25 +780,6 @@ private:
 	gl_context_map m_contexts;
 	uint32 m_current_context;
 	nsstring m_cwd;
-};
-
-struct gl_ctxt
-{
-	gl_ctxt(uint32 id);
-	~gl_ctxt();
-	GLEWContext * glew_context;
-	nsplugin * core_plugin;
-	system_hash_map * systems;
-	nsplugin_manager * plugins;
-	nsevent_dispatcher * event_disp;
-	framebuffer_map fb_map;
-	nstimer * timer;
-	uint32 composite_buf;
-	uint32 context_id;
-#ifdef NSDEBUG
-	nsdebug * deb;
-#endif
-	
 };
 
 

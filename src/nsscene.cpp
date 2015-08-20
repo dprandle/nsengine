@@ -26,6 +26,7 @@
 #include <nsentity_manager.h>
 #include <nsoccupy_comp.h>
 #include <nsplugin_manager.h>
+#include <nslight_comp.h>
 
 nsscene::nsscene():
 	m_tile_grid(new nstile_grid()),
@@ -47,7 +48,7 @@ nsscene::~nsscene()
 
 void nsscene::clear()
 {
-	nspentityset ents = entities();
+	entity_ptr_set ents = entities();
 	auto eiter = ents.begin();
 	while (eiter != ents.end())
 	{
@@ -293,7 +294,7 @@ nsentity * nsscene::skydome() const
 	return entity(m_skydome_id.x, m_skydome_id.y);
 }
 
-const nspentityset & nsscene::entities() const
+const entity_ptr_set & nsscene::entities() const
 {
 	return entities<nstform_comp>();
 }
@@ -301,13 +302,13 @@ const nspentityset & nsscene::entities() const
 /*!
 Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
 */
-uivec2array nsscene::resources()
+uivec2_vector nsscene::resources()
 {
-	uivec2array ret;
+	uivec2_vector ret;
 	auto iter = entities().begin();
 	while (iter != entities().end())
 	{
-		uivec2array tmp = (*iter)->resources();
+		uivec2_vector tmp = (*iter)->resources();
 		ret.insert(ret.end(), tmp.begin(), tmp.end() );
 		++iter;
 	}
@@ -661,7 +662,7 @@ void nsscene::set_skydome(nsentity * skydome, bool addToSceneIfNeeded)
 	}
 }
 
-uivec2array & nsscene::unloaded()
+uivec2_vector & nsscene::unloaded()
 {
 	return m_unloaded;
 }
@@ -671,7 +672,7 @@ Go through all entities and add only entities here that are part of the scene
 */
 void nsscene::update_comp_maps(uint32 plugid, uint32 entid)
 {
-	nsentity * ent = nsengine.resource<nsentity>(plugid, entid);
+	nsentity * ent = nse.resource<nsentity>(plugid, entid);
 	if (ent == NULL)
 		return;
 

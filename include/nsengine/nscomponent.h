@@ -1,9 +1,9 @@
 /*! 
 	\file nscomponent.h
 	
-	\brief Header file for NSComponent class
+	\brief Header file for nscomponent class
 
-	This file contains all of the neccessary declarations for the NSComponent class.
+	This file contains all of the neccessary declarations for the nscomponent class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -13,25 +13,24 @@
 #ifndef NSCOMPONENT_H
 #define NSCOMPONENT_H
 
-#include <nsglobal.h>
-#include <nsmath.h>
 #include <nspupper.h>
+#include <nsvector.h>
 
 class nsentity;
 class nsevent;
 class nstimer;
 
-class NSComponent
+class nscomponent
 {
 public:
 
 	friend class nscomp_factory;
 
-	NSComponent();
+	nscomponent();
 
-	virtual ~NSComponent();
+	virtual ~nscomponent();
 
-	virtual NSComponent * copy(const NSComponent * comp_);
+	virtual nscomponent * copy(const nscomponent * comp_);
 
 	nsentity * owner();
 
@@ -47,7 +46,7 @@ public:
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
 	/return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	virtual void pup(nsfile_pupper * p) = 0;
 
@@ -55,7 +54,7 @@ public:
 
 	void set_owner(nsentity * owner_);
 
-	NSComponent & operator=(const NSComponent & rhs_);
+	nscomponent & operator=(const nscomponent & rhs_);
 
 protected:
 	nsentity * m_owner;

@@ -13,17 +13,14 @@
 #ifndef NSDEBUG_H
 #define NSDEBUG_H
 
-#include <nsglobal.h>
+#define DEFAULT_DEBUG_LOG "enginedebug.log"
+
+#include <nsstring.h>
 
 class NSLogFile;
 
 typedef void (*message_callback)(const nsstring &, void *);
 
-/*!
-NSDebug handles all debug operations
-
-\bug No known bugs.
-*/
 class nsdebug
 {
 public:

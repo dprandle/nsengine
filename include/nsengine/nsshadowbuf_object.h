@@ -1,7 +1,6 @@
 #ifndef NSSHADOWBUF_OBJECT_H
 #define NSSHADOWBUF_OBJECT_H
 
-#include <nstypes.h>
 #include <nsmath.h>
 #include <nstexture.h>
 

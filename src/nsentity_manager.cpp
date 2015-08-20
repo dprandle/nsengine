@@ -26,9 +26,9 @@ nsentity_manager::nsentity_manager() : nsres_manager()
 nsentity_manager::~nsentity_manager()
 {}
 
-nspentityset nsentity_manager::entities(uint32 comp_type_id)
+entity_ptr_set nsentity_manager::entities(uint32 comp_type_id)
 {
-	nspentityset ret;
+	entity_ptr_set ret;
 	auto iter = m_id_resmap.begin();
 	while (iter != m_id_resmap.end())
 	{
@@ -40,7 +40,7 @@ nspentityset nsentity_manager::entities(uint32 comp_type_id)
 	return ret;	
 }
 
-nspentityset nsentity_manager::entities(const nsstring & comp_guid)
+entity_ptr_set nsentity_manager::entities(const nsstring & comp_guid)
 {
 	return entities(hash_id(comp_guid));
 }

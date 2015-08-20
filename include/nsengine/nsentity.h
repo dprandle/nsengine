@@ -12,21 +12,20 @@
 
 #ifndef NSENTITY_H
 #define NSENTITY_H
-#include <nsglobal.h>
+
 #include <nstform_comp.h>
-#include <nsanim_comp.h>
-#include <nscam_comp.h>
-#include <nsrender_comp.h>
-#include <nslight_comp.h>
+// #include <nsanim_comp.h>
+// #include <nscam_comp.h>
+// #include <nsrender_comp.h>
+// #include <nslight_comp.h>
 #include <nsresource.h>
 #include <nsengine.h>
-#include <nspupper.h>
 
-class NSComponent;
+class nscomponent;
 class nsentity : public nsresource
 {
 public:
-	typedef std::unordered_map<uint32, NSComponent*> comp_set;
+	typedef std::unordered_map<uint32, nscomponent*> comp_set;
 
 	template <class PUPer>
 	friend void pup(PUPer & p, nsentity & ent);
@@ -38,30 +37,30 @@ public:
 
 	nsentity(nsentity & copy);
 
-	bool add(NSComponent * pComp);
+	bool add(nscomponent * pComp);
 
 	comp_set::iterator begin();
 	comp_set::iterator end();
 
 	void clear();
 
-	bool copy(NSComponent * toCopy, bool overwrite = true);
+	bool copy(nscomponent * toCopy, bool overwrite = true);
 
 	template<class comp_type>
 	comp_type * create()
 	{
-		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
+		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(create(tid));
 	}
 
-	NSComponent * create(const nsstring & guid);
+	nscomponent * create(const nsstring & guid);
 
-	NSComponent * create(uint32 type_id);
+	nscomponent * create(uint32 type_id);
 
 	template<class comp_type>
 	bool del()
 	{
-		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
+		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
 		return del(tid);
 	}
 
@@ -72,13 +71,13 @@ public:
 	template<class comp_type>
 	comp_type * get()
 	{
-		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
+		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(get(tid));
 	}
 
-	NSComponent * get(uint32 type_id);
+	nscomponent * get(uint32 type_id);
 
-	NSComponent * get(const nsstring & guid);
+	nscomponent * get(const nsstring & guid);
 
 	uint32 count();
 
@@ -88,12 +87,12 @@ public:
 	Get the other resources that this Entity uses. This is given by all the components attached to the entity.
 	\return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 	
 	template<class comp_type>
 	bool has()
 	{
-		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
+		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
 		return (has(tid));
 	}
 
@@ -106,14 +105,14 @@ public:
 	template<class comp_type>
 	comp_type * remove()
 	{
-		uint32 tid = nsengine.type_id(std::type_index(typeid(comp_type)));
+		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(remove(tid));
 	}
 
 	// LEFT OFF HERE
-	NSComponent * remove(uint32 type_id);
+	nscomponent * remove(uint32 type_id);
 
-	NSComponent * remove(const nsstring & guid);
+	nscomponent * remove(const nsstring & guid);
 	
 	void post_update_all(bool pUpdate);
 
@@ -157,7 +156,7 @@ void pup(PUPer & p, nsentity & ent)
 	{
 		for (uint32 i = 0; i < size; ++i)
 		{
-			nsstring k; NSComponent * v = NULL;
+			nsstring k; nscomponent * v = NULL;
 			pup(p, k, "comptype");
 			v = ent.create(k);
 			v->pup(&p);
@@ -168,10 +167,10 @@ void pup(PUPer & p, nsentity & ent)
 		auto iter = ent.m_components.begin();
 		while (iter != ent.m_components.end())
 		{
-			uint32 tform_typeid = nsengine.type_id(std::type_index(typeid(nstform_comp)));
+			uint32 tform_typeid = nse.type_id(std::type_index(typeid(nstform_comp)));
 			if (iter->first != tform_typeid)
 			{
-				nsstring k = nsengine.guid(iter->first);
+				nsstring k = nse.guid(iter->first);
 				pup(p, k, "comptype");
 				iter->second->pup(&p);
 			}

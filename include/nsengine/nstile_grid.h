@@ -13,15 +13,24 @@ This file contains all of the neccessary declarations for the nstile_grid class.
 #ifndef NSTILEGRID_H
 #define NSTILEGRID_H
 
-#include <unordered_map>
-#include <unordered_set>
-#include <nsglobal.h>
-#include <nsmath.h>
+#define X_GRID 0.86f
+#define Y_GRID 1.49f
+#define Z_GRID 0.45f
+#define ROUND_FACTOR 0.5f
+
+#define DEFAULT_GRID_SIZE 64
+#define QUADRANT_COUNT 8
+#define TILE_GRID_RESIZE_PAD 16
+
+
+#include <nsvector.h>
+#include <nsunordered_map.h>
+#include <nsunordered_set.h>
 
 class nstile_grid
 {
 public:
-	typedef std::vector<uivec3array> map_layer;
+	typedef std::vector<uivec3_vector> map_layer;
 	typedef std::vector<map_layer> map_quadrant;
 	typedef std::vector<map_quadrant> map_world;
 
@@ -67,7 +76,7 @@ public:
 
 	bool add(const uivec3 & item_, const ivec3 & space_, const fvec3 & origin_ = fvec3());
 
-	bool add(const uivec3 item_, const ivec3array & spaces_, const fvec3 & origin_ = fvec3());
+	bool add(const uivec3 item_, const ivec3_vector & spaces_, const fvec3 & origin_ = fvec3());
 
 	const uivec3 & at(const map_index & space_) const;
 
@@ -75,7 +84,7 @@ public:
 
 	uivec3 get(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;
 
-	uivec3array bounded_set(const fvec3 & point1_, const fvec3 & point2_);
+	uivec3_vector bounded_set(const fvec3 & point1_, const fvec3 & point2_);
 
 	grid_bounds occupied_bounds();
 
@@ -95,7 +104,7 @@ public:
 
 	bool occupied(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;
 
-	bool occupied(const ivec3array & spaces_, const fvec3 & origin_ = fvec3()) const;
+	bool occupied(const ivec3_vector & spaces_, const fvec3 & origin_ = fvec3()) const;
 
 	bool remove(const fvec3 & pos_);
 
@@ -116,7 +125,7 @@ public:
 	*/
 	void remove(uint32 plug_id_);
 
-	bool remove(const ivec3array & spaces_, const fvec3 & origin_ = fvec3());
+	bool remove(const ivec3_vector & spaces_, const fvec3 & origin_ = fvec3());
 
 	void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 

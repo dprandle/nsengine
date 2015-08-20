@@ -16,7 +16,7 @@
 #include <nsanim_manager.h>
 #include <nsentity.h>
 
-nsanim_comp::nsanim_comp():NSComponent(),
+nsanim_comp::nsanim_comp():nscomponent(),
 	m_elapsed_time(0.0f),
 	m_animation(false),
 	m_looping(false),
@@ -28,7 +28,7 @@ nsanim_comp::nsanim_comp():NSComponent(),
 nsanim_comp::~nsanim_comp()
 {}
 
-nsanim_comp* nsanim_comp::copy(const NSComponent * pToCopy)
+nsanim_comp* nsanim_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -94,7 +94,7 @@ const nsstring & nsanim_comp::current_anim_name()
 	return m_current_anim;
 }
 
-fmat4array * nsanim_comp::final_transforms()
+fmat4_vector * nsanim_comp::final_transforms()
 {
 	return &m_final_transforms;
 }
@@ -102,10 +102,10 @@ fmat4array * nsanim_comp::final_transforms()
 /*!
 Get the resources that the component uses. For the animation component that is simply an AnimSet
 */
-uivec2array nsanim_comp::resources()
+uivec2_vector nsanim_comp::resources()
 {
 	// Build map
-	uivec2array ret;
+	uivec2_vector ret;
 	
 	// only add if not 0
 	if (m_anim_set_id != 0)

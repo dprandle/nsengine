@@ -14,10 +14,7 @@
 #define NSFRAMEBUFFER_H
 
 #include <nsgl_object.h>
-#include <myGL/glew.h>
-#include <vector>
 #include <nstexture.h>
-#include <nsengine.h>
 
 class nsrenderbuf_object;
 
@@ -88,7 +85,6 @@ public:
 
 		if (!add(att, true))
 		{
-			dprint("nsfb_object::create Could not add tex attachment " + pName);
 			delete att;
 			att = NULL;
 		}

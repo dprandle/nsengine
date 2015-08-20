@@ -21,7 +21,7 @@
 
 
 nsrender_comp::nsrender_comp() : 
-NSComponent(),
+nscomponent(),
 m_cast_shadow(true),
 m_mesh_id(0)
 {}
@@ -34,7 +34,7 @@ void nsrender_comp::clear_mats()
 	m_mats.clear();
 }
 
-nsrender_comp* nsrender_comp::copy(const NSComponent * pToCopy)
+nsrender_comp* nsrender_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -88,10 +88,10 @@ void nsrender_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 /*!
 Get the resources that the component uses. The render comp uses a mesh and possibly multiple materials.
 */
-uivec2array nsrender_comp::resources()
+uivec2_vector nsrender_comp::resources()
 {
 	// Build map
-	uivec2array ret;
+	uivec2_vector ret;
 
 	// only add resources if they are not 0
 	if (m_mesh_id != 0)
@@ -132,22 +132,22 @@ bool nsrender_comp::has_material(uint32 pSubMeshIndex)
 void nsrender_comp::init()
 {}
 
-uivec2uimap::iterator nsrender_comp::begin_mat()
+ui_uivec2_map::iterator nsrender_comp::begin_mat()
 {
 	return m_mats.begin();
 }
 
-uivec2uimap::const_iterator nsrender_comp::begin_mat() const
+ui_uivec2_map::const_iterator nsrender_comp::begin_mat() const
 {
 	return m_mats.begin();
 }
 
-uivec2uimap::iterator nsrender_comp::end_mat()
+ui_uivec2_map::iterator nsrender_comp::end_mat()
 {
 	return m_mats.end();
 }
 
-uivec2uimap::const_iterator nsrender_comp::end_mat() const
+ui_uivec2_map::const_iterator nsrender_comp::end_mat() const
 {
 	return m_mats.end();
 }
@@ -163,7 +163,7 @@ bool nsrender_comp::remove_material(uint32 pSubMeshIndex)
 
 bool nsrender_comp::remove_all_materials(const uivec2 & toremove)
 {
-	uivec2uimap::iterator iter = m_mats.begin();
+	ui_uivec2_map::iterator iter = m_mats.begin();
 	bool ret = false;
 	while (iter != m_mats.end())
 	{
@@ -181,7 +181,7 @@ bool nsrender_comp::remove_all_materials(const uivec2 & toremove)
 
 bool nsrender_comp::replace_material(const uivec2 & oldid, const uivec2 & newid)
 {
-	uivec2uimap::iterator iter = m_mats.begin();
+	ui_uivec2_map::iterator iter = m_mats.begin();
 	bool ret = false;
 	while (iter != m_mats.end())
 	{

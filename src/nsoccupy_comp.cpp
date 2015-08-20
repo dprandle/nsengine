@@ -12,18 +12,20 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 
 
 #include <nsoccupy_comp.h>
+#include <nstile_grid.h>
 #include <nsentity.h>
 #include <nsplugin.h>
 #include <cmath>
+#include <nsmesh.h>
 
 nsoccupy_comp::nsoccupy_comp() :
 m_draw_enabled(false),
 m_mesh_id(),
 m_mat_id(),
-NSComponent()
+nscomponent()
 {
 	add(0, 0, 0);
-	nsmesh * occ = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
+	nsmesh * occ = nse.core()->get<nsmesh>(MESH_FULL_TILE);
 	if (occ == NULL)
 	{
 		dprint("nsoccupy_comp::nsoccupy_comp Could not get occupy mesh");
@@ -51,7 +53,7 @@ bool nsoccupy_comp::add(const ivec3 & pGridPos)
 	return true;
 }
 
-ivec3array::iterator nsoccupy_comp::begin()
+ivec3_vector::iterator nsoccupy_comp::begin()
 {
 	return m_spaces.begin();
 }
@@ -258,7 +260,7 @@ bool nsoccupy_comp::contains(const ivec3 & pGridPos)
 	return false;
 }
 
-nsoccupy_comp* nsoccupy_comp::copy(const NSComponent * pToCopy)
+nsoccupy_comp* nsoccupy_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -272,12 +274,12 @@ void nsoccupy_comp::enable_draw(bool pEnable)
 	m_draw_enabled = pEnable;
 }
 
-ivec3array::iterator nsoccupy_comp::end()
+ivec3_vector::iterator nsoccupy_comp::end()
 {
 	return m_spaces.end();
 }
 
-const ivec3array & nsoccupy_comp::spaces() const
+const ivec3_vector & nsoccupy_comp::spaces() const
 {
 	return m_spaces;
 }
@@ -329,9 +331,9 @@ bool nsoccupy_comp::remove(const ivec3 & pGridPos)
 	return false;
 }
 
-uivec2array nsoccupy_comp::resources()
+uivec2_vector nsoccupy_comp::resources()
 {
-	uivec2array ret;
+	uivec2_vector ret;
 	if (m_mat_id != 0)
 		ret.push_back(m_mat_id);
 	if (m_mesh_id != 0)

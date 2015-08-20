@@ -11,12 +11,12 @@ This file contains all of the neccessary definitions for the NSLogFile class.
 */
 
 // Includes
-#include <nsglobal.h>
+
 #include <nslog_file.h>
 #include <ctime>
 #include <iomanip>
 #include <chrono>
-
+#include <nsfstream.h>
 
 /* Constructor 1
 Description:

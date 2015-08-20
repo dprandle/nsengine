@@ -1,8 +1,10 @@
 #ifndef NSFACTORY_H
 #define NSFACTORY_H
 
-#include <nsglobal.h>
-class NSComponent;
+//#include <nsglobal.h>
+#include <nstypes.h>
+
+class nscomponent;
 class nssystem;
 class nsres_manager;
 class nsresource;
@@ -32,7 +34,7 @@ private:
 
 class nsres_factory : public nsfactory
 {
-	friend class NSEngine;
+	friend class nsengine;
   public:
 	nsres_factory():
 		nsfactory(f_resource)
@@ -82,8 +84,8 @@ class nscomp_factory : public nsfactory
 {
 public:
 	nscomp_factory() : nsfactory(f_component) {}
-	virtual NSComponent * create() = 0;
-	void set_id(NSComponent * cmp_);
+	virtual nscomponent * create() = 0;
+	void set_id(nscomponent * cmp_);
 	uint32 type_id;
 };
 
@@ -92,8 +94,8 @@ class nscomp_factory_type : public nscomp_factory
 {
 public:
 	nscomp_factory_type() :nscomp_factory() {}
-	NSComponent* create() {
-		NSComponent * cmp_ = new obj_type();
+	nscomponent* create() {
+		nscomponent * cmp_ = new obj_type();
 		set_id(cmp_);
 		return cmp_;
 	}

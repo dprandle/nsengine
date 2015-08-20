@@ -12,9 +12,20 @@
 #ifndef NSRESOURCE_H
 #define NSRESOURCE_H
 
-#include <nsglobal.h>
-#include <nsmath.h>
+#define NOTIFY_ENGINE_NAME_CHANGE
+
+#define DEFAULT_TEX_EXTENSION ".png"
+#define DEFAULT_MAT_EXTENSION ".mat"
+#define DEFAULT_MESH_EXTENSION ".msh"
+#define DEFAULT_ANIM_EXTENSION ".anm"
+#define DEFAULT_SHADER_EXTENSION ".shr"
+#define DEFAULT_SCENE_EXTENSION ".map"
+#define DEFAULT_ENTITY_EXTENSION ".ent"
+#define DEFAULT_PLUGIN_EXTENSION ".bbp"
+#define CUBEMAP_TEX_EXTENSION ".cube"
+
 #include <nspupper.h>
+#include <nsvector.h>
 
 class nsresource
 {
@@ -43,7 +54,7 @@ public:
 	Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
 	\return Map of resource ID to resource type containing all other used resources (doesn't include this resource)
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	const nsstring & icon_path();
 

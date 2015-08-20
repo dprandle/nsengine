@@ -104,7 +104,7 @@ bool nsshader_manager::load_stage(nsshader * sh, const nsstring & fname, nsshade
 	else
 		pup(*(static_cast<nstext_file_pupper*>(p)), rt, "type");
 
-	if (rt != nsengine.guid(sh->type()) + "_stage:" + sh->stage_name(stagetype))
+	if (rt != nse.guid(sh->type()) + "_stage:" + sh->stage_name(stagetype))
 	{
 		dprint("nsshader_manager::loadStage Attempted to load shader stage " + fName + " which is not of stage type " + std::to_string(stagetype));
 		delete p;
@@ -165,7 +165,7 @@ bool nsshader_manager::save_stage(nsshader * sh, const nsstring & filename, nssh
 		return false;
 	}
 
-	nsstring guid_ = nsengine.guid(sh->type());
+	nsstring guid_ = nse.guid(sh->type());
     std::string savestr = guid_ + "_stage:" + sh->stage_name(stagetype);
 	if (m_save_mode == binary)
         pup(*(static_cast<nsbinary_file_pupper*>(p)), savestr, "type");

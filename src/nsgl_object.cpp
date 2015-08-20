@@ -10,8 +10,10 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <myGL/glew.h>
 #include <nsgl_object.h>
 #include <nslog_file.h>
+#include <nsengine.h>
 
 nsgl_object::nsgl_object() :m_gl_name(0)
 {}
@@ -25,4 +27,19 @@ nsgl_object::~nsgl_object()
 uint32 nsgl_object::gl_id()
 {
 	return m_gl_name;
+}
+
+bool GLError(nsstring errorMessage)
+{
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR)
+	{
+#ifdef NSDEBUG
+		nsstringstream ss;
+		ss << errorMessage << ": OpenGL Error Code : " << err;
+		dprint(ss.str());
+#endif
+		return true;
+	}
+	return false;
 }

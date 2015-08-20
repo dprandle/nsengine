@@ -9,13 +9,14 @@
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
+
+#include <IL/il.h>
+#include <soil/SOIL.h>
+
 #include <nstex_manager.h>
+#include <nsfile_os.h>
 #include <nstexture.h>
 #include <nsengine.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
-#include <soil/SOIL.h>
-#include <nsfile_os.h>
 
 using namespace nsfile_os;
 

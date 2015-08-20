@@ -13,10 +13,19 @@
 #ifndef NSRES_MANAGER_H
 #define NSRES_MANAGER_H
 
+#define LOCAL_ANIMATION_DIR_DEFAULT "anims/"
+#define LOCAL_MESH_DIR_DEFAULT "meshes/"
+#define LOCAL_SHADER_DIR_DEFAULT "shaders/"
+#define LOCAL_TEXTURE_DIR_DEFAULT "textures/"
+#define LOCAL_MATERIAL_DIR_DEFAULT "materials/"
+#define LOCAL_ENTITY_DIR_DEFAULT "entities/"
+#define LOCAL_INPUT_DIR_DEFAULT "input/"
+#define LOCAL_SCENE_DIR_DEFAULT "maps/"
+#define LOCAL_PLUGIN_DIR_DEFAULT "plugins/"
+
 #include <nsengine.h>
-#include <nsglobal.h>
-#include <unordered_map>
-#include <nsresource.h>
+
+class nsresource;
 
 class nsres_manager
 {

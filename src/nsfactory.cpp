@@ -14,7 +14,7 @@ void nsmanager_factory::set_id(nsres_manager * manager)
 	manager->m_hashed_type = type_id;
 }
 
-void nscomp_factory::set_id(NSComponent * comp)
+void nscomp_factory::set_id(nscomponent * comp)
 {
 	comp->m_hashed_type = type_id;
 }

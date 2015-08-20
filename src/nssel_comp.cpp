@@ -24,7 +24,7 @@ m_selected(false),
 m_draw_enabled(true),
 m_selection(),
 m_move_with_input(true),
-NSComponent()
+nscomponent()
 {}
 
 nssel_comp::~nssel_comp()
@@ -46,7 +46,7 @@ bool nssel_comp::add(uint32 pTransformID)
 	return true;
 }
 
-uint32u_set::iterator nssel_comp::begin()
+ui_uset::iterator nssel_comp::begin()
 {
 	return m_selection.begin();
 }
@@ -57,7 +57,7 @@ void nssel_comp::clear()
 	set_selected(false);
 }
 
-nssel_comp* nssel_comp::copy(const NSComponent * pToCopy)
+nssel_comp* nssel_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -95,7 +95,7 @@ void nssel_comp::enable_move(const bool & pEnable)
 	m_move_with_input = pEnable;
 }
 
-uint32u_set::iterator nssel_comp::end()
+ui_uset::iterator nssel_comp::end()
 {
 	return m_selection.end();
 }

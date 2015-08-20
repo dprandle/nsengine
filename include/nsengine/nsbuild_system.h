@@ -14,7 +14,6 @@ This file contains all of the neccessary declarations for the nsbuild_system cla
 #define NSBUILDSYSTEM_H
 
 #include <nssystem.h>
-#include <nsmath.h>
 
 class nsentity;
 

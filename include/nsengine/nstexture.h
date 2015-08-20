@@ -18,14 +18,11 @@
 #ifndef NSTEXTURE_H
 #define NSTEXTURE_H
 
-// Includes
-#include <myGL/glew.h>
-#include <vector>
+#define BASE_TEX_UNIT GL_TEXTURE0
+#define BASE_CUBEMAP_FACE GL_TEXTURE_CUBE_MAP_POSITIVE_X
+
 #include <nsresource.h>
 #include <nsgl_object.h>
-#include <nsmath.h>
-#include <nsglobal.h>
-#include <nspupper.h>
 
 class nstexture : public nsresource, public nsgl_object
 {

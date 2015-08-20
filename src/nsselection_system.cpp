@@ -34,13 +34,8 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsevent.h>
 #include <nsmath.h>
 #include <nsgbuf_object.h>
-/*
-Notes:
-
-Need to fix the bug where when holding z in build mode and clicking to select is still selecting tiles
-
-*/
-
+#include <nsanim_comp.h>
+#include <nsrender_comp.h>
 
 nsselection_system::nsselection_system() :
 	m_focus_ent(),
@@ -74,9 +69,9 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 		return false;
 
 	// TODO: Make this an event - that is a mirror mode event to put build and sel system in mirror mode
-	if (nsengine.system<nsbuild_system>()->mirror())
+	if (nse.system<nsbuild_system>()->mirror())
 	{
-		nsscene * scn = nsengine.current_scene();
+		nsscene * scn = nse.current_scene();
 		if (scn == NULL)
 			return false;
 		
@@ -88,7 +83,7 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 		}
 
 		fvec3 wp = tForm->wpos(tformid);
-		fvec3 newPos = nsengine.system<nsbuild_system>()->center()*2.0f - wp;
+		fvec3 newPos = nse.system<nsbuild_system>()->center()*2.0f - wp;
 		newPos.z = wp.z;
 
 		uivec3 id = scn->grid().get(newPos);
@@ -107,7 +102,7 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 
 bool nsselection_system::add_to_grid()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return false;
 
@@ -177,7 +172,7 @@ bool nsselection_system::contains(const uivec3 & itemid)
 // 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent; // Get the specific event
 
 // 		// Get the selection entity and make sure it is valid
-// 		nsentity * selEnt = nsengine.resource<nsentity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
+// 		nsentity * selEnt = nse.resource<nsentity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
 // 		if (selEnt == NULL)
 // 		{
 // 			dprint("nsselection_system::handleEvent Selection entity sent in event is NULL");
@@ -203,7 +198,7 @@ void nsselection_system::change_layer(int32 pChange)
 
 bool nsselection_system::collision()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return false;
 
@@ -238,7 +233,7 @@ void nsselection_system::clear()
 	}
 	m_selected_ents.clear();
 	m_focus_ent = uivec3();
-	//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+	//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 }
 
 void nsselection_system::set_picking_fbo(uint32 fbo)
@@ -258,7 +253,7 @@ uivec3 nsselection_system::pick(const fvec2 & mpos)
 
 uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return uivec3();
 
@@ -266,7 +261,7 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 	if (cam == NULL)
 		return uivec3();
 
-	nsfb_object * pickingBuf = nsengine.framebuffer(m_picking_buf);
+	nsfb_object * pickingBuf = nse.framebuffer(m_picking_buf);
 	if (pickingBuf == NULL)
 		return uivec3();
 
@@ -290,7 +285,7 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 
 void nsselection_system::draw()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
@@ -298,7 +293,7 @@ void nsselection_system::draw()
 	if (cam == NULL)
 		return;
 
-	nsfb_object * finalB = nsengine.framebuffer(m_final_buf);
+	nsfb_object * finalB = nse.framebuffer(m_final_buf);
 	finalB->set_target(nsfb_object::fb_draw);
 	finalB->bind();
 
@@ -333,16 +328,16 @@ void nsselection_system::draw()
 			while (selIter != selComp->end())
 			{
 				m_sel_shader->set_transform(tComp->transform(*selIter));
-				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->mesh_id());
+				nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					nsmesh::submesh * cSub = rMesh->sub(i);
 
 					m_sel_shader->set_heightmap_enabled(false);
-					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->material_id(i));
+					nsmaterial * mat = nse.resource<nsmaterial>(renComp->material_id(i));
 					if (mat != NULL)
 					{
-						nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
+						nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
 						if (tex != NULL)
 						{
 							m_sel_shader->set_heightmap_enabled(true);
@@ -402,16 +397,16 @@ void nsselection_system::draw()
 			while (selIter != selComp->end())
 			{
 				m_sel_shader->set_transform(tComp->transform(*selIter));
-				nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->mesh_id());
+				nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
 				for (uint32 i = 0; i < rMesh->count(); ++i)
 				{
 					nsmesh::submesh * cSub = rMesh->sub(i);
 
 					m_sel_shader->set_heightmap_enabled(false);
-					nsmaterial * mat = nsengine.resource<nsmaterial>(renComp->material_id(i));
+					nsmaterial * mat = nse.resource<nsmaterial>(renComp->material_id(i));
 					if (mat != NULL)
 					{
-						nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
+						nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
 						if (tex != NULL)
 						{
 							m_sel_shader->set_heightmap_enabled(true);
@@ -478,11 +473,11 @@ void nsselection_system::draw()
 
 	// THIS SHOULD BE MOVED TO BUILD SYSTEM
 	// Draw mirror mode center
-	if (nsengine.system<nsbuild_system>()->mirror())
+	if (nse.system<nsbuild_system>()->mirror())
 	{
-		nsmesh * tileM = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
-		fvec3 mypos = nsengine.system<nsbuild_system>()->mirror();
-		mypos.z = nsengine.system<nsbuild_system>()->layer() * Z_GRID;
+		nsmesh * tileM = nse.core()->get<nsmesh>(MESH_FULL_TILE);
+		fvec3 mypos = nse.system<nsbuild_system>()->mirror();
+		mypos.z = nse.system<nsbuild_system>()->layer() * Z_GRID;
 		m_sel_shader->set_transform(translation_mat4(mypos));
 		for (uint32 i = 0; i < tileM->count(); ++i)
 		{
@@ -518,8 +513,8 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 	nstform_comp * tComp = ent->get<nstform_comp>();
 	if (occComp != NULL && selComp != NULL && tComp != NULL && occComp->draw_enabled())
 	{
-		nsmesh * occMesh = nsengine.resource<nsmesh>(occComp->mesh_id());
-		nsmaterial * mat = nsengine.resource<nsmaterial>(occComp->material_id());
+		nsmesh * occMesh = nse.resource<nsmesh>(occComp->mesh_id());
+		nsmaterial * mat = nse.resource<nsmaterial>(occComp->material_id());
 		if (occMesh != NULL)
 		{
 			auto selIter = selComp->begin();
@@ -564,14 +559,14 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 
 void nsselection_system::_draw_occ()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
 	if (!m_draw_occ)
 		return;
 
-	nsmesh * occMesh = nsengine.core()->get<nsmesh>(MESH_FULL_TILE);
+	nsmesh * occMesh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
 	for (uint32 i = 0; i < occMesh->count(); ++i)
 	{
 		nsmesh::submesh * occSub = occMesh->sub(i);
@@ -598,7 +593,7 @@ void nsselection_system::_draw_occ()
 				for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
 				{
 					uivec3 id = scene->grid().get(ivec3(x, y, z));
-					nsentity * ent = nsengine.resource<nsentity>(id.x, id.y);
+					nsentity * ent = nse.resource<nsentity>(id.x, id.y);
 					if (ent != NULL)
 					{
 						m_trans.set_column(3,fvec4(ent->get<nstform_comp>()->lpos(id.z),1.0f));
@@ -617,7 +612,7 @@ void nsselection_system::_draw_occ()
 
 void nsselection_system::_draw_hidden()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL || m_sel_shader == NULL)
 		return;
 
@@ -627,7 +622,7 @@ void nsselection_system::_draw_hidden()
 
 	// Draw all hidden objects - This should probably be moved to the render system or something - or to a forward
 	// renderer when that gets set up so that we can draw transparent stuff
-	nspentityset sceneEnts = scene->entities();
+	entity_ptr_set sceneEnts = scene->entities();
 	auto sceneEntIter = sceneEnts.begin();
 	while (sceneEntIter != sceneEnts.end())
 	{
@@ -641,7 +636,7 @@ void nsselection_system::_draw_hidden()
 		}
 
 		nsanim_comp * animComp = (*sceneEntIter)->get<nsanim_comp>();
-		nsmesh * rMesh = nsengine.resource<nsmesh>(renComp->mesh_id());
+		nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
 
 		if (rMesh == NULL)
 		{
@@ -695,7 +690,7 @@ void nsselection_system::_draw_hidden()
 
 void nsselection_system::del()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -737,10 +732,10 @@ void nsselection_system::enable_layer_mode(const bool & pMode)
 
 void nsselection_system::init()
 {
-	//nsengine.events()->addListener(this, NSEvent::SelPick);
-	//nsengine.events()->addListener(this, NSEvent::SelSet);
-	//nsengine.events()->addListener(this, NSEvent::SelAdd);
-	//nsengine.events()->addListener(this, NSEvent::ClearSelection);
+	//nse.events()->addListener(this, NSEvent::SelPick);
+	//nse.events()->addListener(this, NSEvent::SelSet);
+	//nse.events()->addListener(this, NSEvent::SelAdd);
+	//nse.events()->addListener(this, NSEvent::ClearSelection);
 	register_handler_func(this, &nsselection_system::_handle_action_event);
 	register_handler_func(this, &nsselection_system::_handle_state_event);
 
@@ -796,7 +791,7 @@ void nsselection_system::_on_rotate_z(nsentity * ent, bool pPressed)
 
 void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -826,13 +821,13 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 				m_moving = true;
 			}
 
-			//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+			//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 		else if (!contains(pID))
 		{
 			clear();
 			m_focus_ent = uivec3();
-			//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+			//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 	}
 	else
@@ -863,7 +858,7 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 					dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
 				}
 
-				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+				//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
@@ -888,7 +883,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 	if (ent == NULL)
 		return;
 
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -898,9 +893,9 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 	if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
 	{
 		m_focus_ent = pi;
-		//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+		//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 
-		nsentity * tileBrush = nsengine.system<nsbuild_system>()->tile_brush();
+		nsentity * tileBrush = nse.system<nsbuild_system>()->tile_brush();
 		if (tileBrush == NULL)
 		{
 			add(ent, pi.z);
@@ -925,7 +920,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 				nstform_comp * tForm = focEnt->get<nstform_comp>();
 				fvec3 pos = tForm->lpos(m_focus_ent.z) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				uivec3 refid = scene->ref_id(pos);
-				nsentity * selEnt = nsengine.resource<nsentity>(refid.x, refid.y);
+				nsentity * selEnt = nse.resource<nsentity>(refid.x, refid.y);
 				if (selEnt == NULL)
 					continue;
 				nssel_comp * selComp = selEnt->get<nssel_comp>();
@@ -942,7 +937,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 
 void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1024,7 +1019,7 @@ const uivec3 & nsselection_system::center()
 
 void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const uivec3 & pID)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1043,7 +1038,7 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 			{
 				add(ent, pID.z);
 				m_focus_ent = pID;
-				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+				//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
@@ -1083,7 +1078,7 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 						m_focus_ent.z = (*first);
 					}
 				}
-				//nsengine.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+				//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 		}
 	}
@@ -1109,7 +1104,7 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 	if (contains(m_focus_ent))
 		return;
 
-	nsentity * ent = nsengine.resource<nsentity>(pickid.xy());
+	nsentity * ent = nse.resource<nsentity>(pickid.xy());
 	nssel_comp * sc;
 	if (ent == NULL || (sc = ent->get<nssel_comp>()) == NULL)
 		return;
@@ -1160,7 +1155,7 @@ void nsselection_system::remove(nsentity * ent, uint32 pTFormID)
 
 void nsselection_system::remove_from_grid()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1543,7 +1538,7 @@ void nsselection_system::snap_z()
 
 void nsselection_system::tile_swap(nsentity * pNewTile)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -1739,7 +1734,7 @@ bool nsselection_system::valid_tile_swap()
 void nsselection_system::update()
 {
 
-	nsscene * scn = nsengine.current_scene();
+	nsscene * scn = nse.current_scene();
 	if (scn == NULL)
 		return;
 	nsentity * ent = scn->entity(m_focus_ent.xy());
@@ -1749,7 +1744,7 @@ void nsselection_system::update()
 
 	if (m_send_foc_event)
 	{
-		nsengine.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
+		nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 		m_send_foc_event = false;
 	}
 
@@ -1781,7 +1776,7 @@ void nsselection_system::update()
 				fvec3 pos = foc_tform->wpos(m_focus_ent.z);
 				scn->grid().snap(pos);
 				add_to_grid();
-				nsengine.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
+				nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 			}
 			m_cached_point = fvec3();
 		}
@@ -1816,7 +1811,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (!contains(pickid))
 			clear();
 		
-		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
+		nsentity * selectedEnt = nse.resource<nsentity>(pickid.xy());
         add(selectedEnt, pickid.z);
 		_reset_focus(pickid);
 	}
@@ -1832,7 +1827,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 			mpos.y = ypos_iter->second;
 		
 		uivec3 pickid = pick(mpos);
-		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
+		nsentity * selectedEnt = nse.resource<nsentity>(pickid.xy());
 		nstform_comp * tc;
 			
 		if (contains(pickid))
@@ -1854,7 +1849,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 			mpos.y = ypos_iter->second;
 		
 		uivec3 pickid = pick(mpos);
-		nsentity * selectedEnt = nsengine.resource<nsentity>(pickid.xy());
+		nsentity * selectedEnt = nse.resource<nsentity>(pickid.xy());
 		add(selectedEnt, pickid.z);
 		_reset_focus(pickid);
 	}
@@ -1869,7 +1864,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x | axis_y | axis_z);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_xy))
@@ -1883,7 +1878,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x | axis_y);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zy))
@@ -1897,7 +1892,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 		
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_y | axis_z);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zx))
@@ -1911,7 +1906,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x | axis_z);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_x))
@@ -1925,7 +1920,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_x);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_y))
@@ -1939,7 +1934,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_y);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_z))
@@ -1953,7 +1948,7 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
-		nsentity * ent = nsengine.resource<nsentity>(m_focus_ent.xy());
+		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, mdelta, axis_z);
 	}
 	return true;	

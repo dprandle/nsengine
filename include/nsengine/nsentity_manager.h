@@ -16,10 +16,11 @@
 #include <nsres_manager.h>
 #include <nsentity.h>
 
+typedef std::set<nsentity*> entity_ptr_set;
 class nsentity_manager : public nsres_manager
 {
 public:
-
+	
 	nsentity_manager();
 	~nsentity_manager();
 
@@ -70,15 +71,15 @@ public:
 	}
 
 	template<class comp_type>
-	nspentityset entities()
+	entity_ptr_set entities()
 	{
-		uint32 hashed_type = nsengine.type_id(std::type_index(typeid(comp_type)));
+		uint32 hashed_type = nse.type_id(std::type_index(typeid(comp_type)));
 		return entities(hashed_type);
 	}
 
-	nspentityset entities(uint32 comp_type_id);
+	entity_ptr_set entities(uint32 comp_type_id);
 
-	nspentityset entities(const nsstring & comp_guid);
+	entity_ptr_set entities(const nsstring & comp_guid);
 };
 
 #endif

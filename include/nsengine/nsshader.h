@@ -1,35 +1,47 @@
-/* ----------------------------- Noble Steed Engine----------------------------*
-Authors : Daniel Randle, Alex Bourne
-Date Created : Mar 5 2013
-
-File:
-	nsshader.h
-
-Description:
-	This file contains the shader class which can initialize/load/bind shaders
-	from file or c style string
-*---------------------------------------------------------------------------*/
-
 #ifndef NSSHADER_H
 #define NSSHADER_H
-
-
-#include <myGL/glew.h>
-#include <nsglobal.h>
-#include <nsgl_object.h>
-#include <nsmath.h>
-#include <vector>
-#include <map>
-#include <nspupper.h>
 
 #define MAX_BONE_TFORMS 100
 #define PARTICLE_MAX_VISUAL_KEYS 50
 #define PARTICLE_MAX_MOTION_KEYS 50
 
+#define DEFAULT_SHADOW_EPSILON 0.0001f
+
+#define POS_ATT 0
+#define TEX_ATT 1
+#define NORM_ATT 2
+#define TANG_ATT 3
+#define BONEID_ATT 4
+#define BONEWEIGHT_ATT 5
+#define TRANS_ATT 6
+#define REFID_ATT 10
+
+#define DIFFUSE_TEX_UNIT 0
+#define NORMAL_TEX_UNIT 1
+#define HEIGHT_TEX_UNIT 2
+#define SPECULAR_TEX_UNIT 3
+#define DISPLACEMENT_TEX_UNIT 4
+#define AMBIENT_TEX_UNIT 5
+#define EMISSIVE_TEX_UNIT 6
+#define SHININESS_TEX_UNIT 7
+#define OPACITY_TEX_UNIT 8
+#define LIGHT_TEX_UNIT 9
+#define REFLECTION_TEX_UNIT 10
+#define G_DIFFUSE_TEX_UNIT 11
+#define G_WORLD_POS_TEX_UNIT 12
+#define G_NORMAL_TEX_UNIT 13
+#define G_PICKING_TEX_UNIT 14
+#define G_MATERIAL_TEX_UNIT 15
+#define FINAL_TEX_UNIT 16
+#define SKYBOX_TEX_UNIT 17
+#define SHADOW_TEX_UNIT 18
+#define RAND_TEX_UNIT 19
+
+#include <nsgl_object.h>
+#include <nsresource.h>
+
 class nslight_comp;
 class nstform_comp;
-
-#include <nsresource.h>
 
 class nsshader : public nsresource, public nsgl_object
 {
@@ -76,7 +88,7 @@ public:
 
 	void bind();
 
-	void set_xfb(xfb_mode pMode, nsstringarray * pOutLocs);
+	void set_xfb(xfb_mode pMode, nsstring_vector * pOutLocs);
 
 	virtual void init() {}
 
@@ -155,7 +167,7 @@ protected:
 	shader_stage m_vertex;
 	shader_stage m_geometry;
 	shader_stage m_fragment;
-	nsstringarray m_xfb_locs;
+	nsstring_vector m_xfb_locs;
 	uniform_loc_map m_uniform_locs;
 };
 
@@ -335,7 +347,7 @@ public:
 
 	void set_proj_cam_mat(const fmat4 & projCam);
 
-	void set_bone_transforms(const fmat4array & transforms);
+	void set_bone_transforms(const fmat4_vector & transforms);
 
 	void set_has_bones(bool hasthem);
 
@@ -380,9 +392,9 @@ public:
 
 	void set_initial_vel_mult(const fvec3 & mult);
 
-	void set_motion_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
+	void set_motion_keys(const ui_fvec3_map & keys, uint32 maxKeys, uint32 lifetime);
 
-	void set_visual_keys(const fvec3uimap & keys, uint32 maxKeys, uint32 lifetime);
+	void set_visual_keys(const ui_fvec3_map & keys, uint32 maxKeys, uint32 lifetime);
 
 };
 
@@ -430,7 +442,7 @@ public:
 
 	void set_node_transform(const fmat4 & tform);
 
-	void set_bone_transform(const fmat4array & transforms);
+	void set_bone_transform(const fmat4_vector & transforms);
 
 	void set_has_bones(bool hasthem);
 
@@ -639,7 +651,7 @@ public:
 
 	void set_proj_cam_mat(const fmat4 & projCam);
 
-	void set_bone_transform(const fmat4array & transforms);
+	void set_bone_transform(const fmat4_vector & transforms);
 
 	void set_has_bones(bool hasthem);
 

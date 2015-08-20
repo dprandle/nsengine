@@ -16,12 +16,6 @@
 #define DEFAULT_TICKS_PER_SECOND 20
 
 #include <nsresource.h>
-#include <map>
-#include <vector>
-#include <nsmath.h>
-#include <assimp/anim.h>
-#include <nsmath.h>
-#include <nspupper.h>
 
 class nsanim_set : public nsresource
 {
@@ -33,13 +27,13 @@ public:
 			animation_node();
 			~animation_node();
 
-			typedef fquatfmap::iterator key_rotation_iter;
-			typedef fvec3fmap::iterator key_iter;
+			typedef f_fquat_map::iterator key_rotation_iter;
+			typedef f_fvec3_map::iterator key_iter;
 
 			
-			fquatfmap rotation_keys;
-			fvec3fmap translation_keys;
-			fvec3fmap scaling_keys;
+			f_fquat_map rotation_keys;
+			f_fvec3_map translation_keys;
+			f_fvec3_map scaling_keys;
 
 			fmat4 transform(float time_, float ticks_per_second);
 

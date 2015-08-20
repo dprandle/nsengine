@@ -11,6 +11,7 @@
 //*-----------------------------------------------------------------------------------------------
 #include <nsmesh.h>
 #include <nsengine.h>
+#include <nsshader.h>
 
 nsmesh::nsmesh(): m_node_tree(new node_tree())
 {
@@ -501,7 +502,7 @@ void nsmesh::_propagate_world_transform(node * pChildNode)
 
 nsmesh::submesh::joint::joint()
 {
-	for (int32 i = 0; i < BONES_PER_VERTEX; ++i)
+	for (int32 i = 0; i < BONES_PER_JOINT; ++i)
 	{
 		bone_ids[i] = 0;
 		weights[i] = 0.0f;
@@ -510,7 +511,7 @@ nsmesh::submesh::joint::joint()
 
 void nsmesh::submesh::joint::add_bone(uint32 pBoneID, float pWeight)
 {
-	for (int32 i = 0; i < BONES_PER_VERTEX; ++i)
+	for (int32 i = 0; i < BONES_PER_JOINT; ++i)
 	{
 		if (weights[i] == 0.0f)
 		{

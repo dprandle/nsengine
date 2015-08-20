@@ -48,7 +48,7 @@ m_elapsed_time(0.0f),
 m_starting_size(1.0f, 1.0f),
 m_emitter_shape(shape_cube),
 m_emitter_size(1.0f, 1.0f, 1.0f),
-NSComponent()
+nscomponent()
 {
 	m_xfb_bufs[0] = new nsxfb_object();
 	m_xfb_bufs[1] = new nsxfb_object();
@@ -71,7 +71,7 @@ nsparticle_comp::~nsparticle_comp()
 	delete m_vaos[1];
 }
 
-nsparticle_comp* nsparticle_comp::copy(const NSComponent * pToCopy)
+nsparticle_comp* nsparticle_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -108,9 +108,9 @@ void nsparticle_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
 /return Map of resource ID to resource type containing all used resources
 */
-uivec2array nsparticle_comp::resources()
+uivec2_vector nsparticle_comp::resources()
 {
-	uivec2array ret;
+	uivec2_vector ret;
 
 	if (m_rand_tex_id != 0)
 		ret.push_back(m_rand_tex_id);
@@ -216,7 +216,7 @@ void nsparticle_comp::set_emitter_size(const fvec3 & pSize)
 fvec3 nsparticle_comp::motion_key_at(float pTime)
 {
 	uint32 index = static_cast<uint32>(pTime * m_max_motion_keys);
-	fvec3uimap::iterator fIter = m_motion_keys.find(index);
+	ui_fvec3_map::iterator fIter = m_motion_keys.find(index);
 	if (fIter != m_motion_keys.end())
 		return fIter->second;
 	return fvec3();
@@ -225,7 +225,7 @@ fvec3 nsparticle_comp::motion_key_at(float pTime)
 fvec3 nsparticle_comp::visual_key_at(float pTime)
 {
 	uint32 index = static_cast<uint32>(pTime * m_max_visual_keys);
-	fvec3uimap::iterator rIter = m_visual_keys.find(index);
+	ui_fvec3_map::iterator rIter = m_visual_keys.find(index);
 	if (rIter != m_visual_keys.end())
 		return rIter->second;
 	return fvec3();
@@ -358,8 +358,8 @@ void nsparticle_comp::set_max_motion_keys(uint32 pMax)
 	if (pMax > PARTICLE_MAX_MOTION_KEYS)
 		return;
 
-	fvec3uimap tmpMap;
-	fvec3uimap::iterator mapIter = m_motion_keys.begin();
+	ui_fvec3_map tmpMap;
+	ui_fvec3_map::iterator mapIter = m_motion_keys.begin();
 	while (mapIter != m_motion_keys.end())
 	{
 		tmpMap[static_cast<uint32>(float(mapIter->first) / float(m_max_motion_keys) * pMax)] = mapIter->second;
@@ -369,12 +369,12 @@ void nsparticle_comp::set_max_motion_keys(uint32 pMax)
 	m_max_motion_keys = pMax;
 }
 
-const fvec3uimap & nsparticle_comp::motion_keys()
+const ui_fvec3_map & nsparticle_comp::motion_keys()
 {
 	return m_motion_keys;
 }
 
-const fvec3uimap & nsparticle_comp::visual_keys()
+const ui_fvec3_map & nsparticle_comp::visual_keys()
 {
 	return m_visual_keys;
 }
@@ -384,8 +384,8 @@ void nsparticle_comp::set_max_visual_keys(uint32 pMax)
 	if (pMax > PARTICLE_MAX_VISUAL_KEYS)
 		return;
 
-	fvec3uimap tmpMap;
-	fvec3uimap::iterator mapIter = m_visual_keys.begin();
+	ui_fvec3_map tmpMap;
+	ui_fvec3_map::iterator mapIter = m_visual_keys.begin();
 	while (mapIter != m_visual_keys.end())
 	{
 		tmpMap[static_cast<uint32>(float(mapIter->first) / float(m_max_visual_keys) * pMax)] = mapIter->second;
@@ -477,22 +477,22 @@ uint32 nsparticle_comp::visual_key_count()
 	return static_cast<uint32>(m_visual_keys.size());
 }
 
-fvec3uimap::iterator nsparticle_comp::begin_motion_key()
+ui_fvec3_map::iterator nsparticle_comp::begin_motion_key()
 {
 	return m_motion_keys.begin();
 }
 
-fvec3uimap::iterator nsparticle_comp::begin_visual_key()
+ui_fvec3_map::iterator nsparticle_comp::begin_visual_key()
 {
 	return m_visual_keys.begin();
 }
 
-fvec3uimap::iterator nsparticle_comp::end_motion_key()
+ui_fvec3_map::iterator nsparticle_comp::end_motion_key()
 {
 	return m_motion_keys.end();
 }
 
-fvec3uimap::iterator nsparticle_comp::end_visual_key()
+ui_fvec3_map::iterator nsparticle_comp::end_visual_key()
 {
 	return m_visual_keys.end();
 }

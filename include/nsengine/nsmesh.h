@@ -1,19 +1,9 @@
 #ifndef NSMESH_H
 #define NSMESH_H
 
+#define BONES_PER_JOINT 4
 
-#include <myGL/glew.h>
-#include <nsglobal.h>
-#include <vector>
-#include <nsmaterial.h>
-#include <nsmath.h>
-#include <nspupper.h>
-#include <nsshader.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <nsresource.h>
-#include <map>
 #include <nsbuffer_object.h>
 #include <nsvertex_array_object.h>
 
@@ -63,8 +53,8 @@ public:
 			joint();
 			void add_bone(uint32 bone_id, float weight);
 
-			uint32 bone_ids[BONES_PER_VERTEX];
-			float weights[BONES_PER_VERTEX];
+			uint32 bone_ids[BONES_PER_JOINT];
+			float weights[BONES_PER_JOINT];
 		};
 
 		submesh(nsmesh * pParentMesh=NULL);
@@ -84,13 +74,13 @@ public:
 		nsbuffer_object joint_buf;
 		nsvertex_array_object vao;
 
-		fvec3array positions;
-		fvec2array tex_coords;
-		fvec3array normals;
-		fvec3array tangents;
-		uint32array indices;
-		uivec3array triangles;
-		uivec2array lines;
+		fvec3_vector positions;
+		fvec2_vector tex_coords;
+		fvec3_vector normals;
+		fvec3_vector tangents;
+		ui_vector indices;
+		uivec3_vector triangles;
+		uivec2_vector lines;
 		std::vector<joint> joints;
 
 		GLenum primitive_type;
@@ -205,12 +195,12 @@ private:
 };
 
 // This is a special structure to hold a set of bone ids that are each weighted to show how much the bone
-// affects the vertex - I have a BONES_PER_VERTEX limit set to 4 bones - I dont think I would ever need
+// affects the vertex - I have a BONES_PER_JOINT limit set to 4 bones - I dont think I would ever need
 // more than 4 bones affecting a single vertex in any sort of animation
 template <class PUPer>
 void pup(PUPer & p, nsmesh::submesh::joint & bwid, const nsstring & var_name)
 {
-	for (uint32 i = 0; i < BONES_PER_VERTEX; ++i)
+	for (uint32 i = 0; i < BONES_PER_JOINT; ++i)
 	{
 		pup(p, bwid.bone_ids[i], var_name + ".bone_ids[" + std::to_string(i) + "]");
 		pup(p, bwid.weights[i], var_name + ".weights[" + std::to_string(i) + "]");

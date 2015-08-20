@@ -14,9 +14,6 @@ This file contains all of the neccessary declarations for the nsxfb_object class
 #define NSTFORMFB_H
 
 #include <nsgl_object.h>
-#include <myGL/glew.h>
-#include <vector>
-#include <nstexture.h>
 
 class nsxfb_object : public nsgl_object
 {

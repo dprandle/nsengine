@@ -131,7 +131,7 @@ selected.
 */
 void nscamera_system::set_view(camera_view_t pView)
 {	
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -204,7 +204,7 @@ void nscamera_system::set_zoom(float pZFactor)
 void nscamera_system::set_mode(camera_mode pMode)
 {
 	m_cam_mode = pMode;
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -317,7 +317,7 @@ void nscamera_system::_on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, floa
 
 void nscamera_system::update()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	// Dont do anything if the scene is NULL
 	if (scene == NULL)
 		return;
@@ -338,7 +338,7 @@ void nscamera_system::update()
 
 				camTComp->set_pos(toset);
 				camTComp->set_orientation(tosetrot);
-				m_anim_elapsed += nsengine.timer()->fixed();
+				m_anim_elapsed += nse.timer()->fixed();
 		
 				if (m_anim_elapsed >= m_anim_time)
 				{
@@ -367,11 +367,11 @@ void nscamera_system::update()
 		{
 
 			if (camComp->strafe().animating)
-				camTComp->translate(nstform_comp::dir_right, camComp->strafe().direction * camComp->speed() * nsengine.timer()->fixed());
+				camTComp->translate(nstform_comp::dir_right, camComp->strafe().direction * camComp->speed() * nse.timer()->fixed());
 			if (camComp->elevate().animating)
-				camTComp->translate(nstform_comp::dir_up, camComp->elevate().direction * camComp->speed() * nsengine.timer()->fixed());
+				camTComp->translate(nstform_comp::dir_up, camComp->elevate().direction * camComp->speed() * nse.timer()->fixed());
 			if (camComp->fly().animating)
-				camTComp->translate(nstform_comp::dir_target, camComp->fly().direction * camComp->speed() * nsengine.timer()->fixed());
+				camTComp->translate(nstform_comp::dir_target, camComp->fly().direction * camComp->speed() * nse.timer()->fixed());
 
 			if (m_cam_mode == mode_focus)
 				camTComp->set_parent(camComp->focus_transform());
@@ -395,7 +395,7 @@ void nscamera_system::update()
 
 bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 
 	if (scene == NULL)
 		return true;
@@ -448,7 +448,7 @@ bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 
 bool nscamera_system::_handle_state_event(nsstate_event * evnt)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 
 	if (scene == NULL)
 		return true;
@@ -479,7 +479,7 @@ bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 
 	if (m_cam_mode == mode_free)
 		return true;
-	nsscene * scn = nsengine.current_scene();
+	nsscene * scn = nse.current_scene();
 	if (scn == NULL)
 		return true;
 	nsentity * cam = scn->camera();

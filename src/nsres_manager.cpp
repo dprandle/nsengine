@@ -17,6 +17,7 @@ This file contains all of the neccessary definitions for the nsres_manager class
 #include <nsfactory.h>
 #include <nscallback.h>
 #include <hash/sha256.h>
+#include <nsresource.h>
 
 using namespace nsfile_os;
 
@@ -70,7 +71,7 @@ bool nsres_manager::changed(nsresource * res, nsstring fname)
 
 	save_as(res, ".tmp");
 
-	nschararray v1, v2;
+	ui8_vector v1, v2;
 	nsfile_os::read(".tmp",&v1);
 	nsfile_os::read(fname, &v2);
 
@@ -98,11 +99,11 @@ nsresource * nsres_manager::create(uint32 res_type_id, const nsstring & resName)
 {
 	// Create the resource and add it to the map - if there is a resource with the same name already
 	// in the map then insertion will have failed, so delete the created resource and retun NULL
-	nsresource * res = nsengine.factory<nsres_factory>(res_type_id)->create();
+	nsresource * res = nse.factory<nsres_factory>(res_type_id)->create();
 	res->rename(resName);
 	if (!add(res))
 	{
-		dprint("nsres_manager::create Deleting unadded " + nsengine.guid(res_type_id) + " with name " + resName);
+		dprint("nsres_manager::create Deleting unadded " + nse.guid(res_type_id) + " with name " + resName);
 		delete res;
 		return NULL;
 	}
@@ -259,9 +260,9 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 	else
 		pup(*(static_cast<nstext_file_pupper*>(p)), rt, "type");
 
-	if (rt != nsengine.guid(res_type_id))
+	if (rt != nse.guid(res_type_id))
 	{
-		dprint("nsres_manager::load Attempted to load resource type " + nsengine.guid(res_type_id) + " from file that is not of that type: " + fName);
+		dprint("nsres_manager::load Attempted to load resource type " + nse.guid(res_type_id) + " from file that is not of that type: " + fName);
 		delete p;
 		file.close();
 		destroy(res);
@@ -426,7 +427,7 @@ bool nsres_manager::save(nsresource * res,const nsstring & path)
 	}
 
 	uint32 hashed_type = res->type();
-	nsstring rest = nsengine.guid(hashed_type);
+	nsstring rest = nse.guid(hashed_type);
 
 	if (m_save_mode == binary)
 		pup(*(static_cast<nsbinary_file_pupper*>(p)), rest, "type");

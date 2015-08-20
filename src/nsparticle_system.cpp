@@ -25,6 +25,8 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 #include <nstexture.h>
 #include <nsplugin.h>
 #include <nstex_manager.h>
+#include <nsxfb_object.h>
+#include <nscam_comp.h>
 
 nsparticle_system::nsparticle_system() :
 nssystem()
@@ -44,7 +46,7 @@ void nsparticle_system::set_final_fbo(uint32 fbo) { m_final_buf = fbo; }
 
 void nsparticle_system::draw()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
@@ -53,7 +55,7 @@ void nsparticle_system::draw()
 	nscam_comp * compc = cam->get<nscam_comp>();
 	nstform_comp * camTComp = cam->get<nstform_comp>();
 
-	nsfb_object * finalBuf = nsengine.framebuffer(m_final_buf);
+	nsfb_object * finalBuf = nse.framebuffer(m_final_buf);
 	finalBuf->set_target(nsfb_object::fb_draw);
 	finalBuf->bind();
 
@@ -68,14 +70,14 @@ void nsparticle_system::draw()
 			++entIter;
 			continue;
 		}
-		nsmaterial * mat = nsengine.resource<nsmaterial>(comp->material_id());
+		nsmaterial * mat = nse.resource<nsmaterial>(comp->material_id());
 		if (mat == NULL)
-			mat = nsengine.system<nsrender_system>()->default_mat();
+			mat = nse.system<nsrender_system>()->default_mat();
 
-		nsparticle_render_shader * renderShader = nsengine.resource<nsparticle_render_shader>(mat->shader_id());
+		nsparticle_render_shader * renderShader = nse.resource<nsparticle_render_shader>(mat->shader_id());
 
 		if (renderShader == NULL)
-			renderShader = nsengine.core()->get<nsparticle_render_shader>(DEFAULT_RENDER_PARTICLE_SHADER);
+			renderShader = nse.core()->get<nsparticle_render_shader>(DEFAULT_RENDER_PARTICLE_SHADER);
 
 		if (renderShader == NULL || comp->first())
 		{
@@ -99,7 +101,7 @@ void nsparticle_system::draw()
 
 		nstform_comp * tComp = (*entIter)->get<nstform_comp>();
 		nstform_comp * camTComp = scene->camera()->get<nstform_comp>();
-		nstexture * tex = nsengine.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
+		nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
 		if (tex != NULL)
 			tex->enable(nsmaterial::diffuse);
 		else
@@ -171,7 +173,7 @@ int32 nsparticle_system::update_priority()
 
 void nsparticle_system::update()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 	nsentity * cam = scene->camera();
@@ -180,7 +182,7 @@ void nsparticle_system::update()
 	nscam_comp * compc = cam->get<nscam_comp>();
 	nstform_comp * camTComp = cam->get<nstform_comp>();
 
-	//nsengine.events()->process(this); // process any events first
+	//nse.events()->process(this); // process any events first
 
 	if (scene == NULL) // if scene is null return
 		return;
@@ -194,7 +196,7 @@ void nsparticle_system::update()
 		nsparticle_comp * comp = (*entIter)->get<nsparticle_comp>();
 
 		if (comp->simulating())
-			comp->elapsed() += nsengine.timer()->fixed();
+			comp->elapsed() += nse.timer()->fixed();
 
 		if (comp->elapsed() * 1000 >= comp->lifetime())
 		{
@@ -202,7 +204,7 @@ void nsparticle_system::update()
 			comp->enable_simulation(comp->looping());
 		}
 
-		nsparticle_process_shader * particleShader = nsengine.resource<nsparticle_process_shader>(comp->shader_id());
+		nsparticle_process_shader * particleShader = nse.resource<nsparticle_process_shader>(comp->shader_id());
 		if (particleShader == NULL)
 			particleShader = m_process_shader;
 
@@ -214,12 +216,12 @@ void nsparticle_system::update()
 		}
 
 		particleShader->bind();
-		nstexture * texRand = nsengine.resource<nstexture>(comp->rand_tex_id());
+		nstexture * texRand = nse.resource<nstexture>(comp->rand_tex_id());
 		if (texRand != NULL)
 			texRand->enable(RAND_TEX_UNIT);
 
 		particleShader->set_elapsed(comp->elapsed());
-		particleShader->set_dt(nsengine.timer()->fixed());
+		particleShader->set_dt(nse.timer()->fixed());
 		particleShader->set_angular_vel(comp->angular_vel());
 		particleShader->set_lifetime(comp->lifetime());
 		particleShader->set_launch_freq(float(comp->emission_rate())); // for now

@@ -56,7 +56,7 @@ bool nsinput_system::mouse_button_event(nsmouse_button_event * evnt)
 	return true;
 }
 
-bool nsinput_system::mouse_move_event(NSMouseMoveEvent * evnt)
+bool nsinput_system::mouse_move_event(nsmouse_move_event * evnt)
 {
 #ifdef INPUTTEST
 	std::cout << "Mouse moved: Mouse coords:" << evnt->mNormMousePos.toString() << std::endl;
@@ -77,7 +77,7 @@ bool nsinput_system::mouse_scroll_event(nsmouse_scroll_event * evnt)
 void nsinput_system::_key_press(nsinput_map::key_val pKey)
 {
 	// Add the key to the modifier set (if not already there)..
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -115,20 +115,20 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 void nsinput_system::_create_action_event(nsinput_map::trigger & trigger)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	nsaction_event * evnt = nsengine.event_dispatch()->push<nsaction_event>(trigger.hash_name);
+	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(trigger.hash_name);
 	_set_axis_from_trigger(evnt->axes, trigger);
 }
 
 void nsinput_system::_create_state_event(nsinput_map::trigger & trigger, bool toggle)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	nsstate_event * evnt = nsengine.event_dispatch()->push<nsstate_event>(trigger.hash_name, toggle);
+	nsstate_event * evnt = nse.event_dispatch()->push<nsstate_event>(trigger.hash_name, toggle);
 	_set_axis_from_trigger(evnt->axes, trigger);
 }
 
 void nsinput_system::_key_release(nsinput_map::key_val pKey)
 {
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -186,7 +186,7 @@ void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 {
 	set_cursor_pos(cursorPos);
 
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -215,7 +215,7 @@ void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const f
 {
 	set_cursor_pos(mousePos);
 
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -253,7 +253,7 @@ void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const
 {
 	set_cursor_pos(mousePos);
 	
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -289,7 +289,7 @@ void nsinput_system::_mouse_scroll(float pDelta, const fvec2 & mousePos)
 	set_cursor_pos(mousePos);
 	m_scroll_delta = pDelta;
 
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
 
@@ -323,7 +323,7 @@ void nsinput_system::pop_context()
 
 void nsinput_system::push_context(const nsstring & pName)
 {
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	nsinput_map::ctxt * ctxt = inmap->context(pName);
 
 	if (ctxt == NULL)
@@ -358,7 +358,7 @@ const uivec2 & nsinput_system::input_map()
 
 void nsinput_system::update()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 
 	if (scene == NULL)
 		return;
@@ -366,7 +366,7 @@ void nsinput_system::update()
 
 bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 {
-	nsinput_map * inmap = nsengine.resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	
 
 	// If Key_Any is not part of key modifiers than there must be a key for key match

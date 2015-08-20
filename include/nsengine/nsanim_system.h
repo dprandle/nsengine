@@ -14,7 +14,6 @@ This file contains all of the neccessary declarations for the nsanim_system clas
 #define NSANIM_SYSTEM_H
 
 #include <nssystem.h>
-#include <nsglobal.h>
 
 class nsanim_system : public nssystem
 {
@@ -23,8 +22,6 @@ public:
 	nsanim_system();
 
 	~nsanim_system();
-
-//	virtual bool handleEvent(NSEvent * pEvent);
 
 	virtual void init();
 

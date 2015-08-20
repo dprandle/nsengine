@@ -17,6 +17,7 @@
 #include <nsmesh.h>
 
 struct aiScene;
+struct aiNode;
 
 class nsmesh_manager : public nsres_manager
 {

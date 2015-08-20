@@ -1,9 +1,9 @@
 /*!
 \file nsengine.cpp
 
-\brief Definition file for NSEngine class
+\brief Definition file for nsengine class
 
-This file contains all of the neccessary definitions for the NSEngine class.
+This file contains all of the neccessary definitions for the nsengine class.
 
 \author Daniel Randle
 \date November 23 2013
@@ -50,13 +50,17 @@ This file contains all of the neccessary definitions for the NSEngine class.
 #include <nsfactory.h>
 #include <nssystem.h>
 #include <nsrender_system.h>
-
+#include <nsgl_context.h>
+#include <nsfb_object.h>
+#include <nsanim_comp.h>
+#include <nslight_comp.h>
+#include <nscam_comp.h>
+#include <nsrender_comp.h>
 #ifdef NSDEBUG
 #include <nsdebug.h>
 #endif
 
-
-NSEngine::NSEngine()
+nsengine::nsengine()
 {
 	srand(static_cast <unsigned> (time(0)));
     ilInit();
@@ -64,16 +68,16 @@ NSEngine::NSEngine()
 	m_cwd = nsfile_os::cwd();	
 }
 
-NSEngine::~NSEngine()
+nsengine::~nsengine()
 {
 }
 
-nsplugin * NSEngine::active()
+nsplugin * nsengine::active()
 {
 	return current()->plugins->active();
 }
 
-bool NSEngine::add_plugin(nsplugin * plugin)
+bool nsengine::add_plugin(nsplugin * plugin)
 {
 	if (plugin == NULL)
 		return false;
@@ -81,54 +85,54 @@ bool NSEngine::add_plugin(nsplugin * plugin)
 	return current()->plugins->add(plugin);
 }
 
-void NSEngine::set_current_scene(const nsstring & scn, bool newSceneOverwriteFile, bool saveprevious)
+void nsengine::set_current_scene(const nsstring & scn, bool newSceneOverwriteFile, bool saveprevious)
 {
 	if (active() == NULL)
 		return;
 	manager<nsscene_manager>(active())->set_current(scn, newSceneOverwriteFile, saveprevious);
 }
 
-void NSEngine::set_current_scene(nsscene * scn, bool newSceneOverwriteFile, bool saveprevious)
+void nsengine::set_current_scene(nsscene * scn, bool newSceneOverwriteFile, bool saveprevious)
 {
 	if (active() == NULL)
 		return;
 	manager<nsscene_manager>(active())->set_current(scn, newSceneOverwriteFile, saveprevious);
 }
 
-void NSEngine::set_current_scene(uint32 scn, bool newSceneOverwriteFile, bool saveprevious)
+void nsengine::set_current_scene(uint32 scn, bool newSceneOverwriteFile, bool saveprevious)
 {
 	if (active() == NULL)
 		return;
 	manager<nsscene_manager>(active())->set_current(scn, newSceneOverwriteFile, saveprevious);
 }
 
-void NSEngine::set_active(const nsstring & plugname)
+void nsengine::set_active(const nsstring & plugname)
 {
 	plugins()->set_active(plugname);
 }
 
-void NSEngine::set_active(nsplugin * plug)
+void nsengine::set_active(nsplugin * plug)
 {
 	plugins()->set_active(plug);
 }
 
-void NSEngine::set_active(uint32 plugid)
+void nsengine::set_active(uint32 plugid)
 {
 	plugins()->set_active(plugid);
 }
 
-bool NSEngine::add_system(nssystem * pSystem)
+bool nsengine::add_system(nssystem * pSystem)
 {
 	if (pSystem == NULL)
 		return false;
 
 	gl_ctxt * gc = current();
 	std::type_index ti(typeid(*pSystem));
-	uint32 type_hash = nsengine.type_id(ti);
+	uint32 type_hash = nse.type_id(ti);
 
 	if (type_hash == 0)
 	{
-		dprint(nsstring("NSEngine::addSystem - Could not find type id for type: ") + ti.name());
+		dprint(nsstring("nsengine::addSystem - Could not find type id for type: ") + ti.name());
 		return false;
 	}
 	auto it = gc->systems->emplace(type_hash, pSystem);
@@ -146,21 +150,21 @@ bool NSEngine::add_system(nssystem * pSystem)
 	return true;
 }
 
-nsresource * NSEngine::resource(uint32 res_typeid, nsplugin * plg, uint32 resid)
+nsresource * nsengine::resource(uint32 res_typeid, nsplugin * plg, uint32 resid)
 {
 	if (plg == NULL)
 		return NULL;
 	return plg->get(res_typeid, resid);
 }
 
-nsresource * NSEngine::resource(uint32 res_typeid, nsplugin * plg, const nsstring & resname)
+nsresource * nsengine::resource(uint32 res_typeid, nsplugin * plg, const nsstring & resname)
 {
 	if (plg == NULL)
 		return NULL;
 	return plg->get(res_typeid, resname);
 }
 
-uint32 NSEngine::create_framebuffer()
+uint32 nsengine::create_framebuffer()
 {
 	nsfb_object * fb = new nsfb_object();
 	fb->init_gl();
@@ -168,7 +172,7 @@ uint32 NSEngine::create_framebuffer()
 	return fb->gl_id();
 }
 
-bool NSEngine::del_framebuffer(uint32 fbid)
+bool nsengine::del_framebuffer(uint32 fbid)
 {
 	nsfb_object * obj = framebuffer(fbid);
 	if (obj == NULL)
@@ -179,7 +183,7 @@ bool NSEngine::del_framebuffer(uint32 fbid)
 	return true;
 }
 
-nsfb_object * NSEngine::framebuffer(uint32 id)
+nsfb_object * nsengine::framebuffer(uint32 id)
 {
 	auto iter = current()->fb_map.find(id);
 	if (iter != current()->fb_map.end())
@@ -187,12 +191,12 @@ nsfb_object * NSEngine::framebuffer(uint32 id)
 	return NULL;
 }
 
-nsplugin * NSEngine::load_plugin(const nsstring & fname)
+nsplugin * nsengine::load_plugin(const nsstring & fname)
 {
 	return current()->plugins->load(fname);
 }
 
-void NSEngine::save_plugins(bool saveOwnedResources, nssave_resouces_callback * scallback)
+void nsengine::save_plugins(bool saveOwnedResources, nssave_resouces_callback * scallback)
 {
 	current()->plugins->save_all("", scallback);
 
@@ -208,7 +212,7 @@ void NSEngine::save_plugins(bool saveOwnedResources, nssave_resouces_callback * 
 	}
 }
 
-bool NSEngine::save_plugin(nsplugin * plg, bool saveOwnedResources,  nssave_resouces_callback * scallback)
+bool nsengine::save_plugin(nsplugin * plg, bool saveOwnedResources,  nssave_resouces_callback * scallback)
 {
 	if (plg == NULL)
 		return false;
@@ -219,12 +223,12 @@ bool NSEngine::save_plugin(nsplugin * plg, bool saveOwnedResources,  nssave_reso
 	return ret;
 }
 
-void NSEngine::save_core(nssave_resouces_callback * scallback)
+void nsengine::save_core(nssave_resouces_callback * scallback)
 {
 	core()->save_all("", scallback);
 }
 
-bool NSEngine::_destroy_factory(uint32 hashid)
+bool nsengine::_destroy_factory(uint32 hashid)
 {
 	nsfactory * fac = _remove_factory(hashid);
 	if (fac == NULL)
@@ -233,7 +237,7 @@ bool NSEngine::_destroy_factory(uint32 hashid)
 	return true;
 }
 
-nsres_manager * NSEngine::manager(uint32 manager_typeid, nsplugin * plg)
+nsres_manager * nsengine::manager(uint32 manager_typeid, nsplugin * plg)
 {
 	return plg->manager(manager_typeid);
 }
@@ -243,12 +247,12 @@ nsres_manager * manager(const nsstring & manager_guid, nsplugin * plg)
 	return plg->manager(manager_guid);		
 }
 
-bool NSEngine::del_plugin(nsplugin * plg)
+bool nsengine::del_plugin(nsplugin * plg)
 {
 	return current()->plugins->del(plg);
 }
 
-bool NSEngine::destroy_system(uint32 type_id)
+bool nsengine::destroy_system(uint32 type_id)
 {
 	nssystem * sys = remove_system(type_id);
 	if (sys == NULL)
@@ -257,22 +261,22 @@ bool NSEngine::destroy_system(uint32 type_id)
 	return true;
 }
 
-bool NSEngine::destroy_system(const nsstring & guid_)
+bool nsengine::destroy_system(const nsstring & guid_)
 {
 	return destroy_system(hash_id(guid_));
 }
 
-hash_factory_map::iterator NSEngine::begin_factory()
+hash_factory_map::iterator nsengine::begin_factory()
 {
 	return m_factories.begin();
 }
 
-system_hash_map::iterator NSEngine::begin_system()
+system_hash_map::iterator nsengine::begin_system()
 {
 	return current()->systems->begin();
 }
 
-nsplugin * NSEngine::create_plugin(const nsstring & plugname, bool makeactive)
+nsplugin * nsengine::create_plugin(const nsstring & plugname, bool makeactive)
 {
 	nsplugin * plug = current()->plugins->create(plugname);
 	if (plug != NULL && makeactive)
@@ -280,7 +284,7 @@ nsplugin * NSEngine::create_plugin(const nsstring & plugname, bool makeactive)
 	return plug;
 }
 
-nssystem * NSEngine::create_system(uint32 type_id)
+nssystem * nsengine::create_system(uint32 type_id)
 {
 	nssystem * system = factory<nssys_factory>(type_id)->create();
 	if (!add_system(system))
@@ -292,12 +296,12 @@ nssystem * NSEngine::create_system(uint32 type_id)
 	return system;
 }
 
-nssystem * NSEngine::create_system(const nsstring & guid_)
+nssystem * nsengine::create_system(const nsstring & guid_)
 {
 	return create_system(hash_id(guid_));
 }
 
-nsscene * NSEngine::current_scene()
+nsscene * nsengine::current_scene()
 {
 	nsplugin * plug = active();
 	if (plug == NULL)
@@ -305,35 +309,35 @@ nsscene * NSEngine::current_scene()
 	return plug->current_scene();
 }
 
-hash_factory_map::iterator NSEngine::end_factory()
+hash_factory_map::iterator nsengine::end_factory()
 {
 	return m_factories.end();
 }
 
-system_hash_map::iterator NSEngine::end_system()
+system_hash_map::iterator nsengine::end_system()
 {
 	gl_ctxt * gc = current();
 	return current()->systems->end();
 }
 
-nstimer * NSEngine::timer()
+nstimer * nsengine::timer()
 {
 	return current()->timer;
 }
 
 #ifdef NSDEBUG
-void NSEngine::debug_print(const nsstring & str)
+void nsengine::debug_print(const nsstring & str)
 {
 	current()->deb->print(str);
 }
 #endif
 
-nsevent_dispatcher * NSEngine::event_dispatch()
+nsevent_dispatcher * nsengine::event_dispatch()
 {
 	return current()->event_disp;
 }
 
-nssystem * NSEngine::system(uint32 type_id)
+nssystem * nsengine::system(uint32 type_id)
 {
 	gl_ctxt * cont = current();
 	auto iter = cont->systems->find(type_id);
@@ -342,28 +346,28 @@ nssystem * NSEngine::system(uint32 type_id)
 	return iter->second;
 }
 
-bool NSEngine::has_plugin(nsplugin * plg)
+bool nsengine::has_plugin(nsplugin * plg)
 {
 	return current()->plugins->contains(plg);
 }
 
-nssystem * NSEngine::system(const nsstring & guid_)
+nssystem * nsengine::system(const nsstring & guid_)
 {
 	return system(hash_id(guid_));
 }
 
-const nsstring & NSEngine::res_dir()
+const nsstring & nsengine::res_dir()
 {
 	return m_res_dir;
 }
 
-bool NSEngine::has_system(uint32 type_id)
+bool nsengine::has_system(uint32 type_id)
 {
 	gl_ctxt * cont = current();
 	return (cont->systems->find(type_id) != cont->systems->end());
 }
 
-bool NSEngine::has_system(const nsstring & guid_)
+bool nsengine::has_system(const nsstring & guid_)
 {
 	return has_system(hash_id(guid_));
 }
@@ -371,11 +375,11 @@ bool NSEngine::has_system(const nsstring & guid_)
 /*!
 Overload of Propagate name change
 */
-void NSEngine::name_change(const uivec2 & oldid, const uivec2 newid)
+void nsengine::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	if (oldid.y == core()->id())
 	{
-		dprint("NSEngine::name_change Cannot change engine default plugin name");
+		dprint("nsengine::name_change Cannot change engine default plugin name");
 		return;
 	}
 	if (oldid.x == core()->id())
@@ -383,7 +387,7 @@ void NSEngine::name_change(const uivec2 & oldid, const uivec2 newid)
 	plugins()->name_change(oldid, newid);
 }
 
-uint32 NSEngine::create_context(bool add)
+uint32 nsengine::create_context(bool add)
 {
 	static uint32 id = 1; // forever increasing id
 	auto iter = m_contexts.emplace(id, new gl_ctxt(id));
@@ -395,17 +399,17 @@ uint32 NSEngine::create_context(bool add)
 	return id++;
 }
 
-nsplugin * NSEngine::core()
+nsplugin * nsengine::core()
 {
 	return current()->core_plugin;
 }
 
-nsplugin_manager * NSEngine::plugins()
+nsplugin_manager * nsengine::plugins()
 {
 	return current()->plugins;
 }
 
-nssystem * NSEngine::remove_system(uint32 type_id)
+nssystem * nsengine::remove_system(uint32 type_id)
 {
 	nssystem * sys = system(type_id);
 	if (sys == NULL)
@@ -415,18 +419,18 @@ nssystem * NSEngine::remove_system(uint32 type_id)
 	return sys;
 }
 
-nssystem * NSEngine::remove_system(const nsstring & guid_)
+nssystem * nsengine::remove_system(const nsstring & guid_)
 {
 	return remove_system(hash_id(guid_));
 }
 
 
-const nsstring & NSEngine::import_dir()
+const nsstring & nsengine::import_dir()
 {
 	return m_import_dir;
 }
 
-void NSEngine::set_import_dir(const nsstring & dir)
+void nsengine::set_import_dir(const nsstring & dir)
 {
 	m_import_dir = dir;
 	core()->set_import_dir(m_import_dir);
@@ -444,7 +448,7 @@ void NSEngine::set_import_dir(const nsstring & dir)
 	}
 }
 
-void NSEngine::set_res_dir(const nsstring & dir)
+void nsengine::set_res_dir(const nsstring & dir)
 {
 	m_res_dir = dir;
 	auto iter = m_contexts.begin();
@@ -455,7 +459,7 @@ void NSEngine::set_res_dir(const nsstring & dir)
 	}
 }
 
-void NSEngine::start()
+void nsengine::start()
 {
 	if (current() == NULL)
 		return;
@@ -492,7 +496,7 @@ void NSEngine::start()
 	timer()->start();
 }
 
-void NSEngine::shutdown()
+void nsengine::shutdown()
 {
 	auto iter = current()->systems->begin();
 	while (iter != current()->systems->end())
@@ -516,28 +520,28 @@ void NSEngine::shutdown()
 	core()->unbind();
 }
 
-nsplugin * NSEngine::plugin(const nsstring & name)
+nsplugin * nsengine::plugin(const nsstring & name)
 {
 	if (name == core()->name())
 		return core();
 	return current()->plugins->get(name);
 }
 
-nsplugin * NSEngine::plugin(uint32 id)
+nsplugin * nsengine::plugin(uint32 id)
 {
 	if (id == core()->id())
 		return core();
 	return current()->plugins->get(id);
 }
 
-nsplugin * NSEngine::plugin(nsplugin * plg)
+nsplugin * nsengine::plugin(nsplugin * plg)
 {
 	if (plg == core())
 		return core();
 	return current()->plugins->get(plg);
 }
 
-nsfactory * NSEngine::factory(uint32 hash_id)
+nsfactory * nsengine::factory(uint32 hash_id)
 {
 	auto fIter = m_factories.find(hash_id);
 	if (fIter == m_factories.end())
@@ -545,7 +549,7 @@ nsfactory * NSEngine::factory(uint32 hash_id)
 	return fIter->second;
 }
 
-nsstring NSEngine::guid(std::type_index type)
+nsstring nsengine::guid(std::type_index type)
 {
 	auto fiter = m_obj_type_hashes.find(type);
 	if (fiter == m_obj_type_hashes.end())
@@ -553,7 +557,7 @@ nsstring NSEngine::guid(std::type_index type)
 	return guid(fiter->second);
 }
 
-nsstring NSEngine::guid(uint32 hash)
+nsstring nsengine::guid(uint32 hash)
 {
 	auto fiter = m_obj_type_names.find(hash);
 	if (fiter != m_obj_type_names.end())
@@ -561,7 +565,7 @@ nsstring NSEngine::guid(uint32 hash)
 	return "";
 }
 
-uint32 NSEngine::type_id(std::type_index type)
+uint32 nsengine::type_id(std::type_index type)
 {
 	auto fiter = m_obj_type_hashes.find(type);
 	if (fiter != m_obj_type_hashes.end())
@@ -569,7 +573,7 @@ uint32 NSEngine::type_id(std::type_index type)
 	return 0;
 }
 
-nsfactory * NSEngine::_remove_factory(uint32 hash_id)
+nsfactory * nsengine::_remove_factory(uint32 hash_id)
 {
 	nsfactory * f = factory(hash_id);
 	if (f == NULL)
@@ -578,7 +582,7 @@ nsfactory * NSEngine::_remove_factory(uint32 hash_id)
 	return f;
 }
 
-void NSEngine::update()
+void nsengine::update()
 {
 	timer()->update();
 	
@@ -607,14 +611,11 @@ void NSEngine::update()
 	system<nsrender_system>()->blit_final_frame();
 }
 
-void NSEngine::_init_input_maps()
+void nsengine::_init_input_maps()
 {
-	nsinput_map * inmap = core()->load<nsinput_map>(DEFAULT_ENGINE_INPUT);
-	system<nsinput_system>()->set_input_map(inmap->full_id());
-	system<nsinput_system>()->push_context(DEFAULT_INPUT_CONTEXT);	
 }
 
-void NSEngine::_init_shaders()
+void nsengine::_init_shaders()
 {
 	nsshader_manager * mShaders = core()->manager<nsshader_manager>();
 	nsrender_system::RenderShaders renShaders;
@@ -646,7 +647,7 @@ void NSEngine::_init_shaders()
 	mShaders->init_uniforms_all();
 }
 
-void NSEngine::_init_entities()
+void nsengine::_init_entities()
 {
 	nsentity * objBrush = core()->create<nsentity>(ENT_OBJECT_BRUSH);
 	nssel_comp * sc = objBrush->create<nssel_comp>();
@@ -658,7 +659,7 @@ void NSEngine::_init_entities()
 	system<nsbuild_system>()->set_object_brush(objBrush);
 }
 
-void NSEngine::_remove_sys(uint32 type_id)
+void nsengine::_remove_sys(uint32 type_id)
 {
 	auto iter1 = m_sys_draw_order.begin();
 	while (iter1 != m_sys_draw_order.end())
@@ -683,14 +684,14 @@ void NSEngine::_remove_sys(uint32 type_id)
 	}
 }
 
-void NSEngine::_init_materials()
+void nsengine::_init_materials()
 {
 	nstexture * tex = core()->load<nstex2d>(nsstring(DEFAULT_MATERIAL_DIFFUSE) + nsstring(DEFAULT_TEX_EXTENSION));
 	nsmaterial * def = core()->load<nsmaterial>(nsstring(DEFAULT_MATERIAL_NAME) + nsstring(DEFAULT_MAT_EXTENSION));
 	system<nsrender_system>()->set_default_mat(def);
 }
 
-void NSEngine::_init_meshes()
+void nsengine::_init_meshes()
 {
 	nsmesh * msh = core()->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
 	//msh->bake_node_rotation(orientation(fvec4(1, 0, 0, -90.0f)));
@@ -702,10 +703,10 @@ void NSEngine::_init_meshes()
 	core()->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
 }
 
-void NSEngine::_init_systems()
+void nsengine::_init_systems()
 {
-	auto fiter = nsengine.begin_factory();
-	while (fiter != nsengine.end_factory())
+	auto fiter = nse.begin_factory();
+	while (fiter != nse.end_factory())
 	{
 		if (fiter->second->type() == nsfactory::f_system)
 			create_system(guid(fiter->first));
@@ -717,7 +718,7 @@ void NSEngine::_init_systems()
 	system<nsparticle_system>()->set_final_fbo(current()->composite_buf);
 }
 
-bool NSEngine::make_current(uint32 cID)
+bool nsengine::make_current(uint32 cID)
 {
 	auto fIter = m_contexts.find(cID);
 	if (fIter == m_contexts.end())
@@ -726,7 +727,7 @@ bool NSEngine::make_current(uint32 cID)
 	return true;
 }
 
-gl_ctxt * NSEngine::current()
+gl_ctxt * nsengine::current()
 {
 	auto fIter = m_contexts.find(m_current_context);
 	if (fIter != m_contexts.end())
@@ -734,24 +735,24 @@ gl_ctxt * NSEngine::current()
 	return NULL;
 }
 
-uint32 NSEngine::current_id()
+uint32 nsengine::current_id()
 {
 	return m_current_context;
 }
 
-bool NSEngine::destroy_plugin(nsplugin * plug)
+bool nsengine::destroy_plugin(nsplugin * plug)
 {
 	return current()->plugins->destroy(plug);
 }
 
 #ifdef NSDEBUG
-nsdebug * NSEngine::debug()
+nsdebug * nsengine::debug()
 {
 	return current()->deb;
 }
 #endif
 
-bool NSEngine::destroy_context(uint32 cID)
+bool nsengine::destroy_context(uint32 cID)
 {
 	auto fiter = m_contexts.find(cID);
 	if (fiter == m_contexts.end())
@@ -765,17 +766,17 @@ bool NSEngine::destroy_context(uint32 cID)
 	return true;
 }
 
-void NSEngine::set_plugin_dir(const nsstring & plugdir)
+void nsengine::set_plugin_dir(const nsstring & plugdir)
 {
 	current()->plugins->set_plugin_dir(plugdir);
 }
 
-const nsstring & NSEngine::plugin_dir()
+const nsstring & nsengine::plugin_dir()
 {
 	return current()->plugins->plugin_dir();
 }
 
-uint32 NSEngine::manager_id(uint32 res_id)
+uint32 nsengine::manager_id(uint32 res_id)
 {
 	auto iter = m_res_manager_map.find(res_id);
 	if (iter != m_res_manager_map.end())
@@ -783,28 +784,28 @@ uint32 NSEngine::manager_id(uint32 res_id)
 	return 0;
 }
 
-uint32 NSEngine::manager_id(std::type_index res_type)
+uint32 nsengine::manager_id(std::type_index res_type)
 {
 	uint32 hashed_type = type_id(res_type);
 	return manager_id(hashed_type);
 }
 
-uint32 NSEngine::manager_id(const nsstring & res_guid)
+uint32 nsengine::manager_id(const nsstring & res_guid)
 {
 	return manager_id(hash_id(res_guid));
 }
 
-const nsstring & NSEngine::cwd()
+const nsstring & nsengine::cwd()
 {
 	return m_cwd;
 }
 
-nsplugin * NSEngine::remove_plugin(nsplugin * plg)
+nsplugin * nsengine::remove_plugin(nsplugin * plg)
 {
 	return current()->plugins->remove(plg);
 }
 
-nsresource * NSEngine::_resource(uint32 restype_id, const uivec2 & resid)
+nsresource * nsengine::_resource(uint32 restype_id, const uivec2 & resid)
 {
 	nsplugin * plg = plugin(resid.x);
 	if (plg == NULL)
@@ -812,7 +813,7 @@ nsresource * NSEngine::_resource(uint32 restype_id, const uivec2 & resid)
 	return plg->get(restype_id, resid.y);
 }
 
-void NSEngine::_init_factories()
+void nsengine::_init_factories()
 {
 	register_component<nsanim_comp>("nsanim_comp");
 	register_component<nscam_comp>("nscam_comp");
@@ -890,65 +891,10 @@ void NSEngine::_init_factories()
 	register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
 }
 
-gl_ctxt::gl_ctxt(uint32 id) :
-	glew_context(new GLEWContext()),
-	core_plugin(new nsplugin()),
-	systems(new system_hash_map()),
-	plugins(new nsplugin_manager()),
-	event_disp(new nsevent_dispatcher()),
-	fb_map(),
-	timer(new nstimer()),
-	composite_buf(0),
-	context_id(id)
-#ifdef NSDEBUG
-	,deb(new nsdebug())
-#endif
+nsengine & nsengine::inst()
 {
-	core_plugin->rename(ENGINE_PLUG);
-#ifdef NSDEBUG
-	deb->set_log_file("engine_ctxt" + std::to_string(context_id) + ".log");
-	deb->set_log_dir(nsengine.cwd() + "logs");
-	deb->clear_log();
-#endif
-}
-
-gl_ctxt::~gl_ctxt()
-{
-	delete plugins;
-	delete systems;
-	delete core_plugin;
-	delete event_disp;
-	delete glew_context;
-	delete timer;
-#ifdef NSDEBUG
-	delete deb;
-#endif
-}
-
-NSEngine & NSEngine::inst()
-{
-	static NSEngine eng;
+	static nsengine eng;
 	return eng;
-}
-
-GLEWContext * glewGetContext()
-{
-	return nsengine.current()->glew_context;
-}
-
-bool GLError(nsstring errorMessage)
-{
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR)
-	{
-#ifdef NSDEBUG
-		nsstringstream ss;
-		ss << errorMessage << ": OpenGL Error Code : " << err;
-		dprint(ss.str());
-#endif
-		return true;
-	}
-	return false;
 }
 
 uint32 hash_id(const nsstring & str)

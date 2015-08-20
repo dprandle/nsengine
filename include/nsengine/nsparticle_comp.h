@@ -13,8 +13,14 @@ This file contains all of the neccessary declarations for the nsparticle_comp cl
 #ifndef NSPARTICLECOMP_H
 #define NSPARTICLECOMP_H
 
+#define DEFAULT_MAX_FORCE_KEYS 50
+#define DEFAULT_MAX_RENDER_KEYS 50
+#define DEFAULT_MAX_PARTICLES 1000
+#define DEFAULT_PART_LIFETIME 5000
+#define DEFAULT_PART_EMISSION 180
+
 #include <nscomponent.h>
-#include <nsmath.h>
+#include <nsmap.h>
 
 class nsentity;
 class nsxfb_object;
@@ -22,7 +28,7 @@ class nsvertex_array_object;
 class nsbuffer_object;
 class nsevent;
 
-class nsparticle_comp : public NSComponent
+class nsparticle_comp : public nscomponent
 {
 public:
 
@@ -65,7 +71,7 @@ public:
 
 	void allocate_buffers();
 
-	virtual nsparticle_comp * copy(const NSComponent* comp_);
+	virtual nsparticle_comp * copy(const nscomponent* comp_);
 
 	virtual void init();
 
@@ -85,11 +91,11 @@ public:
 
 	bool visual_global_time();
 
-	fvec3uimap::iterator begin_motion_key();
-	fvec3uimap::iterator begin_visual_key();
+	ui_fvec3_map::iterator begin_motion_key();
+	ui_fvec3_map::iterator begin_visual_key();
 
-	fvec3uimap::iterator end_motion_key();
-	fvec3uimap::iterator end_visual_key();
+	ui_fvec3_map::iterator end_motion_key();
+	ui_fvec3_map::iterator end_visual_key();
 
 	void enable_looping(bool enable_);
 
@@ -113,7 +119,7 @@ public:
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
 	/return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2array resources();
+	virtual uivec2_vector resources();
 
 	void set_motion_key_type(const motion_key_t & type_);
 
@@ -131,9 +137,9 @@ public:
 
 	uint32 max_particles();
 
-	const fvec3uimap & motion_keys();
+	const ui_fvec3_map & motion_keys();
 
-	const fvec3uimap & visual_keys();
+	const ui_fvec3_map & visual_keys();
 
 	const fvec3 & emitter_size();
 
@@ -240,8 +246,8 @@ public:
 	nsbuffer_object * front_buffer;
 	nsbuffer_object * back_buffer;
 private:
-	fvec3uimap m_motion_keys;
-	fvec3uimap m_visual_keys;
+	ui_fvec3_map m_motion_keys;
+	ui_fvec3_map m_visual_keys;
 
 	uivec2 m_mat_id; //!< Material ID for the rendered quad
 	uivec2 m_xfb_shader_id; //!< Shader used for transform feedback

@@ -24,6 +24,7 @@ This file contains all of the neccessary definitions for the nsanim_system class
 #include <nsentity_manager.h>
 #include <nsplugin.h>
 #include <nsres_manager.h>
+#include <nsrender_comp.h>
 
 nsanim_system::nsanim_system() :nssystem()
 {
@@ -38,7 +39,7 @@ void nsanim_system::init()
 
 // bool nsanim_system::handleEvent(NSEvent * pEvent)
 // {
-// 	nsscene * scene = nsengine.currentScene();
+// 	nsscene * scene = nse.currentScene();
 // 	if (scene == NULL)
 // 		return false;
 
@@ -53,12 +54,12 @@ void nsanim_system::init()
 
 void nsanim_system::update()
 {
-	nsscene * scene = nsengine.current_scene();
-	nstimer * timer = nsengine.timer();
+	nsscene * scene = nse.current_scene();
+	nstimer * timer = nse.timer();
 	if (scene == NULL)
 		return;
 	
-	nspentityset ents = scene->entities<nsanim_comp>();
+	entity_ptr_set ents = scene->entities<nsanim_comp>();
 	auto entIter = ents.begin();
 	while (entIter != ents.end())
 	{
@@ -83,7 +84,7 @@ void nsanim_system::update()
 				continue;
 			}
 
-			nsmesh * msh = nsengine.resource<nsmesh>(meshID);
+			nsmesh * msh = nse.resource<nsmesh>(meshID);
 			if (msh == NULL)
 			{
 				dprint("nsanim_system::update mesh with id " + meshID.to_string() + " is null in anim ent " + (*entIter)->name());
@@ -102,7 +103,7 @@ void nsanim_system::update()
 			auto finalTF = animComp->final_transforms();
 			finalTF->resize(nTree->bone_name_map.size());
 
-			nsanim_set * animset = nsengine.resource<nsanim_set>(animsetID);
+			nsanim_set * animset = nse.resource<nsanim_set>(animsetID);
 			if (animset == NULL)
 			{
 				++entIter;

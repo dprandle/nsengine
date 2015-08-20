@@ -14,9 +14,8 @@ This file contains all of the neccessary declarations for the nstile_brush_comp 
 #define NSTILE_BRUSH_COMP_H
 
 #include <nscomponent.h>
-#include <nsmath.h>
 
-class nstile_brush_comp : public NSComponent
+class nstile_brush_comp : public nscomponent
 {
 public:
 	template <class PUPer>
@@ -30,7 +29,7 @@ public:
 
 	bool add(const ivec2 & grid_space_);
 
-	ivec2array::iterator begin();
+	ivec2_vector::iterator begin();
 
 	void change_height(const int32 & amount_);
 
@@ -38,11 +37,11 @@ public:
 
 	bool contains(const ivec2 & grid_space_);
 
-	virtual nstile_brush_comp * copy(const NSComponent* comp_);
+	virtual nstile_brush_comp * copy(const nscomponent* comp_);
 
 	virtual void pup(nsfile_pupper * p);
 
-	ivec2array::iterator end();
+	ivec2_vector::iterator end();
 
 	int32 height() const;
 
@@ -57,7 +56,7 @@ public:
 	nstile_brush_comp & operator=(const nstile_brush_comp & rhs_);
 
 private:
-	ivec2array m_brush;
+	ivec2_vector m_brush;
 	int32 m_height;
 };
 

@@ -13,13 +13,13 @@ This file contains all of the neccessary definitions for the nsterrain_comp clas
 #include <nsterrain_comp.h>
 #include <nsentity.h>
 
-nsterrain_comp::nsterrain_comp() :m_minmax(0.0f,1.0f), NSComponent()
+nsterrain_comp::nsterrain_comp() :m_minmax(0.0f,1.0f), nscomponent()
 {}
 
 nsterrain_comp::~nsterrain_comp()
 {}
 
-nsterrain_comp* nsterrain_comp::copy(const NSComponent * pToCopy)
+nsterrain_comp* nsterrain_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;

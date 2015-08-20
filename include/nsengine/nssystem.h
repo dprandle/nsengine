@@ -13,8 +13,8 @@ This file contains all of the neccessary declartations for the nssystem class.
 #ifndef NSSYSTEM_H
 #define NSSYSTEM_H
 
-#include <nsglobal.h>
 #include <nsevent_handler.h>
+#include <nsunordered_map.h>
 
 class nstimer;
 class nsscene;
@@ -49,7 +49,7 @@ public:
 	uint32 trigger_hash(uint32 key);
 	
   private:
-	uint32uintu_map m_hashed_input_triggers;
+	ui_ui_umap m_hashed_input_triggers;
 	uint32 m_hashed_type;
 };
 

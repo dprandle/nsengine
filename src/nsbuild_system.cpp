@@ -26,6 +26,9 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 #include <nsentity_manager.h>
 #include <nsplugin.h>
 #include <nsinput_system.h>
+#include <nsentity.h>
+#include <nslight_comp.h>
+#include <nscam_comp.h>
 
 nsbuild_system::nsbuild_system() :
 m_enabled(false),
@@ -56,15 +59,15 @@ void nsbuild_system::change_layer(const int32 & pAmount)
 
 void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 	
 	if (pEnable && !m_enabled)
 	{
 		m_enabled = pEnable;
-		nsengine.system<nsinput_system>()->push_context("BuildMode");
-		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
+		nse.system<nsinput_system>()->push_context("BuildMode");
+		//nse.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
 		if (m_current_brush_type == brush_tile)
 		{
@@ -73,7 +76,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 
 			if (m_mirror_mode)
 			{
-				m_mirror_brush = nsengine.core()->create<nsentity>("MirrorBrush");
+				m_mirror_brush = nse.core()->create<nsentity>("MirrorBrush");
 				*m_mirror_brush = *m_tile_brush;
 			}
 
@@ -94,14 +97,14 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 				if (tmp)
 					m_mirror_mode = false;
 
-//				nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mTileBrush->plugin_id(), mTileBrush->id(), tFormID)));
+//				nse.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mTileBrush->plugin_id(), mTileBrush->id(), tFormID)));
 
 				if (tmp)
 				{
 					fvec3 mirrorPos = m_mirror_center*2.0f - pos;
 					mirrorPos.z = pos.z;
 					uint32 tFormIDMirror = scene->add(m_mirror_brush, mirrorPos);
-//					nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugin_id(), mMirrorBrush->id(), tFormIDMirror)));
+//					nse.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mMirrorBrush->plugin_id(), mMirrorBrush->id(), tFormIDMirror)));
 					m_mirror_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, tFormIDMirror);
 				}
 				m_mirror_mode = tmp;
@@ -112,7 +115,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 				m_tile_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, tFormID);
 				++brushIter;
 			}
-//			nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mTileBrush->plugin_id(), mTileBrush->id(), mTBCenterTFormID)));
+//			nse.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mTileBrush->plugin_id(), mTileBrush->id(), mTBCenterTFormID)));
 			selComp->set_selected(true);
 			to_cursor(pMousePos);
 
@@ -126,7 +129,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 			if (m_build_ent == NULL)
 				return;
 
-			//nsengine.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mObjectBrush->plugin_id(), mObjectBrush->id(), 0) ) );
+			//nse.eventDispatch()->send(new NSSelSetEvent("Center", uivec3(mObjectBrush->plugin_id(), mObjectBrush->id(), 0) ) );
 
 			m_object_brush->del<nslight_comp>();
 			m_object_brush->del<nsoccupy_comp>();
@@ -140,7 +143,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 
 			uint32 tFormID = scene->add(m_object_brush);
 			m_object_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, tFormID);
-//			nsengine.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugin_id(), mObjectBrush->id(), tFormID)));
+//			nse.eventDispatch()->send(new NSSelAddEvent("AddToSel", uivec3(mObjectBrush->plugin_id(), mObjectBrush->id(), tFormID)));
 			selComp->set_selected(true);
 			to_cursor(pMousePos);
 		}
@@ -150,7 +153,7 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 	else if (!pEnable && m_enabled)
 	{
 		m_enabled = pEnable;
-		nsengine.system<nsinput_system>()->pop_context();
+		nse.system<nsinput_system>()->pop_context();
 
 		if (m_object_brush != NULL)
 		{
@@ -161,9 +164,9 @@ void nsbuild_system::enable(const bool & pEnable, const fvec2 & pMousePos)
 		if (m_tile_brush != NULL)
 			scene->remove(m_tile_brush);
 
-		//nsengine.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
+		//nse.eventDispatch()->send(new NSClearSelectionEvent("ClearSelection")); // process now
 
-		nsengine.core()->destroy<nsentity>("MirrorBrush");
+		nse.core()->destroy<nsentity>("MirrorBrush");
 		m_mirror_brush = NULL;
 	}
 }
@@ -180,7 +183,7 @@ void nsbuild_system::enable_mirror(bool pEnable)
 
 void nsbuild_system::erase()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -249,7 +252,7 @@ const nsbuild_system::mode_t & nsbuild_system::mode() const
 
 void nsbuild_system::init()
 {
-	//nsengine.eventDispatch()->addListener(this, NSEvent::InputKey);
+	//nse.eventDispatch()->addListener(this, NSEvent::InputKey);
 }
 
 bool nsbuild_system::enabled() const
@@ -269,7 +272,7 @@ bool nsbuild_system::mirror() const
 
 // bool nsbuild_system::handleEvent(NSEvent * pEvent)
 // {
-// 	nsscene * scene = nsengine.currentScene();
+// 	nsscene * scene = nse.currentScene();
 // 	if (scene == NULL)
 // 		return false;
 
@@ -296,7 +299,7 @@ bool nsbuild_system::mirror() const
 
 void nsbuild_system::to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst)
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -390,7 +393,7 @@ nsentity * nsbuild_system::object_brush()
 
 void nsbuild_system::paint()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
@@ -562,11 +565,11 @@ int32 nsbuild_system::update_priority()
 
 void nsbuild_system::update()
 {
-	nsscene * scene = nsengine.current_scene();
+	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
-	nsengine.event_dispatch()->process(this);
+	nse.event_dispatch()->process(this);
 	if (scene == NULL)
 		return;
 

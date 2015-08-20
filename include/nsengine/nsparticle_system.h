@@ -14,9 +14,6 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 #define NSPARTICLESYSTEM_H
 
 #include <nssystem.h>
-#include <nsglobal.h>
-#include <nsevent.h>
-#include <nstform_comp.h>
 
 class nsscene;
 class nssel_comp;

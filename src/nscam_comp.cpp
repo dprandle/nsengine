@@ -27,7 +27,7 @@ m_persp_nf_clip(),
 m_proj_mode(proj_persp),
 m_screen_size(),
 m_focus_transform(),
-NSComponent()
+nscomponent()
 {}
 
 nscam_comp::~nscam_comp()
@@ -39,7 +39,7 @@ void nscam_comp::change_speed(float pAmount)
 	post_update(true);
 }
 
-nscam_comp* nscam_comp::copy(const NSComponent * pToCopy)
+nscam_comp* nscam_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;

@@ -71,7 +71,7 @@ class nsevent_handler
 			delete hf;
 			return false;
 		}
-		nsengine.event_dispatch()->register_listener<event_type>(class_inst_);
+		nse.event_dispatch()->register_listener<event_type>(class_inst_);
 		return true;
 	}
 

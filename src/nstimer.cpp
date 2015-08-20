@@ -11,6 +11,7 @@ This file contains all of the neccessary definitions for the nstimer class.
 */
 
 #include <nstimer.h>
+#include <nsengine.h>
 
 nstimer::nstimer() : m_start(), m_current(), m_last(), m_lag(0.0f), m_timer(), m_running(false)
 {

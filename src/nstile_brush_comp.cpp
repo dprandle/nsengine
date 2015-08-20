@@ -17,7 +17,7 @@ This file contains all of the neccessary definitions for the nstile_brush_comp c
 nstile_brush_comp::nstile_brush_comp() :
 m_brush(),
 m_height(1),
-NSComponent()
+nscomponent()
 {}
 
 nstile_brush_comp::~nstile_brush_comp()
@@ -37,7 +37,7 @@ bool nstile_brush_comp::add(const ivec2 & pGridSpace)
 	return true;
 }
 
-ivec2array::iterator nstile_brush_comp::begin()
+ivec2_vector::iterator nstile_brush_comp::begin()
 {
 	return m_brush.begin();
 }
@@ -62,7 +62,7 @@ bool nstile_brush_comp::contains(const ivec2 & pGridSpace)
 	return false;
 }
 
-nstile_brush_comp* nstile_brush_comp::copy(const NSComponent * pToCopy)
+nstile_brush_comp* nstile_brush_comp::copy(const nscomponent * pToCopy)
 {
 	if (pToCopy == NULL)
 		return NULL;
@@ -71,7 +71,7 @@ nstile_brush_comp* nstile_brush_comp::copy(const NSComponent * pToCopy)
 	return this;
 }
 
-ivec2array::iterator nstile_brush_comp::end()
+ivec2_vector::iterator nstile_brush_comp::end()
 {
 	return m_brush.end();
 }

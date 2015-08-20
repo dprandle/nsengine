@@ -14,9 +14,8 @@ This file contains all of the neccessary declarations for the nstile_comp class.
 #define NSTILE_COMP_H
 
 #include <nscomponent.h>
-#include <nspupper.h>
 
-class nstile_comp : public NSComponent
+class nstile_comp : public nscomponent
 {
 public:
 	template <class PUPer>
@@ -26,7 +25,7 @@ public:
 
 	virtual ~nstile_comp();
 
-	virtual nstile_comp * copy(const NSComponent * comp_);
+	virtual nstile_comp * copy(const nscomponent * comp_);
 
 	virtual void init();
 

@@ -14,7 +14,6 @@ This file contains all of the neccessary declarations for the nsplugin_manager c
 #define NSPLUGIN_MANAGER_H
 
 #include <nsres_manager.h>
-#include <nsglobal.h>
 #include <nsplugin.h>
 
 class nsplugin_manager : public nsres_manager

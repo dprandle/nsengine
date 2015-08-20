@@ -13,15 +13,21 @@ This file contains all of the neccessary declarations for the nscam_comp class.
 #ifndef NSCAMCOMP_H
 #define NSCAMCOMP_H
 
+#define DEFAULT_Z_NEAR 1.0f
+#define DEFAULT_Z_FAR 1000.0f
+#define DEFAULT_CAM_VIEW_Z -15.0f
+#define DEFAULT_CAM_SENSITIVITY 80.0f
+#define DEFAULT_CAM_SPEED 10.0f
+#define DEFAULT_CAM_ZOOM_FACTOR 3.0f
+#define DEFAULT_CAM_TOP_VIEW_HEIGHT 80.0f
+#define DEFAULT_FOV_ANGLE 45.0f
 
 #include <nscomponent.h>
-#include <nsmath.h>
-#include <nspupper.h>
 
 class nsentity;
 class nstimer;
 
-class nscam_comp : public NSComponent
+class nscam_comp : public nscomponent
 {
 public:
 	friend class nscamera_system;
@@ -61,7 +67,7 @@ public:
 
 	void compute_focus_transform();
 
-	virtual nscam_comp* copy(const NSComponent* to_copy_);
+	virtual nscam_comp* copy(const nscomponent* to_copy_);
 
 	const movement_t & elevate() const;
 

@@ -14,9 +14,8 @@ This file contains all of the neccessary declarations for the nsterrain_comp cla
 #define NSTERRAIN_COMP_H
 
 #include <nscomponent.h>
-#include <nspupper.h>
 
-class nsterrain_comp : public NSComponent
+class nsterrain_comp : public nscomponent
 {
 public:
 	template <class PUPer>
@@ -26,7 +25,7 @@ public:
 
 	virtual ~nsterrain_comp();
 
-	virtual nsterrain_comp * copy(const NSComponent * copy_);
+	virtual nsterrain_comp * copy(const nscomponent * copy_);
 
 	virtual void init();
 

@@ -14,17 +14,15 @@ This file contains all of the neccessary declarations for the nsvertex_array_obj
 #define NSVERTEX_ARRAY_OBJECT_H
 
 #include <nsgl_object.h>
-#include <myGL/glew.h>
-#include <vector>
-#include <nstexture.h>
-#include <nsglobal.h>
+#include <nsmap.h>
+#include <nsset.h>
 
 class nsbuffer_object;
 
 class nsvertex_array_object : public nsgl_object
 {
 public:
-	typedef std::map<uint32,std::set<uint32>> buffer_map;
+	typedef std::map<uint32,ui_set> buffer_map;
 	nsvertex_array_object();
 
 	void add(nsbuffer_object * buffer_, uint32 attrib_loc_);
