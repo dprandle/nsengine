@@ -2,7 +2,9 @@
 #include <nsengine.h>
 
 nsinput_map::nsinput_map()
-{}
+{
+	set_ext(DEFAULT_INPUT_MAP_EXTENSION);
+}
 
 nsinput_map::~nsinput_map()
 {
@@ -302,11 +304,13 @@ void nsinput_map::pup(nsfile_pupper * p)
 nsinput_map::trigger::trigger(
 	const nsstring & pName,
 	t_state triggerOn,
-	uint interestedAxis):
+	uint interestedAxis,
+	bool overwrite_lower_contexts_):
 	name(pName),
 	hash_name(0),
 	trigger_state(triggerOn),
-	axis_bitfield(interestedAxis)
+	axis_bitfield(interestedAxis),
+	overwrite_lower_contexts(overwrite_lower_contexts_)
 	{}
 
 void nsinput_map::trigger::add_key_mod(key_val mod)

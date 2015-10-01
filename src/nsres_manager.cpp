@@ -472,14 +472,16 @@ void nsres_manager::destroy_all()
 
 bool nsres_manager::destroy(nsresource * res)
 {
-	nsresource * res_ = remove(res);
-	if (res_ == NULL)
+	if (res != NULL)
 	{
-		dprint("nsres_manager::destroy - Couldn't destroy " + res_->name());
-		return false;
+		uint32 id = res->id();
+		delete res;
+		m_id_resmap.erase(id);
+		dprint("nsres_manager::remove - Succesfully removed resource " + res->name());
+		return true;
 	}
-	delete res_;
-	return true;
+	dprint("nsres_manager::destroy - Couldn't destroy null resource");
+	return false;
 }
 
 void nsres_manager::set_res_dir(const nsstring & pDirectory)

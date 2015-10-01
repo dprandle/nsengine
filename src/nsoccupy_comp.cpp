@@ -25,7 +25,6 @@ m_mesh_id(),
 m_mat_id(),
 nscomponent()
 {
-	add(0, 0, 0);
 	nsmesh * occ = nse.core()->get<nsmesh>(MESH_FULL_TILE);
 	if (occ == NULL)
 	{
@@ -42,9 +41,6 @@ nsoccupy_comp::~nsoccupy_comp()
 
 bool nsoccupy_comp::add(int32 x, int32 y, int32 z)
 {
-	//if (contains(x, y, z))
-		//return false;
-
 	return add(ivec3(x, y, z));
 }
 
@@ -59,6 +55,10 @@ ivec3_vector::iterator nsoccupy_comp::begin()
 	return m_spaces.begin();
 }
 
+void nsoccupy_comp::clear()
+{
+	m_spaces.clear();
+}
 /*!
 This function builds the occupied spaces from the bounding box around the object, assuming that the
 origin is the center of the object. This should be true for any object imported in to the engine.
@@ -67,31 +67,30 @@ uses the bounding box of the entire mesh.
 */
 void nsoccupy_comp::build(const nsbounding_box & pBox)
 {
-	int32 zCountUp = int32(abs(pBox.mMax.z) / Z_GRID);
-	if (fmod(abs(pBox.mMax.z), Z_GRID) > 0.01)
+	clear();
+	int32 zCountUp = int32(std::abs(pBox.mMax.z) / Z_GRID);
+	if (fmod(std::abs(pBox.mMax.z), Z_GRID) > 0.01)
 		++zCountUp;
 
-	int32 zCountDown = int32(abs(pBox.mMin.z) / Z_GRID);
-	if (fmod(abs(pBox.mMin.z), Z_GRID) > 0.01)
+	int32 zCountDown = int32(std::abs(pBox.mMin.z) / Z_GRID);
+	if (fmod(std::abs(pBox.mMin.z), Z_GRID) > 0.01)
 		++zCountDown;
 
-	int32 xCountRight = int32(abs(pBox.mMax.x) / X_GRID);
-	if (fmod(abs(pBox.mMax.x), X_GRID) > 0.01)
+	int32 xCountRight = int32(std::abs(pBox.mMax.x) / X_GRID);
+	if (fmod(std::abs(pBox.mMax.x), X_GRID) > 0.01)
 		++xCountRight;
 
-	int32 xCountLeft = int32(abs(pBox.mMin.x) / X_GRID);
-	if (fmod(abs(pBox.mMin.x), X_GRID) > 0.01)
+	int32 xCountLeft = int32(std::abs(pBox.mMin.x) / X_GRID);
+	if (fmod(std::abs(pBox.mMin.x), X_GRID) > 0.01)
 		++xCountLeft;
 
-	int32 yCountForward = int32(abs(pBox.mMax.y) / Y_GRID);
-	if (fmod(abs(pBox.mMax.y), Y_GRID) > 0.01)
+	int32 yCountForward = int32(std::abs(pBox.mMax.y) / Y_GRID);
+	if (fmod(std::abs(pBox.mMax.y), Y_GRID) > 0.01)
 		++yCountForward;
 
-	int32 yCountBackward = int32(abs(pBox.mMin.y) / Y_GRID);
-	if (fmod(abs(pBox.mMin.z), Y_GRID) > 0.01)
+	int32 yCountBackward = int32(std::abs(pBox.mMin.y) / Y_GRID);
+	if (fmod(std::abs(pBox.mMin.z), Y_GRID) > 0.01)
 		++yCountBackward;
-
-
 
 	for (int32 i = 0; i < zCountUp; ++i)
 	{

@@ -23,16 +23,6 @@ nsentity::nsentity() :m_components(), nsresource()
 	set_ext(DEFAULT_ENTITY_EXTENSION);
 }
 
-nsentity::nsentity(nsentity & toCopy) :m_components(), nsresource()
-{
-	auto iter = toCopy.begin();
-	while (iter != toCopy.end())
-	{
-		copy(iter->second);
-		++iter;
-	}
-}
-
 nsentity::~nsentity()
 {
 	clear();
@@ -81,6 +71,18 @@ bool nsentity::copy(nscomponent * toCopy, bool overwrite)
 
 	(*nc) = (*toCopy);
 	return true;
+}
+
+bool nsentity::copy_all(nsentity * to_copy, bool overwrite)
+{
+	bool ret = true;
+	auto c_iter = to_copy->begin();
+	while (c_iter != to_copy->end())
+	{
+		ret = ret && copy(c_iter->second, overwrite);
+		++c_iter;
+	}
+	return ret;
 }
 
 void nsentity::clear()
@@ -247,7 +249,7 @@ nscomponent * nsentity::remove(const nsstring & guid)
 void nsentity::post_update_all(bool pUpdate)
 {
 	auto iter = m_components.begin();
-	while (iter != m_components.end());
+	while (iter != m_components.end())
 	{
 		iter->second->post_update(pUpdate);
 		++iter;
@@ -274,10 +276,4 @@ void nsentity::update_scene()
 	nsscene * scene = nse.current_scene();
 	if (scene != NULL)
 		scene->update_comp_maps(m_plugin_id, m_id);
-}
-
-nsentity & nsentity::operator=(nsentity rhs)
-{
-	std::swap(m_components, rhs.m_components);
-	return *this;
 }

@@ -128,8 +128,9 @@ bool create_dir(const nsstring & path)
 	char tmp[256];
 	char *p = NULL;
 	size_t len;
+	nsstring stripped_path = nsres_manager::path_from_filename(path);
 
-	snprintf(tmp, sizeof(tmp),"%s",path.c_str());
+	snprintf(tmp, sizeof(tmp),"%s",stripped_path.c_str());
 	len = strlen(tmp);
 	if(tmp[len - 1] == '/')
 		tmp[len - 1] = 0;

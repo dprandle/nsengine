@@ -18,7 +18,7 @@ This file contains all of the neccessary declartations for the nsengine class.
 // Default relative directories
 #define DEFAULT_RESOURCE_DIR "resources/"
 #define DEFAULT_IMPORT_DIR "import/"
-#define DEFAULT_CORE_DIR "core/"
+#define DEFAULT_CORE_DIR "resources/core/"
 
 // Resource typenames
 // Must add entry here for any custom resource types
@@ -93,14 +93,14 @@ This file contains all of the neccessary declartations for the nsengine class.
 #define MOVE_SYS_TYPESTRING "nsmovement_system"
 #define RENDER_SYS_TYPESTRING "nsrender_system"
 #define SEL_SYS_TYPESTRING "nsselection_system"
-#define UI_SYS_TYPESTRING "NSUISystem"
+#define UI_SYS_TYPESTRING "nsui_system"
 #define INP_SYS_TYPESTRING "nsinput_system"
 #define PARTICLE_SYS_TYPESTRING "nsparticle_system"
 
 // System update priority
 #define ANIM_SYS_UPDATE_PR 70000
-#define CAM_SYS_UPDATE_PR 40000
-#define BUILD_SYS_UPDATE_PR 50000
+#define CAM_SYS_UPDATE_PR 50000
+#define BUILD_SYS_UPDATE_PR 40000
 #define MOVE_SYS_UPDATE_PR 60000
 #define PARTICLE_SYS_UPDATE_PR 80000
 #define RENDER_SYS_UPDATE_PR 90000

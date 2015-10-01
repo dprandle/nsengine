@@ -158,7 +158,8 @@ class nsinput_map : public nsresource
 		trigger(
 			const nsstring & name_="",
 			t_state trigger_state_=t_pressed,
-			uint interested_axes=0
+			uint interested_axes=0,
+			bool overwrite_lower_contexts_=true
 			);
 
 		void add_key_mod(key_val mod);
@@ -176,7 +177,7 @@ class nsinput_map : public nsresource
 		t_state trigger_state;
 		key_modifier_set key_modifiers;
 		mouse_modifier_set mouse_modifiers;
-		
+		bool overwrite_lower_contexts;
 	};
 
 	typedef std::unordered_multimap<key_val, trigger, EnumHash> key_trigger_map;
@@ -309,6 +310,7 @@ void pup(PUPer & p, nsinput_map::trigger & t, const nsstring & var_name)
 	pup(p, t.axis_bitfield, var_name + ".axis_bitfield");
 	pup(p, t.key_modifiers, var_name + ".key_modifiers");
 	pup(p, t.mouse_modifiers, var_name + ".mouse_modifiers");
+	pup(p, t.overwrite_lower_contexts, var_name + ".overwrite_lower_contexts");
 }
 
 #endif

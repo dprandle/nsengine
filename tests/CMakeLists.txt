@@ -46,5 +46,12 @@ elseif (WIN32)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
+
 add_executable(inputtest inputtest.cpp)
 set_target_properties(inputtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+add_executable(buildsystemtest buildsystemtest.cpp)
+set_target_properties(buildsystemtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+add_executable(skyboxtest skyboxtest.cpp)
+set_target_properties(skyboxtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

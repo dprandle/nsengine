@@ -18,7 +18,7 @@ This file contains all of the neccessary declartations for the nssystem class.
 
 class nstimer;
 class nsscene;
-class nsevent;
+//class nsevent;
 
 class nssystem : public nsevent_handler
 {

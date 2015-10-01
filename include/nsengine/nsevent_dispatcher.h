@@ -68,12 +68,9 @@ public:
 		while (currentListener != listenerSetIter->second.end())
 		{
 			m_listener_events[*currentListener].push_back(evnt);
-			++evnt->ref_count;
+			++(evnt->ref_count); // just in case
 			++currentListener;
 		}
-        nsevent * ev = evnt;
-        std::type_index eventT1(typeid(*evnt));
-        std::type_index eventT2(typeid(*ev));
 		return evnt;
 	}
 

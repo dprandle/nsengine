@@ -14,6 +14,14 @@ This file contains all of the neccessary declarations for the nsbuild_system cla
 #define NSBUILDSYSTEM_H
 
 #define ENT_OBJECT_BRUSH "objectbrush"
+#define ENT_MIRROR_BRUSH "mirrorbrush"
+#define NSINSERT_ENTITY "insert_entity"
+#define NSINITIAL_SNAP_BRUSH_Z "initial_snap_brush_z"
+#define NSSNAP_BRUSH_Z "snap_brush_z"
+#define BUILD_MODE_CTXT "build_mode"
+#define NSTOGGLE_BUILD "toggle_build"
+#define NSTOGGLE_BUILD_ERASE_MODE "toggle_build_erase_mode"
+#define NSTOGGLE_TILE_BUILD_MODE "toggle_tile_build_mode"
 
 #include <nssystem.h>
 
@@ -40,11 +48,13 @@ public:
 
 	void change_layer(const int32 & pAmount);
 
-	void enable(const bool & pEnable, const fvec2 & pMousePos);
+	void enable(const bool & pEnable);
 
 	void enable_overwrite(bool pEnable);
 
 	void enable_mirror(bool pEnable);
+
+	void enable_stamp_mode(bool enable);
 
 	void erase();
 
@@ -52,7 +62,9 @@ public:
 
 	const brush_t & brush_type();
 
-	nsentity * build_ent();
+	nsentity * tile_build_ent();
+
+	nsentity * object_build_ent();
 
 	const fvec3 & center() const;
 
@@ -72,7 +84,7 @@ public:
 
 	bool mirror() const;
 
-	void to_cursor(const fvec2 & pCursorPos, bool pUpdateCamFirst=false);
+	void to_cursor();
 
 	void paint();
 
@@ -86,31 +98,60 @@ public:
 
 	void set_tile_brush(nsentity * pBrush);
 
-	void set_build_ent(nsentity * pBuildEnt);
+	void set_object_build_ent(nsentity * pBuildEnt);
+
+	void set_tile_build_ent(nsentity * pBuildEnt);
 
 	void set_layer(const int32 & pLayer);
 
-	void setCenter(const fvec3 & pMirrorCenter);
+	void set_center(const fvec3 & pMirrorCenter);
 
-	void toggle(const fvec2 & pMousePos);
+	bool stamp_mode();
+
+	void toggle();
 
 	virtual void update();
 
 	virtual int32 update_priority();
 
 private:
+
+	enum input_trigger_t
+	{
+		insert_entity,
+		initial_snap_brush_z,
+		snap_brush_z,
+		toggle_build,
+		toggle_build_erase_mode,
+		toggle_tile_build_mode,
+		select_move_toggle // this is for snapping after z movement and continuing move mode
+	};
+	
+	bool _handle_state_event(nsstate_event * evnt);
+	bool _handle_action_event(nsaction_event * evnt);
+	bool _handle_cam_change_event(nscam_change_event * evnt);
+	
 	nsentity * m_tile_brush;
 	nsentity * m_object_brush;
 	nsentity * m_mirror_brush;
-	nsentity * m_build_ent;
+
+	nsentity * m_tile_build_ent;
+	nsentity * m_object_build_ent;
+
 	fvec3 m_mirror_center;
 	uint32 m_tile_brush_center_tform_id;
 	int32 m_layer;
+
 	mode_t m_current_mode;
 	brush_t m_current_brush_type;
 	bool m_overwrite;
 	bool m_enabled;
+
 	bool m_mirror_mode;
+
+	bool m_painting;
+	bool m_erasing;
+	bool m_stamp_mode;
 };
 
 

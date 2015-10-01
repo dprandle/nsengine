@@ -7,8 +7,30 @@
 #include <nsevent_dispatcher.h>
 #include <nsengine.h>
 #include <nsrender_system.h>
+#include <nsinput_system.h>
 
 GLFWwindow * win;
+
+fvec2 platform_normalized_mpos()
+{
+
+    double xPos = 0.0, yPos = 0.0; int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
+    glfwGetCursorPos(win, &xPos, &yPos);
+    glfwGetFramebufferSize(win, &frameBufX, &frameBufY);
+    glfwGetWindowSize(win, &winX, &winY);
+
+    yPos = winY - yPos; // Switch to opengl coords
+
+    // normalize coords
+    yPos /= double(frameBufY);
+    xPos /= double(frameBufX);
+
+    // so compilers wont complain turn in to floats explicitly
+    float normXPos = float(xPos);
+    float normYPos = float(yPos);
+
+	return fvec2(normXPos,normYPos);
+}
 
 bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title)
 {
@@ -387,45 +409,31 @@ void glfw_mousebutton_callback(GLFWwindow * pWindow, int32 pButton, int32 pActio
 	if (pAction == GLFW_REPEAT)
 		return;
 
-    double xPos = 0.0, yPos = 0.0; int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
-    glfwGetCursorPos(pWindow, &xPos, &yPos);
-    glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
-    glfwGetWindowSize(pWindow, &winX, &winY);
-
-    yPos = winY - yPos; // Switch to opengl coords
-
-    // normalize coords
-    yPos /= double(frameBufY);
-    xPos /= double(frameBufX);
-
-    // so compilers wont complain turn in to floats explicitly
-    float normXPos = float(xPos);
-    float normYPos = float(yPos);
-
+	fvec2 norm_mpos = platform_normalized_mpos();
     bool pressed = pAction == 1;
 
     switch (pButton)
     {
     case (GLFW_MOUSE_BUTTON_LEFT) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::left_button, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::left_button, pressed, norm_mpos);
         break;
     case (GLFW_MOUSE_BUTTON_RIGHT) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::right_button, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::right_button, pressed, norm_mpos);
         break;
     case (GLFW_MOUSE_BUTTON_MIDDLE) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::middle_button, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::middle_button, pressed, norm_mpos);
         break;
     case (GLFW_MOUSE_BUTTON_4) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_1, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_1, pressed, norm_mpos);
         break;
     case (GLFW_MOUSE_BUTTON_5) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_2, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_2, pressed, norm_mpos);
         break;
     case (GLFW_MOUSE_BUTTON_6) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_3, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_3, pressed, norm_mpos);
         break;
     case (GLFW_MOUSE_BUTTON_7) :
-        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_4, pressed, fvec2(normXPos, normYPos));
+        nse.event_dispatch()->push<nsmouse_button_event>(nsinput_map::aux_button_4, pressed, norm_mpos);
         break;
     default:
         break;
@@ -450,20 +458,8 @@ void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 
 void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset)
 {
-    double xPos = 0.0, yPos = 0.0;
-    glfwGetCursorPos(pWindow, &xPos, &yPos);
-
-    int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
-    glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
-    glfwGetWindowSize(pWindow, &winX, &winY);
-
-    yPos = winY - yPos; // Switch to opengl coords
-
-    // normalize coords
-    yPos /= double(frameBufY);
-    xPos /= double(frameBufX);
-
-    nse.event_dispatch()->push<nsmouse_scroll_event>(float(pYOffset), fvec2(float(yPos),float(xPos)));
+	fvec2 norm_mpos = platform_normalized_mpos();
+    nse.event_dispatch()->push<nsmouse_scroll_event>(float(pYOffset), norm_mpos);
 }
 
 void glfw_resizewindow_callback(GLFWwindow* window, int32 width, int32 height)

@@ -229,6 +229,7 @@ public:
 						 nsstring fname,
 						 bool prefixWithImportDir,
 						 const nsstring & meshname = "",
+						 bool occupy_comp = true, 
 						 bool pFlipUVs = true);
 
 	bool load_model_resources(nsstring fname,

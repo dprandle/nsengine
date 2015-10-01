@@ -534,9 +534,15 @@ nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname)
 }
 
 
-nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool prefixWithImportDir, const nsstring & meshname, bool flipuv)
+nsentity * nsplugin::load_model(
+	const nsstring & entname,
+	nsstring fname,
+	bool prefix_import_dir,
+	const nsstring & meshname,
+	bool occupy_comp,
+	bool flipuv)
 {
-	if (prefixWithImportDir)
+	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
 	nsentity * ent = create<nsentity>(entname);
@@ -554,9 +560,7 @@ nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool p
 	uint32 flag = 0;
 
 	if (flipuv)
-	{
 		flag = aiProcess_ConvertToLeftHanded;
-	}
 
 	Assimp::Importer importer;
 	const aiScene * scene = importer.ReadFile(fname.c_str(),
@@ -582,6 +586,12 @@ nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool p
 	nsmesh * renderMesh = manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
 	renderComp->set_mesh_id(m_id, renderMesh->id());
 
+	if (occupy_comp)
+	{
+		nsoccupy_comp * occ = ent->create<nsoccupy_comp>();
+		occ->build(renderMesh->aabb());
+	}
+	
 	if (scene->HasMaterials())
 	{
 		std::map<uint32, uint32> indexMap;
@@ -618,9 +628,9 @@ nsentity * nsplugin::load_model(const nsstring & entname, nsstring fname, bool p
 	return ent;
 }
 
-bool nsplugin::load_model_resources(nsstring fname,bool prefixWithImportDir, const nsstring & meshname, bool flipuv)
+bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const nsstring & meshname, bool flipuv)
 {
-	if (prefixWithImportDir)
+	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
 	nsstring sceneName = meshname;
@@ -856,6 +866,8 @@ uint32 nsplugin::resource_count()
 
 bool nsplugin::destroy(nsresource * res)
 {
+	if (res == NULL)
+		return false;
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->destroy(res);
 }

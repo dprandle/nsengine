@@ -79,7 +79,7 @@ template <class T>
 nsvec3<T> project(const nsvec3<T> & a, const nsvec3<T> & b);
 
 template <class T>
-nsvec3<T> projectPlane(const nsvec3<T> & a, const nsvec3<T> & normal_);
+nsvec3<T> project_plane(const nsvec3<T> & a, const nsvec3<T> & normal_);
 
 template <class T>
 nsvec3<T> reflect(const nsvec3<T> & incident_, const nsvec3<T> & normal_);
@@ -1072,7 +1072,7 @@ nsvec3<T> project(const nsvec3<T> & a, const nsvec3<T> & b)
 }
 
 template <class T>
-nsvec3<T> projectPlane(const nsvec3<T> & a, const nsvec3<T> & normal_)
+nsvec3<T> project_plane(const nsvec3<T> & a, const nsvec3<T> & normal_)
 {
 	nsvec3<T> ret(a);
 	ret.project_plane(normal_);

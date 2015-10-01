@@ -90,19 +90,13 @@ void nsevent_dispatcher::process(nsevent_handler * handler)
 	if (events == m_listener_events.end())
 		return;
 
-	auto iter = events->second.begin();
-	while (iter != events->second.end())
+	while (events->second.begin() != events->second.end())
 	{
-        std::type_index ti(typeid(*(*iter)));
-		if (events->first->handle_event(*iter))
-		{
-			--((*iter)->ref_count);
-			if ((*iter)->ref_count == 0)
-				delete (*iter);
-			iter = events->second.erase(iter);
-		}
-		else
-			++iter;
+		events->first->handle_event(events->second.front());
+		--(events->second.front()->ref_count);
+		if (events->second.front()->ref_count == 0)
+			delete events->second.front();
+		events->second.pop_front();
 	}
 }
 

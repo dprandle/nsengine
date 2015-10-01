@@ -16,6 +16,8 @@ This file contains all of the neccessary declarations for the NSEvent class.
 #ifndef NSEVENT_H
 #define NSEVENT_H
 
+#include <iostream>
+
 class nsevent
 {
 public:
@@ -86,6 +88,8 @@ public:
 		nsevent()
 	{}
 
+	virtual ~nsaction_event() {};
+
 	uint32 trigger_hash_name;
 	nsinput_map::axis_map axes;
 };
@@ -109,6 +113,13 @@ class nssel_focus_event : public nsevent
 		focus_id(focid_)
 	{}
 	uivec3 focus_id;
+};
+
+class nscam_change_event : public nsevent
+{
+  public:
+	nscam_change_event()
+	{}
 };
 
 #endif

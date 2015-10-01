@@ -9,6 +9,7 @@
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
+#include <iostream>
 
 #include <IL/il.h>
 #include <soil/SOIL.h>
@@ -44,16 +45,7 @@ nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname)
 			return NULL;
 
 		if (texExtension == ".cube" || texExtension == ".CUBE")
-		{
-			return load_cubemap(
-				texName + "_front.png",
-				texName + "_back.png",
-				texName + "_top.png",
-				texName + "_bottom.png",
-				texName + "_left.png",
-				texName + "_right.png",
-				fname);
-		}
+			return load_cubemap(fname,".png");
 		else
 			return load_cubemap(fname);
 	}
@@ -211,7 +203,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		ilGenImages(1, &imageID);
 		ilBindImage(imageID);
 
-		int32 worked = ilLoadImage((const ILstring)fNames[i].c_str());
+		int32 worked = ilLoadImage(fNames[i].c_str());
 		int32 converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 		if (!worked || !converted)
 		{
@@ -249,6 +241,33 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	tex->unbind();
 	dprint("nstex_manager::loadCubemap Successfully loaded NSTexCubemap with name " + tex->name());
 	return tex;
+}
+
+nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname, const nsstring & cube_all_ext)
+{
+	nsstring cube_name = name_from_filename(fname);		
+	if (cube_all_ext.find_first_of(".") == nsstring::npos)
+	{
+		return load_cubemap(
+			cube_name + "_front." + cube_all_ext,
+			cube_name + "_back." + cube_all_ext,
+			cube_name + "_top." + cube_all_ext,
+			cube_name + "_bottom." + cube_all_ext,
+			cube_name + "_left." + cube_all_ext,
+			cube_name + "_right." + cube_all_ext,
+			fname);
+	}
+	else
+	{
+		return load_cubemap(
+			cube_name + "_front" + cube_all_ext,
+			cube_name + "_back" + cube_all_ext,
+			cube_name + "_top" + cube_all_ext,
+			cube_name + "_bottom" + cube_all_ext,
+			cube_name + "_left" + cube_all_ext,
+			cube_name + "_right" + cube_all_ext,
+			fname);		
+	}
 }
 
 nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname)

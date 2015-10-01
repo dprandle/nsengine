@@ -184,8 +184,6 @@ public:
 
 	bool snapped(uint32 tform_id_ = 0) const;
 
-	bool calc_local_transform(uint32 tform_id_ = 0) const;
-
 	bool parent_enabled(uint32 tform_id_ = 0) const;
 
 	bool xfb_enabled();

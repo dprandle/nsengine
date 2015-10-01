@@ -508,11 +508,16 @@ bool nsscene::remove(nsentity * entity, uint32 tformid)
 	if (tComp == NULL)
 		return false;
 
+	nssel_comp * sel_cmp = entity->get<nssel_comp>();
+
 	uint32 size = tComp->count();
 	fvec3 pos = tComp->wpos(tformid);
 	nsoccupy_comp * occComp = entity->get<nsoccupy_comp>();
 
 
+    //if (sel_cmp != NULL)
+    //	sel_cmp->remove(tformid);
+	
 	uint32 newSize = tComp->remove(tformid);
 	bool ret = (newSize == (size - 1));
 

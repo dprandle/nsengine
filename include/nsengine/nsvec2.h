@@ -4,6 +4,7 @@
 #include <nsstring.h>
 #include <cmath>
 #include <stdexcept>
+#include <nstypes.h>
 
 template <class T>
 struct nsvec3;
@@ -122,7 +123,10 @@ struct nsvec2
 
 	T angle(bool rads_ = false) const
 	{
-		return angle_to(nsvec2<T>(1, 0),rads_);
+		T ret = angle_to(nsvec2<T>(1, 0),rads_);
+		if (y < 0)
+			ret *= -1;
+		return ret;
 	}
 
 	T angle_to(const nsvec2<T> & vec_, bool rads_ = false) const

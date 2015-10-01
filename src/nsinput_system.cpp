@@ -12,7 +12,6 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 
 #include <iostream>
 
-
 #include <nsinput_system.h>
 #include <nsevent.h>
 #include <nsevent_dispatcher.h>
@@ -29,6 +28,11 @@ nsinput_system::nsinput_system() :
 nsinput_system::~nsinput_system()
 {
  
+}
+
+const fvec2 & nsinput_system::cursor_pos()
+{
+	return m_current_pos;
 }
 
 bool nsinput_system::key_event(nskey_event * evnt)
@@ -98,7 +102,7 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_released)
 					_create_action_event(keyIter.first->second);
 				
-				foundInContext = true;
+				foundInContext = keyIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++keyIter.first;
 		}
@@ -152,7 +156,7 @@ void nsinput_system::_key_release(nsinput_map::key_val pKey)
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_pressed)
 					_create_action_event(keyIter.first->second);
 				
-				foundInContext = true;
+				foundInContext = keyIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++keyIter.first;
 		}
@@ -201,7 +205,7 @@ void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
 				_create_action_event(mouseIter.first->second);
-				foundInContext = true;
+				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++mouseIter.first;
 		}
@@ -236,7 +240,7 @@ void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const f
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_released)
 					_create_action_event(mouseIter.first->second);
 
-				foundInContext = true;
+				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++mouseIter.first;
 		}
@@ -274,7 +278,7 @@ void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_pressed)
 					_create_action_event(mouseIter.first->second);
 
-				foundInContext = true;
+				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++mouseIter.first;
 		}
@@ -304,7 +308,7 @@ void nsinput_system::_mouse_scroll(float pDelta, const fvec2 & mousePos)
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
 				_create_action_event(mouseIter.first->second);
-				foundInContext = true;
+				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++mouseIter.first;
 		}
@@ -328,7 +332,7 @@ void nsinput_system::push_context(const nsstring & pName)
 
 	if (ctxt == NULL)
 		return;
-	
+
 	m_ctxt_stack.push_back(ctxt);
 }
 
@@ -368,7 +372,6 @@ bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 {
 	nsinput_map * inmap = nse.resource<nsinput_map>(m_input_map_id);
 	
-
 	// If Key_Any is not part of key modifiers than there must be a key for key match
 	if ( (t.key_modifiers.find(nsinput_map::key_any) == t.key_modifiers.end()) &&
 		 t.key_modifiers.size() != m_key_modifiers.size())
@@ -387,7 +390,7 @@ bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 		// If modifier isnt allowed or if it is not in current mod stack then return false
 		if ((*keyIter != nsinput_map::key_any) &&
 			(!inmap->allowed_mod(*keyIter) || m_key_modifiers.find(*keyIter) == m_key_modifiers.end()))
-			return false;
+			return false;			
 		++keyIter;
 	}
 

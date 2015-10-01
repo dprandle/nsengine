@@ -68,11 +68,11 @@ public:
 
 	bool empty();
 
-	void enable_layer_mode(const bool & pMode);
-
-	int32 layer() const;
-
 	const uivec3 & center();
+
+	void enable_mirror_selection(bool enable_);
+
+	bool mirror_selection();
 
 	virtual int32 draw_priority();
 
@@ -83,8 +83,6 @@ public:
 	uivec3 pick(const fvec2 & mpos);
 
 	virtual void init();
-
-	bool layer_mode() const;
 
 	bool valid_brush();
 
@@ -116,9 +114,9 @@ public:
 
 	void rotate(const fquat & orientation);
 
-	void scale(nsentity * ent, const fvec3 & pAmount);
+	void scale(nsentity * ent, const fvec3 & amount_);
 
-	void scale(const fvec3 & pAmount);
+	void scale(const fvec3 & amount_);
 
 	void scale(nsentity * ent, float x, float y, float z);
 
@@ -132,9 +130,9 @@ public:
 
 	void set_final_fbo(uint32 fbo);
 
-	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
+	void set_focus_entity(const uivec3 & focus_ent);
 
-	void set_layer(int32 pLayer);
+	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
 
 	void set_shader(nsselection_shader * selShader);
 
@@ -158,21 +156,21 @@ public:
 
 	void tile_swap(nsentity * newtile);
 
-	void translate(nsentity * ent, const fvec3 & pAmount);
+	void translate(nsentity * ent, const fvec3 & amount_);
 
-	void translate(const fvec3 & pAmount);
+	void translate(const fvec3 & amount_);
 
 	void translate(float x, float y, float z);
 
 	void translate(nsentity * ent, float x, float y, float z);
 
-	void translate(nsentity * ent, nstform_comp::dir_vec pDir, float pAmount);
+	void translate(nsentity * ent, nstform_comp::dir_vec pDir, float amount_);
 
-	void translate(nstform_comp::dir_vec pDir, float pAmount);
+	void translate(nstform_comp::dir_vec pDir, float amount_);
 
-	void translate(nsentity * ent, nstform_comp::world_axis pDir, float pAmount);
+	void translate(nsentity * ent, nstform_comp::world_axis pDir, float amount_);
 
-	void translate(nstform_comp::world_axis pDir, float pAmount);
+	void translate(nstform_comp::world_axis pDir, float amount_);
 
 	virtual void update();
 
@@ -248,12 +246,12 @@ protected:
 	bool m_moving;
 	bool m_toggle_move;
 	bool m_send_foc_event;
+	bool m_mirror_selection;
 	
 	fvec2 m_pick_pos;
 	fvec3 m_cached_point;
-	bool m_layer_mode;
+
 	bool m_draw_occ;
-	int32 m_layer;
 	fvec2 m_cached_point_last;
 	uint32 m_final_buf;
 	uint32 m_picking_buf;
@@ -261,3 +259,4 @@ protected:
 };
 
 #endif
+

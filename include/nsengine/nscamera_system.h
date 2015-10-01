@@ -20,9 +20,17 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 #define NSCAM_TILTPAN "camera_tilt_pan"
 #define NSCAM_MOVE "camera_move"
 #define NSCAM_ZOOM "camera_zoom"
-#define NSCAM_TOPVIEW "camera_top_view"
-#define NSCAM_ISOVIEW "camera_iso_view"
-#define NSCAM_FRONTVIEW "camera_front_view"
+
+#define NSCAM_TOPVIEW_0 "camera_top_view_0"
+#define NSCAM_ISOVIEW_0 "camera_iso_view_0"
+#define NSCAM_FRONTVIEW_0 "camera_front_view_0"
+#define NSCAM_TOPVIEW_120 "camera_top_view_120"
+#define NSCAM_ISOVIEW_120 "camera_iso_view_120"
+#define NSCAM_FRONTVIEW_120 "camera_front_view_120"
+#define NSCAM_TOPVIEW_240 "camera_top_view_240"
+#define NSCAM_ISOVIEW_240 "camera_iso_view_240"
+#define NSCAM_FRONTVIEW_240 "camera_front_view_240"
+
 #define NSCAM_TOGGLEMODE "camera_toggle_mode"
 
 #include <nssystem.h>
@@ -34,8 +42,7 @@ class nsstate_event;
 
 class nscamera_system : public nssystem
 {
-public:
-
+  public:
 	enum camera_mode {
 		mode_free, /*!< Free mode - camera moves as fps */
 		mode_focus /*!< Focus mode - camera focuses on single object */
@@ -50,10 +57,17 @@ public:
 	/*!
 	Enum holds 3 different pre-set camera view identifiers
 	*/
-	enum camera_view_t {
-		view_top, /*!< Top down camera view */
-		view_iso, /*!< Isometric camera view */
-		view_front /*!< Front on camera view */
+	enum camera_view_t
+	{
+		view_top_0,
+		view_top_120,
+		view_top_240,
+		view_iso_0,
+		view_iso_120,
+		view_iso_240,
+		view_front_0,
+		view_front_120,
+		view_front_240
 	};
 
 	nscamera_system();
@@ -91,7 +105,7 @@ public:
 
 	virtual int32 update_priority();
 
-private:
+  private:
 
 	enum input_trigger_t
 	{
@@ -102,12 +116,21 @@ private:
 		camera_tilt_pan,
 		camera_move,
 		camera_zoom,
-		camera_top_view,
-		camera_iso_view,
-		camera_front_view,
+		camera_top_view_0,
+		camera_iso_view_0,
+		camera_front_view_0,
+		camera_top_view_120,
+		camera_iso_view_120,
+		camera_front_view_120,
+		camera_top_view_240,
+		camera_iso_view_240,
+		camera_front_view_240,
 		camera_toggle_mode
 	};
 
+	void _on_cam_rotate_horizontal(nscam_comp * pCam, nstform_comp * tComp, bool left);
+	void _on_cam_rotate_vertical(nscam_comp * pCam, nstform_comp * tComp, bool up);
+	
     void _on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
 	void _on_cam_move(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
 	void _on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, float pScroll);
@@ -121,9 +144,12 @@ private:
 	float m_strafe_sensitivity;
 	float m_anim_time;
 	float m_anim_elapsed;
-	fquat m_start_orient, m_final_orient;
+
+	fquat m_start_orient, m_start_local_orient, m_final_orient;
 	fvec3 m_start_pos, m_final_pos;
 	bool m_anim_view, m_switch_back;
+
+
 	ivec2 m_free_mode_inverted;
 	ivec2 m_focus_mode_inverted;
 	uivec3 m_focus_ent;

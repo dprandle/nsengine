@@ -16,6 +16,8 @@ This file contains all of the neccessary declarations for the nsinput_system cla
 #include <nssystem.h>
 #include <nsinput_map.h>
 
+fvec2 platform_normalized_mpos();
+
 class nsinput_system : public nssystem
 {
 public:
@@ -25,6 +27,8 @@ public:
 	nsinput_system();
 
 	~nsinput_system();
+
+	const fvec2 & cursor_pos();
 
 	bool key_event(nskey_event * evnt);
 

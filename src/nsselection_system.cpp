@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 */
 
 #include <iostream>
-
+#include <nsvector.h>
 #include <nsselection_system.h>
 #include <nsscene_manager.h>
 #include <nsscene.h>
@@ -41,11 +41,10 @@ nsselection_system::nsselection_system() :
 	m_focus_ent(),
 	m_pick_pos(),
 	m_selected_ents(),
+	m_mirror_selection(false),
 	m_sel_shader(NULL),
 	m_cached_point(),
 	m_moving(false),
-	m_layer_mode(false),
-	m_layer(0),
 	m_cached_point_last(),
 	m_draw_occ(false),
 	m_final_buf(0),
@@ -59,6 +58,16 @@ nsselection_system::nsselection_system() :
 nsselection_system::~nsselection_system()
 {}
 
+void nsselection_system::enable_mirror_selection(bool enable_)
+{
+	m_mirror_selection = enable_;
+}
+
+bool nsselection_system::mirror_selection()
+{
+	return m_mirror_selection;
+}
+
 bool nsselection_system::add(nsentity * ent, uint32 tformid)
 {
 	if (ent == NULL)
@@ -68,8 +77,9 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 	if (selComp == NULL)
 		return false;
 
-	// TODO: Make this an event - that is a mirror mode event to put build and sel system in mirror mode
-	if (nse.system<nsbuild_system>()->mirror())
+	// This little peice of code makes it so that when selecting stuff in mirror mode the mirrored stuff is
+	// also selected
+	if (m_mirror_selection)
 	{
 		nsscene * scn = nse.current_scene();
 		if (scn == NULL)
@@ -87,14 +97,10 @@ bool nsselection_system::add(nsentity * ent, uint32 tformid)
 		newPos.z = wp.z;
 
 		uivec3 id = scn->grid().get(newPos);
-		if (id != 0)
-		{
-			nsentity * entAdd = scn->entity(id.x,id.y);
-			m_selected_ents.insert(entAdd);
-			entAdd->get<nssel_comp>()->set_selected(true);
-			entAdd->get<nssel_comp>()->add(id.y);
-		}
+		if (id.xy() == ent->full_id())
+			selComp->add(id.z);
 	}
+	
 	m_selected_ents.insert(ent);
 	selComp->set_selected(true);
 	return selComp->add(tformid);
@@ -146,45 +152,11 @@ bool nsselection_system::contains(const uivec3 & itemid)
 	return false;
 }
 
-// bool nsselection_system::handleEvent(NSEvent * pEvent)
-// {
-// 	if (pEvent->mID == NSEvent::SelPick)
-// 	{
-// 		NSSelPickEvent * selEvent = (NSSelPickEvent*)pEvent;
-// 		mPickPos = selEvent->mPickPos;
-// 		return true;
-// 	}
-// 	else if (pEvent->mID == NSEvent::ClearSelection)
-// 	{
-// 		clear();
-// 		return true;
-// 	}
-// 	else if (pEvent->mID == NSEvent::SelSet)
-// 	{
-// 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent;
-// 		mFocusEnt = selEvent->mEntRefID;
-// 		//set(mScene->get(mFocusEnt.y)->get<nssel_comp>(), mFocusEnt.z);
-// 		return true;
-// 	}
-// 	else if (pEvent->mID == NSEvent::SelAdd)
-// 	{
-// 		// This will handle any add to selection events denoted as SelAdd
-// 		NSSelSetEvent * selEvent = (NSSelSetEvent*)pEvent; // Get the specific event
-
-// 		// Get the selection entity and make sure it is valid
-// 		nsentity * selEnt = nse.resource<nsentity>(selEvent->mEntRefID.x, selEvent->mEntRefID.y);
-// 		if (selEnt == NULL)
-// 		{
-// 			dprint("nsselection_system::handleEvent Selection entity sent in event is NULL");
-// 			return false;
-// 		}
-
-// 		// Add the selection to the current selection
-// 		add(selEnt, selEvent->mEntRefID.z);
-// 		return true;
-// 	}
-// 	return false;
-// }
+void nsselection_system::set_focus_entity(const uivec3 & focus_ent)
+{
+	m_focus_ent = focus_ent;
+	m_send_foc_event = true;
+}
 
 void nsselection_system::change_layer(int32 pChange)
 {
@@ -214,7 +186,7 @@ bool nsselection_system::collision()
 			auto selIter = selComp->begin();
 			while (selIter != selComp->end())
 			{
-				noCollision = !scene->grid().occupied(occComp->spaces(), tComp->wpos(*selIter)) && noCollision;
+				noCollision = noCollision && !scene->grid().occupied(occComp->spaces(), tComp->wpos(*selIter));
 				++selIter;
 			}
 		}			
@@ -233,7 +205,7 @@ void nsselection_system::clear()
 	}
 	m_selected_ents.clear();
 	m_focus_ent = uivec3();
-	//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
+	m_send_foc_event = true;
 }
 
 void nsselection_system::set_picking_fbo(uint32 fbo)
@@ -476,7 +448,7 @@ void nsselection_system::draw()
 	if (nse.system<nsbuild_system>()->mirror())
 	{
 		nsmesh * tileM = nse.core()->get<nsmesh>(MESH_FULL_TILE);
-		fvec3 mypos = nse.system<nsbuild_system>()->mirror();
+		fvec3 mypos = nse.system<nsbuild_system>()->center();
 		mypos.z = nse.system<nsbuild_system>()->layer() * Z_GRID;
 		m_sel_shader->set_transform(translation_mat4(mypos));
 		for (uint32 i = 0; i < tileM->count(); ++i)
@@ -723,11 +695,6 @@ void nsselection_system::del()
 bool nsselection_system::empty()
 {
 	return m_selected_ents.empty();
-}
-
-void nsselection_system::enable_layer_mode(const bool & pMode)
-{
-	m_layer_mode = pMode;
 }
 
 void nsselection_system::init()
@@ -977,13 +944,12 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	fvec3 normal;
 
 	fvec3 targetVec = (camc->focus_orientation() * camTForm->orientation()).target();
-	fvec3 projVec = projectPlane(targetVec, fvec3(0.0f,0.0f,-1.0f));
+	fvec3 projVec = project_plane(targetVec, fvec3(0.0f,0.0f,-1.0f));
 	fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
 	
 	float angle = targetVec.angle_to(projVec);
 	float angleX = projVec.xy().angle_to(projVecX);
-
-
+	
 	// Set normal if not moving in a single plane
 	if ((axis_ == (axis_x | axis_y | axis_z) && angle > 35.0f) || (axis_ & axis_z) != axis_z)
 		normal.set(0.0f,0.0f,-1.0f);
@@ -1010,11 +976,6 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	fpos -= originalPos;	
 	fpos %= fvec3(float((axis_ & axis_x) == axis_x), float((axis_ & axis_y) == axis_y), float((axis_ & axis_z) == axis_z));
 	m_total_frame_translation += fpos;
-}
-
-int32 nsselection_system::layer() const
-{
-	return m_layer;
 }
 
 const uivec3 & nsselection_system::center()
@@ -1117,28 +1078,28 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 	nstform_comp * tc = ent->get<nstform_comp>();
 	fvec3 original_pos = tc->wpos(pickid.z);
 	
-	auto iter = m_selected_ents.find(ent);
-	if (iter != m_selected_ents.end())
-	{
-		auto sel_iter = sc->begin();
-		uint closest_tformid = *sel_iter;
-		while (sel_iter != sc->end())
-		{
-			if ( (original_pos - tc->wpos(*sel_iter)).length_sq() <
-				 (original_pos - tc->wpos(closest_tformid)).length_sq() )
-				closest_tformid = *sel_iter;
-			++sel_iter;
-		}
-		m_focus_ent.set(pickid.xy(),closest_tformid);
-	}
-	else
-	{
-		auto entFirst = m_selected_ents.begin();
-		nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
-		auto first = selComp->begin();
-		m_focus_ent.set((*entFirst)->full_id(), *first);
-	}
-	m_send_foc_event = true;
+	// auto iter = m_selected_ents.find(ent);
+	// if (iter != m_selected_ents.end())
+	// {
+	// 	auto sel_iter = sc->begin();
+	// 	uint closest_tformid = *sel_iter;
+	// 	while (sel_iter != sc->end())
+	// 	{
+	// 		if ( (original_pos - tc->wpos(*sel_iter)).length_sq() <
+	// 			 (original_pos - tc->wpos(closest_tformid)).length_sq() )
+	// 			closest_tformid = *sel_iter;
+	// 		++sel_iter;
+	// 	}
+	// 	m_focus_ent.set(pickid.xy(),closest_tformid);
+	// }
+	// else
+	// {
+	// 	auto entFirst = m_selected_ents.begin();
+	// 	nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
+	// 	auto first = selComp->begin();
+	// 	m_focus_ent.set((*entFirst)->full_id(), *first);
+	// }
+	// m_send_foc_event = true;
 }
 
 void nsselection_system::remove(nsentity * ent, uint32 pTFormID)
@@ -1418,11 +1379,6 @@ void nsselection_system::set_hidden_state(nstform_comp::h_state pState, bool pSe
 	}
 }
 
-void nsselection_system::set_layer(int32 pLayer)
-{
-	m_layer = pLayer;
-}
-
 void nsselection_system::set_shader(nsselection_shader * selShader_)
 {
 	m_sel_shader = selShader_;
@@ -1678,11 +1634,6 @@ void nsselection_system::translate(nstform_comp::world_axis pDir, float pAmount)
 	}
 }
 
-bool nsselection_system::layer_mode() const
-{
-	return m_layer_mode;
-}
-
 bool nsselection_system::valid_brush()
 {
 	if (m_selected_ents.empty())
@@ -1738,15 +1689,10 @@ bool nsselection_system::valid_tile_swap()
 
 void nsselection_system::update()
 {
-
 	nsscene * scn = nse.current_scene();
 	if (scn == NULL)
 		return;
-	nsentity * ent = scn->entity(m_focus_ent.xy());
-	if (ent == NULL)
-		return;
-	nstform_comp * foc_tform = ent->get<nstform_comp>();
-
+	
 	if (m_send_foc_event)
 	{
 		nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
@@ -1755,46 +1701,59 @@ void nsselection_system::update()
 
 	if (m_toggle_move)
 	{
-		if (m_moving)
+		m_toggle_move = false;
+		nsentity * ent = scn->entity(m_focus_ent.xy());
+		if (ent != NULL)
 		{
-			fvec3 originalPos = foc_tform->wpos(m_focus_ent.z);
-			m_cached_point = originalPos;
-			remove_from_grid();
-		}
-		else
-		{
-			snap();
-			if (!collision())
-			{
-				foc_tform->compute_transform(m_focus_ent.z);
-				fvec3 pTranslate = m_cached_point - foc_tform->wpos(m_focus_ent.z);
-				translate(pTranslate);
-				set_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
+			nstform_comp * foc_tform = ent->get<nstform_comp>();
 
-				if (!add_to_grid())
-				{
-					dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
-				}
+			if (m_moving)
+			{
+				fvec3 originalPos = foc_tform->wpos(m_focus_ent.z);
+				m_cached_point = originalPos;
+				if (!nse.system<nsbuild_system>()->enabled())
+					remove_from_grid();
 			}
 			else
 			{
-				fvec3 pos = foc_tform->wpos(m_focus_ent.z);
-				scn->grid().snap(pos);
-				add_to_grid();
-				nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
+				snap();
+				if (!collision())
+				{
+					foc_tform->compute_transform(m_focus_ent.z);
+					fvec3 pTranslate = m_cached_point - foc_tform->wpos(m_focus_ent.z);
+					translate(pTranslate);
+					set_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
+
+					if (!add_to_grid())
+					{
+						dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
+					}
+				}
+				else
+				{
+					fvec3 pos = foc_tform->wpos(m_focus_ent.z);
+					scn->grid().snap(pos);
+					if (!nse.system<nsbuild_system>()->enabled())
+						add_to_grid();
+					nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
+				}
+				m_cached_point = fvec3();
 			}
-			m_cached_point = fvec3();
 		}
-		m_toggle_move = false;
 	}
 
 	if (m_moving)
-	{		
-		if (!collision())
-			set_color(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
-		else
-			reset_color();
+	{
+		if (!nse.system<nsbuild_system>()->enabled())
+		{
+			if (!collision())
+				set_color(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+			else
+				reset_color();
+		}
+		
 		translate(m_total_frame_translation);
+		
 		m_total_frame_translation = 0.0f;
 	}
 }

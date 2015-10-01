@@ -1,0 +1,107 @@
+* DONE Rename Everything [100%]
+** DONE Managers [100%]
+*** DONE NSResManager
+*** DONE NSMatManager
+*** DONE NSTexManager
+*** DONE NSEntityManager
+*** DONE NSPluginManager
+*** DONE NSSceneManager
+*** DONE NSAnimManager
+*** DONE NSInputMapManager
+*** DONE NSMeshManager
+*** DONE NSShaderManager
+** DONE Resource [100%]
+*** DONE NSResource
+*** DONE NSAnimSet
+*** DONE NSMesh
+*** DONE NSShader (and all subclasses)
+*** DONE NSTexture (and all subclasses)
+*** DONE NSMaterial
+*** DONE NSScene
+*** DONE NSPlugin
+*** DONE NSInputMap
+*** DONE NSEntity
+** DONE Systems [100%]
+*** DONE NSSystem
+*** DONE NSRenderSystem
+*** DONE NSInputSystem
+*** DONE NSSelectionSystem
+*** DONE NSMovementSystem
+*** DONE NSCameraSystem
+*** DONE NSAnimationSystem
+*** DONE NSParticleSystem
+*** DONE NSBuildSystem
+** DONE Components [100%]
+*** DONE NSComponent
+*** DONE NSCamComp
+*** DONE NSInputComp
+*** DONE NSSelComp
+*** DONE NSTFormComp
+*** DONE NSRenderComp
+*** DONE NSTileComp
+*** DONE NSTileBrushComp
+*** DONE NSAnimComp
+*** DONE NSTerrainComp
+*** DONE NSLightComp
+*** DONE NSOccupyComp
+*** DONE NSParticleComp
+** DONE Math [100%]
+*** DONE NSQuat
+*** DONE NSVec2
+*** DONE NSVec3
+*** DONE NSVec4
+*** DONE NSMat2
+*** DONE NSMat3
+*** DONE NSMat4
+*** DONE Math functions
+** DONE Other OpenGL Classes [100%]
+*** DONE NSBufferObject
+*** DONE NSGLObject
+*** DONE NSTransformFeedbackObject
+*** DONE NSVertexArrayObject
+*** DONE NSFramebuffer
+** DONE Events [100%]
+*** DONE NSEvent
+*** DONE NSEventDispatcher
+*** DONE NSEventHandler
+** DONE Other [100%]
+*** DONE NSCallback
+*** DONE NSDebug
+*** DONE NSEngine
+*** DONE NSFactory
+*** DONE NSFileos functions
+*** DONE NSLogFile
+*** DONE NSPupper
+*** DONE NSTileGrid
+*** DONE NSTimer
+* DONE Redistribute "nsglobal"
+* TODO Get build system working
+** DONE Get tile brushes working again
+** DONE Get object brushes working again
+** DONE Rework build system events
+* TODO Testing
+** TODO Test Animation System again
+** TODO Test lighting parameters stuff
+** TODO Test particle system make sure works
+** TODO Test loading and saving of each resource type
+*** TODO Map
+*** TODO Mesh
+*** TODO Material
+*** TODO Animation
+*** TODO Plugins
+*** TODO Texture
+*** TODO Shader
+*** TODO Entity
+*** DONE InputMap
+** TODO Test skybox
+** TODO Test fog
+* TODO Create UI System
+* TODO Create audio system
+* TODO Create thread mechanism full multiplatform
+* TODO Reintegrate the new engine version in to the toolkit
+* TODO Create method for transparency
+
+
+* Things to Fix
+The build system crashed in mirror mode with the tile brush
+Also can't start in tile brush mode - guessing that its something to do with initial conditions and build ent being null

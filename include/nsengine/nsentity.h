@@ -14,10 +14,6 @@
 #define NSENTITY_H
 
 #include <nstform_comp.h>
-// #include <nsanim_comp.h>
-// #include <nscam_comp.h>
-// #include <nsrender_comp.h>
-// #include <nslight_comp.h>
 #include <nsresource.h>
 #include <nsengine.h>
 
@@ -30,12 +26,8 @@ public:
 	template <class PUPer>
 	friend void pup(PUPer & p, nsentity & ent);
 
-	friend void swap(const nsentity & first, const nsentity & second);
-
 	nsentity();
 	~nsentity();
-
-	nsentity(nsentity & copy);
 
 	bool add(nscomponent * pComp);
 
@@ -45,6 +37,8 @@ public:
 	void clear();
 
 	bool copy(nscomponent * toCopy, bool overwrite = true);
+
+	bool copy_all(nsentity * to_copy, bool overwrite = true);
 
 	template<class comp_type>
 	comp_type * create()
@@ -135,8 +129,6 @@ public:
 	}
 
 	bool update_posted(const nsstring & compType);
-
-	nsentity & operator=(nsentity rhs);
 
 private:
 	comp_set m_components;

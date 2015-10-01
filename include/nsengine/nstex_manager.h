@@ -88,6 +88,8 @@ public:
 	
 	virtual nstex_cubemap * load_cubemap(const nsstring & fname);
 
+	virtual nstex_cubemap * load_cubemap(const nsstring & fname, const nsstring & cube_all_ext);
+
 	virtual nstex_cubemap * load_cubemap(const nsstring & pXPlus,
 									   const nsstring & pXMinus,
 									   const nsstring & pYPlus,

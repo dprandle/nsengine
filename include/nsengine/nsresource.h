@@ -22,6 +22,7 @@
 #define DEFAULT_SCENE_EXTENSION ".map"
 #define DEFAULT_ENTITY_EXTENSION ".ent"
 #define DEFAULT_PLUGIN_EXTENSION ".bbp"
+#define DEFAULT_INPUT_MAP_EXTENSION ".nsi"
 #define CUBEMAP_TEX_EXTENSION ".cube"
 
 #include <nspupper.h>

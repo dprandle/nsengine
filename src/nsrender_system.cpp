@@ -508,7 +508,9 @@ void nsrender_system::init()
 	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
+	nsmesh * msh = cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
+	msh->bake_node_rotation(orientation(fvec4(1,0,0,180)));
+	msh->bake_node_scaling(fvec3(2,2,2));
 }
 
 void nsrender_system::enable_debug_draw(bool pDebDraw)
@@ -644,7 +646,7 @@ void nsrender_system::update()
 						terh,
 						(*iter)->id(),
 						(*iter)->plugin_id(),
-						tComp->count(),
+						tComp->visible_count(),
 						rComp->cast_shadow()));
 					m_shader_mat_map[shader].insert(mat);
 				}
