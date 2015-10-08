@@ -463,8 +463,7 @@ void nsselection_system::draw()
 			m_sel_shader->set_has_bones(false);
 
 			cSub->vao.bind();
-			fvec4 col(1.0f, 0.0f, 1.0f, 0.7f);
-			m_sel_shader->set_frag_color_out(col);
+			m_sel_shader->set_frag_color_out(m_mirror_tile_color);
 			glDrawElements(cSub->primitive_type,
 						   static_cast<GLsizei>(cSub->indices.size()),
 						   GL_UNSIGNED_INT,
@@ -475,6 +474,16 @@ void nsselection_system::draw()
 
 	m_sel_shader->unbind();
 	glLineWidth(1.0f);
+}
+
+void nsselection_system::set_mirror_tile_color(const fvec4 & color)
+{
+	m_mirror_tile_color = color;
+}
+
+const fvec4 & nsselection_system::mirror_tile_color()
+{
+	return m_mirror_tile_color;
 }
 
 void nsselection_system::_draw_ent_occ(nsentity * ent)
@@ -529,6 +538,16 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 	}
 }
 
+void nsselection_system::enable_draw_occupied_grid(bool enable_)
+{
+	m_draw_occ = enable_;
+}
+
+bool nsselection_system::draw_occupied_grid()
+{
+	return m_draw_occ;
+}
+		
 void nsselection_system::_draw_occ()
 {
 	nsscene * scene = nse.current_scene();
@@ -549,15 +568,9 @@ void nsselection_system::_draw_occ()
 			m_sel_shader->set_node_transform(fmat4());
 
 		m_sel_shader->set_has_bones(false);
-		occSub->pos_buf.bind();
-		occSub->vao.vertex_attrib_ptr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-		occSub->indice_buf.bind();
-
-		m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+		m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 0.1f));
 
 		nstile_grid::grid_bounds g = scene->grid().occupied_bounds();
-
-
 		for (int32 z = g.min_space.z; z <= g.max_space.z; ++z)
 		{
 			for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
@@ -568,12 +581,14 @@ void nsselection_system::_draw_occ()
 					nsentity * ent = nse.resource<nsentity>(id.x, id.y);
 					if (ent != NULL)
 					{
-						m_trans.set_column(3,fvec4(ent->get<nstform_comp>()->lpos(id.z),1.0f));
+						m_trans.set_column(3, nstile_grid::world(ivec3(x,y,z)));
 						m_sel_shader->set_transform(m_trans);
+						occSub->vao.bind();
 						glDrawElements(occSub->primitive_type,
 									   static_cast<GLsizei>(occSub->indices.size()),
 									   GL_UNSIGNED_INT,
 									   0);
+						occSub->vao.unbind();
 					}
 				}
 			}

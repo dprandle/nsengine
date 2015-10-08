@@ -63,7 +63,8 @@ nsengine::nsengine()
 {
 	srand(static_cast <unsigned> (time(0)));
     ilInit();
-	GL_INVALID_ENUM;
+	ilEnable(IL_ORIGIN_SET);
+	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
 	m_cwd = nsfile_os::cwd();	
 }
 
@@ -92,7 +93,10 @@ uint32 nsengine::composite_framebuffer()
 void nsengine::set_current_scene(const nsstring & scn, bool newSceneOverwriteFile, bool saveprevious)
 {
 	if (active() == NULL)
+    {
+        dprint("nsengine::set_current_scene No active plugin set");
 		return;
+    }
 	manager<nsscene_manager>(active())->set_current(scn, newSceneOverwriteFile, saveprevious);
 }
 
@@ -475,7 +479,7 @@ void nsengine::start()
 	GLenum cont = glewInit();
 	if (cont != GLEW_OK)
 	{
-		NSLogFile("GLEW extensions unable to initialize");
+		nslog_file("GLEW extensions unable to initialize");
 		return;
 	}
 

@@ -36,21 +36,6 @@ void nsanim_system::init()
 {
 }
 
-// bool nsanim_system::handleEvent(NSEvent * pEvent)
-// {
-// 	nsscene * scene = nse.currentScene();
-// 	if (scene == NULL)
-// 		return false;
-
-// 	if (pEvent == NULL)
-// 	{
-// 		dprint("nsanim_system::handleEvent Event is NULL - bad bad bad");
-// 		return false;
-// 	}
-	
-// 	return false;
-// }
-
 void nsanim_system::update()
 {
 	nsscene * scene = nse.current_scene();

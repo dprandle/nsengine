@@ -17,6 +17,7 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 #include <nsevent_dispatcher.h>
 #include <nsinput_map.h>
 #include <nsscene.h>
+#include <nsplugin.h>
 
 nsinput_system::nsinput_system() :
 	m_scroll_delta(0.0f),
@@ -343,6 +344,14 @@ void nsinput_system::init()
     register_handler_func(this, &nsinput_system::mouse_button_event);
     register_handler_func(this, &nsinput_system::mouse_scroll_event);
     register_handler_func(this, &nsinput_system::mouse_move_event);
+	register_handler_func(this, &nsinput_system::_handle_action);
+}
+
+bool nsinput_system::_handle_action(nsaction_event * evnt)
+{
+	if (evnt->trigger_hash_name == hash_id("save_map"))
+		nse.active()->save<nsscene>("mainscene");
+	return true;
 }
 
 int32 nsinput_system::update_priority()

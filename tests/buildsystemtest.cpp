@@ -105,6 +105,13 @@ int main()
 	move_brush_click_z.add_key_mod(nsinput_map::key_z);
     imap->add_mouse_trigger(BUILD_MODE_CTXT, nsinput_map::left_button, move_brush_click_z);
 
+	nsinput_map::trigger save_map(
+        "save_map",
+		nsinput_map::t_pressed
+		);
+	save_map.add_key_mod(nsinput_map::key_lctrl);
+    imap->add_key_trigger("Main", nsinput_map::key_s, save_map);
+
 	// Setup build brush (simple one)
 	nsentity * tilebrush = plg->create<nsentity>("simple_tile_brush");
 	nstile_brush_comp * tc = tilebrush->create<nstile_brush_comp>();
@@ -121,13 +128,18 @@ int main()
 	msh->bake_node_rotation(orientation(fvec4(1.0,0.0,0.0,-90.0f)));
 	nsoccupy_comp * oc = object_to_build->get<nsoccupy_comp>();
 	oc->build(msh->aabb());
-	
     nse.system<nsbuild_system>()->set_tile_brush(tilebrush);
 	nse.system<nsbuild_system>()->set_tile_build_ent(plg->get<nsentity>("grasstile"));
 	nse.system<nsbuild_system>()->set_object_build_ent(object_to_build);
-    nse.system<nsbuild_system>()->enable_mirror(false);
-    nse.system<nsselection_system>()->enable_mirror_selection(false);
+    nse.system<nsbuild_system>()->enable_mirror(true);
+    nse.system<nsselection_system>()->enable_mirror_selection(true);
 
+	nsentity * skybox = plg->create_skydome("skydome", "skydomes/sun5deg.cube", ".png", "skydome/");
+	nse.current_scene()->set_skydome(skybox);
+
+	imap->rename("bb_toolkit");
+	nse.save_plugins(true);
+	
 	while (glfw_window_open())
     {
         nse.update();

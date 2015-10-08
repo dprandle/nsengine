@@ -416,7 +416,7 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 				faceName = "_right";
 				break;
 			}
-			localFname = fName + faceName + nsstring(DEFAULT_TEX_EXTENSION);
+            localFname = fName + cubemap->name() + faceName + nsstring(DEFAULT_TEX_EXTENSION);
 
 			cubemap->bind();
 			cubemap->lock(nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + curFace));

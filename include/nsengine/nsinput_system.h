@@ -75,6 +75,8 @@ private:
 	void _create_state_event(nsinput_map::trigger & trigger, bool toggle);
 
 	void _set_axis_from_trigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t);
+
+	bool _handle_action(nsaction_event * evnt);
 	
 	context_stack m_ctxt_stack;
 	nsinput_map::key_modifier_set m_key_modifiers;

@@ -72,6 +72,10 @@ public:
 
 	void enable_mirror_selection(bool enable_);
 
+	void enable_draw_occupied_grid(bool enable_);
+
+	bool draw_occupied_grid();
+
 	bool mirror_selection();
 
 	virtual int32 draw_priority();
@@ -153,6 +157,10 @@ public:
 	void snap_z(nsentity * ent);
 
 	void snap_z();
+
+	void set_mirror_tile_color(const fvec4 & color);
+
+	const fvec4 & mirror_tile_color();
 
 	void tile_swap(nsentity * newtile);
 
@@ -250,6 +258,7 @@ protected:
 	
 	fvec2 m_pick_pos;
 	fvec3 m_cached_point;
+	fvec4 m_mirror_tile_color;
 
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;

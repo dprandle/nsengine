@@ -362,6 +362,78 @@ void nsshader::set_uniform(const nsstring & var_name, const fvec2 & data)
 	GLError("nsshader::setUniform");
 }
 
+void nsshader::set_uniform(const nsstring & var_name, const ivec4 & data)
+{
+	GLint vec[4];
+	vec[0] = data.x; vec[1] = data.y; vec[2] = data.z; vec[3] = data.w;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform4iv(init_uniform_loc(var_name), 1, vec);
+	else
+		glUniform4iv(iter->second, 1, vec);
+	GLError("nsshader::setUniform");		
+}
+
+void nsshader::set_uniform(const nsstring & var_name, const ivec3 & data)
+{
+	GLint vec[3];
+	vec[0] = data.x; vec[1] = data.y; vec[2] = data.z;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform3iv(init_uniform_loc(var_name), 1, vec);
+	else
+		glUniform3iv(iter->second, 1, vec);
+	GLError("nsshader::setUniform");		
+}
+
+void nsshader::set_uniform(const nsstring & var_name, const ivec2 & data)
+{
+	GLint vec[2];
+	vec[0] = data.u; vec[1] = data.v;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform2iv(init_uniform_loc(var_name), 1, vec);
+	else
+		glUniform2iv(iter->second, 1, vec);
+	GLError("nsshader::setUniform");		
+}
+
+void nsshader::set_uniform(const nsstring & var_name, const uivec4 & data)
+{
+	GLuint vec[4];
+	vec[0] = data.x; vec[1] = data.y; vec[2] = data.z; vec[3] = data.w;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform4uiv(init_uniform_loc(var_name), 1, vec);
+	else
+		glUniform4uiv(iter->second, 1, vec);
+	GLError("nsshader::setUniform");		
+}
+
+void nsshader::set_uniform(const nsstring & var_name, const uivec3 & data)
+{
+	GLuint vec[3];
+	vec[0] = data.x; vec[1] = data.y; vec[2] = data.z;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform3uiv(init_uniform_loc(var_name), 1, vec);
+	else
+		glUniform3uiv(iter->second, 1, vec);
+	GLError("nsshader::setUniform");				
+}
+
+void nsshader::set_uniform(const nsstring & var_name, const uivec2 & data)
+{
+	GLuint vec[2];
+	vec[0] = data.u; vec[1] = data.v;
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniform2uiv(init_uniform_loc(var_name), 1, vec);
+	else
+		glUniform2uiv(iter->second, 1, vec);
+	GLError("nsshader::setUniform");	
+}
+
 void nsshader::set_uniform(const nsstring & var_name, float data)
 {
 	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
@@ -598,6 +670,16 @@ void nsdir_light_shader::set_bg_color(const fvec3 & col)
 void nsdir_light_shader::set_direction(const fvec3 & dir)
 {
 	set_uniform("light.direction", dir);
+}
+
+void nsdir_light_shader::set_fog_factor(const uivec2 & factor)
+{
+	set_uniform("fog_factor", factor);
+}
+
+void nsdir_light_shader::set_fog_color(const fvec4 & color)
+{
+	set_uniform("fog_color", color);	
 }
 
 nspoint_light_shader::nspoint_light_shader() :nslight_shader() {}

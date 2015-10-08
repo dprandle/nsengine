@@ -19,7 +19,7 @@ This file contains all of the neccessary declarations for the NSLogFile class.
 
 // Class Forward Declarations
 
-class NSLogFile
+class nslog_file
 {
 public:
 
@@ -28,10 +28,10 @@ public:
 		wm_overwrite
 	};
 
-	NSLogFile(const nsstring & text="", const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
-	NSLogFile(const nsstringstream & stream, const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
+	nslog_file(const nsstring & text="", const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
+	nslog_file(const nsstringstream & stream, const nsstring & fileName="enginedebug.log", const nsstring & directory="logs");
 
-	~NSLogFile();
+	~nslog_file();
 
 	void clear();
 

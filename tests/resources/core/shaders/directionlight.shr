@@ -63,6 +63,8 @@ uniform vec2 screenSize;
 uniform vec3 camWorldPos;
 uniform vec3 bgColor;
 uniform vec2 shadowTexSize;
+uniform uvec2 fog_factor;
+uniform vec4 fog_color;
 uniform int shadowSamples;
 uniform float epsilon;
 uniform mat4 projLightMat;
@@ -99,15 +101,15 @@ float getShadowFactor(vec4 worldPos)
     return total / ((2*shadowSamples+1)*(2*shadowSamples+1));
 }
 
-// Compute the linear fog factor
-// This function gets the linear fog factor according to the linear fog equation..
+// Compute the linear fog_factor factor
+// This function gets the linear fog_factor factor according to the linear fog_factor equation..
 // f = (fogEnd - depth) / (fogEnd - fogBegin)
 // depth is calculated : dot(Normal of Camera, distance of fragment from camera)
-float computeLinearFogFactor(vec3 worldPos, float near, float far)
+float computeLinearFogFactor(vec3 worldPos)
 {
 	float factor;
 	vec3 dVec = (camWorldPos.xyz - worldPos.xyz);
-	factor = (far - length(dVec) ) / (far - near);
+	factor = (fog_factor.y - length(dVec) ) / (fog_factor.y - fog_factor.x);
 	factor = clamp( factor, 0.0, 1.0 );
 	return factor;
 }
@@ -162,15 +164,14 @@ void main()
 		material.specIntensity = spec.a;
 		material.specPower = normal.a;
 
-		float fogFactor = computeLinearFogFactor(worldPos.xyz, 40, 100);
+		float fogFactor = computeLinearFogFactor(worldPos.xyz);
 
 		vec4 lightFactor = getLightInfluence(worldPos, normal.xyz, material);
-		vec4 fogColor =  vec4(0.8f, 0.8f, 0.8f, 1.0f);
 
 		if (color == normal && color == worldPos)
 			fragColor = vec4(bgColor,1.0);
 		else
-			fragColor = color * lightFactor;// + fogColor * (1.0 - fogFactor) );
+			fragColor = mix(color * lightFactor, fog_color, 1 - fogFactor);
 	}
 	else
 	{
@@ -180,8 +181,4 @@ void main()
 			fragColor = color;
 	}
 }
-
-
-
-
 </nsstring>

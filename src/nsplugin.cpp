@@ -22,6 +22,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsplugin.h>
 #include <nsentity.h>
 #include <nstexture.h>
+#include <nsshader.h>
 
 #include <nsres_manager.h>
 #include <nsscene_manager.h>
@@ -29,6 +30,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsanim_manager.h>
 #include <nsmesh_manager.h>
 #include <nsplugin_manager.h>
+#include <nstex_manager.h>
 
 #include <nscam_comp.h>
 #include <nsanim_comp.h>
@@ -359,6 +361,33 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	return create_tile(name, get<nsmaterial>(matid), collides, type);
 }
 
+nsentity * nsplugin::create_skydome(const nsstring & name,
+									nsstring cubemap_relative_fname,
+									const nsstring & image_ext,
+									const nsstring & tex_subdir,
+									bool prefix_import_dir_)
+{
+	nsentity * skybox = create<nsentity>(name);
+
+	if (prefix_import_dir_)
+		cubemap_relative_fname = m_import_dir + cubemap_relative_fname;
+	
+	nstexture * sky_box = manager<nstex_manager>()->load_cubemap(cubemap_relative_fname, image_ext);
+	sky_box->set_subdir(tex_subdir);
+	
+	nsmaterial * sb_mat = create<nsmaterial>(name);
+	sb_mat->set_map_tex_id(nsmaterial::diffuse, sky_box->full_id());
+	sb_mat->set_shader_id(nse.core()->get<nsshader>(DEFAULT_SKYBOX_SHADER)->full_id());
+	sb_mat->set_cull_mode(GL_FRONT);
+	
+	nsrender_comp * rc = skybox->create<nsrender_comp>();
+	rc->set_cast_shadow(false);
+	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_SKYDOME)->full_id());
+	rc->set_material(0, sb_mat->full_id());
+
+	return skybox;
+}
+
 nsentity * nsplugin::create_terrain(const nsstring & name, 
 	float hmin, 
 	float hmax, 
@@ -498,6 +527,12 @@ nsresource * nsplugin::get(uint32 res_typeid, uint32 resid)
 {
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->get(resid);
+}
+
+nsresource * nsplugin::get(uint32 res_typeid, nsresource * res)
+{
+	nsres_manager * rm = manager(nse.manager_id(res_typeid));
+	return rm->get(res);
 }
 
 nsresource * nsplugin::get(uint32 res_typeid, const nsstring & resName)
@@ -951,7 +986,7 @@ void nsplugin::_update_res_map()
 		{
 			std::pair<nsstring, nsstring> rpair;
 			rpair.first = type_to_guid(*resiter->second);
-			rpair.second = resiter->second->name() + resiter->second->extension();
+			rpair.second = resiter->second->subdir() + resiter->second->name() + resiter->second->extension();
 			m_resmap.emplace(hash_to_guid(miter->first), rpair);
 			++resiter;
 		}

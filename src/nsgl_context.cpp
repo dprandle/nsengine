@@ -25,7 +25,7 @@ gl_ctxt::gl_ctxt(uint32 id) :
 	core_plugin->rename(ENGINE_PLUG);
 #ifdef NSDEBUG
 	deb->set_log_file("engine_ctxt" + std::to_string(context_id) + ".log");
-	deb->set_log_dir(nsengine.cwd() + "logs");
+	deb->set_log_dir(nse.cwd() + "logs");
 	deb->clear_log();
 #endif
 }

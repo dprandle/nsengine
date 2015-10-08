@@ -21,7 +21,7 @@ nsgl_object::nsgl_object() :m_gl_name(0)
 nsgl_object::~nsgl_object()
 {
 	if (m_gl_name != 0)
-		NSLogFile("Warning : Failed to call \"release()\" on NSBuffer object - openGL resource was not released","enginecreatedestroy.log");
+		nslog_file("Warning : Failed to call \"release()\" on NSBuffer object - openGL resource was not released","enginecreatedestroy.log");
 }
 
 uint32 nsgl_object::gl_id()

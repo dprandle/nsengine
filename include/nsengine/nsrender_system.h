@@ -53,6 +53,10 @@
 #define DEFAULT_FB_RES_X 1920
 #define DEFAULT_FB_RES_Y 1080
 
+// Some default fog settings
+#define DEFAULT_FOG_FACTOR_NEAR 40
+#define DEFAULT_FOG_FACTOR_FAR 80
+
 #include <nssystem.h>
 #include <nsmesh.h>
 
@@ -208,6 +212,14 @@ public:
 
 	void set_shadow_fbo(uint32 fbo1, uint32 fbo2, uint32 fbo3);
 
+	void set_fog_factor(const uivec2 & near_far);
+
+	const uivec2 & fog_factor();
+
+	void set_fog_color(const fvec4 & near_far);
+
+	const fvec4 & fog_color();
+
 	void toggle_debug_draw();
 
 	void update();
@@ -234,7 +246,8 @@ private:
 	bool m_lighting_enabled;
 
 	ivec2 m_screen_size;
-
+	uivec2 m_fog_nf;
+	fvec4 m_fog_color;
 
 	mat_drawcall_map m_drawcall_map;
 	//MatDCMap mTransparentDrawCallMap;

@@ -19,7 +19,7 @@ nsdebug::nsdebug() : m_console_open(false),
 	m_deb_level(deb_high),
 	m_msg_cb(NULL),
 	m_msg_inst(NULL),
-	m_log_file(new NSLogFile())
+	m_log_file(new nslog_file())
 {
 	set_log_file(DEFAULT_DEBUG_LOG);
 }

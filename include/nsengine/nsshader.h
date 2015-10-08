@@ -132,13 +132,25 @@ public:
 
 	void set_uniform(const nsstring & var_name, const fvec2 & data);
 
+	void set_uniform(const nsstring & var_name, const ivec4 & data);
+
+	void set_uniform(const nsstring & var_name, const ivec3 & data);
+
+	void set_uniform(const nsstring & var_name, const ivec2 & data);
+
+	void set_uniform(const nsstring & var_name, const uivec4 & data);
+
+	void set_uniform(const nsstring & var_name, const uivec3 & data);
+
+	void set_uniform(const nsstring & var_name, const uivec2 & data);
+
 	void set_uniform(const nsstring & var_name, float data);
 
 	void set_uniform(const nsstring & var_name, int32 data);
 
-	void set_uniform(const nsstring & var_name, bool val);
-
 	void set_uniform(const nsstring & var_name, uint32 data);
+
+	void set_uniform(const nsstring & var_name, bool val);
 
 	uint32 gl_id(shader_type type);
 
@@ -252,6 +264,10 @@ public:
 	void set_bg_color(const fvec3 & col);
 
 	void set_direction(const fvec3 & dir);
+
+	void set_fog_factor(const uivec2 & factor);
+
+	void set_fog_color(const fvec4 & color);
 
 };
 

@@ -535,6 +535,14 @@ public:
 
 	bool save_plugin(nsplugin * plg, bool saveOwnedResources=false, nssave_resouces_callback * scallback=NULL);
 
+    //! Save all plugins to the plugins file - if saveOwnedResources then save each plugin's owned rcs also. 
+	//! The callback function can be used to track progress of saving as the exec function is executed after
+	//! each resource is saved.
+	/*!
+	  \param saveOwnedResources If true save each plugin's owned resources
+	  \param scallback The callback's exec function is called after each resource save - if null then does
+	  nothing
+    */
 	void save_plugins(bool saveOwnedResources=false, nssave_resouces_callback * scallback = NULL);
 
 	void set_plugin_dir(const nsstring & plugdir);

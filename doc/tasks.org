@@ -75,32 +75,31 @@
 *** DONE NSTileGrid
 *** DONE NSTimer
 * DONE Redistribute "nsglobal"
-* TODO Get build system working
+* DONE Get build system working
 ** DONE Get tile brushes working again
 ** DONE Get object brushes working again
 ** DONE Rework build system events
 * TODO Testing
-** TODO Test Animation System again
-** TODO Test lighting parameters stuff
+** DONE Test Animation System again
+** DONE Test lighting parameters stuff
 ** TODO Test particle system make sure works
-** TODO Test loading and saving of each resource type
+** DONE Test loading and saving of each resource type
 *** TODO Map
 *** TODO Mesh
 *** TODO Material
 *** TODO Animation
 *** TODO Plugins
-*** TODO Texture
+*** DONE Texture
 *** TODO Shader
 *** TODO Entity
 *** DONE InputMap
-** TODO Test skybox
-** TODO Test fog
+** DONE Test skybox
+** DONE Test fog
 * TODO Create UI System
 * TODO Create audio system
 * TODO Create thread mechanism full multiplatform
 * TODO Reintegrate the new engine version in to the toolkit
 * TODO Create method for transparency
-
 
 * Things to Fix
 The build system crashed in mirror mode with the tile brush

@@ -37,16 +37,18 @@
 #include <nscam_comp.h>
 
 nsrender_system::nsrender_system() :
-m_drawcall_map(),
-m_gbuffer(new nsgbuf_object()),
-m_final_buf(NULL),
-m_shadow_buf(new nsshadowbuf_object()),
-m_shaders(),
-m_debug_draw(false),
-m_earlyz_enabled(false),
-m_lighting_enabled(true),
-m_screen_fbo(0),
-nssystem()
+    m_drawcall_map(),
+    m_gbuffer(new nsgbuf_object()),
+	m_final_buf(NULL),
+    m_shadow_buf(new nsshadowbuf_object()),
+	m_shaders(),
+    m_debug_draw(false),
+	m_earlyz_enabled(false),
+    m_lighting_enabled(true),
+    m_screen_fbo(0),
+	m_fog_color(1),
+	m_fog_nf(DEFAULT_FOG_FACTOR_NEAR, DEFAULT_FOG_FACTOR_FAR),
+    nssystem()
 {}
 
 nsrender_system::~nsrender_system()
@@ -406,6 +408,8 @@ void nsrender_system::draw()
 				m_shaders.dir_light->set_bg_color(scene->bg_color());
 				m_shaders.dir_light->set_direction(tComp->dvec(nstform_comp::dir_target, i));
 				m_shaders.dir_light->set_cam_world_pos(camTComp->wpos());
+				m_shaders.dir_light->set_fog_factor(m_fog_nf);
+				m_shaders.dir_light->set_fog_color(m_fog_color);
 				_blend_dir_light(lComp);
 				dirlt = true;
 				dirlterr = false;
@@ -502,14 +506,13 @@ void nsrender_system::init()
 	m_default_mat = cplg->load<nsmaterial>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_MAT_EXTENSION));
 
 	// Light bounds, skydome, and tile meshes
-	cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION))->flip_uv();
+	cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION))->flip_uv();
+	cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION))->flip_uv();
 	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	nsmesh * msh = cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
-	msh->bake_node_rotation(orientation(fvec4(1,0,0,180)));
 	msh->bake_node_scaling(fvec3(2,2,2));
 }
 
@@ -976,6 +979,26 @@ void nsrender_system::_draw_xfbs()
 		xbdat->update = false;
 		++drawIter;
 	}
+}
+
+const uivec2 & nsrender_system::fog_factor()
+{
+	return m_fog_nf;
+}
+
+void nsrender_system::set_fog_factor(const uivec2 & near_far)
+{
+	m_fog_nf = near_far;
+}
+
+const fvec4 & nsrender_system::fog_color()
+{
+	return m_fog_color;
+}
+
+void nsrender_system::set_fog_color(const fvec4 & color)
+{
+	m_fog_color = color;
 }
 
 void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)

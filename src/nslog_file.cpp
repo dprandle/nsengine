@@ -28,7 +28,7 @@ Parameters:
 	fileName : the name of the logfile to write to
 	directory : the directory where the logfile is stored
 */
-NSLogFile::NSLogFile(const nsstring & text, const nsstring & fileName, const nsstring & directory):
+nslog_file::nslog_file(const nsstring & text, const nsstring & fileName, const nsstring & directory):
 m_current_wm(wm_append),
 m_fname(fileName),
 m_dir(directory),
@@ -38,7 +38,7 @@ m_ts_enabled(false)
 		write(text);
 }
 
-NSLogFile::NSLogFile(const nsstringstream & stream, const nsstring & fileName, const nsstring & directory):
+nslog_file::nslog_file(const nsstringstream & stream, const nsstring & fileName, const nsstring & directory):
 m_current_wm(wm_append),
 m_fname(fileName),
 m_dir(directory),
@@ -47,12 +47,12 @@ m_ts_enabled(false)
 	write(stream);
 }
 
-NSLogFile::~NSLogFile()
+nslog_file::~nslog_file()
 {
 }
 
 
-void NSLogFile::clear()
+void nslog_file::clear()
 {
 	write_m t = m_current_wm;
 	m_current_wm = wm_overwrite;
@@ -75,7 +75,7 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::set_file_name(const nsstring & fileName)
+void nslog_file::set_file_name(const nsstring & fileName)
 {
 
 	m_fname = fileName;
@@ -91,7 +91,7 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::set_dir(const nsstring & directory)
+void nslog_file::set_dir(const nsstring & directory)
 {
 
 	m_dir = directory;
@@ -111,7 +111,7 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::set_write_mode(write_m mode)
+void nslog_file::set_write_mode(write_m mode)
 {
 	m_current_wm = mode;
 }
@@ -128,7 +128,7 @@ Parameters:
 Return:
 	None
 */
-void NSLogFile::enable_timestamp(bool enabled)
+void nslog_file::enable_timestamp(bool enabled)
 {
 
 	m_ts_enabled = enabled;
@@ -148,7 +148,7 @@ Parameters:
 Return:
 	const QString & : unmodifiable reference to the filename
 */
-const nsstring & NSLogFile::file_name() const
+const nsstring & nslog_file::file_name() const
 {
 
 	return m_fname;
@@ -165,7 +165,7 @@ Parameters:
 Return:
 	const QString & : unmodifiable reference to the directory
 */
-const nsstring & NSLogFile::dir() const
+const nsstring & nslog_file::dir() const
 {
 	return m_dir;
 }
@@ -181,7 +181,7 @@ Parameters:
 Return:
 	NSLogFile::WriteMode is the write mode type defined by the enum in nslogfile
 */
-NSLogFile::write_m NSLogFile::write_mode() const
+nslog_file::write_m nslog_file::write_mode() const
 {
 
 	return m_current_wm;
@@ -198,7 +198,7 @@ Parameters:
 Return:
 	bool
 */
-bool NSLogFile::timestamp() const
+bool nslog_file::timestamp() const
 {
 
 	return m_ts_enabled;
@@ -221,7 +221,7 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::write(const nsstring & text)
+bool nslog_file::write(const nsstring & text)
 {
 	nsstring fullFileName;
 
@@ -257,19 +257,19 @@ bool NSLogFile::write(const nsstring & text)
 }
 
 
-bool NSLogFile::write(const nsstringstream & ss)
+bool nslog_file::write(const nsstringstream & ss)
 {
 	return write(ss.str());
 }
 
-bool NSLogFile::write(float num)
+bool nslog_file::write(float num)
 {
 	nsstringstream ss;
 	ss << num;
 	return write(ss);
 }
 
-bool NSLogFile::write(int32 num)
+bool nslog_file::write(int32 num)
 {
 	nsstringstream ss;
 	ss << num;
@@ -289,7 +289,7 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::write_date()
+bool nslog_file::write_date()
 {
 	nsstring fullFileName;
 
@@ -338,7 +338,7 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::write_to(const nsstring & text, const nsstring &fname, write_m mode)
+bool nslog_file::write_to(const nsstring & text, const nsstring &fname, write_m mode)
 {
 	if (fname.empty())
 		return false;
@@ -375,7 +375,7 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::write_date(const nsstring & fname, write_m mode)
+bool nslog_file::write_date(const nsstring & fname, write_m mode)
 {
 	nsfstream outFile(fname);
 	switch (mode)
@@ -411,7 +411,7 @@ Parameters:
 Return:
 	bool : whether or not this function succeeded in writing to the file
 */
-bool NSLogFile::write_to_com(const nsstring & text, write_m mode )
+bool nslog_file::write_to_com(const nsstring & text, write_m mode )
 {
 	return write_to(text, "Logs/debugcom.log",mode);
 }

@@ -69,6 +69,10 @@ public:
 
 	void init();
 
+	animmap::iterator begin();
+
+	animmap::iterator end();
+
 	animation_data * create_anim_data(const nsstring & anim_name_);
 
 	animation_data * anim_data(const nsstring & anim_name_);

@@ -294,7 +294,7 @@ void pup(PUPer & p, nsscene & sc)
 			if (oc != NULL)
 			{
 				for (uint32 i = 0; i < tc->count(); ++i)
-					sc.grid().add(uivec3(ent->plugin_id(), ent->id(), i), tc->wpos(i));
+					sc.grid().add(uivec3(ent->plugin_id(), ent->id(), i), oc->spaces(), tc->wpos(i));
 			}
 		}
 	}

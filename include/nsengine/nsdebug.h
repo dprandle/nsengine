@@ -17,7 +17,7 @@
 
 #include <nsstring.h>
 
-class NSLogFile;
+class nslog_file;
 
 typedef void (*message_callback)(const nsstring &, void *);
 
@@ -72,7 +72,7 @@ private:
 	debug_level m_deb_level;
 	message_callback m_msg_cb;
 	void * m_msg_inst;
-	NSLogFile* m_log_file;
+	nslog_file* m_log_file;
 };
 
 #endif

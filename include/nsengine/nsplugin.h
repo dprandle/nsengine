@@ -129,14 +129,20 @@ public:
 		tile_t type=tile_full);
 
 	nsentity * create_tile(const nsstring & name,
-		const nsstring & matname,
-		bool collides, 
-		tile_t type = tile_full);
+						   const nsstring & matname,
+						   bool collides, 
+						   tile_t type = tile_full);
 
 	nsentity * create_tile(const nsstring & name,
-		uint32 matid,
-		bool collides, 
-		tile_t type = tile_full);
+						   uint32 matid,
+						   bool collides, 
+						   tile_t type = tile_full);
+
+	nsentity * create_skydome(const nsstring & name,
+							  nsstring cubemap_relative_fname,
+							  const nsstring & image_ext,
+							  const nsstring & tex_subdir="",
+							  bool prefix_import_dir_=true);
 
 
 	template<class ManagerType>
@@ -181,6 +187,8 @@ public:
 	}
 
 	nsresource * get(uint32 res_typeid, uint32 resid);
+
+	nsresource * get(uint32 res_typeid, nsresource * res);
 
 	nsresource * get(uint32 res_typeid, const nsstring & resName);
 
@@ -230,12 +238,12 @@ public:
 						 bool prefixWithImportDir,
 						 const nsstring & meshname = "",
 						 bool occupy_comp = true, 
-						 bool pFlipUVs = true);
+						 bool pFlipUVs = false);
 
 	bool load_model_resources(nsstring fname,
 							bool prefixWithImportDir,
 							const nsstring & meshname = "",
-							bool flipuv = true);
+							bool flipuv = false);
 	
 	bool bind();
 
