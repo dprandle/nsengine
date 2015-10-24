@@ -14,6 +14,7 @@ This file contains all of the neccessary definitions for the nsmovement_system c
 #include <nstform_comp.h>
 #include <nsscene.h>
 #include <nsentity.h>
+#include <nsbuffer_object.h>
 
 nsmovement_system::nsmovement_system() :nssystem()
 {}

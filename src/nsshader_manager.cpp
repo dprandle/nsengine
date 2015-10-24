@@ -93,7 +93,7 @@ bool nsshader_manager::load_stage(nsshader * sh, const nsstring & fname, nsshade
 
 	if (!file.is_open())
 	{
-		dprint("nsshader_manager::loadStage : Error opening file with name - " + fName);
+		dprint("nsshader_manager::loadStage Error opening file with name - " + fName);
 		delete p;
 		return false;
 	}
@@ -114,7 +114,7 @@ bool nsshader_manager::load_stage(nsshader * sh, const nsstring & fname, nsshade
 	}
 
 	sh->pup(p, stagetype);
-	dprint("nsshader_manager::loadStage - Succesfully loaded stage " + sh->stage_name(stagetype) + " from file " + fName);
+	dprint("nsshader_manager::loadStage Succesfully loaded stage " + sh->stage_name(stagetype) + " from file " + fName);
 	delete p;
 	file.close();
 	return true;
@@ -160,7 +160,7 @@ bool nsshader_manager::save_stage(nsshader * sh, const nsstring & filename, nssh
 
 	if (!file.is_open())
 	{
-		dprint("nsshader_manager::saveStage : Error opening stage " + sh->stage_name(stagetype) + " file " + fName);
+		dprint("nsshader_manager::saveStage Error opening stage " + sh->stage_name(stagetype) + " file " + fName);
 		delete p;
 		return false;
 	}
@@ -173,7 +173,7 @@ bool nsshader_manager::save_stage(nsshader * sh, const nsstring & filename, nssh
         pup(*(static_cast<nstext_file_pupper*>(p)), savestr, std::string("type"));
 
 	sh->pup(p, stagetype);
-	dprint("nsshader_manager::saveStage - Succesfully saved stage " + sh->stage_name(stagetype) + " to file " + fName);
+	dprint("nsshader_manager::saveStage Succesfully saved stage " + sh->stage_name(stagetype) + " to file " + fName);
 	delete p;
 	file.close();
 	return true;

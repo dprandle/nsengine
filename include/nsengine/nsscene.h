@@ -103,7 +103,7 @@ public:
 
 	const nsstring & notes() const;
 
-	const uint32 ref_count() const;
+	uint32 ref_count() const;
 
 	nsentity * skydome() const;
 
@@ -198,7 +198,7 @@ public:
 	template<class T1, class T2>
 	bool remove(const T1 & plug_, const T2 & res_)
 	{
-		remove(entity(plug_, res_));
+		return remove(entity(plug_, res_));
 	}
 
 	bool remove(nsentity * entity, uint32 tformid);

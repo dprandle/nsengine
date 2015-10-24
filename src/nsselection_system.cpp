@@ -52,6 +52,7 @@ nsselection_system::nsselection_system() :
 	m_trans(),
 	m_toggle_move(false),
 	m_send_foc_event(false),
+	m_mirror_tile_color(fvec4(1.0f, 0.0f, 1.0f, 0.7f)),
 	nssystem()
 {}
 
@@ -294,6 +295,12 @@ void nsselection_system::draw()
 		nsanim_comp * animComp = (*iter)->get<nsanim_comp>();
 		nsterrain_comp * terComp = (*iter)->get<nsterrain_comp>();
 
+		if (renComp == NULL || tComp == NULL || selComp == NULL)
+		{
+			++iter;
+			continue;
+		}
+
 		if (selComp->selected() && selComp->draw_enabled())
 		{
 			auto selIter = selComp->begin();
@@ -462,6 +469,7 @@ void nsselection_system::draw()
 
 			m_sel_shader->set_has_bones(false);
 
+			
 			cSub->vao.bind();
 			m_sel_shader->set_frag_color_out(m_mirror_tile_color);
 			glDrawElements(cSub->primitive_type,
@@ -681,26 +689,14 @@ void nsselection_system::del()
 	if (scene == NULL)
 		return;
 
-	std::vector<fvec3> posVec;
-
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
+
 		nssel_comp * selC = (*iter)->get<nssel_comp>();
-		nstform_comp * tComp = (*iter)->get<nstform_comp>();
-
-		posVec.resize(selC->count());
-		uint32 i = 0;
-		auto iter2 = selC->begin();
-		while (iter2 != selC->end())
-		{
-			posVec[i] = tComp->wpos(*iter2);
-			++iter2;
-			++i;
-		}
-
-		for (uint32 cur = 0; cur < posVec.size(); ++cur)
-			scene->remove(posVec[cur]);
+		
+		while (selC->begin() != selC->end())
+		 	scene->remove(*iter,*selC->begin());
 
 		++iter;
 	}

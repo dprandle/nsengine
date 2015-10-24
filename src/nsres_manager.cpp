@@ -233,7 +233,7 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 
 	if (!file.is_open())
 	{
-		dprint("nsres_manager::load : Error opening resource file " + fName);
+		dprint("nsres_manager::load Error opening resource file " + fName);
 		delete p;
 		return NULL;
 	}
@@ -271,7 +271,7 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 
 
 	res->pup(p);
-	dprint("nsres_manager::load - Succesfully loaded resource from file " + fName);
+	dprint("nsres_manager::load Succesfully loaded resource from file " + fName);
 	delete p;
 	file.close();
 	return res;
@@ -334,7 +334,7 @@ nsresource * nsres_manager::remove(nsresource * res)
 		m_id_resmap.erase(res->m_id);
 		res->m_plugin_id = 0;
 		res->m_owned = false;
-		dprint("nsres_manager::remove - Succesfully removed resource " + res->name());
+		dprint("nsres_manager::remove Succesfully removed resource " + res->name());
 	}
 	return res;
 }
@@ -356,11 +356,11 @@ bool nsres_manager::rename(const nsstring & oldName, const nsstring & newName)
 			
 	if (ret == 0)
 	{
-		dprint("nsres_manager::rename - Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
+		dprint("nsres_manager::rename Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	else
 	{
-		dprint("nsres_manager::rename - Could not rename file with old name: " + oldName + " to file with new name: " + newName);
+		dprint("nsres_manager::rename Could not rename file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	
 	return (ret == 0);
@@ -435,7 +435,7 @@ bool nsres_manager::save(nsresource * res,const nsstring & path)
 		pup(*(static_cast<nstext_file_pupper*>(p)), rest, "type");
 
 	res->pup(p);
-	dprint("nsres_manager::save - Succesfully saved " + rest + " to file " + fName);
+	dprint("nsres_manager::save Succesfully saved " + rest + " to file " + fName);
 	delete p;
 	file.close();
 	return true;

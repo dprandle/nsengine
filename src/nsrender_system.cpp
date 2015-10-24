@@ -100,20 +100,28 @@ void nsrender_system::enable_earlyz(bool pEnable)
 void nsrender_system::enable_lighting(bool pEnable)
 {
 	m_lighting_enabled = pEnable;
-	nsfb_object * mCur = nse.framebuffer(bound_fbo());
+
+	uint current_fbo = bound_fbo();
+	nsfb_object * mCur = NULL;
+	ui_vector ap_vec;
+	
+	if (current_fbo != 0)
+		mCur = nse.framebuffer(current_fbo);
 
 	m_gbuffer->bind();
 	if (pEnable)
 		m_gbuffer->fb()->update_draw_buffers();
 	else
 	{
-		nsfb_object::attachment_point_array ap;
-		ap.push_back(nsfb_object::att_color + nsgbuf_object::col_diffuse);
-		ap.push_back(nsfb_object::att_color + nsgbuf_object::col_picking);
-		m_gbuffer->fb()->set_draw_buffers(&ap);
+		ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_diffuse);
+		ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_picking);
+		m_gbuffer->fb()->set_draw_buffers(&ap_vec);
 	}
-	
-	mCur->bind();
+
+	if (mCur != NULL)
+		mCur->bind();
+	else
+		m_gbuffer->unbind();
 }
 
 bool nsrender_system::_valid_check()
@@ -1086,8 +1094,6 @@ void nsrender_system::_draw_geometry()
 				nstexture * t = nse.resource<nstexture>(cIter->second);
 				if (t != NULL)
 					t->enable(cIter->first);
-				else
-					dprint("nsrender_system::_drawGeometry Texture id in material " + (*matIter)->name() + " does not refer to any valid texture");
 				++cIter;
 			}
 
@@ -1126,15 +1132,13 @@ void nsrender_system::_draw_geometry()
 				_draw_call(dcIter);
 				++dcIter;
 			}
-			GLError("nsrender_system::df");
+			GLError("nsrender_system::draw_geometry");
 			nsmaterial::texmap_map_const_iter eIter = (*matIter)->begin();
 			while (eIter != (*matIter)->end())
 			{
 				nstexture * t = nse.resource<nstexture>(eIter->second);
 				if (t != NULL)
 					t->disable(eIter->first);
-				else
-					dprint("nsrender_system::_drawGeometry Texture id in material " + (*matIter)->name() + " does not refer to any valid texture");
 				++eIter;
 			}
 			++matIter;

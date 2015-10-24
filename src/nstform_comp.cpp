@@ -19,15 +19,16 @@
 #include <nsvertex_array_object.h>
 #include <nsshader.h>
 #include <nsmesh.h>
+#include <nsbuffer_object.h>
 
 nstform_comp::nstform_comp():
-m_tform_buffer(nsbuffer_object::array, nsbuffer_object::storage_mutable),
-m_tform_id_buffer(nsbuffer_object::array, nsbuffer_object::storage_mutable),
-m_xfb_data(),
-m_buffer_resized(false),
-m_xfb(false),
-nscomponent(),
-m_visible_count(0)
+	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_tform_id_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_xfb_data(),
+	m_buffer_resized(false),
+	m_xfb(false),
+	nscomponent(),
+	m_visible_count(0)
 {}
 
 nstform_comp::~nstform_comp()
@@ -283,8 +284,8 @@ bool nstform_comp::enable_xfb(bool enable_)
 
 void nstform_comp::init()
 {
-	m_tform_buffer.init_gl();
-	m_tform_id_buffer.init_gl();
+	m_tform_buffer->init_gl();
+	m_tform_id_buffer->init_gl();
 }
 
 const fvec3 nstform_comp::dvec(dir_vec dir_, uint32 tform_id_) const
@@ -358,12 +359,12 @@ const fmat4 & nstform_comp::transform(uint32 tform_id_) const
 
 nsbuffer_object * nstform_comp::transform_buffer()
 {
-	return &m_tform_buffer;
+	return m_tform_buffer;
 }
 
 nsbuffer_object * nstform_comp::transform_id_buffer()
 {
-	return &m_tform_id_buffer;
+	return m_tform_id_buffer;
 }
 
 uint32 nstform_comp::count() const
@@ -411,8 +412,8 @@ bool nstform_comp::transform_update(uint32 tform_id_) const
 
 void nstform_comp::release()
 {
-	m_tform_buffer.release();
-	m_tform_id_buffer.release();
+	m_tform_buffer->release();
+	m_tform_id_buffer->release();
 	if (m_xfb)
 		enable_xfb(false);
 }

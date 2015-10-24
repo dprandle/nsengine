@@ -135,6 +135,9 @@ nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec
 
 bool nsplugin::contains(nsresource * res)
 {
+	if (res == NULL)
+		return false;
+	
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->contains(res);
 }

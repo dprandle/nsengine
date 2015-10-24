@@ -371,7 +371,7 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 
 	if (cubemap == NULL)
 	{
-		dprint("nstex_manager::save : Cannot save NULL valued cubemap");
+		dprint("nstex_manager::save Cannot save NULL valued cubemap");
 		return false;
 	}
 
@@ -446,7 +446,7 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 			ILenum err = ilGetError();
 			while (err != IL_NO_ERROR)
 			{
-				dprint("nstex_manager::saveCubemap : Error saving NSTexCubemap to file " + localFname);
+				dprint("nstex_manager::saveCubemap Error saving NSTexCubemap to file " + localFname);
 				err = ilGetError();
 			}
 		}
@@ -499,7 +499,7 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 {
 	if (image == NULL)
 	{
-		dprint("nstex_manager::save : Cannot save NULL valued image");
+		dprint("nstex_manager::save Cannot save NULL valued image");
 		return false;
 	}
 
@@ -542,7 +542,7 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 	ILenum err = ilGetError();
 	while (err != IL_NO_ERROR)
 	{
-		dprint("nstex_manager::saveImage : Error saving nstex2d to file " + fName);
+		dprint("nstex_manager::saveImage Error saving nstex2d to file " + fName);
 		err = ilGetError();
 	}
 

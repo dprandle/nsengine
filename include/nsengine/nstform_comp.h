@@ -17,8 +17,8 @@
 #define MAX_TF_BUFFER_COUNT 32 // about 100 mb
 
 #include <nscomponent.h>
-#include <nsbuffer_object.h>
 
+class nsbuffer_object;
 class nsvertex_array_object;
 class nsxfb_object;
 class nstimer;
@@ -328,8 +328,8 @@ public:
 
 private:
 	instance_vec m_tforms;
-	nsbuffer_object m_tform_buffer;
-	nsbuffer_object m_tform_id_buffer;
+	nsbuffer_object * m_tform_buffer;
+	nsbuffer_object * m_tform_id_buffer;
 	xfb_data m_xfb_data;
 	bool m_buffer_resized;
 	bool m_xfb;

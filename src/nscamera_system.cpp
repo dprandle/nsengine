@@ -132,7 +132,7 @@ void nscamera_system::set_sensitivity(float pSensitivity, const sensitivity_t & 
 Set the camera view so that it locks and does not allow movement about the right vector axis. That is, it does
 not allow the pitch to be changed, only the yaw. There are three different angles.. front, isometric (45 degrees)
 and top down. No matter what the camera mode is in or what angle it is at, setting the camera to any of these
-modes will result in the angle about the horizontal axis to be 0, 45, or 90 degrees depending on which view is
+modes will result in the angle about the horizontal axis to be 0, 45, or deg_0 degrees depending on which view is
 selected.
 */
 void nscamera_system::set_view(camera_view_t view_)
@@ -160,39 +160,47 @@ void nscamera_system::set_view(camera_view_t view_)
 	
 	m_anim_view = true;
 
+	float deg_0 = 0.0f;
+	float deg_120 = 120.0f;
+	float deg_240 = -120.0f;
+
+	//90
+	//210
+	//deg_240
+	
 	switch (view_)
 	{
 	  case (view_top_0) :
-		  m_final_orient = orientation(fvec4(0,0,-1,90));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_0));
 		  break;
 	  case (view_top_120) :
-		  m_final_orient = orientation(fvec4(0,0,-1,210));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_120));
 		  break;
 	  case (view_top_240) :
-		  m_final_orient = orientation(fvec4(0,0,-1,-30));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_240));
 		  break;
 	  case (view_iso_0) :
-		  m_final_orient = orientation(fvec4(0,0,-1,90));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_0));
 		  m_final_orient = orientation(fvec4(m_final_orient.right(),-45.0f)) * m_final_orient;
 		  break;
 	  case (view_iso_120) :
-		  m_final_orient = orientation(fvec4(0,0,-1,210));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_120));
 		  m_final_orient = orientation(fvec4(m_final_orient.right(),-45.0f)) * m_final_orient;
 		  break;
 	  case (view_iso_240) :
-		  m_final_orient = orientation(fvec4(0,0,-1,-30));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_240));
 		  m_final_orient = orientation(fvec4(m_final_orient.right(),-45.0f)) * m_final_orient;
 		  break;
 	  case (view_front_0) :
-		  m_final_orient = orientation(fvec4(0,0,-1,90));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_0));
 		  m_final_orient = orientation(fvec4(m_final_orient.right(),-90.0f)) * m_final_orient;
 		  break;
 	  case (view_front_120) :
-		  m_final_orient = orientation(fvec4(0,0,-1,210));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_120));
 		  m_final_orient = orientation(fvec4(m_final_orient.right(),-90.0f)) * m_final_orient;
 		  break;
 	  case (view_front_240) :
-		  m_final_orient = orientation(fvec4(0,0,-1,-30));
+		  m_final_orient = orientation(fvec4(0,0,-1,deg_240));
 		  m_final_orient = orientation(fvec4(m_final_orient.right(),-90.0f)) * m_final_orient;
 		  break;
 	}

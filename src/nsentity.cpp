@@ -62,9 +62,10 @@ bool nsentity::copy(nscomponent * toCopy, bool overwrite)
 	{
 		if (!overwrite)
 			return false;
+		else
+			del(type_id);
 	}
-	else
-		nc = create(type_id);
+	nc = create(type_id);
 
 	if (nc == NULL)
 		return false;

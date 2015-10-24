@@ -57,8 +57,13 @@ bool nstile_grid::add(const uivec3 pItem, const ivec3_vector & pSpaces, const fv
 {
 	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
+		// If any of the spaces fail we need to go back and remove all previously added spaces
 		if (!add(pItem, pSpaces[i], pOrigin))
+		{
+			for (int j = 0; j < i; ++j)
+				remove(pSpaces[j],pOrigin);
 			return false;
+		}
 	}
 	return true;
 }

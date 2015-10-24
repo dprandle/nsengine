@@ -140,7 +140,6 @@ void nsbuild_system::enable(const bool & pEnable)
 			if (m_object_build_ent == NULL)
 				return;
 			
-            m_object_brush->del<nsoccupy_comp>();
             m_object_brush->copy(m_object_build_ent->get<nsrender_comp>());
 			m_object_brush->copy(m_object_build_ent->get<nslight_comp>());
 			fvec3 pos = nstile_grid::world(ivec3(0,0,m_layer));
@@ -195,6 +194,8 @@ void nsbuild_system::enable(const bool & pEnable)
 		if (m_current_brush_type == brush_object && m_object_brush != NULL)
 		{
 			m_object_brush->del<nsoccupy_comp>();
+			m_object_brush->del<nsrender_comp>();
+			m_object_brush->del<nslight_comp>();
 			scene->remove(m_object_brush);
 		}
 
@@ -435,6 +436,7 @@ void nsbuild_system::paint()
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
 				fvec3 pos = m_tile_brush->get<nstform_comp>()->wpos(m_tile_brush_center_tform_id) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				nstile_grid::snap(pos);
 				
 				if (m_overwrite)
 				{
@@ -461,9 +463,7 @@ void nsbuild_system::paint()
 							scene->remove(m_tile_build_ent, tFormID);
 							continue;
 						}
-						m_tile_build_ent->get<nstform_comp>()->snap(tFormMID);
 					}
-					m_tile_build_ent->get<nstform_comp>()->snap(tFormID);
 				}
 			}
 			++brushIter;
@@ -475,6 +475,7 @@ void nsbuild_system::paint()
 			return;
 
 		fvec3 pos = m_object_brush->get<nstform_comp>()->wpos();
+		nstile_grid::snap(pos);
 		uint32 tFormID = scene->add(m_object_build_ent, pos);
 
 		if (tFormID != -1)
@@ -489,11 +490,10 @@ void nsbuild_system::paint()
 					scene->remove(m_object_build_ent, tFormID);
 					return;
 				}
-				m_object_build_ent->get<nstform_comp>()->snap(tFormMID);
 			}
-			m_object_build_ent->get<nstform_comp>()->snap(tFormID);
 		}
 	}
+	to_cursor();
 }
 
 void nsbuild_system::set_active_brush_color(const fvec4 & pColor)
@@ -543,16 +543,22 @@ void nsbuild_system::set_brush_type(const brush_t & brush_type_)
 
 void nsbuild_system::set_object_brush(nsentity * pBrush)
 {
-	if (m_enabled)
+	bool state = m_enabled;
+	if (state)
 		toggle();
 	m_object_brush = pBrush;
+	if (state)
+		toggle();
 }
 
 void nsbuild_system::set_tile_brush(nsentity * pBrush)
 {
-	if (m_enabled)
+	bool state = m_enabled;
+	if (state)
 		toggle();
 	m_tile_brush = pBrush;
+	if (state)
+		toggle();
 }
 
 void nsbuild_system::set_tile_build_ent(nsentity * pBuildEnt)
@@ -563,8 +569,13 @@ void nsbuild_system::set_tile_build_ent(nsentity * pBuildEnt)
 
 void nsbuild_system::set_object_build_ent(nsentity * pBuildEnt)
 {
+	bool tog = m_enabled;
+	if (tog)
+		toggle();
 	if (pBuildEnt == NULL || !pBuildEnt->has<nstile_comp>())
 		m_object_build_ent = pBuildEnt;
+	if (tog)
+		toggle();
 }
 
 void nsbuild_system::set_mode(const mode_t & pMode)
@@ -634,7 +645,7 @@ void nsbuild_system::update()
 				mirror_tform->set_pos(new_pos, i);
 			}
 		}
-        else if (m_current_brush_type == brush_object && m_object_brush != NULL)
+        else if (m_current_brush_type == brush_object && m_object_build_ent != NULL)
 		{
 			nstform_comp * obj_tform = m_object_brush->get<nstform_comp>();
 			fvec3 wp = obj_tform->wpos();			
@@ -677,6 +688,7 @@ void nsbuild_system::update()
 			else
 				set_active_brush_color(m_object_brush->get<nssel_comp>()->default_color());
 		}
+		to_cursor();
 	}
 
 	if (m_enabled)
@@ -684,7 +696,7 @@ void nsbuild_system::update()
 		float z = 0.0;
 		if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
 			z = m_tile_brush->get<nstform_comp>()->wpos().z;
-		else if (m_current_brush_type == brush_object && m_object_brush != NULL)
+		else if (m_current_brush_type == brush_object && m_object_build_ent != NULL)
 			z = m_object_brush->get<nstform_comp>()->wpos().z;
 		m_layer = nstile_grid::grid(fvec3(0,0,z)).z;
 

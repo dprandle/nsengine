@@ -105,7 +105,8 @@ uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, con
 			// This is the part that we check if we just added the transform component or not
 			if (addTComp)
 			{
-				// Set the scene ID to zero and remove the transform component.. this will also update all of the
+				// Set the scene ID to zero and remove the transform component..
+				// this will also update all of the
 				// entity by component lists in the scene (when removeComponent is called)
 				pEnt->del<nstform_comp>();
 			}
@@ -274,7 +275,7 @@ uivec3 nsscene::ref_id(const fvec3 & pWorldPos) const
 	return m_tile_grid->get(pWorldPos);
 }
 
-const uint32 nsscene::ref_count() const
+uint32 nsscene::ref_count() const
 {
 	uint32 count = 0;
 
@@ -514,13 +515,24 @@ bool nsscene::remove(nsentity * entity, uint32 tformid)
 	fvec3 pos = tComp->wpos(tformid);
 	nsoccupy_comp * occComp = entity->get<nsoccupy_comp>();
 
-
-    //if (sel_cmp != NULL)
-    //	sel_cmp->remove(tformid);
 	
 	uint32 newSize = tComp->remove(tformid);
 	bool ret = (newSize == (size - 1));
 
+	if (sel_cmp != NULL && ret)
+	{
+		// remove the index of the tform we are removing from selection
+    	sel_cmp->remove(tformid);
+
+		// Since remove replaces the tform at tformid with a copy of the last tform and then pops
+		// the back, we need to replace the index appropriately in the selection component
+		if (sel_cmp->contains(newSize))
+		{
+			sel_cmp->remove(newSize);
+			sel_cmp->add(tformid);
+		}
+	}
+	
 	if (occComp != NULL)
 	{
 		m_tile_grid->remove(occComp->spaces(), pos);
@@ -541,7 +553,8 @@ bool nsscene::remove(nsentity * entity, uint32 tformid)
 	{
 		ret = entity->del<nstform_comp>();
 
-		// If the enity being removed from the scene is the current camera or current skybox then make sure to set these to 0
+		// If the entity being removed from the scene is the current
+		// camera or current skybox then make sure to set these to 0
 		if (m_skydome_id == uivec2(entity->plugin_id(), entity->id()))
 			m_skydome_id = 0;
 		if (m_camera_id == uivec2(entity->plugin_id(),entity->id()))
