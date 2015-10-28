@@ -82,13 +82,13 @@ public:
 	nsscene * current();
 	
 	template<class T>
-	bool set_current(const T & scene, bool new_scene = false, bool save_previous = false)
+	bool set_current(const T & scene, bool new_scene, bool save_previous)
 	{
 		nsscene * sc = get(scene);
 		return set_current(sc, new_scene, save_previous);
 	}
 	
-	bool set_current(nsscene * scene, bool new_scene=false, bool save_previous=false);
+	bool set_current(nsscene * scene, bool new_scene, bool save_previous);
 
 private:
 	nsscene * mCurrentScene;

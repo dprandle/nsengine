@@ -139,7 +139,7 @@ bool nsres_manager::del(nsresource * res)
 		dprint("nsres_manager::del - Could not delete file with name: " + fName);
 	}
 	
-	return (ret == 0);
+	return ret;
 }
 
 nsres_manager::map_type::iterator nsres_manager::end()
@@ -188,6 +188,9 @@ nsresource * nsres_manager::load(const nsstring & res_guid,
 
 nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 {
+	if (fname.empty())
+		return NULL;
+	
 	nsstring resName(fname);
 	nsstring resExtension;
 	nsstring fName;
@@ -250,7 +253,7 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 		return NULL;
 	}
 
-	res->set_subdir(subDir); // should be "" for false appendDirectories is false
+	res->set_subdir(subDir);
 	res->set_ext(resExtension);
 
 	nsstring rt;
@@ -317,25 +320,27 @@ uint32 nsres_manager::plugin_id()
 	return m_plugin_id;
 }
 
-nsresource * nsres_manager::remove(uint32 res_type_id)
+nsresource * nsres_manager::remove(uint32 res_id)
 {
-	return remove((get(res_type_id)));
+	nsresource * res = get(res_id);
+	if (res == NULL)
+		return NULL;
+	m_id_resmap.erase(res_id);
+	res->m_plugin_id = 0;
+	res->m_owned = false;
+	dprint("nsres_manager::remove Succesfully removed resource " + res->name());
+	return res;
 }
 
 nsresource * nsres_manager::remove(const nsstring & resName)
 {
-	return remove((get(resName)));
+	return remove(hash_id(resName));
 }
 
 nsresource * nsres_manager::remove(nsresource * res)
 {
 	if (res != NULL)
-	{
-		m_id_resmap.erase(res->m_id);
-		res->m_plugin_id = 0;
-		res->m_owned = false;
-		dprint("nsres_manager::remove Succesfully removed resource " + res->name());
-	}
+		return remove(res->id());
 	return res;
 }
 

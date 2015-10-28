@@ -84,6 +84,8 @@ public:
 		return save(res, path);
 	}
 
+	virtual bool del(nsresource * res);
+
 	virtual bool save(nsresource * res, const nsstring & path);
 	
 	virtual nstex_cubemap * load_cubemap(const nsstring & fname);

@@ -75,7 +75,7 @@ nsplugin * setup_basic_plugin()
     nsplugin * plg = nse.create_plugin("testplug");
     nsscene * scn = plg->create<nsscene>("mainscene");
 	scn->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-	nse.set_current_scene(scn, true);
+	nse.set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(600, 600), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
 	nsentity * dirl = plg->create_dir_light("dirlight", 0.8f, 0.6f);

@@ -7,6 +7,7 @@
 #include <nsbuffer_object.h>
 #include <nsvertex_array_object.h>
 
+
 class nsmesh : public nsresource
 {
 public:
@@ -94,7 +95,7 @@ public:
 	typedef std::vector<submesh*>::iterator submesh_iter;
 
 	nsmesh();
-	~nsmesh();
+	virtual ~nsmesh();
 
 	const nsbounding_box & aabb();
 
@@ -164,7 +165,7 @@ public:
 
 	submesh * sub(uint32 pIndex);
 
-	void init();
+	virtual void init();
 
 	node_tree * tree();
 
@@ -193,6 +194,7 @@ private:
 	node_tree* m_node_tree;
 	nsbounding_box m_bounding_box;
 };
+
 
 // This is a special structure to hold a set of bone ids that are each weighted to show how much the bone
 // affects the vertex - I have a BONES_PER_JOINT limit set to 4 bones - I dont think I would ever need
@@ -299,5 +301,17 @@ void pup(PUPer & p, nsmesh & mesh)
 	mesh.init_gl();
 	mesh.allocate();
 }
+
+
+class nsmesh_plane : public nsmesh
+{
+  public:	
+	nsmesh_plane();
+	~nsmesh_plane();
+
+	void init();
+	void set_dim(const fvec2 & dimensions_);
+};
+
 
 #endif

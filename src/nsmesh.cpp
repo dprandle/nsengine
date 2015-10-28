@@ -706,3 +706,64 @@ nsmesh::node * nsmesh::node_tree::create_root_node(const nsstring & pName)
 	root_node->name = pName;
 	return root_node;
 }
+
+nsmesh_plane::nsmesh_plane():
+	nsmesh()
+{
+	
+}
+
+nsmesh_plane::~nsmesh_plane()
+{
+	
+}
+
+void nsmesh_plane::init()
+{
+	submesh * smsh = create();
+	smsh->primitive_type = GL_TRIANGLE_STRIP;
+	smsh->init_gl();
+	
+	smsh->positions.push_back(fvec3(-1,-1,0));
+	smsh->positions.push_back(fvec3(-1,1,0));
+	smsh->positions.push_back(fvec3(1,-1,0));
+	smsh->positions.push_back(fvec3(1,1,0));
+
+	smsh->indices.push_back(0);
+	smsh->indices.push_back(1);
+	smsh->indices.push_back(2);
+	smsh->indices.push_back(3);
+
+	smsh->tex_coords.push_back(fvec2(0,0));
+	smsh->tex_coords.push_back(fvec2(0,1));
+	smsh->tex_coords.push_back(fvec2(1,0));
+	smsh->tex_coords.push_back(fvec2(1,1));
+
+	smsh->normals.push_back(fvec3(0,0,1));
+	smsh->normals.push_back(fvec3(0,0,1));
+	smsh->normals.push_back(fvec3(0,0,1));
+	smsh->normals.push_back(fvec3(0,0,1));
+
+	smsh->tangents.push_back(fvec3(0,1,0));
+	smsh->tangents.push_back(fvec3(0,1,0));
+	smsh->tangents.push_back(fvec3(0,1,0));
+	smsh->tangents.push_back(fvec3(0,1,0));
+
+	smsh->joints.resize(4);
+	smsh->has_tex_coords = true;
+
+	smsh->allocate_buffers();
+}
+
+void nsmesh_plane::set_dim(const fvec2 & dim_)
+{
+	submesh * smsh = sub(0);
+	fvec2 hdim = dim_/2.0f;
+	
+        smsh->positions[0] = fvec3(-hdim.x,-hdim.y,0);
+        smsh->positions[1] = fvec3(-hdim.x,hdim.y,0);
+        smsh->positions[2] = fvec3(hdim.x,-hdim.y,0);
+        smsh->positions[3] = fvec3(hdim.x,hdim.y,0);
+	smsh->allocate_buffers();
+}
+

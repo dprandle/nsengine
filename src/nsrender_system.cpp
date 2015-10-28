@@ -101,27 +101,27 @@ void nsrender_system::enable_lighting(bool pEnable)
 {
 	m_lighting_enabled = pEnable;
 
-	uint current_fbo = bound_fbo();
-	nsfb_object * mCur = NULL;
-	ui_vector ap_vec;
+	// uint current_fbo = bound_fbo();
+	// nsfb_object * mCur = NULL;
+	// ui_vector ap_vec;
 	
-	if (current_fbo != 0)
-		mCur = nse.framebuffer(current_fbo);
+	// if (current_fbo != 0)
+	// 	mCur = nse.framebuffer(current_fbo);
 
-	m_gbuffer->bind();
-	if (pEnable)
-		m_gbuffer->fb()->update_draw_buffers();
-	else
-	{
-		ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_diffuse);
-		ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_picking);
-		m_gbuffer->fb()->set_draw_buffers(&ap_vec);
-	}
+	// m_gbuffer->bind();
+	// if (pEnable)
+	// 	m_gbuffer->fb()->update_draw_buffers();
+	// else
+	// {
+	// 	ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_diffuse);
+	// 	ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_picking);
+	// 	m_gbuffer->fb()->set_draw_buffers(&ap_vec);
+	// }
 
-	if (mCur != NULL)
-		mCur->bind();
-	else
-		m_gbuffer->unbind();
+	// if (mCur != NULL)
+	// 	mCur->bind();
+	// else
+	// 	m_gbuffer->unbind();
 }
 
 bool nsrender_system::_valid_check()

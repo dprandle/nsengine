@@ -620,7 +620,8 @@ void nsscene::set_camera(nsentity * cam, bool addToSceneIfNeeded)
 		// able to switch between camera modes properly
 		camtf->enable_parent(true);
 		m_camera_id = uivec2(cam->plugin_id(),cam->id());
-		dprint("nsscene::setCamera - Map \"" + m_name + "\"'s camera set to \"" + cam->name() + "\"");
+		nsstring msg = "nsscene::set_camera Map \"" + m_name + "\"'s camera set to \"" + cam->name() + "\"";
+		dprint(msg);
 	}
 	else
 	{

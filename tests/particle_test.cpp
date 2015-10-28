@@ -31,7 +31,7 @@ int main()
 	nse.set_active(plg);
 
 	nsinput_map * imap = plg->get<nsinput_map>("bb_toolkit");
-	nse.set_current_scene("mainscene");
+	nse.set_current_scene("mainscene", false, false);
 	nse.system<nsrender_system>()->set_fog_factor(uivec2(60,110));
 	nse.system<nsrender_system>()->set_fog_color(fvec4(nse.current_scene()->bg_color(),1.0f));
 	nse.system<nsinput_system>()->set_input_map(imap->full_id());

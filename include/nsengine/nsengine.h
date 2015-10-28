@@ -626,11 +626,11 @@ public:
 
 	void set_active(uint32 plugid);
 
-	void set_current_scene(const nsstring & scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void set_current_scene(const nsstring & scn, bool new_scene, bool save_previous);
 
-	void set_current_scene(nsscene * scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void set_current_scene(nsscene * scn, bool new_scene, bool save_previous);
 
-	void set_current_scene(uint32 scn, bool newSceneOverwriteFile = false, bool saveprevious = false);
+	void set_current_scene(uint32 scn, bool new_scene, bool save_previous);
 
 	bool make_current(uint32 cID);
 

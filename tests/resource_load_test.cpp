@@ -39,7 +39,7 @@ int main()
 	nsinput_map * imap = plg->get<nsinput_map>("bb_toolkit");
     nsengine & eng = nse;
 
-	nse.set_current_scene("mainscene");
+	nse.set_current_scene("mainscene", false, false);
     nse.system<nsbuild_system>()->set_tile_brush(tilebrush);
 	nse.system<nsbuild_system>()->set_tile_build_ent(grasstile);
 	nse.system<nsbuild_system>()->set_object_build_ent(object_to_build);	

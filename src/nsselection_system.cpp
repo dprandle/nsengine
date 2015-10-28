@@ -717,7 +717,9 @@ void nsselection_system::init()
 		nsstring(DEFAULT_SELECTION_SHADER) + nsstring(DEFAULT_SHADER_EXTENSION));
 	m_sel_shader->compile();
 	m_sel_shader->link();
+	m_sel_shader->bind();
 	m_sel_shader->init_uniforms();
+	m_sel_shader->unbind();
 	
 	register_handler_func(this, &nsselection_system::_handle_action_event);
 	register_handler_func(this, &nsselection_system::_handle_state_event);

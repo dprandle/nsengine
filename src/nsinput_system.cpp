@@ -334,6 +334,13 @@ void nsinput_system::push_context(const nsstring & pName)
 	if (ctxt == NULL)
 		return;
 
+	// Make sure the context isnt already on the stack
+	for (uint32 i = 0; i < m_ctxt_stack.size(); ++i)
+	{
+		if (m_ctxt_stack[i] == ctxt)
+			return;
+	}
+	
 	m_ctxt_stack.push_back(ctxt);
 }
 
@@ -362,6 +369,7 @@ int32 nsinput_system::update_priority()
 void nsinput_system::set_input_map(const uivec2 & resid)
 {
 	m_input_map_id = resid;
+	clear_contexts();
 }
 
 const uivec2 & nsinput_system::input_map()
@@ -417,3 +425,7 @@ bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 	return true;
 }
 
+void nsinput_system::clear_contexts()
+{
+	m_ctxt_stack.clear();
+}

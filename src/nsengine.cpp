@@ -779,10 +779,12 @@ void nsengine::_init_factories()
 	register_resource<nsanim_set, nsanim_manager>("nsanim_set");
 	register_resource<nsentity, nsentity_manager>("nsentity");
 	register_resource<nsmaterial, nsmat_manager>("nsmaterial");
-	register_resource<nsmesh, nsmesh_manager>("nsmesh");
 	register_resource<nsplugin, nsplugin_manager>("nsplugin");
 	register_resource<nsscene, nsscene_manager>("nsscene");
 
+	register_resource<nsmesh, nsmesh_manager>("nsmesh");
+	register_resource<nsmesh_plane, nsmesh_manager>("nsmesh_plane");
+	
 	register_abstract_resource<nstexture, nstex_manager>("nstexture");
 	register_resource<nstex1d, nstex_manager>("nstex1d");
 	register_resource<nstex1d_array, nstex_manager>("nstex1d_array");

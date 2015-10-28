@@ -48,6 +48,8 @@ public:
 
 	virtual int32 update_priority();
 
+	void clear_contexts();
+
 	void pop_context();
 
 	void push_context(const nsstring & pName);

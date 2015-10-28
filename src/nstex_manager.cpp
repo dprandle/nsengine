@@ -31,6 +31,9 @@ nstex_manager::~nstex_manager()
 
 nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname)
 {
+	if (fname.empty())
+		return NULL;
+	
 	if (res_type_id == type_to_hash(nstex2d))
 		return load_image(fname);
 	else if (res_type_id == type_to_hash(nstex_cubemap))
@@ -55,6 +58,9 @@ nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname)
 
 nstex2d * nstex_manager::load_image(const nsstring & fname)
 {
+	if (fname.empty())
+		return NULL;
+	
 	nsstring resName(fname);
 	nsstring resExtension;
 	nsstring fName;
@@ -150,7 +156,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 {
 	nsstring resName(fname);
 	nsstring resExtension;
-	nsstring fName;
+	nsstring fName(fname);
 	nsstring subDir;
 	bool shouldPrefix = false;
 	
@@ -167,7 +173,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		resName = resName.substr(pos + 1);
 	}
 	else
-		shouldPrefix = true;
+		fName = "";
 
 	size_t extPos = resName.find_last_of(".");
 	resExtension = resName.substr(extPos);
@@ -176,7 +182,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	if (shouldPrefix)
 		fName = prefixdirs + subDir;
 	else
-		fName = path_from_filename(fname);
+		fName = path_from_filename(fName);
 	
 	nstex_cubemap * tex = get<nstex_cubemap>(resName);
 	if (tex == NULL)
@@ -268,6 +274,36 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname, const nsstri
 			cube_name + "_right" + cube_all_ext,
 			fname);		
 	}
+}
+
+bool nstex_manager::del(nsresource * res)
+{
+	if (res == NULL)
+		return false;
+	if (res->extension() != ".cube" && res->extension() != ".CUBE")
+		return nsres_manager::del(res);
+
+
+	nsstring dir = m_res_dir + m_local_dir + res->subdir();
+	nsstring fName = dir + res->name();
+	bool ret = remove_file(fName + "_front" + DEFAULT_TEX_EXTENSION);
+	ret |= remove_file(fName + "_back" + DEFAULT_TEX_EXTENSION);
+	ret |= remove_file(fName + "_top" + DEFAULT_TEX_EXTENSION);
+	ret |= remove_file(fName + "_bottom" + DEFAULT_TEX_EXTENSION);
+	ret |= remove_file(fName + "_left" + DEFAULT_TEX_EXTENSION);
+	ret |= remove_file(fName + "_right" + DEFAULT_TEX_EXTENSION);
+
+	if (ret)
+	{
+		dprint("nsres_manager::del - Succesfully deleted file with name: " + fName);
+		destroy(res);
+	}
+	else
+	{
+		dprint("nsres_manager::del - Could not delete file with name: " + fName);
+	}
+	
+	return ret;
 }
 
 nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname)
