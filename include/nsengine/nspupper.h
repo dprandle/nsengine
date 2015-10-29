@@ -42,8 +42,10 @@ public:
 	nsbinary_file_pupper(nsfstream & file_stream_, const uint32 & _io);
 	friend void pup(nsbinary_file_pupper & p_, char & val_, const nsstring & var_name_);
 	friend void pup(nsbinary_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+ #ifndef WIN32
 	friend void pup(nsbinary_file_pupper & p_, char16 & val_, const nsstring & var_name_);
 	friend void pup(nsbinary_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+#endif
 	friend void pup(nsbinary_file_pupper & p_, int8 & val_, const nsstring & var_name_);
 	friend void pup(nsbinary_file_pupper & p_, int16 & val_, const nsstring & var_name_);
 	friend void pup(nsbinary_file_pupper & p_, int32 & val_, const nsstring & var_name_);
@@ -68,8 +70,10 @@ public:
 	nstext_file_pupper(nsfstream & file_stream_, const uint32 & _io);
 	friend void pup(nstext_file_pupper & p_, char & val_, const nsstring & var_name_);
 	friend void pup(nstext_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+#ifndef WIN32
 	friend void pup(nstext_file_pupper & p_, char16 & val_, const nsstring & var_name_);
 	friend void pup(nstext_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+#endif
 	friend void pup(nstext_file_pupper & p_, int8 & val_, const nsstring & var_name_);
 	friend void pup(nstext_file_pupper & p_, int16 & val_, const nsstring & var_name_);
 	friend void pup(nstext_file_pupper & p_, int32 & val_, const nsstring & var_name_);
@@ -89,8 +93,10 @@ public:
 
 void pup(nsbinary_file_pupper & p_, char & val_, const nsstring & var_name_);
 void pup(nsbinary_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+#ifndef WIN32
 void pup(nsbinary_file_pupper & p_, char16 & val_, const nsstring & var_name_);
 void pup(nsbinary_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+#endif
 void pup(nsbinary_file_pupper & p_, int8 & val_, const nsstring & var_name_);
 void pup(nsbinary_file_pupper & p_, int16 & val_, const nsstring & var_name_);
 void pup(nsbinary_file_pupper & p_, int32 & val_, const nsstring & var_name_);
@@ -106,8 +112,10 @@ void pup(nsbinary_file_pupper & p_, bool & val_, const nsstring & var_name_);
 
 void pup(nstext_file_pupper & p_, char & val_, const nsstring & var_name_);
 void pup(nstext_file_pupper & p_, wchar & val_, const nsstring & var_name_);
+#ifndef WIN32
 void pup(nstext_file_pupper & p_, char16 & val_, const nsstring & var_name_);
 void pup(nstext_file_pupper & p_, char32 & val_, const nsstring & var_name_);
+#endif
 void pup(nstext_file_pupper & p_, int8 & val_, const nsstring & var_name_);
 void pup(nstext_file_pupper & p_, int16 & val_, const nsstring & var_name_);
 void pup(nstext_file_pupper & p_, int32 & val_, const nsstring & var_name_);

@@ -23,6 +23,7 @@
 #include <string.h>
 #endif
 
+#include <nsres_manager.h>
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -51,24 +52,18 @@ bool dir_exists(const nsstring & filename)
 bool create_dir(const nsstring & path)
 {
 	bool ret = false;
-	nsstring pth(path);
+    nsstring pth(path);
 	nsstring dr;
 	size_t up = pth.find_first_of("/\\")+1;
-	std::tr2::sys::path p;
+    std::tr2::sys::path p;
 	while (up != 0)
 	{
 		dr += pth.substr(0, up);
 		pth = pth.substr(up);
 		up = pth.find_first_of("/\\")+1;
 		p = dr;
-		try
-		{
-			ret = std::tr2::sys::create_directory(p) || ret;
-		}
-		catch (std::exception &)
-		{
-			// do nothing
-		}
+        if (!std::tr2::sys::exists(p))
+            ret = std::tr2::sys::create_directory(p) || ret;
 	}
 	return ret;
 }
@@ -105,8 +100,10 @@ nsstring cwd()
 {
 	char buffer[MAX_PATH];
 	GetModuleFileName(NULL, buffer, MAX_PATH);
-	nsstring::size_type pos = nsstring( buffer ).find_last_of( "\\/" );
-    return nsstring( buffer ).substr( 0, pos);
+    nsstring str(buffer);
+    nsstring::size_type pos = str.find_last_of( "\\/" );
+    str = str.substr(0, pos) + "/";
+    return str;
 }
 
 #else

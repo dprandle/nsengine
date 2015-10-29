@@ -12,6 +12,7 @@
 
 
 #include <nsbuffer_object.h>
+#include <nsgl_context.h>
 #include <nsengine.h>
 
 nsbuffer_object::nsbuffer_object(target_buffer pTarget, storage_mode pStorageMode): 

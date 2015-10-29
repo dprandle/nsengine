@@ -14,6 +14,7 @@ Description:
 #include <nslog_file.h>
 #include <nstexture.h>
 #include <nstex_manager.h>
+#include <nsgl_context.h>
 
 nstexture::nstexture(tex_type type) :
 	m_tex_type(type),

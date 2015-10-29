@@ -14,6 +14,7 @@
 #define NSBUFFER_OBJECT_H
 
 #include <nsgl_object.h>
+#include <nsgl_context.h>
 
 class nsbuffer_object : public nsgl_object
 {

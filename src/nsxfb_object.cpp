@@ -12,6 +12,7 @@ This file contains all of the neccessary definitions for the nsxfb_object class.
 
 
 #include <nsxfb_object.h>
+#include <nsgl_context.h>
 
 nsxfb_object::nsxfb_object():
 m_prim_mode(gl_triangles),

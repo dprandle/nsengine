@@ -24,6 +24,7 @@ void pup(nsbinary_file_pupper & p, wchar & val, const nsstring & varName)
 	pup_bytes(p, val);
 }
 
+#ifndef WIN32
 void pup(nsbinary_file_pupper & p, char16 & val, const nsstring & varName)
 {
 	pup_bytes(p, val);
@@ -33,6 +34,7 @@ void pup(nsbinary_file_pupper & p, char32 & val, const nsstring & varName)
 {
 	pup_bytes(p, val);
 }
+#endif
 
 void pup(nsbinary_file_pupper & p, int8 & val, const nsstring & varName)
 {
@@ -135,6 +137,7 @@ void pup(nstext_file_pupper & p, wchar & val, const nsstring & varName)
 	}
 }
 
+#ifndef WIN32
 void pup(nstext_file_pupper & p, char16 & val, const nsstring & varName)
 {
 	nsstring begtag, endtag;
@@ -172,6 +175,7 @@ void pup(nstext_file_pupper & p, char32 & val, const nsstring & varName)
 		val = line[0];
 	}
 }
+#endif
 
 void pup(nstext_file_pupper & p, int8 & val, const nsstring & varName)
 {
@@ -340,7 +344,10 @@ void pup(nstext_file_pupper & p, float & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = std::stof(line);
+        if (line == "nan")
+            val = 0;
+        else
+            val = std::stof(line);
 	}
 }
 

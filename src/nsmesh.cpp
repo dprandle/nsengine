@@ -11,6 +11,7 @@
 //*-----------------------------------------------------------------------------------------------
 #include <nsmesh.h>
 #include <nsengine.h>
+#include <nsgl_context.h>
 #include <nsshader.h>
 
 nsmesh::nsmesh(): m_node_tree(new node_tree())

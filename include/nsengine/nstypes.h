@@ -4,8 +4,14 @@
 #include <stdint.h>
  
 typedef wchar_t wchar;
+
+#ifdef WIN32
+typedef wchar_t char16;
+typedef wchar_t char32;
+#else
 typedef char16_t char16;
 typedef char32_t char32;
+#endif
 
 typedef int8_t int8;
 typedef int16_t int16;

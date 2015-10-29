@@ -304,7 +304,7 @@ void nsinput_map::pup(nsfile_pupper * p)
 nsinput_map::trigger::trigger(
 	const nsstring & pName,
 	t_state triggerOn,
-	uint interestedAxis,
+    uint32 interestedAxis,
 	bool overwrite_lower_contexts_):
 	name(pName),
 	hash_name(0),

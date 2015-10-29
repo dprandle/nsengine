@@ -13,6 +13,7 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 
 #include <nsparticle_comp.h>
 #include <nsxfb_object.h>
+#include <nsgl_context.h>
 #include <nsvertex_array_object.h>
 #include <nsbuffer_object.h>
 #include <nstex_manager.h>

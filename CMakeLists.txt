@@ -45,9 +45,10 @@ include_directories(
 )
 
 # Preprocessor definitions
-add_definitions(-DGLEW_MX -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS -DNSDEBUG -std=c++11)
+add_definitions(-DGLEW_MX -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS -DNSDEBUG)
 
 if (UNIX)
+add_definitions(-std=c++11)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -fms-extensions")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpermissive -fms-extensions")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")

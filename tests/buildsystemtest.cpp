@@ -138,6 +138,8 @@ int main()
 	nse.current_scene()->set_skydome(skybox);
 
 	imap->rename("bb_toolkit");
+    nse.system<nsinput_system>()->set_input_map(imap->full_id());
+    nse.system<nsinput_system>()->push_context("Main");
 	nse.save_plugins(true);
 	
 	while (glfw_window_open())
@@ -166,7 +168,5 @@ nsplugin * setup_basic_plugin()
     scn->add_gridded(tile, ivec3(32, 32, 2), fvec3(0.0f,0.0f,0.0f));
 
 	nsinput_map * imap = plg->load<nsinput_map>("basic_input.nsi");
-	nse.system<nsinput_system>()->set_input_map(imap->full_id());
-	nse.system<nsinput_system>()->push_context("Main");	
 	return plg;
 }

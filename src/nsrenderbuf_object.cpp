@@ -1,4 +1,5 @@
 #include <nsrenderbuf_object.h>
+#include <nsgl_context.h>
 #include <myGL/glew.h>
 
 nsrenderbuf_object::nsrenderbuf_object() :

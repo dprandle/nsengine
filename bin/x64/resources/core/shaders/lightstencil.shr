@@ -1,0 +1,20 @@
+type:<nsstring>nslight_stencil_shader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>#version 440
+layout (location = 0) in vec3 position;
+
+uniform mat4 transform;
+uniform mat4 projCamMat;
+uniform mat4 nodeTransform;
+
+void main()
+{
+	gl_Position = projCamMat * transform * nodeTransform * vec4(position, 1.0);
+}
+
+
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring></nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring></nsstring>

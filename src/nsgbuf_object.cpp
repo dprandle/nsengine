@@ -1,5 +1,6 @@
 #include <nsgbuf_object.h>
 #include <nsshader.h>
+#include <nsgl_context.h>
 #include <nsengine.h>
 
 nsgbuf_object::nsgbuf_object() :

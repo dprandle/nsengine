@@ -13,6 +13,7 @@
 #include <nsrenderbuf_object.h>
 #include <nsfb_object.h>
 #include <nsres_manager.h>
+#include <nsgl_context.h>
 #include <nsengine.h>
 
 nsfb_object::nsfb_object() : m_target(fb_read_draw),

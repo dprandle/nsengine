@@ -18,6 +18,7 @@ Description:
 #include <nsengine.h>
 #include <exception>
 #include <string.h>
+#include <nsgl_context.h>
 
 nsshader::nsshader():
 	m_error_sate(error_none),

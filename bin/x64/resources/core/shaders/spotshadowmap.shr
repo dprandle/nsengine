@@ -1,0 +1,63 @@
+type:<nsstring>nsspot_shadowmap_shader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>#version 440
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 tex;
+layout (location = 2) in vec3 norm;
+layout (location = 3) in vec3 tang;
+layout (location = 4) in ivec4 boneIDs;
+layout (location = 5) in vec4 boneWeights;
+layout (location = 6) in vec4 trans1;
+layout (location = 7) in vec4 trans2;
+layout (location = 8) in vec4 trans3;
+layout (location = 9) in vec4 trans4;
+layout (location = 10) in uint referenceID;
+
+uniform sampler2D heightMap;
+uniform vec2 hminmax;
+uniform bool hasHeightMap;
+uniform mat4 nodeTransform;
+uniform mat4 projMat;
+uniform mat4 boneTransforms[100];
+uniform bool hasBones;
+
+mat4 transform;
+vec4 localPos;
+vec4 worldPos;
+
+void main()
+{
+	transform[0] = vec4(trans1.x, trans2.x, trans3.x, trans4.x);
+	transform[1] = vec4(trans1.y, trans2.y, trans3.y, trans4.y);
+	transform[2] = vec4(trans1.z, trans2.z, trans3.z, trans4.z);
+	transform[3] = vec4(trans1.w, trans2.w, trans3.w, trans4.w);
+
+	if (hasBones)
+	{
+		mat4 boneTrans = boneTransforms[boneIDs.x] * boneWeights.x;
+		boneTrans += boneTransforms[boneIDs.y] * boneWeights.y;
+		boneTrans += boneTransforms[boneIDs.z] * boneWeights.z;
+		boneTrans += boneTransforms[boneIDs.w] * boneWeights.w;
+		localPos = boneTrans * vec4(position, 1.0);
+	}
+	else
+		localPos = nodeTransform * vec4(position, 1.0);
+
+	worldPos = transform * localPos;
+
+	if (hasHeightMap)
+	{
+		float heightMult = textureLod(heightMap, tex, 0.0).r; // store height info in red channel
+		worldPos.z += heightMult*(hminmax.y - hminmax.x) + hminmax.x;
+	}
+
+    gl_Position = projMat * worldPos;
+} 
+
+
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring></nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring></nsstring>

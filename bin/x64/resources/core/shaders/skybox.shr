@@ -1,0 +1,92 @@
+type:<nsstring>nsskybox_shader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>#version 440
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 tex;
+layout (location = 2) in vec3 norm;
+layout (location = 3) in vec3 tang;
+layout (location = 4) in ivec4 boneIDs;
+layout (location = 5) in vec4 boneWeights;
+layout (location = 6) in vec4 trans1;
+layout (location = 7) in vec4 trans2;
+layout (location = 8) in vec4 trans3;
+layout (location = 9) in vec4 trans4;
+layout (location = 10) in uint referenceID;
+
+uniform sampler2D heightMap;
+uniform sampler2D diffuseMap;
+
+uniform mat4 nodeTransform;
+uniform mat4 projCamMat;
+uniform mat4 boneTransforms[100];
+uniform bool hasBones;
+uniform bool hasHeightMap;
+uniform vec2 hminmax;
+
+mat4 transform;
+vec4 localPos;
+
+out vec3 texCoord;
+
+void main()
+{
+	transform[0] = vec4(trans1.x, trans2.x, trans3.x, trans4.x);
+	transform[1] = vec4(trans1.y, trans2.y, trans3.y, trans4.y);
+	transform[2] = vec4(trans1.z, trans2.z, trans3.z, trans4.z);
+	transform[3] = vec4(trans1.w, trans2.w, trans3.w, trans4.w);
+
+	localPos = nodeTransform * vec4(position, 1.0);
+
+    vec4 projCamPos = projCamMat * transform * localPos;
+    gl_Position = projCamPos.xyww;
+    texCoord = position;
+	//texCoord.y *= -1;
+} 
+
+
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring></nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring>#version 440
+
+in vec3 texCoord;
+
+uniform samplerCube diffuseMap;
+uniform samplerCube opacityMap;
+uniform samplerCube normalMap;
+
+uniform float specPower;
+uniform float specIntensity;
+uniform vec3 specColor;
+uniform uint entityID;
+uniform uint pluginID;
+uniform bool colorMode;
+uniform vec4 fragColOut;
+uniform bool hasDiffuseMap;
+uniform bool hasNormalMap;
+uniform bool hasOpacityMap;
+uniform bool lightingEnabled;
+uniform bool hasHeightMap;
+
+layout (location = 0) out vec4 colorOut;
+layout (location = 1) out uvec3 pickingOut;
+layout (location = 2) out vec3 worldPosOut;
+layout (location = 3) out vec4 normalOut;
+
+void main()
+{
+	colorOut = vec4(1.0,0.0,0.0,1.0);
+
+	if (!colorMode && hasDiffuseMap)
+		colorOut = texture(diffuseMap, texCoord);
+
+	pickingOut = uvec3(pluginID, entityID, 0);
+	worldPosOut = vec3(0.0,0.0,0.0);
+	normalOut = vec4(1.0,1.0,1.0,0.0);
+}
+
+
+
+</nsstring>

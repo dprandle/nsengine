@@ -158,7 +158,7 @@ class nsinput_map : public nsresource
 		trigger(
 			const nsstring & name_="",
 			t_state trigger_state_=t_pressed,
-			uint interested_axes=0,
+            uint32 interested_axes=0,
 			bool overwrite_lower_contexts_=true
 			);
 
@@ -172,8 +172,8 @@ class nsinput_map : public nsresource
 		bool operator==(const trigger & rhs);
 		
 		nsstring name;
-		uint hash_name;
-		uint axis_bitfield;
+        uint32 hash_name;
+        uint32 axis_bitfield;
 		t_state trigger_state;
 		key_modifier_set key_modifiers;
 		mouse_modifier_set mouse_modifiers;
