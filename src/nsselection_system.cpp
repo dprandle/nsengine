@@ -1805,7 +1805,6 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		
 		uivec3 pickid = pick(mpos);
 		nsentity * selectedEnt = nse.resource<nsentity>(pickid.xy());
-		nstform_comp * tc;
 			
 		if (contains(pickid))
 			remove(selectedEnt,pickid.z);
