@@ -40,7 +40,7 @@ int main()
 
 	nsentity * dwarf = plg->load_model("dwarf", "dwarf.x",true);
 	nsmesh * dwarf_mesh = plg->get<nsmesh>(dwarf->get<nsrender_comp>()->mesh_id().y);
-	dwarf_mesh->bake_node_scaling(fvec3(0.1,0.1,0.1));
+    dwarf_mesh->bake_node_scaling(fvec3(0.1f, 0.1f, 0.1f));
 	dwarf_mesh->bake_node_rotation(orientation(fvec4(1,0,0,-90)));
 	dwarf->get<nsoccupy_comp>()->build(dwarf_mesh->aabb());
 	dwarf->get<nsanim_comp>()->set_loop(true);

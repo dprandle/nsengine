@@ -4,15 +4,16 @@ project(nsengine)
 
 # Set the source directory
 set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(HASH_SRC_DIR ${PROJECT_SOURCE_DIR}/src/hash)
+set(SOIL_SRC_DIR ${PROJECT_SOURCE_DIR}/src/soil)
+set(GLEW_SRC_DIR ${PROJECT_SOURCE_DIR}/src/glew)
 
 # Set the include directory
 set(NSENGINE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/nsengine)
+set(LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/include)
 set(DEVIL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/devil-1.7.8/include)
-set(GLEW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glew-1.12.0/include)
 set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glfw-3.1.1/include)
-set(HASH_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/hashlib-1.0.0/include)
-set(SOIL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/soil-1.16.0/include)
 
 # Postfix debug builds with d
 set(CMAKE_DEBUG_POSTFIX d)
@@ -23,25 +24,24 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/${PLATFORM})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 
 # Set the src files for the project
-file(GLOB SRC_FILES "${NSENGINE_SRC_DIR}/*.c*")
+file(GLOB SRC_FILES 
+"${NSENGINE_SRC_DIR}/*.c*" 
+"${HASH_SRC_DIR}/*.c*" 
+"${SOIL_SRC_DIR}/*.c*" 
+"${GLEW_SRC_DIR}/*.c*"
+)
+
 file(GLOB HEADER_FILES
 "${NSENGINE_INCLUDE_DIR}/*.h*"
-"${ASSIMP_INCLUDE_DIR}/*.h*"
-"${DEVIL_INCLUDE_DIR}/*.h*"
-"${GLEW_INCLUDE_DIR}/*.h*"
-"${GLFW_INCLUDE_DIR}/*.h*"
-"${HASH_INCLUDE_DIR}/*.h*"
-"${SOIL_INCLUDE_DIR}/*.h*")
+)
 
 # Set project includes dir
 include_directories(
 "${NSENGINE_INCLUDE_DIR}"
 "${ASSIMP_INCLUDE_DIR}"
 "${DEVIL_INCLUDE_DIR}"
-"${GLEW_INCLUDE_DIR}"
+"${LIB_INCLUDE_DIR}"
 "${GLFW_INCLUDE_DIR}"
-"${HASH_INCLUDE_DIR}"
-"${SOIL_INCLUDE_DIR}"
 )
 
 # Preprocessor definitions
@@ -65,4 +65,5 @@ endif()
 # Adding executable
 add_library(nsengine STATIC ${SRC_FILES} ${HEADER_FILES})
 
+add_subdirectory(deps/glfw-3.1.1)
 add_subdirectory(tests)

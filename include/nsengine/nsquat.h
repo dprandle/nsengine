@@ -295,8 +295,8 @@ struct nsquat
 		if ( cos_half_theta >= 1.0 )
 			return *this;
 		
-		T half_theta = acos(cos_half_theta);
-		T sin_half_theta = sqrt( 1.0 - cos_half_theta * cos_half_theta );
+        T half_theta = static_cast<T>(acos(cos_half_theta));
+        T sin_half_theta = static_cast<T>(sqrt( 1.0 - cos_half_theta * cos_half_theta ));
 
 		if (std::abs(sin_half_theta) < EPS)
 		{

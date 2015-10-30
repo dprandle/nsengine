@@ -192,7 +192,7 @@ void pup(nstext_file_pupper & p, int8 & val, const nsstring & varName)
 		std::getline(p.fs, line);
 		size_t beg = begtag.size(); size_t loc = line.find(endtag);
 		line = line.substr(beg, loc - beg);
-		val = (int16)std::stoi(line);
+        val = (int8)std::stoi(line);
 	}
 }
 
