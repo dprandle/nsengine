@@ -17,7 +17,6 @@
 nsmesh_manager::nsmesh_manager(): nsres_manager()
 {
 	set_local_dir(LOCAL_MESH_DIR_DEFAULT);
-	set_save_mode(text);
 }
 
 nsmesh_manager::~nsmesh_manager()

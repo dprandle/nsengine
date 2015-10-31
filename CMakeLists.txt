@@ -65,5 +65,9 @@ endif()
 # Adding executable
 add_library(nsengine STATIC ${SRC_FILES} ${HEADER_FILES})
 
+if (WIN32)
+execute_process(COMMAND ${PROJECT_SOURCE_DIR}/config.bat ${PROJECT_SOURCE_DIR})
+endif()
+
 add_subdirectory(deps/glfw-3.1.1)
 add_subdirectory(tests)

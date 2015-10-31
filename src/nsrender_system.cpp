@@ -100,28 +100,6 @@ void nsrender_system::enable_earlyz(bool pEnable)
 void nsrender_system::enable_lighting(bool pEnable)
 {
 	m_lighting_enabled = pEnable;
-
-	// uint current_fbo = bound_fbo();
-	// nsfb_object * mCur = NULL;
-	// ui_vector ap_vec;
-	
-	// if (current_fbo != 0)
-	// 	mCur = nse.framebuffer(current_fbo);
-
-	// m_gbuffer->bind();
-	// if (pEnable)
-	// 	m_gbuffer->fb()->update_draw_buffers();
-	// else
-	// {
-	// 	ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_diffuse);
-	// 	ap_vec.push_back(nsfb_object::att_color + nsgbuf_object::col_picking);
-	// 	m_gbuffer->fb()->set_draw_buffers(&ap_vec);
-	// }
-
-	// if (mCur != NULL)
-	// 	mCur->bind();
-	// else
-	// 	m_gbuffer->unbind();
 }
 
 bool nsrender_system::_valid_check()
@@ -514,9 +492,9 @@ void nsrender_system::init()
 	m_default_mat = cplg->load<nsmaterial>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_MAT_EXTENSION));
 
 	// Light bounds, skydome, and tile meshes
-	cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION))->flip_uv();
-	cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION))->flip_uv();
-	cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION))->flip_uv();
+    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
+    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));

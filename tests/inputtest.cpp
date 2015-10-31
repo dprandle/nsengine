@@ -13,6 +13,7 @@
 #include <nscamera_system.h>
 #include <nscam_comp.h>
 #include <nsinput_map_manager.h>
+#include <nsmesh_manager.h>
 
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
@@ -35,7 +36,7 @@ int main()
 
 	// Save the input map
 	plg->save<nsinput_map>("basic_input");
-	
+
     while (glfw_window_open())
     {
         nse.update();
