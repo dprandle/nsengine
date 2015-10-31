@@ -25,14 +25,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 
 # Set the src files for the project
 file(GLOB SRC_FILES 
-"${NSENGINE_SRC_DIR}/*.c*" 
-"${HASH_SRC_DIR}/*.c*" 
-"${SOIL_SRC_DIR}/*.c*" 
-"${GLEW_SRC_DIR}/*.c*"
+"${NSENGINE_SRC_DIR}/*.c"
+"${HASH_SRC_DIR}/*.c"
+"${SOIL_SRC_DIR}/*.c"
+"${GLEW_SRC_DIR}/*.c"
+"${NSENGINE_SRC_DIR}/*.cpp"
+"${HASH_SRC_DIR}/*.cpp"
+"${SOIL_SRC_DIR}/*.cpp"
+"${GLEW_SRC_DIR}/*.cpp"
 )
 
 file(GLOB HEADER_FILES
-"${NSENGINE_INCLUDE_DIR}/*.h*"
+"${NSENGINE_INCLUDE_DIR}/*.h"
+"${NSENGINE_INCLUDE_DIR}/*.hpp"
 )
 
 # Set project includes dir
@@ -45,7 +50,12 @@ include_directories(
 )
 
 # Preprocessor definitions
-add_definitions(-DGLEW_MX -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS -DNSDEBUG)
+add_definitions(-DGLEW_MX -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+add_definitions(-DNSDEBUG)
+message("Debug build starting...\n")
+endif ()
 
 if (UNIX)
 add_definitions(-std=c++11)

@@ -418,7 +418,9 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 
     bool fret = nsfile_os::create_dir(fName);
 	if (fret)
+    {
 		dprint("nstex_manager::save Created directory " + fName);
+    }
 	
 
 	if (cubemap->extension() == ".cube" || cubemap->extension() == ".CUBE")
@@ -485,7 +487,9 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 			}
 		}
 		if (ret)
+        {
 			dprint("nstex_manager::loadCubemap Successfully saved NSTexCubemap to file " + fName);
+        }
 		return ret;
 	}
 	else if (cubemap->extension() == ".tga")
@@ -546,7 +550,9 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 
     bool fret = nsfile_os::create_dir(fName);
 	if (fret)
+    {
 		dprint("nstex_manager::save Created directory " + fName);
+    }
 
 	image->bind();
 	image->lock();

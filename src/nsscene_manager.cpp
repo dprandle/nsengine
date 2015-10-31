@@ -93,7 +93,9 @@ bool nsscene_manager::save(nsresource * res, const nsstring & path)
 
     bool fret = nsfile_os::create_dir(fName);
 	if (fret)
+    {
 		dprint("nsscene_manager::save Created directory " + fName);
+    }
 
 
     // If a scene other than the current scene is being saved, check first to make sure that there isnt a file

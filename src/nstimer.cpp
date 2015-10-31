@@ -29,7 +29,7 @@ float nstimer::dt()
 
 float nstimer::fixed()
 {
-	return FIXED_TIME_STEP;
+    return FIXED_TIME_STEP;
 }
 
 float nstimer::elapsed()
