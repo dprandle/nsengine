@@ -28,6 +28,7 @@
 #include <string>
 #include <iostream>
 #include <iterator>
+#include <stdio.h>
 
 namespace nsfile_os
 {
@@ -36,17 +37,20 @@ namespace nsfile_os
 
 bool file_exists(const nsstring & filename)
 {
-	std::tr2::sys::path p;
-	p = filename;
-	return std::tr2::sys::exists(p);
+    std::ifstream ifile(filename);
+    if (ifile.is_open())
+    {
+        ifile.close();
+        return true;
+    }
+    return false;
 }
 
-bool dir_exists(const nsstring & filename)
+bool path_exists(nsstring path)
 {
-	
-	std::tr2::sys::path p;
-	p = filename;
-	return std::tr2::sys::exists(p);
+    DWORD dwAttrib = GetFileAttributes(windows_path(path).c_str());
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+           (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 bool create_dir(const nsstring & path)
@@ -55,15 +59,14 @@ bool create_dir(const nsstring & path)
     nsstring pth(path);
 	nsstring dr;
 	size_t up = pth.find_first_of("/\\")+1;
-    std::tr2::sys::path p;
+    nsstring p;
 	while (up != 0)
 	{
 		dr += pth.substr(0, up);
 		pth = pth.substr(up);
 		up = pth.find_first_of("/\\")+1;
-		p = dr;
-        if (!std::tr2::sys::exists(p))
-            ret = std::tr2::sys::create_directory(p) || ret;
+        p = dr;
+        CreateDirectory(p.c_str(),NULL);
 	}
 	return ret;
 }
@@ -75,25 +78,14 @@ uint32 remove_dir(const nsstring & dirpath)
 	return std::tr2::sys::remove_all(p);
 }
 
-bool remove_file(const nsstring & filename)
+bool remove(const nsstring & filename)
 {
-	std::tr2::sys::path p;
-	p = filename;
-	return std::tr2::sys::remove(p);
+    return (::remove(filename.c_str()) == 0);
 }
 
-bool rename_dir(const nsstring & oldpath, const nsstring & newpath)
+bool rename(const nsstring & oldname, const nsstring & newname)
 {
-	std::tr2::sys::path p1,p2;
-	p1 = oldpath; p2 = newpath;
-	return std::tr2::sys::rename(p1, p2);
-}
-
-bool rename_file(const nsstring & oldname, const nsstring & newname)
-{
-	std::tr2::sys::path p1, p2;
-	p1 = oldname; p2 = newname;
-	return std::tr2::sys::rename(p1, p2);
+    return (::rename(oldname.c_str(), newname.c_str()) == 0);
 }
 
 nsstring cwd()
@@ -114,7 +106,7 @@ bool file_exists(const nsstring & filename)
 	return (stat(filename.c_str(), &buffer) == 0);
 }
 
-bool dir_exists(const nsstring & filename)
+bool path_exists(nsstring filename)
 {
 	struct stat buffer;   
 	return (stat(filename.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode));
@@ -171,17 +163,12 @@ uint32 remove_dir(const nsstring & dirpath)
     return 1;
 }
 
-bool remove_file(const nsstring & filename)
+bool remove(const nsstring & filename)
 {
 	return (remove(filename.c_str()) == 0);
 }
 
-bool rename_dir(const nsstring & oldpath, const nsstring & newpath)
-{
-	return (rename(oldpath.c_str(), newpath.c_str()) == 0);
-}
-
-bool rename_file(const nsstring & oldname, const nsstring & newname)
+bool rename(const nsstring & oldname, const nsstring & newname)
 {
 	return (rename(oldname.c_str(), newname.c_str()) == 0);
 }
@@ -222,6 +209,27 @@ void read(const nsstring & fname, ui8_vector * contents)
     contents->insert(contents->begin(),
                std::istream_iterator<char>(file),
                std::istream_iterator<char>());
+}
+
+nsstring & windows_path(nsstring & convert)
+{
+    for (uint32 i = 0; i < convert.size(); ++i)
+    {
+        if (convert[i] == '/')
+            convert[i] = '\\';
+    }
+    return convert;
+}
+
+
+nsstring & unix_path(nsstring & convert)
+{
+    for (uint32 i = 0; i < convert.size(); ++i)
+    {
+        if (convert[i] == '\\')
+            convert[i] = '/';
+    }
+    return convert;
 }
 
 }

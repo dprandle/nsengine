@@ -19,8 +19,6 @@ This file contains all of the neccessary definitions for the nsres_manager class
 #include <hash/sha256.h>
 #include <nsresource.h>
 
-using namespace nsfile_os;
-
 nsres_manager::nsres_manager():
 m_res_dir(),
 m_local_dir(),
@@ -81,7 +79,7 @@ bool nsres_manager::changed(nsresource * res, nsstring fname)
 	SHA256 sha256;
 	std::string s1 = sha256(&v1[0], v1.size());
 	std::string s2 = sha256(&v2[0], v2.size());
-	nsfile_os::remove_file(".tmp");
+	nsfile_os::remove(".tmp");
 	return (s1 != s2);
 }
 
@@ -127,7 +125,7 @@ bool nsres_manager::del(nsresource * res)
 {
 	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fName = dir + res->name() + res->extension();
-	bool ret = remove_file(fName);
+    bool ret = nsfile_os::remove(fName);
 
 	if (ret)
 	{
@@ -357,9 +355,9 @@ bool nsres_manager::rename(const nsstring & oldName, const nsstring & newName)
 	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fNameOld = dir + oldName + res->extension();
 	nsstring fNameNew = dir + res->name() + res->extension();
-	int32 ret = rename_file(fNameOld.c_str(), fNameNew.c_str());
+    bool ret = nsfile_os::rename(fNameOld.c_str(), fNameNew.c_str());
 			
-	if (ret == 0)
+    if (ret)
 	{
 		dprint("nsres_manager::rename Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
 	}
@@ -368,7 +366,7 @@ bool nsres_manager::rename(const nsstring & oldName, const nsstring & newName)
 		dprint("nsres_manager::rename Could not rename file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	
-	return (ret == 0);
+    return ret;
 }
 
 void nsres_manager::save_all(const nsstring & path, nssave_resouces_callback * scallback)
@@ -405,7 +403,7 @@ bool nsres_manager::save(nsresource * res,const nsstring & path)
 		fName = path + fName;
 	// otherwise create in cwd
 
-	bool fret = create_dir(fName);
+    bool fret = nsfile_os::create_dir(fName);
 	if (fret)
 	{
 		dprint("nsres_manager::save Created directory " + fName);

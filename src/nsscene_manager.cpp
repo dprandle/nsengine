@@ -16,7 +16,6 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 #include <nsengine.h>
 #include <nsentity_manager.h>
 #include <nsfile_os.h>
-using namespace nsfile_os;
 
 nsscene_manager::nsscene_manager() : 
 mCurrentScene(NULL)
@@ -65,7 +64,7 @@ nsscene * nsscene_manager::load(uint32 res_type_id, const nsstring & fname)
 		fName = fname;
 
 	// check if the file exists.. if it doesnt then return without creating scene
-	if (!file_exists(fName))
+    if (!nsfile_os::file_exists(fName))
 		return NULL;
 
 	nsscene * scene = get(resName);
@@ -92,7 +91,7 @@ bool nsscene_manager::save(nsresource * res, const nsstring & path)
 		fName = path + fName;
 	// otherwise create in cwd
 
-	bool fret = create_dir(fName);
+    bool fret = nsfile_os::create_dir(fName);
 	if (fret)
 		dprint("nsscene_manager::save Created directory " + fName);
 
@@ -100,7 +99,7 @@ bool nsscene_manager::save(nsresource * res, const nsstring & path)
     // If a scene other than the current scene is being saved, check first to make sure that there isnt a file
 	// for the scene - if there is then do not save the scene because it will overwrite the scene file with
 	// empty data.. if there is not a scene file then save it
-	if (scene != mCurrentScene && file_exists(fName))
+    if (scene != mCurrentScene && nsfile_os::file_exists(fName))
 		return true;
 
 	nsfstream file;

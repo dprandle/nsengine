@@ -8,19 +8,23 @@ namespace nsfile_os
 {
 
 bool file_exists(const nsstring & filename);
-bool dir_exists(const nsstring & filename);
+
+bool path_exists(const nsstring path);
 
 bool create_dir(const nsstring & path);
 
 uint32 remove_dir(const nsstring & path);
-bool remove_file(const nsstring & filename);
 
-bool rename_dir(const nsstring & oldpath, const nsstring & newpath);
-bool rename_file(const nsstring & oldname, const nsstring & newname);
+bool remove(const nsstring & filename);
+
+bool rename(const nsstring & oldname, const nsstring & newname);
 
 nsstring cwd();
 
 void read(const nsstring & fname, ui8_vector * contents);
+
+nsstring & windows_path(nsstring & convert);
+nsstring & unix_path(nsstring & convert);
 
 }
 

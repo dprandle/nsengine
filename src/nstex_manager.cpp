@@ -19,8 +19,6 @@
 #include <nstexture.h>
 #include <nsengine.h>
 
-using namespace nsfile_os;
-
 nstex_manager::nstex_manager(): nsres_manager()
 {
 	set_local_dir(LOCAL_TEXTURE_DIR_DEFAULT);
@@ -286,12 +284,12 @@ bool nstex_manager::del(nsresource * res)
 
 	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fName = dir + res->name();
-	bool ret = remove_file(fName + "_front" + DEFAULT_TEX_EXTENSION);
-	ret |= remove_file(fName + "_back" + DEFAULT_TEX_EXTENSION);
-	ret |= remove_file(fName + "_top" + DEFAULT_TEX_EXTENSION);
-	ret |= remove_file(fName + "_bottom" + DEFAULT_TEX_EXTENSION);
-	ret |= remove_file(fName + "_left" + DEFAULT_TEX_EXTENSION);
-	ret |= remove_file(fName + "_right" + DEFAULT_TEX_EXTENSION);
+    bool ret = nsfile_os::remove(fName + "_front" + DEFAULT_TEX_EXTENSION);
+    ret |= nsfile_os::remove(fName + "_back" + DEFAULT_TEX_EXTENSION);
+    ret |= nsfile_os::remove(fName + "_top" + DEFAULT_TEX_EXTENSION);
+    ret |= nsfile_os::remove(fName + "_bottom" + DEFAULT_TEX_EXTENSION);
+    ret |= nsfile_os::remove(fName + "_left" + DEFAULT_TEX_EXTENSION);
+    ret |= nsfile_os::remove(fName + "_right" + DEFAULT_TEX_EXTENSION);
 
 	if (ret)
 	{
@@ -418,7 +416,7 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 	else
 		fName = path + fName;
 
-	bool fret = create_dir(fName);
+    bool fret = nsfile_os::create_dir(fName);
 	if (fret)
 		dprint("nstex_manager::save Created directory " + fName);
 	
@@ -546,7 +544,7 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 	else
 		fName = path + fName;
 
-	bool fret = create_dir(fName);
+    bool fret = nsfile_os::create_dir(fName);
 	if (fret)
 		dprint("nstex_manager::save Created directory " + fName);
 
