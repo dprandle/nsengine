@@ -647,7 +647,7 @@ void nsdir_light_shader::init_uniforms()
 	nslight_shader::init_uniforms();
 	set_proj_light_mat(fmat4());
 	set_lighting_enabled(false);
-	set_bg_color(fvec3());
+    set_bg_color(fvec4());
 	set_direction(fvec3());
 }
 
@@ -663,7 +663,7 @@ void nsdir_light_shader::set_lighting_enabled(bool enable)
 	set_uniform("lightingEnabled", enable);
 }
 
-void nsdir_light_shader::set_bg_color(const fvec3 & col)
+void nsdir_light_shader::set_bg_color(const fvec4 & col)
 {
 	set_uniform("bgColor", col);
 }

@@ -93,7 +93,7 @@ public:
 
 	uivec3 ref_id(const fvec3 & pWorldPos) const;
 
-	const fvec3 & bg_color() const;
+    const fvec4 & bg_color() const;
 
 	nsentity * camera() const;
 
@@ -203,7 +203,7 @@ public:
 
 	bool remove(nsentity * entity, uint32 tformid);
 
-	void set_bg_color(const fvec3 & pColor);
+    void set_bg_color(const fvec4 & bg_color);
 
 	void set_creator(const nsstring & pCreator);
 
@@ -238,7 +238,7 @@ private:
 	uivec2 m_camera_id;
 	uivec2 m_skydome_id;
 	uint32 m_max_players;
-	fvec3 m_bg_color;
+    fvec4 m_bg_color;
 	entities_by_comp m_ents_by_comp_type;
 	nsstring m_notes;
 	nsstring m_creator;

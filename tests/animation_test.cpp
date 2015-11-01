@@ -34,7 +34,7 @@ int main()
 
 	nse.set_current_scene("mainscene", false, false);
 	nse.system<nsrender_system>()->set_fog_factor(uivec2(60,110));
-	nse.system<nsrender_system>()->set_fog_color(fvec4(nse.current_scene()->bg_color(),1.0f));
+    nse.system<nsrender_system>()->set_fog_color(nse.current_scene()->bg_color());
 	nse.system<nsinput_system>()->set_input_map(imap->full_id());
 	nse.system<nsinput_system>()->push_context("Main");
 

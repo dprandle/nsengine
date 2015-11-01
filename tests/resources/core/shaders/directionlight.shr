@@ -61,7 +61,7 @@ uniform sampler2D gMatMap;
 
 uniform vec2 screenSize;
 uniform vec3 camWorldPos;
-uniform vec3 bgColor;
+uniform vec4 bgColor;
 uniform vec2 shadowTexSize;
 uniform uvec2 fog_factor;
 uniform vec4 fog_color;
@@ -169,14 +169,14 @@ void main()
 		vec4 lightFactor = getLightInfluence(worldPos, normal.xyz, material);
 
 		if (color == normal && color == worldPos)
-			fragColor = vec4(bgColor,1.0);
+			fragColor = bgColor;
 		else
 			fragColor = mix(color * lightFactor, fog_color, 1 - fogFactor);
 	}
 	else
 	{
 		if (color == normal && color == worldPos)
-			fragColor = vec4(bgColor,1.0);
+			fragColor = bgColor;
 		else
 			fragColor = color;
 	}

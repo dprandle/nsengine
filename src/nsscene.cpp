@@ -236,7 +236,7 @@ bool nsscene::has_dir_light() const
 	return false;
 }
 
-const fvec3 & nsscene::bg_color() const
+const fvec4 & nsscene::bg_color() const
 {
 	return m_bg_color;
 }
@@ -596,9 +596,9 @@ bool nsscene::remove(nsentity * ent)
 	return ret;
 }
 
-void nsscene::set_bg_color(const fvec3 & pBackgroundColor)
+void nsscene::set_bg_color(const fvec4 & bg_color)
 {
-	m_bg_color = pBackgroundColor;
+    m_bg_color = bg_color;
 }
 
 void nsscene::set_creator(const nsstring & pCreator)

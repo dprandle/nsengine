@@ -261,7 +261,7 @@ public:
 
 	void set_lighting_enabled(bool enable);
 
-	void set_bg_color(const fvec3 & col);
+    void set_bg_color(const fvec4 & col);
 
 	void set_direction(const fvec3 & dir);
 
