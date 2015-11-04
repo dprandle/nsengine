@@ -33,7 +33,7 @@ public:
 
 	float & elapsed();
 
-	void fill_bones(nsmesh::node_tree * node_tree_, nsanim_set::animation_data * current_anim_);
+	void fill_joints(nsmesh::node_tree * node_tree_, nsanim_set::animation_data * current_anim_);
 
 	const uivec2 & anim_set_id();
 
@@ -74,7 +74,7 @@ public:
 	nsanim_comp & operator=(const nsanim_comp & rhs_);
 
 private:
-	void _fill_bone_transforms(nsmesh::node_tree * node_tree_, nsmesh::node * node_, nsanim_set::animation_data * current_anim_, fmat4 & parent_tform_);
+	void _fill_joint_transforms(nsmesh::node_tree * node_tree_, nsmesh::node * node_, nsanim_set::animation_data * current_anim_, fmat4 & parent_tform_);
 
 	float m_elapsed_time;
 	

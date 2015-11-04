@@ -84,10 +84,10 @@ nsanim_set::animmap::iterator nsanim_set::end()
 	return m_animmap.end();
 }
 
-fmat4 nsanim_set::anim_bone_transform(const nsstring & pAnimationName,
+fmat4 nsanim_set::anim_joint_transform(const nsstring & pAnimationName,
 	const nsstring & pNodeName, float pTime)
 {
-	return anim_data(pAnimationName)->bone_transform(pNodeName,pTime);
+	return anim_data(pAnimationName)->joint_transform(pNodeName,pTime);
 }
 
 nsanim_set::animation_data::animation_data(): anim_node_map(),
@@ -123,7 +123,7 @@ nsanim_set::animation_data::animation_node * nsanim_set::animation_data::anim_no
 	return NULL;
 }
 
-fmat4 nsanim_set::animation_data::bone_transform(const nsstring & pNodeName, float pTime)
+fmat4 nsanim_set::animation_data::joint_transform(const nsstring & pNodeName, float pTime)
 {
 	anim_nodemap_iter iter = anim_node_map.find(pNodeName);
 	if (iter != anim_node_map.end())

@@ -179,8 +179,13 @@ struct nsvec2
 
 	nsvec2<T> & fract()
 	{
-		x -= static_cast<T>(std::floor(x));
-		y -= static_cast<T>(std::floor(y));
+		for (uint32 i = 0; i < 2; ++i)
+		{
+			if (data[i] >= 0)
+				data[i] -= static_cast<T>(std::floor(data[i]));
+			else
+				data[i] -= static_cast<T>(std::ceil(data[i]));
+		}
 		return *this;
 	}
 
@@ -649,7 +654,7 @@ nsvec2<T> floor(const nsvec2<T> & vec_)
 template <class T>
 nsvec2<T> fract(const nsvec2<T> & vec_)
 {
-	return vec_ - floor(vec_);
+	return nsvec2<T>(vec_).fract();
 }
 
 template <class T>

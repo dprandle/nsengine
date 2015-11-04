@@ -165,12 +165,12 @@ uint32 remove_dir(const nsstring & dirpath)
 
 bool remove(const nsstring & filename)
 {
-	return (remove(filename.c_str()) == 0);
+	return (::remove(filename.c_str()) == 0);
 }
 
 bool rename(const nsstring & oldname, const nsstring & newname)
 {
-	return (rename(oldname.c_str(), newname.c_str()) == 0);
+	return (::rename(oldname.c_str(), newname.c_str()) == 0);
 }
 
 nsstring cwd()

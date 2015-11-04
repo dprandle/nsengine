@@ -1,0 +1,6 @@
+PosX = Front (PosY in engine coords)
+NegX = Back  (NegY in engine coords)
+PosY = Top (NegZ in engine coords)
+NegY = Bottom (PosZ in engine coords)
+PosZ = Left  (PosX in engine coords)
+NegZ = Right (NegX in engine coords)

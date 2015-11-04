@@ -15,6 +15,7 @@
 
 // Default shaders
 #define DEFAULT_GBUFFER_SHADER "gbufferdefault"
+#define DEFAULT_GBUFFER_WIREFRAME_SHADER "gbufferdefault_wireframe"
 #define DEFAULT_XFBGBUFFER_SHADER "gbufferxtf"
 #define DEFAULT_XFBGBUFFER_RENDER_SHADER "gbufferxtfrender"
 #define DEFAULT_EARLYZ_SHADER "earlyz"
@@ -123,6 +124,7 @@ public:
 	{
 		RenderShaders() :
 			deflt(NULL),
+			deflt_wireframe(NULL),
 			early_z(NULL),
 			light_stencil(NULL),
 			dir_light(NULL),
@@ -140,6 +142,7 @@ public:
 		{}
 
 		nsmaterial_shader * deflt;
+		nsmaterial_shader * deflt_wireframe;
 		nsearlyz_shader * early_z;
 		nslight_stencil_shader * light_stencil;
 		nsdir_light_shader * dir_light;

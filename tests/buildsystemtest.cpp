@@ -141,6 +141,7 @@ int main()
     nse.system<nsinput_system>()->set_input_map(imap->full_id());
     nse.system<nsinput_system>()->push_context("Main");
 	nse.save_plugins(true);
+//	nse.save_core();
 	
 	while (glfw_window_open())
     {

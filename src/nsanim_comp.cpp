@@ -56,9 +56,9 @@ float & nsanim_comp::elapsed()
 	return m_elapsed_time;
 }
 
-void nsanim_comp::fill_bones(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim)
+void nsanim_comp::fill_joints(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim)
 {
-	_fill_bone_transforms(pNodeTree, pNodeTree->root_node, pCurrentAnim, pNodeTree->root_node->world_transform);
+	_fill_joint_transforms(pNodeTree, pNodeTree->m_root, pCurrentAnim, pNodeTree->m_root->m_world_tform);
 }
 
 void nsanim_comp::init()
@@ -148,27 +148,27 @@ nsanim_comp & nsanim_comp::operator=(const nsanim_comp & pRHSComp)
 	return (*this);
 }
 
-void nsanim_comp::_fill_bone_transforms(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)
+void nsanim_comp::_fill_joint_transforms(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)
 {
 	fmat4 globalTransform;
 	nsstringstream ss;
 
-	if (pNodeTree->bone_name_map.empty())
+	if (pNodeTree->m_name_joint_map.empty())
 	{
 		dprint("nsanim_comp::_fillBoneTransform Animation has no bones");
 		return;
 	}
 
-	if (pCurrentAnim != NULL && pCurrentAnim->anim_node(pNode->name) != NULL)
-		globalTransform = pParentTransform * pCurrentAnim->bone_transform(pNode->name, m_elapsed_time);
+	if (pCurrentAnim != NULL && pCurrentAnim->anim_node(pNode->m_name) != NULL)
+		globalTransform = pParentTransform * pCurrentAnim->joint_transform(pNode->m_name, m_elapsed_time);
 	else
-		globalTransform = pParentTransform * pNode->node_transform;
+		globalTransform = pParentTransform * pNode->m_node_tform;
 
-	std::map<nsstring, nsmesh::bone>::const_iterator iter = pNodeTree->bone_name_map.find(pNode->name);
-	if (iter != pNodeTree->bone_name_map.end())
-		m_final_transforms[iter->second.boneID] = globalTransform * iter->second.mOffsetTransform;
+	std::map<nsstring, nsmesh::joint>::const_iterator iter = pNodeTree->m_name_joint_map.find(pNode->m_name);
+	if (iter != pNodeTree->m_name_joint_map.end())
+		m_final_transforms[iter->second.m_joint_id] = globalTransform * iter->second.m_offset_tform;
 
-	for (uint32 i = 0; i < pNode->child_nodes.size(); ++i)
-		_fill_bone_transforms(pNodeTree, pNode->child_nodes[i], pCurrentAnim, globalTransform);
+	for (uint32 i = 0; i < pNode->m_child_nodes.size(); ++i)
+		_fill_joint_transforms(pNodeTree, pNode->m_child_nodes[i], pCurrentAnim, globalTransform);
 }
 

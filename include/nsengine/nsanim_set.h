@@ -48,7 +48,7 @@ public:
 		animation_node * create_node(const nsstring & node_name_);
 
 		animation_node * anim_node(const nsstring & node_name_);
-		fmat4 bone_transform(const nsstring & node_name_, float time_);
+		fmat4 joint_transform(const nsstring & node_name_, float time_);
 
 		std::map<nsstring,animation_node*> anim_node_map;
 		nsstring animation_name;
@@ -77,7 +77,7 @@ public:
 
 	animation_data * anim_data(const nsstring & anim_name_);
 
-	fmat4 anim_bone_transform(const nsstring & anim_name_,
+	fmat4 anim_joint_transform(const nsstring & anim_name_,
 		const nsstring & node_name_, float time_);
 
 	virtual void pup(nsfile_pupper * p);

@@ -13,6 +13,8 @@ This file contains all of the neccessary declarations for the nsoccupy_comp clas
 #ifndef NSOCCUPY_COMP_H
 #define NSOCCUPY_COMP_H
 
+#define R_FACTOR 0.25f
+
 #include <nscomponent.h>
 
 class nsoccupy_comp : public nscomponent

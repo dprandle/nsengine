@@ -21,13 +21,21 @@ double clamp(double pVal, const double & pMin, const double & pMax)
 
 float fractf(const float & num)
 {
-	float flr = std::floor(num);
+	float flr;
+	if (num >= 0)
+		flr = std::floor(num);
+	else
+		flr = std::ceil(num);
 	return num - flr;
 }
 
 double fract(const double & num)
 {
-	double flr = std::floor(num);
+	double flr;
+	if (num >= 0)
+		flr = std::floor(num);
+	else
+		flr = std::ceil(num);
 	return num - flr;
 }
 

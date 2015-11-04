@@ -1,0 +1,207 @@
+type:<nsstring>nspoint_light_shader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>#version 440
+layout (location = 0) in vec3 position;
+
+uniform mat4 transform;
+uniform mat4 projCamMat;
+uniform mat4 nodeTransform;
+
+void main()
+{
+	gl_Position = projCamMat * transform * nodeTransform * vec4(position, 1.0);
+}
+
+
+
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring></nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring>#version 440
+
+out vec4 fragColor;
+
+
+struct PointLight 
+{
+	float ambientIntensity;
+	float diffuseIntensity;
+	vec3 color;
+	vec3 position;
+	float shadowDarkness;
+	float attConstant;
+	float attLinear;
+	float attExp;
+};
+
+struct Material
+{
+	float specPower;
+	float specIntensity;
+	vec3 specColor;
+};
+
+
+uniform PointLight light;
+uniform samplerCubeShadow shadowMap;
+uniform sampler2D gWorldPosMap;
+uniform sampler2D gDiffuseMap;
+uniform sampler2D gNormalMap;
+uniform sampler2D gMatMap;
+
+uniform vec2 screenSize;
+uniform vec3 camWorldPos;
+uniform vec2 shadowTexSize;
+uniform int shadowSamples;
+uniform float epsilon;
+uniform float maxDepth;
+uniform bool castShadows;
+
+const int PosX = 0;
+const int NegX = 1;
+const int PosY = 2;
+const int NegY = 3;
+const int PosZ = 4;
+const int NegZ = 5;
+
+int getFace(vec3 dir)
+{
+	if (abs(dir.x) > abs(dir.y) && abs(dir.x) > abs(dir.z))
+	{
+		if (dir.x > 0)
+			return PosX;
+		else
+			return NegX;
+	}
+	else if (abs(dir.y) > abs(dir.x) && abs(dir.y) > abs(dir.z))
+	{
+		if (dir.y > 0)
+			return PosY;
+		else
+			return NegY;
+	}
+	else
+	{
+		if (dir.z > 0)
+			return PosZ;
+		else
+			return NegZ;
+	}
+}
+
+float getShadowFactor(vec3 lightToPixel, float distance)
+{
+	float depth = distance / maxDepth;
+
+	if (shadowSamples == 0)
+		return texture(shadowMap, vec4(lightToPixel,depth - 8*epsilon));
+
+	float total = 0.0;
+	float xDelta = 1.0 / shadowTexSize.x;
+	float yDelta = 1.0 / shadowTexSize.y;
+
+	int face = getFace(lightToPixel);
+
+	int negBoundary = shadowSamples * -1;
+
+	for (int i = negBoundary; i <= shadowSamples; ++i)
+	{
+		for (int j = negBoundary; j <= shadowSamples; ++j)
+		{
+			vec4 texCoord = vec4(lightToPixel,depth-epsilon);
+			switch (face)
+			{
+				case (PosX):
+					texCoord.y += xDelta*i;
+					texCoord.z += yDelta*j;
+					break;
+				case (NegX):
+					texCoord.y += xDelta*i;
+					texCoord.z += yDelta*j;
+					break;
+				case (PosY):
+					texCoord.x += xDelta*i;
+					texCoord.z += yDelta*j;
+					break;
+				case (NegY):
+					texCoord.x += xDelta*i;
+					texCoord.z += yDelta*j;
+					break;
+				case (PosZ):
+					texCoord.x += xDelta*i;
+					texCoord.y += yDelta*j;
+					break;
+				case (NegZ):
+					texCoord.x += xDelta*i;
+					texCoord.y += yDelta*j;
+					break;
+			}
+			
+			total += texture(shadowMap, texCoord);
+		}
+	}
+
+    return total / ( (2*shadowSamples + 1) * (2*shadowSamples+1) );
+}
+
+vec2 getTexCoord()
+{
+   return gl_FragCoord.xy / screenSize;
+}
+
+vec4 getLightInfluence(vec3 worldPos, vec3 norm, Material mat)
+{
+	vec3 lightToPixel = worldPos - light.position;
+	float distance = length(lightToPixel);
+	lightToPixel = normalize(lightToPixel);
+
+	vec4 ambientColor = vec4(light.color, 1.0f) * light.ambientIntensity;
+	float diffuseFactor = dot(norm, -lightToPixel);
+
+	vec4 diffuseColor  = vec4(0, 0, 0, 0);
+	vec4 specularColor = vec4(0, 0, 0, 0);
+
+	float shadowFactor = 1.0;
+	if (castShadows)
+		shadowFactor = getShadowFactor(lightToPixel, distance);
+
+	if (diffuseFactor > 0) 
+	{
+		diffuseColor = vec4(light.color, 1.0f) * light.diffuseIntensity * diffuseFactor;
+        vec3 vertexToEye = normalize(camWorldPos - worldPos);
+        vec3 lightReflect = normalize(reflect(lightToPixel, norm));
+        float specularFactor = dot(vertexToEye, lightReflect);
+		specularFactor = pow(specularFactor, mat.specPower);
+		if (specularFactor > 0)
+		{
+			specularColor = vec4(light.color, 1.0f) * mat.specIntensity * specularFactor;
+		}
+	}
+
+	vec4 color = ambientColor + (diffuseColor + specularColor)*shadowFactor;
+
+	// Spot light attenuation formula
+	float attenuation =  1.0f / (light.attConstant + light.attLinear * distance + light.attExp * distance * distance);
+
+	return color * attenuation;
+}
+
+void main()
+{
+	vec2 texCoord = getTexCoord();
+    vec4 worldPos = texture(gWorldPosMap, texCoord);
+    vec4 color = texture(gDiffuseMap, texCoord);
+    vec4 normal = texture(gNormalMap, texCoord);
+	vec4 spec = texture(gMatMap, texCoord);
+
+	Material material;
+	material.specColor = spec.xyz;
+	material.specIntensity = spec.a;
+	material.specPower = normal.a;
+
+	fragColor = vec4(color.rgb, 1.0) * getLightInfluence(worldPos.xyz, normal.xyz, material);
+}
+
+
+</nsstring>

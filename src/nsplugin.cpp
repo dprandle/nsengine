@@ -576,7 +576,7 @@ nsentity * nsplugin::load_model(
 	const nsstring & entname,
 	nsstring fname,
 	bool prefix_import_dir,
-	const nsstring & meshname,
+	const nsstring & model_name,
 	bool occupy_comp,
 	bool flipuv)
 {
@@ -586,7 +586,7 @@ nsentity * nsplugin::load_model(
 	nsentity * ent = create<nsentity>(entname);
 	nsrender_comp * renderComp = ent->create<nsrender_comp>();
 
-	nsstring sceneName = meshname;
+	nsstring sceneName = model_name;
 	if (sceneName.empty())
 	{
 		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
@@ -666,12 +666,12 @@ nsentity * nsplugin::load_model(
 	return ent;
 }
 
-bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const nsstring & meshname, bool flipuv)
+bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const nsstring & model_name, bool flipuv)
 {
 	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
-	nsstring sceneName = meshname;
+	nsstring sceneName = model_name;
 	if (sceneName.empty())
 	{
 		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
@@ -724,6 +724,162 @@ bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const
 		manager<nsanim_manager>()->assimp_load_anim_set(scene, sceneName);
 
 	return true;
+}
+
+nsmesh * nsplugin::load_model_mesh(nsstring fname,
+								 bool prefix_import_dir,
+								 const nsstring & model_name,
+								 bool flipuv)
+{
+	if (prefix_import_dir)
+		fname = m_import_dir + fname;
+
+	nsstring sceneName = model_name;
+	if (sceneName.empty())
+	{
+		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
+		sceneName = sceneName.erase(sceneName.find_last_of("."), nsstring::npos);
+	}
+
+	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
+
+	uint32 flag = 0;
+
+	if (flipuv)
+	{
+		flag = aiProcess_ConvertToLeftHanded;
+	}
+
+	Assimp::Importer importer;
+	const aiScene * scene = importer.ReadFile(fname.c_str(),
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_Triangulate |
+		aiProcess_SortByPType |
+		flag |
+		aiProcess_GenUVCoords |
+		aiProcess_TransformUVCoords |
+		aiProcess_ImproveCacheLocality |
+		aiProcess_FindDegenerates |
+		aiProcess_ValidateDataStructure |
+		aiProcess_OptimizeMeshes |
+		aiProcess_OptimizeGraph |
+		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+		aiProcess_RemoveRedundantMaterials |
+		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+		aiProcess_FindInvalidData
+		// May include optimizing scene etc here
+		);
+
+	return manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
+}
+
+bool nsplugin::load_model_mats(nsstring fname,
+					 bool prefix_import_dir,
+					 const nsstring & model_name,
+					 bool flipuv)
+{
+	if (prefix_import_dir)
+		fname = m_import_dir + fname;
+
+	nsstring sceneName = model_name;
+	if (sceneName.empty())
+	{
+		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
+		sceneName = sceneName.erase(sceneName.find_last_of("."), nsstring::npos);
+	}
+
+	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
+
+	uint32 flag = 0;
+
+	if (flipuv)
+	{
+		flag = aiProcess_ConvertToLeftHanded;
+	}
+
+	Assimp::Importer importer;
+	const aiScene * scene = importer.ReadFile(fname.c_str(),
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_Triangulate |
+		aiProcess_SortByPType |
+		flag |
+		aiProcess_GenUVCoords |
+		aiProcess_TransformUVCoords |
+		aiProcess_ImproveCacheLocality |
+		aiProcess_FindDegenerates |
+		aiProcess_ValidateDataStructure |
+		aiProcess_OptimizeMeshes |
+		aiProcess_OptimizeGraph |
+		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+		aiProcess_RemoveRedundantMaterials |
+		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+		aiProcess_FindInvalidData
+		// May include optimizing scene etc here
+		);
+
+	if (scene->HasMaterials())
+	{
+		for (uint32 i = 0; i < scene->mNumMaterials; ++i)
+		{
+			nsstringstream ss;
+			ss << sceneName << "_" << i;
+			const aiMaterial* aiMat = scene->mMaterials[i];
+			nsmaterial * mat = manager<nsmat_manager>()->assimp_load_material(ss.str(), aiMat, dir);
+		}
+		return true;
+	}
+	else
+		return false;
+}
+
+nsanim_set * nsplugin::load_model_anim(nsstring fname,
+								bool prefix_import_dir,
+								const nsstring & model_name,
+								bool flipuv)
+{
+	if (prefix_import_dir)
+		fname = m_import_dir + fname;
+
+	nsstring sceneName = model_name;
+	if (sceneName.empty())
+	{
+		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
+		sceneName = sceneName.erase(sceneName.find_last_of("."), nsstring::npos);
+	}
+
+	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
+
+	uint32 flag = 0;
+
+	if (flipuv)
+	{
+		flag = aiProcess_ConvertToLeftHanded;
+	}
+
+	Assimp::Importer importer;
+	const aiScene * scene = importer.ReadFile(fname.c_str(),
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_Triangulate |
+		aiProcess_SortByPType |
+		flag |
+		aiProcess_GenUVCoords |
+		aiProcess_TransformUVCoords |
+		aiProcess_ImproveCacheLocality |
+		aiProcess_FindDegenerates |
+		aiProcess_ValidateDataStructure |
+		aiProcess_OptimizeMeshes |
+		aiProcess_OptimizeGraph |
+		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+		aiProcess_RemoveRedundantMaterials |
+		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+		aiProcess_FindInvalidData
+		// May include optimizing scene etc here
+		);
+
+	if (scene->HasAnimations())
+		return manager<nsanim_manager>()->assimp_load_anim_set(scene, sceneName);
+
+	return NULL;		
 }
 
 nsres_manager * nsplugin::manager(const nsstring & manager_guid)
@@ -790,9 +946,13 @@ bool nsplugin::bind()
 	while (liter != m_resmap.end())
 	{
 		nsres_manager * rm = manager(liter->first);
-		nsresource * r = rm->load(liter->second.first,liter->second.second);
+		nsresource * r = rm->load(liter->second.m_res_guid,liter->second.m_res_subdir_and_name);
+
 		if (r == NULL)
 			m_unloaded.emplace(liter->first, liter->second);
+		else
+			r->set_icon_path(liter->second.m_icon_path);
+		
 		++liter;
 	}
 
@@ -840,7 +1000,7 @@ nsstring nsplugin::details()
 	auto iter = m_resmap.begin();
 	while (iter != m_resmap.end())
 	{
-		ret += iter->second.second + "\n";
+		ret += iter->second.m_res_subdir_and_name + "\n";
 		++iter;
 	}
 	return ret;
@@ -987,10 +1147,11 @@ void nsplugin::_update_res_map()
 		auto resiter = miter->second->begin();
 		while (resiter != miter->second->end())
 		{
-			std::pair<nsstring, nsstring> rpair;
-			rpair.first = type_to_guid(*resiter->second);
-			rpair.second = resiter->second->subdir() + resiter->second->name() + resiter->second->extension();
-			m_resmap.emplace(hash_to_guid(miter->first), rpair);
+			res_info rinfo;
+			rinfo.m_res_guid = hash_to_guid(resiter->second->type());
+			rinfo.m_res_subdir_and_name = resiter->second->subdir() + resiter->second->name() + resiter->second->extension();
+			rinfo.m_icon_path = resiter->second->icon_path();
+			m_resmap.emplace(hash_to_guid(miter->first), rinfo);
 			++resiter;
 		}
 		++miter;
@@ -1020,3 +1181,11 @@ void nsplugin::_clear()
 	}
 }
 
+nsplugin::res_info::res_info(
+	const nsstring & res_guid,
+	const nsstring & subdir_and_name,
+	const nsstring & icon_path):
+	m_res_guid(res_guid),
+	m_res_subdir_and_name(subdir_and_name),
+	m_icon_path(icon_path)	
+{}

@@ -324,8 +324,8 @@ void nsselection_system::draw()
 						}
 					}
 
-					if (cSub->node_ != NULL)
-						m_sel_shader->set_node_transform(cSub->node_->world_transform);
+					if (cSub->m_node != NULL)
+						m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
 					else
 						m_sel_shader->set_node_transform(fmat4());
 
@@ -340,12 +340,12 @@ void nsselection_system::draw()
 					if (terComp != NULL)
 						m_sel_shader->set_height_minmax(terComp->height_bounds());
 
-					cSub->vao.bind();
-					glDrawElements(cSub->primitive_type,
-								   static_cast<GLsizei>(cSub->indices.size()),
+					cSub->m_vao.bind();
+					glDrawElements(cSub->m_prim_type,
+								   static_cast<GLsizei>(cSub->m_indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
-					cSub->vao.unbind();
+					cSub->m_vao.unbind();
 				}
 				++selIter;
 			}
@@ -393,8 +393,8 @@ void nsselection_system::draw()
 						}
 					}
 
-					if (cSub->node_ != NULL)
-						m_sel_shader->set_node_transform(cSub->node_->world_transform);
+					if (cSub->m_node != NULL)
+						m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
 					else
 						m_sel_shader->set_node_transform(fmat4());
 
@@ -409,7 +409,7 @@ void nsselection_system::draw()
 					if (terComp != NULL)
 						m_sel_shader->set_height_minmax(terComp->height_bounds());
 
-					cSub->vao.bind();
+					cSub->m_vao.bind();
 
 					glDisable(GL_DEPTH_TEST);
 					glPolygonMode(GL_FRONT, GL_LINE);
@@ -418,8 +418,8 @@ void nsselection_system::draw()
 
 					fvec4 selCol = selComp->color();
 					m_sel_shader->set_frag_color_out(selCol);
-					glDrawElements(cSub->primitive_type,
-								   static_cast<GLsizei>(cSub->indices.size()),
+					glDrawElements(cSub->m_prim_type,
+								   static_cast<GLsizei>(cSub->m_indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
 
@@ -432,11 +432,11 @@ void nsselection_system::draw()
 						selCol.w = 0.4f;
 
 					m_sel_shader->set_uniform("fragColOut", selCol);
-					glDrawElements(cSub->primitive_type,
-								   static_cast<GLsizei>(cSub->indices.size()),
+					glDrawElements(cSub->m_prim_type,
+								   static_cast<GLsizei>(cSub->m_indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
-					cSub->vao.unbind();
+					cSub->m_vao.unbind();
 				}
 				++selIter;
 			}
@@ -462,21 +462,21 @@ void nsselection_system::draw()
 		{
 			nsmesh::submesh * cSub = tileM->sub(i);
 
-			if (cSub->node_ != NULL)
-				m_sel_shader->set_node_transform(cSub->node_->world_transform);
+			if (cSub->m_node != NULL)
+				m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
 			else
 				m_sel_shader->set_node_transform(fmat4());
 
 			m_sel_shader->set_has_bones(false);
 
 			
-			cSub->vao.bind();
+			cSub->m_vao.bind();
 			m_sel_shader->set_frag_color_out(m_mirror_tile_color);
-			glDrawElements(cSub->primitive_type,
-						   static_cast<GLsizei>(cSub->indices.size()),
+			glDrawElements(cSub->m_prim_type,
+						   static_cast<GLsizei>(cSub->m_indices.size()),
 						   GL_UNSIGNED_INT,
 						   0);
-			cSub->vao.unbind();
+			cSub->m_vao.unbind();
 		}
 	}
 
@@ -513,13 +513,13 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 				{
 					nsmesh::submesh * occSub = occMesh->sub(i);
 
-					if (occSub->node_ != NULL)
-						m_sel_shader->set_node_transform(occSub->node_->world_transform);
+					if (occSub->m_node != NULL)
+						m_sel_shader->set_node_transform(occSub->m_node->m_world_tform);
 					else
 						m_sel_shader->set_node_transform(fmat4());
 
 					m_sel_shader->set_has_bones(false);
-					occSub->vao.bind();
+					occSub->m_vao.bind();
 
 					glDisable(GL_STENCIL_TEST);
 
@@ -532,13 +532,13 @@ void nsselection_system::_draw_ent_occ(nsentity * ent)
 					while (spaceIter != occComp->end())
 					{
 						m_sel_shader->set_transform(translation_mat4(nstile_grid::world(*spaceIter, tComp->wpos(*selIter))));
-						glDrawElements(occSub->primitive_type,
-									   static_cast<GLsizei>(occSub->indices.size()),
+						glDrawElements(occSub->m_prim_type,
+									   static_cast<GLsizei>(occSub->m_indices.size()),
 									   GL_UNSIGNED_INT,
 									   0);
 						++spaceIter;
 					}
-					occSub->vao.unbind();
+					occSub->m_vao.unbind();
 				}
 				++selIter;
 			}
@@ -570,8 +570,8 @@ void nsselection_system::_draw_occ()
 	{
 		nsmesh::submesh * occSub = occMesh->sub(i);
 
-		if (occSub->node_ != NULL)
-			m_sel_shader->set_node_transform(occSub->node_->world_transform);
+		if (occSub->m_node != NULL)
+			m_sel_shader->set_node_transform(occSub->m_node->m_world_tform);
 		else
 			m_sel_shader->set_node_transform(fmat4());
 
@@ -591,12 +591,12 @@ void nsselection_system::_draw_occ()
 					{
 						m_trans.set_column(3, nstile_grid::world(ivec3(x,y,z)));
 						m_sel_shader->set_transform(m_trans);
-						occSub->vao.bind();
-						glDrawElements(occSub->primitive_type,
-									   static_cast<GLsizei>(occSub->indices.size()),
+						occSub->m_vao.bind();
+						glDrawElements(occSub->m_prim_type,
+									   static_cast<GLsizei>(occSub->m_indices.size()),
 									   GL_UNSIGNED_INT,
 									   0);
-						occSub->vao.unbind();
+						occSub->m_vao.unbind();
 					}
 				}
 			}
@@ -655,8 +655,8 @@ void nsselection_system::_draw_hidden()
 				{
 					nsmesh::submesh * cSub = rMesh->sub(i);
 
-					if (cSub->node_ != NULL)
-						m_sel_shader->set_node_transform(cSub->node_->world_transform);
+					if (cSub->m_node != NULL)
+						m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
 					else
 						m_sel_shader->set_node_transform(fmat4());
 
@@ -668,14 +668,14 @@ void nsselection_system::_draw_hidden()
 					else
 						m_sel_shader->set_has_bones(false);
 
-					cSub->vao.bind();
+					cSub->m_vao.bind();
 					fvec4 col(1.0f, 1.0f, 1.0f, 0.04f);
 					m_sel_shader->set_frag_color_out(col);
-					glDrawElements(cSub->primitive_type,
-								   static_cast<GLsizei>(cSub->indices.size()),
+					glDrawElements(cSub->m_prim_type,
+								   static_cast<GLsizei>(cSub->m_indices.size()),
 								   GL_UNSIGNED_INT,
 								   0);
-					cSub->vao.unbind();
+					cSub->m_vao.unbind();
 				}
 			}
 		}

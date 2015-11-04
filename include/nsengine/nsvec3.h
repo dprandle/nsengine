@@ -330,9 +330,13 @@ struct nsvec3
 
 	nsvec3<T> & fract()
 	{
-		x -= static_cast<T>(std::floor(x));
-		y -= static_cast<T>(std::floor(y));
-		z -= static_cast<T>(std::floor(z));
+		for (uint32 i = 0; i < 3; ++i)
+		{
+			if (data[i] >= 0)
+				data[i] -= static_cast<T>(std::floor(data[i]));
+			else
+				data[i] -= static_cast<T>(std::ceil(data[i]));
+		}
 		return *this;
 	}
 
@@ -1022,7 +1026,7 @@ nsvec3<T> floor(const nsvec3<T> & vec_)
 template <class T>
 nsvec3<T> fract(const nsvec3<T> & vec_)
 {
-	return vec_ - floor(vec_);
+	return nsvec3<T>(vec_).fract();
 }
 
 template <class T>

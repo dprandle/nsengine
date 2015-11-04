@@ -492,19 +492,19 @@ uivec3_vector nstile_grid::bounded_set(const fvec3 & pPoint1, const fvec3 & pPoi
 int32 nstile_grid::index_x(float pX, bool pOffset)
 {
 	if (pOffset)
-		return int32(floor(((pX - X_GRID) / (2 * X_GRID)) + ROUND_FACTOR));
+		return int32(std::round(0.5f * (pX - X_GRID) / X_GRID));
 
-	return int32(floor((pX / (2 * X_GRID)) + ROUND_FACTOR));
+	return int32(std::round(0.5f * pX / X_GRID));
 }
 
 int32 nstile_grid::index_y(float pY)
 {
-	return int32(floor((pY / Y_GRID) + ROUND_FACTOR));
+	return int32(std::round(pY / Y_GRID));
 }
 
 int32 nstile_grid::index_z(float pZ)
 {
-	return int32(floor((pZ / Z_GRID) + ROUND_FACTOR));
+	return int32(std::round(pZ / Z_GRID));
 }
 
 nstile_grid::map_index nstile_grid::index(const ivec3 & pSpace)
@@ -541,7 +541,7 @@ fvec3 nstile_grid::world(const ivec3 & pSpace, const fvec3 & pOrigin)
 {
 	ivec3 space = pSpace + grid(pOrigin);
 	fvec3 pos(space.x * 2.0f * X_GRID, space.y * Y_GRID, space.z * Z_GRID);
-	if (space.y % 2 != 0)
+	if (pSpace.y % 2 != 0)
 		pos.x += X_GRID;
 	return pos;
 }

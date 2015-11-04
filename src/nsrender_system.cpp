@@ -468,6 +468,7 @@ void nsrender_system::init()
 	nsplugin * cplg = nse.core();	
 	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
 	m_shaders.deflt = cplg->load<nsmaterial_shader>(nsstring(DEFAULT_GBUFFER_SHADER) + shext);
+	m_shaders.deflt_wireframe = cplg->load<nsmaterial_shader>(nsstring(DEFAULT_GBUFFER_WIREFRAME_SHADER) + shext);
 	m_shaders.early_z = cplg->load<nsearlyz_shader>(nsstring(DEFAULT_EARLYZ_SHADER) + shext);
 	m_shaders.light_stencil = cplg->load<nslight_stencil_shader>(nsstring(DEFAULT_LIGHTSTENCIL_SHADER) + shext);
 	m_shaders.dir_light = cplg->load<nsdir_light_shader>(nsstring(DEFAULT_DIRLIGHT_SHADER) + shext);
@@ -492,9 +493,16 @@ void nsrender_system::init()
 	m_default_mat = cplg->load<nsmaterial>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_MAT_EXTENSION));
 
 	// Light bounds, skydome, and tile meshes
-    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+    nsmesh * full_tile = cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+	full_tile->bake_node_translation(fvec3(0.0f,0.0f,-0.45f/2.0f));
+	
     cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
-    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+    nsmesh * half_tile = cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+	
+	half_tile->bake_node_rotation(orientation(fvec4(1,0,0,90.0f)));
+	half_tile->bake_node_translation(fvec3(0,0,-0.45f/4.0f));
+
+	
 	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
@@ -618,7 +626,12 @@ void nsrender_system::update()
 				fTForms = NULL;
 
 				if (shader == NULL)
-					shader = m_shaders.deflt;
+				{
+					if (mat->wireframe())
+						shader = m_shaders.deflt_wireframe;
+					else
+						shader = m_shaders.deflt;
+				}
 
 				if (animComp != NULL)
 					fTForms = animComp->final_transforms();
@@ -660,14 +673,14 @@ void nsrender_system::_blend_dir_light(nslight_comp * pLight)
 	for (uint32 i = 0; i < boundingMesh->count(); ++i)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
-		cSub->vao.bind();
-		GLsizei sz = static_cast<GLsizei>(cSub->indices.size());
-		glDrawElements(cSub->primitive_type,
+		cSub->m_vao.bind();
+		GLsizei sz = static_cast<GLsizei>(cSub->m_indices.size());
+		glDrawElements(cSub->m_prim_type,
 					   sz,
 					   GL_UNSIGNED_INT,
 					   nullptr);
         GLError("_blendDirectionLight: Draw Error");
-		cSub->vao.unbind();
+		cSub->m_vao.unbind();
 	}
 }
 
@@ -691,17 +704,17 @@ void nsrender_system::_blend_point_light(nslight_comp * pLight)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->node_ != NULL)
-			m_shaders.point_light->set_uniform("nodeTransform", cSub->node_->world_transform);
+		if (cSub->m_node != NULL)
+			m_shaders.point_light->set_uniform("nodeTransform", cSub->m_node->m_world_tform);
 		else
 			m_shaders.point_light->set_uniform("nodeTransform", fmat4());
 
-		cSub->vao.bind();
-		glDrawElements(cSub->primitive_type,
-					   static_cast<GLsizei>(cSub->indices.size()),
+		cSub->m_vao.bind();
+		glDrawElements(cSub->m_prim_type,
+					   static_cast<GLsizei>(cSub->m_indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->vao.unbind();
+		cSub->m_vao.unbind();
 	}
 }
 
@@ -728,17 +741,17 @@ void nsrender_system::_blend_spot_light(nslight_comp * pLight)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->node_ != NULL)
-			m_shaders.spot_light->set_uniform("nodeTransform", cSub->node_->world_transform);
+		if (cSub->m_node != NULL)
+			m_shaders.spot_light->set_uniform("nodeTransform", cSub->m_node->m_world_tform);
 		else
 			m_shaders.spot_light->set_uniform("nodeTransform", fmat4());
 
-		cSub->vao.bind();
-		glDrawElements(cSub->primitive_type,
-					   static_cast<GLsizei>(cSub->indices.size()),
+		cSub->m_vao.bind();
+		glDrawElements(cSub->m_prim_type,
+					   static_cast<GLsizei>(cSub->m_indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->vao.unbind();
+		cSub->m_vao.unbind();
 	}
 }
 
@@ -842,29 +855,29 @@ void nsrender_system::_draw_xfbs()
 				{
 					nsmesh::submesh * subMesh = mesh->sub(subI);
 
-					if (subMesh->node_ != NULL)
-						m_shaders.xfb_default->set_uniform("nodeTransform", subMesh->node_->world_transform);
+					if (subMesh->m_node != NULL)
+						m_shaders.xfb_default->set_uniform("nodeTransform", subMesh->m_node->m_world_tform);
 					else
 						m_shaders.xfb_default->set_uniform("nodeTransform", fmat4());
 
 					// Set up all of the uniform inputs
-					subMesh->vao.bind();
+					subMesh->m_vao.bind();
 					tComp->transform_buffer()->bind();
 					for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 					{
-						subMesh->vao.add(tComp->transform_buffer(), nsshader::loc_instance_tform + tfInd);
-						subMesh->vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
-						subMesh->vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
+						subMesh->m_vao.add(tComp->transform_buffer(), nsshader::loc_instance_tform + tfInd);
+						subMesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
+						subMesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
 					}
 
 					tComp->transform_id_buffer()->bind();
-					subMesh->vao.add(tComp->transform_id_buffer(), nsshader::loc_ref_id);
-					subMesh->vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
-					subMesh->vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
+					subMesh->m_vao.add(tComp->transform_id_buffer(), nsshader::loc_ref_id);
+					subMesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
+					subMesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
 
 					// Draw the stuff without sending the stuff to be rasterized
-					glDrawElementsInstanced(subMesh->primitive_type,
-											static_cast<GLsizei>(subMesh->indices.size()),
+					glDrawElementsInstanced(subMesh->m_prim_type,
+											static_cast<GLsizei>(subMesh->m_indices.size()),
 											GL_UNSIGNED_INT,
 											0,
 											bufIter->instance_count);
@@ -872,12 +885,12 @@ void nsrender_system::_draw_xfbs()
 					GLError("nsrender_system::_drawTransformFeedbacks glDrawElementsInstanced");
 
 					tComp->transform_buffer()->bind();
-					subMesh->vao.remove(tComp->transform_buffer());
+					subMesh->m_vao.remove(tComp->transform_buffer());
 
 					tComp->transform_id_buffer()->bind();
-					subMesh->vao.remove(tComp->transform_id_buffer());
+					subMesh->m_vao.remove(tComp->transform_id_buffer());
 
-					subMesh->vao.unbind();
+					subMesh->m_vao.unbind();
 				}
 
 				bufIter->xfb_obj->end();
@@ -937,7 +950,7 @@ void nsrender_system::_draw_xfbs()
 				shader->set_entity_id((*drawIter)->id());
 				shader->set_plugin_id((*drawIter)->plugin_id());
 
-				if (!subMesh->has_tex_coords)
+				if (!subMesh->m_has_tex_coords)
 					shader->set_color_mode(true);
 
 				bufIter->xfb_vao->bind();
@@ -992,34 +1005,33 @@ void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)
 	// Check to make sure each buffer is allocated before setting the shader attribute : un-allocated buffers
 	// are fairly common because not every mesh has tangents for example.. or normals.. or whatever
 
-	pDCIter->submesh->vao.bind();
+	pDCIter->submesh->m_vao.bind();
 	pDCIter->transform_buffer->bind();
 	for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 	{
-		pDCIter->submesh->vao.add(pDCIter->transform_buffer, nsshader::loc_instance_tform + tfInd);
-		pDCIter->submesh->vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-		pDCIter->submesh->vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
+		pDCIter->submesh->m_vao.add(pDCIter->transform_buffer, nsshader::loc_instance_tform + tfInd);
+		pDCIter->submesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+		pDCIter->submesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
 	}
 
 	pDCIter->transform_id_buffer->bind();
-	pDCIter->submesh->vao.add(pDCIter->transform_id_buffer, nsshader::loc_ref_id);
-	pDCIter->submesh->vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
-	pDCIter->submesh->vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
-	GLError("nsrender_system::_drawCall 1");
-	
-	glDrawElementsInstanced(pDCIter->submesh->primitive_type,
-							static_cast<GLsizei>(pDCIter->submesh->indices.size()),
+	pDCIter->submesh->m_vao.add(pDCIter->transform_id_buffer, nsshader::loc_ref_id);
+	pDCIter->submesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
+	pDCIter->submesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
+
+	GLError("nsrender_system::_draw_call pre");
+	glDrawElementsInstanced(pDCIter->submesh->m_prim_type,
+							static_cast<GLsizei>(pDCIter->submesh->m_indices.size()),
 							GL_UNSIGNED_INT,
 							0,
 							pDCIter->transform_count);
-	
-	GLError("nsrender_system::_drawCall 2");
+	GLError("nsrender_system::_draw_call post");
 
 	pDCIter->transform_buffer->bind();
-	pDCIter->submesh->vao.remove(pDCIter->transform_buffer);
+	pDCIter->submesh->m_vao.remove(pDCIter->transform_buffer);
 	pDCIter->transform_id_buffer->bind();
-	pDCIter->submesh->vao.remove(pDCIter->transform_id_buffer);
-	pDCIter->submesh->vao.unbind();
+	pDCIter->submesh->m_vao.remove(pDCIter->transform_id_buffer);
+	pDCIter->submesh->m_vao.unbind();
 }
 
 void nsrender_system::_draw_geometry()
@@ -1056,11 +1068,6 @@ void nsrender_system::_draw_geometry()
 			else
 				glDisable(GL_CULL_FACE);
 
-			if ((*matIter)->wireframe())
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			else
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 			currentShader->set_diffusemap_enabled((*matIter)->contains(nsmaterial::diffuse));
 			currentShader->set_opacitymap_enabled((*matIter)->contains(nsmaterial::opacity));
 			currentShader->set_normalmap_enabled((*matIter)->contains(nsmaterial::normal));
@@ -1089,11 +1096,11 @@ void nsrender_system::_draw_geometry()
 				currentShader->set_entity_id(dcIter->entity_id);
 				currentShader->set_plugin_id(dcIter->plugin_id);
 
-				if (!dcIter->submesh->has_tex_coords)
+				if (!dcIter->submesh->m_has_tex_coords)
 					currentShader->set_color_mode(true);
 
-				if (dcIter->submesh->node_ != NULL)
-					currentShader->set_node_transform(dcIter->submesh->node_->world_transform);
+				if (dcIter->submesh->m_node != NULL)
+					currentShader->set_node_transform(dcIter->submesh->m_node->m_world_tform);
 				else
 					currentShader->set_node_transform(fmat4());
 
@@ -1143,7 +1150,7 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 		drawcall_set::iterator  dcIter = currentSet.begin();
 		while (dcIter != currentSet.end())
 		{
-			if (dcIter->submesh->primitive_type != GL_TRIANGLES)
+			if (dcIter->submesh->m_prim_type != GL_TRIANGLES)
 			{
 				++dcIter;
 				continue;
@@ -1155,8 +1162,8 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 				continue;
 			}
 
-			if (dcIter->submesh->node_ != NULL)
-				pShader->set_node_transform(dcIter->submesh->node_->world_transform);
+			if (dcIter->submesh->m_node != NULL)
+				pShader->set_node_transform(dcIter->submesh->m_node->m_world_tform);
 			else
 				pShader->set_node_transform(fmat4());
 
@@ -1218,17 +1225,17 @@ void nsrender_system::_stencil_point_light(nslight_comp * pLight)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->node_ != NULL)
-			m_shaders.light_stencil->set_node_transform(cSub->node_->world_transform);
+		if (cSub->m_node != NULL)
+			m_shaders.light_stencil->set_node_transform(cSub->m_node->m_world_tform);
 		else
 			m_shaders.light_stencil->set_node_transform(fmat4());
 
-		cSub->vao.bind();
-		glDrawElements(cSub->primitive_type,
-					   static_cast<GLsizei>(cSub->indices.size()),
+		cSub->m_vao.bind();
+		glDrawElements(cSub->m_prim_type,
+					   static_cast<GLsizei>(cSub->m_indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->vao.unbind();
+		cSub->m_vao.unbind();
 	}
 }
 
@@ -1239,17 +1246,17 @@ void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 	{
 		nsmesh::submesh * cSub = boundingMesh->sub(i);
 
-		if (cSub->node_ != NULL)
-			m_shaders.light_stencil->set_node_transform(cSub->node_->world_transform);
+		if (cSub->m_node != NULL)
+			m_shaders.light_stencil->set_node_transform(cSub->m_node->m_world_tform);
 		else
 			m_shaders.light_stencil->set_node_transform(fmat4());
 
-		cSub->vao.bind();
-		glDrawElements(cSub->primitive_type,
-					   static_cast<GLsizei>(cSub->indices.size()),
+		cSub->m_vao.bind();
+		glDrawElements(cSub->m_prim_type,
+					   static_cast<GLsizei>(cSub->m_indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		cSub->vao.unbind();
+		cSub->m_vao.unbind();
 	}
 }
 
@@ -1326,6 +1333,7 @@ bool nsrender_system::RenderShaders::error()
 {
 	return (
 		deflt->error() != nsshader::error_none ||
+		deflt_wireframe->error() != nsshader::error_none ||
 		early_z->error() != nsshader::error_none ||
 		light_stencil->error() != nsshader::error_none ||
 		dir_light->error() != nsshader::error_none ||
@@ -1346,6 +1354,7 @@ bool nsrender_system::RenderShaders::valid()
 {
 	return (
 		deflt != NULL &&
+		deflt_wireframe != NULL &&
 		early_z != NULL &&
 		light_stencil != NULL &&
 		dir_light != NULL &&

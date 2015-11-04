@@ -1,0 +1,10 @@
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/animation_test.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/buildsystemtest.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/fogtest.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/deps/glfw-3.1.1/src/CMakeFiles/glfw.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/inputtest.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/CMakeFiles/nsengine.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/particle_test.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/res_load_test.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/tests/CMakeFiles/skyboxtest.dir
+/home/dprandle/Documents/code/nsengine/build/x64/release/deps/glfw-3.1.1/CMakeFiles/uninstall.dir

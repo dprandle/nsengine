@@ -20,6 +20,8 @@ This file contains all of the neccessary declarations for the nsplugin class.
 class nsentity;
 class nsscene;
 class nsmaterial;
+class nsanim_set;
+class nsmesh;
 
 class nsplugin : public nsresource
 {
@@ -29,10 +31,21 @@ public:
 
 	typedef std::unordered_map<uint32, nsres_manager*> manager_map;
 
+	struct res_info
+	{
+		res_info(const nsstring & res_guid="",
+				 const nsstring & subdir_and_name="",
+				 const nsstring & icon_path="");
+		nsstring m_res_guid;
+		nsstring m_res_subdir_and_name;
+		nsstring m_icon_path;
+	};
+	
 	// This is manager type string to pair(get typestring, get name)
 	// Sometimes managers can manage an abstract type - nstexture for example - which
 	// means the get type string must also be included so we can get the right factory
-	typedef std::unordered_multimap<nsstring, std::pair<std::string, std::string>> res_type_map;
+	// manager guid 
+	typedef std::unordered_multimap<nsstring, res_info> res_type_map;
 
 	enum tile_t
 	{
@@ -244,7 +257,22 @@ public:
 							bool prefixWithImportDir,
 							const nsstring & meshname = "",
 							bool flipuv = false);
-	
+
+	nsmesh * load_model_mesh(nsstring fname,
+							bool prefixWithImportDir,
+							const nsstring & meshname = "",
+							bool flipuv = false);
+
+	bool load_model_mats(nsstring fname,
+						 bool prefixWithImportDir,
+						 const nsstring & meshname = "",
+						 bool flipuv = false);
+
+	nsanim_set * load_model_anim(nsstring fname,
+						 bool prefixWithImportDir,
+						 const nsstring & meshname = "",
+						 bool flipuv = false);
+
 	bool bind();
 
 	bool bound();
@@ -360,6 +388,14 @@ private:
 	res_type_map m_unloaded;
 	bool m_add_name;
 };
+
+template <class PUPer>
+void pup(PUPer & p, nsplugin::res_info & res_info, const nsstring & var_name)
+{
+	pup(p, res_info.m_res_guid, var_name + "guid");
+	pup(p, res_info.m_res_subdir_and_name, var_name + "res_name");
+	pup(p, res_info.m_icon_path, var_name + "icon_path");
+}
 
 template <class PUPer>
 void pup(PUPer & p, nsplugin & plug)

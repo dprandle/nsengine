@@ -68,162 +68,50 @@ uses the bounding box of the entire mesh.
 void nsoccupy_comp::build(const nsbounding_box & pBox)
 {
 	clear();
-	int32 zCountUp = int32(std::abs(pBox.mMax.z) / Z_GRID);
-	if (fmod(std::abs(pBox.mMax.z), Z_GRID) > 0.01)
-		++zCountUp;
+	fvec4 plus, minus;
+	ivec4 iplus, iminus;
+	
+	plus.x = (0.5f * (pBox.mMax.x + X_GRID)/X_GRID);
+	minus.x = (0.5f * (pBox.mMin.x + X_GRID)/X_GRID);
+	plus.w = (0.5f * (pBox.mMax.x/X_GRID));
+	minus.w = (0.5f * (pBox.mMin.x/X_GRID));
+	plus.y = ((pBox.mMax.y + 0.5f) / Y_GRID);
+	minus.y = ((pBox.mMin.y + 1.0f) / Y_GRID);
+	plus.z = (pBox.mMax.z/Z_GRID);
+	minus.z = (pBox.mMin.z/Z_GRID);
 
-	int32 zCountDown = int32(std::abs(pBox.mMin.z) / Z_GRID);
-	if (fmod(std::abs(pBox.mMin.z), Z_GRID) > 0.01)
-		++zCountDown;
-
-	int32 xCountRight = int32(std::abs(pBox.mMax.x) / X_GRID);
-	if (fmod(std::abs(pBox.mMax.x), X_GRID) > 0.01)
-		++xCountRight;
-
-	int32 xCountLeft = int32(std::abs(pBox.mMin.x) / X_GRID);
-	if (fmod(std::abs(pBox.mMin.x), X_GRID) > 0.01)
-		++xCountLeft;
-
-	int32 yCountForward = int32(std::abs(pBox.mMax.y) / Y_GRID);
-	if (fmod(std::abs(pBox.mMax.y), Y_GRID) > 0.01)
-		++yCountForward;
-
-	int32 yCountBackward = int32(std::abs(pBox.mMin.y) / Y_GRID);
-	if (fmod(std::abs(pBox.mMin.z), Y_GRID) > 0.01)
-		++yCountBackward;
-
-	for (int32 i = 0; i < zCountUp; ++i)
+	for (uint32 i = 0; i < 4; ++i)
 	{
-		for (int32 j = 0; j < yCountForward; ++j)
-		{
-			int32 mod = j % 2;
-			for (int32 k = 0; k < xCountRight; ++k)
-			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(k/2, j, i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((k)/2, j, i);
-				}
-			}
-			for (int32 k = 1; k < xCountLeft; ++k)
-			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(-k/2, j, i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((-k-1)/2, j, i);
-				}
-			}
-		}
-		for (int32 j = 1; j < yCountBackward; ++j)
-		{
-			int32 mod = j % 2;
-			for (int32 k = 0; k < xCountRight; ++k)
-			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(k/2, -j, i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((k)/2, -j, i);
-				}
-			}
-			for (int32 k = 1; k < xCountLeft; ++k)
-			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(-k/2, -j, i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((-k-1)/2, -j, i);
-				}
-			}
-		}
+		if (plus[i] >= 0.0f)
+			iplus[i] = std::floor(plus[i]);
+		else
+			iplus[i] = std::ceil(plus[i]);
+
+		if (minus[i] >= 0.0f)
+			iminus[i] = std::floor(minus[i]);
+		else
+			iminus[i] = std::ceil(minus[i]);
+
+		if (std::abs(fract(plus[i])) > R_FACTOR)
+			iplus[i] += 1;
+		
+		if (std::abs(fract(minus[i])) > R_FACTOR)
+			iminus[i] -= 1;
 	}
 
-	for (int32 i = 1; i < zCountDown; ++i)
+	for (int32 z = iplus.z; z > iminus.z; --z)
 	{
-		for (int32 j = 0; j < yCountForward; ++j)
+		for (int32 y = iminus.y; y < iplus.y; ++y)
 		{
-			int32 mod = j % 2;
-			for (int32 k = 0; k < xCountRight; ++k)
+			if ((y % 2) == 0)
 			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(k/2, j, -i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((k)/2, j, -i);
-				}
+				for (int32 x = iminus.x; x < iplus.x; ++x)
+					add(x,y,z);
 			}
-			for (int32 k = 1; k < xCountLeft; ++k)
+			else
 			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(-k/2, j, -i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((-k-1)/2, j, -i);
-				}
-			}
-		}
-		for (int32 j = 1; j < yCountBackward; ++j)
-		{
-			int32 mod = j % 2;
-			for (int32 k = 0; k < xCountRight; ++k)
-			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(k/2, -j, -i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((k)/2, -j, -i);
-				}
-			}
-			for (int32 k = 1; k < xCountLeft; ++k)
-			{
-				int32 mod2 = k % 2;
-				if (!mod) // if mod == 0 - basically if j is even
-				{
-					if (!mod2) // if k is even
-						add(-k/2, -j, -i);
-				}
-				else // if j is odd
-				{
-					if (mod2) // if k is odd
-						add((-k-1)/2, -j, -i);
-				}
+				for (int32 x = iminus.w; x < iplus.w; ++x)
+					add(x,y,z);
 			}
 		}
 	}

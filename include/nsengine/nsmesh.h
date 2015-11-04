@@ -1,7 +1,7 @@
 #ifndef NSMESH_H
 #define NSMESH_H
 
-#define BONES_PER_JOINT 4
+#define JOINTS_PER_VERTEX 4
 
 #include <nsresource.h>
 #include <nsbuffer_object.h>
@@ -14,11 +14,11 @@ public:
 	template<class PUPer>
 	friend void pup(PUPer & p, nsmesh & mesh);
 
-	struct bone
+	struct joint
 	{
-		bone();
-		uint32 boneID;
-		fmat4 mOffsetTransform;
+		joint();
+		uint32 m_joint_id;
+		fmat4 m_offset_tform;
 	};
 
 	struct node
@@ -28,12 +28,12 @@ public:
 		node * create_child(const nsstring & pName);
 		node * find_node(const nsstring & pNodeName);
 
-		nsstring name;
-		uint32 node_id;
-		fmat4 node_transform;
-		fmat4 world_transform;
-		node * parent_node;
-		std::vector<node*> child_nodes;
+		nsstring m_name;
+		uint32 m_node_id;
+		fmat4 m_node_tform;
+		fmat4 m_world_tform;
+		node * m_parent_node;
+		std::vector<node*> m_child_nodes;
 	};
 
 	struct node_tree
@@ -43,19 +43,19 @@ public:
 		node * create_root_node(const nsstring & pName);
 		node * find_node(const nsstring & pNodeName);
 
-		node * root_node;
-		std::map<nsstring,nsmesh::bone> bone_name_map;
+		node * m_root;
+		std::map<nsstring,nsmesh::joint> m_name_joint_map;
 	};
 
 	struct submesh
 	{
-		struct joint
+		struct connected_joints
 		{
-			joint();
-			void add_bone(uint32 bone_id, float weight);
+			connected_joints();
+			void add_joint(uint32 bone_id, float weight);
 
-			uint32 bone_ids[BONES_PER_JOINT];
-			float weights[BONES_PER_JOINT];
+			uint32 m_joint_ids[JOINTS_PER_VERTEX];
+			float m_weights[JOINTS_PER_VERTEX];
 		};
 
 		submesh(nsmesh * pParentMesh=NULL);
@@ -64,32 +64,32 @@ public:
 		void calc_aabb();
 		void init_gl();
 		void resize(uint32 pNewSize);
-		void update_VAO();
+		void update_vao();
 
 
-		nsbuffer_object pos_buf;
-		nsbuffer_object tex_buf;
-		nsbuffer_object norm_buf;
-		nsbuffer_object tang_buf;
-		nsbuffer_object indice_buf;
-		nsbuffer_object joint_buf;
-		nsvertex_array_object vao;
+		nsbuffer_object m_vert_buf;
+		nsbuffer_object m_tex_buf;
+		nsbuffer_object m_norm_buf;
+		nsbuffer_object m_tang_buf;
+		nsbuffer_object m_indice_buf;
+		nsbuffer_object m_joint_buf;
+		nsvertex_array_object m_vao;
 
-		fvec3_vector positions;
-		fvec2_vector tex_coords;
-		fvec3_vector normals;
-		fvec3_vector tangents;
-		ui_vector indices;
-		uivec3_vector triangles;
-		uivec2_vector lines;
-		std::vector<joint> joints;
+		fvec3_vector m_verts;
+		fvec2_vector m_tex_coords;
+		fvec3_vector m_normals;
+		fvec3_vector m_tangents;
+		ui_vector m_indices;
+		uivec3_vector m_triangles;
+		uivec2_vector m_lines;
+		std::vector<connected_joints> m_joints;
 
-		GLenum primitive_type;
-		node * node_;
-		nsstring name;
-		nsmesh * parent_mesh;
-		nsbounding_box bounding_box;
-		bool has_tex_coords;
+		GLenum m_prim_type;
+		node * m_node;
+		nsstring m_name;
+		nsmesh * m_parent_mesh;
+		nsbounding_box m_bounding_box;
+		bool m_has_tex_coords;
 	};
 
 	typedef std::vector<submesh*>::iterator submesh_iter;
@@ -200,12 +200,12 @@ private:
 // affects the vertex - I have a BONES_PER_JOINT limit set to 4 bones - I dont think I would ever need
 // more than 4 bones affecting a single vertex in any sort of animation
 template <class PUPer>
-void pup(PUPer & p, nsmesh::submesh::joint & bwid, const nsstring & var_name)
+void pup(PUPer & p, nsmesh::submesh::connected_joints & bwid, const nsstring & var_name)
 {
-	for (uint32 i = 0; i < BONES_PER_JOINT; ++i)
+	for (uint32 i = 0; i < JOINTS_PER_VERTEX; ++i)
 	{
-		pup(p, bwid.bone_ids[i], var_name + ".bone_ids[" + std::to_string(i) + "]");
-		pup(p, bwid.weights[i], var_name + ".weights[" + std::to_string(i) + "]");
+		pup(p, bwid.m_joint_ids[i], var_name + ".joint_ids[" + std::to_string(i) + "]");
+		pup(p, bwid.m_weights[i], var_name + ".weights[" + std::to_string(i) + "]");
 	}
 }
 
@@ -214,17 +214,17 @@ void pup(PUPer & p, nsmesh::submesh::joint & bwid, const nsstring & var_name)
 template <class PUPer>
 void pup(PUPer & p, nsmesh::submesh & sm, const nsstring & var_name)
 {
-	pup(p, sm.positions, var_name + ".positions");
-	pup(p, sm.tex_coords, var_name + ".tex_coords");
-	pup(p, sm.normals, var_name + ".normals");
-	pup(p, sm.tangents, var_name + ".tangents");
-	pup(p, sm.indices, var_name + ".indices");
-	pup(p, sm.triangles, var_name + ".triangles");
-	pup(p, sm.lines, var_name + ".lines");
-	pup(p, sm.joints, var_name + ".joints");
-	pup(p, sm.primitive_type, var_name + ".primitive_type");
-	pup(p, sm.has_tex_coords, var_name + ".has_tex_coords");
-	pup(p, sm.name, var_name + ".name");
+	pup(p, sm.m_verts, var_name + ".verts");
+	pup(p, sm.m_tex_coords, var_name + ".tex_coords");
+	pup(p, sm.m_normals, var_name + ".normals");
+	pup(p, sm.m_tangents, var_name + ".tangents");
+	pup(p, sm.m_indices, var_name + ".indices");
+	pup(p, sm.m_triangles, var_name + ".triangles");
+	pup(p, sm.m_lines, var_name + ".lines");
+	pup(p, sm.m_joints, var_name + ".joints");
+	pup(p, sm.m_prim_type, var_name + ".prim_type");
+	pup(p, sm.m_has_tex_coords, var_name + ".has_tex_coords");
+	pup(p, sm.m_name, var_name + ".name");
 }
 
 // This handles a pointer to a submesh - if the pupper is PUP_IN (reading) then allocate memory for the submesh
@@ -239,23 +239,23 @@ void pup(PUPer & p, nsmesh::submesh * & sm, const nsstring & var_name)
 
 // Pup a bone - a bone just has an id and an offset transform to mess with the vertices its connected to
 template <class PUPer>
-void pup(PUPer & p, nsmesh::bone & bone, const nsstring & var_name)
+void pup(PUPer & p, nsmesh::joint & bone, const nsstring & var_name)
 {
-	pup(p, bone.boneID, var_name + ".bone_id");
-	pup(p, bone.mOffsetTransform, var_name + ".mOffsetTransform");
+	pup(p, bone.m_joint_id, var_name + ".joint_id");
+	pup(p, bone.m_offset_tform, var_name + ".offset_tform");
 }
 
 // Pup a node and all of its child nodes
 template <class PUPer>
 void pup(PUPer & p, nsmesh::node & node, const nsstring & var_name)
 {
-	pup(p, node.name, var_name + ".name");
-	pup(p, node.node_id, var_name + ".node_id");
-	pup(p, node.node_transform, var_name + ".node_transform");
-	pup(p, node.world_transform, var_name + ".world_transform");
-	pup(p, node.child_nodes, var_name + ".child_nodes");
-	for (uint32 i = 0; i < node.child_nodes.size(); ++i)
-		node.child_nodes[i]->parent_node = &node;
+	pup(p, node.m_name, var_name + ".name");
+	pup(p, node.m_node_id, var_name + ".node_id");
+	pup(p, node.m_node_tform, var_name + ".node_tform");
+	pup(p, node.m_world_tform, var_name + ".world_tform");
+	pup(p, node.m_child_nodes, var_name + ".child_nodes");
+	for (uint32 i = 0; i < node.m_child_nodes.size(); ++i)
+		node.m_child_nodes[i]->m_parent_node = &node;
 }
 
 // Allocate memory for a node if the pupper is set to PUP_IN
@@ -272,11 +272,11 @@ void pup(PUPer & p, nsmesh::node * & node_ptr, const nsstring & var_name)
 template <class PUPer>
 void pup(PUPer & p, nsmesh::node_tree & node_tree, const nsstring & var_name)
 {
-	pup(p, node_tree.bone_name_map, var_name + ".bone_name_map");
-	bool has_root = (node_tree.root_node != NULL);
+	pup(p, node_tree.m_name_joint_map, var_name + ".name_joint__map");
+	bool has_root = (node_tree.m_root != NULL);
 	pup(p, has_root, var_name + ".has_root"); // has_root will be saved or overwritten depending on saving or loading
 	if (has_root)
-		pup(p, node_tree.root_node, var_name);
+		pup(p, node_tree.m_root, var_name);
 }
 
 // Pup a mesh - pup the node tree and all of the submeshes - then go through the submeshes
@@ -291,11 +291,11 @@ void pup(PUPer & p, nsmesh & mesh)
 	for (uint32 i = 0; i < mesh.m_submeshes.size(); ++i)
 	{
 		nsstring node_name = "";
-		if (mesh.m_submeshes[i]->node_ != NULL)
-			node_name = mesh.m_submeshes[i]->node_->name;
+		if (mesh.m_submeshes[i]->m_node != NULL)
+			node_name = mesh.m_submeshes[i]->m_node->m_name;
 		pup(p, node_name, "node_name");
-		mesh.m_submeshes[i]->node_ = mesh.m_node_tree->find_node(node_name);
-		mesh.m_submeshes[i]->parent_mesh = &mesh;
+		mesh.m_submeshes[i]->m_node = mesh.m_node_tree->find_node(node_name);
+		mesh.m_submeshes[i]->m_parent_mesh = &mesh;
 	}
 	mesh.calc_aabb();
 	mesh.init_gl();

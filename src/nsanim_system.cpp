@@ -85,7 +85,7 @@ void nsanim_system::update()
 			}
 
 			auto finalTF = animComp->final_transforms();
-			finalTF->resize(nTree->bone_name_map.size());
+			finalTF->resize(nTree->m_name_joint_map.size());
 
 			nsanim_set * animset = nse.resource<nsanim_set>(animsetID);
 			if (animset == NULL)
@@ -109,7 +109,7 @@ void nsanim_system::update()
 				{
 					if (animComp->elapsed() >= currAnim->duration)
 						animComp->elapsed() = 0.0f;
-					animComp->fill_bones(nTree, currAnim);
+					animComp->fill_joints(nTree, currAnim);
 				}
 				else
 				{
@@ -119,7 +119,7 @@ void nsanim_system::update()
 						animComp->elapsed() = 0.0f;
 						return;
 					}
-					animComp->fill_bones(nTree, currAnim);
+					animComp->fill_joints(nTree, currAnim);
 				}
 				return;
 			}

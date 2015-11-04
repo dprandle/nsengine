@@ -1,0 +1,108 @@
+type:<nsstring>nsrender_xfb_shader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>#version 440
+
+layout (location = 0) in vec3 worldPosIn;
+layout (location = 1) in vec3 texIn;
+layout (location = 2) in vec3 normIn;
+layout (location = 3) in vec3 tangIn;
+
+uniform mat4 projCamMat;
+
+out vec4 worldPos;
+out vec2 texCoords;
+out vec3 normal;
+out vec3 tangent;
+flat out uint refID;
+
+void main()
+{
+
+	worldPos = vec4(worldPosIn, 1.0);
+	texCoords = texIn.xy;
+	normal = normIn;
+	tangent = tangIn;
+	refID = uint(texIn.z);
+    gl_Position = projCamMat * worldPos;
+} 
+
+
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring></nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring>#version 440
+
+in vec2 texCoords;
+in vec3 normal;
+in vec3 tangent;
+in vec4 worldPos;
+flat in uint refID;
+
+uniform sampler2D diffuseMap;
+uniform sampler2D opacityMap;
+uniform sampler2D normalMap;
+
+uniform float specPower;
+uniform float specIntensity;
+uniform vec3 specColor;
+uniform uint entityID;
+uniform uint pluginID;
+uniform bool colorMode;
+uniform vec4 fragColOut;
+uniform bool hasDiffuseMap = false;
+uniform bool hasNormalMap = false;
+uniform bool hasOpacityMap = false;
+uniform bool lightingEnabled;
+
+layout (location = 0) out vec4 colorOut;
+layout (location = 1) out uvec3 pickingOut;
+layout (location = 2) out vec3 worldPosOut;
+layout (location = 3) out vec4 normalOut;
+layout (location = 4) out vec4 materialOut;
+
+vec3 calculateNormalMap()
+{
+    vec3 norm = normalize(normal);
+	if (!colorMode && hasNormalMap)
+	{
+		vec3 tang = normalize(tangent);
+		tang = normalize(tang - dot(tang, norm) * norm);
+		vec3 biTangent = cross(tang, norm);
+		vec3 bmNormal = texture(normalMap, texCoords).xyz;
+		bmNormal = 2.0 * bmNormal - vec3(1.0, 1.0, 1.0);
+		vec3 nNormal;
+		mat3 transBumpMap = mat3(tang, biTangent, norm);
+		nNormal = transBumpMap * bmNormal;
+		nNormal = normalize(nNormal);
+		return nNormal;
+	}
+	return norm;
+}
+
+void main()
+{
+	vec4 difCol = fragColOut;
+	if (!colorMode && hasDiffuseMap)
+		difCol = texture(diffuseMap, texCoords);
+
+	float alpha = 1.0;
+	if (hasOpacityMap)
+		alpha = texture(opacityMap, texCoords).a;
+
+//	if (alpha != 1.0) // This may decrease performance
+//		discard;
+
+	colorOut = difCol;
+	pickingOut = uvec3(entityID, refID, pluginID);
+	if (lightingEnabled)
+	{
+		worldPosOut = worldPos.xyz;
+		normalOut = vec4(calculateNormalMap(),specPower);
+		materialOut = vec4(specColor, specIntensity);
+	}
+}
+
+
+
+</nsstring>
