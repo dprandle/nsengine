@@ -468,13 +468,26 @@ uint32 nsmesh::vert_count()
 {
 	uint32 total = 0;
 	for (uint32 i = 0; i < m_submeshes.size(); ++i)
-		total += static_cast<uint32>(m_submeshes[i]->m_indices.size());
+		total += static_cast<uint32>(m_submeshes[i]->m_verts.size());
 	return total;
 }
 
 uint32 nsmesh::vert_count(uint32 pIndex)
 {
-	return static_cast<uint32>(m_submeshes[pIndex]->m_indices.size());
+	return static_cast<uint32>(m_submeshes[pIndex]->m_verts.size());
+}
+
+uint32 nsmesh::indice_count()
+{
+	uint32 total = 0;
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
+		total += static_cast<uint32>(m_submeshes[i]->m_indices.size());
+	return total;	
+}
+
+uint32 nsmesh::indice_count(uint32 pIndex)
+{
+	return static_cast<uint32>(m_submeshes[pIndex]->m_indices.size());	
 }
 
 void nsmesh::transform_node(node * pNode, const fmat4 & pTransform)
@@ -768,3 +781,23 @@ void nsmesh_plane::set_dim(const fvec2 & dim_)
 	smsh->allocate_buffers();
 }
 
+uint32 nsmesh::node_count()
+{
+	if (m_node_tree->m_root == NULL)
+		return 0;
+	uint32 cnt = 0;
+	_node_count(m_node_tree->m_root, cnt);
+	return cnt;
+}
+
+uint32 nsmesh::joint_count()
+{
+	return m_node_tree->m_name_joint_map.size();
+}
+
+void nsmesh::_node_count(node * node_, uint32 & cnt)
+{
+	cnt += node_->m_child_nodes.size();
+	for (uint32 i = 0; i < node_->m_child_nodes.size(); ++i)
+		_node_count(node_->m_child_nodes[i], cnt);
+}

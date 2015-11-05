@@ -16,25 +16,25 @@ void nsrenderbuf_object::allocate()
 {
 	// Note that the render buffer must be bound for this to work
 	glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_sample_number, m_internal_format, m_size.w, m_size.h);
-	m_allocated = !GLError("nsrenderbuf_object::allocate");
+	m_allocated = !gl_err_check("nsrenderbuf_object::allocate");
 }
 
 void nsrenderbuf_object::bind()
 {
 	glBindRenderbuffer(GL_RENDERBUFFER, m_gl_name);
-	GLError("nsrenderbuf_object::bind");
+	gl_err_check("nsrenderbuf_object::bind");
 }
 
 void nsrenderbuf_object::init_gl()
 {
 	glGenRenderbuffers(1, &m_gl_name);
-	GLError("nsrenderbuf_object::initGL");
+	gl_err_check("nsrenderbuf_object::initGL");
 }
 
 void nsrenderbuf_object::release()
 {
 	glDeleteRenderbuffers(1, &m_gl_name);
-	GLError("nsrenderbuf_object::release");
+	gl_err_check("nsrenderbuf_object::release");
 	m_gl_name = 0;
 	m_allocated = false;
 }
@@ -91,5 +91,5 @@ void nsrenderbuf_object::set_internal_format(int32 pInternalFormat)
 void nsrenderbuf_object::unbind()
 {
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	GLError("nsfb_object::unbind");
+	gl_err_check("nsfb_object::unbind");
 }

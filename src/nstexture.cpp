@@ -39,13 +39,13 @@ nstexture::~nstexture()
 void nstexture::init_gl()
 {
 	glGenTextures(1, &m_gl_name);
-	GLError("nstexture::initGL");
+	gl_err_check("nstexture::initGL");
 }
 
 void nstexture::bind()
 {
 	glBindTexture(m_tex_type, m_gl_name);
-	GLError("nstexture::bind");
+	gl_err_check("nstexture::bind");
 }
 
 uint32 nstexture::border() const
@@ -78,7 +78,7 @@ void nstexture::enable_mipmaps(int32 level)
 		if (level != 0)
 			set_parameter_i(max_level, m_mipmap_level);
 		glGenerateMipmap(m_tex_type);
-		GLError("nstexture::enableMipMaps");
+		gl_err_check("nstexture::enableMipMaps");
 	}
 }
 
@@ -200,7 +200,7 @@ float nstexture::parameter_f(get_tex_param p)
 	else
 		glGetTexParameterfv(m_tex_type, p, &f);
 	
-	GLError("nstexture::getParameterf");
+	gl_err_check("nstexture::getParameterf");
 	return f;
 }
 
@@ -213,21 +213,21 @@ int32 nstexture::parameter_i(get_tex_param p)
 	else
 		glGetTexParameteriv(m_tex_type, p, &i);
 
-	GLError("nstexture::getParameteri");
+	gl_err_check("nstexture::getParameteri");
 	return i;
 }
 
 void nstexture::disable(uint32 pTexUnit)
 {
 	glActiveTexture(BASE_TEX_UNIT + pTexUnit);
-	GLError("nstexture::disable");
+	gl_err_check("nstexture::disable");
 	unbind();
 }
 
 void nstexture::enable(uint32 pTexUnit)
 {
 	glActiveTexture(BASE_TEX_UNIT + pTexUnit);
-	GLError("nstexture::enable");
+	gl_err_check("nstexture::enable");
 	bind();
 }
 
@@ -310,7 +310,7 @@ void nstexture::set_parameter_f(tex_parameter pParam, float pValue)
 	if (pParam == GL_TEXTURE_BUFFER)
 		return;
 	glTexParameterf(m_tex_type, pParam, pValue);
-	GLError("nstexture::setParameterf");
+	gl_err_check("nstexture::setParameterf");
 }
 
 void nstexture::set_parameter_i(tex_parameter pParam, int32 pValue)
@@ -318,7 +318,7 @@ void nstexture::set_parameter_i(tex_parameter pParam, int32 pValue)
 	if (pParam == GL_TEXTURE_BUFFER)
 		return;
 	glTexParameteri(m_tex_type, pParam, pValue);
-	GLError("nstexture::setParameteri");
+	gl_err_check("nstexture::setParameteri");
 }
 
 void nstexture::set_parameter_fv(tex_parameter param, const fvec4 & val)
@@ -326,7 +326,7 @@ void nstexture::set_parameter_fv(tex_parameter param, const fvec4 & val)
 	if (param == GL_TEXTURE_BUFFER)
 		return;
 	glTexParameterfv(m_tex_type, param, &val[0]);
-	GLError("nstexture::setParameterfv");
+	gl_err_check("nstexture::setParameterfv");
 }
 
 void nstexture::set_parameter_iv(tex_parameter param, const ivec4 & val)
@@ -334,7 +334,7 @@ void nstexture::set_parameter_iv(tex_parameter param, const ivec4 & val)
 	if (param == GL_TEXTURE_BUFFER)
 		return;
 	glTexParameteriv(m_tex_type, param, &val[0]);
-	GLError("nstexture::setParameteriv");
+	gl_err_check("nstexture::setParameteriv");
 }
 
 void nstexture::set_parameter_Iiv(tex_parameter param, const ivec4 & val)
@@ -342,7 +342,7 @@ void nstexture::set_parameter_Iiv(tex_parameter param, const ivec4 & val)
 	if (param == GL_TEXTURE_BUFFER)
 		return;
 	glTexParameterIiv(m_tex_type, param, &val[0]);
-	GLError("nstexture::setParameterIiv");
+	gl_err_check("nstexture::setParameterIiv");
 }
 
 void nstexture::set_parameter_Iuiv(tex_parameter param, const uivec4 & val)
@@ -350,7 +350,7 @@ void nstexture::set_parameter_Iuiv(tex_parameter param, const uivec4 & val)
 	if (param == GL_TEXTURE_BUFFER)
 		return;
 	glTexParameterIuiv(m_tex_type, param, &val[0]);
-	GLError("nstexture::setParameterIiuv");
+	gl_err_check("nstexture::setParameterIiuv");
 }
 
 void nstexture::unbind()
@@ -402,7 +402,7 @@ bool nstex1d::allocate(const void * data)
 		glCompressedTexImage1D(m_tex_type, 0, m_internal_format, m_width, m_border, m_comp_byte_size, data);
 	}
 
-	m_allocated = !GLError("nstex1d::allocate");
+	m_allocated = !gl_err_check("nstex1d::allocate");
 	return m_allocated;
 }
 
@@ -418,7 +418,7 @@ bool nstex1d::allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimens
 		return false;
 
 	glCopyTexImage1D(m_tex_type, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_width, m_border);
-	m_allocated = !GLError("nstexture::allocateFromScreen()");
+	m_allocated = !gl_err_check("nstexture::allocateFromScreen()");
 	return m_allocated;
 }
 
@@ -473,7 +473,7 @@ bool nstex1d::lock()
 		glGetCompressedTexImage(m_tex_type, 0, static_cast<void*>(m_data.data));
 	}
 
-	m_locked = !GLError("nstex1d::lock");
+	m_locked = !gl_err_check("nstex1d::lock");
 	if (!m_locked)
 	{
 		m_data.bpp = 0;
@@ -513,7 +513,7 @@ bool nstex1d::set_data(const void * data, uint32 xoffset, uint32 width)
 	else
 		glCompressedTexSubImage1D(m_tex_type, 0, xoffset, width, m_format, m_comp_byte_size, data);
 
-	return GLError("nstex1d::setData");
+	return gl_err_check("nstex1d::setData");
 }
 
 bool nstex1d::set_compressed(uint32 byteSize)
@@ -533,7 +533,7 @@ bool nstex1d::set_data_from_screen(uint32 xoffset, const uivec2 & lowerLeft, uin
 		return false;
 
 	glCopyTexSubImage1D(m_tex_type, 0, xoffset, lowerLeft.x, lowerLeft.y, width);
-	return GLError("nstex1d::setDataFromScreen");
+	return gl_err_check("nstex1d::setDataFromScreen");
 }
 
 void nstex1d::set_immutable(bool immutable)
@@ -620,7 +620,7 @@ bool nstex2d::allocate(const void * data)
 		glCompressedTexImage2D(m_tex_type, 0, m_internal_format, m_size.w, m_size.h, m_border, m_comp_byte_size, data);
 	}
 
-	m_allocated = !GLError("nstex2d::allocate");
+	m_allocated = !gl_err_check("nstex2d::allocate");
 	return m_allocated;
 }
 
@@ -639,7 +639,7 @@ bool nstex2d::allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimens
 		return false;
 
 	glCopyTexImage2D(m_tex_type, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_size.w, m_size.h, m_border);
-	m_allocated = !GLError("nstex2d::allocateFromScreen()");
+	m_allocated = !gl_err_check("nstex2d::allocateFromScreen()");
 	return m_allocated;
 }
 
@@ -699,7 +699,7 @@ bool nstex2d::lock()
 		glGetCompressedTexImage(m_tex_type, 0, static_cast<void*>(m_data.data));
 	}
 
-	m_locked = !GLError("nstex2d::lock");
+	m_locked = !gl_err_check("nstex2d::lock");
 	if (!m_locked)
 	{
 		m_data.bpp = 0;
@@ -772,7 +772,7 @@ bool nstex2d::set_data(const void * data, const uivec2 & offset, const uivec2 & 
 	else
 		glCompressedTexSubImage2D(m_tex_type, 0, offset.x, offset.y, dimensions.w, dimensions.h, m_format, m_comp_byte_size, data);
 
-	return !GLError("nstex2d::setData");
+	return !gl_err_check("nstex2d::setData");
 }
 
 bool nstex2d::set_compressed(uint32 byteSize)
@@ -792,7 +792,7 @@ bool nstex2d::set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLe
 		return false;
 
 	glCopyTexSubImage2D(m_tex_type, 0, offset.x, offset.y, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
-	return !GLError("nstex2d::setDataFromScreen");
+	return !gl_err_check("nstex2d::setDataFromScreen");
 }
 
 void nstex2d::set_immutable(bool immutable)
@@ -851,7 +851,7 @@ bool nstex3d::allocate(const void * data)
 		glCompressedTexImage3D(m_tex_type, 0, m_internal_format, m_size.x, m_size.y, m_size.z, m_border, m_comp_byte_size, data);
 	}
 
-	m_allocated = !GLError("nstex3d::allocate");
+	m_allocated = !gl_err_check("nstex3d::allocate");
 	return m_allocated;
 }
 
@@ -911,7 +911,7 @@ bool nstex3d::lock()
 		glGetCompressedTexImage(m_tex_type, 0, static_cast<void*>(m_data.data));
 	}
 
-	m_locked = !GLError("nstex3d::lock");
+	m_locked = !gl_err_check("nstex3d::lock");
 	if (!m_locked)
 	{
 		m_data.bpp = 0;
@@ -984,7 +984,7 @@ bool nstex3d::set_data(const void * data, const uivec3 & offset, const uivec3 & 
 	else
 		glCompressedTexSubImage3D(m_tex_type, 0, offset.x, offset.y, offset.z, dimensions.x, dimensions.y, dimensions.z, m_format, m_comp_byte_size, data);
 
-	return !GLError("nstex3d::setData");
+	return !gl_err_check("nstex3d::setData");
 }
 
 bool nstex3d::set_compressed(uint32 byteSize)
@@ -1004,7 +1004,7 @@ bool nstex3d::set_data_from_screen(const uivec3 & offset, const uivec2 & lowerLe
 		return false;
 
 	glCopyTexSubImage3D(m_tex_type, 0, offset.x, offset.y, offset.z, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
-	return !GLError("nstex3d::setDataFromScreen");
+	return !gl_err_check("nstex3d::setDataFromScreen");
 }
 
 void nstex3d::set_immutable(bool immutable)
@@ -1065,7 +1065,7 @@ bool nstex_cubemap::allocate(cube_face f, const void * data)
 		glCompressedTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_comp_byte_size, data);
 
 	if (f == neg_z)
-		m_allocated = !GLError("nstex_cubemap::allocate");
+		m_allocated = !gl_err_check("nstex_cubemap::allocate");
 	
 	return m_allocated;
 }
@@ -1100,7 +1100,7 @@ bool nstex_cubemap::allocate_from_screen(cube_face f, const uivec2 & lowerLeft, 
 		return false;
 
 	glCopyTexImage2D(f, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_size.w, m_size.h, m_border);
-	m_allocated = !GLError("nstexture::allocateFromScreen()");
+	m_allocated = !gl_err_check("nstexture::allocateFromScreen()");
 	return m_allocated;
 }
 
@@ -1143,7 +1143,7 @@ bool nstex_cubemap::lock()
 			glGetCompressedTexImage(pos_x + i, 0, static_cast<void*>(m_data.data + i*m_data.bpp*m_size.w*m_size.h));
 	}
 
-	m_locked = !GLError("nstex_cubemap::lock");
+	m_locked = !gl_err_check("nstex_cubemap::lock");
 	if (!m_locked)
 	{
 		m_data.bpp = 0;
@@ -1173,7 +1173,7 @@ bool nstex_cubemap::lock(cube_face f)
 		glGetCompressedTexImage(f, 0, static_cast<void*>(m_data.data));
 	}
 
-	m_locked = !GLError("nstex_cubemap::lock");
+	m_locked = !gl_err_check("nstex_cubemap::lock");
 	if (!m_locked)
 	{
 		m_data.bpp = 0;
@@ -1274,7 +1274,7 @@ bool nstex_cubemap::set_data(cube_face f, const void * data, const uivec2 & offs
 	else
 		glCompressedTexSubImage2D(f, 0, offset.x, offset.y, dimensions.w, dimensions.h, m_format, m_comp_byte_size, data);
 
-	return !GLError("nstex_cubemap::setData");
+	return !gl_err_check("nstex_cubemap::setData");
 }
 
 bool nstex_cubemap::set_compressed(uint32 byteSize)
@@ -1306,7 +1306,7 @@ bool nstex_cubemap::set_data_from_screen(cube_face f, const uivec2 & offset, con
 		return false;
 
 	glCopyTexSubImage2D(f, 0, offset.x, offset.y, lowerLeft.x, lowerLeft.y, dimensions.w, dimensions.h);
-	return !GLError("nstex_cubemap::setDataFromScreen");
+	return !gl_err_check("nstex_cubemap::setDataFromScreen");
 }
 
 void nstex_cubemap::pup(nsfile_pupper * p)

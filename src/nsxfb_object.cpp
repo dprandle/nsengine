@@ -23,19 +23,19 @@ m_update(true)
 void nsxfb_object::begin()
 {
 	glBeginTransformFeedback(m_prim_mode);
-	GLError("nsxfb_object::begin");
+	gl_err_check("nsxfb_object::begin");
 }
 
 void nsxfb_object::bind()
 {
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_gl_name);
-	GLError("nsxfb_object::bind");
+	gl_err_check("nsxfb_object::bind");
 }
 
 void nsxfb_object::end()
 {
 	glEndTransformFeedback();
-	GLError("nsxfb_object::end");
+	gl_err_check("nsxfb_object::end");
 }
 
 nsxfb_object::primitive_mode nsxfb_object::primitive()
@@ -46,14 +46,14 @@ nsxfb_object::primitive_mode nsxfb_object::primitive()
 void nsxfb_object::init_gl()
 {
 	glGenTransformFeedbacks(1, &m_gl_name);
-	GLError("nsxfb_object::initGL");
+	gl_err_check("nsxfb_object::initGL");
 }
 
 void nsxfb_object::release()
 {
 	glDeleteTransformFeedbacks(1, &m_gl_name);
 	m_gl_name = 0;
-	GLError("nsxfb_object::release");
+	gl_err_check("nsxfb_object::release");
 }
 
 void nsxfb_object::set_primitive(primitive_mode pMode)
@@ -69,7 +69,7 @@ void nsxfb_object::set_update(bool pUpdate)
 void nsxfb_object::unbind()
 {
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
-	GLError("nsxfb_object::unbind");
+	gl_err_check("nsxfb_object::unbind");
 }
 
 bool nsxfb_object::update()

@@ -61,15 +61,15 @@ bool nsshader::compile(shader_type type)
 		glDeleteShader(_stage(type).m_stage_id);
 
 	_stage(type).m_stage_id = glCreateShader(type);
-	GLError("nsshader::compile error creating shader");
+	gl_err_check("nsshader::compile error creating shader");
 	// create arguements for glShaderSource
 	const char* c_str = _stage(type).m_source.c_str();
 
 	glShaderSource(_stage(type).m_stage_id, 1, &c_str, NULL); // Attach source to shader
-	GLError("nsshader::compile error setting shader source");
+	gl_err_check("nsshader::compile error setting shader source");
 
 	glCompileShader(_stage(type).m_stage_id);
-	GLError("nsshader::compile error compiling shader");
+	gl_err_check("nsshader::compile error compiling shader");
 
 	GLint worked;
 	glGetShaderiv(_stage(type).m_stage_id, GL_COMPILE_STATUS, &worked);
@@ -88,7 +88,7 @@ bool nsshader::compile(shader_type type)
 #endif
 
 		glDeleteShader(_stage(type).m_stage_id);
-		GLError("nsshader::compile error deleting shader");
+		gl_err_check("nsshader::compile error deleting shader");
 		_stage(type).m_stage_id = 0;
 		return false;
 	}
@@ -125,7 +125,7 @@ uint32 nsshader::gl_id(shader_type type)
 uint32 nsshader::init_uniform_loc(const nsstring & var_name)
 {
 	uint32 loc = glGetUniformLocation( m_gl_name, var_name.c_str() );
-	GLError("nsshader::initUniformLoc");
+	gl_err_check("nsshader::initUniformLoc");
 	m_uniform_locs[hash_id(var_name)] = loc;
 	return loc;
 }
@@ -136,7 +136,7 @@ bool nsshader::link()
 		glDeleteProgram(m_gl_name);
 
 	m_gl_name = glCreateProgram();  // create program instance
-	GLError("nsshader::link Error creating program");
+	gl_err_check("nsshader::link Error creating program");
 	if (m_gl_name == 0)
 	{
 		m_error_sate = error_program;
@@ -150,12 +150,12 @@ bool nsshader::link()
 	if (m_geometry.m_stage_id)
 		glAttachShader(m_gl_name, m_geometry.m_stage_id);
 
-	GLError("nsshader::link Error attaching program");
+	gl_err_check("nsshader::link Error attaching program");
 	if (!m_xfb_locs.empty())
 		_setup_xfb();
 
 	glLinkProgram(m_gl_name);
-	GLError("nsshader::link Error linking program");
+	gl_err_check("nsshader::link Error linking program");
 	if (m_fragment.m_stage_id)
 		glDetachShader(m_gl_name, m_fragment.m_stage_id);
 	if (m_vertex.m_stage_id)
@@ -163,7 +163,7 @@ bool nsshader::link()
 	if (m_geometry.m_stage_id)
 		glDetachShader(m_gl_name, m_geometry.m_stage_id);
 
-	GLError("nsshader::link Error detaching program");
+	gl_err_check("nsshader::link Error detaching program");
 	GLint worked;
 	glGetProgramiv(m_gl_name, GL_LINK_STATUS, &worked);
 	if (!worked)
@@ -179,7 +179,7 @@ bool nsshader::link()
 		dprint(ss.str());
 		#endif
 		glDeleteProgram(m_gl_name);
-		GLError("nsshader::link Error deleting program");
+		gl_err_check("nsshader::link Error deleting program");
 		m_gl_name = 0;
 		return false;
 	}
@@ -268,7 +268,7 @@ void nsshader::_setup_xfb()
 	}
 
  	glTransformFeedbackVaryings(m_gl_name, 4, varyings, m_xfb_mode);
-	GLError("nsshader::_setupTransformFeedback()");
+	gl_err_check("nsshader::_setupTransformFeedback()");
 
 	for (uint32 i = 0; i < m_xfb_locs.size(); ++i)
 		delete[] varyings[i];
@@ -291,13 +291,13 @@ void nsshader::set_xfb(xfb_mode pMode, nsstring_vector * pOutLocs)
 void nsshader::bind()
 {
 	glUseProgram(m_gl_name);
-	GLError("nsshader::bind");
+	gl_err_check("nsshader::bind");
 }
 
 void nsshader::unbind()
 {
 	glUseProgram(0);
-	GLError("nsshader::bind");
+	gl_err_check("nsshader::bind");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const fmat4 & data)
@@ -308,7 +308,7 @@ void nsshader::set_uniform(const nsstring & var_name, const fmat4 & data)
 		glUniformMatrix4fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.data_ptr());
 	else
 		glUniformMatrix4fv(iter->second, 1, GL_TRUE, mat.data_ptr());
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const fmat3 & data)
@@ -319,7 +319,7 @@ void nsshader::set_uniform(const nsstring & var_name, const fmat3 & data)
 		glUniformMatrix3fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.data_ptr());
 	else
 		glUniformMatrix3fv(iter->second, 1, GL_TRUE, mat.data_ptr());
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, bool val)
@@ -336,7 +336,7 @@ void nsshader::set_uniform(const nsstring & var_name, const fvec4 & data)
 		glUniform4fv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform4fv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const fvec3 & data)
@@ -348,7 +348,7 @@ void nsshader::set_uniform(const nsstring & var_name, const fvec3 & data)
 		glUniform3fv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform3fv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const fvec2 & data)
@@ -360,7 +360,7 @@ void nsshader::set_uniform(const nsstring & var_name, const fvec2 & data)
 		glUniform2fv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform2fv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const ivec4 & data)
@@ -372,7 +372,7 @@ void nsshader::set_uniform(const nsstring & var_name, const ivec4 & data)
 		glUniform4iv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform4iv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");		
+	gl_err_check("nsshader::setUniform");		
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const ivec3 & data)
@@ -384,7 +384,7 @@ void nsshader::set_uniform(const nsstring & var_name, const ivec3 & data)
 		glUniform3iv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform3iv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");		
+	gl_err_check("nsshader::setUniform");		
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const ivec2 & data)
@@ -396,7 +396,7 @@ void nsshader::set_uniform(const nsstring & var_name, const ivec2 & data)
 		glUniform2iv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform2iv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");		
+	gl_err_check("nsshader::setUniform");		
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const uivec4 & data)
@@ -408,7 +408,7 @@ void nsshader::set_uniform(const nsstring & var_name, const uivec4 & data)
 		glUniform4uiv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform4uiv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");		
+	gl_err_check("nsshader::setUniform");		
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const uivec3 & data)
@@ -420,7 +420,7 @@ void nsshader::set_uniform(const nsstring & var_name, const uivec3 & data)
 		glUniform3uiv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform3uiv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");				
+	gl_err_check("nsshader::setUniform");				
 }
 
 void nsshader::set_uniform(const nsstring & var_name, const uivec2 & data)
@@ -432,7 +432,7 @@ void nsshader::set_uniform(const nsstring & var_name, const uivec2 & data)
 		glUniform2uiv(init_uniform_loc(var_name), 1, vec);
 	else
 		glUniform2uiv(iter->second, 1, vec);
-	GLError("nsshader::setUniform");	
+	gl_err_check("nsshader::setUniform");	
 }
 
 void nsshader::set_uniform(const nsstring & var_name, float data)
@@ -442,7 +442,7 @@ void nsshader::set_uniform(const nsstring & var_name, float data)
 		glUniform1f(init_uniform_loc(var_name), data);
 	else
 		glUniform1f(iter->second, data);
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, int32 data)
@@ -452,7 +452,7 @@ void nsshader::set_uniform(const nsstring & var_name, int32 data)
 		glUniform1i(init_uniform_loc(var_name), data);
 	else
 		glUniform1i(iter->second, data);
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::set_uniform(const nsstring & var_name, uint32 data)
@@ -462,7 +462,7 @@ void nsshader::set_uniform(const nsstring & var_name, uint32 data)
 		glUniform1ui(init_uniform_loc(var_name), data);
 	else
 		glUniform1ui(iter->second, data);
-	GLError("nsshader::setUniform");
+	gl_err_check("nsshader::setUniform");
 }
 
 void nsshader::release()
@@ -487,7 +487,7 @@ void nsshader::release()
 		glDeleteShader(m_geometry.m_stage_id);
 		m_geometry.m_stage_id = 0;
 	}
-	GLError("nsshader::release");
+	gl_err_check("nsshader::release");
 }
 
 void nsshader::reset_error()
@@ -508,7 +508,7 @@ nsshader::error_state nsshader::error() const
 uint32 nsshader::attrib_loc(const nsstring & var_name) const
 {
 	return glGetAttribLocation(m_gl_name, var_name.c_str());
-	GLError("nsshader::attrib");
+	gl_err_check("nsshader::attrib");
 }
 
 bool nsshader::_validate()

@@ -249,7 +249,7 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 
 	uivec3 index;
 	glReadPixels(int32(mouseX), int32(mouseY), 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
-	GLError("nsselection_system::pick");
+	gl_err_check("nsselection_system::pick");
 
 	pickingBuf->set_read_buffer(nsfb_object::att_none);
 	pickingBuf->unbind();

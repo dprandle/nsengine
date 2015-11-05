@@ -300,6 +300,7 @@ void nsres_manager::name_change(const uivec2 & oldid, const uivec2 newid)
 		nsresource * res = get<nsresource>(oldid.y);
 		if (res != NULL)
 		{
+			dprint("nsres_manager::name_change - name change in res_manager " + hash_to_guid(m_hashed_type));
 			remove(oldid.y);
 			add(res);
 		}
@@ -478,8 +479,10 @@ bool nsres_manager::destroy(nsresource * res)
 	if (res != NULL)
 	{
 		uint32 id = res->id();
+		nsstring name = res->name();
 		delete res;
 		m_id_resmap.erase(id);
+		dprint("nsres_manager::destroy Successfully destroyed " + name);
 		return true;
 	}
 	return false;

@@ -138,7 +138,7 @@ void nsparticle_system::draw()
 		}
 
 		glDrawTransformFeedbackInstanced(GL_POINTS, comp->xfb_id(),tComp->count());
-		GLError("nsparticle_system::draw in glDrawElementsInstanced");
+		gl_err_check("nsparticle_system::draw in glDrawElementsInstanced");
 
 
 		tComp->transform_buffer()->bind();
@@ -245,13 +245,13 @@ void nsparticle_system::update()
 		if (comp->first())
 		{
 			glDrawArrays(GL_POINTS, 0, 1);
-			GLError("nsparticle_system::update in glDrawArrays");
+			gl_err_check("nsparticle_system::update in glDrawArrays");
 			comp->set_first(false);
 		}
 		else
 		{
 			glDrawTransformFeedback(GL_POINTS, comp->xfb_id());
-			GLError("nsparticle_system::update in glDrawTransformFeedback");
+			gl_err_check("nsparticle_system::update in glDrawTransformFeedback");
 		}
 		comp->xfb_obj()->end();
 		comp->va_obj()->unbind();

@@ -336,7 +336,7 @@ nstimer * nsengine::timer()
 #ifdef NSDEBUG
 void nsengine::debug_print(const nsstring & str)
 {
-	current()->deb->print(str);
+	current()->deb->print("context-" + std::to_string(m_current_context) + " " + str);
 }
 #endif
 

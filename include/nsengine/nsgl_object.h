@@ -16,7 +16,7 @@
 #include <myGL/glew.h>
 #include <nsvector.h>
 
-bool GLError(nsstring errorMessage);
+bool gl_err_check(nsstring errorMessage);
 
 class nsgl_object
 {

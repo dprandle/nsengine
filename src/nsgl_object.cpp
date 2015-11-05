@@ -29,14 +29,14 @@ uint32 nsgl_object::gl_id()
 	return m_gl_name;
 }
 
-bool GLError(nsstring errorMessage)
+bool gl_err_check(nsstring errorMessage)
 {
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
 #ifdef NSDEBUG
 		nsstringstream ss;
-		ss << errorMessage << ": OpenGL Error Code : " << err;
+		ss << "context-" << nse.current_id() << " " << errorMessage << "\nOpenGL Error Code : " << err;
 		dprint(ss.str());
 #endif
 		return true;

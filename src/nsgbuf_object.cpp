@@ -33,19 +33,19 @@ void nsgbuf_object::debug_blit(const ivec2 & scrn)
 
 	m_tex_fb->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_diffuse));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, 0, 0, hlf.w, hlf.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	GLError("nsfb_object::debugBlit");
+	gl_err_check("nsfb_object::debugBlit");
 
 	m_tex_fb->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_position));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, 0, hlf.h, hlf.w, scrn.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	GLError("nsfb_object::debugBlit2");
+	gl_err_check("nsfb_object::debugBlit2");
 
 	m_tex_fb->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_normal));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, hlf.w, hlf.h, scrn.w, scrn.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	GLError("nsfb_object::debugBlit3");
+	gl_err_check("nsfb_object::debugBlit3");
 
 	m_tex_fb->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_material));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, hlf.w, 0, scrn.w, hlf.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	GLError("nsfb_object::debugBlit4");
+	gl_err_check("nsfb_object::debugBlit4");
 
 	m_tex_fb->set_read_buffer(nsfb_object::att_none);
 	m_tex_fb->unbind();

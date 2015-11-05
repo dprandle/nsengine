@@ -183,13 +183,22 @@ public:
 
 	uint32 vert_count(uint32 pIndex);
 
+	uint32 indice_count();
+
+	uint32 indice_count(uint32 pIndex);
+
+	uint32 node_count();
+
+	uint32 joint_count();
+
 	/*!
 	Calculate volume using divergence theorem method
 	*/
 	float volume();
 
 private:
-	void _propagate_world_transform(node * child_node);
+	void _node_count(node * child, uint32 & cnt);
+	void _propagate_world_transform(node * node_);
 	std::vector<submesh*> m_submeshes;
 	node_tree* m_node_tree;
 	nsbounding_box m_bounding_box;

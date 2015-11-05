@@ -189,11 +189,11 @@ void nsrender_system::draw()
 	}
 	
 	// Now draw geometry
-	GLError("nstexture::_drawTransformFeedbacks");
+	gl_err_check("nstexture::_drawTransformFeedbacks");
 	//_drawTransformFeedbacks();
-	GLError("nstexture::_drawTransformFeedbacks");
+	gl_err_check("nstexture::_drawTransformFeedbacks");
 	_draw_geometry();
-	GLError("nstexture::_drawTransformFeedbacks");
+	gl_err_check("nstexture::_drawTransformFeedbacks");
 	m_gbuffer->unbind();
 	m_gbuffer->enable_textures();
 
@@ -679,7 +679,7 @@ void nsrender_system::_blend_dir_light(nslight_comp * pLight)
 					   sz,
 					   GL_UNSIGNED_INT,
 					   nullptr);
-        GLError("_blendDirectionLight: Draw Error");
+        gl_err_check("_blendDirectionLight: Draw Error");
 		cSub->m_vao.unbind();
 	}
 }
@@ -882,7 +882,7 @@ void nsrender_system::_draw_xfbs()
 											0,
 											bufIter->instance_count);
 					
-					GLError("nsrender_system::_drawTransformFeedbacks glDrawElementsInstanced");
+					gl_err_check("nsrender_system::_drawTransformFeedbacks glDrawElementsInstanced");
 
 					tComp->transform_buffer()->bind();
 					subMesh->m_vao.remove(tComp->transform_buffer());
@@ -955,7 +955,7 @@ void nsrender_system::_draw_xfbs()
 
 				bufIter->xfb_vao->bind();
 				glDrawTransformFeedback(GL_TRIANGLES, bufIter->xfb_obj->gl_id());
-				GLError("nsrender_system::_drawTransformFeedbacks glDrawTransformFeedback");
+				gl_err_check("nsrender_system::_drawTransformFeedbacks glDrawTransformFeedback");
 				bufIter->xfb_vao->unbind();
 
 
@@ -1019,13 +1019,13 @@ void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)
 	pDCIter->submesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
 	pDCIter->submesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
 
-	GLError("nsrender_system::_draw_call pre");
+	gl_err_check("nsrender_system::_draw_call pre");
 	glDrawElementsInstanced(pDCIter->submesh->m_prim_type,
 							static_cast<GLsizei>(pDCIter->submesh->m_indices.size()),
 							GL_UNSIGNED_INT,
 							0,
 							pDCIter->transform_count);
-	GLError("nsrender_system::_draw_call post");
+	gl_err_check("nsrender_system::_draw_call post");
 
 	pDCIter->transform_buffer->bind();
 	pDCIter->submesh->m_vao.remove(pDCIter->transform_buffer);
@@ -1117,7 +1117,7 @@ void nsrender_system::_draw_geometry()
 				_draw_call(dcIter);
 				++dcIter;
 			}
-			GLError("nsrender_system::draw_geometry");
+			gl_err_check("nsrender_system::draw_geometry");
 			nsmaterial::texmap_map_const_iter eIter = (*matIter)->begin();
 			while (eIter != (*matIter)->end())
 			{
@@ -1208,7 +1208,7 @@ void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
 				{
 					bufIter->xfb_vao->bind();
 					glDrawTransformFeedback(GL_TRIANGLES, bufIter->xfb_obj->gl_id());
-					GLError("nsrender_system::_drawSceneToDepthXFB");
+					gl_err_check("nsrender_system::_drawSceneToDepthXFB");
 					bufIter->xfb_vao->unbind();
 				}
 				++bufIter;

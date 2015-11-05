@@ -30,13 +30,13 @@ nsbuffer_object::~nsbuffer_object()
 void nsbuffer_object::bind()
 {
 	glBindBuffer(m_target, m_gl_name);
-	GLError("nsbuffer_object::bind()");
+	gl_err_check("nsbuffer_object::bind()");
 }
 
 void nsbuffer_object::bind(uint32 pIndex)
 {
 	glBindBufferBase(m_target, pIndex, m_gl_name);
-	GLError("nsbuffer_object::bindBase()");
+	gl_err_check("nsbuffer_object::bindBase()");
 }
 
 nsbuffer_object::storage_mode nsbuffer_object::storage() const
@@ -52,7 +52,7 @@ nsbuffer_object::target_buffer nsbuffer_object::target() const
 void nsbuffer_object::init_gl()
 {
 	glGenBuffers(1, &m_gl_name);
-	GLError("nsbuffer_object::initGL()");
+	gl_err_check("nsbuffer_object::initGL()");
 }
 
 bool nsbuffer_object::allocated() const
@@ -72,7 +72,7 @@ void nsbuffer_object::allocate(usage_flag pFlag, uint32 pTotalByteSize)
 	else
 		glBufferStorage(m_target, pTotalByteSize, NULL, pFlag);
 
-	GLError("nsbuffer_object::allocate()");
+	gl_err_check("nsbuffer_object::allocate()");
 	m_allocated = true;
 }
 
@@ -83,7 +83,7 @@ void nsbuffer_object::release()
 	m_gl_name = 0;
 	m_mapped = false;
 	m_allocated = false;
-	GLError("nsbuffer_object::release()");
+	gl_err_check("nsbuffer_object::release()");
 }
 
 bool nsbuffer_object::set_storage(storage_mode pStorageMode)
@@ -106,13 +106,13 @@ bool nsbuffer_object::set_target(target_buffer pTarget)
 void nsbuffer_object::unbind()
 {
 	glBindBuffer(m_target, 0);
-	GLError("nsbuffer_object::unbind()");
+	gl_err_check("nsbuffer_object::unbind()");
 }
 
 void nsbuffer_object::unbind(uint32 pIndex)
 {
 	glBindBufferBase(m_target, pIndex, 0);
-	GLError("nsbuffer_object::unbindBase()");
+	gl_err_check("nsbuffer_object::unbindBase()");
 }
 
 bool nsbuffer_object::unmap()
@@ -123,6 +123,6 @@ bool nsbuffer_object::unmap()
 		return false;
 	}
 	m_mapped = !(glUnmapBuffer(m_target) != 0);
-	GLError("nsbuffer_object::unmap()");
+	gl_err_check("nsbuffer_object::unmap()");
 	return !m_mapped;
 }

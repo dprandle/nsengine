@@ -30,7 +30,7 @@ void nsvertex_array_object::add(nsbuffer_object * mBuffer, uint32 pAttLoc)
 void nsvertex_array_object::bind()
 {
 	glBindVertexArray(m_gl_name);
-	GLError("nsvertex_array_object::bind()");
+	gl_err_check("nsvertex_array_object::bind()");
 }
 
 bool nsvertex_array_object::contains(nsbuffer_object * pBuffer)
@@ -41,19 +41,19 @@ bool nsvertex_array_object::contains(nsbuffer_object * pBuffer)
 void nsvertex_array_object::enable(uint32 pAttLoc)
 {
 	glEnableVertexAttribArray(pAttLoc);
-	GLError("nsvertex_array_object::enableAttribute()");
+	gl_err_check("nsvertex_array_object::enableAttribute()");
 }
 
 void nsvertex_array_object::disable(uint32 pAttLoc)
 {
 	glDisableVertexAttribArray(pAttLoc);
-	GLError("nsvertex_array_object::disableAttribute()");
+	gl_err_check("nsvertex_array_object::disableAttribute()");
 }
 
 void nsvertex_array_object::init_gl()
 {
 	glGenVertexArrays(1, &m_gl_name);
-	GLError("nsvertex_array_object::initGL()");
+	gl_err_check("nsvertex_array_object::initGL()");
 }
 
 void nsvertex_array_object::remove(nsbuffer_object * mBuffer)
@@ -93,38 +93,38 @@ void nsvertex_array_object::release()
 {
 	glDeleteVertexArrays(1, &m_gl_name);
 	m_gl_name = 0;
-	GLError("nsvertex_array_object::release()");
+	gl_err_check("nsvertex_array_object::release()");
 }
 
 void nsvertex_array_object::unbind()
 {
 	glBindVertexArray(0);
-	GLError("nsvertex_array_object::unbind()");
+	gl_err_check("nsvertex_array_object::unbind()");
 }
 
 void nsvertex_array_object::vertex_attrib_div(uint32 pAttLoc, uint32 pDivisor)
 {
 	glVertexAttribDivisor(pAttLoc, pDivisor);
-	GLError("nsvertex_array_object::vertexAttribDiv()");
+	gl_err_check("nsvertex_array_object::vertexAttribDiv()");
 }
 
 void nsvertex_array_object::vertex_attrib_ptr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, bool pNormalized, uint32 pAttributeStride, uint32 pByteOffset)
 {
 	int64 cst = pByteOffset;
 	glVertexAttribPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pNormalized, pAttributeStride, (const GLvoid*)cst);
-	GLError("nsvertex_array_object::vertexAttribPtr()");
+	gl_err_check("nsvertex_array_object::vertexAttribPtr()");
 }
 
 void nsvertex_array_object::vertex_attrib_I_ptr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, uint32 pAttributeStride, uint32 pByteOffset)
 {
 	int64 cst = pByteOffset;
 	glVertexAttribIPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)cst);
-	GLError("nsvertex_array_object::vertexAttribIPtr()");
+	gl_err_check("nsvertex_array_object::vertexAttribIPtr()");
 }
 
 void nsvertex_array_object::vertex_attrib_L_ptr(uint32 pAttLoc, uint32 pElementsPerAttribute, uint32 pGLElementType, uint32 pAttributeStride, uint32 pByteOffset)
 {
 	int64 cst = pByteOffset;
 	glVertexAttribLPointer(pAttLoc, pElementsPerAttribute, pGLElementType, pAttributeStride, (const GLvoid*)cst);
-	GLError("nsvertex_array_object::vertexAttribLPtr()");
+	gl_err_check("nsvertex_array_object::vertexAttribLPtr()");
 }

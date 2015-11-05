@@ -95,7 +95,7 @@ public:
 		else
 			glBufferStorage(m_target, sizeof(data_type)* size_, &data_[0], flag_);
 
-		m_allocated = !GLError("nsbuffer_object::allocate");
+		m_allocated = !gl_err_check("nsbuffer_object::allocate");
 	}
 
 	template<class data_type>
@@ -106,7 +106,7 @@ public:
 		else
 			glBufferStorage(m_target, sizeof(data_type), &data_, flag_);
 
-		m_allocated = !GLError("nsbuffer_object::allocate");
+		m_allocated = !gl_err_check("nsbuffer_object::allocate");
 	}
 
 	void allocate(usage_flag flag_, uint32 total_byte_size_);
@@ -119,7 +119,7 @@ public:
 		else
 			glBufferStorage(m_target, sizeof(data_type)* size_, NULL, flag_);
 
-		m_allocated = !GLError("nsbuffer_object::allocate");
+		m_allocated = !gl_err_check("nsbuffer_object::allocate");
 	}
 	
 	void bind();
@@ -136,7 +136,7 @@ public:
 			return;
 
 		glGetBufferSubData(m_target, offset_bytes_*sizeof(data_type), data_.size()*sizeof(data_type), &data_[0]);
-		GLError("nsbuffer_object::allocate");
+		gl_err_check("nsbuffer_object::allocate");
 	}
 
 	storage_mode storage() const;
@@ -161,7 +161,7 @@ public:
 		data_type * retVal = (data_type*)glMapBuffer(m_target, access_);
 		if (retVal == NULL)
 		{
-			GLError("nsbuffer_object::map");
+			gl_err_check("nsbuffer_object::map");
 			m_mapped = false;
 		}
 		return retVal;
@@ -177,7 +177,7 @@ public:
 		m_mapped = true;
 		if (retVal == NULL)
 		{
-			GLError("nsbuffer_object::map");
+			gl_err_check("nsbuffer_object::map");
 			m_mapped = false;
 		}
 		return retVal;
@@ -190,7 +190,7 @@ public:
 			return;
 
 		glBufferSubData(m_target, offset_, sizeof(data_type)* size_, &data_[0]);
-		GLError("nsbuffer_object::setData");
+		gl_err_check("nsbuffer_object::setData");
 	}
 
 	bool set_storage(storage_mode storage_mode_);
