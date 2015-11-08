@@ -222,7 +222,12 @@ void nsbuild_system::enable_overwrite(bool pEnable)
 
 void nsbuild_system::enable_mirror(bool pEnable)
 {
-	m_mirror_mode = pEnable;
+    bool state = m_enabled;
+    if (state)
+        toggle();
+    m_mirror_mode = pEnable;
+    if (state)
+        toggle();
 }
 
 void nsbuild_system::erase()

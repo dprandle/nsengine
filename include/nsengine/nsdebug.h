@@ -16,6 +16,7 @@
 #define DEFAULT_DEBUG_LOG "enginedebug.log"
 
 #include <nsstring.h>
+#include <nstypes.h>
 
 class nslog_file;
 
@@ -73,6 +74,21 @@ private:
 	message_callback m_msg_cb;
 	void * m_msg_inst;
 	nslog_file* m_log_file;
+};
+
+
+class nsdebug_dump
+{
+public:
+
+    enum info_level
+    {
+        info_level_small,
+        info_level_medium,
+        info_level_large
+    };
+
+    static int save(const nsstring & fname, void * param=nullptr, info_level ilevel = info_level_medium);
 };
 
 #endif
