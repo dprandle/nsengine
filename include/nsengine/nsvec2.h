@@ -1,6 +1,8 @@
 #ifndef NSVEC2_H
 #define NSVEC2_H
 
+
+#define EPS_VEC_0 0.000001f
 #include <nsstring.h>
 #include <cmath>
 #include <stdexcept>
@@ -295,9 +297,9 @@ struct nsvec2
 
 	nsvec2<T> & round_to_zero()
 	{
-		if (::abs(x) < EPS)
+		if (std::abs(x) < EPS_VEC_0)
 			x = 0;
-		if (::abs(y) < EPS)
+		if (std::abs(y) < EPS_VEC_0)
 			y = 0;
 		return *this;
 	}
@@ -730,19 +732,19 @@ nsvec2<T> round(const nsvec2<T> & vec_)
 template <class T>
 nsvec2<T> scaling2d_vec(const nsmat2<T> & transform2d_)
 {
-	return nsvec2<T>().scalingFrom(transform2d_);
+	return nsvec2<T>().scaling_from(transform2d_);
 }
 
 template <class T>
 nsvec2<T> scaling2d_vec(const nsmat3<T> & transform2d_)
 {
-	return nsvec2<T>().scalingFrom(transform2d_);
+	return nsvec2<T>().scaling_from(transform2d_);
 }
 
 template <class T>
 nsvec2<T> translation2d_vec(const nsmat3<T> & transform2d_)
 {
-	return nsvec2<T>().translationFrom(transform2d_);
+	return nsvec2<T>().translation_from(transform2d_);
 }
 
 template<class PUPer, class T>

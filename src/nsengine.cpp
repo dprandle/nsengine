@@ -65,7 +65,8 @@ nsengine::nsengine()
     ilInit();
 	ilEnable(IL_ORIGIN_SET);
 	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-	m_cwd = nsfile_os::cwd();	
+	m_cwd = nsfile_os::cwd();
+	nsfile_os::create_dir(m_cwd + "logs/blabla.txt");
 }
 
 nsengine::~nsengine()
@@ -486,6 +487,7 @@ void nsengine::start()
 	set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
 	set_import_dir(m_cwd + nsstring(DEFAULT_IMPORT_DIR));
 	set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
+	
 
 	nsplugin * plg = core();	
 	plg->init();

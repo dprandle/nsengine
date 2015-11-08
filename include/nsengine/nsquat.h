@@ -206,7 +206,7 @@ struct nsquat
 
 	nsquat<T> & from(const nsmat4<T> & transform_)
 	{
-		return *this;
+		return from(transform_.basis());
 	}
 
 	nsquat<T> & from(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_)
@@ -253,13 +253,13 @@ struct nsquat
 
 	nsquat<T> & round_to_zero()
 	{
-		if (abs(x) < EPS)
+		if (std::abs(x) < EPS_VEC_0)
 			x = 0;
-		if (abs(y) < EPS)
+		if (std::abs(y) < EPS_VEC_0)
 			y = 0;
-		if (abs(x) < EPS)
+		if (std::abs(x) < EPS_VEC_0)
 			z = 0;
-		if (abs(w) < EPS)
+		if (std::abs(w) < EPS_VEC_0)
 			w = 0;
 		return *this;
 	}

@@ -2,6 +2,7 @@
 #define NSMAT3_H
 
 #include "nsmat2.h"
+#include <iomanip>
 
 template <class T>
 nsvec3<T> operator*(const nsvec3<T> & lhs_, const nsmat3<T> & rhs_);
@@ -420,9 +421,9 @@ struct nsmat3
 
 	nsmat3<T> & round_to_zero()
 	{
-		data[0].roundToZero();
-		data[1].roundToZero();
-		data[2].roundToZero();
+		data[0].round_to_zero();
+		data[1].round_to_zero();
+		data[2].round_to_zero();
 		return *this;
 	}
 
@@ -557,9 +558,16 @@ struct nsmat3
 		if (newline_)
 			lc += '\n';
 
-		ss << "[" << data[0][0] << " " << data[0][1] << " " << data[0][2] << lc;
-		ss << " " << data[1][0] << " " << data[1][1] << " " << data[1][2] << lc;
-		ss << " " << data[2][0] << " " << data[2][1] << " " << data[2][2] << "]";
+		ss << std::left
+		   << "|" << std::setw(6) << data[0][0]
+		   << " " << std::setw(6) << data[0][1]
+		   << " " << std::setw(6) << data[0][2] << lc
+		   << "|" << std::setw(6) << data[1][0]
+		   << " " << std::setw(6) << data[1][1]
+		   << " " << std::setw(6) << data[1][2] << lc
+		   << "|" << std::setw(6) << data[2][0]
+		   << " " << std::setw(6) << data[2][1]
+		   << " " << std::setw(6) << data[2][2] << " |";
 		return ss.str();
 	}
 

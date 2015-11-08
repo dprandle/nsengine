@@ -147,13 +147,13 @@ typedef nsmat4<ldouble> ldmat4;
 template<class T>
 T degrees(const T & val_)
 {
-	return static_cast<T>(180 / PI) * val_;
+	return (180 / PI) * val_;
 }
 
 template<class T>
 T radians(const T & val_)
 {
-	return static_cast<T>(PI / 180) * val_;
+	return (PI / 180) * val_;
 }
 
 #include <vector>

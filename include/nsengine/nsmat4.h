@@ -2,6 +2,7 @@
 #define NSMAT4_H
 
 #include "nsmat3.h"
+#include <iomanip>
 
 template <class T>
 nsmat4<T> operator*(const int32 & lhs_, const nsmat4<T> & rhs_);
@@ -452,10 +453,10 @@ struct nsmat4
 
 	nsmat4<T> & round_to_zero()
 	{
-		data[0].roundToZero();
-		data[1].roundToZero();
-		data[2].roundToZero();
-		data[3].roundToZero();
+		data[0].round_to_zero();
+		data[1].round_to_zero();
+		data[2].round_to_zero();
+		data[3].round_to_zero();
 		return *this;
 	}
 
@@ -584,15 +585,28 @@ struct nsmat4
 	nsstring to_string(bool newline_ = true) const
 	{
 		nsstringstream ss;
-		nsstring lc = ";";
+		nsstring lc = " |";
 
 		if (newline_)
 			lc += '\n';
 
-		ss << "[" << data[0][0] << " " << data[0][1] << " " << data[0][2] << " " << data[0][3] << lc;
-		ss << " " << data[1][0] << " " << data[1][1] << " " << data[1][2] << " " << data[1][3] << lc;
-		ss << " " << data[2][0] << " " << data[2][1] << " " << data[2][2] << " " << data[2][3] << lc;
-		ss << " " << data[3][0] << " " << data[3][1] << " " << data[3][2] << " " << data[3][3] << "]";
+		ss << std::left
+		   << "|" << std::setw(6) << data[0][0]
+		   << " " << std::setw(6) << data[0][1]
+		   << " " << std::setw(6) << data[0][2]
+		   << " " << std::setw(6) << data[0][3] << lc
+		   << "|" << std::setw(6) << data[1][0]
+		   << " " << std::setw(6) << data[1][1]
+		   << " " << std::setw(6) << data[1][2]
+		   << " " << std::setw(6) << data[1][3] << lc
+		   << "|" << std::setw(6) << data[2][0]
+		   << " " << std::setw(6) << data[2][1]
+		   << " " << std::setw(6) << data[2][2]
+		   << " " << std::setw(6) << data[2][3] << lc
+		   << "|" << std::setw(6) << data[3][0]
+		   << " " << std::setw(6) << data[3][1]
+		   << " " << std::setw(6) << data[3][2]
+		   << " " << std::setw(6) << data[3][3] << " |";
 		return ss.str();
 	}
 

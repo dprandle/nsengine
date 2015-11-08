@@ -281,13 +281,13 @@ struct nsvec4
 
 	nsvec4<T> & round_to_zero()
 	{
-		if (::abs(x) < EPS)
+		if (std::abs(x) < EPS_VEC_0)
 			x = 0;
-		if (::abs(y) < EPS)
+		if (std::abs(y) < EPS_VEC_0)
 			y = 0;
-		if (::abs(z) < EPS)
+		if (std::abs(z) < EPS_VEC_0)
 			z = 0;
-		if (::abs(w) < EPS)
+		if (std::abs(w) < EPS_VEC_0)
 			w = 0;
 		return *this;
 	}
@@ -1620,31 +1620,31 @@ nsvec4<T> abs(const nsvec4<T> & vec_)
 template <class T>
 nsvec4<T> axis_angle(const nsvec3<T> & euler_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(euler_, order_, rads_), rads_);
+	return nsvec4<T>().axis_angle_from(nsquat<T>().from(euler_, order_, rads_), rads_);
 }
 
 template <class T>
 nsvec4<T> axis_angle(const nsquat<T> & orientation_, bool rads_)
 {
-	return nsvec4<T>().axisAngleFrom(orientation_, rads_);
+	return nsvec4<T>().axis_angle_from(orientation_, rads_);
 }
 
 template <class T>
 nsvec4<T> axis_angle(const nsmat3<T> & rotation_mat3_, bool rads_)
 {
-	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(rotation_mat3_), rads_);
+	return nsvec4<T>().axis_angle_from(nsquat<T>().from(rotation_mat3_), rads_);
 }
 
 template <class T>
 nsvec4<T> axis_angle(const nsmat4<T> & transform_, bool rads_)
 {
-	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(transform_), rads_);
+	return nsvec4<T>().axis_angle_from(nsquat<T>().from(transform_), rads_);
 }
 
 template <class T>
 nsvec4<T> axis_angle(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, bool rads_)
 {
-	return nsvec4<T>().axisAngleFrom(nsquat<T>().from(vec_, to_vec_), rads_);
+	return nsvec4<T>().axis_angle_from(nsquat<T>().from(vec_, to_vec_), rads_);
 }
 
 template <class T>

@@ -2,6 +2,7 @@
 #define NSMAT2_H
 
 #include "nsquat.h"
+#include <iomanip>
 
 template <class T>
 nsmat2<T> operator*(const int32 & lhs_, const nsmat2<T> & rhs_);
@@ -126,8 +127,8 @@ struct nsmat2
 
 	nsmat2<T> & round_to_zero()
 	{
-		data[0].roundToZero();
-		data[1].roundToZero();
+		data[0].round_to_zero();
+		data[1].round_to_zero();
 		return *this;
 	}
 
@@ -205,8 +206,11 @@ struct nsmat2
 		if (newline_)
 			lc += '\n';
 
-		ss << "[" << data[0][0] << " " << data[0][1] << lc;
-		ss << " " << data[1][0] << " " << data[1][1] << "]";
+		ss << std::left
+		   << "|" << std::setw(6) << data[0][0]
+		   << " " << std::setw(6) << data[0][1] << lc
+		   << "|" << std::setw(6) << data[1][0]
+		   << " " << std::setw(6) << data[1][1] << " |";
 		return ss.str();
 	}
 
@@ -472,37 +476,37 @@ T determinant(const nsmat2<T> & mat_)
 template <class T>
 nsmat2<T> rotation2d_mat2(const T & angle_, bool rads_)
 {
-	return nsmat2<T>().rotationFrom(angle_, rads_);
+	return nsmat2<T>().rotation_from(angle_, rads_);
 }
 
 template <class T>
 nsmat2<T> rotation2d_mat2(const nsmat3<T> & transform2d_)
 {
-	return nsmat2<T>().rotationFrom(transform2d_);
+	return nsmat2<T>().rotation_from(transform2d_);
 }
 
 template <class T>
 nsmat2<T> rotation2d_mat2(const nsmat2<T> & transform2d_)
 {
-	return nsmat2<T>().rotationFrom(transform2d_);
+	return nsmat2<T>().rotation_from(transform2d_);
 }
 
 template<class T>
 nsmat2<T> scaling2d_mat2(const nsvec2<T> & scale_)
 {
-	return nsmat2<T>().scalingFrom(scale_);
+	return nsmat2<T>().scaling_from(scale_);
 }
 
 template<class T>
 nsmat2<T> scaling2d_mat2(const nsmat2<T> & transform2d_)
 {
-	return nsmat2<T>().scalingFrom(transform2d_);
+	return nsmat2<T>().scaling_from(transform2d_);
 }
 
 template<class T>
 nsmat2<T> scaling2d_mat2(const nsmat3<T> & transform2d_)
 {
-	return nsmat2<T>().scalingFrom(transform2d_);
+	return nsmat2<T>().scaling_from(transform2d_);
 }
 
 template <class T>

@@ -228,7 +228,7 @@ public:
 
 	void set_buffer_resize(bool resize_);
 
-	void enable_snap(bool snap_, uint32 tform_id_ = 0);
+	void enable_snap(bool snap_, uint32 tform_id_);
 
 	void enable_snap(bool snap_);
 

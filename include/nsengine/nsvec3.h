@@ -492,11 +492,11 @@ struct nsvec3
 
 	nsvec3<T> & round_to_zero()
 	{
-		if (::abs(x) < EPS)
+		if (std::abs(x) < EPS_VEC_0)
 			x = 0;
-		if (::abs(y) < EPS)
+		if (std::abs(y) < EPS_VEC_0)
 			y = 0;
-		if (::abs(z) < EPS)
+		if (std::abs(z) < EPS_VEC_0)
 			z = 0;
 		return *this;
 	}
@@ -988,31 +988,31 @@ T dot(const nsvec3<T> & lhs_, const nsvec3<T> & rhs_)
 template <class T>
 nsvec3<T> euler(const nsvec4<T> & axis_angle_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return nsvec3<T>().eulerFrom(nsquat<T>().from(axis_angle_, rads_), order_, rads_);
+	return nsvec3<T>().euler_from(nsquat<T>().from(axis_angle_, rads_), order_, rads_);
 }
 
 template <class T>
 nsvec3<T> euler(const nsquat<T> & orientation_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return nsvec3<T>().eulerFrom(nsmat3<T>().rotationFrom(orientation_), order_, rads_);
+	return nsvec3<T>().euler_from(nsmat3<T>().rotation_from(orientation_), order_, rads_);
 }
 
 template <class T>
 nsvec3<T> euler(const nsmat3<T> & rotation_mat3_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return nsvec3<T>().eulerFrom(rotation_mat3_, order_, rads_);
+	return nsvec3<T>().euler_from(rotation_mat3_, order_, rads_);
 }
 
 template <class T>
 nsvec3<T> euler(const nsmat4<T> & transform_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return nsvec3<T>().eulerFrom(transform_, order_, rads_);
+	return nsvec3<T>().euler_from(transform_, order_, rads_);
 }
 
 template <class T>
 nsvec3<T> euler(const nsvec3<T> & vec_, const nsvec3<T> & to_vec_, typename nsvec3<T>::EulerOrder order_, bool rads_)
 {
-	return nsvec3<T>().eulerFrom(nsquat<T>().from(vec_, to_vec_), order_, rads_);
+	return nsvec3<T>().euler_from(nsquat<T>().from(vec_, to_vec_), order_, rads_);
 }
 
 template <class T>
@@ -1102,19 +1102,19 @@ nsvec3<T> round(const nsvec3<T> & vec_)
 template <class T>
 nsvec3<T> scaling_vec(const nsmat3<T> & transform_)
 {
-	return nsvec3<T>().scalingFrom(transform_);
+	return nsvec3<T>().scaling_from(transform_);
 }
 
 template <class T>
 nsvec3<T> scaling_vec(const nsmat4<T> & transform_)
 {
-	return nsvec3<T>().scalingFrom(transform_);
+	return nsvec3<T>().scaling_from(transform_);
 }
 
 template <class T>
 nsvec3<T> translation_vec(const nsmat4<T> & transform_)
 {
-	return nsvec3<T>().translationFrom(transform_);
+	return nsvec3<T>().translation_from(transform_);
 }
 
 template<class PUPer, class T>
