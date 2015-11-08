@@ -51,10 +51,14 @@ include_directories(
 
 # Preprocessor definitions
 add_definitions(-DGLEW_MX -DGLEW_STATIC)
+add_definitions(-DNSDEBUG)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-add_definitions(-DNSDEBUG)
 message("Debug build starting...\n")
+endif ()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif ()
 
 if (UNIX)

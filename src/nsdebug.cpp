@@ -12,6 +12,7 @@
 
 #include <nsdebug.h>
 #include <nslog_file.h>
+#include <nsfile_os.h>
 
 nsdebug::nsdebug() : m_console_open(false),
 	m_logging_messages(true), 
@@ -113,3 +114,65 @@ void nsdebug::set_render_messages(bool pRenderMessages)
 {
 	m_render_messages = pRenderMessages;
 }
+
+#ifdef WIN32
+#include <Windows.h>
+#include <DbgHelp.h>
+int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
+{
+
+    int type = MiniDumpNormal;
+    switch (ilevel)
+    {
+    case (info_level_small):
+        type |= MiniDumpWithIndirectlyReferencedMemory |
+                MiniDumpScanMemory;
+        break;
+    case (info_level_medium):
+        type |= MiniDumpWithDataSegs |
+                MiniDumpWithPrivateReadWriteMemory |
+                MiniDumpWithHandleData |
+                MiniDumpWithFullMemoryInfo |
+                MiniDumpWithThreadInfo |
+                MiniDumpWithUnloadedModules;
+        break;
+    case (info_level_large):
+        type |= MiniDumpWithDataSegs |
+                MiniDumpWithPrivateReadWriteMemory |
+                MiniDumpWithHandleData |
+                MiniDumpWithFullMemory |
+                MiniDumpWithFullMemoryInfo |
+                MiniDumpWithThreadInfo |
+                MiniDumpWithUnloadedModules |
+                MiniDumpWithProcessThreadData;
+        break;
+    }
+
+    int success;
+    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
+
+    nsfile_os::create_dir(fname);
+    HANDLE hDumpFile = CreateFile(
+                fname.c_str(),
+                GENERIC_READ|GENERIC_WRITE,
+                FILE_SHARE_WRITE|FILE_SHARE_READ,
+                0,
+                CREATE_ALWAYS,
+                0,
+                0);
+
+    ExpParam.ThreadId = GetCurrentThreadId();
+    ExpParam.ExceptionPointers = (EXCEPTION_POINTERS*)param;
+    ExpParam.ClientPointers = TRUE;
+
+    success = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+                    hDumpFile, (MINIDUMP_TYPE)type, &ExpParam, NULL, NULL);
+
+    return success;
+}
+#else
+bool debug_dump::save(const nsstring & fname, void * param, info_level ilevel)
+{
+    return false;
+}
+#endif

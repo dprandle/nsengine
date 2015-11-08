@@ -6,5 +6,7 @@
 
 typedef std::string nsstring;
 typedef std::stringstream nsstringstream;
+typedef std::wstring nswstring;
+typedef std::wstringstream nswstringstream;
 
 #endif
