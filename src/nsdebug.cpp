@@ -153,26 +153,26 @@ int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
 
     nsfile_os::create_dir(fname);
     HANDLE hDumpFile = CreateFile(
-                fname.c_str(),
-                GENERIC_READ|GENERIC_WRITE,
-                FILE_SHARE_WRITE|FILE_SHARE_READ,
-                0,
-                CREATE_ALWAYS,
-                0,
-                0);
+		fname.c_str(),
+		GENERIC_READ|GENERIC_WRITE,
+		FILE_SHARE_WRITE|FILE_SHARE_READ,
+		0,
+		CREATE_ALWAYS,
+		0,
+		0);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = (EXCEPTION_POINTERS*)param;
     ExpParam.ClientPointers = TRUE;
 
     success = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
-                    hDumpFile, (MINIDUMP_TYPE)type, &ExpParam, NULL, NULL);
+								hDumpFile, (MINIDUMP_TYPE)type, &ExpParam, NULL, NULL);
 
     return success;
 }
 #else
-bool debug_dump::save(const nsstring & fname, void * param, info_level ilevel)
+int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
 {
-    return false;
+    return 0;
 }
 #endif
