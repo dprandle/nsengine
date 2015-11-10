@@ -109,18 +109,18 @@ void nsparticle_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
 /return Map of resource ID to resource type containing all used resources
 */
-uivec2_vector nsparticle_comp::resources()
+uivec3_vector nsparticle_comp::resources()
 {
-	uivec2_vector ret;
+	uivec3_vector ret;
 
 	if (m_rand_tex_id != 0)
-		ret.push_back(m_rand_tex_id);
+		ret.push_back(uivec3(m_rand_tex_id, type_to_hash(nstexture)));
 
 	if (m_mat_id != 0)
-		ret.push_back(m_mat_id);
+		ret.push_back(uivec3(m_mat_id, type_to_hash(nsmaterial)));
 
 	if (m_xfb_shader_id != 0)
-		ret.push_back(m_xfb_shader_id);
+		ret.push_back(uivec3(m_xfb_shader_id, type_to_hash(nsshader)));
 
 	return ret;
 }

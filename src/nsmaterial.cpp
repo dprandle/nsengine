@@ -162,22 +162,22 @@ const nsmaterial::texmap_map & nsmaterial::tex_maps() const
 /*!
 Get the other resources that this Material uses. This includes all texture maps.
 */
-uivec2_vector nsmaterial::resources()
+uivec3_vector nsmaterial::resources()
 {
-	uivec2_vector ret;
+	uivec3_vector ret;
 
 	// add all texture maps that are available
 	auto iter = m_tex_maps.begin();
 	while (iter != m_tex_maps.end())
 	{
 		if (iter->second != 0) // only add if not equal to 0
-			ret.push_back(iter->second);
+			ret.push_back(uivec3(iter->second,type_to_hash(nstexture)));
 		++iter;
 	}
 
 	// Add the shader and all resources shader may use
 	if (m_shader_id != 0)
-		ret.push_back(m_shader_id);
+		ret.push_back(uivec3(m_shader_id, type_to_hash(nsshader)));
 
 	return ret;
 }
@@ -302,4 +302,27 @@ bool nsmaterial::set_map_tex_id(map_type pMapType, const uivec2 & pID, bool pOve
 
 	m_tex_maps.emplace(pMapType, pID);
 	return true;
+}
+
+nsmaterial & nsmaterial::operator=(const nsmaterial & rhs_)
+{
+	if (this == &rhs_)
+		return *this;
+
+	m_alpha_blend = rhs_.m_alpha_blend;
+	m_shader_id = rhs_.m_shader_id;
+	m_color = rhs_.m_color;
+	m_color_mode = rhs_.m_color_mode;
+	m_culling_enabled = rhs_.m_culling_enabled;
+	m_cull_mode = rhs_.m_cull_mode;
+	m_spec_comp = rhs_.m_spec_comp;
+	m_tex_maps.clear();
+	auto iter = rhs_.m_tex_maps.begin();
+	while (iter != rhs_.m_tex_maps.end())
+	{
+		m_tex_maps[iter->first] = iter->second;
+		++iter;
+	}
+	m_wireframe = rhs_.m_wireframe;
+	return *this;
 }

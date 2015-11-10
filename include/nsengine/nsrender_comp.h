@@ -46,7 +46,7 @@ public:
 	Get the resources that the component uses. The render comp uses a mesh and possibly multiple materials.
 	/return Map of resource ID to resource type containing mesh ID and all material IDs.
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	bool has_material(uint32 submesh_index_);
 

@@ -392,7 +392,7 @@ void nsrender_system::draw()
 				m_shaders.dir_light->set_proj_light_mat(projLightMat);
 				m_shaders.dir_light->set_lighting_enabled(m_lighting_enabled);
 				m_shaders.dir_light->set_bg_color(scene->bg_color());
-				m_shaders.dir_light->set_direction(tComp->dvec(nstform_comp::dir_target, i));
+				m_shaders.dir_light->set_direction(tComp->transform(i).target());
 				m_shaders.dir_light->set_cam_world_pos(camTComp->wpos());
 				m_shaders.dir_light->set_fog_factor(m_fog_nf);
 				m_shaders.dir_light->set_fog_color(m_fog_color);

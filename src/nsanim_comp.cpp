@@ -102,14 +102,14 @@ fmat4_vector * nsanim_comp::final_transforms()
 /*!
 Get the resources that the component uses. For the animation component that is simply an AnimSet
 */
-uivec2_vector nsanim_comp::resources()
+uivec3_vector nsanim_comp::resources()
 {
 	// Build map
-	uivec2_vector ret;
+	uivec3_vector ret;
 	
 	// only add if not 0
 	if (m_anim_set_id != 0)
-		ret.push_back(m_anim_set_id);
+		ret.push_back(uivec3(m_anim_set_id, type_to_hash(nsanim_set)));
 
 	return ret;
 }

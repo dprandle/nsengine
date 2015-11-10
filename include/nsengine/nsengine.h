@@ -597,6 +597,8 @@ public:
 		return static_cast<res_type*>(resource(type_to_hash(res_type),plug,res));
 	}
 
+	nsresource * resource(uint32 res_typeid, const uivec2 & resid);
+
 	nsresource * resource(uint32 res_typeid, nsplugin * plg, uint32 resid);
 
 	nsresource * resource(uint32 res_typeid, nsplugin * plg, const nsstring & resname);

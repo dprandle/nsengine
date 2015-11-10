@@ -106,7 +106,7 @@ public:
 	Get the resources that the component uses. The light comp uses a bounding mesh.
 	/return Map of resource ID to resource type containing bounding mesh ID.
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	void set_attenuation(const fvec3 & atten_);
 

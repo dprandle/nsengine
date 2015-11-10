@@ -191,15 +191,15 @@ void nsentity::name_change(const uivec2 & oldid, const uivec2 newid)
 /*!
 Get the other resources that this Entity uses. This is given by all the components attached to the entity.
 */
-uivec2_vector nsentity::resources()
+uivec3_vector nsentity::resources()
 {
-	uivec2_vector ret;
+	uivec3_vector ret;
 
 	// Go through each component and insert all used resources from each comp_t
 	auto iter = m_components.begin();
 	while (iter != m_components.end())
 	{
-		uivec2_vector tmp = iter->second->resources();
+		uivec3_vector tmp = iter->second->resources();
 		ret.insert(ret.end(), tmp.begin(), tmp.end() );
 		++iter;
 	}

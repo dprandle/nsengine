@@ -99,7 +99,7 @@ public:
 	Get the other resources that this Material uses. This includes all texture maps.
 	\return Map of resource ID to resource type containing all other used texture map IDs and a shader ID
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	void init();
 
@@ -148,6 +148,8 @@ public:
 	void set_specular_power(float power_);
 
 	void set_specular_intensity(float intensity_);
+
+	nsmaterial & operator=(const nsmaterial & rhs_);
 
 private:
 	bool m_alpha_blend;

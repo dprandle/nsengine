@@ -66,7 +66,7 @@ public:
 
 	bool remove(const ivec3 & grid_pos_);
 
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	void set_mesh_id(const uivec2 & mesh_id_);
 

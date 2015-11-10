@@ -303,13 +303,13 @@ const entity_ptr_set & nsscene::entities() const
 /*!
 Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
 */
-uivec2_vector nsscene::resources()
+uivec3_vector nsscene::resources()
 {
-	uivec2_vector ret;
+	uivec3_vector ret;
 	auto iter = entities().begin();
 	while (iter != entities().end())
 	{
-		uivec2_vector tmp = (*iter)->resources();
+		uivec3_vector tmp = (*iter)->resources();
 		ret.insert(ret.end(), tmp.begin(), tmp.end() );
 		++iter;
 	}

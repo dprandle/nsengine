@@ -159,6 +159,11 @@ bool nsengine::add_system(nssystem * pSystem)
 	return true;
 }
 
+nsresource * nsengine::resource(uint32 res_typeid, const uivec2 & resid)
+{
+	return resource(res_typeid, plugin(resid.x), resid.y);
+}
+
 nsresource * nsengine::resource(uint32 res_typeid, nsplugin * plg, uint32 resid)
 {
 	if (plg == NULL)

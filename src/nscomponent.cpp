@@ -62,9 +62,9 @@ nscomponent & nscomponent::operator=(const nscomponent & pRHSComp)
 /*!
 Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
 */
-uivec2_vector nscomponent::resources()
+uivec3_vector nscomponent::resources()
 {
-	return uivec2_vector();
+	return uivec3_vector();
 }
 
 void nscomponent::set_owner(nsentity * owner)

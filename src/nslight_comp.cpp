@@ -194,14 +194,14 @@ const fmat4 & nslight_comp::transform(uint32 index_)
 /*!
 Get the resources that the component uses. The light comp uses a bounding mesh.
 */
-uivec2_vector nslight_comp::resources()
+uivec3_vector nslight_comp::resources()
 {
 	// Build map
-	uivec2_vector ret;
+	uivec3_vector ret;
 
 	// only add if not 0
 	if (m_bounding_mesh_id != 0)
-		ret.push_back(m_bounding_mesh_id);
+		ret.push_back(uivec3(m_bounding_mesh_id, type_to_hash(nsmesh)));
 
 	return ret;
 }

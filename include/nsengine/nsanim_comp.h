@@ -47,7 +47,7 @@ public:
 	Get the resources that the component uses. For the animation component that is simply an AnimSet
 	/return Map of resource ID to resource type containing AnimSet used
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	void init();
 

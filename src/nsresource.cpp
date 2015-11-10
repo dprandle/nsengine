@@ -82,9 +82,9 @@ const uivec2 & nsresource::icon_tex_id()
 /*!
 Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
 */
-uivec2_vector  nsresource::resources()
+uivec3_vector  nsresource::resources()
 {
-	return uivec2_vector();
+	return uivec3_vector();
 }
 
 /*!

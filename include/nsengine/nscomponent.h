@@ -46,7 +46,7 @@ public:
 	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
 	/return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	virtual void pup(nsfile_pupper * p) = 0;
 

@@ -55,7 +55,7 @@ public:
 	Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
 	\return Map of resource ID to resource type containing all other used resources (doesn't include this resource)
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	const nsstring & icon_path();
 

@@ -81,7 +81,7 @@ public:
 	Get the other resources that this Entity uses. This is given by all the components attached to the entity.
 	\return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 	
 	template<class comp_type>
 	bool has()

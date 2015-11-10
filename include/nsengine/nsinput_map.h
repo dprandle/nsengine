@@ -232,8 +232,6 @@ class nsinput_map : public nsresource
 
 	virtual void init();
 
-	virtual uivec2_vector resources();
-
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	virtual void pup(nsfile_pupper * p);

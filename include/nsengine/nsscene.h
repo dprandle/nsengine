@@ -127,7 +127,7 @@ public:
 	Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
 	\return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec2_vector resources();
+	virtual uivec3_vector resources();
 
 	nstile_grid & grid();
 

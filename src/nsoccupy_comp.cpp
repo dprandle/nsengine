@@ -17,7 +17,9 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 #include <nsplugin.h>
 #include <cmath>
 #include <nsmesh.h>
+#include <nsmaterial.h>
 #include <nsrender_system.h>
+#include <nsengine.h>
 
 nsoccupy_comp::nsoccupy_comp() :
 m_draw_enabled(false),
@@ -219,13 +221,13 @@ bool nsoccupy_comp::remove(const ivec3 & pGridPos)
 	return false;
 }
 
-uivec2_vector nsoccupy_comp::resources()
+uivec3_vector nsoccupy_comp::resources()
 {
-	uivec2_vector ret;
+	uivec3_vector ret;
 	if (m_mat_id != 0)
-		ret.push_back(m_mat_id);
+		ret.push_back(uivec3(m_mat_id, type_to_hash(nsmaterial)));
 	if (m_mesh_id != 0)
-		ret.push_back(m_mesh_id);
+		ret.push_back(uivec3(m_mesh_id, type_to_hash(nsmesh)));
 	return ret;
 }
 

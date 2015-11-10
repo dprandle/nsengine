@@ -1109,7 +1109,7 @@ nsresource * nsplugin::remove(nsresource * res)
 void nsplugin::_update_parents()
 {
 	// Get all get parents - only do immediate parents (not recursive)
-	uivec2_vector usedResources;
+	uivec3_vector usedResources;
 	m_parents.clear();
 
 	auto iter = m_managers.begin();
@@ -1118,7 +1118,7 @@ void nsplugin::_update_parents()
 		auto iter2 = iter->second->begin();
 		while (iter2 != iter->second->end())
 		{
-			uivec2_vector ret = iter2->second->resources();
+			uivec3_vector ret = iter2->second->resources();
 			usedResources.insert(usedResources.end(), ret.begin(), ret.end());
 			++iter2;
 		}
