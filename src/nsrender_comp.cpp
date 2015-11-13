@@ -93,16 +93,25 @@ uivec3_vector nsrender_comp::resources()
 	// Build map
 	uivec3_vector ret;
 
-	// only add resources if they are not 0
-	if (m_mesh_id != 0)
-		ret.push_back(uivec3(m_mesh_id, type_to_hash(nsmesh)));
+	nsmesh * _mesh_ = nse.resource<nsmesh>(m_mesh_id);
+	if (_mesh_ != NULL)
+	{
+		uivec3_vector tmp = _mesh_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_mesh_->full_id(), type_to_hash(nsmesh)));
+	}
 
 	// Add all materials
 	auto iter = begin_mat();
 	while (iter != end_mat())
 	{
-		if (iter->second != 0) // only add if the submesh has a material assigned (it might not)
-			ret.push_back(uivec3(iter->second, type_to_hash(nsmaterial)));
+		nsmaterial * mat = nse.resource<nsmaterial>(iter->second);
+		if (mat != NULL)
+		{
+			uivec3_vector tmp = mat->resources();
+			ret.insert(ret.end(), tmp.begin(), tmp.end());
+			ret.push_back(uivec3(mat->full_id(), type_to_hash(nsmaterial)));
+		}
 		++iter;
 	}
 

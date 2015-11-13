@@ -107,10 +107,13 @@ uivec3_vector nsanim_comp::resources()
 	// Build map
 	uivec3_vector ret;
 	
-	// only add if not 0
-	if (m_anim_set_id != 0)
-		ret.push_back(uivec3(m_anim_set_id, type_to_hash(nsanim_set)));
-
+	nsanim_set * _anim_set_ = nse.resource<nsanim_set>(m_anim_set_id);;
+	if (_anim_set_ != NULL)
+	{
+		uivec3_vector tmp = _anim_set_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_anim_set_->full_id(), type_to_hash(nsanim_set)));
+	}
 	return ret;
 }
 

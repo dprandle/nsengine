@@ -199,9 +199,13 @@ uivec3_vector nslight_comp::resources()
 	// Build map
 	uivec3_vector ret;
 
-	// only add if not 0
-	if (m_bounding_mesh_id != 0)
-		ret.push_back(uivec3(m_bounding_mesh_id, type_to_hash(nsmesh)));
+	nsmesh * _mesh_ = nse.resource<nsmesh>(m_bounding_mesh_id);
+	if (_mesh_ != NULL)
+	{
+		uivec3_vector tmp = _mesh_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_mesh_->full_id(), type_to_hash(nsmesh)));
+	}
 
 	return ret;
 }

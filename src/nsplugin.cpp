@@ -296,7 +296,10 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	bool collides,
 	tile_t type)
 {
-	nsmaterial * mat = create<nsmaterial>(name);
+	nsmaterial * mat = get<nsmaterial>(name);
+	if (mat == NULL)
+		mat = create<nsmaterial>(name);
+
 	if (mat == NULL)
 		return NULL;
 
@@ -306,8 +309,15 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	mat->set_color(m_col);
 	mat->set_specular_power(s_pwr);
 	mat->set_specular_intensity(s_int32);
-	nstexture * tdiff = load<nstex2d>(difftex);
-	nstexture * tnorm = load<nstex2d>(normtex);
+
+	nstexture * tdiff = get<nstex2d>(difftex);
+	if (tdiff == NULL)
+		tdiff = load<nstex2d>(difftex);
+	
+	nstexture * tnorm = get<nstex2d>(normtex);
+	if (tnorm == NULL)
+		tnorm = load<nstex2d>(normtex);
+	
 	if (tdiff != NULL)
 		mat->set_map_tex_id(nsmaterial::diffuse, tdiff->full_id());
 	if (tnorm != NULL)

@@ -170,15 +170,24 @@ uivec3_vector nsmaterial::resources()
 	auto iter = m_tex_maps.begin();
 	while (iter != m_tex_maps.end())
 	{
-		if (iter->second != 0) // only add if not equal to 0
-			ret.push_back(uivec3(iter->second,type_to_hash(nstexture)));
+		nstexture * _tex_ = nse.resource<nstexture>(iter->second);
+		if (_tex_ != NULL)
+		{
+			uivec3_vector tmp = _tex_->resources();
+			ret.insert(ret.end(), tmp.begin(), tmp.end());
+			ret.push_back(uivec3(_tex_->full_id(), type_to_hash(nstexture)));
+		}
 		++iter;
 	}
 
-	// Add the shader and all resources shader may use
-	if (m_shader_id != 0)
-		ret.push_back(uivec3(m_shader_id, type_to_hash(nsshader)));
-
+	nsshader * _shdr_ = nse.resource<nsshader>(m_shader_id);
+	if (_shdr_ != NULL)
+	{
+		uivec3_vector tmp = _shdr_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_shdr_->full_id(), type_to_hash(nsshader)));
+	}
+		
 	return ret;
 }
 

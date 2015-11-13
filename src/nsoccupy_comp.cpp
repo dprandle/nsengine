@@ -224,10 +224,22 @@ bool nsoccupy_comp::remove(const ivec3 & pGridPos)
 uivec3_vector nsoccupy_comp::resources()
 {
 	uivec3_vector ret;
-	if (m_mat_id != 0)
-		ret.push_back(uivec3(m_mat_id, type_to_hash(nsmaterial)));
-	if (m_mesh_id != 0)
-		ret.push_back(uivec3(m_mesh_id, type_to_hash(nsmesh)));
+
+	nsmaterial * _mat_ = nse.resource<nsmaterial>(m_mat_id);
+	if (_mat_ != NULL)
+	{
+		uivec3_vector tmp = _mat_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_mat_->full_id(), type_to_hash(nsmaterial)));
+	}
+	
+	nsmesh * _mesh_ = nse.resource<nsmesh>(m_mesh_id);
+	if (_mesh_ != NULL)
+	{
+		uivec3_vector tmp = _mesh_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_mesh_->full_id(), type_to_hash(nsmesh)));
+	}
 	return ret;
 }
 

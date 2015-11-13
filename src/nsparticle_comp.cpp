@@ -113,15 +113,29 @@ uivec3_vector nsparticle_comp::resources()
 {
 	uivec3_vector ret;
 
-	if (m_rand_tex_id != 0)
-		ret.push_back(uivec3(m_rand_tex_id, type_to_hash(nstexture)));
+	nstexture * _tex_ = nse.resource<nstexture>(m_rand_tex_id);
+	if (_tex_ != NULL)
+	{
+		uivec3_vector tmp = _tex_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_tex_->full_id(), type_to_hash(nstexture)));
+	}
 
-	if (m_mat_id != 0)
-		ret.push_back(uivec3(m_mat_id, type_to_hash(nsmaterial)));
+	nsmaterial * _mat_ = nse.resource<nsmaterial>(m_mat_id);
+	if (_mat_ != NULL)
+	{
+		uivec3_vector tmp = _mat_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_mat_->full_id(), type_to_hash(nsmaterial)));
+	}
 
-	if (m_xfb_shader_id != 0)
-		ret.push_back(uivec3(m_xfb_shader_id, type_to_hash(nsshader)));
-
+	nsshader * _shdr_ = nse.resource<nsshader>(m_xfb_shader_id);
+	if (_shdr_ != NULL)
+	{
+		uivec3_vector tmp = _shdr_->resources();
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
+		ret.push_back(uivec3(_shdr_->full_id(), type_to_hash(nsshader)));
+	}
 	return ret;
 }
 
