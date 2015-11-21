@@ -73,6 +73,8 @@ public:
 
 	void set_ext( const nsstring & pExt);
 
+	virtual bool copy(nsresource * res);
+
 	void rename(const nsstring & pResName);
 
 	uivec2 full_id();

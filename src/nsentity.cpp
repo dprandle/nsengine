@@ -50,7 +50,7 @@ bool nsentity::add(nscomponent * pComp)
 	return ret.second;
 }
 
-bool nsentity::copy(nscomponent * toCopy, bool overwrite)
+bool nsentity::copy_comp(nscomponent * toCopy, bool overwrite)
 {
 	if (toCopy == NULL)
 		return false;
@@ -72,18 +72,6 @@ bool nsentity::copy(nscomponent * toCopy, bool overwrite)
 
 	(*nc) = (*toCopy);
 	return true;
-}
-
-bool nsentity::copy_all(nsentity * to_copy, bool overwrite)
-{
-	bool ret = true;
-	auto c_iter = to_copy->begin();
-	while (c_iter != to_copy->end())
-	{
-		ret = ret && copy(c_iter->second, overwrite);
-		++c_iter;
-	}
-	return ret;
 }
 
 void nsentity::clear()
@@ -219,6 +207,33 @@ bool nsentity::has(uint32 type_id)
 void nsentity::init()
 {
 	// do nothing
+}
+
+bool nsentity::copy(nsresource * res)
+{
+	nsentity * ent = dynamic_cast<nsentity*>(res);
+	if (ent == NULL)
+		return false;
+
+	bool ret = true;
+	auto c_iter = ent->begin();
+	while (c_iter != ent->end())
+	{
+		// skip transform component
+		if (c_iter->first == type_to_hash(nstform_comp))
+		{
+			++c_iter;
+			continue;
+		}
+		
+		ret = copy_comp(c_iter->second, true) && ret;
+		if (ret == false)
+		{
+			dprint("nsentity::copy_all - error in copying component type: " + hash_to_guid(c_iter->first));
+		}
+		++c_iter;
+	}
+	return ret;
 }
 
 nscomponent * nsentity::remove(uint32 type_id)

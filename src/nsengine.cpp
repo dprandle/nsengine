@@ -741,14 +741,6 @@ nsplugin * nsengine::remove_plugin(nsplugin * plg)
 	return current()->plugins->remove(plg);
 }
 
-nsresource * nsengine::_resource(uint32 restype_id, const uivec2 & resid)
-{
-	nsplugin * plg = plugin(resid.x);
-	if (plg == NULL)
-		return NULL;
-	return plg->get(restype_id, resid.y);
-}
-
 void nsengine::_init_factories()
 {
 	register_component<nsanim_comp>("nsanim_comp");

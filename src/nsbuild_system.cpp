@@ -87,7 +87,7 @@ void nsbuild_system::enable(const bool & pEnable)
 			{
 				m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH);
 				// copy the tile brush and assign it to the mirror brush
-				m_mirror_brush->copy_all(m_tile_brush);
+				m_mirror_brush->copy(m_tile_brush);
 			}
 
 			nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
@@ -140,15 +140,15 @@ void nsbuild_system::enable(const bool & pEnable)
 			if (m_object_build_ent == NULL)
 				return;
 			
-            m_object_brush->copy(m_object_build_ent->get<nsrender_comp>());
-			m_object_brush->copy(m_object_build_ent->get<nslight_comp>());
+            m_object_brush->copy_comp(m_object_build_ent->get<nsrender_comp>());
+			m_object_brush->copy_comp(m_object_build_ent->get<nslight_comp>());
 			fvec3 pos = nstile_grid::world(ivec3(0,0,m_layer));
 			
 			if (m_mirror_mode)
 			{
 				m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH);
 				// copy the tile brush and assign it to the mirror brush
-				m_mirror_brush->copy_all(m_object_brush);
+				m_mirror_brush->copy(m_object_brush);
 			}
 
 			nssel_comp * selComp = m_object_brush->get<nssel_comp>();
@@ -174,10 +174,10 @@ void nsbuild_system::enable(const bool & pEnable)
 				m_mirror_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, mirror_tform_id);
 			}
 
-            m_object_brush->copy(m_object_build_ent->get<nsoccupy_comp>());
+            m_object_brush->copy_comp(m_object_build_ent->get<nsoccupy_comp>());
 
 			if (m_mirror_mode)
-				m_mirror_brush->copy(m_object_build_ent->get<nsoccupy_comp>());
+				m_mirror_brush->copy_comp(m_object_build_ent->get<nsoccupy_comp>());
 
 			nse.system<nsselection_system>()->enable_mirror_selection(tmp);
 			to_cursor();

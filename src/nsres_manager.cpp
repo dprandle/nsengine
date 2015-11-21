@@ -116,6 +116,11 @@ bool nsres_manager::contains(nsresource * res)
 	return (get(res->id()) != NULL);
 }
 
+bool nsres_manager::copy(nsresource * from_, nsresource * to_)
+{
+	return false;
+}
+
 uint32 nsres_manager::count() const
 {
 	return static_cast<uint32>(m_id_resmap.size());
@@ -485,6 +490,11 @@ bool nsres_manager::destroy(nsresource * res)
 		dprint("nsres_manager::destroy Successfully destroyed " + name);
 		return true;
 	}
+	return false;
+}
+
+bool nsres_manager::replace(nsresource * orig_, nsresource * new_)
+{
 	return false;
 }
 

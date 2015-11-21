@@ -239,7 +239,7 @@ void nsmaterial::name_change(const uivec2 & oldid, const uivec2 newid)
 
 bool nsmaterial::remove_tex_map(map_type pMapType)
 {
-	return m_tex_maps.erase(pMapType) && 1;
+	return m_tex_maps.erase(pMapType) >= 1;
 }
 
 void nsmaterial::set_alpha_blend(bool pBlend)

@@ -587,7 +587,7 @@ public:
 	res_type * resource(const uivec2 & resID)
 	{
 		uint32 hashed_type = type_to_hash(res_type);
-		return static_cast<res_type*>(_resource(hashed_type,resID));
+		return static_cast<res_type*>(resource(hashed_type,resID));
 	}
 
 	template<class res_type,class T1, class T2>
@@ -733,8 +733,6 @@ private:
 	void _init_systems();
 	void _init_factories();
 	void _remove_sys(uint32 type_id);
-
-	nsresource * _resource(uint32 restype_id, const uivec2 & resid);
 	
 	nsstring m_res_dir;
 	nsstring m_import_dir;

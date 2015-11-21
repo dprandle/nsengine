@@ -55,6 +55,12 @@ public:
 		nsresource * res = get(resource);
 		return changed(res,fname);
 	}
+
+	template<class T>
+	bool copy(const T & from_, nsresource * to_)
+	{
+		return this->copy(get(from_), to_);
+	}
 	
 	template<class T>
 	bool contains(const T & res_name)
@@ -74,6 +80,13 @@ public:
 	{
 		nsresource * res = get(res_name);
 		return del(res);
+	}
+
+	template<class T>
+	bool destroy(const T & resname)
+	{
+		nsresource * res = get(resname);
+		return destroy(res);
 	}
 
 	template <class res_type, class T>
@@ -97,6 +110,12 @@ public:
 	}
 
 	template<class T>
+	bool replace(const T & orig_, nsresource * new_)
+	{
+		return this->replace(get(orig_), new_);
+	}
+
+	template<class T>
 	bool save(const T & res_name, nsstring path="")
 	{
 		nsresource * res = get(res_name);
@@ -111,6 +130,8 @@ public:
 	}
 
 	virtual bool changed(nsresource * res, nsstring fname);
+
+	virtual bool copy(nsresource * from_, nsresource * to_);
 
 	virtual bool contains(nsresource * res);
 
@@ -157,6 +178,8 @@ public:
 	virtual nsresource * remove(nsresource * res);
 
 	virtual bool rename(const nsstring & oldName, const nsstring & newName);
+
+	virtual bool replace(nsresource * orig_, nsresource * new_);
 	
 	virtual bool save(nsresource * res,const nsstring & path);
 
@@ -175,13 +198,6 @@ public:
 	void set_save_mode(s_mode sm);
 
 	virtual void destroy_all();
-
-	template<class T>
-	bool destroy(const T & resname)
-	{
-		nsresource * res = get(resname);
-		return destroy(res);
-	}
 	
 	virtual bool destroy(nsresource * res);
 

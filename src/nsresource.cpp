@@ -106,6 +106,18 @@ void nsresource::set_ext(const nsstring & pExt)
 	m_ext = pExt;
 }
 
+bool nsresource::copy(nsresource * res)
+{
+	if (res == NULL)
+		return false;
+	
+	this->rename(res->name());
+	m_icon_path = res->icon_path();
+	m_subdir = res->subdir();
+	m_ext = res->extension();
+	return true;
+}
+
 void nsresource::rename(const nsstring & pRefName)
 {
 	uint32 tmp = m_id;

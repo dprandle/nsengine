@@ -27,6 +27,8 @@ public:
 	friend void pup(PUPer & p, nsentity & ent);
 
 	nsentity();
+
+	
 	~nsentity();
 
 	bool add(nscomponent * pComp);
@@ -36,9 +38,9 @@ public:
 
 	void clear();
 
-	bool copy(nscomponent * toCopy, bool overwrite = true);
+	bool copy_comp(nscomponent * toCopy, bool overwrite = true);
 
-	bool copy_all(nsentity * to_copy, bool overwrite = true);
+	bool copy(nsresource * to_copy);
 
 	template<class comp_type>
 	comp_type * create()
@@ -129,6 +131,8 @@ public:
 	}
 
 	bool update_posted(const nsstring & compType);
+
+	
 
 private:
 	comp_set m_components;
