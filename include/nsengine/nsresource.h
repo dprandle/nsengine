@@ -35,6 +35,7 @@ public:
 	friend class nsres_factory;
 
 	nsresource();
+	
 	virtual ~nsresource();
 
 	virtual void init() = 0;
@@ -47,7 +48,7 @@ public:
 
 	uint32 id() const;
 
-	uint32 type();
+	uint32 type() const;
 
 	const nsstring & subdir() const;
 
@@ -57,9 +58,9 @@ public:
 	*/
 	virtual uivec3_vector resources();
 
-	const nsstring & icon_path();
+	const nsstring & icon_path() const;
 
-	const uivec2 & icon_tex_id();
+	const uivec2 & icon_tex_id() const;
 
 	/*!
 	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
@@ -73,8 +74,6 @@ public:
 
 	void set_ext( const nsstring & pExt);
 
-	virtual bool copy(nsresource * res);
-
 	void rename(const nsstring & pResName);
 
 	uivec2 full_id();
@@ -85,7 +84,12 @@ public:
 
 	void set_subdir(const nsstring & pDir);
 
+	nsresource(const nsresource & copy);
+	virtual nsresource * copy(const nsresource * res);
+	nsresource & operator=(const nsresource & rhs);
+
 protected:
+
 	uint32 m_hashed_type;
 	nsstring m_icon_path;
 	uivec2 m_icon_tex_id;

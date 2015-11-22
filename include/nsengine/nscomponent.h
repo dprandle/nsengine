@@ -1,13 +1,13 @@
 /*! 
-	\file nscomponent.h
+  \file nscomponent.h
 	
-	\brief Header file for nscomponent class
+  \brief Header file for nscomponent class
 
-	This file contains all of the neccessary declarations for the nscomponent class.
+  This file contains all of the neccessary declarations for the nscomponent class.
 
-	\author Daniel Randle
-	\date November 23 2013
-	\copywrite Earth Banana Games 2013
+  \author Daniel Randle
+  \date November 23 2013
+  \copywrite Earth Banana Games 2013
 */
 
 #ifndef NSCOMPONENT_H
@@ -22,7 +22,7 @@ class nstimer;
 
 class nscomponent
 {
-public:
+  public:
 
 	friend class nscomp_factory;
 
@@ -43,8 +43,8 @@ public:
 	virtual void name_change(const uivec2 &, const uivec2);
 
 	/*!
-	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
-	/return Map of resource ID to resource type containing all used resources
+	  Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
+	  /return Map of resource ID to resource type containing all used resources
 	*/
 	virtual uivec3_vector resources();
 
@@ -56,7 +56,7 @@ public:
 
 	nscomponent & operator=(const nscomponent & rhs_);
 
-protected:
+  protected:
 	nsentity * m_owner;
 	uint32 m_hashed_type;
 	bool m_update;

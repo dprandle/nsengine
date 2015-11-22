@@ -26,6 +26,18 @@ m_hashed_type(0),
 m_owned(false)
 {}
 
+nsresource::nsresource(const nsresource & copy):
+	m_icon_path(copy.m_icon_path),
+	m_icon_tex_id(copy.m_icon_tex_id),
+	m_name(copy.m_name),
+	m_subdir(copy.m_subdir),
+	m_id(copy.m_id),
+	m_plugin_id(copy.m_plugin_id),
+	m_hashed_type(copy.m_hashed_type),
+	m_owned(false)
+{	
+}
+
 nsresource::~nsresource()
 {}
 
@@ -69,12 +81,12 @@ const nsstring & nsresource::subdir() const
 	return m_subdir;
 }
 
-const nsstring & nsresource::icon_path()
+const nsstring & nsresource::icon_path() const
 {
 	return m_icon_path;
 }
 
-const uivec2 & nsresource::icon_tex_id()
+const uivec2 & nsresource::icon_tex_id() const
 {
 	return m_icon_tex_id;
 }
@@ -96,7 +108,7 @@ void nsresource::name_change(const uivec2 & oldid, const uivec2 newid)
 	// do nothing
 }
 
-uint32 nsresource::type()
+uint32 nsresource::type() const
 {
 	return m_hashed_type;
 }
@@ -106,16 +118,9 @@ void nsresource::set_ext(const nsstring & pExt)
 	m_ext = pExt;
 }
 
-bool nsresource::copy(nsresource * res)
+nsresource * nsresource::copy(const nsresource * res)
 {
-	if (res == NULL)
-		return false;
-	
-	this->rename(res->name());
-	m_icon_path = res->icon_path();
-	m_subdir = res->subdir();
-	m_ext = res->extension();
-	return true;
+	return NULL;
 }
 
 void nsresource::rename(const nsstring & pRefName)
@@ -134,4 +139,10 @@ void nsresource::rename(const nsstring & pRefName)
 void nsresource::set_subdir(const nsstring & pDir)
 {
 	m_subdir = pDir;
+}
+
+nsresource & nsresource::operator=(const nsresource & rhs)
+{
+	copy(&rhs);
+	return *this;
 }

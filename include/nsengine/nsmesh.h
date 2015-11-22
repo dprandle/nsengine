@@ -191,10 +191,11 @@ public:
 
 	uint32 joint_count();
 
-	/*!
-	Calculate volume using divergence theorem method
-	*/
 	float volume();
+
+	//virtual bool copy(const nsresource * to_copy);
+
+	//nsmesh & operator=(const nsmesh & rhs);
 
 private:
 	void _node_count(node * child, uint32 & cnt);
