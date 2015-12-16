@@ -22,31 +22,37 @@ This file contains all of the neccessary definitions for the nslight_comp class.
 #include <nscam_comp.h>
 
 nslight_comp::nslight_comp() : 
-m_light_type(l_point),
-m_att_comp(),
-m_intensity_comp(),
-m_shadow_darkness(1.0f),
-m_angle(),
-m_color(1.0f, 1.0f, 1.0f),
-m_cast_shadows(true),
-m_shadow_samples(0),
-m_bounding_mesh_id(0),
-m_scaling(1.0f, 1.0f, 1.0f),
-m_shadow_clip(DEFAULT_Z_NEAR, DEFAULT_Z_FAR),
-nscomponent()
+	nscomponent(),
+	m_light_type(l_point),
+	m_att_comp(),
+	m_intensity_comp(),
+	m_shadow_darkness(1.0f),
+	m_angle(),
+	m_color(1.0f, 1.0f, 1.0f),
+	m_cast_shadows(true),
+	m_shadow_samples(0),
+	m_bounding_mesh_id(0),
+	m_scaling(1.0f, 1.0f, 1.0f),
+	m_shadow_clip(DEFAULT_Z_NEAR, DEFAULT_Z_FAR)
+{}
+
+nslight_comp::nslight_comp(const nslight_comp & copy):
+	nscomponent(copy),
+	m_light_type(copy.m_light_type),
+	m_att_comp(copy.m_att_comp),
+	m_intensity_comp(copy.m_intensity_comp),
+	m_shadow_darkness(copy.m_shadow_darkness),
+	m_angle(copy.m_angle),
+	m_color(copy.m_color),
+	m_cast_shadows(copy.m_cast_shadows),
+	m_shadow_samples(copy.m_shadow_samples),
+	m_bounding_mesh_id(copy.m_bounding_mesh_id),
+	m_scaling(copy.m_scaling),
+	m_shadow_clip(copy.m_shadow_clip)
 {}
 
 nslight_comp::~nslight_comp()
 {}
-
-nslight_comp* nslight_comp::copy(const nscomponent * copy_)
-{
-	if (copy_ == NULL)
-		return NULL;
-	const nslight_comp * comp = (const nslight_comp*)copy_;
-	(*this) = (*comp);
-	return this;
-}
 
 void nslight_comp::init()
 {}
@@ -335,16 +341,17 @@ void nslight_comp::set_shadow_samples(int32 samples_)
 	post_update(true);
 }
 
-nslight_comp & nslight_comp::operator=(const nslight_comp & rhs_)
+nslight_comp & nslight_comp::operator=(nslight_comp rhs_)
 {
-	m_light_type = rhs_.m_light_type;
-	m_att_comp = rhs_.m_att_comp;
-	m_intensity_comp = rhs_.m_intensity_comp;
-	m_angle = rhs_.m_angle;
-	m_color = rhs_.m_color;
-	m_bounding_mesh_id = rhs_.m_bounding_mesh_id;
-	m_shadow_samples = rhs_.m_shadow_samples;
-	m_shadow_darkness = rhs_.m_shadow_darkness;
+	nscomponent::operator=(rhs_);
+	std::swap(m_light_type,rhs_.m_light_type);
+	std::swap(m_att_comp,rhs_.m_att_comp);
+	std::swap(m_intensity_comp,rhs_.m_intensity_comp);
+	std::swap(m_angle,rhs_.m_angle);
+	std::swap(m_color,rhs_.m_color);
+	std::swap(m_bounding_mesh_id,rhs_.m_bounding_mesh_id);
+	std::swap(m_shadow_samples,rhs_.m_shadow_samples);
+	std::swap(m_shadow_darkness,rhs_.m_shadow_darkness);
 	post_update(true);
 	return (*this);
 }

@@ -54,7 +54,12 @@ public:
 	};
 
 	nsplugin();
+
+	nsplugin(const nsplugin & copy_);
+
 	~nsplugin();
+
+	nsplugin & operator=(nsplugin rhs);
 
 	bool add(nsresource * res);
 
@@ -73,13 +78,13 @@ public:
 	}
 
 	template<class ResType>
-	ResType * create(const nsstring & resName)
+	ResType * create(const nsstring & resName, nsresource * to_copy=nullptr)
 	{
 		uint32 hashed_type = type_to_hash(ResType);
-		return static_cast<ResType*>(create(hashed_type, resName));
+		return static_cast<ResType*>(create(hashed_type, resName, to_copy));
 	}
 
-	nsresource * create(uint32 res_typeid, const nsstring & resName);
+	nsresource * create(uint32 res_typeid, const nsstring & resName, nsresource * to_copy);
 
 	nsentity * create_camera(const nsstring & name,
 		float fov,
@@ -368,8 +373,9 @@ public:
 	bool destroy(nsresource * res);
 
 	bool unbind();
-
+	
 private:
+	
 	void _update_parents();
 	void _update_res_map();
 	void _clear();

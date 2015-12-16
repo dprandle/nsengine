@@ -22,13 +22,20 @@
 #include <nsbuffer_object.h>
 
 nstform_comp::nstform_comp():
+	nscomponent(),
 	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
 	m_tform_id_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
-	m_xfb_data(),
 	m_buffer_resized(false),
-	m_xfb(false),
-	nscomponent(),
 	m_visible_count(0)
+{}
+
+nstform_comp::nstform_comp(const nstform_comp & copy):
+	nscomponent(copy),
+	m_tforms(copy.m_tforms),
+	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_tform_id_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_buffer_resized(copy.m_buffer_resized),
+	m_visible_count(copy.m_visible_count)
 {}
 
 nstform_comp::~nstform_comp()
@@ -46,13 +53,6 @@ uint32 nstform_comp::add(const instance_tform & trans)
 	m_tforms.push_back(trans);
 	post_update(true);
 	m_buffer_resized = true;
-
-	if (m_xfb)
-	{
-		enable_xfb(false);
-		enable_xfb(true);
-	}
-
 	return static_cast<uint32>(m_tforms.size()) - 1;
 }
 
@@ -63,13 +63,6 @@ uint32 nstform_comp::add(uint32 cnt_)
 	m_tforms.resize(m_tforms.size() + cnt_);
 	post_update(true);
 	m_buffer_resized = true;
-
-	if (m_xfb)
-	{
-		enable_xfb(false);
-		enable_xfb(true);
-	}
-
 	return ret;
 }
 
@@ -119,15 +112,6 @@ void nstform_comp::compute_transform(uint32 tform_id_)
 	m_tforms[tform_id_].compute();
 }
 
-nstform_comp* nstform_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nstform_comp * comp = (const nstform_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
-}
-
 void nstform_comp::enable_parent(bool enable_, uint32 tform_id_)
 {
 	if (tform_id_ >= m_tforms.size())
@@ -139,147 +123,6 @@ void nstform_comp::enable_parent(bool enable_, uint32 tform_id_)
 	m_tforms[tform_id_].parent_enabled = enable_;
 	m_tforms[tform_id_].update = true;
 	post_update(true);
-}
-
-/*!
-Enable transform feedback for this entity. Pass in pVertCount to set the buffer size necessary to hold
-*/
-bool nstform_comp::enable_xfb(bool enable_)
-{
-	m_xfb = enable_;
-
-	if (m_xfb)
-	{
-		// Figure out how much mem to allocate
-		nsrender_comp * mRenComp = m_owner->get<nsrender_comp>();
-		if (mRenComp == NULL || m_tforms.empty())
-			return false;
-
-		nsmesh * mesh = nse.resource<nsmesh>(mRenComp->mesh_id());
-		if (mesh == NULL)
-			return false;
-
-		// Figure out how much memory to allocate in the buffers.. this should be number of tranforms times number of verts
-		uint32 allocAmount = mesh->vert_count() * static_cast<uint32>(m_tforms.size());
-		uint32 instancePerDraw = static_cast<uint32>(m_tforms.size());
-		uint32 totalIntanceCount = static_cast<uint32>(m_tforms.size());
-
-		// If the total is larger than 4mB, then find out how many 4 mB buffers are needed
-		uint32 bufCount = 1;
-		if (allocAmount > MAX_TF_BUFFER_SIZE)
-		{
-			bufCount = allocAmount / MAX_TF_BUFFER_SIZE + 1;
-			allocAmount = MAX_TF_BUFFER_SIZE;
-			instancePerDraw = MAX_TF_BUFFER_SIZE / mesh->vert_count();
-		}
-
-		if (bufCount > MAX_TF_BUFFER_COUNT)
-			return false;
-
-
-
-		m_xfb_data.xfb_buffers.resize(bufCount);
-		for (uint32 bufI = 0; bufI < bufCount; ++bufI)
-		{
-			xfb_buffer * buf = &m_xfb_data.xfb_buffers[bufI];
-			buf->alloc_amnt = allocAmount;
-
-			buf->xfb_obj = new nsxfb_object();
-			buf->xfb_vao = new nsvertex_array_object();
-			buf->xfb_pos_buf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
-			buf->xfb_texcoord_buf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
-			buf->xfb_normal_buf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
-			buf->xfb_tangent_buf = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
-
-			buf->xfb_vao->init_gl();
-			buf->xfb_obj->init_gl();
-			buf->xfb_pos_buf->init_gl();
-			buf->xfb_texcoord_buf->init_gl();
-			buf->xfb_normal_buf->init_gl();
-			buf->xfb_tangent_buf->init_gl();
-
-			// Set up VAO for draw on other stuff
-			buf->xfb_vao->bind();
-
-			buf->xfb_pos_buf->bind();
-			buf->xfb_pos_buf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->alloc_amnt);
-			buf->xfb_vao->add(buf->xfb_pos_buf, nsshader::loc_position);
-			buf->xfb_vao->vertex_attrib_ptr(nsshader::loc_position, 4, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-			buf->xfb_texcoord_buf->bind();
-			buf->xfb_texcoord_buf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->alloc_amnt);
-			buf->xfb_vao->add(buf->xfb_texcoord_buf, nsshader::loc_tex_coords);
-			buf->xfb_vao->vertex_attrib_ptr(nsshader::loc_tex_coords, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-			buf->xfb_normal_buf->bind();
-			buf->xfb_normal_buf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->alloc_amnt);
-			buf->xfb_vao->add(buf->xfb_normal_buf, nsshader::loc_normal);
-			buf->xfb_vao->vertex_attrib_ptr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-			buf->xfb_tangent_buf->bind();
-			buf->xfb_tangent_buf->allocate<fvec3>(nsbuffer_object::mutable_dynamic_copy, buf->alloc_amnt);
-			buf->xfb_vao->add(buf->xfb_tangent_buf, nsshader::loc_tangent);
-			buf->xfb_vao->vertex_attrib_ptr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-			buf->xfb_vao->unbind();
-
-			buf->xfb_pos_buf->set_target(nsbuffer_object::transform_feedback);
-			buf->xfb_texcoord_buf->set_target(nsbuffer_object::transform_feedback);
-			buf->xfb_normal_buf->set_target(nsbuffer_object::transform_feedback);
-			buf->xfb_tangent_buf->set_target(nsbuffer_object::transform_feedback);
-			buf->xfb_obj->bind();
-			buf->xfb_pos_buf->bind(nsshader::loc_position);
-			buf->xfb_texcoord_buf->bind(nsshader::loc_tex_coords);
-			buf->xfb_normal_buf->bind(nsshader::loc_normal);
-			buf->xfb_tangent_buf->bind(nsshader::loc_tangent);
-			buf->xfb_obj->unbind();
-
-			if (instancePerDraw <= totalIntanceCount)
-			{
-				buf->instance_count = instancePerDraw;
-				totalIntanceCount -= instancePerDraw;
-			}
-			else
-			{
-				buf->instance_count = totalIntanceCount;
-			}
-		}
-		m_xfb_data.update = true;
-	}
-	else
-	{
-		for (uint32 bufI = 0; bufI < m_xfb_data.xfb_buffers.size(); ++bufI)
-		{
-			xfb_buffer * buf = &m_xfb_data.xfb_buffers[bufI];
-
-			buf->xfb_obj->release();
-			delete buf->xfb_obj;
-			buf->xfb_obj = NULL;
-
-			buf->xfb_vao->release();
-			delete buf->xfb_vao;
-			buf->xfb_vao = NULL;
-
-			buf->xfb_pos_buf->release();
-			delete buf->xfb_pos_buf;
-			buf->xfb_pos_buf = NULL;
-
-			buf->xfb_texcoord_buf->release();
-			delete buf->xfb_texcoord_buf;
-			buf->xfb_texcoord_buf = NULL;
-
-			buf->xfb_normal_buf->release();
-			delete buf->xfb_normal_buf;
-			buf->xfb_normal_buf = NULL;
-
-			buf->xfb_tangent_buf->release();
-			delete buf->xfb_tangent_buf;
-			buf->xfb_tangent_buf = NULL;
-		}
-		m_xfb_data.xfb_buffers.clear();
-		m_xfb_data.update = false;
-	}
-	return true;
 }
 
 void nstform_comp::init()
@@ -342,11 +185,6 @@ const uivec3 & nstform_comp::parent_id(uint32 tform_id_) const
 	return m_tforms[tform_id_].parent_id;
 }
 
-nstform_comp::xfb_data * nstform_comp::xfb()
-{
-	return &m_xfb_data;
-}
-
 const fmat4 & nstform_comp::parent(uint32 tform_id_) const
 {
 	return m_tforms[tform_id_].parent_tform;
@@ -400,11 +238,6 @@ bool nstform_comp::parent_enabled(uint32 tform_id_) const
 	return m_tforms[tform_id_].parent_enabled;
 }
 
-bool nstform_comp::xfb_enabled()
-{
-	return m_xfb;
-}
-
 bool nstform_comp::transform_update(uint32 tform_id_) const
 {
 	return m_tforms[tform_id_].update;
@@ -414,8 +247,6 @@ void nstform_comp::release()
 {
 	m_tform_buffer->release();
 	m_tform_id_buffer->release();
-	if (m_xfb)
-		enable_xfb(false);
 }
 
 uint32 nstform_comp::remove(uint32 tform_id_)
@@ -436,13 +267,6 @@ uint32 nstform_comp::remove(uint32 tform_id_)
 	m_tforms.pop_back();
 	post_update(true);
 	m_buffer_resized = true;
-
-	if (m_xfb)
-	{
-		enable_xfb(false);
-		enable_xfb(true);
-	}
-
 	return count();
 }
 
@@ -473,13 +297,6 @@ uint32 nstform_comp::remove(uint32 first_, uint32 last_)
 	m_tforms.resize(resizeNum);
 	m_buffer_resized = true;
 	post_update(true);
-
-	if (m_xfb)
-	{
-		enable_xfb(false);
-		enable_xfb(true);
-	}
-
 	return count();
 }
 
@@ -794,9 +611,6 @@ void nstform_comp::set_instance_update(bool update_, uint32 tform_id_)
 
 void nstform_comp::post_update(bool update_)
 {
-	if (update_)
-		m_xfb_data.update = update_;
-
 	nscomponent::post_update(update_);
 }
 
@@ -1049,11 +863,14 @@ void nstform_comp::translate_z(float amount_, uint32 tform_id_)
 	translate(0.0f, 0.0f, amount_, tform_id_);
 }
 
-nstform_comp & nstform_comp::operator=(const nstform_comp & rhs_)
+nstform_comp & nstform_comp::operator=(nstform_comp rhs_)
 {
-	m_tforms.resize(rhs_.m_tforms.size());
-	for (uint32 i = 0; i < m_tforms.size(); ++i)
-		m_tforms[i] = rhs_.m_tforms[i];
+	nscomponent::operator=(rhs_);
+	std::swap(m_tforms,rhs_.m_tforms);
+	std::swap(m_tform_buffer, rhs_.m_tform_buffer);
+	std::swap(m_tform_id_buffer, rhs_.m_tform_id_buffer);
+	std::swap(m_buffer_resized, rhs_.m_buffer_resized);
+	std::swap(m_visible_count, rhs_.m_visible_count);
 	post_update(true);
 	return (*this);
 }

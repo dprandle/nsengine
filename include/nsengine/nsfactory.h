@@ -39,7 +39,7 @@ class nsres_factory : public nsfactory
 	nsres_factory():
 		nsfactory(f_resource)
 	{}
-	virtual nsresource * create() = 0;
+	virtual nsresource * create(nsresource * copy_=nullptr) = 0;
 	void set_id(nsresource * res_);	
 	uint32 type_id;
 };
@@ -52,9 +52,23 @@ class nsres_factory_type : public nsres_factory
 		nsres_factory()
 	{}
 	
-	nsresource* create() {
-		nsresource * res_ = new obj_type();
-		set_id(res_);
+	nsresource* create(nsresource * copy_)
+	{
+		nsresource * res_ = nullptr;
+		if (copy_ == nullptr)
+		{
+			res_ = new obj_type();
+			set_id(res_);
+		}
+		else
+		{
+			obj_type * copy = dynamic_cast<obj_type*>(copy_);
+			if (copy != nullptr)
+			{
+				res_ = new obj_type(*copy);
+				set_id(res_);
+			}
+		}
 		return res_;
 	}
 };
@@ -84,7 +98,7 @@ class nscomp_factory : public nsfactory
 {
 public:
 	nscomp_factory() : nsfactory(f_component) {}
-	virtual nscomponent * create() = 0;
+	virtual nscomponent * create(nscomponent * copy_ = nullptr) = 0;
 	void set_id(nscomponent * cmp_);
 	uint32 type_id;
 };
@@ -94,9 +108,23 @@ class nscomp_factory_type : public nscomp_factory
 {
 public:
 	nscomp_factory_type() :nscomp_factory() {}
-	nscomponent* create() {
+	nscomponent* create(nscomponent * copy_)
+	{
 		nscomponent * cmp_ = new obj_type();
-		set_id(cmp_);
+		if (copy_ == nullptr)
+		{
+			cmp_ = new obj_type();
+			set_id(cmp_);
+		}
+		else
+		{
+			obj_type * copy = dynamic_cast<obj_type*>(copy_);
+			if (copy != nullptr)
+			{
+				cmp_ = new obj_type(*copy);
+				set_id(cmp_);
+			}
+		}
 		return cmp_;
 	}
 };

@@ -8,6 +8,7 @@ void main()
 	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
 }
 
+
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>#version 440
@@ -27,6 +28,7 @@ void main()
     EmitVertex();
     EndPrimitive();
 }
+
 
 
 
@@ -181,4 +183,5 @@ void main()
 			fragColor = color;
 	}
 }
+
 </nsstring>

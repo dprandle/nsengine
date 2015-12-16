@@ -14,6 +14,7 @@ void main()
 
 
 
+
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring></nsstring>
@@ -202,6 +203,7 @@ void main()
 
 	fragColor = vec4(color.rgb, 1.0) * getLightInfluence(worldPos.xyz, normal.xyz, material);
 }
+
 
 
 </nsstring>

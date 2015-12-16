@@ -23,33 +23,33 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 #include <nsengine.h>
 
 nsparticle_comp::nsparticle_comp() :
-front_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
-back_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
-m_buffer_index(0),
-m_simulating(false),
-m_first(true),
-m_mat_id(0),
-m_xfb_shader_id(0),
-m_rand_tex_id(0),
-m_max_particle_count(DEFAULT_MAX_PARTICLES),
-m_lifetime(DEFAULT_PART_LIFETIME),
-m_emission_rate(DEFAULT_PART_EMISSION),
-m_max_motion_keys(DEFAULT_MAX_FORCE_KEYS),
-m_max_visual_keys(DEFAULT_MAX_RENDER_KEYS),
-m_looping(false),
-m_motion_key_type(key_vel),
-m_motion_key_interp(true),
-m_motion_global_time(false),
-m_visual_global_time(false),
-m_visual_key_interp(true),
-m_blend_mode(b_mix),
-m_init_vel_mult(1.0f, 1.0f, 1.0f),
-m_ang_vel(0),
-m_elapsed_time(0.0f),
-m_starting_size(1.0f, 1.0f),
-m_emitter_shape(shape_cube),
-m_emitter_size(1.0f, 1.0f, 1.0f),
-nscomponent()
+	nscomponent(),
+	front_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	back_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_buffer_index(0),
+	m_simulating(false),
+	m_first(true),
+	m_mat_id(0),
+	m_xfb_shader_id(0),
+	m_rand_tex_id(0),
+	m_max_particle_count(DEFAULT_MAX_PARTICLES),
+	m_lifetime(DEFAULT_PART_LIFETIME),
+	m_emission_rate(DEFAULT_PART_EMISSION),
+	m_max_motion_keys(DEFAULT_MAX_FORCE_KEYS),
+	m_max_visual_keys(DEFAULT_MAX_RENDER_KEYS),
+	m_looping(false),
+	m_motion_key_type(key_vel),
+	m_motion_key_interp(true),
+	m_motion_global_time(false),
+	m_visual_global_time(false),
+	m_visual_key_interp(true),
+	m_blend_mode(b_mix),
+	m_init_vel_mult(1.0f, 1.0f, 1.0f),
+	m_ang_vel(0),
+	m_elapsed_time(0.0f),
+	m_starting_size(1.0f, 1.0f),
+	m_emitter_shape(shape_cube),
+	m_emitter_size(1.0f, 1.0f, 1.0f)
 {
 	m_xfb_bufs[0] = new nsxfb_object();
 	m_xfb_bufs[1] = new nsxfb_object();
@@ -61,6 +61,43 @@ nscomponent()
 	m_visual_keys[m_max_visual_keys] = fvec3(1.0f, 1.0f, 1.0f);
 }
 
+nsparticle_comp::nsparticle_comp(const nsparticle_comp & copy):
+	nscomponent(copy),
+	front_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	back_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_motion_keys(copy.m_motion_keys),
+	m_visual_keys(copy.m_visual_keys),
+	m_mat_id(copy.m_mat_id),
+	m_xfb_shader_id(copy.m_xfb_shader_id),
+	m_max_particle_count(copy.m_max_particle_count),
+	m_lifetime(copy.m_lifetime),
+	m_emission_rate(copy.m_emission_rate),
+	m_rand_tex_id(copy.m_rand_tex_id),
+	m_emitter_shape(copy.m_emitter_shape),
+	m_motion_key_type(copy.m_motion_key_type),
+	m_blend_mode(copy.m_blend_mode),
+	m_ang_vel(copy.m_ang_vel),
+	m_looping(copy.m_looping),
+	m_motion_key_interp(copy.m_motion_key_interp),
+	m_motion_global_time(copy.m_motion_global_time),
+	m_visual_key_interp(copy.m_visual_key_interp),
+	m_visual_global_time(copy.m_visual_global_time),
+	m_elapsed_time(copy.m_elapsed_time),
+	m_starting_size(copy.m_starting_size),
+	m_emitter_size(copy.m_emitter_size),
+	m_init_vel_mult(copy.m_init_vel_mult),
+	m_max_motion_keys(copy.m_max_motion_keys),
+	m_max_visual_keys(copy.m_max_visual_keys),
+	m_simulating(copy.m_simulating),
+	m_first(copy.m_first),
+	m_buffer_index(0)
+{
+	m_xfb_bufs[0] = new nsxfb_object();
+	m_xfb_bufs[1] = new nsxfb_object();
+	m_vaos[0] = new nsvertex_array_object();
+	m_vaos[1] = new nsvertex_array_object();	
+}
+
 nsparticle_comp::~nsparticle_comp()
 {
 	release();
@@ -70,15 +107,6 @@ nsparticle_comp::~nsparticle_comp()
 	delete m_xfb_bufs[1];
 	delete m_vaos[0];
 	delete m_vaos[1];
-}
-
-nsparticle_comp* nsparticle_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nsparticle_comp * comp = (const nsparticle_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
 }
 
 void nsparticle_comp::name_change(const uivec2 & oldid, const uivec2 newid)
@@ -668,40 +696,39 @@ void nsparticle_comp::set_first(bool pSet)
 	m_first = pSet;
 }
 
-nsparticle_comp & nsparticle_comp::operator=(const nsparticle_comp & rhs)
+nsparticle_comp & nsparticle_comp::operator=(nsparticle_comp rhs)
 {
-	// Check for self assignment
-	if (this == &rhs)
-		return *this;
-
-	release();
-	m_motion_keys.clear();
-	m_visual_keys.clear();
-	m_motion_keys.insert(rhs.m_motion_keys.begin(), rhs.m_motion_keys.end());
-	m_visual_keys.insert(rhs.m_visual_keys.begin(), rhs.m_visual_keys.end());
-
-	m_mat_id = rhs.m_mat_id;
-	m_xfb_shader_id = rhs.m_xfb_shader_id;
-	m_max_particle_count = rhs.m_max_particle_count;
-	m_lifetime = rhs.m_lifetime;
-	m_emission_rate = rhs.m_emission_rate;
-	m_rand_tex_id = rhs.m_rand_tex_id;
-	m_emitter_shape = rhs.m_emitter_shape;
-	m_motion_key_type = rhs.m_motion_key_type;
-	m_blend_mode = rhs.m_blend_mode;
-	m_ang_vel = rhs.m_ang_vel;
-	m_looping = rhs.m_looping;
-	m_motion_key_interp = rhs.m_motion_key_interp;
-	m_motion_global_time = rhs.m_motion_global_time;
-	m_visual_key_interp = rhs.m_visual_key_interp;
-	m_visual_global_time = rhs.m_visual_global_time;
-	m_elapsed_time = rhs.m_elapsed_time;
-	m_starting_size = rhs.m_starting_size;
-	m_emitter_size = rhs.m_emitter_size;
-	m_init_vel_mult = rhs.m_init_vel_mult;
-	m_max_motion_keys = rhs.m_max_motion_keys;
-	m_max_visual_keys = rhs.m_max_visual_keys;
-
+	nscomponent::operator=(rhs);
+	std::swap(front_buffer, rhs.front_buffer);
+	std::swap(back_buffer, rhs.back_buffer);
+	std::swap(m_motion_keys, rhs.m_motion_keys);
+	std::swap(m_visual_keys, rhs.m_visual_keys);
+	std::swap(m_mat_id, rhs.m_mat_id);
+	std::swap(m_xfb_shader_id, rhs.m_xfb_shader_id);
+	std::swap(m_max_particle_count, rhs.m_max_particle_count);
+	std::swap(m_lifetime, rhs.m_lifetime);
+	std::swap(m_emission_rate, rhs.m_emission_rate);
+	std::swap(m_rand_tex_id, rhs.m_rand_tex_id);
+	std::swap(m_emitter_shape, rhs.m_emitter_shape);
+	std::swap(m_motion_key_type, rhs.m_motion_key_type);
+	std::swap(m_blend_mode, rhs.m_blend_mode);
+	std::swap(m_ang_vel, rhs.m_ang_vel);
+	std::swap(m_looping, rhs.m_looping);
+	std::swap(m_motion_key_interp, rhs.m_motion_key_interp);
+	std::swap(m_motion_global_time, rhs.m_motion_global_time);
+	std::swap(m_visual_key_interp, rhs.m_visual_key_interp);
+	std::swap(m_visual_global_time, rhs.m_visual_global_time);
+	std::swap(m_elapsed_time, rhs.m_elapsed_time);
+	std::swap(m_starting_size, rhs.m_starting_size);
+	std::swap(m_emitter_size, rhs.m_emitter_size);
+	std::swap(m_init_vel_mult, rhs.m_init_vel_mult);
+	std::swap(m_max_motion_keys, rhs.m_max_motion_keys);
+	std::swap(m_max_visual_keys, rhs.m_max_visual_keys);
+	std::swap(m_simulating, rhs.m_simulating);
+	std::swap(m_first, rhs.m_first);
+	std::swap(m_xfb_bufs, rhs.m_xfb_bufs);
+	std::swap(m_vaos, rhs.m_vaos);
+	std::swap(m_buffer_index, rhs.m_buffer_index);
 	post_update(true);
 	return (*this);
 }

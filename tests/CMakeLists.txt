@@ -53,3 +53,6 @@ set_target_properties(animation_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POST
 
 add_executable(particle_test particle_test.cpp)
 set_target_properties(particle_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+add_executable(resource_copy_test resource_copy_test.cpp)
+set_target_properties(particle_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

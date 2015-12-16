@@ -12,9 +12,17 @@
 
 #include <nsanim_set.h>
 
-nsanim_set::nsanim_set(): m_animmap()
+nsanim_set::nsanim_set():
+	nsresource(),
+	m_animmap()
 {
 	set_ext(DEFAULT_ANIM_EXTENSION);
+}
+
+nsanim_set::nsanim_set(const nsanim_set & copy_):
+	nsresource(copy_)
+{
+	
 }
 
 nsanim_set::~nsanim_set()
@@ -26,6 +34,12 @@ nsanim_set::~nsanim_set()
 		++iter;
 	}
 	m_animmap.clear();
+}
+
+nsanim_set & nsanim_set::operator=(nsanim_set rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
 }
 
 void nsanim_set::init()

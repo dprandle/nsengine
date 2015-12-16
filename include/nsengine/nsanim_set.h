@@ -63,7 +63,12 @@ public:
 	friend void pup(PUPer & p, nsanim_set & aset);
 
 	nsanim_set();
+	
+	nsanim_set(const nsanim_set & copy_);
+
 	~nsanim_set();
+
+	nsanim_set & operator=(nsanim_set rhs);
 
 	void clear();
 
@@ -77,8 +82,10 @@ public:
 
 	animation_data * anim_data(const nsstring & anim_name_);
 
-	fmat4 anim_joint_transform(const nsstring & anim_name_,
-		const nsstring & node_name_, float time_);
+	fmat4 anim_joint_transform(
+		const nsstring & anim_name_,
+		const nsstring & node_name_,
+		float time_);
 
 	virtual void pup(nsfile_pupper * p);
 

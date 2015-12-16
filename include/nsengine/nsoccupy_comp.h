@@ -26,6 +26,8 @@ public:
 
 	nsoccupy_comp();
 
+	nsoccupy_comp(const nsoccupy_comp & copy);
+
 	virtual ~nsoccupy_comp();
 
 	bool add(int32 x_, int32 y_, int32 z_);
@@ -41,8 +43,6 @@ public:
 	bool contains(const ivec3 & grid_pos_);
 
 	void clear();
-
-	virtual nsoccupy_comp * copy(const nscomponent* pComp);
 
 	void enable_draw(bool enable_);
 
@@ -72,7 +72,7 @@ public:
 
 	void set_material_id(const uivec2 & mat_id_);
 
-	nsoccupy_comp & operator=(const nsoccupy_comp & rhs_);
+	nsoccupy_comp & operator=(nsoccupy_comp rhs_);
 
 private:
 	ivec3_vector m_spaces;

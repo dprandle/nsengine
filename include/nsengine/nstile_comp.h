@@ -22,6 +22,7 @@ public:
 	friend void pup(PUPer & p, nstile_comp & tc);
 
 	nstile_comp();
+	nstile_comp(const nstile_comp & rhs);
 
 	virtual ~nstile_comp();
 
@@ -31,7 +32,7 @@ public:
 
 	virtual void pup(nsfile_pupper * p);
 
-	nstile_comp & operator=(const nstile_comp & rhs_);
+	nstile_comp & operator=(nstile_comp rhs_);
 
 };
 

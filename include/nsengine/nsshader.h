@@ -72,13 +72,17 @@ public:
 	};
 
 	typedef std::unordered_map<uint32,uint32> uniform_loc_map;
-	
-	
+		
 	template <class PUPer>
 	friend void pup(PUPer & p, nsshader & shader);
 
 	nsshader();
+
+	nsshader(const nsshader & copy_);
+
 	~nsshader();
+
+	nsshader & operator=(nsshader rhs);
 
 	bool compile();
 
@@ -156,7 +160,7 @@ public:
 
 	nsstring stage_name(shader_type type);
 
-	xfb_mode xfb();
+	xfb_mode xfb();	
 
 protected:
 	struct shader_stage

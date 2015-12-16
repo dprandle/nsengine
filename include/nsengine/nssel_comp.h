@@ -32,6 +32,9 @@ public:
 	friend void pup(PUPer & p, nssel_comp & sc);
 
 	nssel_comp();
+
+	nssel_comp(const nssel_comp & copy);
+
 	~nssel_comp();
 
 	bool add(uint32 tform_id_);
@@ -39,8 +42,6 @@ public:
 	ui_uset::iterator begin();
 
 	bool contains(uint32 tform_id_);
-
-	nssel_comp * copy(const nscomponent* copy_);
 
 	uint32 count();
 
@@ -82,7 +83,7 @@ public:
 
 	void set_color(const fvec4 & col_);
 
-	nssel_comp & operator=(const nssel_comp & rhs_);
+	nssel_comp & operator=(nssel_comp rhs_);
 
 private:
 	fvec4 m_default_sel_color;

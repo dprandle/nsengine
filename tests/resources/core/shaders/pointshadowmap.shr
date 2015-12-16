@@ -52,6 +52,7 @@ void main()
 } 
 
 
+
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>#version 440
@@ -109,6 +110,7 @@ void main()
 }
 
 
+
 </nsstring>
 fragment.type:<uint32>35632</uint32>
 fragment.source:<nsstring>#version 440
@@ -121,6 +123,7 @@ void main()
 {
 	gl_FragDepth = length(worldPos.xyz - lightPos) / maxDepth;
 }
+
 
 
 

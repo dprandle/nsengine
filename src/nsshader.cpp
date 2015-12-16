@@ -21,6 +21,7 @@ Description:
 #include <nsgl_context.h>
 
 nsshader::nsshader():
+	nsresource(),
 	m_error_sate(error_none),
 	m_fragment(fragment_shader),
 	m_vertex(vertex_shader),
@@ -31,9 +32,28 @@ nsshader::nsshader():
 	set_ext(DEFAULT_SHADER_EXTENSION);
 }
 
+nsshader::nsshader(const nsshader & copy_):
+	nsresource(copy_),
+	m_error_sate(copy_.m_error_sate),
+	m_fragment(fragment_shader),
+	m_vertex(vertex_shader),
+	m_geometry(geometry_shader),
+	m_uniform_locs(copy_.m_uniform_locs),
+	m_xfb_mode(copy_.m_xfb_mode)
+{
+	
+}
+
 nsshader::~nsshader()
 {
 	release();
+}
+
+
+nsshader & nsshader::operator=(nsshader rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
 }
 
 bool nsshader::compile()

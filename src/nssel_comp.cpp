@@ -13,34 +13,38 @@ This file contains all of the neccessary definitions for the nssel_comp class.
 
 #include <nssel_comp.h>
 #include <nsentity.h>
-#include <nstform_comp.h>
+#include <nssel_comp.h>
 #include <nstimer.h>
 
 nssel_comp::nssel_comp() :
-m_default_sel_color(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A),
-m_sel_color(m_default_sel_color),
-m_mask_alpha(DEFAULT_SEL_MASK_A),
-m_selected(false),
-m_draw_enabled(true),
-m_selection(),
-m_move_with_input(true),
-nscomponent()
+	nscomponent(),
+	m_default_sel_color(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A),
+	m_sel_color(m_default_sel_color),
+	m_mask_alpha(DEFAULT_SEL_MASK_A),
+	m_selected(false),
+	m_draw_enabled(true),
+	m_selection(),
+	m_move_with_input(true)
 {}
+
+nssel_comp::nssel_comp(const nssel_comp & copy):
+	nscomponent(copy),
+	m_default_sel_color(copy.m_default_sel_color),
+	m_sel_color(copy.m_sel_color),
+	m_mask_alpha(copy.m_mask_alpha),
+	m_selected(false),
+	m_draw_enabled(copy.m_draw_enabled),
+	m_move_with_input(copy.m_move_with_input),
+	m_selection(copy.m_selection)
+{
+	
+}
 
 nssel_comp::~nssel_comp()
 {}
 
 bool nssel_comp::add(uint32 pTransformID)
 {
-
-	if (pTransformID >= m_owner->get<nstform_comp>()->count())
-	{
-		dprint("nssel_comp::add - TransformID out of bounds");
-		return false;
-	}
-	if (m_selection.find(pTransformID) != m_selection.end())
-		return false;
-
 	m_selection.insert(pTransformID);
 	set_selected(true);
 	return true;
@@ -55,15 +59,6 @@ void nssel_comp::clear()
 {
 	m_selection.clear();
 	set_selected(false);
-}
-
-nssel_comp* nssel_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nssel_comp * comp = (const nssel_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
 }
 
 bool nssel_comp::contains(uint32 pTransformID)
@@ -181,12 +176,16 @@ bool nssel_comp::empty()
 	return m_selection.empty();
 }
 
-nssel_comp & nssel_comp::operator=(const nssel_comp & pRHSComp)
+nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 {
-	m_sel_color = pRHSComp.m_sel_color;
-	m_default_sel_color = pRHSComp.m_sel_color;
-	m_mask_alpha = pRHSComp.m_mask_alpha;
-	m_draw_enabled = pRHSComp.m_draw_enabled;
+	nscomponent::operator=(rhs_);
+	std::swap(m_default_sel_color, rhs_.m_default_sel_color);
+	std::swap(m_sel_color, rhs_.m_sel_color);
+	std::swap(m_mask_alpha, rhs_.m_mask_alpha);
+	std::swap(m_selected, rhs_.m_selected);
+	std::swap(m_draw_enabled, rhs_.m_draw_enabled);
+	std::swap(m_move_with_input, rhs_.m_move_with_input);
+	std::swap(m_selection, rhs_.m_selection);
 	post_update(true);
 	return (*this);
 }

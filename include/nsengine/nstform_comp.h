@@ -46,42 +46,6 @@ public:
 		hide_all = 0x08
 	};
 
-	struct xfb_buffer
-	{
-		xfb_buffer():
-			xfb_vao(NULL),
-			xfb_obj(NULL),
-			xfb_pos_buf(NULL),
-			xfb_texcoord_buf(NULL),
-			xfb_normal_buf(NULL),
-			xfb_tangent_buf(NULL),
-			alloc_amnt(0),
-			instance_count(0)
-		{}
-
-		nsvertex_array_object * xfb_vao;
-		nsxfb_object * xfb_obj;
-		nsbuffer_object * xfb_pos_buf;
-		nsbuffer_object * xfb_texcoord_buf;
-		nsbuffer_object * xfb_normal_buf;
-		nsbuffer_object * xfb_tangent_buf;
-		uint32 alloc_amnt;
-		uint32 instance_count;
-	};
-
-	typedef std::vector<xfb_buffer> xfb_buffer_array;
-
-	struct xfb_data
-	{
-		xfb_data() :
-			xfb_buffers(),
-			update(true)
-		{}
-
-		xfb_buffer_array xfb_buffers;
-		bool update;
-	};
-
 	struct instance_tform
 	{
 		instance_tform() :
@@ -122,6 +86,8 @@ public:
 
 	nstform_comp();
 
+	nstform_comp(const nstform_comp & copy);
+
 	~nstform_comp();
 
 	uint32 add();
@@ -138,11 +104,7 @@ public:
 
 	void compute_transform(uint32 tform_id_ = 0);
 
-	nstform_comp * copy(const nscomponent* copy_);
-
 	void enable_parent(bool enable_, uint32 tform_id_ = 0);
-
-	bool enable_xfb(bool enable_);
 
 	const fvec3 dvec(dir_vec dir_, uint32 tform_id_ = 0) const;
 
@@ -174,8 +136,6 @@ public:
 
 	uint32 count() const;
 
-	xfb_data * xfb();
-
 	uint32 visible_count() const;
 
 	fvec3 wpos(uint32 tform_id_ = 0);
@@ -185,8 +145,6 @@ public:
 	bool snapped(uint32 tform_id_ = 0) const;
 
 	bool parent_enabled(uint32 tform_id_ = 0) const;
-
-	bool xfb_enabled();
 
 	bool transform_update(uint32 tform_id_ = 0) const;
 
@@ -324,15 +282,13 @@ public:
 
 	void translate_z(float amount_);
 
-	nstform_comp & operator=(const nstform_comp & rhs_);
+	nstform_comp & operator=(nstform_comp rhs_);
 
 private:
 	instance_vec m_tforms;
 	nsbuffer_object * m_tform_buffer;
 	nsbuffer_object * m_tform_id_buffer;
-	xfb_data m_xfb_data;
 	bool m_buffer_resized;
-	bool m_xfb;
 	uint32 m_visible_count;
 };
 
@@ -340,14 +296,8 @@ template <class PUPer>
 void pup(PUPer & p, nstform_comp & tc)
 {
 	pup(p, tc.m_tforms, "tforms");
-	pup(p, tc.m_xfb, "xfb");
 	tc.post_update(true);
 	tc.m_buffer_resized = true;
-	if (tc.m_xfb)
-	{
-		tc.enable_xfb(false);
-		tc.enable_xfb(true);
-	}
 }
 
 template <class PUPer>

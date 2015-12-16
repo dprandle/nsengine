@@ -196,7 +196,12 @@ class nsinput_map : public nsresource
 	friend void pup(PUPer & p, nsinput_map & input);
 
 	nsinput_map();
+
+	nsinput_map(const nsinput_map & copy_);
+
     virtual ~nsinput_map();
+
+	nsinput_map & operator=(nsinput_map rhs);
 
 	void add_allowed_mod(key_val pKey);
 	// In adding the context InputManager takes ownership
@@ -235,7 +240,7 @@ class nsinput_map : public nsresource
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	virtual void pup(nsfile_pupper * p);
-
+	
   private:	
 	context_collection m_contexts;
 	key_modifier_set m_allowed_mods;

@@ -69,6 +69,7 @@ void main()
     gl_Position = projCamMat * worldPos_v;
 } 
 
+
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>
@@ -138,6 +139,7 @@ void main()
 	EmitVertex();
 	EndPrimitive();
 }
+
 
 </nsstring>
 fragment.type:<uint32>35632</uint32>
@@ -219,4 +221,5 @@ void main()
 		materialOut = vec4(specColor, specIntensity);
 	}
 }
+
 </nsstring>

@@ -25,14 +25,14 @@ public:
 	~nsentity_manager();
 
 	template <class res_type>
-	res_type * create(const nsstring & res_name)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name);
+		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsentity * create(const nsstring & res_name)
+	virtual nsentity * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return create<nsentity>(res_name); // Create 2d texture by default
+		return create<nsentity>(res_name, to_copy);
 	}
 
 	template <class res_type, class T>

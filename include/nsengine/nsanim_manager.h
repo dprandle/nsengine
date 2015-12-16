@@ -25,14 +25,14 @@ public:
 	~nsanim_manager();
 
 	template <class res_type>
-	res_type * create(const nsstring & res_name)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name);
+		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsanim_set * create(const nsstring & res_name)
+	virtual nsanim_set * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return create<nsanim_set>(res_name); // Create 2d texture by default
+		return create<nsanim_set>(res_name, to_copy); // Create 2d texture by default
 	}
 
 	template <class res_type, class T>

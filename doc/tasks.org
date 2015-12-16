@@ -75,11 +75,11 @@
 *** DONE NSTileGrid
 *** DONE NSTimer
 * DONE Redistribute "nsglobal"
-* DONE Get build system working
+* DONE Get build system working [100%]
 ** DONE Get tile brushes working again
 ** DONE Get object brushes working again
 ** DONE Rework build system events
-* TODO Testing
+* TODO Testing [83%]
 ** DONE Test Animation System again
 ** DONE Test lighting parameters stuff
 ** TODO Test particle system make sure works
@@ -98,9 +98,34 @@
 * TODO Create UI System
 * TODO Create audio system
 * TODO Create thread mechanism full multiplatform
-* TODO Reintegrate the new engine version in to the toolkit
+* DONE Reintegrate the new engine version in to the toolkit
 * TODO Create method for transparency
+* TODO Implement copy ctor and assignment operators for components and resources [60%]
+** TODO nsentity
+** DONE nsmesh
+** TODO nsanim_set
+** TODO nsshader
+** TODO nstexture
+** TODO nsmaterial
+** TODO nsinput_map
+** TODO nsscene
+** TODO nsplugin
+** DONE nsanim_comp
+** DONE nscam_comp
+** DONE nslight_comp
+** DONE nsparticle_comp
+** DONE nsoccupy_comp
+** DONE nsrender_comp
+** DONE nssel_comp
+** DONE nsterrain_comp
+** DONE nstform_comp
+** DONE nstile_brush_comp
+** DONE nstile_comp
+* TODO Make copy function protected or remove all together
+* TODO Remove all XFB stuff - didn't work out and complicates code unnecessarily [50%]
+** DONE Remove from tform_comp
+** TODO Remove from render system
 
-* Things to Fix
-The build system crashed in mirror mode with the tile brush
-Also can't start in tile brush mode - guessing that its something to do with initial conditions and build ent being null
+
+Left off with moving the copy command in entity to the copy constructor - nsmesh is only resource with stuff implemented
+

@@ -23,14 +23,14 @@ public:
 	~nsscene_manager();
 	
 	template <class res_type>
-	res_type * create(const nsstring & res_name)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name);
+		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsscene * create(const nsstring & res_name)
+	virtual nsscene * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return create<nsscene>(res_name); // Create 2d texture by default
+		return create<nsscene>(res_name, to_copy);
 	}
 
 	template <class res_type, class T>

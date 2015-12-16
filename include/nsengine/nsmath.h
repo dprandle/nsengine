@@ -163,6 +163,8 @@ struct nsbounding_box
 		const std::vector<fvec3> & verts_ = std::vector<fvec3>()
 		);
 
+	~nsbounding_box();
+
 	enum box_face {
 		f_none,
 		f_bottom,

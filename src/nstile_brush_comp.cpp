@@ -15,9 +15,16 @@ This file contains all of the neccessary definitions for the nstile_brush_comp c
 #include <nsentity.h>
 
 nstile_brush_comp::nstile_brush_comp() :
-m_brush(),
-m_height(1),
-nscomponent()
+	nscomponent(),
+	m_brush(),
+	m_height(1)
+{}
+
+
+nstile_brush_comp::nstile_brush_comp(const nstile_brush_comp & copy):
+	nscomponent(copy),
+	m_brush(copy.m_brush),
+	m_height(copy.m_height)
 {}
 
 nstile_brush_comp::~nstile_brush_comp()
@@ -60,15 +67,6 @@ bool nstile_brush_comp::contains(const ivec2 & pGridSpace)
 			return true;
 	}
 	return false;
-}
-
-nstile_brush_comp* nstile_brush_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nstile_brush_comp * comp = (const nstile_brush_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
 }
 
 ivec2_vector::iterator nstile_brush_comp::end()
@@ -127,13 +125,11 @@ void nstile_brush_comp::set_height(const int32 & pHeight)
 	m_height = pHeight;
 }
 
-nstile_brush_comp & nstile_brush_comp::operator=(const nstile_brush_comp & pRHSComp)
+nstile_brush_comp & nstile_brush_comp::operator=(nstile_brush_comp rhs_)
 {
-	m_height = pRHSComp.m_height;
-	m_brush.resize(pRHSComp.m_brush.size());
-	for (uint32 i = 0; i < m_brush.size(); ++i)
-		m_brush[i] = pRHSComp.m_brush[i];
-
+	nscomponent::operator=(rhs_);
+	std::swap(m_brush, rhs_.m_brush);
+	std::swap(m_height, rhs_.m_height);
 	post_update(true);
 	return (*this);
 }

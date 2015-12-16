@@ -88,16 +88,14 @@ uint32 nsres_manager::type()
 	return m_hashed_type;
 }
 
-nsresource * nsres_manager::create(const nsstring & guid_, const nsstring & resName)
+nsresource * nsres_manager::create(uint32 res_type_id, const nsstring & resName, nsresource * to_copy)
 {
-	return create(hash_id(guid_), resName);
-}
-
-nsresource * nsres_manager::create(uint32 res_type_id, const nsstring & resName)
-{
+	if (resName.empty())
+		return nullptr;
+	
 	// Create the resource and add it to the map - if there is a resource with the same name already
 	// in the map then insertion will have failed, so delete the created resource and retun NULL
-	nsresource * res = nse.factory<nsres_factory>(res_type_id)->create();
+	nsresource * res = nse.factory<nsres_factory>(res_type_id)->create(to_copy);
 	res->rename(resName);
 	if (!add(res))
 	{
@@ -114,11 +112,6 @@ bool nsres_manager::contains(nsresource * res)
 	if (res == NULL)
 		return false;
 	return (get(res->id()) != NULL);
-}
-
-bool nsres_manager::copy(nsresource * from_, nsresource * to_)
-{
-	return false;
 }
 
 uint32 nsres_manager::count() const
@@ -490,11 +483,6 @@ bool nsres_manager::destroy(nsresource * res)
 		dprint("nsres_manager::destroy Successfully destroyed " + name);
 		return true;
 	}
-	return false;
-}
-
-bool nsres_manager::replace(nsresource * orig_, nsresource * new_)
-{
 	return false;
 }
 

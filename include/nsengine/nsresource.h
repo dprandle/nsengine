@@ -28,6 +28,8 @@
 #include <nspupper.h>
 #include <nsvector.h>
 
+class nsresource_inst;
+
 class nsresource
 {
 public:
@@ -35,6 +37,7 @@ public:
 	friend class nsres_factory;
 
 	nsresource();
+	nsresource(const nsresource & copy);
 	
 	virtual ~nsresource();
 
@@ -84,9 +87,7 @@ public:
 
 	void set_subdir(const nsstring & pDir);
 
-	nsresource(const nsresource & copy);
-	virtual nsresource * copy(const nsresource * res);
-	nsresource & operator=(const nsresource & rhs);
+	nsresource & operator=(nsresource_inst rhs);
 
 protected:
 
@@ -99,6 +100,13 @@ protected:
 	uint32 m_id;
 	uint32 m_plugin_id;
 	bool m_owned;
+};
+
+class nsresource_inst : public nsresource
+{
+	nsresource_inst(const nsresource & rhs):nsresource(rhs) {}
+	void init() {std::terminate();}
+ 	void pup(nsfile_pupper * p) {std::terminate();}
 };
 
 #endif

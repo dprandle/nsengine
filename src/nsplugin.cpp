@@ -41,18 +41,22 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nstile_comp.h>
 #include <nslight_comp.h>
 
-nsplugin::nsplugin() : 
+nsplugin::nsplugin():
+    nsresource(),
 	m_notes(),
 	m_creator(),
 	m_creation_date(),
 	m_edit_date(),
 	m_bound(false),
 	m_managers(),
-	m_add_name(true),
-	nsresource()
+	m_add_name(true)
 {
 	set_ext(DEFAULT_PLUGIN_EXTENSION);
 }
+
+nsplugin::nsplugin(const nsplugin & copy_):
+	nsresource(copy_)
+{}
 
 nsplugin::~nsplugin()
 {
@@ -63,6 +67,12 @@ nsplugin::~nsplugin()
 		++iter;
 	}
 	m_managers.clear();
+}
+
+nsplugin & nsplugin::operator=(nsplugin rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
 }
 
 bool nsplugin::add(nsresource * res)
@@ -111,10 +121,10 @@ bool nsplugin::add_manager(nsres_manager * manag)
 	return false;
 }
 
-nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName)
+nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsresource * to_copy)
 {
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
-	return rm->create(res_typeid, resName);
+	return rm->create(res_typeid, resName, to_copy);
 }
 
 nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec2 & screenDim, const fvec2 & clipnf)

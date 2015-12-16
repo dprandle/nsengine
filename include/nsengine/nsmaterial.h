@@ -51,9 +51,15 @@ public:
 	};
 
 	nsmaterial();
+
+	nsmaterial(const nsmaterial & copy_);
+
 	~nsmaterial();
 
+	nsmaterial & operator=(nsmaterial rhs);
+
 	texmap_map_iter begin();
+
 	texmap_map_const_iter begin() const;
 
 	void change_specular(float pow_amount, float intensity_amount);
@@ -71,6 +77,7 @@ public:
 	void enable_wireframe(bool pEnable);
 
 	texmap_map_iter end();
+
 	texmap_map_const_iter end() const;
 
 	const fvec4 & color();
@@ -148,8 +155,6 @@ public:
 	void set_specular_power(float power_);
 
 	void set_specular_intensity(float intensity_);
-
-	nsmaterial & operator=(const nsmaterial & rhs_);
 
 private:
 	bool m_alpha_blend;

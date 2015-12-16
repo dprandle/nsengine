@@ -13,18 +13,22 @@ This file contains all of the neccessary definitions for the nstile_comp class.
 #include <nstile_comp.h>
 #include <nsentity.h>
 
-nstile_comp::nstile_comp() :nscomponent()
+nstile_comp::nstile_comp() :
+	nscomponent()
+{}
+
+nstile_comp::nstile_comp(const nstile_comp & copy):
+	nscomponent(copy)
 {}
 
 nstile_comp::~nstile_comp()
 {}
 
-nstile_comp* nstile_comp::copy(const nscomponent * pToCopy)
+nstile_comp* nstile_comp::copy(const nscomponent * to_copy)
 {
-	if (pToCopy == NULL)
-		return NULL;
-	const nstile_comp * comp = (const nstile_comp*)pToCopy;
-	(*this) = (*comp);
+	const nstile_comp * comp = dynamic_cast<const nstile_comp*>(to_copy);
+	if (comp != nullptr)
+		(*this) = *comp;
 	return this;
 }
 
@@ -46,8 +50,9 @@ void nstile_comp::pup(nsfile_pupper * p)
 	}
 }
 
-nstile_comp & nstile_comp::operator=(const nstile_comp & pRHSComp)
+nstile_comp & nstile_comp::operator=(nstile_comp rhs_)
 {
+	nscomponent::operator=(rhs_);
 	post_update(true);
 	return (*this);
 }

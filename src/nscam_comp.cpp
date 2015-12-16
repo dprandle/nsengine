@@ -14,20 +14,43 @@ This file contains all of the neccessary definitions for the nscam_comp class.
 #include <nsentity.h>
 #include <nstimer.h>
 #include <nstform_comp.h>
+#include <algorithm>
 
 nscam_comp::nscam_comp():
-m_flying(),
-m_strafing(),
-m_elevating(),
-m_focus_point(),
-m_focus_orientation(),
-m_speed(DEFAULT_CAM_SPEED),
-m_fov_angle(0.0f),
-m_persp_nf_clip(),
-m_proj_mode(proj_persp),
-m_screen_size(),
-m_focus_transform(),
-nscomponent()
+	nscomponent(),
+	m_flying(),
+	m_strafing(),
+	m_elevating(),
+	m_focus_point(),
+	m_focus_orientation(),
+	m_speed(DEFAULT_CAM_SPEED),
+	m_fov_angle(0.0f),
+	m_persp_nf_clip(),
+	m_proj_mode(proj_persp),
+	m_screen_size(),
+	m_focus_transform()
+{}
+
+nscam_comp::nscam_comp(const nscam_comp & copy):
+	nscomponent(copy),
+	m_flying(),
+	m_strafing(),
+	m_elevating(),
+	m_speed(copy.m_speed),
+	m_focus_point(copy.m_focus_point),
+	m_focus_orientation(copy.m_focus_orientation),
+	m_fov_angle(copy.m_fov_angle),
+	m_persp_nf_clip(copy.m_persp_nf_clip),
+	m_screen_size(copy.m_screen_size),
+	m_tb_clip(copy.m_tb_clip),
+	m_lr_clip(copy.m_lr_clip),
+	m_nf_clip(copy.m_nf_clip),
+	m_proj_mode(copy.m_proj_mode),
+	m_proj_mat(copy.m_proj_mat),
+	m_inv_proj_mat(copy.m_inv_proj_mat),
+	m_proj_cam(copy.m_proj_cam),
+	m_inv_proj_cam(copy.m_inv_proj_cam),
+	m_focus_transform(copy.m_focus_transform)
 {}
 
 nscam_comp::~nscam_comp()
@@ -37,15 +60,6 @@ void nscam_comp::change_speed(float pAmount)
 {
 	m_speed += pAmount;
 	post_update(true);
-}
-
-nscam_comp* nscam_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nscam_comp * comp = (const nscam_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
 }
 
 const fvec2 & nscam_comp::ortho_tb_clip()
@@ -285,14 +299,26 @@ void nscam_comp::set_strafe(dir_t pDir, bool pAnimate)
 	post_update(true);
 }
 
-nscam_comp & nscam_comp::operator=(const nscam_comp & pRHSComp)
+nscam_comp & nscam_comp::operator=(nscam_comp rhs_)
 {
-	m_flying = pRHSComp.m_flying;
-	m_elevating = pRHSComp.m_elevating;
-	m_strafing = pRHSComp.m_strafing;
-	m_speed = pRHSComp.m_speed;
-	m_focus_point = pRHSComp.m_focus_point;
-	m_focus_orientation = pRHSComp.m_focus_orientation;
+	nscomponent::operator=(rhs_);
+	std::swap(m_flying,rhs_.m_flying);
+	std::swap(m_elevating,rhs_.m_elevating);
+	std::swap(m_strafing,rhs_.m_strafing);
+	std::swap(m_speed,rhs_.m_speed);
+	std::swap(m_focus_point,rhs_.m_focus_point);
+	std::swap(m_focus_orientation,rhs_.m_focus_orientation);
+	std::swap(m_fov_angle, rhs_.m_fov_angle);
+	std::swap(m_persp_nf_clip, rhs_.m_persp_nf_clip);
+	std::swap(m_screen_size, rhs_.m_screen_size);
+	std::swap(m_tb_clip, rhs_.m_tb_clip);
+	std::swap(m_lr_clip, rhs_.m_lr_clip);
+	std::swap(m_nf_clip, rhs_.m_nf_clip);
+	std::swap(m_proj_mode, rhs_.m_proj_mode);
+	std::swap(m_inv_proj_mat, rhs_.m_inv_proj_mat);
+	std::swap(m_proj_cam, rhs_.m_proj_cam);
+	std::swap(m_inv_proj_cam, rhs_.m_inv_proj_cam);
+	std::swap(m_focus_transform, rhs_.m_focus_transform);
 	post_update(true);
 	return (*this);
 }

@@ -24,9 +24,14 @@ public:
 	struct node
 	{
 		node(const nsstring & pName="", node * pParentNode=NULL);
+		node(const node & copy_);
 		~node();
+
 		node * create_child(const nsstring & pName);
 		node * find_node(const nsstring & pNodeName);
+		node * find_node(uint32 node_id_);
+
+		node & operator=(node rhs);
 
 		nsstring m_name;
 		uint32 m_node_id;
@@ -39,9 +44,14 @@ public:
 	struct node_tree
 	{
 		node_tree();
+		node_tree(const node_tree & copy_);
 		~node_tree();
+
 		node * create_root_node(const nsstring & pName);
 		node * find_node(const nsstring & pNodeName);
+		node * find_node(uint32 node_id_);
+
+		node_tree & operator=(node_tree copy_);
 
 		node * m_root;
 		std::map<nsstring,nsmesh::joint> m_name_joint_map;
@@ -52,6 +62,7 @@ public:
 		struct connected_joints
 		{
 			connected_joints();
+			
 			void add_joint(uint32 bone_id, float weight);
 
 			uint32 m_joint_ids[JOINTS_PER_VERTEX];
@@ -59,7 +70,11 @@ public:
 		};
 
 		submesh(nsmesh * pParentMesh=NULL);
+
+		submesh(const submesh & copy_);
+
 		~submesh();
+		
 		void allocate_buffers();
 		void calc_aabb();
 		void init_gl();
@@ -90,12 +105,19 @@ public:
 		nsmesh * m_parent_mesh;
 		nsbounding_box m_bounding_box;
 		bool m_has_tex_coords;
+
+		submesh & operator=(submesh rhs_);
 	};
 
 	typedef std::vector<submesh*>::iterator submesh_iter;
 
 	nsmesh();
+
+	nsmesh(const nsmesh & copy_);
+
 	virtual ~nsmesh();
+
+	nsmesh & operator=(nsmesh rhs);
 
 	const nsbounding_box & aabb();
 
@@ -189,19 +211,24 @@ public:
 
 	uint32 node_count();
 
+	void regenerate_node_ids();
+
 	uint32 joint_count();
 
 	float volume();
 
-	//virtual bool copy(const nsresource * to_copy);
-
-	//nsmesh & operator=(const nsmesh & rhs);
-
 private:
+
 	void _node_count(node * child, uint32 & cnt);
+
 	void _propagate_world_transform(node * node_);
+
+	void _regen_node_ids(node * node_, uint32 & id_);
+
 	std::vector<submesh*> m_submeshes;
+
 	node_tree* m_node_tree;
+
 	nsbounding_box m_bounding_box;
 };
 

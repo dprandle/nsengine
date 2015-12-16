@@ -13,20 +13,18 @@ This file contains all of the neccessary definitions for the nsterrain_comp clas
 #include <nsterrain_comp.h>
 #include <nsentity.h>
 
-nsterrain_comp::nsterrain_comp() :m_minmax(0.0f,1.0f), nscomponent()
+nsterrain_comp::nsterrain_comp() :
+	nscomponent(),
+	m_minmax(0.0f,1.0f)
+{}
+
+nsterrain_comp::nsterrain_comp(const nsterrain_comp & copy):
+	nscomponent(copy),
+	m_minmax(copy.m_minmax)
 {}
 
 nsterrain_comp::~nsterrain_comp()
 {}
-
-nsterrain_comp* nsterrain_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nsterrain_comp * comp = (const nsterrain_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
-}
 
 void nsterrain_comp::init()
 {}
@@ -61,9 +59,10 @@ void nsterrain_comp::pup(nsfile_pupper * p)
 	}
 }
 
-nsterrain_comp & nsterrain_comp::operator=(const nsterrain_comp & pRHSComp)
+nsterrain_comp & nsterrain_comp::operator=(nsterrain_comp rhs_)
 {
-	m_minmax = pRHSComp.m_minmax;
+	nscomponent::operator=(rhs_);
+	std::swap(m_minmax, rhs_.m_minmax);
 	post_update(true);
 	return (*this);
 }

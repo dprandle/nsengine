@@ -25,14 +25,14 @@ public:
 	~nsmat_manager();
 
 	template <class res_type>
-	res_type * create(const nsstring & res_name_)
+	res_type * create(const nsstring & res_name_, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name_);
+		return nsres_manager::create<res_type>(res_name_, to_copy);
 	}
 
-	virtual nsmaterial * create(const nsstring & res_name_)
+	virtual nsmaterial * create(const nsstring & res_name_, nsresource * to_copy=nullptr)
 	{
-		return create<nsmaterial>(res_name_);
+		return create<nsmaterial>(res_name_, to_copy);
 	}
 
 	template <class res_type, class T>

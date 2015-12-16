@@ -12,14 +12,14 @@ public:
 	~nsinput_map_manager();
 	
 	template <class res_type>
-	res_type * create(const nsstring & res_name)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name);
+		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsinput_map * create(const nsstring & res_name)
+	virtual nsinput_map * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return create<nsinput_map>(res_name); // Create 2d texture by default
+		return create<nsinput_map>(res_name, to_copy);
 	}
 
 	template <class res_type, class T>

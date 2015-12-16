@@ -19,6 +19,7 @@
 class nsentity;
 class nsevent;
 class nstimer;
+class nscomponent_inst;
 
 class nscomponent
 {
@@ -28,9 +29,9 @@ class nscomponent
 
 	nscomponent();
 
-	virtual ~nscomponent();
+	nscomponent(const nscomponent & copy);
 
-	virtual nscomponent * copy(const nscomponent * comp_);
+	virtual ~nscomponent();
 
 	nsentity * owner();
 
@@ -54,12 +55,20 @@ class nscomponent
 
 	void set_owner(nsentity * owner_);
 
-	nscomponent & operator=(const nscomponent & rhs_);
+	nscomponent & operator=(nscomponent_inst rhs_);
 
   protected:
 	nsentity * m_owner;
 	uint32 m_hashed_type;
 	bool m_update;
 };
+
+class nscomponent_inst : public nscomponent
+{
+	nscomponent_inst(const nscomponent & rhs):nscomponent(rhs) {}
+	void init() {std::terminate();}
+ 	void pup(nsfile_pupper * p) {std::terminate();}
+};
+
 
 #endif

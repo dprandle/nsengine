@@ -24,12 +24,13 @@ class nsanim_comp : public nscomponent
 {
 public:
 	nsanim_comp();
+
+	nsanim_comp(const nsanim_comp & cpy);	
+
 	~nsanim_comp();
 
 	template <class PUPer>
 	friend void pup(PUPer & p, nsanim_comp & anim);
-
-	virtual nsanim_comp* copy(const nscomponent* copy_);
 
 	float & elapsed();
 
@@ -71,7 +72,7 @@ public:
 
 	void set_current_animation(const nsstring & anim_name_);
 
-	nsanim_comp & operator=(const nsanim_comp & rhs_);
+	nsanim_comp & operator=(nsanim_comp rhs_);
 
 private:
 	void _fill_joint_transforms(nsmesh::node_tree * node_tree_, nsmesh::node * node_, nsanim_set::animation_data * current_anim_, fmat4 & parent_tform_);

@@ -45,6 +45,7 @@ void main()
 } 
 
 
+
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring></nsstring>
@@ -86,6 +87,7 @@ void main()
 	worldPosOut = vec3(0.0,0.0,0.0);
 	normalOut = vec4(1.0,1.0,1.0,0.0);
 }
+
 
 
 

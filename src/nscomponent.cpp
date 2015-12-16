@@ -13,20 +13,19 @@
 #include <nscomponent.h>
 
 nscomponent::nscomponent(): 
-m_owner(NULL),
-m_update(true),
-m_hashed_type(0)
+	m_owner(NULL),
+	m_update(true),
+	m_hashed_type(0)
+{}
+
+nscomponent::nscomponent(const nscomponent & copy):
+	m_owner(NULL),
+	m_update(true),
+	m_hashed_type(copy.m_hashed_type)
 {}
 
 nscomponent::~nscomponent()
 {}
-
-nscomponent * nscomponent::copy(const nscomponent * pComp)
-{
-	if (pComp == NULL)
-		return NULL;
-	return this;
-}
 
 nsentity * nscomponent::owner()
 {
@@ -53,9 +52,10 @@ void nscomponent::name_change(const uivec2 & oldid, const uivec2 newid)
 	// do nothing
 }
 
-nscomponent & nscomponent::operator=(const nscomponent & pRHSComp)
+nscomponent & nscomponent::operator=(nscomponent_inst rhs)
 {
-	copy(&pRHSComp);
+	std::swap(m_hashed_type, rhs.m_hashed_type);
+	m_update = true;
 	return *this;
 }
 

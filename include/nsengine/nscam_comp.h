@@ -61,13 +61,14 @@ public:
 	friend void pup(PUPer & p, nscam_comp & cc);
 
 	nscam_comp();
+
+	nscam_comp(const nscam_comp & copy);
+
 	~nscam_comp();
 
 	void change_speed(float amount_);
 
 	void compute_focus_transform();
-
-	virtual nscam_comp* copy(const nscomponent* to_copy_);
 
 	const movement_t & elevate() const;
 
@@ -141,7 +142,7 @@ public:
 
 	void resize_screen(const ivec2 & dimen_);
 
-	nscam_comp & operator=(const nscam_comp & pRHSComp);
+	nscam_comp & operator=(nscam_comp rhs_);
 
 private:
 	void _update_proj();

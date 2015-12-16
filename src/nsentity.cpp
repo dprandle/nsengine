@@ -17,15 +17,36 @@
 #include <nsfactory.h>
 #include <nsengine.h>
 
-nsentity::nsentity() :m_components(), nsresource()
+nsentity::nsentity() :
+	nsresource(),
+	m_components()
 {
 	m_components.clear();
 	set_ext(DEFAULT_ENTITY_EXTENSION);
 }
 
+nsentity::nsentity(const nsentity & copy):
+	nsresource(copy),
+	m_components()
+{
+	auto iter = copy.m_components.begin();
+	while (iter != copy.m_components.end())
+	{
+		create(iter->second);
+		++iter;
+	}
+}
+
 nsentity::~nsentity()
 {
 	clear();
+}
+
+nsentity & nsentity::operator=(nsentity rhs)
+{
+	nsresource::operator=(rhs);
+	std::swap(m_components, rhs.m_components);
+	return *this;
 }
 
 bool nsentity::add(nscomponent * pComp)
@@ -48,30 +69,6 @@ bool nsentity::add(nscomponent * pComp)
 		update_scene();
 	}
 	return ret.second;
-}
-
-bool nsentity::copy_comp(nscomponent * toCopy, bool overwrite)
-{
-	if (toCopy == NULL)
-		return false;
-
-	nscomponent * nc = NULL;
-	
-	uint32 type_id = toCopy->type();
-	if (has(type_id))
-	{
-		if (!overwrite)
-			return false;
-		else
-			del(type_id);
-	}
-	nc = create(type_id);
-
-	if (nc == NULL)
-		return false;
-
-	(*nc) = (*toCopy);
-	return true;
 }
 
 void nsentity::clear()
@@ -100,13 +97,30 @@ nscomponent * nsentity::create(uint32 type_id)
 	nscomponent * comp_t = nse.factory<nscomp_factory>(type_id)->create();
 	if (!add(comp_t))
 	{
-		dprint(nsstring("nsentity::createComponent - Failed adding comp_t type ") + nse.guid(type_id) +
+		dprint(nsstring("nsentity::create - Failed adding comp_t type ") + nse.guid(type_id) +
 			   nsstring(" to Entity ") + m_name);
 		delete comp_t;
 		return NULL;
 	}
 	comp_t->init();
 	return comp_t;
+}
+
+nscomponent * nsentity::create(nscomponent * to_copy)
+{
+	if (to_copy == nullptr)
+		return nullptr;
+	
+	nscomponent * comp_t = nse.factory<nscomp_factory>(to_copy->type())->create(to_copy);
+	if (!add(comp_t))
+	{
+		dprint(nsstring("nsentity::create - Failed copying comp_t type ") + nse.guid(to_copy->type()) +
+			   nsstring(" to Entity ") + m_name);
+		delete comp_t;
+		return NULL;
+	}
+	comp_t->init();
+	return comp_t;	
 }
 
 nscomponent * nsentity::create(const nsstring & guid)
@@ -207,33 +221,6 @@ bool nsentity::has(uint32 type_id)
 void nsentity::init()
 {
 	// do nothing
-}
-
-bool nsentity::copy(nsresource * res)
-{
-	nsentity * ent = dynamic_cast<nsentity*>(res);
-	if (ent == NULL)
-		return false;
-
-	bool ret = true;
-	auto c_iter = ent->begin();
-	while (c_iter != ent->end())
-	{
-		// skip transform component
-		if (c_iter->first == type_to_hash(nstform_comp))
-		{
-			++c_iter;
-			continue;
-		}
-		
-		ret = copy_comp(c_iter->second, true) && ret;
-		if (ret == false)
-		{
-			dprint("nsentity::copy_all - error in copying component type: " + hash_to_guid(c_iter->first));
-		}
-		++c_iter;
-	}
-	return ret;
 }
 
 nscomponent * nsentity::remove(uint32 type_id)

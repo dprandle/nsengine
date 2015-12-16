@@ -72,6 +72,9 @@ nsbounding_box::nsbounding_box(
 	calculate(pVertices);
 }
 
+nsbounding_box::~nsbounding_box()
+{}
+
 /*!
 Find the min and max of a set of vertices and use that to make the bounding box.
 */

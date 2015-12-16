@@ -14,9 +14,25 @@
 #include <nsgl_context.h>
 #include <nsshader.h>
 
-nsmesh::nsmesh(): m_node_tree(new node_tree())
+nsmesh::nsmesh():
+	nsresource(),
+	m_node_tree(new node_tree())
 {
 	set_ext(DEFAULT_MESH_EXTENSION);
+}
+
+nsmesh::nsmesh(const nsmesh & copy_):
+	nsresource(copy_),
+	m_node_tree(new node_tree(*copy_.m_node_tree)),
+	m_submeshes(copy_.m_submeshes.size(), nullptr),
+	m_bounding_box(copy_.m_bounding_box)
+{
+	for (uint32 i = 0; i < m_submeshes.size(); ++i)
+	{
+		m_submeshes[i] = new submesh(*copy_.m_submeshes[i]);
+		m_submeshes[i]->init_gl();
+		m_submeshes[i]->allocate_buffers();
+	}
 }
 
 nsmesh::~nsmesh()
@@ -27,6 +43,16 @@ nsmesh::~nsmesh()
 		m_submeshes.pop_back();
 	}
 	delete m_node_tree;
+}
+
+
+nsmesh & nsmesh::operator=(nsmesh rhs)
+{
+	nsresource::operator=(rhs);
+	std::swap(m_submeshes,rhs.m_submeshes);
+	std::swap(m_node_tree, rhs.m_node_tree);
+	std::swap(m_bounding_box, rhs.m_bounding_box);
+	return *this;
 }
 
 void nsmesh::allocate()
@@ -541,20 +567,70 @@ nsmesh::submesh::submesh(nsmesh * pParentMesh):
 	m_tex_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
 	m_norm_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
 	m_tang_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_joint_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
 	m_indice_buf(nsbuffer_object::element_array,nsbuffer_object::storage_mutable),
+	m_joint_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	m_vao(),
 	m_verts(),
 	m_tex_coords(),
 	m_normals(),
 	m_tangents(),
-	m_joints(),
 	m_indices(),
+	m_triangles(),
+	m_lines(),
+	m_joints(),
+	m_prim_type(0),
 	m_node(NULL),
 	m_name(),
 	m_parent_mesh(pParentMesh),
-	m_has_tex_coords(false),
-	m_bounding_box()
+	m_bounding_box(),
+	m_has_tex_coords(false)
 {}
+
+nsmesh::submesh::submesh(const submesh & copy_):
+	m_vert_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	m_tex_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	m_norm_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	m_tang_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	m_indice_buf(nsbuffer_object::element_array,nsbuffer_object::storage_mutable),
+	m_joint_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
+	m_vao(),
+	m_verts(copy_.m_verts),
+	m_tex_coords(copy_.m_tex_coords),
+	m_normals(copy_.m_normals),
+	m_tangents(copy_.m_tangents),
+	m_indices(copy_.m_indices),
+	m_triangles(copy_.m_triangles),
+	m_lines(copy_.m_lines),
+	m_joints(copy_.m_joints),
+	m_prim_type(copy_.m_prim_type),
+	m_node(nullptr),
+	m_name(copy_.m_name),
+	m_parent_mesh(copy_.m_parent_mesh),
+	m_bounding_box(copy_.m_bounding_box),
+	m_has_tex_coords(copy_.m_has_tex_coords)
+{
+	if (copy_.m_node != nullptr)
+		m_node = m_parent_mesh->tree()->find_node(copy_.m_node->m_node_id);
+}
+
+nsmesh::submesh & nsmesh::submesh::operator=(submesh rhs_)
+{
+	std::swap(m_verts,rhs_.m_verts);
+	std::swap(m_tex_coords,rhs_.m_tex_coords);
+	std::swap(m_normals, rhs_.m_normals);
+	std::swap(m_tangents, rhs_.m_tangents);
+	std::swap(m_indices, rhs_.m_indices);
+	std::swap(m_triangles, rhs_.m_triangles);
+	std::swap(m_lines, rhs_.m_lines);
+	std::swap(m_joints, rhs_.m_joints);
+	std::swap(m_prim_type, rhs_.m_prim_type);
+	std::swap(m_node, rhs_.m_node);
+	std::swap(m_name, rhs_.m_name);
+	std::swap(m_parent_mesh, rhs_.m_parent_mesh);
+	std::swap(m_bounding_box, rhs_.m_bounding_box);
+	std::swap(m_has_tex_coords, rhs_.m_has_tex_coords);
+	return *this;
+}
 
 nsmesh::submesh::~submesh()
 {
@@ -662,6 +738,20 @@ nsmesh::node::node(const nsstring & pName, node * pParentNode):m_name(pName),
 	m_child_nodes()
 {}
 
+nsmesh::node::node(const node & copy_):
+	m_node_id(copy_.m_node_id),
+	m_node_tform(copy_.m_node_tform),
+	m_world_tform(copy_.m_world_tform),
+	m_parent_node(nullptr),
+	m_child_nodes(copy_.m_child_nodes.size())
+{
+	for (uint32 i = 0; i < copy_.m_child_nodes.size(); ++i)
+	{
+		m_child_nodes[i] = new node(*copy_.m_child_nodes[i]);
+		m_child_nodes[i]->m_parent_node = this;
+	}
+}
+
 nsmesh::node::~node()
 {
 	while (m_child_nodes.begin() != m_child_nodes.end())
@@ -687,11 +777,38 @@ nsmesh::node * nsmesh::node::find_node(const nsstring & pNodeName)
 	return NULL;
 }
 
+nsmesh::node * nsmesh::node::find_node(uint32 node_id_)
+{
+	if (m_node_id == node_id_)
+		return this;
+
+	auto iter = m_child_nodes.begin();
+	while (iter != m_child_nodes.end())
+	{
+		node * ret = (*iter)->find_node(node_id_);
+		if (ret != NULL)
+			return ret;
+		++iter;
+	}
+	return NULL;
+}
+
 nsmesh::node * nsmesh::node::create_child(const nsstring & pName)
 {
 	node * childNode = new node(pName, this);
 	m_child_nodes.push_back(childNode);
 	return childNode;
+}
+
+nsmesh::node & nsmesh::node::operator=(node rhs)
+{
+	std::swap(m_name, rhs.m_name);
+	std::swap(m_node_id, rhs.m_node_id);
+	std::swap(m_node_tform, rhs.m_node_tform);
+	std::swap(m_world_tform, rhs.m_world_tform);
+	std::swap(m_parent_node, rhs.m_parent_node);
+	std::swap(m_child_nodes, rhs.m_child_nodes);
+	return *this;
 }
 
 nsmesh::joint::joint(): m_joint_id(0),
@@ -702,11 +819,32 @@ nsmesh::node_tree::node_tree(): m_name_joint_map(),
 	m_root(NULL)
 {}
 
+nsmesh::node_tree::node_tree(const node_tree & copy_):
+	m_root(new node(*copy_.m_root))
+{
+	if (copy_.m_root != nullptr)
+		m_root = new node(*(copy_.m_root));
+}
+
+nsmesh::node_tree & nsmesh::node_tree::operator=(node_tree copy_)
+{
+	std::swap(m_root,copy_.m_root);
+	std::swap(m_name_joint_map, copy_.m_name_joint_map);
+	return *this;
+}
+
 nsmesh::node * nsmesh::node_tree::find_node(const nsstring & pNodeName)
 {
 	if (m_root == NULL)
 		return NULL;
 	return m_root->find_node(pNodeName);
+}
+
+nsmesh::node * nsmesh::node_tree::find_node(uint32 node_id_)
+{
+	if (m_root == NULL)
+		return NULL;
+	return m_root->find_node(node_id_);
 }
 
 nsmesh::node_tree::~node_tree()
@@ -723,14 +861,10 @@ nsmesh::node * nsmesh::node_tree::create_root_node(const nsstring & pName)
 
 nsmesh_plane::nsmesh_plane():
 	nsmesh()
-{
-	
-}
+{}
 
 nsmesh_plane::~nsmesh_plane()
-{
-	
-}
+{}
 
 void nsmesh_plane::init()
 {
@@ -767,6 +901,25 @@ void nsmesh_plane::init()
 	smsh->m_has_tex_coords = true;
 
 	smsh->allocate_buffers();
+}
+
+void nsmesh::regenerate_node_ids()
+{
+	uint32 id = 0;
+	if (m_node_tree->m_root != NULL)
+	{
+		m_node_tree->m_root->m_node_id = id++;
+		_regen_node_ids(m_node_tree->m_root, id);
+	}
+}
+
+void nsmesh::_regen_node_ids(node * node_, uint32 & id_)
+{
+	for (uint32 i = 0; i < node_->m_child_nodes.size(); ++i)
+	{
+		node_->m_child_nodes[i]->m_node_id = id_++;
+		_regen_node_ids(node_->m_child_nodes[i], id_);
+	}
 }
 
 void nsmesh_plane::set_dim(const fvec2 & dim_)

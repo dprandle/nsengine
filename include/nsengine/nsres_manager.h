@@ -57,9 +57,9 @@ public:
 	}
 
 	template<class T>
-	bool copy(const T & from_, nsresource * to_)
+	bool copy(const T & to_copy, const nsstring & copy_name="")
 	{
-		return this->copy(get(from_), to_);
+		return this->copy(get(to_copy), copy_name);
 	}
 	
 	template<class T>
@@ -69,11 +69,19 @@ public:
 	}
 
 	template <class res_type>
-	res_type * create(const nsstring & resName)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
 		uint32 res_type_id = type_to_hash(res_type);
-		return static_cast<res_type*>(create(res_type_id, resName));
+		return static_cast<res_type*>(create(res_type_id, res_name, to_copy));
 	}
+	
+	// template <class res_type>
+	// res_type * create(const res_type & res_copy)
+	// {
+	// 	uint32 res_type_id = type_to_hash(res_type);
+	// 	return static_cast<res_type*>(create(res_type_id, res_name));
+	// }
+
 
 	template<class T>
 	bool del(const T & res_name)
@@ -110,12 +118,6 @@ public:
 	}
 
 	template<class T>
-	bool replace(const T & orig_, nsresource * new_)
-	{
-		return this->replace(get(orig_), new_);
-	}
-
-	template<class T>
 	bool save(const T & res_name, nsstring path="")
 	{
 		nsresource * res = get(res_name);
@@ -131,17 +133,15 @@ public:
 
 	virtual bool changed(nsresource * res, nsstring fname);
 
-	virtual bool copy(nsresource * from_, nsresource * to_);
-
 	virtual bool contains(nsresource * res);
 
 	uint32 count() const;
 
-	virtual nsresource * create(const nsstring & resName)=0;
+	virtual nsresource * create(const nsstring & res_name, nsresource * to_copy)=0;
 
-	virtual nsresource * create(uint32 res_type_id, const nsstring & resName);
+	virtual nsresource * create(uint32 res_type_id, const nsstring & res_name, nsresource * to_copy=nullptr);
 
-	nsresource * create(const nsstring & guid_, const nsstring & resName);
+	nsresource * create(const nsstring & guid_, const nsstring & res_name);
 
 	virtual bool del(nsresource * res);
 
@@ -153,7 +153,7 @@ public:
 
 	virtual nsresource * get(uint32 resid);
 
-	virtual nsresource * get(const nsstring & resName);
+	virtual nsresource * get(const nsstring & res_name);
 
 	virtual nsresource * get(nsresource * res);
 
@@ -173,13 +173,11 @@ public:
 
 	virtual nsresource * remove(uint32 res_type_id);
 
-	virtual nsresource * remove(const nsstring & resName);
+	virtual nsresource * remove(const nsstring & res_name);
 	
 	virtual nsresource * remove(nsresource * res);
 
 	virtual bool rename(const nsstring & oldName, const nsstring & newName);
-
-	virtual bool replace(nsresource * orig_, nsresource * new_);
 	
 	virtual bool save(nsresource * res,const nsstring & path);
 

@@ -31,7 +31,7 @@ nsmesh* nsmesh_manager::assimp_load_mesh(const aiScene * scene, const nsstring &
 	return mesh;
 }
 
-void nsmesh_manager::_assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, const aiNode * node)
+void nsmesh_manager::_assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, const aiNode * node, uint32 & node_id)
 {
 	aiMatrix4x4 trans = node->mTransformation;
 	fmat4 lTransform( fvec4(trans.a1, trans.a2, trans.a3, trans.a4),
@@ -72,7 +72,8 @@ void nsmesh_manager::_assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, 
 	{
 		aiNode * childAINode = node->mChildren[i];
 		nsmesh::node * childNode = pMeshNode->create_child(childAINode->mName.C_Str());
-		_assimp_load_node(pMesh, childNode, childAINode);
+		childNode->m_node_id = node_id++;
+		_assimp_load_node(pMesh, childNode, childAINode, node_id);
 	}
 }
 
@@ -80,7 +81,11 @@ void nsmesh_manager::_assimp_load_node_heirarchy(nsmesh* pMesh, const aiNode * p
 {
 	nsmesh::node_tree * meshNodeTree = pMesh->tree();
 	nsmesh::node * rootNode = meshNodeTree->create_root_node(pRootNode->mName.C_Str());
-	_assimp_load_node(pMesh, rootNode, pRootNode);
+
+	uint32 node_id = 0;
+	
+	rootNode->m_node_id = node_id++;
+	_assimp_load_node(pMesh, rootNode, pRootNode, node_id);
 }
 
 void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pScene)

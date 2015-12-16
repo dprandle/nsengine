@@ -28,11 +28,12 @@ public:
 	friend void pup(PUPer & p, nsrender_comp & rc);
 
 	nsrender_comp();
+
+	nsrender_comp(const nsrender_comp & rend_comp);
+	
 	~nsrender_comp();
 
 	void clear_mats();
-
-	nsrender_comp* copy(const nscomponent* copy_);
 
 	bool cast_shadow();
 
@@ -90,7 +91,7 @@ public:
 		post_update(true);
 	}
 
-	nsrender_comp & operator=(const nsrender_comp & rhs_);
+	nsrender_comp & operator=(nsrender_comp rhs_);
 
 private:
 	bool m_cast_shadow;

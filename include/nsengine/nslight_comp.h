@@ -42,6 +42,9 @@ public:
 	};
 
 	nslight_comp();
+
+	nslight_comp(const nslight_comp & copy);
+
 	~nslight_comp();
 
 	void init();
@@ -63,8 +66,6 @@ public:
 	void change_shadow_darkness(float amount_);
 
 	void change_radius(float amount_);
-
-	nslight_comp* copy(const nscomponent* copy_);
 
 	const fvec3 & atten() const;
 
@@ -146,7 +147,7 @@ public:
 
 	void set_shadow_samples(int32 samples_);
 
-	nslight_comp & operator=(const nslight_comp & rhs_);
+	nslight_comp & operator=(nslight_comp rhs_);
 
 private:
 

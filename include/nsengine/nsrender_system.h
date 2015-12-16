@@ -16,10 +16,6 @@
 // Default shaders
 #define DEFAULT_GBUFFER_SHADER "gbufferdefault"
 #define DEFAULT_GBUFFER_WIREFRAME_SHADER "gbufferdefault_wireframe"
-#define DEFAULT_XFBGBUFFER_SHADER "gbufferxtf"
-#define DEFAULT_XFBGBUFFER_RENDER_SHADER "gbufferxtfrender"
-#define DEFAULT_EARLYZ_SHADER "earlyz"
-#define DEFAULT_XFBEARLYZ_SHADER "xfbearlyz"
 #define DEFAULT_LIGHTSTENCIL_SHADER "lightstencil"
 #define DEFAULT_SPOTLIGHT_SHADER "spotlight"
 #define DEFAULT_DIRLIGHT_SHADER "directionlight"
@@ -27,9 +23,6 @@
 #define DEFAULT_POINTSHADOWMAP_SHADER "pointshadowmap"
 #define DEFAULT_SPOTSHADOWMAP_SHADER "spotshadowmap"
 #define DEFAULT_DIRSHADOWMAP_SHADER "dirshadowmap"
-#define DEFAULT_XFBPOINTSHADOWMAP_SHADER "xfbpointshadowmap"
-#define DEFAULT_XFBSPOTSHADOWMAP_SHADER "xfbspotshadowmap"
-#define DEFAULT_XFBDIRSHADOWMAP_SHADER "xfbdirshadowmap"
 #define DEFAULT_SKYBOX_SHADER "skybox"
 
 // Default checkered material
@@ -120,30 +113,22 @@ public:
 		bool operator==(const draw_call & rhs) const;
 	};
 
-	struct RenderShaders
+	struct render_shaders
 	{
-		RenderShaders() :
+		render_shaders() :
 			deflt(NULL),
 			deflt_wireframe(NULL),
-			early_z(NULL),
 			light_stencil(NULL),
 			dir_light(NULL),
 			point_light(NULL),
 			spot_light(NULL),
 			point_shadow(NULL),
 			spot_shadow(NULL),
-			dir_shadow(NULL),
-			xfb_default(NULL),
-			xfb_render(NULL),
-			xfb_earlyz(NULL),
-			xfb_dir_shadow(NULL),
-			xfb_point_shadow(NULL),
-			xfb_spot_shadow(NULL)
+			dir_shadow(NULL)
 		{}
 
 		nsmaterial_shader * deflt;
 		nsmaterial_shader * deflt_wireframe;
-		nsearlyz_shader * early_z;
 		nslight_stencil_shader * light_stencil;
 		nsdir_light_shader * dir_light;
 		nspoint_light_shader * point_light;
@@ -151,12 +136,6 @@ public:
 		nspoint_shadowmap_shader * point_shadow;
 		nsspot_shadowmap_shader * spot_shadow;
 		nsdir_shadowmap_shader * dir_shadow;
-		nsxfb_shader * xfb_default;
-		nsrender_xfb_shader * xfb_render;
-		nsearlyz_xfb_shader * xfb_earlyz;
-		nsdir_shadowmap_xfb_shader * xfb_dir_shadow;
-		nspoint_shadowmap_xfb_shader * xfb_point_shadow;
-		nsspot_shadowmap_xfb_shader * xfb_spot_shadow;
 
 		bool error();
 		bool valid();
@@ -174,8 +153,6 @@ public:
 	void blit_final_frame();
 
 	void draw();
-
-	void enable_earlyz(bool pEnable);
 
 	void enable_debug_draw(bool pDebDraw);
 
@@ -207,7 +184,7 @@ public:
 
 	void set_default_mat(nsmaterial * pDefMaterial);
 
-	void set_shaders(const RenderShaders & pShaders);
+	void set_shaders(const render_shaders & pShaders);
 
 	void set_gbuffer_fbo(uint32 fbo);
 
@@ -238,14 +215,11 @@ private:
 	void _stencil_point_light(nslight_comp * pLight);
 	void _stencil_spot_light(nslight_comp * pLight);
 	void _draw_geometry();
-	void _draw_xfbs();
 	void _draw_scene_to_depth(nsdepth_shader * pShader);
-	void _draw_scene_to_depth_xfb(nsshader * pShader);
 	void _draw_call(drawcall_set::iterator pDCIter);
 	bool _valid_check();
 
 	bool m_debug_draw;
-	bool m_earlyz_enabled;
 	bool m_lighting_enabled;
 
 	ivec2 m_screen_size;
@@ -253,17 +227,14 @@ private:
 	fvec4 m_fog_color;
 
 	mat_drawcall_map m_drawcall_map;
-	//MatDCMap mTransparentDrawCallMap;
 	shader_mat_map m_shader_mat_map;
-	//ShaderMaterialMap mTransparentShaderMatMap;
-	xfb_draw_set m_xfb_draws;
 	uint32 m_screen_fbo;
 
 	nsgbuf_object * m_gbuffer;
 	nsshadowbuf_object * m_shadow_buf;
 	nsfb_object * m_final_buf;
 	nsmaterial * m_default_mat;
-	RenderShaders m_shaders;
+	render_shaders m_shaders;
 };
 
 #endif

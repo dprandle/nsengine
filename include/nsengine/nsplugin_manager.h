@@ -26,14 +26,14 @@ public:
 	virtual bool add(nsresource * res);
 	
 	template <class res_type>
-	res_type * create(const nsstring & res_name)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name);
+		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsplugin * create(const nsstring & res_name)
+	virtual nsplugin * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return create<nsplugin>(res_name); // Create 2d texture by default
+		return create<nsplugin>(res_name, to_copy); // Create 2d texture by default
 	}
 
 	template <class res_type, class T>

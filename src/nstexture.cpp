@@ -17,6 +17,7 @@ Description:
 #include <nsgl_context.h>
 
 nstexture::nstexture(tex_type type) :
+	nsresource(),
 	m_tex_type(type),
 	m_allocated(false),
 	m_locked(false),
@@ -31,9 +32,27 @@ nstexture::nstexture(tex_type type) :
 	set_ext(DEFAULT_TEX_EXTENSION);
 }
 
+nstexture::nstexture(const nstexture & copy_):
+	nsresource(copy_),
+	m_tex_type(copy_.m_tex_type),
+	m_format(copy_.m_format),
+	m_internal_format(copy_.m_internal_format),
+	m_pixel_data_type(copy_.m_pixel_data_type),
+	m_mipmap_level(copy_.m_mipmap_level),
+	m_generate_mipmaps(copy_.m_generate_mipmaps),
+	m_border(copy_.m_border)
+{
+}
+
 nstexture::~nstexture()
 {
 	release();
+}
+
+nstexture & nstexture::operator=(nstexture_inst rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
 }
 
 void nstexture::init_gl()
@@ -363,21 +382,56 @@ nstexture::tex_type nstexture::texture_type() const
 	return m_tex_type;
 }
 
+nstexture::image_data::image_data(uint8 * data_, uint32 size_, uint32 bpp_) :
+	data(data_),
+	size(size_),
+	bpp(bpp_)
+{}
+
+nstexture::image_data::image_data(const image_data & copy_):
+	data(new uint8[copy_.size]),
+	size(copy_.size),
+	bpp(copy_.bpp)
+{
+//	for (uint32 i = 0; i < size; ++i)
+//		data[i]
+}
+
+nstexture::image_data::~image_data()
+{
+	delete [] data;
+}
+
+nstexture::image_data & nstexture::image_data::operator=(const image_data & rhs)
+{
+	return *this;
+}
+
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
 
 nstex1d::nstex1d():
-m_width(0),
-m_comp_byte_size(0),
-m_immutable(false),
-nstexture(tex_1d)
+	m_width(0),
+	m_comp_byte_size(0),
+	m_immutable(false),
+	nstexture(tex_1d)
 {}
 
+nstex1d:: nstex1d(const nstex1d & copy_):
+	nstexture(copy_),
+	m_comp_byte_size(copy_.m_comp_byte_size),
+	m_immutable(copy_.m_immutable)
+{}
+
+
 nstex1d::~nstex1d()
+{}
+
+nstex1d & nstex1d::operator=(nstex1d rhs)
 {
-	if (m_locked && m_data.data != NULL)
-		delete[] m_data.data;
+	nstexture::operator=(rhs);
+	return *this;
 }
 
 /*
@@ -586,16 +640,28 @@ nstex1d_array::~nstex1d_array(){}
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 
 nstex2d::nstex2d() :
-m_size(),
-m_comp_byte_size(0),
-m_immutable(false),
-nstexture(tex_2d)
+	m_size(),
+	m_comp_byte_size(0),
+	m_immutable(false),
+	nstexture(tex_2d)
+{}
+
+nstex2d::nstex2d(const nstex2d & copy_):
+	nstexture(copy_),
+	m_comp_byte_size(copy_.m_comp_byte_size),
+	m_immutable(copy_.m_immutable)
 {}
 
 nstex2d::~nstex2d()
 {
 	if (m_locked && m_data.data != NULL)
 		delete[] m_data.data;
+}
+
+nstex2d & nstex2d::operator=(nstex2d rhs)
+{
+	nstexture::operator=(rhs);
+	return *this;
 }
 
 /*
@@ -809,6 +875,7 @@ const uivec2 & nstex2d::size()
 	return m_size;
 }
 
+
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 
 nstex2d_array::nstex2d_array() : nstex3d() { m_tex_type = tex_2d_array; }
@@ -817,16 +884,28 @@ nstex2d_array::~nstex2d_array(){}
 /*----------------------------------------------------------------------------------------------------------------------------------------*/
 
 nstex3d::nstex3d() :
-m_size(),
-m_comp_byte_size(0),
-m_immutable(false),
-nstexture(tex_3d)
+	m_size(),
+	m_comp_byte_size(0),
+	m_immutable(false),
+	nstexture(tex_3d)
+{}
+
+nstex3d::nstex3d(const nstex3d & copy_):
+	nstexture(copy_),
+	m_comp_byte_size(copy_.m_comp_byte_size),
+	m_immutable(copy_.m_immutable)
 {}
 
 nstex3d::~nstex3d()
 {
 	if (m_locked && m_data.data != NULL)
 		delete[] m_data.data;
+}
+
+nstex3d & nstex3d::operator=(nstex3d rhs)
+{
+	nstexture::operator=(rhs);
+	return *this;
 }
 
 /*
@@ -1023,15 +1102,27 @@ const uivec3 & nstex3d::size()
 /*------------------------------------------------------------------------------------------------------------------------------*/
 
 nstex_cubemap::nstex_cubemap() :
-m_size(),
-m_comp_byte_size(0),
-nstexture(tex_cubemap)
+	nstexture(tex_cubemap),
+	m_size(),
+	m_comp_byte_size(0)
+{}
+
+nstex_cubemap::nstex_cubemap(const nstex_cubemap & copy_):
+	nstexture(copy_),
+	m_comp_byte_size(copy_.m_comp_byte_size),
+	m_size(copy_.m_size)
 {}
 
 nstex_cubemap::~nstex_cubemap()
 {
 	if (m_locked && m_data.data != NULL)
 		delete[] m_data.data;
+}
+
+nstex_cubemap & nstex_cubemap::operator=(nstex_cubemap rhs)
+{
+	nstexture::operator=(rhs);
+	return *this;
 }
 
 /*
@@ -1339,6 +1430,16 @@ nstex2d_multisample_array::~nstex2d_multisample_array() {}
 
 nstex_buffer::nstex_buffer():nstexture(tex_buffer) {}
 nstex_buffer::~nstex_buffer() {}
+
+nstex_buffer::nstex_buffer(const nstex_buffer & copy_):
+	nstexture(copy_)
+{}
+
+nstex_buffer & nstex_buffer::operator=(nstex_buffer rhs)
+{
+	nstexture::operator=(rhs);
+	return *this;
+}
 
 bool nstex_buffer::allocate(const void * data)
 {

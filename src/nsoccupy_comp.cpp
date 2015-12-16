@@ -22,21 +22,20 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 #include <nsengine.h>
 
 nsoccupy_comp::nsoccupy_comp() :
-m_draw_enabled(false),
-m_mesh_id(),
-m_mat_id(),
-nscomponent()
-{
-	nsmesh * occ = nse.core()->get<nsmesh>(MESH_FULL_TILE);
-	if (occ == NULL)
-	{
-		dprint("nsoccupy_comp::nsoccupy_comp Could not get occupy mesh");
-	}
-	else
-	{
-		m_mesh_id = occ->full_id();
-	}
-}
+	nscomponent(),
+	m_spaces(),
+	m_draw_enabled(false),
+	m_mesh_id(),
+	m_mat_id()
+{}
+
+nsoccupy_comp::nsoccupy_comp(const nsoccupy_comp & copy):
+	nscomponent(copy),
+	m_spaces(copy.m_spaces),
+	m_draw_enabled(copy.m_draw_enabled),
+	m_mesh_id(copy.m_mesh_id),
+	m_mat_id(copy.m_mat_id)
+{}
 
 nsoccupy_comp::~nsoccupy_comp()
 {}
@@ -150,15 +149,6 @@ bool nsoccupy_comp::contains(const ivec3 & pGridPos)
 	return false;
 }
 
-nsoccupy_comp* nsoccupy_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nsoccupy_comp * comp = (const nsoccupy_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
-}
-
 void nsoccupy_comp::enable_draw(bool pEnable)
 {
 	m_draw_enabled = pEnable;
@@ -255,14 +245,13 @@ void nsoccupy_comp::set_material_id(const uivec2 & mat)
 	post_update(true);
 }
 
-nsoccupy_comp & nsoccupy_comp::operator=(const nsoccupy_comp & pRHSComp)
+nsoccupy_comp & nsoccupy_comp::operator=(nsoccupy_comp rhs_)
 {
-	m_spaces.resize(pRHSComp.m_spaces.size());
-	for (uint32 i = 0; i < m_spaces.size(); ++i)
-		m_spaces[i] = pRHSComp.m_spaces[i];
-	m_mesh_id = pRHSComp.m_mesh_id;
-	m_mat_id = pRHSComp.m_mat_id;
-	m_draw_enabled = pRHSComp.m_draw_enabled;
+	nscomponent::operator=(rhs_);
+	std::swap(m_spaces, rhs_.m_spaces);
+	std::swap(m_mesh_id, rhs_.m_mesh_id);
+	std::swap(m_mat_id, rhs_.m_mat_id);
+	std::swap(m_draw_enabled, rhs_.m_draw_enabled);
 	post_update(true);
 	return (*this);
 }

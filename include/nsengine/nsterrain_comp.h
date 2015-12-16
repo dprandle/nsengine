@@ -23,9 +23,9 @@ public:
 
 	nsterrain_comp();
 
-	virtual ~nsterrain_comp();
+	nsterrain_comp(const nsterrain_comp & copy);
 
-	virtual nsterrain_comp * copy(const nscomponent * copy_);
+	virtual ~nsterrain_comp();
 
 	virtual void init();
 
@@ -37,7 +37,7 @@ public:
 
 	virtual void pup(nsfile_pupper * p);
 
-	nsterrain_comp & operator=(const nsterrain_comp & rhs_);
+	nsterrain_comp & operator=(nsterrain_comp rhs_);
 
 private:
 	fvec2 m_minmax;

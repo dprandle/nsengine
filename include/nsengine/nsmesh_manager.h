@@ -26,14 +26,14 @@ public:
 	~nsmesh_manager();
 
 	template <class res_type>
-	res_type * create(const nsstring & res_name)
+	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(res_name);
+		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsmesh * create(const nsstring & res_name)
+	virtual nsmesh * create(const nsstring & res_name, nsresource * to_copy=nullptr)
 	{
-		return create<nsmesh>(res_name); // Create 2d texture by default
+		return create<nsmesh>(res_name, to_copy);
 	}
 
 	template <class res_type, class T>
@@ -76,7 +76,7 @@ public:
 private:
 
 	void _assimp_load_submeshes(nsmesh* pMesh, const aiScene * pScene);
-	void _assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, const aiNode * pNode);
+	void _assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, const aiNode * pNode, uint32 & node_id);
 	void _assimp_load_node_heirarchy(nsmesh* pMesh, const aiNode * pRootNode);
 };
 

@@ -16,7 +16,8 @@
 #include <nsanim_manager.h>
 #include <nsentity.h>
 
-nsanim_comp::nsanim_comp():nscomponent(),
+nsanim_comp::nsanim_comp():
+	nscomponent(),
 	m_elapsed_time(0.0f),
 	m_animation(false),
 	m_looping(false),
@@ -25,16 +26,31 @@ nsanim_comp::nsanim_comp():nscomponent(),
 	m_final_transforms()
 {}
 
+nsanim_comp::nsanim_comp(const nsanim_comp & cpy):
+	nscomponent(cpy),
+	m_elapsed_time(0.0f), // Lets not copy the animation time elapseds
+	m_animation(cpy.m_animation),
+	m_looping(cpy.m_looping),
+	m_anim_set_id(cpy.m_anim_set_id),
+	m_current_anim(cpy.m_current_anim)
+{		
+	m_final_transforms.clear();
+}
+
 nsanim_comp::~nsanim_comp()
 {}
 
-nsanim_comp* nsanim_comp::copy(const nscomponent * pToCopy)
+nsanim_comp & nsanim_comp::operator=(nsanim_comp rhs)
 {
-	if (pToCopy == NULL)
-		return NULL;
-	const nsanim_comp * cmp = (const nsanim_comp*)pToCopy;
-	(*this) = (*cmp);
-	return this;
+	nscomponent::operator=(rhs);
+	std::swap(m_elapsed_time, rhs.m_elapsed_time);
+	std::swap(m_animation, rhs.m_animation);
+	std::swap(m_anim_set_id, rhs.m_anim_set_id);
+	std::swap(m_looping, rhs.m_looping);
+	std::swap(m_current_anim, rhs.m_current_anim);
+	m_final_transforms.clear();
+	post_update(true);
+	return *this;
 }
 
 void nsanim_comp::pup(nsfile_pupper * p)
@@ -138,17 +154,6 @@ void nsanim_comp::set_anim_set_id(const uivec2 & pID)
 {
 	m_anim_set_id = pID;
 	post_update(true);
-}
-
-nsanim_comp & nsanim_comp::operator=(const nsanim_comp & pRHSComp)
-{
-	m_elapsed_time = pRHSComp.m_elapsed_time;
-	m_animation = pRHSComp.m_animation;
-	m_anim_set_id = pRHSComp.m_anim_set_id;
-	m_current_anim = pRHSComp.m_current_anim;
-	m_final_transforms.clear();
-	post_update(true);
-	return (*this);
 }
 
 void nsanim_comp::_fill_joint_transforms(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)

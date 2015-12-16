@@ -28,8 +28,11 @@ public:
 
 	nsentity();
 
+	nsentity(const nsentity & copy);
 	
 	~nsentity();
+
+	nsentity & operator=(nsentity rhs);
 
 	bool add(nscomponent * pComp);
 
@@ -38,16 +41,14 @@ public:
 
 	void clear();
 
-	bool copy_comp(nscomponent * toCopy, bool overwrite = true);
-
-	bool copy(nsresource * to_copy);
-
 	template<class comp_type>
 	comp_type * create()
 	{
 		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
 		return static_cast<comp_type*>(create(tid));
 	}
+
+	nscomponent * create(nscomponent * to_copy);
 
 	nscomponent * create(const nsstring & guid);
 
@@ -131,8 +132,6 @@ public:
 	}
 
 	bool update_posted(const nsstring & compType);
-
-	
 
 private:
 	comp_set m_components;

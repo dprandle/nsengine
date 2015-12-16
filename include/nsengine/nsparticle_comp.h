@@ -67,11 +67,11 @@ public:
 	
 	nsparticle_comp();
 
+	nsparticle_comp(const nsparticle_comp & );
+	
 	virtual ~nsparticle_comp();
 
 	void allocate_buffers();
-
-	virtual nsparticle_comp * copy(const nscomponent* comp_);
 
 	virtual void init();
 
@@ -129,7 +129,7 @@ public:
 
 	const emitter_shape_t & emitter_shape();
 
-	nsparticle_comp & operator=(const nsparticle_comp & rhs_);
+	nsparticle_comp & operator=(nsparticle_comp rhs_);
 
 	const uivec2 & shader_id();
 

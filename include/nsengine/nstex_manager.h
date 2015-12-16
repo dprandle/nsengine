@@ -30,14 +30,14 @@ public:
 	~nstex_manager();
 
 	template <class res_type>
-	res_type * create(const nsstring & resName)
+	res_type * create(const nsstring & resName, nsresource * to_copy=nullptr)
 	{
-		return nsres_manager::create<res_type>(resName);
+		return nsres_manager::create<res_type>(resName, to_copy);
 	}
 
-	virtual nstex2d * create(const nsstring & resName)
+	virtual nstex2d * create(const nsstring & resName, nsresource * to_copy=nullptr)
 	{
-		return create<nstex2d>(resName); // Create 2d texture by default
+		return create<nstex2d>(resName, to_copy); // Create 2d texture by default
 	}
 
 	template <class res_type, class T>

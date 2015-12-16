@@ -23,6 +23,8 @@ public:
 
 	nstile_brush_comp();
 
+	nstile_brush_comp(const nstile_brush_comp & copy);
+
 	virtual ~nstile_brush_comp();
 
 	bool add(int32 x_, int32 y_);
@@ -36,8 +38,6 @@ public:
 	bool contains(int32 x_, int32 y_);
 
 	bool contains(const ivec2 & grid_space_);
-
-	virtual nstile_brush_comp * copy(const nscomponent* comp_);
 
 	virtual void pup(nsfile_pupper * p);
 
@@ -53,7 +53,7 @@ public:
 
 	void set_height(const int32 & height_);
 
-	nstile_brush_comp & operator=(const nstile_brush_comp & rhs_);
+	nstile_brush_comp & operator=(nstile_brush_comp rhs_);
 
 private:
 	ivec2_vector m_brush;

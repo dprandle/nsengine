@@ -1,13 +1,13 @@
 /*! 
-	\file nsrendersystem.cpp
+  \file nsrendersystem.cpp
 	
-	\brief Definition file for nsrender_system class
+  \brief Definition file for nsrender_system class
 
-	This file contains all of the neccessary definitions for the nsrender_system class.
+  This file contains all of the neccessary definitions for the nsrender_system class.
 
-	\author Daniel Randle
-	\date November 23 2013
-	\copywrite Earth Banana Games 2013
+  \author Daniel Randle
+  \date November 23 2013
+  \copywrite Earth Banana Games 2013
 */
 
 #include <nsplugin.h>
@@ -37,18 +37,17 @@
 #include <nscam_comp.h>
 
 nsrender_system::nsrender_system() :
-    m_drawcall_map(),
+nssystem(),
+m_drawcall_map(),
     m_gbuffer(new nsgbuf_object()),
 	m_final_buf(NULL),
-    m_shadow_buf(new nsshadowbuf_object()),
+m_shadow_buf(new nsshadowbuf_object()),
 	m_shaders(),
     m_debug_draw(false),
-	m_earlyz_enabled(false),
-    m_lighting_enabled(true),
+m_lighting_enabled(true),
     m_screen_fbo(0),
 	m_fog_color(1),
-	m_fog_nf(DEFAULT_FOG_FACTOR_NEAR, DEFAULT_FOG_FACTOR_FAR),
-    nssystem()
+m_fog_nf(DEFAULT_FOG_FACTOR_NEAR, DEFAULT_FOG_FACTOR_FAR)
 {}
 
 nsrender_system::~nsrender_system()
@@ -90,11 +89,6 @@ void nsrender_system::blit_final_frame()
 		glClearColor(0.11f, 0.11f, 0.11f, 0.11f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
-}
-
-void nsrender_system::enable_earlyz(bool pEnable)
-{
-	m_earlyz_enabled = pEnable;
 }
 
 void nsrender_system::enable_lighting(bool pEnable)
@@ -168,25 +162,7 @@ void nsrender_system::draw()
 	glDepthMask(GL_TRUE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);;
-	if (m_earlyz_enabled)
-	{
-		glDepthFunc(GL_LESS);
-		
-		m_gbuffer->enabled_color_write(false);
-
-		m_shaders.early_z->bind();
-		m_shaders.early_z->set_proj_mat(camc->proj_cam());
-		_draw_scene_to_depth(m_shaders.early_z);
-
-		m_shaders.xfb_earlyz->bind();
-		m_shaders.xfb_earlyz->set_proj_cam_mat(camc->proj_cam());
-		_draw_scene_to_depth_xfb(m_shaders.xfb_earlyz);
-
-		m_gbuffer->enabled_color_write(true);
-		glDepthMask(GL_FALSE);
-		glDepthFunc(GL_LEQUAL);
-	}
+	glCullFace(GL_BACK);
 	
 	// Now draw geometry
 	gl_err_check("nstexture::_drawTransformFeedbacks");
@@ -249,11 +225,6 @@ void nsrender_system::draw()
 					m_shaders.spot_shadow->bind();
 					m_shaders.spot_shadow->set_proj_mat(projLightMat);
 					_draw_scene_to_depth(m_shaders.spot_shadow);
-
-					//cplg.mXFBSpotShadowMap->bind();
-					//cplg.mXFBSpotShadowMap->setProjLightMat(projLightMat);
-					//_drawSceneToDepthXFB(cplg.mXFBSpotShadowMap);
-
 					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
 
@@ -312,14 +283,6 @@ void nsrender_system::draw()
 					f.set_column(3,fvec4(tComp->wpos(i)*-1.0f,1.0f));
 					m_shaders.point_shadow->set_inverse_trans_mat(f);
 					_draw_scene_to_depth(m_shaders.point_shadow);
-
-					//cplg.mXFBPointShadowMap->bind();
-					//cplg.mXFBPointShadowMap->setLightPos(tComp->wpos(i));
-					//cplg.mXFBPointShadowMap->setMaxDepth(lComp->shadowClipping().y - lComp->shadowClipping().x);
-					//cplg.mXFBPointShadowMap->setProjMat(proj);
-					//cplg.mXFBPointShadowMap->setInverseTMat(translationMat4(tComp->wpos(i)*-1));
-					//_drawSceneToDepthXFB(cplg.mXFBPointShadowMap);
-
 					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
 
@@ -371,11 +334,6 @@ void nsrender_system::draw()
 					m_shaders.dir_shadow->bind();
 					m_shaders.dir_shadow->set_proj_mat(projLightMat);
 					_draw_scene_to_depth(m_shaders.dir_shadow);
-
-					m_shaders.xfb_dir_shadow->bind();
-					m_shaders.xfb_dir_shadow->set_proj_light_mat(projLightMat);
-					_draw_scene_to_depth_xfb(m_shaders.xfb_dir_shadow);
-
 					glViewport(0, 0, camc->screen_size().w, camc->screen_size().h);
 				}
 
@@ -469,7 +427,6 @@ void nsrender_system::init()
 	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
 	m_shaders.deflt = cplg->load<nsmaterial_shader>(nsstring(DEFAULT_GBUFFER_SHADER) + shext);
 	m_shaders.deflt_wireframe = cplg->load<nsmaterial_shader>(nsstring(DEFAULT_GBUFFER_WIREFRAME_SHADER) + shext);
-	m_shaders.early_z = cplg->load<nsearlyz_shader>(nsstring(DEFAULT_EARLYZ_SHADER) + shext);
 	m_shaders.light_stencil = cplg->load<nslight_stencil_shader>(nsstring(DEFAULT_LIGHTSTENCIL_SHADER) + shext);
 	m_shaders.dir_light = cplg->load<nsdir_light_shader>(nsstring(DEFAULT_DIRLIGHT_SHADER) + shext);
 	m_shaders.point_light = cplg->load<nspoint_light_shader>(nsstring(DEFAULT_POINTLIGHT_SHADER) + shext);
@@ -477,12 +434,6 @@ void nsrender_system::init()
 	m_shaders.point_shadow = cplg->load<nspoint_shadowmap_shader>(nsstring(DEFAULT_POINTSHADOWMAP_SHADER) + shext);
 	m_shaders.spot_shadow = cplg->load<nsspot_shadowmap_shader>(nsstring(DEFAULT_SPOTSHADOWMAP_SHADER) + shext);
 	m_shaders.dir_shadow = cplg->load<nsdir_shadowmap_shader>(nsstring(DEFAULT_DIRSHADOWMAP_SHADER) + shext);
-	m_shaders.xfb_default = cplg->load<nsxfb_shader>(nsstring(DEFAULT_XFBGBUFFER_SHADER) + shext);
-	m_shaders.xfb_render = cplg->load<nsrender_xfb_shader>(nsstring(DEFAULT_XFBGBUFFER_RENDER_SHADER) + shext);
-	m_shaders.xfb_earlyz = cplg->load<nsearlyz_xfb_shader>(nsstring(DEFAULT_XFBEARLYZ_SHADER) + shext);
-	m_shaders.xfb_dir_shadow = cplg->load<nsdir_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBDIRSHADOWMAP_SHADER) + shext);
-	m_shaders.xfb_point_shadow = cplg->load<nspoint_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBPOINTSHADOWMAP_SHADER) + shext);
-	m_shaders.xfb_spot_shadow = cplg->load<nsspot_shadowmap_xfb_shader>(nsstring(DEFAULT_XFBSPOTSHADOWMAP_SHADER) + shext);
 	cplg->load<nsskybox_shader>(nsstring(DEFAULT_SKYBOX_SHADER) + shext);
 	cplg->manager<nsshader_manager>()->compile_all();
 	cplg->manager<nsshader_manager>()->link_all();
@@ -493,21 +444,13 @@ void nsrender_system::init()
 	m_default_mat = cplg->load<nsmaterial>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_MAT_EXTENSION));
 
 	// Light bounds, skydome, and tile meshes
-    nsmesh * full_tile = cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	full_tile->bake_node_translation(fvec3(0.0f,0.0f,-0.45f/2.0f));
-	
+    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
     cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
-    nsmesh * half_tile = cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	
-	half_tile->bake_node_rotation(orientation(fvec4(1,0,0,90.0f)));
-	half_tile->bake_node_translation(fvec3(0,0,-0.45f/4.0f));
-
-	
+    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
 	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	nsmesh * msh = cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
-	msh->bake_node_scaling(fvec3(2,2,2));
+	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
 }
 
 void nsrender_system::enable_debug_draw(bool pDebDraw)
@@ -520,7 +463,7 @@ void nsrender_system::set_default_mat(nsmaterial * pDefMat)
 	m_default_mat = pDefMat;
 }
 
-void nsrender_system::set_shaders(const RenderShaders & pShaders)
+void nsrender_system::set_shaders(const render_shaders & pShaders)
 {
 	m_shaders = pShaders;
 }
@@ -534,8 +477,6 @@ void nsrender_system::update()
 {
 	static bool sceneerr = false;
 	static bool camerr = false;
-
-	//nse.events()->process(this);
 
 	// Warning message switches (so they dont appear every frame)
 	nsscene * scene = nse.current_scene();
@@ -564,18 +505,17 @@ void nsrender_system::update()
 	else
 		camerr = false;
 
-	 m_drawcall_map.clear();
-	 m_shader_mat_map.clear();
-	 m_xfb_draws.clear();
+	m_drawcall_map.clear();
+	m_shader_mat_map.clear();
 
 	// update render components and the draw call list
-	 fvec2 terh;
-	 nsrender_comp * rComp = NULL;
-	 nstform_comp * tComp = NULL;
-	 nsanim_comp * animComp = NULL;
-	 nsterrain_comp * terComp = NULL;
-	 nsmesh * currentMesh = NULL;
-	 nslight_comp * lc = NULL;
+	fvec2 terh;
+	nsrender_comp * rComp = NULL;
+	nstform_comp * tComp = NULL;
+	nsanim_comp * animComp = NULL;
+	nsterrain_comp * terComp = NULL;
+	nsmesh * currentMesh = NULL;
+	nslight_comp * lc = NULL;
 
 	auto iter = scene->entities<nsrender_comp>().begin();
 	while (iter != scene->entities<nsrender_comp>().end())
@@ -591,10 +531,7 @@ void nsrender_system::update()
 		if (lc != NULL)
 		{
 			if (lc->update_posted())
-			{
-				//tComp->setScale(lc->scaling());
 				lc->post_update(false);
-			}
 		}
 
 		if (rComp->update_posted())
@@ -606,42 +543,41 @@ void nsrender_system::update()
 			continue;
 		}
 
-		if (tComp->xfb_enabled())
-			m_xfb_draws.emplace((*iter));
-		else
+  
+		nsmesh::submesh * mSMesh = NULL;
+		nsmaterial * mat = NULL;
+		fmat4_vector * fTForms = NULL;
+		nsmaterial_shader * shader = NULL;
+		for (uint32 i = 0; i < currentMesh->count(); ++i)
 		{
-			nsmesh::submesh * mSMesh = NULL;
-			nsmaterial * mat = NULL;
-			fmat4_vector * fTForms = NULL;
-			nsmaterial_shader * shader = NULL;
-			for (uint32 i = 0; i < currentMesh->count(); ++i)
+			mSMesh = currentMesh->sub(i);
+			mat = nse.resource<nsmaterial>(rComp->material_id(i));
+
+			if (mat == NULL)
+				mat = m_default_mat;
+
+			shader = nse.resource<nsmaterial_shader>(mat->shader_id());
+			fTForms = NULL;
+
+			if (shader == NULL)
 			{
-				mSMesh = currentMesh->sub(i);
-				mat = nse.resource<nsmaterial>(rComp->material_id(i));
+				if (mat->wireframe())
+					shader = m_shaders.deflt_wireframe;
+				else
+					shader = m_shaders.deflt;
+			}
 
-				if (mat == NULL)
-					mat = m_default_mat;
+			if (animComp != NULL)
+				fTForms = animComp->final_transforms();
 
-				shader = nse.resource<nsmaterial_shader>(mat->shader_id());
-				fTForms = NULL;
+			if (terComp != NULL)
+				terh = terComp->height_bounds();
 
-				if (shader == NULL)
-				{
-					if (mat->wireframe())
-						shader = m_shaders.deflt_wireframe;
-					else
-						shader = m_shaders.deflt;
-				}
-
-				if (animComp != NULL)
-					fTForms = animComp->final_transforms();
-
-				if (terComp != NULL)
-					terh = terComp->height_bounds();
-
-				if (tComp != NULL)
-				{
-					m_drawcall_map[mat].emplace(draw_call(mSMesh,
+			if (tComp != NULL)
+			{
+				m_drawcall_map[mat].emplace(
+					draw_call(
+						mSMesh,
 						fTForms,
 						tComp->transform_buffer(),
 						tComp->transform_id_buffer(),
@@ -650,10 +586,10 @@ void nsrender_system::update()
 						(*iter)->plugin_id(),
 						tComp->visible_count(),
 						rComp->cast_shadow()));
-					m_shader_mat_map[shader].insert(mat);
-				}
+				m_shader_mat_map[shader].insert(mat);
 			}
 		}
+		
 		++iter;
 	}
 }
@@ -727,7 +663,7 @@ void nsrender_system::_blend_spot_light(nslight_comp * pLight)
 	m_shaders.spot_light->set_shadow_samples(pLight->shadow_samples());
 	m_shaders.spot_light->set_shadow_darkness(pLight->shadow_darkness());
 	m_shaders.spot_light->set_screen_size(fvec2(static_cast<float>(m_final_buf->size().x),
-												   static_cast<float>(m_final_buf->size().y)));
+												static_cast<float>(m_final_buf->size().y)));
 	m_shaders.spot_light->set_shadow_tex_size(
 		fvec2(static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).w),
 			  static_cast<float>(m_shadow_buf->size(nsshadowbuf_object::Direction).y)));
@@ -815,169 +751,6 @@ void nsrender_system::set_final_fbo(uint32 fbo)
 	m_final_buf->add(m_final_buf->create<nstex2d>("RenderedFrame", nsfb_object::att_color, FINAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT));
 	m_final_buf->add(m_gbuffer->depth());
 	m_final_buf->update_draw_buffers();
-}
-
-void nsrender_system::_draw_xfbs()
-{
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL)
-		return;
-	nsentity * cam = scene->camera();
-	if (cam == NULL)
-		return;
-	nstform_comp * camTComp = cam->get<nstform_comp>();
-	nscam_comp * camc = cam->get<nscam_comp>();
-
-	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
-	while (drawIter != m_xfb_draws.end())
-	{
-		nsrender_comp * rComp = (*drawIter)->get<nsrender_comp>();
-		nstform_comp * tComp = (*drawIter)->get<nstform_comp>();
-		nsmesh * mesh = nse.resource<nsmesh>(rComp->mesh_id());
-		if (mesh == NULL)
-			return;
-
-		nstform_comp::xfb_data * xbdat = tComp->xfb();
-
-		auto bufIter = xbdat->xfb_buffers.begin();
-		uint32 tFormByteOffset = 0;
-		uint32 indexByteOffset = 0;
-		while (bufIter != xbdat->xfb_buffers.end())
-		{
-			if (xbdat->update)
-			{
-				m_shaders.xfb_default->bind();
-
-				bufIter->xfb_obj->bind();
-				glEnable(GL_RASTERIZER_DISCARD);
-				bufIter->xfb_obj->begin();
-				for (uint32 subI = 0; subI < mesh->count(); ++subI)
-				{
-					nsmesh::submesh * subMesh = mesh->sub(subI);
-
-					if (subMesh->m_node != NULL)
-						m_shaders.xfb_default->set_uniform("nodeTransform", subMesh->m_node->m_world_tform);
-					else
-						m_shaders.xfb_default->set_uniform("nodeTransform", fmat4());
-
-					// Set up all of the uniform inputs
-					subMesh->m_vao.bind();
-					tComp->transform_buffer()->bind();
-					for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
-					{
-						subMesh->m_vao.add(tComp->transform_buffer(), nsshader::loc_instance_tform + tfInd);
-						subMesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd + tFormByteOffset);
-						subMesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
-					}
-
-					tComp->transform_id_buffer()->bind();
-					subMesh->m_vao.add(tComp->transform_id_buffer(), nsshader::loc_ref_id);
-					subMesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), indexByteOffset);
-					subMesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);
-
-					// Draw the stuff without sending the stuff to be rasterized
-					glDrawElementsInstanced(subMesh->m_prim_type,
-											static_cast<GLsizei>(subMesh->m_indices.size()),
-											GL_UNSIGNED_INT,
-											0,
-											bufIter->instance_count);
-					
-					gl_err_check("nsrender_system::_drawTransformFeedbacks glDrawElementsInstanced");
-
-					tComp->transform_buffer()->bind();
-					subMesh->m_vao.remove(tComp->transform_buffer());
-
-					tComp->transform_id_buffer()->bind();
-					subMesh->m_vao.remove(tComp->transform_id_buffer());
-
-					subMesh->m_vao.unbind();
-				}
-
-				bufIter->xfb_obj->end();
-				glDisable(GL_RASTERIZER_DISCARD);
-				bufIter->xfb_obj->unbind();
-			}
-
-			for (uint32 subI = 0; subI < mesh->count(); ++subI)
-			{
-				nsmesh::submesh * subMesh = mesh->sub(subI);
-
-				nsmaterial * mat = nse.resource<nsmaterial>(rComp->material_id(subI));
-				if (mat == NULL)
-					mat = m_default_mat;
-
-				nsmaterial_shader * shader = nse.resource<nsmaterial_shader>(mat->shader_id());
-				if (shader == NULL)
-					shader = m_shaders.xfb_render;
-
-				shader->bind();
-				shader->set_proj_cam_mat(camc->proj_cam());
-				shader->set_lighting_enabled(m_lighting_enabled);
-
-				glCullFace(mat->cull_mode());
-
-				if (mat->culling())
-					glEnable(GL_CULL_FACE);
-				else
-					glDisable(GL_CULL_FACE);
-
-				if (mat->wireframe())
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				else
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-				shader->set_diffusemap_enabled(mat->contains(nsmaterial::diffuse));
-				shader->set_opacitymap_enabled(mat->contains(nsmaterial::opacity));
-				shader->set_normalmap_enabled(mat->contains(nsmaterial::normal));
-				shader->set_heightmap_enabled(mat->contains(nsmaterial::height));
-
-				nsmaterial::texmap_map_const_iter cIter = mat->begin();
-				while (cIter != mat->end())
-				{
-					nstexture * t = nse.resource<nstexture>(cIter->second);
-					if (t != NULL)
-						t->enable(cIter->first);
-					else
-						dprint("nsrender_system::_drawGeometry Texture id in material " + mat->name() + " does not refer to any valid texture");
-					++cIter;
-				}
-
-				shader->set_color_mode(mat->color_mode());
-				shader->set_frag_color_out(mat->color());
-				shader->set_specular_power(mat->specular_power());
-				shader->set_specular_color(mat->specular_color());
-				shader->set_specular_intensity(mat->specular_intensity());
-				shader->set_entity_id((*drawIter)->id());
-				shader->set_plugin_id((*drawIter)->plugin_id());
-
-				if (!subMesh->m_has_tex_coords)
-					shader->set_color_mode(true);
-
-				bufIter->xfb_vao->bind();
-				glDrawTransformFeedback(GL_TRIANGLES, bufIter->xfb_obj->gl_id());
-				gl_err_check("nsrender_system::_drawTransformFeedbacks glDrawTransformFeedback");
-				bufIter->xfb_vao->unbind();
-
-
-				nsmaterial::texmap_map_const_iter eIter = mat->begin();
-				while (eIter != mat->end())
-				{
-					nstexture * t = nse.resource<nstexture>(eIter->second);
-					if (t != NULL)
-						t->enable(eIter->first);
-					else
-						dprint("nsrender_system::_drawGeometry Texture id in material " + mat->name() + " does not refer to any valid texture");
-					++eIter;
-				}
-
-			}
-			tFormByteOffset += bufIter->instance_count * sizeof(fmat4);
-			indexByteOffset += bufIter->instance_count * sizeof(uint32);
-			++bufIter;
-		}
-		xbdat->update = false;
-		++drawIter;
-	}
 }
 
 const uivec2 & nsrender_system::fog_factor()
@@ -1183,41 +956,6 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 	}
 }
 
-
-void nsrender_system::_draw_scene_to_depth_xfb(nsshader * pShader)
-{
-	xfb_draw_set::iterator drawIter = m_xfb_draws.begin();
-	while (drawIter != m_xfb_draws.end())
-	{
-		nsrender_comp * rComp = (*drawIter)->get<nsrender_comp>();
-		nstform_comp * tComp = (*drawIter)->get<nstform_comp>();
-		nsmesh * mesh = nse.resource<nsmesh>(rComp->mesh_id());
-		if (mesh == NULL)
-			return;
-
-		nstform_comp::xfb_data * xbdat = tComp->xfb();
-
-		auto bufIter = xbdat->xfb_buffers.begin();
-		uint32 tFormByteOffset = 0;
-		uint32 indexByteOffset = 0;
-		if (!xbdat->update)
-		{
-			while (bufIter != xbdat->xfb_buffers.end())
-			{
-				for (uint32 subI = 0; subI < mesh->count(); ++subI)
-				{
-					bufIter->xfb_vao->bind();
-					glDrawTransformFeedback(GL_TRIANGLES, bufIter->xfb_obj->gl_id());
-					gl_err_check("nsrender_system::_drawSceneToDepthXFB");
-					bufIter->xfb_vao->unbind();
-				}
-				++bufIter;
-			}
-		}
-		++drawIter;
-	}
-}
-
 void nsrender_system::_stencil_point_light(nslight_comp * pLight)
 {
 	nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
@@ -1261,23 +999,23 @@ void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 }
 
 nsrender_system::draw_call::draw_call(nsmesh::submesh * pSubMesh, 
-	fmat4_vector * pAnimTransforms,
-	nsbuffer_object * pTransformBuffer,
-	nsbuffer_object * pTransformIDBuffer,
-	const fvec2 & heightMinMax,
-	uint32 pEntID,
-	uint32 plugID,
-	uint32 pNumTransforms, 
-	bool pCastShadows) :
-submesh(pSubMesh),
-anim_transforms(pAnimTransforms),
-transform_buffer(pTransformBuffer),
-transform_id_buffer(pTransformIDBuffer),
-height_minmax(heightMinMax),
-entity_id(pEntID),
-plugin_id(plugID),
-transform_count(pNumTransforms),
-casts_shadows(pCastShadows)
+									  fmat4_vector * pAnimTransforms,
+									  nsbuffer_object * pTransformBuffer,
+									  nsbuffer_object * pTransformIDBuffer,
+									  const fvec2 & heightMinMax,
+									  uint32 pEntID,
+									  uint32 plugID,
+									  uint32 pNumTransforms, 
+									  bool pCastShadows) :
+	submesh(pSubMesh),
+	anim_transforms(pAnimTransforms),
+	transform_buffer(pTransformBuffer),
+	transform_id_buffer(pTransformIDBuffer),
+	height_minmax(heightMinMax),
+	entity_id(pEntID),
+	plugin_id(plugID),
+	transform_count(pNumTransforms),
+	casts_shadows(pCastShadows)
 {}
 
 nsrender_system::draw_call::~draw_call()
@@ -1329,44 +1067,30 @@ int32 nsrender_system::update_priority()
 
 
 
-bool nsrender_system::RenderShaders::error()
+bool nsrender_system::render_shaders::error()
 {
 	return (
 		deflt->error() != nsshader::error_none ||
 		deflt_wireframe->error() != nsshader::error_none ||
-		early_z->error() != nsshader::error_none ||
 		light_stencil->error() != nsshader::error_none ||
 		dir_light->error() != nsshader::error_none ||
 		point_light->error() != nsshader::error_none ||
 		spot_light->error() != nsshader::error_none ||
 		point_shadow->error() != nsshader::error_none ||
 		spot_shadow->error() != nsshader::error_none ||
-		dir_shadow->error() != nsshader::error_none ||
-		xfb_default->error() != nsshader::error_none ||
-		xfb_earlyz->error() != nsshader::error_none ||
-		xfb_dir_shadow->error() != nsshader::error_none ||
-		xfb_point_shadow->error() != nsshader::error_none ||
-		xfb_spot_shadow->error() != nsshader::error_none ||
-		xfb_render->error() != nsshader::error_none);
+		dir_shadow->error() != nsshader::error_none );
 }
 
-bool nsrender_system::RenderShaders::valid()
+bool nsrender_system::render_shaders::valid()
 {
 	return (
 		deflt != NULL &&
 		deflt_wireframe != NULL &&
-		early_z != NULL &&
 		light_stencil != NULL &&
 		dir_light != NULL &&
 		point_light != NULL &&
 		spot_light != NULL &&
 		point_shadow != NULL &&
 		spot_shadow != NULL &&
-		dir_shadow != NULL &&
-		xfb_default != NULL &&
-		xfb_earlyz != NULL &&
-		xfb_dir_shadow != NULL &&
-		xfb_point_shadow != NULL &&
-		xfb_spot_shadow != NULL &&
-		xfb_render != NULL);
+		dir_shadow != NULL );
 }

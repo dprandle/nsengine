@@ -21,28 +21,25 @@
 
 
 nsrender_comp::nsrender_comp() : 
-nscomponent(),
-m_cast_shadow(true),
-m_mesh_id(0)
+	nscomponent(),
+	m_cast_shadow(true),
+	m_mesh_id(0)
 {}
 
 nsrender_comp::~nsrender_comp()
 {}
 
+nsrender_comp::nsrender_comp(const nsrender_comp & rend_comp):
+	nscomponent(rend_comp),
+	m_cast_shadow(rend_comp.m_cast_shadow),
+	m_mesh_id(rend_comp.m_mesh_id),
+	m_mats(rend_comp.m_mats)
+{}
+	
 void nsrender_comp::clear_mats()
 {
 	m_mats.clear();
 }
-
-nsrender_comp* nsrender_comp::copy(const nscomponent * pToCopy)
-{
-	if (pToCopy == NULL)
-		return NULL;
-	const nsrender_comp * comp = (const nsrender_comp*)pToCopy;
-	(*this) = (*comp);
-	return this;
-}
-
 
 bool nsrender_comp::cast_shadow()
 {
@@ -229,13 +226,12 @@ void nsrender_comp::set_mesh_id(const uivec2 & pMeshID)
 	m_mesh_id = pMeshID;
 }
 
-nsrender_comp & nsrender_comp::operator=(const nsrender_comp & pRHSComp)
+nsrender_comp & nsrender_comp::operator=(nsrender_comp rhs_)
 {
-	m_mesh_id = pRHSComp.m_mesh_id;
-	m_cast_shadow = pRHSComp.m_cast_shadow;
-	
-	m_mats.clear();
-	m_mats.insert(pRHSComp.m_mats.begin(), pRHSComp.m_mats.end());
+	nscomponent::operator=(rhs_);
+	std::swap(m_cast_shadow, rhs_.m_cast_shadow);
+	std::swap(m_mesh_id, rhs_.m_mesh_id);
+	std::swap(m_mats, rhs_.m_mats);
 	post_update(true);
 	return (*this);
 }

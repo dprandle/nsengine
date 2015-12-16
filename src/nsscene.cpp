@@ -29,6 +29,7 @@
 #include <nslight_comp.h>
 
 nsscene::nsscene():
+	nsresource(),
 	m_tile_grid(new nstile_grid()),
 	m_camera_id(),
 	m_skydome_id(),
@@ -41,9 +42,20 @@ nsscene::nsscene():
 	set_ext(DEFAULT_SCENE_EXTENSION);
 }
 
+
+nsscene::nsscene(const nsscene & copy_):
+	nsresource(copy_)
+{}
+
 nsscene::~nsscene()
 {
 	delete m_tile_grid;
+}
+
+nsscene & nsscene::operator=(nsscene rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
 }
 
 void nsscene::clear()

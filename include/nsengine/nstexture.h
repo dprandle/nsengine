@@ -1,13 +1,13 @@
 /*! 
-	\file nstexture.h
+  \file nstexture.h
 	
-	\brief Header file for nstexture class
+  \brief Header file for nstexture class
 
-	This file contains all of the neccessary declarations for the nstexture class.
+  This file contains all of the neccessary declarations for the nstexture class.
 
-	\author Daniel Randle
-	\date November 23 2013
-	\copywrite Earth Banana Games 2013
+  \author Daniel Randle
+  \date November 23 2013
+  \copywrite Earth Banana Games 2013
 */
 
 // Internal Format : Bytes per pixel(ie 3 or 4)
@@ -24,13 +24,18 @@
 #include <nsresource.h>
 #include <nsgl_object.h>
 
+class nstexture_inst;
+
 class nstexture : public nsresource, public nsgl_object
 {
-public:
+  public:
 	struct image_data
 	{
-		image_data(uint8 * data_, uint32 size_, uint32 bpp_) :data(data_), size(size_), bpp(bpp_){}
-
+		image_data(uint8 * data_=nullptr, uint32 size_=0, uint32 bpp_=0);
+		~image_data();
+		image_data(const image_data & copy_);
+		image_data & operator=(const image_data & rhs);
+		
 		uint8 * data;
 		uint32 size;
 		uint32 bpp;
@@ -91,14 +96,19 @@ public:
 	friend void pup(PUPer & p, nstexture & sm);
 
 	nstexture(tex_type type);
+
+	nstexture(const nstexture & copy_);
+
 	~nstexture();
 
+	nstexture & operator=(nstexture_inst rhs);
+	
 	void init_gl();
 
 	void bind();
 
 	/*
-	Get the number of bytes per pixel using opengl format and type parameters
+	  Get the number of bytes per pixel using opengl format and type parameters
 	*/
 	uint32 bpp();
 
@@ -135,18 +145,18 @@ public:
 	int32 parameter_i(get_tex_param p);
 
 	/*!
-	Enable mipmaps for this texture - level of 0 means use the default max mip map level
-	If you want to disable mipmaps you need to create a new texture with them disabled
-	If the texture has been allocated then this will call generate mip map function
-	If it has not, it will call generate mip map function when it is allocated
-	\param level how many mip map levels to include
+	  Enable mipmaps for this texture - level of 0 means use the default max mip map level
+	  If you want to disable mipmaps you need to create a new texture with them disabled
+	  If the texture has been allocated then this will call generate mip map function
+	  If it has not, it will call generate mip map function when it is allocated
+	  \param level how many mip map levels to include
 	*/
 	void enable_mipmaps(int32 level = 0);
 
 	virtual void pup(nsfile_pupper * p);
 
 	/*
-	Release the opengl image name
+	  Release the opengl image name
 	*/
 	void release();
 
@@ -155,34 +165,34 @@ public:
 	tex_type texture_type() const;
 
 	/*
-	Set the format - see opengl specs for which formats are allowable - this determines how pixel data is read in
-	when we allocate or how it is returned when we get the texture data from the GPU
+	  Set the format - see opengl specs for which formats are allowable - this determines how pixel data is read in
+	  when we allocate or how it is returned when we get the texture data from the GPU
 
-	\param OpenGL format used when uploading or downloading pixel data from a stored image on the GPU
+	  \param OpenGL format used when uploading or downloading pixel data from a stored image on the GPU
 	*/
 	void set_format(int32 format);
 
 	/*
-	Set the texture internal format - it is not gaurenteed however that the image will be stored in this format - but it
-	has a good inlfuence on what the driver will do.
+	  Set the texture internal format - it is not gaurenteed however that the image will be stored in this format - but it
+	  has a good inlfuence on what the driver will do.
 
-	As per the specs, image data can be stored internally as unsigned or signed integers, floats, or unsigned/signed normalized integers.
-	Floats resolve in the shader to a vector of floats, matching exactly what they are internally. uint32egers will resolve in to a vector of uint32egers
-	in the shader, and signed integers will resolve in to a vector of signed integers. Normalized uint32egers will resolve in to a vector of floats
-	between 0.0 and 1.0 in the shader. Each integer value is divided by the max possible integer value for that component's bitdepth. For signed normalized,
-	it will resolve to a vector of floats between -1.0 and 1.0 with each positive value being divided my the max signed integer value, and each negative value
-	being divided by the most negative integer value for that component's bitdepth. Usually the ditdepth is the same for all components (where r g b and a are considered
-	components).
+	  As per the specs, image data can be stored internally as unsigned or signed integers, floats, or unsigned/signed normalized integers.
+	  Floats resolve in the shader to a vector of floats, matching exactly what they are internally. uint32egers will resolve in to a vector of uint32egers
+	  in the shader, and signed integers will resolve in to a vector of signed integers. Normalized uint32egers will resolve in to a vector of floats
+	  between 0.0 and 1.0 in the shader. Each integer value is divided by the max possible integer value for that component's bitdepth. For signed normalized,
+	  it will resolve to a vector of floats between -1.0 and 1.0 with each positive value being divided my the max signed integer value, and each negative value
+	  being divided by the most negative integer value for that component's bitdepth. Usually the ditdepth is the same for all components (where r g b and a are considered
+	  components).
 
-	You dont have to store all of the components of the texture internally - if a texture missing certain components is sampled in a shader, the missing components
-	will resolve to 0 except for alpha which will resolve to 1. The sampled color value will always be a 4 element vector (rgba).
+	  You dont have to store all of the components of the texture internally - if a texture missing certain components is sampled in a shader, the missing components
+	  will resolve to 0 except for alpha which will resolve to 1. The sampled color value will always be a 4 element vector (rgba).
 
-	GL_DEPTH_COMPONENT_16, _24, _32, and _32F are an example of where only one component is stored internally - the cool thing about these texture formats is that
-	they can be sampled with shadow samplers. The integer formats (all without the F) are all normalized.
+	  GL_DEPTH_COMPONENT_16, _24, _32, and _32F are an example of where only one component is stored internally - the cool thing about these texture formats is that
+	  they can be sampled with shadow samplers. The integer formats (all without the F) are all normalized.
 
-	This function will do nothing if the texture data has already been allocated
+	  This function will do nothing if the texture data has already been allocated
 
-	\param internalFormat The opengl acceptable image format
+	  \param internalFormat The opengl acceptable image format
 	*/
 	void set_internal_format(int32 intformat);
 
@@ -201,26 +211,26 @@ public:
 	void set_gl_name(uint32 glid);
 
 	/*
-	Set the pixel data type - see opengl doc for what types are acceptable
-	The is the type for each component given in format - if a single type such as GL_UNSIGNED_BYTE is specified then all of the components
-	given in the format are of that type. Sometimes images have different bit sizes for each component however, such as 16 bit RGB where the
-	red and blue channels are each 5 bits and the green channel is 6 bits. In this case the format would be GL_RGB and the type would be
-	GL_UNSIGNED_SHORT_5_6_5
+	  Set the pixel data type - see opengl doc for what types are acceptable
+	  The is the type for each component given in format - if a single type such as GL_UNSIGNED_BYTE is specified then all of the components
+	  given in the format are of that type. Sometimes images have different bit sizes for each component however, such as 16 bit RGB where the
+	  red and blue channels are each 5 bits and the green channel is 6 bits. In this case the format would be GL_RGB and the type would be
+	  GL_UNSIGNED_SHORT_5_6_5
 
-	The specification is GL_[base type]_[size1]_[size2]_[size3]_[size4](_REV)
+	  The specification is GL_[base type]_[size1]_[size2]_[size3]_[size4](_REV)
 
-	The _REV reversed the order the components are put in the format.. ie if the previous example was GL_UNSIGNED_SHORT_5_5_6_REV with format GL_RGB, this would
-	be equivalent to GL_UNSIGNED_SHORT_5_5_6 with format as GL_BGR
+	  The _REV reversed the order the components are put in the format.. ie if the previous example was GL_UNSIGNED_SHORT_5_5_6_REV with format GL_RGB, this would
+	  be equivalent to GL_UNSIGNED_SHORT_5_5_6 with format as GL_BGR
 
-	The base type must be some type that is large enough to store all of the 4 components
+	  The base type must be some type that is large enough to store all of the 4 components
 	*/
 	void set_pixel_data_type(int32 pType);
 
 	void unbind();
 
-protected:
+  protected:
 	/*
-	Returns the pixel size in bytes using the format
+	  Returns the pixel size in bytes using the format
 	*/
 	void _pixelSize() const;
 
@@ -235,6 +245,17 @@ protected:
 	uint32 m_border;
 	image_data m_data;
 };
+
+class nstexture_inst : public nstexture
+{
+	nstexture_inst(const nstexture & rhs):nstexture(rhs) {}
+	void init() {std::terminate();}
+ 	void pup(nsfile_pupper * p) {std::terminate();}
+	bool allocate(const void * data) {std::terminate();}
+	bool lock() {std::terminate();}
+	bool unlock() {std::terminate();}
+};
+
 
 template <class PUPer>
 void pup(PUPer & p, nstexture::image_data & dat, const nsstring & var_name)
@@ -285,25 +306,30 @@ void pup(PUPer & p, nstexture * sm)
 // Save using raw data
 class nstex1d : public nstexture
 {
-public:
+  public:
 	template <class PUPer>
 	friend void pup(PUPer & p, nstex1d & sm);
 
 	nstex1d();
+
+	nstex1d(const nstex1d & copy_);
+
 	~nstex1d();
 
-	/*
-	Using width, internal format, pixel data type, format, and mip map level this function
-	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
-	before calling allocate.
+	nstex1d & operator=(nstex1d rhs);
+
+/*
+	  Using width, internal format, pixel data type, format, and mip map level this function
+	  will allocate new texture data to the currently bound texture name. Be sure to bind the texture
+	  before calling allocate.
 	*/
 	bool allocate(const void * data);
 
 	/*
-	Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
-	Read buffer must be bound (glReadBuffer) in order to copy screen pixels
-	\param lowerLeft x and y screen coordinates
-	\param dim width and height starting from lowerLeft
+	  Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
+	  Read buffer must be bound (glReadBuffer) in order to copy screen pixels
+	  \param lowerLeft x and y screen coordinates
+	  \param dim width and height starting from lowerLeft
 	*/
 	bool allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions);
 
@@ -314,9 +340,9 @@ public:
 	bool immutable() const;
 
 	/*!
-	Lock the texture from other operations and download the pixel data for editing...
-	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	Returns true if the texture is already locked
+	  Lock the texture from other operations and download the pixel data for editing...
+	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
+	  Returns true if the texture is already locked
 	*/
 	bool lock();
 
@@ -325,34 +351,34 @@ public:
 	virtual void resize(uint32 w);
 
 	/*!
-	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	or else it returns false. It also returns 
+	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
+	  or else it returns false. It also returns 
 	*/
 	bool unlock();
 
 	bool set_compressed(uint32 byteSize);
 
 	/*
-	Set image data starting from the offset and going until offset + dimensions
-	If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
-	the store data
-	\param offset x and y offset in to the image
-	\param dimensions width and height of the sub image
-	\data Pixel data for the image
+	  Set image data starting from the offset and going until offset + dimensions
+	  If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
+	  the store data
+	  \param offset x and y offset in to the image
+	  \param dimensions width and height of the sub image
+	  \data Pixel data for the image
 	*/
 	bool set_data(const void * data, uint32 xoffset, uint32 width);
 
 	/*
-	Copy pixels from currently bound read buffer to existing texture - does not allocate space
-	\param offset the offset in elements 
+	  Copy pixels from currently bound read buffer to existing texture - does not allocate space
+	  \param offset the offset in elements 
 	*/
 	bool set_data_from_screen(uint32 xoffset, const uivec2 & lowerLeft, uint32 width);
 
 	void set_immutable(bool immutable);
 
 	uint32 size();
-
-private:
+	
+  private:
 	uint32 m_width;
 	uint32 m_comp_byte_size;
 	bool m_immutable;
@@ -375,24 +401,30 @@ void pup(PUPer & p, nstex1d * sm)
 
 class nstex2d : public nstexture
 {
-public:
+  public:
 	template <class PUPer>
 	friend void pup(PUPer & p, nstex2d & sm);
 
 	nstex2d();
+	
+	nstex2d(const nstex2d & copy_);
+
 	~nstex2d();
-	/*
-	Using width, internal format, pixel data type, format, and mip map level this function
-	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
-	before calling allocate.
+
+	nstex2d & operator=(nstex2d rhs);
+
+/*
+	  Using width, internal format, pixel data type, format, and mip map level this function
+	  will allocate new texture data to the currently bound texture name. Be sure to bind the texture
+	  before calling allocate.
 	*/
 	bool allocate(const void * data);
 
 	/*
-	Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
-	Read buffer must be bound (glReadBuffer) in order to copy screen pixels
-	\param lowerLeft x and y screen coordinates
-	\param dimensions width and height starting from lowerLeft
+	  Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
+	  Read buffer must be bound (glReadBuffer) in order to copy screen pixels
+	  \param lowerLeft x and y screen coordinates
+	  \param dimensions width and height starting from lowerLeft
 	*/
 	bool allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dimensions);
 
@@ -405,9 +437,9 @@ public:
 	void init();
 
 	/*!
-	Lock the texture from other operations and download the pixel data for editing...
-	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	Returns true if the texture is already locked
+	  Lock the texture from other operations and download the pixel data for editing...
+	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
+	  Returns true if the texture is already locked
 	*/
 	bool lock();
 
@@ -418,34 +450,34 @@ public:
 	void resize(const uivec2 & sz);
 
 	/*!
-	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	or else it returns false. It also returns
+	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
+	  or else it returns false. It also returns
 	*/
 	bool unlock();
 
 	bool set_compressed(uint32 byteSize);
 
 	/*
-	Set image data starting from the offset and going until offset + dimensions
-	If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
-	the store data
-	\param offset x and y offset in to the image
-	\param dimensions width and height of the sub image
-	\data Pixel data for the image
+	  Set image data starting from the offset and going until offset + dimensions
+	  If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
+	  the store data
+	  \param offset x and y offset in to the image
+	  \param dimensions width and height of the sub image
+	  \data Pixel data for the image
 	*/
 	bool set_data(const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
 	void set_immutable(bool immutable);
 
 	/*
-	Copy pixels from currently bound read buffer to existing texture - does not allocate space
-	\param offset the offset in elements
+	  Copy pixels from currently bound read buffer to existing texture - does not allocate space
+	  \param offset the offset in elements
 	*/
 	bool set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
 	const uivec2 & size();
 
-private:
+  private:
 	uivec2 m_size;
 	uint32 m_comp_byte_size;
 	bool m_immutable;
@@ -468,23 +500,29 @@ void pup(PUPer & p, nstex2d * sm)
 
 class nstex1d_array : public nstex2d
 {
-public:
+  public:
 	nstex1d_array();
 	~nstex1d_array();
 };
 
 class nstex3d : public nstexture
 {
-public:
+  public:
 	template <class PUPer>
 	friend void pup(PUPer & p, nstex3d & sm);
 
 	nstex3d();
+	
+	nstex3d(const nstex3d & copy_);
+
 	~nstex3d();
-	/*
-	Using width, internal format, pixel data type, format, and mip map level this function
-	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
-	before calling allocate.
+
+	nstex3d & operator=(nstex3d rhs);
+
+/*
+	  Using width, internal format, pixel data type, format, and mip map level this function
+	  will allocate new texture data to the currently bound texture name. Be sure to bind the texture
+	  before calling allocate.
 	*/
 	bool allocate(const void * data);
 
@@ -497,17 +535,17 @@ public:
 	void init();
 
 	/*!
-	Lock the texture from other operations and download the pixel data for editing...
-	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	Returns true if the texture is already locked
+	  Lock the texture from other operations and download the pixel data for editing...
+	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
+	  Returns true if the texture is already locked
 	*/
 	bool lock();
 
 	virtual void pup(nsfile_pupper * p);
 
 	/*!
-	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	or else it returns false. It also returns
+	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
+	  or else it returns false. It also returns
 	*/
 	bool unlock();
 
@@ -518,18 +556,18 @@ public:
 	bool set_compressed(uint32 byteSize);
 
 	/*
-	Set image data starting from the offset and going until offset + dimensions
-	If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
-	the store data
-	\param offset x and y offset in to the image
-	\param dimensions width and height of the sub image
-	\data Pixel data for the image
+	  Set image data starting from the offset and going until offset + dimensions
+	  If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
+	  the store data
+	  \param offset x and y offset in to the image
+	  \param dimensions width and height of the sub image
+	  \data Pixel data for the image
 	*/
 	bool set_data(const void * data, const uivec3 & offset, const uivec3 & dimensions);
 
 	/*
-	Copy pixels from currently bound read buffer to existing texture - does not allocate space
-	\param offset the offset in elements
+	  Copy pixels from currently bound read buffer to existing texture - does not allocate space
+	  \param offset the offset in elements
 	*/
 	bool set_data_from_screen(const uivec3 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
@@ -537,7 +575,7 @@ public:
 
 	const uivec3 & size();
 
-private:
+  private:
 	uivec3 m_size;
 	uint32 m_comp_byte_size;
 	bool m_immutable;
@@ -560,14 +598,14 @@ void pup(PUPer & p, nstex3d * sm)
 
 class nstex2d_array : public nstex3d
 {
-public:
+  public:
 	nstex2d_array();
 	~nstex2d_array();
 };
 
 class nstex_cubemap : public nstexture
 {
-public:
+  public:
 
 	enum cube_face {
 		pos_x = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -582,12 +620,17 @@ public:
 	friend void pup(PUPer & p, nstex_cubemap & sm);
 
 	nstex_cubemap();
+
+	nstex_cubemap(const nstex_cubemap & copy_);
+
 	~nstex_cubemap();
 
+	nstex_cubemap & operator=(nstex_cubemap rhs);
+
 	/*
-	Using width, internal format, pixel data type, format, and mip map level this function
-	will allocate new texture data to the currently bound texture name. Be sure to bind the texture
-	before calling allocate.
+	  Using width, internal format, pixel data type, format, and mip map level this function
+	  will allocate new texture data to the currently bound texture name. Be sure to bind the texture
+	  before calling allocate.
 	*/
 	bool allocate(const void * data);
 
@@ -596,10 +639,10 @@ public:
 
 	bool allocate_from_screen(const uivec2 & lowerLeft, const uivec2 dim);
 	/*
-	Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
-	Read buffer must be bound (glReadBuffer) in order to copy screen pixels
-	\param lowerLeft x and y screen coordinates
-	\param dimensions width and height starting from lowerLeft
+	  Allocate new space for a texture and copy screen pixels from whatever read buffer is currently bound
+	  Read buffer must be bound (glReadBuffer) in order to copy screen pixels
+	  \param lowerLeft x and y screen coordinates
+	  \param dimensions width and height starting from lowerLeft
 	*/
 	bool allocate_from_screen(cube_face f, const uivec2 & lowerLeft, const uivec2 dimensions);
 
@@ -612,9 +655,9 @@ public:
 	bool lock();
 
 	/*!
-	Lock the texture from other operations and download the pixel data for editing...
-	Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	Returns true if the texture is already locked
+	  Lock the texture from other operations and download the pixel data for editing...
+	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
+	  Returns true if the texture is already locked
 	*/
 	bool lock(cube_face f);
 
@@ -627,34 +670,34 @@ public:
 	bool unlock();
 
 	/*!
-	Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	or else it returns false. It also returns
+	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
+	  or else it returns false. It also returns
 	*/
 	bool unlock(cube_face f);
 
 	bool set_compressed(uint32 byteSize);
 
 	/*
-	Set image data starting from the offset and going until offset + dimensions
-	If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
-	the store data
-	\param offset x and y offset in to the image
-	\param dimensions width and height of the sub image
-	\data Pixel data for the image
+	  Set image data starting from the offset and going until offset + dimensions
+	  If data is bound to PIXEL_UNPACK_BUFFER then data will be used as a byte offset in to
+	  the store data
+	  \param offset x and y offset in to the image
+	  \param dimensions width and height of the sub image
+	  \data Pixel data for the image
 	*/
 	bool set_data(const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
 	bool set_data(cube_face f, const void * data, const uivec2 & offset, const uivec2 & dimensions);
 
 	/*
-	Copy pixels from currently bound read buffer to existing texture - does not allocate space
-	\param offset the offset in elements
+	  Copy pixels from currently bound read buffer to existing texture - does not allocate space
+	  \param offset the offset in elements
 	*/
 	bool set_data_from_screen(const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
 	bool set_data_from_screen(cube_face f, const uivec2 & offset, const uivec2 & lowerLeft, const uivec2 & dimensions);
 
-private:
+  private:
 	uivec2 m_size;
 	uint32 m_comp_byte_size;
 };
@@ -676,37 +719,43 @@ void pup(PUPer & p, nstex_cubemap * sm)
 
 class nstex_rectangle : public nstex2d
 {
-public:
+  public:
 	nstex_rectangle();
 	~nstex_rectangle();
 };
 
 class nstex_cubemap_array : public nstex3d
 {
-public:
+  public:
 	nstex_cubemap_array();
 	~nstex_cubemap_array();
 };
 
 class nstex2d_multisample : public nstex2d
 {
-public:
+  public:
 	nstex2d_multisample();
 	~nstex2d_multisample();
 };
 
 class nstex2d_multisample_array : public nstex3d
 {
-public:
+  public:
 	nstex2d_multisample_array();
 	~nstex2d_multisample_array();
 };
 
 class nstex_buffer : public nstexture
 {
-public:
+  public:
+
 	nstex_buffer();
+	
+	nstex_buffer(const nstex_buffer & copy_);
+
 	~nstex_buffer();
+
+	nstex_buffer & operator=(nstex_buffer rhs);
 
 	bool allocate(const void * data);
 

@@ -19,6 +19,7 @@ Description:
 #include <nstex_manager.h>
 
 nsmaterial::nsmaterial():
+	nsresource(),
 	m_alpha_blend(false),
 	m_shader_id(0),
 	m_color(1.0f,1.0f,1.0f,1.0f),
@@ -32,8 +33,18 @@ nsmaterial::nsmaterial():
 	set_ext(DEFAULT_MAT_EXTENSION);
 }
 
+nsmaterial::nsmaterial(const nsmaterial & copy_):
+	nsresource(copy_)
+{}
+
 nsmaterial::~nsmaterial()
 {}
+
+nsmaterial & nsmaterial::operator=(nsmaterial rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
+}
 
 nsmaterial::texmap_map_iter nsmaterial::begin()
 {
@@ -313,25 +324,3 @@ bool nsmaterial::set_map_tex_id(map_type pMapType, const uivec2 & pID, bool pOve
 	return true;
 }
 
-nsmaterial & nsmaterial::operator=(const nsmaterial & rhs_)
-{
-	if (this == &rhs_)
-		return *this;
-
-	m_alpha_blend = rhs_.m_alpha_blend;
-	m_shader_id = rhs_.m_shader_id;
-	m_color = rhs_.m_color;
-	m_color_mode = rhs_.m_color_mode;
-	m_culling_enabled = rhs_.m_culling_enabled;
-	m_cull_mode = rhs_.m_cull_mode;
-	m_spec_comp = rhs_.m_spec_comp;
-	m_tex_maps.clear();
-	auto iter = rhs_.m_tex_maps.begin();
-	while (iter != rhs_.m_tex_maps.end())
-	{
-		m_tex_maps[iter->first] = iter->second;
-		++iter;
-	}
-	m_wireframe = rhs_.m_wireframe;
-	return *this;
-}

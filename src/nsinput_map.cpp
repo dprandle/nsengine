@@ -1,10 +1,16 @@
 #include <nsinput_map.h>
 #include <nsengine.h>
 
-nsinput_map::nsinput_map()
+nsinput_map::nsinput_map():
+	nsresource()
 {
 	set_ext(DEFAULT_INPUT_MAP_EXTENSION);
 }
+
+
+nsinput_map::nsinput_map(const nsinput_map & copy_):
+	nsresource(copy_)
+{}
 
 nsinput_map::~nsinput_map()
 {
@@ -15,6 +21,13 @@ nsinput_map::~nsinput_map()
 		iter->second = NULL;
 		iter = m_contexts.erase(iter);
 	}	
+}
+
+
+nsinput_map & nsinput_map::operator=(nsinput_map rhs)
+{
+	nsresource::operator=(rhs);
+	return *this;
 }
 
 void nsinput_map::add_allowed_mod(key_val pKey)
@@ -345,3 +358,4 @@ bool nsinput_map::trigger::operator==(const trigger & pRhs)
 		mouse_modifiers == pRhs.mouse_modifiers
 		);
 }
+

@@ -16,27 +16,27 @@
 #endif
 
 nsresource::nsresource() :
-m_icon_path(),
-m_icon_tex_id(),
-m_name(),
-m_subdir(),
-m_id(0),
-m_plugin_id(0),
-m_hashed_type(0),
-m_owned(false)
+	m_icon_path(),
+	m_icon_tex_id(),
+	m_name(),
+	m_subdir(),
+	m_id(0),
+	m_plugin_id(0),
+	m_hashed_type(0),
+	m_owned(false)
 {}
 
 nsresource::nsresource(const nsresource & copy):
+	m_hashed_type(copy.m_hashed_type),
 	m_icon_path(copy.m_icon_path),
 	m_icon_tex_id(copy.m_icon_tex_id),
 	m_name(copy.m_name),
 	m_subdir(copy.m_subdir),
+	m_ext(copy.m_ext),
 	m_id(copy.m_id),
 	m_plugin_id(copy.m_plugin_id),
-	m_hashed_type(copy.m_hashed_type),
 	m_owned(false)
-{	
-}
+{}
 
 nsresource::~nsresource()
 {}
@@ -92,7 +92,7 @@ const uivec2 & nsresource::icon_tex_id() const
 }
 
 /*!
-Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
+  Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
 */
 uivec3_vector  nsresource::resources()
 {
@@ -100,8 +100,8 @@ uivec3_vector  nsresource::resources()
 }
 
 /*!
-This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
-is then it will update the handle
+  This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
+  is then it will update the handle
 */
 void nsresource::name_change(const uivec2 & oldid, const uivec2 newid)
 {
@@ -116,11 +116,6 @@ uint32 nsresource::type() const
 void nsresource::set_ext(const nsstring & pExt)
 {
 	m_ext = pExt;
-}
-
-nsresource * nsresource::copy(const nsresource * res)
-{
-	return NULL;
 }
 
 void nsresource::rename(const nsstring & pRefName)
@@ -141,8 +136,16 @@ void nsresource::set_subdir(const nsstring & pDir)
 	m_subdir = pDir;
 }
 
-nsresource & nsresource::operator=(const nsresource & rhs)
+nsresource & nsresource::operator=(nsresource_inst rhs)
 {
-	copy(&rhs);
+	std::swap(m_hashed_type, rhs.m_hashed_type);
+	std::swap(m_icon_path, rhs.m_icon_path);
+	std::swap(m_icon_tex_id, rhs.m_icon_tex_id);
+	std::swap(m_name, rhs.m_name);
+	std::swap(m_subdir, rhs.m_subdir);
+	std::swap(m_ext, rhs.m_ext);
+	std::swap(m_id, rhs.m_id);
+	std::swap(m_plugin_id, rhs.m_plugin_id);
+	std::swap(m_owned, rhs.m_owned);
 	return *this;
 }

@@ -32,7 +32,12 @@ public:
 	friend void pup(PUPer & p, nsscene & sc);
 
 	nsscene();
+
+	nsscene(const nsscene & copy_);
+
 	~nsscene();
+	
+	nsscene & operator=(nsscene rhs);
 
 	uint32 add(
 		nsentity * ent_,
