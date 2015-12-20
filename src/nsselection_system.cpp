@@ -320,7 +320,8 @@ void nsselection_system::draw()
 						if (tex != NULL)
 						{
 							m_sel_shader->set_heightmap_enabled(true);
-							tex->enable(nsmaterial::height);
+							nse.system<nsrender_system>()->set_active_texture_unit(nsmaterial::height);
+							tex->bind();
 						}
 					}
 
@@ -389,7 +390,8 @@ void nsselection_system::draw()
 						if (tex != NULL)
 						{
 							m_sel_shader->set_heightmap_enabled(true);
-							tex->enable(nsmaterial::height);
+							nse.system<nsrender_system>()->set_active_texture_unit(nsmaterial::height);
+							tex->bind();
 						}
 					}
 

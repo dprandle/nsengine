@@ -72,7 +72,7 @@ float & nsanim_comp::elapsed()
 	return m_elapsed_time;
 }
 
-void nsanim_comp::fill_joints(nsmesh::node_tree * pNodeTree, nsanim_set::animation_data * pCurrentAnim)
+void nsanim_comp::fill_joints(nsmesh::node_tree * pNodeTree, animation_data * pCurrentAnim)
 {
 	_fill_joint_transforms(pNodeTree, pNodeTree->m_root, pCurrentAnim, pNodeTree->m_root->m_world_tform);
 }
@@ -156,7 +156,7 @@ void nsanim_comp::set_anim_set_id(const uivec2 & pID)
 	post_update(true);
 }
 
-void nsanim_comp::_fill_joint_transforms(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, nsanim_set::animation_data * pCurrentAnim, fmat4 & pParentTransform)
+void nsanim_comp::_fill_joint_transforms(nsmesh::node_tree * pNodeTree, nsmesh::node * pNode, animation_data * pCurrentAnim, fmat4 & pParentTransform)
 {
 	fmat4 globalTransform;
 	nsstringstream ss;

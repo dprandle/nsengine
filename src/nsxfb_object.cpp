@@ -26,7 +26,7 @@ void nsxfb_object::begin()
 	gl_err_check("nsxfb_object::begin");
 }
 
-void nsxfb_object::bind()
+void nsxfb_object::bind() const
 {
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_gl_name);
 	gl_err_check("nsxfb_object::bind");
@@ -66,7 +66,7 @@ void nsxfb_object::set_update(bool pUpdate)
 	m_update = pUpdate;
 }
 
-void nsxfb_object::unbind()
+void nsxfb_object::unbind() const
 {
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 	gl_err_check("nsxfb_object::unbind");

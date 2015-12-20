@@ -98,7 +98,10 @@ void nsparticle_system::draw()
 		nstform_comp * camTComp = scene->camera()->get<nstform_comp>();
 		nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
 		if (tex != NULL)
-			tex->enable(nsmaterial::diffuse);
+		{
+			nse.system<nsrender_system>()->set_active_texture_unit(nsmaterial::diffuse);
+			tex->bind();
+		}
 		else
 			dprint("nsparticle_system::draw() - No random texture set - particles will be lame.");
 
@@ -220,7 +223,10 @@ void nsparticle_system::update()
 		particleShader->bind();
 		nstexture * texRand = nse.resource<nstexture>(comp->rand_tex_id());
 		if (texRand != NULL)
-			texRand->enable(RAND_TEX_UNIT);
+		{
+			nse.system<nsrender_system>()->set_active_texture_unit(RAND_TEX_UNIT);
+			texRand->bind();
+		}
 
 		particleShader->set_elapsed(comp->elapsed());
 		particleShader->set_dt(nse.timer()->fixed());

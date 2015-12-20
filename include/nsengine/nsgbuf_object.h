@@ -21,13 +21,9 @@ public:
 
 	void debug_blit(const ivec2 & scrn);
 
-	void disable_textures();
-
-	void enable_textures();
-
 	void enabled_color_write(bool pEnable);
 
-	nsfb_object::attachment * color(color_attachment_t pType);
+	nsfb_object::attachment * color(uint32 att_type);
 
 	nsfb_object::attachment * depth();
 

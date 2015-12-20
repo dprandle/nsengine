@@ -70,8 +70,13 @@ public:
 	};
 
 	nstile_grid();
+
+	nstile_grid(const nstile_grid & copy_);
+	
 	~nstile_grid();
 
+	nstile_grid & operator=(nstile_grid rhs);
+	
 	bool add(const uivec3 & item_, const fvec3 & pos_);
 
 	bool add(const uivec3 & item_, const ivec3 & space_, const fvec3 & origin_ = fvec3());

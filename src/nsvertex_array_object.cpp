@@ -27,7 +27,7 @@ void nsvertex_array_object::add(nsbuffer_object * mBuffer, uint32 pAttLoc)
 	enable(pAttLoc);
 }
 
-void nsvertex_array_object::bind()
+void nsvertex_array_object::bind() const
 {
 	glBindVertexArray(m_gl_name);
 	gl_err_check("nsvertex_array_object::bind()");
@@ -96,7 +96,7 @@ void nsvertex_array_object::release()
 	gl_err_check("nsvertex_array_object::release()");
 }
 
-void nsvertex_array_object::unbind()
+void nsvertex_array_object::unbind() const
 {
 	glBindVertexArray(0);
 	gl_err_check("nsvertex_array_object::unbind()");

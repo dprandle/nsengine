@@ -19,7 +19,7 @@ void nsrenderbuf_object::allocate()
 	m_allocated = !gl_err_check("nsrenderbuf_object::allocate");
 }
 
-void nsrenderbuf_object::bind()
+void nsrenderbuf_object::bind() const
 {
 	glBindRenderbuffer(GL_RENDERBUFFER, m_gl_name);
 	gl_err_check("nsrenderbuf_object::bind");
@@ -88,7 +88,7 @@ void nsrenderbuf_object::set_internal_format(int32 pInternalFormat)
 	m_internal_format = pInternalFormat;
 }
 
-void nsrenderbuf_object::unbind()
+void nsrenderbuf_object::unbind() const
 {
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	gl_err_check("nsfb_object::unbind");

@@ -56,7 +56,7 @@ public:
 	// On attachment the frame buffer is responsible for destroying the texture
 	bool add(attachment * att_, bool overwrite_=false);
 
-	void bind();
+	void bind() const;
 
 	attachment * create(attach_point att_point_, uint32 sampler_num_, int32 internal_format_, bool overwrite_ = true);
 
@@ -92,10 +92,6 @@ public:
 		return att;
 	}
 
-	void disable_textures();
-
-	void enable_textures();
-
     // Will return attachment with NULL as renderbuffer pointer and texture pointer if
     // there is no attachment at the attachment point
 	attachment * att(attach_point att_point_);
@@ -124,12 +120,11 @@ public:
 
 	void set_target(fb_target target_);
 	
-	void unbind();
+	void unbind() const;
 
 	void update_draw_buffers();
 
 protected:
-
 	fb_target m_target;
 	uivec2 m_size;
 

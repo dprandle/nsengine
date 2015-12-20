@@ -30,21 +30,31 @@
 
 nsscene::nsscene():
 	nsresource(),
-	m_tile_grid(new nstile_grid()),
 	m_camera_id(),
 	m_skydome_id(),
 	m_max_players(0),
 	m_bg_color(),
+	m_ents_by_comp_type(),
 	m_notes(),
 	m_creator(),
-	m_show_bit(false)
+	m_show_bit(false),
+	m_tile_grid(new nstile_grid())
 {
 	set_ext(DEFAULT_SCENE_EXTENSION);
 }
 
 
 nsscene::nsscene(const nsscene & copy_):
-	nsresource(copy_)
+	nsresource(copy_),
+	m_camera_id(copy_.m_camera_id),
+	m_skydome_id(copy_.m_skydome_id),
+	m_max_players(copy_.m_max_players),
+	m_bg_color(copy_.m_bg_color),
+	m_ents_by_comp_type(copy_.m_ents_by_comp_type),
+	m_notes(copy_.m_notes),
+	m_creator(copy_.m_creator),
+	m_show_bit(copy_.m_show_bit),
+	m_tile_grid(new nstile_grid(*copy_.m_tile_grid))
 {}
 
 nsscene::~nsscene()
@@ -55,6 +65,15 @@ nsscene::~nsscene()
 nsscene & nsscene::operator=(nsscene rhs)
 {
 	nsresource::operator=(rhs);
+	std::swap(m_camera_id,rhs.m_camera_id);
+	std::swap(m_skydome_id,rhs.m_skydome_id);
+	std::swap(m_max_players,rhs.m_max_players);
+	std::swap(m_bg_color,rhs.m_bg_color);
+	std::swap(m_ents_by_comp_type,rhs.m_ents_by_comp_type);
+	std::swap(m_notes,rhs.m_notes);
+	std::swap(m_creator,rhs.m_creator);
+	std::swap(m_show_bit,rhs.m_show_bit);
+	std::swap(m_tile_grid, rhs.m_tile_grid);
 	return *this;
 }
 

@@ -55,7 +55,19 @@ nsplugin::nsplugin():
 }
 
 nsplugin::nsplugin(const nsplugin & copy_):
-	nsresource(copy_)
+	nsresource(copy_),
+	m_res_dir(copy_.m_res_dir),
+	m_import_dir(copy_.m_import_dir),
+	m_notes(copy_.m_notes),
+	m_creator(copy_.m_creator),
+	m_creation_date(copy_.m_creation_date),
+	m_edit_date(copy_.m_edit_date),
+	m_bound(false),
+	m_managers(),
+	m_parents(copy_.m_parents),
+	m_resmap(copy_.m_resmap),
+	m_unloaded(),
+	m_add_name(copy_.m_add_name)
 {}
 
 nsplugin::~nsplugin()
@@ -72,6 +84,15 @@ nsplugin::~nsplugin()
 nsplugin & nsplugin::operator=(nsplugin rhs)
 {
 	nsresource::operator=(rhs);
+	std::swap(m_res_dir,rhs.m_res_dir);
+	std::swap(m_import_dir,rhs.m_import_dir);
+	std::swap(m_notes,rhs.m_notes);
+	std::swap(m_creator,rhs.m_creator);
+	std::swap(m_creation_date,rhs.m_creation_date);
+	std::swap(m_edit_date,rhs.m_edit_date);
+	std::swap(m_parents,rhs.m_parents);
+	std::swap(m_resmap,rhs.m_resmap);
+	std::swap(m_add_name,rhs.m_add_name);
 	return *this;
 }
 
@@ -79,6 +100,12 @@ bool nsplugin::add(nsresource * res)
 {
 	if (res == NULL)
 		return false;
+
+	if (!m_bound)
+	{
+		dprint("nsplugin::add The plugin " + m_name + " is not bound - it must be bound to add stuff");
+		return nullptr;
+	}
 
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->add(res);
@@ -123,12 +150,24 @@ bool nsplugin::add_manager(nsres_manager * manag)
 
 nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsresource * to_copy)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->create(res_typeid, resName, to_copy);
 }
 
 nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec2 & screenDim, const fvec2 & clipnf)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_camera The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsentity * cament = create<nsentity>(name);
 	if (cament == NULL)
 		return NULL;
@@ -154,6 +193,12 @@ bool nsplugin::contains(nsresource * res)
 
 nsentity * nsplugin::create_camera(const nsstring & name, const fvec2 & lrclip, const fvec2 & tbclip, const fvec2 & nfclip)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_camera The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsentity * cament = create<nsentity>(name);
 	if (cament == NULL)
 		return NULL;
@@ -177,6 +222,12 @@ nsentity * nsplugin::create_dir_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_dir_light The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
@@ -209,6 +260,12 @@ nsentity * nsplugin::create_point_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_point_light The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
@@ -247,6 +304,12 @@ bool castshadows,
 float shadowdarkness,
 int32 shadowsamples)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_spot_light The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
 	if (bounds == NULL)
 		return NULL;
@@ -306,6 +369,12 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	bool collides,
 	tile_t type)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_tile The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsmaterial * mat = get<nsmaterial>(name);
 	if (mat == NULL)
 		mat = create<nsmaterial>(name);
@@ -340,6 +409,12 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 nsentity * nsplugin::create_tile(const nsstring & name,
 	nsmaterial * mat, bool collides, tile_t type)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_tile The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsentity * ent = create<nsentity>(name);
 	if (ent == NULL)
 		return NULL;
@@ -390,6 +465,12 @@ nsentity * nsplugin::create_skydome(const nsstring & name,
 									const nsstring & tex_subdir,
 									bool prefix_import_dir_)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_skydome The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsentity * skybox = create<nsentity>(name);
 
 	if (prefix_import_dir_)
@@ -419,6 +500,12 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	const nsstring & nmfile,
 	bool importdir)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::create_terrain The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		return nullptr;
+	}
+
 	nsentity * terr = create<nsentity>(name);
 
 	if (terr == NULL)
@@ -508,11 +595,17 @@ nsscene * nsplugin::current_scene()
 
 bool nsplugin::destroy_manager(const nsstring & manager_guid)
 {
+	if (m_bound)
+		return false;
+	
 	return destroy_manager(hash_id(manager_guid));
 }
 
 bool nsplugin::destroy_manager(uint32 manager_typeid)
 {
+	if (m_bound)
+		return false;
+	
 	nsres_manager * resman = remove_manager(manager_typeid);
 	delete resman;
 	return true;
@@ -520,6 +613,12 @@ bool nsplugin::destroy_manager(uint32 manager_typeid)
 
 bool nsplugin::del(nsresource * res)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::del The plugin " + m_name + " is not bound - it must be bound to del stuff");
+		return nullptr;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->del(res);
 }
@@ -548,18 +647,36 @@ void nsplugin::name_change(const uivec2 & oldid, const uivec2 newid)
 
 nsresource * nsplugin::get(uint32 res_typeid, uint32 resid)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::get The plugin " + m_name + " is not bound - it must be bound to get stuff");
+		return nullptr;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->get(resid);
 }
 
 nsresource * nsplugin::get(uint32 res_typeid, nsresource * res)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::get The plugin " + m_name + " is not bound - it must be bound to get stuff");
+		return nullptr;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->get(res);
 }
 
 nsresource * nsplugin::get(uint32 res_typeid, const nsstring & resName)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::get The plugin " + m_name + " is not bound - it must be bound to get stuff");
+		return nullptr;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->get(resName);
 }
@@ -587,6 +704,12 @@ void nsplugin::init()
 
 nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::load_model The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		return nullptr;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->load(res_typeid, fname);
 }
@@ -600,6 +723,12 @@ nsentity * nsplugin::load_model(
 	bool occupy_comp,
 	bool flipuv)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::load_model The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		return nullptr;
+	}
+
 	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
@@ -688,6 +817,12 @@ nsentity * nsplugin::load_model(
 
 bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const nsstring & model_name, bool flipuv)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::load_model_resources The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		return false;
+	}
+
 	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
@@ -751,6 +886,12 @@ nsmesh * nsplugin::load_model_mesh(nsstring fname,
 								 const nsstring & model_name,
 								 bool flipuv)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::load_model_mesh The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		return nullptr;
+	}
+
 	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
@@ -798,6 +939,12 @@ bool nsplugin::load_model_mats(nsstring fname,
 					 const nsstring & model_name,
 					 bool flipuv)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::load_model_mats The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		return false;
+	}
+
 	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
@@ -857,6 +1004,12 @@ nsanim_set * nsplugin::load_model_anim(nsstring fname,
 								const nsstring & model_name,
 								bool flipuv)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::load_model_anim The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		return nullptr;
+	}
+
 	if (prefix_import_dir)
 		fname = m_import_dir + fname;
 
@@ -959,8 +1112,17 @@ const nsstring_set & nsplugin::parents()
 
 bool nsplugin::bind()
 {
-	if (!parents_loaded())
+	if (m_bound)
+	{
+		dprint("nsplugin::bind Cannot bind plugin " + m_name + " - it is already bound");
 		return false;
+	}
+	
+	if (!parents_loaded())
+	{
+		dprint("nsplugin::bind Cannot load plugin " + m_name + " without parents loaded");
+		return false;
+	}
 
 	auto liter = m_resmap.begin();
 	while (liter != m_resmap.end())
@@ -1001,12 +1163,24 @@ void nsplugin::save_all(const nsstring & path, nssave_resouces_callback * scallb
 
 void nsplugin::save_all(uint32 res_typeid, const nsstring & path, nssave_resouces_callback * scallback)
 {
+	if (!m_bound)
+		dprint("nsplugin::save_as Trying to save all plugin:" + m_name + " resources type: " + std::to_string(res_typeid) + " while it is not bound..");
+
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->save_all(path, scallback);	
 }
 
 bool nsplugin::save_as(nsresource * res, const nsstring & fname)
 {
+	if (res == nullptr)
+		return false;
+	
+	if (!m_bound)
+	{
+		dprint("nsplugin::save_as Trying to save resource " + res->name() + " in plugin " + m_name + " while it is not bound..");
+		return false;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->save_as(res, fname);
 }
@@ -1055,6 +1229,15 @@ void nsplugin::set_edit_date(const nsstring & pEditDate)
 
 bool nsplugin::save(nsresource * res, const nsstring & path)
 {
+	if (res == nullptr)
+		return false;
+	
+	if (!m_bound)
+	{
+		dprint("nsplugin::save Trying to save resource " + res->name() + " in plugin " + m_name + " while it is not bound..");
+		return false;
+	}
+	
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->save(res, path);
 }
@@ -1071,6 +1254,12 @@ const nsstring & nsplugin::res_dir()
 
 bool nsplugin::resource_changed(nsresource * res)
 {
+	if (!m_bound)
+	{
+		dprint("nsplugin::resource_changed Trying to check plugin " + m_name + " while it is not bound..");
+		return false;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->changed(res);
 }
@@ -1086,6 +1275,13 @@ bool nsplugin::destroy(nsresource * res)
 {
 	if (res == NULL)
 		return false;
+
+	if (!m_bound)
+	{
+		dprint("nsplugin::destroy Trying to destroy " + res->name() + " while owning plugin " + m_name + " is not bound..");
+		return false;
+	}
+
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->destroy(res);
 }
@@ -1122,6 +1318,15 @@ void nsplugin::pup(nsfile_pupper * p)
 
 nsresource * nsplugin::remove(nsresource * res)
 {
+	if (res == nullptr)
+		return nullptr;
+	
+	if (!m_bound)
+	{
+		dprint("nsplugin::remove Trying to remove " + res->name() + " while owning plugin " + m_name + " is not bound..");
+		return nullptr;
+	}
+	
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->remove(res);
 }

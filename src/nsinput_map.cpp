@@ -9,8 +9,17 @@ nsinput_map::nsinput_map():
 
 
 nsinput_map::nsinput_map(const nsinput_map & copy_):
-	nsresource(copy_)
-{}
+	nsresource(copy_),
+	m_allowed_mods(copy_.m_allowed_mods)
+{
+	auto iter = copy_.m_contexts.begin();
+	while (iter != copy_.m_contexts.end())
+	{
+		ctxt * nc = create_context(iter->first);
+		(*nc) = (*iter->second);
+		++iter;
+	}
+}
 
 nsinput_map::~nsinput_map()
 {
@@ -27,6 +36,8 @@ nsinput_map::~nsinput_map()
 nsinput_map & nsinput_map::operator=(nsinput_map rhs)
 {
 	nsresource::operator=(rhs);
+	std::swap(m_allowed_mods, rhs.m_allowed_mods);
+	std::swap(m_contexts, rhs.m_contexts);
 	return *this;
 }
 

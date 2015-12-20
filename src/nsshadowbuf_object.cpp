@@ -32,38 +32,6 @@ void nsshadowbuf_object::set_point_face(nstex_cubemap::cube_face face_)
 	m_spot_fb->set_cube_face(nsfb_object::att_depth, face_);
 }
 
-void nsshadowbuf_object::disable(const map_t & pMType)
-{
-	switch (pMType)
-	{
-	case (Direction) :
-		m_dir_fb->disable_textures();
-		break;
-	case (Spot) :
-		m_spot_fb->disable_textures();
-		break;
-	case (Point) :
-		m_point_fb->disable_textures();
-		break;
-	}
-}
-
-void nsshadowbuf_object::enable(const map_t & pMType)
-{
-	switch (pMType)
-	{
-	case (Direction) :
-		m_dir_fb->enable_textures();
-		break;
-	case (Spot) :
-		m_spot_fb->enable_textures();
-		break;
-	case (Point) :
-		m_point_fb->enable_textures();
-		break;
-	}
-}
-
 void nsshadowbuf_object::set_fb(nsfb_object * fb, const map_t & map)
 {
 	switch (map)

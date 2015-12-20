@@ -150,6 +150,8 @@ public:
 	nsrender_system();
 	~nsrender_system();
 
+	uint32 active_tex_unit();
+
 	void blit_final_frame();
 
 	void draw();
@@ -157,6 +159,8 @@ public:
 	void enable_debug_draw(bool pDebDraw);
 
 	void enable_lighting(bool pEnable);
+
+	void set_active_texture_unit(uint32 tex_unit);
 
 	nsmaterial * default_mat();
 
@@ -218,6 +222,7 @@ private:
 	void _draw_scene_to_depth(nsdepth_shader * pShader);
 	void _draw_call(drawcall_set::iterator pDCIter);
 	bool _valid_check();
+	void _bind_gbuffer_textures();
 
 	bool m_debug_draw;
 	bool m_lighting_enabled;

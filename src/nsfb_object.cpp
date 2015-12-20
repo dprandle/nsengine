@@ -79,7 +79,7 @@ bool nsfb_object::add(attachment * pAttachment, bool pOverwrite)
 	return true;
 }
 
-void nsfb_object::bind()
+void nsfb_object::bind() const
 {
 	// use mTarget - easily set with setTarget
 	glBindFramebuffer(m_target, m_gl_name);
@@ -107,40 +107,12 @@ nsfb_object::attachment * nsfb_object::create(attach_point pAttPoint, uint32 pSa
 
 	if (!add(att, overwrite))
 	{
-		dprint("nsfb_object::Attachment unable to add attachment at " + att->m_att_point);
+		dprint("nsfb_object::Attachment unable to add attachment at " + std::to_string(att->m_att_point));
 		delete att;
 		att = NULL;
 	}
 
 	return att;
-}
-
-void nsfb_object::disable_textures()
-{
-	// Remember that disabling first sets the texture unit
-	attachment_array::iterator iter = m_color_atts.begin();
-	while (iter != m_color_atts.end())
-	{
-		if ((*iter)->m_texture != NULL)
-			(*iter)->m_texture->disable((*iter)->m_tex_unit);
-		++iter;
-	}
-	if (m_depth_stencil_att != NULL && m_depth_stencil_att->m_texture != NULL)
-		m_depth_stencil_att->m_texture->disable(m_depth_stencil_att->m_tex_unit);
-}
-
-
-void  nsfb_object::enable_textures()
-{
-	attachment_array::iterator iter = m_color_atts.begin();
-	while (iter != m_color_atts.end())
-	{
-		if ((*iter)->m_texture != NULL)
-			(*iter)->m_texture->enable((*iter)->m_tex_unit);
-		++iter;
-	}
-	if (m_depth_stencil_att != NULL && m_depth_stencil_att->m_texture != NULL)
-		m_depth_stencil_att->m_texture->enable(m_depth_stencil_att->m_tex_unit);
 }
 
 nsfb_object::attachment * nsfb_object::att(attach_point pAttPoint)
@@ -315,7 +287,7 @@ void nsfb_object::set_target(fb_target pTarget)
 	m_target = pTarget;
 }
 
-void nsfb_object::unbind()
+void nsfb_object::unbind() const
 {
 	// By unbind I just mean bind the main frame buffer back
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

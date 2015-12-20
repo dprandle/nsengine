@@ -32,7 +32,9 @@ nsentity::nsentity(const nsentity & copy):
 	auto iter = copy.m_components.begin();
 	while (iter != copy.m_components.end())
 	{
-		create(iter->second);
+		// Copy all components except for tform comp
+		if (iter->first != type_to_hash(nstform_comp))
+			create(iter->second);
 		++iter;
 	}
 }

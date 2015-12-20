@@ -94,7 +94,7 @@ void nsanim_system::update()
 				continue;
 			}
 
-			nsanim_set::animation_data * currAnim = animset->anim_data(mCurrentAnim);
+			animation_data * currAnim = animset->anim_data(mCurrentAnim);
 			if (currAnim == NULL)
 			{
 				dprint("nsanim_system::update anim set not found " + (*entIter)->name());

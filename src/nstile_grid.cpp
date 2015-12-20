@@ -29,8 +29,20 @@ nstile_grid::nstile_grid()
 	}
 }
 
+nstile_grid::nstile_grid(const nstile_grid & copy_):
+	m_world_map(copy_.m_world_map)
+{
+	
+}
+
 nstile_grid::~nstile_grid()
 {}
+
+nstile_grid & nstile_grid::operator=(nstile_grid rhs)
+{
+	std::swap(m_world_map, rhs.m_world_map);
+	return *this;
+}
 
 bool nstile_grid::add(const uivec3 & pItem, const fvec3 & pPos)
 {

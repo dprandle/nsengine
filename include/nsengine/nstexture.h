@@ -22,6 +22,7 @@
 #define BASE_CUBEMAP_FACE GL_TEXTURE_CUBE_MAP_POSITIVE_X
 
 #include <nsresource.h>
+#include <nsvector.h>
 #include <nsgl_object.h>
 
 class nstexture_inst;
@@ -105,16 +106,14 @@ class nstexture : public nsresource, public nsgl_object
 	
 	void init_gl();
 
-	void bind();
+	void bind() const;
 
 	/*
 	  Get the number of bytes per pixel using opengl format and type parameters
 	*/
-	uint32 bpp();
+	uint32 bpp() const;
 
-	uint32 channels();
-
-	void disable(uint32 pTexUnit);
+	uint32 channels() const;
 
 	virtual bool allocate(const void * data) = 0;
 
@@ -122,21 +121,17 @@ class nstexture : public nsresource, public nsgl_object
 
 	bool allocated();
 
-	virtual image_data data();
+	virtual image_data data() const = 0;
+
+	virtual void data(uint8 * array_, uint32 size_) const = 0;
+
+	virtual void data(ui8_vector * array_) const = 0;
 
 	int32 format() const;
 
 	int32 pixel_data_type() const;
 
-	virtual bool lock() = 0;
-
-	bool locked() const;
-
-	virtual bool unlock() = 0;
-
 	int32 internal_format() const;
-
-	void enable(uint32 pTexUnit);
 
 	uint32 border() const;
 
@@ -226,24 +221,18 @@ class nstexture : public nsresource, public nsgl_object
 	*/
 	void set_pixel_data_type(int32 pType);
 
-	void unbind();
+	void unbind() const;
 
   protected:
-	/*
-	  Returns the pixel size in bytes using the format
-	*/
-	void _pixelSize() const;
-
+	
 	tex_type m_tex_type;
 	bool m_allocated;
-	bool m_locked;
 	GLint m_format;
 	GLint m_internal_format;
 	GLint m_pixel_data_type;
 	int32 m_mipmap_level;
 	bool m_generate_mipmaps;
 	uint32 m_border;
-	image_data m_data;
 };
 
 class nstexture_inst : public nstexture
@@ -252,8 +241,9 @@ class nstexture_inst : public nstexture
 	void init() {std::terminate();}
  	void pup(nsfile_pupper * p) {std::terminate();}
 	bool allocate(const void * data) {std::terminate();}
-	bool lock() {std::terminate();}
-	bool unlock() {std::terminate();}
+	image_data data() const {std::terminate();}
+	void data(uint8 * array_, uint32 size_) const {std::terminate();}
+	void data(ui8_vector * array_) const {std::terminate();}
 };
 
 
@@ -292,9 +282,8 @@ void pup(PUPer & p, nstexture & sm)
 		sm.allocate(NULL);
 		sm.unbind();
 	}
-	sm.lock();
-	pup(p, sm.m_data,"data");
-	sm.unlock();
+	nstexture::image_data i_dat(sm.data());
+	pup(p, i_dat, "data");
 }
 
 template <class PUPer>
@@ -339,22 +328,15 @@ class nstex1d : public nstexture
 
 	bool immutable() const;
 
-	/*!
-	  Lock the texture from other operations and download the pixel data for editing...
-	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	  Returns true if the texture is already locked
-	*/
-	bool lock();
+	virtual image_data data() const;
+
+	virtual void data(uint8 * array_, uint32 size_) const;
+
+	virtual void data(ui8_vector * array_) const;
 
 	virtual void pup(nsfile_pupper * p);
 
 	virtual void resize(uint32 w);
-
-	/*!
-	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	  or else it returns false. It also returns 
-	*/
-	bool unlock();
 
 	bool set_compressed(uint32 byteSize);
 
@@ -430,30 +412,23 @@ class nstex2d : public nstexture
 
 	bool compressed() const;
 
+	virtual image_data data() const;
+
+	virtual void data(uint8 * array_, uint32 size_) const;
+
+	virtual void data(ui8_vector * array_) const;
+
 	const uivec2 & size() const;
 
 	bool immutable() const;
 
 	void init();
 
-	/*!
-	  Lock the texture from other operations and download the pixel data for editing...
-	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	  Returns true if the texture is already locked
-	*/
-	bool lock();
-
 	virtual void pup(nsfile_pupper * p);
 
 	virtual void resize(uint32 w, uint32 h);
 
 	void resize(const uivec2 & sz);
-
-	/*!
-	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	  or else it returns false. It also returns
-	*/
-	bool unlock();
 
 	bool set_compressed(uint32 byteSize);
 
@@ -528,26 +503,19 @@ class nstex3d : public nstexture
 
 	bool compressed() const;
 
+	virtual image_data data() const;
+
+	virtual void data(uint8 * array_, uint32 size_) const;
+
+	virtual void data(ui8_vector * array_) const;
+
 	const uivec3 & size() const;
 
 	bool immutable() const;
 
 	void init();
 
-	/*!
-	  Lock the texture from other operations and download the pixel data for editing...
-	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	  Returns true if the texture is already locked
-	*/
-	bool lock();
-
 	virtual void pup(nsfile_pupper * p);
-
-	/*!
-	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	  or else it returns false. It also returns
-	*/
-	bool unlock();
 
 	virtual void resize(uint32 w, uint32 h, uint32 layers);
 
@@ -648,32 +616,27 @@ class nstex_cubemap : public nstexture
 
 	bool compressed() const;
 
+	virtual image_data data() const;
+
+	virtual void data(uint8 * array_, uint32 size_) const;
+
+	virtual void data(ui8_vector * array_) const;
+	
+	virtual image_data data(cube_face f) const;
+
+	virtual void data(cube_face f, uint8 * array_, uint32 size_) const;
+
+	virtual void data(cube_face f, ui8_vector * array_) const;
+
 	const uivec2 & size() const;
 
 	void init();
-
-	bool lock();
-
-	/*!
-	  Lock the texture from other operations and download the pixel data for editing...
-	  Returns true if the data is downloaded and false otherwise, or if the texture is not allocated
-	  Returns true if the texture is already locked
-	*/
-	bool lock(cube_face f);
 
 	virtual void pup(nsfile_pupper * p);
 
 	virtual void resize(uint32 w, uint32 h);
 	
 	void resize(const uivec2 & size);
-
-	bool unlock();
-
-	/*!
-	  Unlock the texture and upload the pixel data back to the GPU. Returns true if the data is uploaded without error,
-	  or else it returns false. It also returns
-	*/
-	bool unlock(cube_face f);
 
 	bool set_compressed(uint32 byteSize);
 
@@ -759,11 +722,13 @@ class nstex_buffer : public nstexture
 
 	bool allocate(const void * data);
 
+	virtual image_data data() const;
+
+	virtual void data(uint8 * array_, uint32 size_) const;
+
+	virtual void data(ui8_vector * array_) const;
+
 	void init();
-
-	bool lock();
-
-	bool unlock();
 };
 
 #endif

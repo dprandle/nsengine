@@ -27,7 +27,7 @@ nsbuffer_object::~nsbuffer_object()
 {}
 
 	
-void nsbuffer_object::bind()
+void nsbuffer_object::bind() const
 {
 	glBindBuffer(m_target, m_gl_name);
 	gl_err_check("nsbuffer_object::bind()");
@@ -103,7 +103,7 @@ bool nsbuffer_object::set_target(target_buffer pTarget)
 	return true;
 }
 
-void nsbuffer_object::unbind()
+void nsbuffer_object::unbind() const
 {
 	glBindBuffer(m_target, 0);
 	gl_err_check("nsbuffer_object::unbind()");

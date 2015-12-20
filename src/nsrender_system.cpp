@@ -38,16 +38,16 @@
 
 nsrender_system::nsrender_system() :
 nssystem(),
-m_drawcall_map(),
-    m_gbuffer(new nsgbuf_object()),
-	m_final_buf(NULL),
-m_shadow_buf(new nsshadowbuf_object()),
-	m_shaders(),
-    m_debug_draw(false),
-m_lighting_enabled(true),
-    m_screen_fbo(0),
-	m_fog_color(1),
-m_fog_nf(DEFAULT_FOG_FACTOR_NEAR, DEFAULT_FOG_FACTOR_FAR)
+  m_drawcall_map(),
+  m_gbuffer(new nsgbuf_object()),
+  m_final_buf(NULL),
+  m_shadow_buf(new nsshadowbuf_object()),
+  m_shaders(),
+  m_debug_draw(false),
+  m_lighting_enabled(true),
+  m_screen_fbo(0),
+  m_fog_color(1),
+  m_fog_nf(DEFAULT_FOG_FACTOR_NEAR, DEFAULT_FOG_FACTOR_FAR)
 {}
 
 nsrender_system::~nsrender_system()
@@ -165,14 +165,9 @@ void nsrender_system::draw()
 	glCullFace(GL_BACK);
 	
 	// Now draw geometry
-	gl_err_check("nstexture::_drawTransformFeedbacks");
-	//_drawTransformFeedbacks();
-	gl_err_check("nstexture::_drawTransformFeedbacks");
 	_draw_geometry();
-	gl_err_check("nstexture::_drawTransformFeedbacks");
 	m_gbuffer->unbind();
-	m_gbuffer->enable_textures();
-
+	_bind_gbuffer_textures();
 
 	if (m_debug_draw)
 	{
@@ -181,7 +176,6 @@ void nsrender_system::draw()
 		m_gbuffer->debug_blit(camc->screen_size());
 		return;
 	}
-
 
 	m_final_buf->set_target(nsfb_object::fb_draw);
 	m_final_buf->bind();
@@ -229,7 +223,12 @@ void nsrender_system::draw()
 				}
 
 				m_final_buf->bind();
-				m_shadow_buf->enable(nsshadowbuf_object::Spot);
+
+				// Bind the spot light's attachment texture for use in the shader
+				nsfb_object::attachment * attch = m_shadow_buf->fb(nsshadowbuf_object::Spot)->att(nsfb_object::att_depth);
+				set_active_texture_unit(attch->m_tex_unit);
+				attch->m_texture->bind();
+
 				m_final_buf->set_draw_buffer(nsfb_object::att_none);
 				glDepthMask(GL_FALSE);
 				glClear(GL_STENCIL_BUFFER_BIT);
@@ -287,7 +286,12 @@ void nsrender_system::draw()
 				}
 
 				m_final_buf->bind();
-				m_shadow_buf->enable(nsshadowbuf_object::Point);
+
+				// bind the point light shadow fb's attachment for use in the shader
+				nsfb_object::attachment * attch = m_shadow_buf->fb(nsshadowbuf_object::Point)->att(nsfb_object::att_depth);
+				set_active_texture_unit(attch->m_tex_unit);
+				attch->m_texture->bind();
+
 				m_final_buf->set_draw_buffer(nsfb_object::att_none);
 				glDepthMask(GL_FALSE);
 				glClear(GL_STENCIL_BUFFER_BIT);
@@ -339,7 +343,12 @@ void nsrender_system::draw()
 
 
 				m_final_buf->bind();
-				m_shadow_buf->enable(nsshadowbuf_object::Direction);
+
+				// Bind the dir light's attachment texture for use in the shader
+				nsfb_object::attachment * attch = m_shadow_buf->fb(nsshadowbuf_object::Direction)->att(nsfb_object::att_depth);
+				set_active_texture_unit(attch->m_tex_unit);
+				attch->m_texture->bind();
+
 				m_final_buf->set_draw_buffer(nsfb_object::att_color);
 				glClear(GL_STENCIL_BUFFER_BIT);
 				glDepthMask(GL_FALSE);
@@ -394,6 +403,13 @@ void nsrender_system::resize_screen(const ivec2 & size)
 const ivec2 & nsrender_system::screen_size()
 {
 	return m_screen_size;	
+}
+
+uint32 nsrender_system::active_tex_unit()
+{
+	GLint act_un;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &act_un);
+	return act_un - BASE_TEX_UNIT;
 }
 
 bool nsrender_system::debug_draw()
@@ -456,6 +472,12 @@ void nsrender_system::init()
 void nsrender_system::enable_debug_draw(bool pDebDraw)
 {
 	m_debug_draw = pDebDraw;
+}
+
+void nsrender_system::set_active_texture_unit(uint32 tex_unit)
+{
+	glActiveTexture(BASE_TEX_UNIT + tex_unit);
+	gl_err_check("nstexture::enable");
 }
 
 void nsrender_system::set_default_mat(nsmaterial * pDefMat)
@@ -851,7 +873,10 @@ void nsrender_system::_draw_geometry()
 			{
 				nstexture * t = nse.resource<nstexture>(cIter->second);
 				if (t != NULL)
-					t->enable(cIter->first);
+				{
+					set_active_texture_unit(cIter->first);
+					t->bind();
+				}
 				++cIter;
 			}
 
@@ -891,14 +916,6 @@ void nsrender_system::_draw_geometry()
 				++dcIter;
 			}
 			gl_err_check("nsrender_system::draw_geometry");
-			nsmaterial::texmap_map_const_iter eIter = (*matIter)->begin();
-			while (eIter != (*matIter)->end())
-			{
-				nstexture * t = nse.resource<nstexture>(eIter->second);
-				if (t != NULL)
-					t->disable(eIter->first);
-				++eIter;
-			}
 			++matIter;
 		}
 		++shaderIter;
@@ -916,7 +933,8 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 		if (tex != NULL)
 		{
 			pShader->set_height_map_enabled(true);
-			tex->enable(nsmaterial::height);
+			set_active_texture_unit(nsmaterial::height);
+			tex->bind();
 		}
 
 		drawcall_set & currentSet = matIter->second;
@@ -1065,7 +1083,15 @@ int32 nsrender_system::update_priority()
 	return RENDER_SYS_UPDATE_PR;
 }
 
-
+void nsrender_system::_bind_gbuffer_textures()
+{
+	for (uint32 i = 0; i < nsgbuf_object::attrib_count; ++i)
+	{
+		nsfb_object::attachment * att = m_gbuffer->color(i);
+		set_active_texture_unit(att->m_tex_unit);
+		att->m_texture->bind();
+	}
+}
 
 bool nsrender_system::render_shaders::error()
 {

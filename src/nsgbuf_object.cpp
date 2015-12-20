@@ -52,11 +52,6 @@ void nsgbuf_object::debug_blit(const ivec2 & scrn)
 	m_tex_fb->set_target(nsfb_object::fb_read_draw);
 }
 
-void nsgbuf_object::disable_textures()
-{
-	m_tex_fb->disable_textures();
-}
-
 void nsgbuf_object::enabled_color_write(bool pEnable)
 {
 	if (pEnable)
@@ -65,20 +60,15 @@ void nsgbuf_object::enabled_color_write(bool pEnable)
 		m_tex_fb->set_draw_buffer(nsfb_object::att_none);
 }
 
-void nsgbuf_object::enable_textures()
-{
-	m_tex_fb->enable_textures();
-}
-
-nsfb_object::attachment * nsgbuf_object::color(color_attachment_t pType)
+nsfb_object::attachment * nsgbuf_object::color(uint32 att_type)
 {
     // If this check fails it probably means the GBuffer was not initialized
-	if (pType >= attrib_count)
+	if (att_type >= attrib_count)
 	{
-		dprint("NSGFrameBuffer::getColorAttachment Parameter pType is larger than the color attachments vector");
+		dprint("NSGFrameBuffer::getColorAttachment Parameter att_type is larger than the color attachments vector");
 		return NULL;
 	}
-	return m_tex_fb->att(nsfb_object::attach_point(nsfb_object::att_color + pType));
+	return m_tex_fb->att(nsfb_object::attach_point(nsfb_object::att_color + att_type));
 }
 
 nsfb_object::attachment * nsgbuf_object::depth()

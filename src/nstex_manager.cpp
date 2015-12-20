@@ -132,7 +132,6 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	tex->resize(dim);
 	tex->set_pixel_data_type(GL_UNSIGNED_BYTE);
 
-	tex->init_gl();
 	tex->bind();
 	tex->allocate(ilGetData());
 	tex->enable_mipmaps(0);
@@ -198,7 +197,6 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	fNames[2] = fName + pYPlus; fNames[3] = fName + pYMinus;
 	fNames[4] = fName + pZPlus; fNames[5] = fName + pZMinus;
 
-	tex->init_gl();
 	tex->bind();
 
 	for (uint32 i = 0; i < fNames.size(); ++i)
@@ -455,9 +453,10 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
             localFname = fName + cubemap->name() + faceName + nsstring(DEFAULT_TEX_EXTENSION);
 
 			cubemap->bind();
-			cubemap->lock(nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + curFace));
+			nstexture::image_data tex_data = cubemap->data(
+				nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + curFace));
 			cubemap->unbind();
-			if (cubemap->data().data == NULL)
+			if (tex_data.data == NULL)
 			{
 				ret = false;
 				continue;
@@ -472,13 +471,10 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 					   cubemap->channels(),
 					   cubemap->format(),
 					   cubemap->pixel_data_type(),
-					   cubemap->data().data);
+					   tex_data.data);
 			ret = true && ilSaveImage((const ILstring)localFname.c_str());
 			ilDeleteImages(1, &imageID);
 			imageID = 0;
-			cubemap->bind();
-			cubemap->unlock(nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + curFace));
-			cubemap->unbind();
 			ILenum err = ilGetError();
 			while (err != IL_NO_ERROR)
 			{
@@ -510,17 +506,20 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 		return false;
 	}
 	cubemap->bind();
-	cubemap->lock();
+	nstexture::image_data tex_data = cubemap->data();
 	cubemap->unbind();
 
-	if (cubemap->data().data == NULL)
+	if (tex_data.data == NULL)
 		return false;
 
-	uint32 ret = SOIL_save_image(fName.c_str(), savetype, cubemap->size().w, cubemap->size().h*6, cubemap->channels(), (uint8*)cubemap->data().data);
-	cubemap->bind();
-	cubemap->unlock();
-	cubemap->unbind();
-
+	uint32 ret = SOIL_save_image(
+		fName.c_str(),
+		savetype,
+		cubemap->size().w,
+		cubemap->size().h*6,
+		cubemap->channels(),
+		tex_data.data);
+	
 	if (ret == 0)
 	{
 		dprint("nstex_manager::loadCubemap Could not save NSTexCubemap to file " + fName + " Error: " + nsstring(SOIL_last_result()));
@@ -555,10 +554,10 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
     }
 
 	image->bind();
-	image->lock();
+	nstexture::image_data tex_data = image->data();
 	image->unbind();
 
-	if (image->data().data == NULL)
+	if (tex_data.data == NULL)
 		return false;
 
 	ILuint imageID = 0;
@@ -571,13 +570,10 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 			   image->channels(),
 			   image->format(),
 			   image->pixel_data_type(),
-			   image->data().data);
+			   tex_data.data);
 
 	bool ret = ilSaveImage((const ILstring)fName.c_str()) && true;
 	ilDeleteImages(1, &imageID);
-	image->bind();
-	image->unlock();
-	image->unbind();
 
 	ILenum err = ilGetError();
 	while (err != IL_NO_ERROR)

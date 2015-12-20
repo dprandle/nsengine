@@ -22,7 +22,13 @@ nsanim_set::nsanim_set():
 nsanim_set::nsanim_set(const nsanim_set & copy_):
 	nsresource(copy_)
 {
-	
+	auto iter = copy_.m_animmap.begin();
+	while (iter != copy_.m_animmap.end())
+	{
+		animation_data * nd = create_anim_data(iter->first);
+		(*nd) = (*iter->second);
+		++iter;
+	}
 }
 
 nsanim_set::~nsanim_set()
@@ -72,7 +78,7 @@ void nsanim_set::pup(nsfile_pupper * p)
 	}
 }
 
-nsanim_set::animation_data * nsanim_set::create_anim_data(const nsstring & pAnimationName)
+animation_data * nsanim_set::create_anim_data(const nsstring & pAnimationName)
 {
 	animation_data * animData = new animation_data();
 	animData->animation_name = pAnimationName;
@@ -80,7 +86,7 @@ nsanim_set::animation_data * nsanim_set::create_anim_data(const nsstring & pAnim
 	return animData;
 }
 
-nsanim_set::animation_data * nsanim_set::anim_data(const nsstring & pAnimationName)
+animation_data * nsanim_set::anim_data(const nsstring & pAnimationName)
 {
 	animmap_iter iter = m_animmap.find(pAnimationName);
 	if (iter != m_animmap.end())
@@ -104,12 +110,26 @@ fmat4 nsanim_set::anim_joint_transform(const nsstring & pAnimationName,
 	return anim_data(pAnimationName)->joint_transform(pNodeName,pTime);
 }
 
-nsanim_set::animation_data::animation_data(): anim_node_map(),
+animation_data::animation_data(): anim_node_map(),
 	animation_name(),
 	duration(0.0f)
 {}
 
-nsanim_set::animation_data::~animation_data()
+animation_data::animation_data(const animation_data & copy_):
+	animation_name(copy_.animation_name),
+	duration(copy_.duration),
+	ticks_per_second_(copy_.ticks_per_second_)
+{
+	auto iter = copy_.anim_node_map.begin();
+	while (iter != copy_.anim_node_map.end())
+	{
+		animation_node * nd = create_node(iter->first);
+		(*nd) = (*iter->second);
+		++iter;
+	}
+}
+
+animation_data::~animation_data()
 {
 	anim_nodemap_iter iter = anim_node_map.begin();
 	while (iter != anim_node_map.end())
@@ -121,7 +141,16 @@ nsanim_set::animation_data::~animation_data()
 	anim_node_map.clear();
 }
 
-nsanim_set::animation_data::animation_node * nsanim_set::animation_data::create_node(const nsstring & pNodeName)
+animation_data & animation_data::operator=(animation_data rhs)
+{
+	std::swap(anim_node_map, rhs.anim_node_map);
+	std::swap(animation_name, rhs.animation_name);
+	std::swap(duration, rhs.duration);
+	std::swap(ticks_per_second_, rhs.ticks_per_second_);
+	return *this;
+}
+
+animation_node * animation_data::create_node(const nsstring & pNodeName)
 {
 	animation_node * animNode = new animation_node();
 	animNode->name = pNodeName;
@@ -129,7 +158,7 @@ nsanim_set::animation_data::animation_node * nsanim_set::animation_data::create_
 	return animNode;
 }
 
-nsanim_set::animation_data::animation_node * nsanim_set::animation_data::anim_node(const nsstring & pNodeName)
+animation_node * animation_data::anim_node(const nsstring & pNodeName)
 {
 	anim_nodemap_iter iter = anim_node_map.find(pNodeName);
 	if (iter != anim_node_map.end())
@@ -137,7 +166,7 @@ nsanim_set::animation_data::animation_node * nsanim_set::animation_data::anim_no
 	return NULL;
 }
 
-fmat4 nsanim_set::animation_data::joint_transform(const nsstring & pNodeName, float pTime)
+fmat4 animation_data::joint_transform(const nsstring & pNodeName, float pTime)
 {
 	anim_nodemap_iter iter = anim_node_map.find(pNodeName);
 	if (iter != anim_node_map.end())
@@ -145,13 +174,13 @@ fmat4 nsanim_set::animation_data::joint_transform(const nsstring & pNodeName, fl
 	return fmat4();
 }
 
-nsanim_set::animation_data::animation_node::animation_node()
+animation_node::animation_node()
 {}
 
-nsanim_set::animation_data::animation_node::~animation_node()
+animation_node::~animation_node()
 {}
 
-fmat4 nsanim_set::animation_data::animation_node::transform(float pTime, float pTicksPerSecond)
+fmat4 animation_node::transform(float pTime, float pTicksPerSecond)
 {
 	float tick = pTime * pTicksPerSecond;
 

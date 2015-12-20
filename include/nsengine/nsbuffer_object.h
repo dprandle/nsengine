@@ -122,7 +122,7 @@ public:
 		m_allocated = !gl_err_check("nsbuffer_object::allocate");
 	}
 	
-	void bind();
+	void bind() const;
 
 	/*!
 	This calls bind buffer base
@@ -197,7 +197,7 @@ public:
 
 	bool set_target(target_buffer target_);
 
-	void unbind();
+	void unbind() const;
 
 	/*!
 	This calls bind buffer base

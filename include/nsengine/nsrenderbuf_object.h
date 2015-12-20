@@ -13,7 +13,7 @@ class nsrenderbuf_object : public nsgl_object
 
 	void allocate();
 
-	void bind();
+	void bind() const;
 
 	int32 internal_format() const;
 
@@ -33,7 +33,7 @@ class nsrenderbuf_object : public nsgl_object
 
 	void set_internal_format(int32 internal_format_);
 
-	void unbind();
+	void unbind() const;
 
   private:
 	uint32 m_sample_number;

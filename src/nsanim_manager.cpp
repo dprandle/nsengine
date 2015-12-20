@@ -34,7 +34,7 @@ nsanim_set * nsanim_manager::assimp_load_anim_set(const aiScene * pScene, const 
 		nsstringstream ss;
 		aiAnimation * currentAnim = pScene->mAnimations[i];
 		ss << currentAnim->mName.C_Str();
-		nsanim_set::animation_data * animData = animSet->create_anim_data(ss.str());
+		animation_data * animData = animSet->create_anim_data(ss.str());
 
 
 		animData->ticks_per_second_ = float(currentAnim->mTicksPerSecond);
@@ -45,7 +45,7 @@ nsanim_set * nsanim_manager::assimp_load_anim_set(const aiScene * pScene, const 
 		for (uint32 j = 0; j < currentAnim->mNumChannels; ++j)
 		{
 			aiNodeAnim * aiAnimNode = currentAnim->mChannels[j];
-			nsanim_set::animation_data::animation_node * animNode = animData->create_node(aiAnimNode->mNodeName.C_Str());
+			animation_node * animNode = animData->create_node(aiAnimNode->mNodeName.C_Str());
 			
 			for (uint32 transIndex = 0; transIndex < aiAnimNode->mNumPositionKeys; ++transIndex)
 			{

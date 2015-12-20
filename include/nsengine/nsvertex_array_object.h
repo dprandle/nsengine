@@ -27,7 +27,7 @@ public:
 
 	void add(nsbuffer_object * buffer_, uint32 attrib_loc_);
 
-	void bind();
+	void bind() const;
 
 	bool contains(nsbuffer_object * buffer_);
 
@@ -43,7 +43,7 @@ public:
 
 	void release();
 
-	void unbind();
+	void unbind() const;
 
 	void vertex_attrib_div(uint32 attrib_loc_, uint32 pDivisor);
 

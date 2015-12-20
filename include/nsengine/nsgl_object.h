@@ -23,12 +23,12 @@ class nsgl_object
 public:
 	nsgl_object();
 	virtual ~nsgl_object();
-	virtual void bind()=0;
+	virtual void bind() const = 0;
 	virtual void init_gl()=0;
 	virtual void release()=0;
-	virtual void unbind()=0;
+	virtual void unbind() const = 0;
 
-	uint32 gl_id();
+	uint32 gl_id() const;
 
 protected:
 	uint32 m_gl_name;

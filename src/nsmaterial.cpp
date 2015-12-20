@@ -34,7 +34,16 @@ nsmaterial::nsmaterial():
 }
 
 nsmaterial::nsmaterial(const nsmaterial & copy_):
-	nsresource(copy_)
+	nsresource(copy_),
+	m_alpha_blend(copy_.m_alpha_blend),
+	m_shader_id(copy_.m_shader_id),
+	m_color(copy_.m_color),
+	m_color_mode(copy_.m_color_mode),
+	m_culling_enabled(copy_.m_culling_enabled),
+	m_cull_mode(copy_.m_cull_mode),
+	m_spec_comp(copy_.m_spec_comp),
+	m_tex_maps(copy_.m_tex_maps),
+	m_wireframe(copy_.m_wireframe)
 {}
 
 nsmaterial::~nsmaterial()
@@ -43,6 +52,15 @@ nsmaterial::~nsmaterial()
 nsmaterial & nsmaterial::operator=(nsmaterial rhs)
 {
 	nsresource::operator=(rhs);
+	std::swap(m_alpha_blend, rhs.m_alpha_blend);
+	std::swap(m_shader_id, rhs.m_shader_id);
+	std::swap(m_color, rhs.m_color);
+	std::swap(m_color_mode, rhs.m_color_mode);
+	std::swap(m_culling_enabled, rhs.m_culling_enabled);
+	std::swap(m_cull_mode, rhs.m_cull_mode);
+	std::swap(m_spec_comp, rhs.m_spec_comp);
+	std::swap(m_tex_maps, rhs.m_tex_maps);
+	std::swap(m_wireframe, rhs.m_wireframe);
 	return *this;
 }
 

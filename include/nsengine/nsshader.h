@@ -88,9 +88,9 @@ public:
 
 	bool compile(shader_type type);
 
-	void unbind();
+	void unbind() const;
 
-	void bind();
+	void bind() const;
 
 	void set_xfb(xfb_mode pMode, nsstring_vector * pOutLocs);
 

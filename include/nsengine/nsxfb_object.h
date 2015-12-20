@@ -27,14 +27,14 @@ public:
 
 	nsxfb_object();
 	void begin();
-	void bind();
+	void bind() const;
 	void end();
 	primitive_mode primitive();
 	void init_gl();
 	void release();
 	void set_primitive(primitive_mode mode_);
 	void set_update(bool update_);
-	void unbind();
+	void unbind() const;
 	bool update();
 private:
 	primitive_mode m_prim_mode;

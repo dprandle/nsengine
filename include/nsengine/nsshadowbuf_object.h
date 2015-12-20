@@ -20,10 +20,6 @@ public:
 
 	void bind(const map_t & type_);
 
-	void disable(const map_t & type_);
-
-	void enable(const map_t & type_);
-
 	nstexture * texture(const map_t & type_);
 
 	const uivec2 & size(const map_t & type_);
