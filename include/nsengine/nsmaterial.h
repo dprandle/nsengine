@@ -43,7 +43,7 @@ public:
 
 	struct specular_comp
 	{
-		specular_comp(float power_ = 0.0f, float intensity_ = 0.0f, fvec3 color_ = fvec3(1.0f, 1.0f, 1.0f)) :power(power_), intensity(intensity_), color(color_)
+		specular_comp(float power_ = 0.0f, float intensity_ = 0.0f, fvec3 color_ = fvec3()) :power(power_), intensity(intensity_), color(color_)
 		{};
 		float power;
 		float intensity;
@@ -126,6 +126,10 @@ public:
 
 	void set_alpha_blend(bool pBlend);
 
+	void use_alpha_from_color(bool enable);
+
+	bool using_alpha_from_color() const;
+
 	void set_color(const fvec4 & color_);
 
 	void set_color_mode(bool pEnable);
@@ -166,6 +170,7 @@ private:
 	specular_comp m_spec_comp;
 	texmap_map m_tex_maps;
 	bool m_wireframe;
+	bool m_force_alpha;
 };
 
 
@@ -181,6 +186,7 @@ void pup(PUPer & p, nsmaterial & mat)
 	pup(p, mat.m_spec_comp, "spec_comp");
 	pup(p, mat.m_tex_maps, "texture_maps");
 	pup(p, mat.m_wireframe, "wireframe");
+	pup(p, mat.m_force_alpha, "force_alpha");	
 }
 
 template<class PUPer>

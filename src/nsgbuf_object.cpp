@@ -43,10 +43,6 @@ void nsgbuf_object::debug_blit(const ivec2 & scrn)
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, hlf.w, hlf.h, scrn.w, scrn.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	gl_err_check("nsfb_object::debugBlit3");
 
-	m_tex_fb->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_material));
-	glBlitFramebuffer(0, 0, scrn.w, scrn.h, hlf.w, 0, scrn.w, hlf.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	gl_err_check("nsfb_object::debugBlit4");
-
 	m_tex_fb->set_read_buffer(nsfb_object::att_none);
 	m_tex_fb->unbind();
 	m_tex_fb->set_target(nsfb_object::fb_read_draw);
@@ -140,7 +136,7 @@ bool nsgbuf_object::_create_texture_attachments()
 
 	// The order these are added here determines the layout in the shader
 	// Diffuse color data texture: layout = 0
-	att = m_tex_fb->create<nstex2d>("GBufferDiffuse", nsfb_object::attach_point(nsfb_object::att_color + col_diffuse), G_DIFFUSE_TEX_UNIT, GL_RGBA8, GL_RGBA, GL_FLOAT);
+	att = m_tex_fb->create<nstex2d>("GBufferDiffuse", nsfb_object::attach_point(nsfb_object::att_color + col_diffuse), G_DIFFUSE_TEX_UNIT, GL_RGB8, GL_RGB, GL_FLOAT);
 	if (att != NULL)
 	{
 		att->m_texture->set_parameter_f(nstexture::min_filter, GL_LINEAR);
@@ -148,7 +144,7 @@ bool nsgbuf_object::_create_texture_attachments()
 	}
 
 	// Picking data texture: layout = 1
-	att = m_tex_fb->create<nstex2d>("GBufferPicking", nsfb_object::attach_point(nsfb_object::att_color + col_picking), G_PICKING_TEX_UNIT, GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT);
+	att = m_tex_fb->create<nstex2d>("GBufferPicking", nsfb_object::attach_point(nsfb_object::att_color + col_picking), G_PICKING_TEX_UNIT, GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT);
 	if (att != NULL)
 	{
 		att->m_texture->set_parameter_i(nstexture::min_filter, GL_NEAREST);
@@ -156,7 +152,7 @@ bool nsgbuf_object::_create_texture_attachments()
 	}
 
 	// Position data texture: layout = 2
-	att = m_tex_fb->create<nstex2d>("GBufferPosition", nsfb_object::attach_point(nsfb_object::att_color + col_position), G_WORLD_POS_TEX_UNIT, GL_RGB32F, GL_RGB, GL_FLOAT);
+	att = m_tex_fb->create<nstex2d>("GBufferPosition", nsfb_object::attach_point(nsfb_object::att_color + col_position), G_WORLD_POS_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 	if (att != NULL)
 	{
 		att->m_texture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
@@ -164,15 +160,7 @@ bool nsgbuf_object::_create_texture_attachments()
 	}
 
 	// Normal data texture: layout = 3
-	att = m_tex_fb->create<nstex2d>("GBufferNormal", nsfb_object::attach_point(nsfb_object::att_color + col_normal), G_NORMAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
-	if (att != NULL)
-	{
-		att->m_texture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
-		att->m_texture->set_parameter_f(nstexture::mag_filter, GL_NEAREST);
-	}
-
-	// Normal data texture: layout = 4
-	att = m_tex_fb->create<nstex2d>("GBufferMaterial", nsfb_object::attach_point(nsfb_object::att_color + col_material), G_MATERIAL_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+	att = m_tex_fb->create<nstex2d>("GBufferNormal", nsfb_object::attach_point(nsfb_object::att_color + col_normal), G_NORMAL_TEX_UNIT, GL_RGB16F, GL_RGB, GL_FLOAT);
 	if (att != NULL)
 	{
 		att->m_texture->set_parameter_f(nstexture::min_filter, GL_NEAREST);

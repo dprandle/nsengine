@@ -1166,9 +1166,7 @@ bool nstex_cubemap::allocate(cube_face f, const void * data)
 	else
 		glCompressedTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_comp_byte_size, data);
 
-	if (f == neg_z)
-		m_allocated = !gl_err_check("nstex_cubemap::allocate");
-	
+    m_allocated = !gl_err_check("nstex_cubemap::allocate");
 	return m_allocated;
 }
 

@@ -16,6 +16,7 @@ Description:
 #include <nslight_comp.h>
 #include <nsengine.h>
 #include <nsengine.h>
+#include <nsmaterial.h>
 #include <exception>
 #include <string.h>
 #include <nsgl_context.h>
@@ -571,9 +572,9 @@ void nslight_shader::init_uniforms()
 {
 	set_shadow_sampler(SHADOW_TEX_UNIT);
 	set_diffuse_sampler(G_DIFFUSE_TEX_UNIT);
+	set_material_sampler(G_PICKING_TEX_UNIT);
 	set_world_pos_sampler(G_WORLD_POS_TEX_UNIT);
 	set_normal_sampler(G_NORMAL_TEX_UNIT);
-	set_material_sampler(G_MATERIAL_TEX_UNIT);
 	set_epsilon(DEFAULT_SHADOW_EPSILON);
 	set_ambient_intensity(0);
 	set_cast_shadows(false);
@@ -658,6 +659,42 @@ void nslight_shader::set_material_sampler(int32 sampler)
 void nslight_shader::set_shadow_sampler(int32 sampler)
 {
 	set_uniform("shadowMap", sampler);
+}
+
+void nslight_shader::set_material_ids(const mat_id_map & mat_ids)
+{
+	nsstring id;
+	id.reserve(64);
+	auto iter = mat_ids.begin();
+	while (iter != mat_ids.end())
+	{
+		id = "materials[" + std::to_string(iter->second) + "].spec_";
+		set_uniform(id+"color",iter->first->specular_color());
+		set_uniform(id+"power",iter->first->specular_power());
+		set_uniform(id+"intensity",iter->first->specular_intensity());
+		++iter;
+	}
+}
+
+nsfragment_sort_shader::nsfragment_sort_shader()
+{}
+
+nsfragment_sort_shader::~nsfragment_sort_shader()
+{}
+
+void nsfragment_sort_shader::init_uniforms()
+{
+	set_screen_size(fvec2());
+	set_uniform("gMatMap", int32(G_PICKING_TEX_UNIT));
+}
+
+void nsfragment_sort_shader::init()
+{
+}
+
+void nsfragment_sort_shader::set_screen_size(const fvec2 & screen_size)
+{
+	set_uniform("screen_size", screen_size);	
 }
 
 nsdir_light_shader::nsdir_light_shader() :nslight_shader() {}
@@ -786,10 +823,8 @@ void nsmaterial_shader::init_uniforms()
 	set_height_sampler(HEIGHT_TEX_UNIT);
 	set_heightmap_enabled(false);
 	set_height_minmax(fvec2(0.0f, 1.0f));
-	set_specular_power(0);
-	set_specular_intensity(0);
-	set_specular_color(fvec3());
 	set_entity_id(0);
+	set_material_id(0);
 	set_plugin_id(0);
 	set_color_mode(false);
 	set_frag_color_out(fvec4());
@@ -801,6 +836,7 @@ void nsmaterial_shader::init_uniforms()
 	set_proj_cam_mat(fmat4());
 	set_bone_transforms(b);
 	set_has_bones(false);
+	set_force_alpha(false);
 }
 
 void nsmaterial_shader::init()
@@ -823,19 +859,24 @@ void nsmaterial_shader::set_normal_sampler(int32 sampler)
 	set_uniform("normalMap", sampler);
 }
 
-void nsmaterial_shader::set_specular_power(float power)
+void nsmaterial_shader::set_height_sampler(int32 sampler)
 {
-	set_uniform("specPower", power);
+	set_uniform("heightMap", sampler);
 }
 
-void nsmaterial_shader::set_specular_intensity(float intensity)
+void nsmaterial_shader::set_heightmap_enabled(bool enabled)
 {
-	set_uniform("specIntensity", intensity);
+	set_uniform("hasHeightMap", enabled);
 }
 
-void nsmaterial_shader::set_specular_color(const fvec3 & col)
+void nsmaterial_shader::set_height_minmax(const fvec2 & hu)
 {
-	set_uniform("specColor", col);
+	set_uniform("hminmax", hu);
+}
+
+void nsmaterial_shader::set_material_id(uint32 mat_id)
+{
+	set_uniform("material_id",  mat_id);	
 }
 
 void nsmaterial_shader::set_entity_id(uint32 id)
@@ -888,7 +929,6 @@ void nsmaterial_shader::set_proj_cam_mat(const fmat4 & projCam)
 	set_uniform("projCamMat", projCam);
 }
 
-
 void nsmaterial_shader::set_bone_transforms(const fmat4_vector & transforms)
 {
 	for (uint32 i = 0; i < transforms.size(); ++i)
@@ -898,6 +938,11 @@ void nsmaterial_shader::set_bone_transforms(const fmat4_vector & transforms)
 void nsmaterial_shader::set_has_bones(bool hasthem)
 {
 	set_uniform("hasBones", hasthem);
+}
+
+void nsmaterial_shader::set_force_alpha(bool force)
+{
+	set_uniform("force_alpha", force);		
 }
 
 nsparticle_process_shader::nsparticle_process_shader() : nsshader() {}

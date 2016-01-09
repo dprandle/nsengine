@@ -11,7 +11,6 @@ public:
 		col_picking,
 		col_position,
 		col_normal,
-		col_material,
 		attrib_count };
 
 	nsgbuf_object();

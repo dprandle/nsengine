@@ -596,7 +596,7 @@ void nsengine::update()
 	timer()->update();
 	
     while (timer()->lag() >= timer()->fixed())
-    {
+	{
 		auto sysUpdateIter = m_sys_update_order.begin();
 		while (sysUpdateIter != m_sys_update_order.end())
 		{
@@ -605,8 +605,8 @@ void nsengine::update()
 			sys->update();
 			++sysUpdateIter;
 		}
-        timer()->lag() -= timer()->fixed();
-    }
+		timer()->lag() -= timer()->fixed();
+	}
 
 	auto sysDrawIter = m_sys_draw_order.begin();
 	while (sysDrawIter != m_sys_draw_order.end())
@@ -804,6 +804,7 @@ void nsengine::_init_factories()
 	register_resource<nsmaterial_shader, nsshader_manager>("nsmaterial_shader");
 	register_resource<nsparticle_process_shader, nsshader_manager>("nsparticle_process_shader");
 	register_resource<nsparticle_render_shader, nsshader_manager>("nsparticle_render_shader");
+	register_resource<nsfragment_sort_shader, nsshader_manager>("nsfragment_sort_shader");
 	register_resource<nsdir_shadowmap_shader, nsshader_manager>("nsdir_shadowmap_shader");
 	register_resource<nspoint_shadowmap_shader, nsshader_manager>("nspoint_shadowmap_shader");
 	register_resource<nsspot_shadowmap_shader, nsshader_manager>("nsspot_shadowmap_shader");

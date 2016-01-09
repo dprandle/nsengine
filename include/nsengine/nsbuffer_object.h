@@ -193,6 +193,18 @@ public:
 		gl_err_check("nsbuffer_object::setData");
 	}
 
+	template<class data_type>
+	void set_data(data_type& data_, uint32 offset_)
+	{
+		if (!m_allocated)
+			return;
+
+		glBufferSubData(m_target, offset_, sizeof(data_type), &data_);
+		gl_err_check("nsbuffer_object::setData");
+
+	}
+
+
 	bool set_storage(storage_mode storage_mode_);
 
 	bool set_target(target_buffer target_);

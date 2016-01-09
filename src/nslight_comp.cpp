@@ -197,6 +197,10 @@ const fmat4 & nslight_comp::transform(uint32 index_)
 	return m_tmp_ret;
 }
 
+uint32 nslight_comp::transform_count()
+{
+	return m_owner->get<nstform_comp>()->count();
+}
 /*!
 Get the resources that the component uses. The light comp uses a bounding mesh.
 */

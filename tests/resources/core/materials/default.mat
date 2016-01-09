@@ -19,3 +19,4 @@ texture_maps.key:<uint32>0</uint32>
 texture_maps[Key][0]:<uint32>1788357623</uint32>
 texture_maps[Key][1]:<uint32>142955658</uint32>
 wireframe:<bool>false</bool>
+alpha_mode:<bool>false</bool>

@@ -73,6 +73,10 @@ public:
 
 	bool set(uint32 tform_id_);
 
+	void enable_transparent_picking(bool enable);
+
+	bool transparent_picking_enabled() const;
+
 	virtual void pup(nsfile_pupper * p);
 
 	void set_default_sel_color(const fvec4 & col_);
@@ -92,6 +96,7 @@ private:
 	bool m_selected;
 	bool m_draw_enabled;
 	bool m_move_with_input;
+	bool m_transparent_picking_enabled;
 	ui_uset m_selection;
 };
 
@@ -102,6 +107,7 @@ void pup(PUPer & p, nssel_comp & sc)
 	pup(p, sc.m_sel_color, "sel_color");
 	pup(p, sc.m_mask_alpha, "mask_alpha");
 	pup(p, sc.m_draw_enabled, "draw_enabled");
+	pup(p, sc.m_transparent_picking_enabled, "transparent_picking_enabled");
 }
 
 #endif

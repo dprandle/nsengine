@@ -28,7 +28,8 @@ nsmaterial::nsmaterial():
 	m_tex_maps(),
 	m_culling_enabled(true),
 	m_cull_mode(GL_BACK),
-	m_wireframe(false)
+	m_wireframe(false),
+	m_force_alpha(false)
 {
 	set_ext(DEFAULT_MAT_EXTENSION);
 }
@@ -43,7 +44,8 @@ nsmaterial::nsmaterial(const nsmaterial & copy_):
 	m_cull_mode(copy_.m_cull_mode),
 	m_spec_comp(copy_.m_spec_comp),
 	m_tex_maps(copy_.m_tex_maps),
-	m_wireframe(copy_.m_wireframe)
+	m_wireframe(copy_.m_wireframe),
+	m_force_alpha(copy_.m_force_alpha)
 {}
 
 nsmaterial::~nsmaterial()
@@ -61,6 +63,7 @@ nsmaterial & nsmaterial::operator=(nsmaterial rhs)
 	std::swap(m_spec_comp, rhs.m_spec_comp);
 	std::swap(m_tex_maps, rhs.m_tex_maps);
 	std::swap(m_wireframe, rhs.m_wireframe);
+	std::swap(m_force_alpha, rhs.m_force_alpha);
 	return *this;
 }
 
@@ -323,6 +326,16 @@ void nsmaterial::set_specular_intensity(float pIntensity)
 	m_spec_comp.intensity = pIntensity;
 }
 
+void nsmaterial::use_alpha_from_color(bool enable)
+{
+	m_force_alpha = enable;
+}
+
+bool nsmaterial::using_alpha_from_color() const
+{
+	return m_force_alpha;
+}
+
 bool nsmaterial::set_map_tex_id(map_type pMapType, const uivec2 & pID, bool pOverwrite)
 {
 	texmap_map::iterator iter = m_tex_maps.find(pMapType);
@@ -341,4 +354,3 @@ bool nsmaterial::set_map_tex_id(map_type pMapType, const uivec2 & pID, bool pOve
 	m_tex_maps.emplace(pMapType, pID);
 	return true;
 }
-

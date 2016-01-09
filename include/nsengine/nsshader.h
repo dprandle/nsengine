@@ -31,11 +31,10 @@
 #define G_WORLD_POS_TEX_UNIT 12
 #define G_NORMAL_TEX_UNIT 13
 #define G_PICKING_TEX_UNIT 14
-#define G_MATERIAL_TEX_UNIT 15
-#define FINAL_TEX_UNIT 16
-#define SKYBOX_TEX_UNIT 17
-#define SHADOW_TEX_UNIT 18
-#define RAND_TEX_UNIT 19
+#define FINAL_TEX_UNIT 15
+#define SKYBOX_TEX_UNIT 16
+#define SHADOW_TEX_UNIT 17
+#define RAND_TEX_UNIT 18
 
 #include <nsgl_object.h>
 #include <nsresource.h>
@@ -211,6 +210,9 @@ void pup(PUPer & p, nsshader & shader)
 
 }
 
+class nsmaterial;
+typedef std::map<nsmaterial*, uint32> mat_id_map;
+
 class nslight_shader : public nsshader
 {
 public:
@@ -248,6 +250,22 @@ public:
 	void set_material_sampler(int32 sampler);
 
 	void set_shadow_sampler(int32 sampler);
+
+	void set_material_ids(const mat_id_map & mat_ids);
+
+};
+
+class nsfragment_sort_shader : public nsshader
+{
+public:
+	nsfragment_sort_shader();
+	~nsfragment_sort_shader();
+
+	virtual void init_uniforms();
+
+	virtual void init();
+
+	void set_screen_size(const fvec2 & screen_size);
 
 };
 
@@ -335,17 +353,13 @@ public:
 
 	void set_normal_sampler(int32 sampler);
 
-	void set_height_sampler(int32 sampler) { set_uniform("heightMap", sampler); }
+	void set_height_sampler(int32 sampler);
 
-	void set_heightmap_enabled(bool enabled) { set_uniform("hasHeightMap", enabled); }
+	void set_heightmap_enabled(bool enabled);
 
-	void set_height_minmax(const fvec2 & hu) { set_uniform("hminmax", hu); }
+	void set_height_minmax(const fvec2 & hu);
 
-	void set_specular_power(float power);
-
-	void set_specular_intensity(float intensity);
-
-	void set_specular_color(const fvec3 & col);
+	void set_material_id(uint32 mat_id);
 
 	void set_entity_id(uint32 id);
 
@@ -371,7 +385,7 @@ public:
 
 	void set_has_bones(bool hasthem);
 
-
+	void set_force_alpha(bool force);
 };
 
 class nsparticle_process_shader : public nsshader

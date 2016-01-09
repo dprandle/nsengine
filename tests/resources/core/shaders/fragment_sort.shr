@@ -1,0 +1,137 @@
+type:<nsstring>nsfragment_sort_shader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>
+#version 440
+
+layout (location = 0) in vec3 position;
+
+void main()
+{
+	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
+}
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring>
+#version 440
+
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+void main()
+{
+    gl_Position = vec4(-1.0,-1.0, 1.0, 1.0);
+    EmitVertex();
+	gl_Position = vec4(-1.0, 1.0, 1.0, 1.0);
+	EmitVertex();
+	gl_Position = vec4(1.0, -1.0, 1.0, 1.0);
+	EmitVertex();
+    gl_Position = vec4(1.0,  1.0, 1.0, 1.0);
+    EmitVertex();
+    EndPrimitive();
+}
+</nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring>
+#version 440
+
+#define MAX_BUCKET_COUNT 8
+#define MAX_FRAGMENTS 4
+
+layout (location = 0) out vec4 final_col_out;
+layout (location = 1) out uvec3 final_picking;
+
+struct packed_fragment_data // 32 bytes total
+{
+	vec3 wpos;
+	uint color;
+	uint normal;
+	int next;
+	float depth;
+	uint mat_id;
+	uvec4 ids;
+};
+
+//header
+layout (std430, binding=0) buffer header_array
+{
+	int header_indices[];	
+};
+
+layout (std430, binding=1) buffer fragment_linked_list
+{
+	packed_fragment_data linked_list[];
+};
+
+int frag_ind[MAX_FRAGMENTS];
+
+uniform vec2 screen_size;
+uniform usampler2D gMatMap;
+
+vec2 uv_from_screen_size()
+{
+	return gl_FragCoord.xy / screen_size;
+}
+
+uint sort_fragment_list(int start_ind)
+{
+	packed_fragment_data dat;
+	float prev_min_depth;
+	int ll_ind;
+	uint bucket_index;
+	uint fragment_count = 0;
+	float peeled_depth = 0.0;
+	bool pick_found = false;
+	for (uint i = 0; i < MAX_FRAGMENTS; ++i)
+	{
+		frag_ind[i] = -1;
+		ll_ind = start_ind;
+		prev_min_depth = 1.0/0.0; // infinity
+		bucket_index = 0;
+		while (bucket_index < MAX_BUCKET_COUNT)
+		{
+			if (ll_ind == -1)
+				break;
+			
+			dat = linked_list[ll_ind];
+			if (dat.depth > peeled_depth && dat.depth < prev_min_depth)
+			{
+				frag_ind[i] = ll_ind;
+				fragment_count = i + 1;
+				prev_min_depth = dat.depth;
+			}
+			ll_ind = linked_list[ll_ind].next;
+			++bucket_index;
+		}
+		if (!pick_found && frag_ind[i] != -1 && linked_list[frag_ind[i]].ids.y != 0)
+		{
+			final_picking = linked_list[frag_ind[i]].ids.xyz;
+			pick_found = true;
+		}
+		peeled_depth = prev_min_depth;
+	}
+	return fragment_count;
+}
+
+void reorder_linked_list(uint header_index, uint frag_count)
+{
+	int frag_index = int(frag_count - 1);
+	header_indices[header_index] = frag_ind[frag_index];
+	while (frag_index > 0)
+	{
+		linked_list[frag_ind[frag_index]].next = frag_ind[frag_index - 1];
+		--frag_index;
+	}
+	linked_list[frag_ind[frag_index]].next = -1;
+}
+
+void main()
+{
+	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*screen_size.x);
+	vec2 tex_coord = uv_from_screen_size();
+	int first_indice = header_indices[header_index];
+	final_picking = texture(gMatMap, tex_coord).xyz;
+	final_col_out = vec4(0.0,0.0,0.0,0.0);
+	if (first_indice != -1)
+	  	reorder_linked_list(header_index, sort_fragment_list(first_indice));
+}
+</nsstring>

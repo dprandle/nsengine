@@ -86,7 +86,7 @@ void nsshadowbuf_object::init()
 	m_spot_fb->set_target(nsfb_object::fb_draw);
 	m_spot_fb->bind();
 	m_spot_fb->set_draw_buffer(nsfb_object::att_none);
-	nsfb_object::attachment * att = m_spot_fb->create<nstex2d>("SpotLightShadow", nsfb_object::att_depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+	nsfb_object::attachment * att = m_spot_fb->create<nstex2d>("SpotLightShadow", nsfb_object::att_depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
 	att->m_texture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
 	att->m_texture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
 	att->m_texture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
@@ -97,7 +97,7 @@ void nsshadowbuf_object::init()
 	m_dir_fb->set_target(nsfb_object::fb_draw);
 	m_dir_fb->bind();
 	m_dir_fb->set_draw_buffer(nsfb_object::att_none);
-	nsfb_object::attachment * att2 = m_dir_fb->create<nstex2d>("DirLightShadow", nsfb_object::att_depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+	nsfb_object::attachment * att2 = m_dir_fb->create<nstex2d>("DirLightShadow", nsfb_object::att_depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
 	att2->m_texture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
 	att2->m_texture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
 	att2->m_texture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
@@ -108,7 +108,7 @@ void nsshadowbuf_object::init()
 	m_point_fb->set_target(nsfb_object::fb_draw);
 	m_point_fb->bind();
 	m_point_fb->set_draw_buffer(nsfb_object::att_none);
-	nsfb_object::attachment * att3 = m_point_fb->create<nstex_cubemap>("PointLightShadow", nsfb_object::att_depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT);
+	nsfb_object::attachment * att3 = m_point_fb->create<nstex_cubemap>("PointLightShadow", nsfb_object::att_depth, SHADOW_TEX_UNIT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
 	att3->m_texture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
 	att3->m_texture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
 	att3->m_texture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);

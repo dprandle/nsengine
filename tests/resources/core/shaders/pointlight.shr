@@ -1,8 +1,8 @@
 type:<nsstring>nspoint_light_shader</nsstring>
 vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 440
+vertex.source:<nsstring>
+#version 440
 layout (location = 0) in vec3 position;
-
 uniform mat4 transform;
 uniform mat4 projCamMat;
 uniform mat4 nodeTransform;
@@ -11,18 +11,23 @@ void main()
 {
 	gl_Position = projCamMat * transform * nodeTransform * vec4(position, 1.0);
 }
-
-
-
-
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring></nsstring>
 fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>#version 440
+fragment.source:<nsstring>
+#version 440
 
-out vec4 fragColor;
+#define MAX_MATERIALS 64
+#define MAX_BUCKET_COUNT 8
+#define MAX_FRAGMENTS 4
+#define MAX_UINT 65536
+#define MAX_INT 32768
+#define MAX_RES_X 1980
+#define MAX_RES_Y 1020
 
+layout (location = 0) out vec4 final_frag_color;
+//layout (location = 1) out uvec3 final_picking;
 
 struct PointLight 
 {
@@ -38,18 +43,51 @@ struct PointLight
 
 struct Material
 {
-	float specPower;
-	float specIntensity;
-	vec3 specColor;
+	float spec_power;
+	float spec_intensity;
+	vec3 spec_color;
 };
 
 
+struct packed_fragment_data // 32 bytes total
+{
+	vec3 wpos;
+	uint color;
+	uint normal;
+	int next;
+	float depth;
+	uint mat_id;
+	uvec4 ids;
+};
+
+struct unpacked_fragment_data
+{
+	vec4 color;
+	vec3 normal;
+	float depth;
+	int next;
+	vec3 wpos;
+	uint mat_id;
+	uvec4 ids;
+};
+
+//header
+layout (std430, binding=0) buffer header_array
+{
+	int header_indices[];	
+};
+
+layout (std430, binding=1) buffer fragment_linked_list
+{
+	packed_fragment_data linked_list[];
+};
+
 uniform PointLight light;
 uniform samplerCubeShadow shadowMap;
-uniform sampler2D gWorldPosMap;
 uniform sampler2D gDiffuseMap;
+uniform usampler2D gMatMap;
+uniform sampler2D gWorldPosMap;
 uniform sampler2D gNormalMap;
-uniform sampler2D gMatMap;
 
 uniform vec2 screenSize;
 uniform vec3 camWorldPos;
@@ -58,6 +96,10 @@ uniform int shadowSamples;
 uniform float epsilon;
 uniform float maxDepth;
 uniform bool castShadows;
+uniform uvec2 fog_factor;
+uniform vec4 fog_color;
+uniform vec4 bgColor;
+uniform Material materials[MAX_MATERIALS];
 
 const int PosX = 0;
 const int NegX = 1;
@@ -66,7 +108,42 @@ const int NegY = 3;
 const int PosZ = 4;
 const int NegZ = 5;
 
-int getFace(vec3 dir)
+vec4 unpack_color(uint color)
+{
+	uint r = (color >> 24) & 0x000000FF;
+	uint g = (color >> 16) & 0x000000FF;
+	uint b = (color >> 8) & 0x000000FF;
+	uint a = (color & 0x000000FF);
+	return vec4(float(r)/255.0,float(g)/255.0,float(b)/255.0,float(a)/255.0);
+}
+
+vec3 unpack_normal(uint packed_normal)
+{
+	vec3 norm_loc;
+	norm_loc.y = float(packed_normal & 0x0000FFFF) / float(MAX_UINT);
+	norm_loc.x = float((packed_normal >> 16) & 0x0000FFFF) / float(MAX_UINT);
+	norm_loc.z = sqrt(1 - norm_loc.x*norm_loc.x - norm_loc.y*norm_loc.y);
+	return normalize(norm_loc);
+}
+
+unpacked_fragment_data unpack_fragment_data(packed_fragment_data to_unpack)
+{
+	unpacked_fragment_data ret;
+	ret.wpos = to_unpack.wpos;
+	ret.color = unpack_color(to_unpack.color);
+	ret.depth = to_unpack.depth;
+	ret.next = to_unpack.next;
+	ret.normal = unpack_normal(to_unpack.normal);
+	ret.mat_id = to_unpack.mat_id & 0x0000FFFF;
+	int fac = int((to_unpack.mat_id >> 16) & 0x0000000F);
+	ret.normal.x *= ((fac >> 2) & 0x00000001) * -2 + 1;
+	ret.normal.y *= ((fac >> 1) & 0x00000001) * -2 + 1;
+	ret.normal.z *= (fac & 0x00000001) * -2 + 1;
+	ret.ids = to_unpack.ids;
+	return ret;
+}
+
+int get_face(vec3 dir)
 {
 	if (abs(dir.x) > abs(dir.y) && abs(dir.x) > abs(dir.z))
 	{
@@ -91,18 +168,18 @@ int getFace(vec3 dir)
 	}
 }
 
-float getShadowFactor(vec3 lightToPixel, float distance)
+float shadow_factor(vec3 light_to_pixel, float dist)
 {
-	float depth = distance / maxDepth;
+	float depth = dist / maxDepth;
 
 	if (shadowSamples == 0)
-		return texture(shadowMap, vec4(lightToPixel,depth - 8*epsilon));
+		return texture(shadowMap, vec4(light_to_pixel,depth - 8*epsilon));
 
 	float total = 0.0;
 	float xDelta = 1.0 / shadowTexSize.x;
 	float yDelta = 1.0 / shadowTexSize.y;
 
-	int face = getFace(lightToPixel);
+	int face = get_face(light_to_pixel);
 
 	int negBoundary = shadowSamples * -1;
 
@@ -110,7 +187,7 @@ float getShadowFactor(vec3 lightToPixel, float distance)
 	{
 		for (int j = negBoundary; j <= shadowSamples; ++j)
 		{
-			vec4 texCoord = vec4(lightToPixel,depth-epsilon);
+			vec4 texCoord = vec4(light_to_pixel,depth-epsilon);
 			switch (face)
 			{
 				case (PosX):
@@ -146,64 +223,122 @@ float getShadowFactor(vec3 lightToPixel, float distance)
     return total / ( (2*shadowSamples + 1) * (2*shadowSamples+1) );
 }
 
-vec2 getTexCoord()
+vec2 uv_from_screen_size()
 {
    return gl_FragCoord.xy / screenSize;
 }
 
-vec4 getLightInfluence(vec3 worldPos, vec3 norm, Material mat)
+vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)
 {
-	vec3 lightToPixel = worldPos - light.position;
-	float distance = length(lightToPixel);
-	lightToPixel = normalize(lightToPixel);
+	vec3 light_to_pixel = worldPos - light.position;
+	float dist = length(light_to_pixel);
+	light_to_pixel = normalize(light_to_pixel);
 
 	vec4 ambientColor = vec4(light.color, 1.0f) * light.ambientIntensity;
-	float diffuseFactor = dot(norm, -lightToPixel);
+	float diffuseFactor = dot(norm, -light_to_pixel);
 
 	vec4 diffuseColor  = vec4(0, 0, 0, 0);
 	vec4 specularColor = vec4(0, 0, 0, 0);
 
 	float shadowFactor = 1.0;
 	if (castShadows)
-		shadowFactor = getShadowFactor(lightToPixel, distance);
+		shadowFactor = shadow_factor(light_to_pixel, dist);
 
 	if (diffuseFactor > 0) 
 	{
 		diffuseColor = vec4(light.color, 1.0f) * light.diffuseIntensity * diffuseFactor;
         vec3 vertexToEye = normalize(camWorldPos - worldPos);
-        vec3 lightReflect = normalize(reflect(lightToPixel, norm));
+        vec3 lightReflect = normalize(reflect(light_to_pixel, norm));
         float specularFactor = dot(vertexToEye, lightReflect);
-		specularFactor = pow(specularFactor, mat.specPower);
+		specularFactor = pow(specularFactor, mat.spec_power);
 		if (specularFactor > 0)
 		{
-			specularColor = vec4(light.color, 1.0f) * mat.specIntensity * specularFactor;
+			specularColor = vec4(mat.spec_color, 1.0f) * mat.spec_intensity * specularFactor;
 		}
 	}
 
 	vec4 color = ambientColor + (diffuseColor + specularColor)*shadowFactor;
 
 	// Spot light attenuation formula
-	float attenuation =  1.0f / (light.attConstant + light.attLinear * distance + light.attExp * distance * distance);
+	float attenuation =  1.0f / (light.attConstant + light.attLinear * dist + light.attExp * dist * dist);
 
 	return color * attenuation;
 }
 
-void main()
+float linear_fog_factor(vec3 worldPos)
 {
-	vec2 texCoord = getTexCoord();
-    vec4 worldPos = texture(gWorldPosMap, texCoord);
-    vec4 color = texture(gDiffuseMap, texCoord);
-    vec4 normal = texture(gNormalMap, texCoord);
-	vec4 spec = texture(gMatMap, texCoord);
-
-	Material material;
-	material.specColor = spec.xyz;
-	material.specIntensity = spec.a;
-	material.specPower = normal.a;
-
-	fragColor = vec4(color.rgb, 1.0) * getLightInfluence(worldPos.xyz, normal.xyz, material);
+	float factor;
+	vec3 dVec = (camWorldPos.xyz - worldPos.xyz);
+	factor = (fog_factor.y - length(dVec) ) / (fog_factor.y - fog_factor.x);
+	factor = clamp( factor, 0.0, 1.0 );
+	return factor;
 }
 
+vec4 base_color_from_attachments(vec2 uv_from_screen_size)
+{
+	Material mat;
+	float fog_factor;
+	vec4 light_factor;
+	uint id = texture(gMatMap, uv_from_screen_size).w; 
+	vec4 base_color = texture(gDiffuseMap, uv_from_screen_size);
+	vec4 wpos = texture(gWorldPosMap, uv_from_screen_size);
+	vec4 normal = texture(gNormalMap, uv_from_screen_size);
 
+	if (id > MAX_MATERIALS)
+		return vec4(bgColor.xyz, base_color.a);
 
+	fog_factor = linear_fog_factor(wpos.xyz);
+	mat = materials[id]; // id should be good - well see if we can use this
+	if (mat.spec_color == vec3(0.0,0.0,0.0))
+		mat.spec_color = light.color;
+	light_factor = light_influence(wpos.xyz, normal.xyz, mat);
+	base_color = base_color*light_factor;//mix(base_color * light_factor, fog_color, 1 - fog_factor);
+	base_color.a = wpos.w; // use the alpha to store depth
+	return base_color;
+}
+
+vec4 blend_alpha(vec4 src, vec4 dest)
+{
+	float dest_mult = (1.0 - src.a);
+	return src * vec4(src.a,src.a,src.a,src.a) + vec4(dest_mult,dest_mult,dest_mult,dest_mult) * dest;
+}
+
+vec4 mix_translucent_fragments(vec4 base_color)
+{
+	float fog_factor;
+	vec4 light_factor;
+	Material mat;
+	vec4 final_col = base_color;
+	unpacked_fragment_data fdat;
+	
+    // get header index
+	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*screenSize.x);
+	int frag_index = header_indices[header_index];
+
+	uint cumi_count = 0;
+	while (cumi_count < MAX_FRAGMENTS)
+	{
+		if (frag_index == -1)
+			break;
+
+		fdat = unpack_fragment_data(linked_list[frag_index]);
+		fog_factor = linear_fog_factor(fdat.wpos);
+		mat = materials[fdat.mat_id];
+		if (mat.spec_color == vec3(0.0,0.0,0.0))
+			mat.spec_color = light.color;
+		light_factor = light_influence(fdat.wpos, fdat.normal, mat);
+		light_factor.a = 1.0;
+		final_col = blend_alpha(fdat.color*light_factor, final_col);//mix(fdat.color * light_factor, fog_color, 1 - fog_factor), final_col);
+		frag_index = fdat.next;
+		++cumi_count;
+	}
+	return final_col;
+}
+
+void main()
+{
+	vec2 texCoord = uv_from_screen_size();
+	vec4 base_color = base_color_from_attachments(texCoord);
+	final_frag_color = mix_translucent_fragments(base_color);
+}
 </nsstring>

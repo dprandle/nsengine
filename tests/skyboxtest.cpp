@@ -39,7 +39,7 @@ int main()
 	nstexture * sky_box = plg->manager<nstex_manager>()->load_cubemap("./import/skydomes/space.cube",".jpg");
 	nsmaterial * sb_mat = plg->create<nsmaterial>("skybox");
 	sb_mat->set_map_tex_id(nsmaterial::diffuse, sky_box->full_id());
-	sb_mat->set_shader_id(nse.core()->get<nsshader>(DEFAULT_SKYBOX_SHADER)->full_id());
+	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
 	sb_mat->set_cull_mode(GL_FRONT);
 	nsrender_comp * rc = skybox->create<nsrender_comp>();
 	rc->set_cast_shadow(false);

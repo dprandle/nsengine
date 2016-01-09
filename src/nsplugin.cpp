@@ -360,9 +360,20 @@ nsres_manager * nsplugin::create_manager(uint32 manager_typeid)
 }
 
 nsentity * nsplugin::create_tile(const nsstring & name,
+	fvec4 m_col,
+	float s_pwr,
+	float s_int32,
+	fvec3 s_col,
+	bool collides,
+	tile_t type)
+{
+	return create_tile(name,"","",m_col,s_pwr,s_int32,s_col,collides,type);
+}
+
+nsentity * nsplugin::create_tile(const nsstring & name,
 	const nsstring & difftex,
 	const nsstring & normtex,
-	fvec3 m_col,
+	fvec4 m_col,
 	float s_pwr,
 	float s_int32,
 	fvec3 s_col,
@@ -402,7 +413,11 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	if (tnorm != NULL)
 		mat->set_map_tex_id(nsmaterial::normal, tnorm->full_id());
 	if (tdiff == NULL && tnorm == NULL)
+	{
 		mat->set_color_mode(true);
+		if (mat->color().a < 1.0f)
+			mat->set_alpha_blend(true);
+	}
 	return create_tile(name, mat, collides, type);
 }
 
@@ -481,7 +496,7 @@ nsentity * nsplugin::create_skydome(const nsstring & name,
 	
 	nsmaterial * sb_mat = create<nsmaterial>(name);
 	sb_mat->set_map_tex_id(nsmaterial::diffuse, sky_box->full_id());
-	sb_mat->set_shader_id(nse.core()->get<nsshader>(DEFAULT_SKYBOX_SHADER)->full_id());
+	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
 	sb_mat->set_cull_mode(GL_FRONT);
 	
 	nsrender_comp * rc = skybox->create<nsrender_comp>();

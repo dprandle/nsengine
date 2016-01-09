@@ -36,7 +36,7 @@ void nsbuffer_object::bind() const
 void nsbuffer_object::bind(uint32 pIndex)
 {
 	glBindBufferBase(m_target, pIndex, m_gl_name);
-	gl_err_check("nsbuffer_object::bindBase()");
+	gl_err_check("nsbuffer_object::bind(uint32 index)");
 }
 
 nsbuffer_object::storage_mode nsbuffer_object::storage() const

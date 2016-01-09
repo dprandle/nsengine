@@ -1,4 +1,4 @@
- /*!
+\ /*!
 \file nscontroller_system.h
 
 \brief Definition file for NSControllerSystem class
@@ -269,7 +269,9 @@ void nsselection_system::draw()
 	nsfb_object * finalB = nse.framebuffer(m_final_buf);
 	finalB->set_target(nsfb_object::fb_draw);
 	finalB->bind();
-
+	nsfb_object::attachment_point_array att_array(2, nsfb_object::att_none);
+	att_array[0] = nsfb_object::att_color;
+	finalB->set_draw_buffers(&att_array);
 	glDepthMask(GL_TRUE);
 	glDisable(GL_DEPTH_TEST);
 	glCullFace(GL_BACK);
@@ -713,7 +715,7 @@ bool nsselection_system::empty()
 void nsselection_system::init()
 {
 	set_final_fbo(nse.composite_framebuffer());
-	set_picking_fbo(nse.system<nsrender_system>()->gbuffer_fbo());
+	set_picking_fbo(nse.composite_framebuffer());
 
 	m_sel_shader = nse.core()->load<nsselection_shader>(
 		nsstring(DEFAULT_SELECTION_SHADER) + nsstring(DEFAULT_SHADER_EXTENSION));

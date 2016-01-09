@@ -99,7 +99,7 @@ public:
 
 	const fmat4 & transform(uint32 index_);
 
-	fmat4_vector & transforms();
+	uint32 transform_count();
 
 	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 

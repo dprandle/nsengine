@@ -24,7 +24,8 @@ nssel_comp::nssel_comp() :
 	m_selected(false),
 	m_draw_enabled(true),
 	m_selection(),
-	m_move_with_input(true)
+	m_move_with_input(true),
+	m_transparent_picking_enabled(false)
 {}
 
 nssel_comp::nssel_comp(const nssel_comp & copy):
@@ -35,7 +36,8 @@ nssel_comp::nssel_comp(const nssel_comp & copy):
 	m_selected(false),
 	m_draw_enabled(copy.m_draw_enabled),
 	m_move_with_input(copy.m_move_with_input),
-	m_selection(copy.m_selection)
+	m_selection(copy.m_selection),
+	m_transparent_picking_enabled(copy.m_transparent_picking_enabled)
 {
 	
 }
@@ -166,6 +168,16 @@ void nssel_comp::set_color(const fvec4 & pColor)
 	m_sel_color = pColor;
 }
 
+void nssel_comp::enable_transparent_picking(bool enable)
+{
+	m_transparent_picking_enabled = enable;
+}
+
+bool nssel_comp::transparent_picking_enabled() const
+{
+	return m_transparent_picking_enabled;
+}
+
 uint32 nssel_comp::count()
 {
 	return static_cast<uint32>(m_selection.size());
@@ -186,6 +198,7 @@ nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 	std::swap(m_draw_enabled, rhs_.m_draw_enabled);
 	std::swap(m_move_with_input, rhs_.m_move_with_input);
 	std::swap(m_selection, rhs_.m_selection);
+	std::swap(m_transparent_picking_enabled, rhs_.m_transparent_picking_enabled);
 	post_update(true);
 	return (*this);
 }

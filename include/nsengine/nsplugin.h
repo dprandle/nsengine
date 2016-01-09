@@ -132,9 +132,17 @@ public:
 		int32 shadowsamples = 2);
 
 	nsentity * create_tile(const nsstring & name,
+		fvec4 m_col,
+		float s_pwr,
+		float s_int32,
+		fvec3 s_col,
+		bool collides,
+		tile_t type = tile_full);
+
+	nsentity * create_tile(const nsstring & name,
 		const nsstring & difftex,
 		const nsstring & normtex,
-		fvec3 m_col,
+		fvec4 m_col,
 		float s_pwr,
 		float s_int32,
 		fvec3 s_col,
