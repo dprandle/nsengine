@@ -333,11 +333,6 @@ void nsrender_system::draw_pre_lighting_pass()
 
 void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
 {
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-	glClear(GL_STENCIL_BUFFER_BIT);
-
 	nscam_comp * camc = cam->get<nscam_comp>();
 	m_shaders.sel_shader->bind();
 	m_shaders.sel_shader->set_proj_cam_mat(camc->proj_cam());
@@ -466,6 +461,8 @@ void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
 		}
 		++iter;
 	}
+	glEnable(GL_DEPTH_TEST);
+					
 }
 
 void nsrender_system::draw()
@@ -523,10 +520,18 @@ void nsrender_system::draw()
 	glEnable(GL_STENCIL_TEST);
 	glCullFace(GL_FRONT);
 	
-	blend_spot_lights(cam);
-	blend_point_lights(cam);
+	//blend_spot_lights(cam);
+	//blend_point_lights(cam);
 
-//	draw_selection(scene, cam);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glStencilFunc(GL_ALWAYS, 1, -1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	//draw_selection(scene, cam);
+	
 	blit_final_frame();
 }
 
