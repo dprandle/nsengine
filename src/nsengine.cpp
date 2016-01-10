@@ -607,15 +607,7 @@ void nsengine::update()
 		}
 		timer()->lag() -= timer()->fixed();
 	}
-
-	auto sysDrawIter = m_sys_draw_order.begin();
-	while (sysDrawIter != m_sys_draw_order.end())
-	{
-		nssystem * sys = system(sysDrawIter->second);
-		sys->draw();
-		++sysDrawIter;
-	}
-	system<nsrender_system>()->blit_final_frame();
+	system<nsrender_system>()->draw();
 }
 
 void nsengine::_remove_sys(uint32 type_id)

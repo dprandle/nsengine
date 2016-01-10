@@ -16,7 +16,6 @@ This file contains all of the neccessary declarations for the nsselection_system
 #include <nssystem.h>
 #include <nsentity_manager.h>
 
-#define DEFAULT_SELECTION_SHADER "selectionsolid"
 #define NSSEL_SELECT "select_entity"
 #define NSSEL_SHIFTSELECT "shift_select"
 #define NSSEL_MULTISELECT "multi_select"
@@ -138,8 +137,6 @@ public:
 
 	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
 
-	void set_shader(nsselection_shader * selShader);
-
 	void set_occupied_spaces(bool show);
 
 	void snap(nsentity * ent);
@@ -182,6 +179,8 @@ public:
 
 	virtual void update();
 
+	void prepare_selection_for_rendering();
+	
 protected:
 
 	enum input_triggers
@@ -249,7 +248,6 @@ protected:
 
 	uivec3 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
 	entity_ptr_set m_selected_ents;
-	nsselection_shader * m_sel_shader;
 	fvec3 m_total_frame_translation;
 	bool m_moving;
 	bool m_toggle_move;

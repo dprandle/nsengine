@@ -24,6 +24,7 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 
 class nsshader;
 class nstimer;
+class nsbuffer_object;
 
 class nssel_comp : public nscomponent
 {
@@ -77,6 +78,8 @@ public:
 
 	bool transparent_picking_enabled() const;
 
+	nsbuffer_object * transform_buffer();
+
 	virtual void pup(nsfile_pupper * p);
 
 	void set_default_sel_color(const fvec4 & col_);
@@ -90,6 +93,7 @@ public:
 	nssel_comp & operator=(nssel_comp rhs_);
 
 private:
+	nsbuffer_object * m_tform_buffer;
 	fvec4 m_default_sel_color;
 	fvec4 m_sel_color;
 	float m_mask_alpha;

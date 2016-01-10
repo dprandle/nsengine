@@ -1,4 +1,4 @@
-\ /*!
+/*!
 \file nscontroller_system.h
 
 \brief Definition file for NSControllerSystem class
@@ -42,7 +42,6 @@ nsselection_system::nsselection_system() :
 	m_pick_pos(),
 	m_selected_ents(),
 	m_mirror_selection(false),
-	m_sel_shader(NULL),
 	m_cached_point(),
 	m_moving(false),
 	m_cached_point_last(),
@@ -252,240 +251,11 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 	gl_err_check("nsselection_system::pick");
 
 	pickingBuf->set_read_buffer(nsfb_object::att_none);
-	pickingBuf->unbind();
 	return index;
 }
 
 void nsselection_system::draw()
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL || m_sel_shader == NULL)
-		return;
-
-	nsentity * cam = scene->camera();
-	if (cam == NULL)
-		return;
-
-	nsfb_object * finalB = nse.framebuffer(m_final_buf);
-	finalB->set_target(nsfb_object::fb_draw);
-	finalB->bind();
-	nsfb_object::attachment_point_array att_array(2, nsfb_object::att_none);
-	att_array[0] = nsfb_object::att_color;
-	finalB->set_draw_buffers(&att_array);
-	glDepthMask(GL_TRUE);
-	glDisable(GL_DEPTH_TEST);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glClear(GL_STENCIL_BUFFER_BIT);
-	glStencilFunc(GL_ALWAYS, 1, -1);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-	nstform_comp * camTComp = cam->get<nstform_comp>();
-	nscam_comp * camc = cam->get<nscam_comp>();
-	m_sel_shader->bind();
-	m_sel_shader->set_proj_cam_mat(camc->proj_cam());
-
-	// Go through and stencil each selected item
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		nstform_comp * tComp = (*iter)->get<nstform_comp>();
-		nssel_comp * selComp = (*iter)->get<nssel_comp>();
-		nsrender_comp * renComp = (*iter)->get<nsrender_comp>();
-		nsanim_comp * animComp = (*iter)->get<nsanim_comp>();
-		nsterrain_comp * terComp = (*iter)->get<nsterrain_comp>();
-
-		if (renComp == NULL || tComp == NULL || selComp == NULL)
-		{
-			++iter;
-			continue;
-		}
-
-		if (selComp->selected() && selComp->draw_enabled())
-		{
-			auto selIter = selComp->begin();
-			while (selIter != selComp->end())
-			{
-				m_sel_shader->set_transform(tComp->transform(*selIter));
-				nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
-				for (uint32 i = 0; i < rMesh->count(); ++i)
-				{
-					nsmesh::submesh * cSub = rMesh->sub(i);
-
-					m_sel_shader->set_heightmap_enabled(false);
-					nsmaterial * mat = nse.resource<nsmaterial>(renComp->material_id(i));
-					if (mat != NULL)
-					{
-						nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
-						if (tex != NULL)
-						{
-							m_sel_shader->set_heightmap_enabled(true);
-							nse.system<nsrender_system>()->set_active_texture_unit(nsmaterial::height);
-							tex->bind();
-						}
-					}
-
-					if (cSub->m_node != NULL)
-						m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
-					else
-						m_sel_shader->set_node_transform(fmat4());
-
-					if (animComp != NULL)
-					{
-						m_sel_shader->set_has_bones(true);
-						m_sel_shader->set_bone_transform(*animComp->final_transforms());
-					}
-					else
-						m_sel_shader->set_has_bones(false);
-
-					if (terComp != NULL)
-						m_sel_shader->set_height_minmax(terComp->height_bounds());
-
-					cSub->m_vao.bind();
-					glDrawElements(cSub->m_prim_type,
-								   static_cast<GLsizei>(cSub->m_indices.size()),
-								   GL_UNSIGNED_INT,
-								   0);
-					cSub->m_vao.unbind();
-				}
-				++selIter;
-			}
-		}
-		++iter;
-	}
-
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glLineWidth(3.0f);
-	iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		nstform_comp * tComp = (*iter)->get<nstform_comp>();
-		nssel_comp * selComp = (*iter)->get<nssel_comp>();
-		nsrender_comp * renComp = (*iter)->get<nsrender_comp>();
-		nsanim_comp * animComp = (*iter)->get<nsanim_comp>();
-		nsterrain_comp * terComp = (*iter)->get<nsterrain_comp>();
-
-		if (renComp == NULL || tComp == NULL)
-		{
-			++iter;
-			continue;
-		}
-
-		if (selComp->selected() && selComp->draw_enabled())
-		{
-			auto selIter = selComp->begin();
-			while (selIter != selComp->end())
-			{
-				m_sel_shader->set_transform(tComp->transform(*selIter));
-				nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
-				for (uint32 i = 0; i < rMesh->count(); ++i)
-				{
-					nsmesh::submesh * cSub = rMesh->sub(i);
-
-					m_sel_shader->set_heightmap_enabled(false);
-					nsmaterial * mat = nse.resource<nsmaterial>(renComp->material_id(i));
-					if (mat != NULL)
-					{
-						nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
-						if (tex != NULL)
-						{
-							m_sel_shader->set_heightmap_enabled(true);
-							nse.system<nsrender_system>()->set_active_texture_unit(nsmaterial::height);
-							tex->bind();
-						}
-					}
-
-					if (cSub->m_node != NULL)
-						m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
-					else
-						m_sel_shader->set_node_transform(fmat4());
-
-					if (animComp != NULL)
-					{
-						m_sel_shader->set_has_bones(true);
-						m_sel_shader->set_bone_transform(*animComp->final_transforms());
-					}
-					else
-						m_sel_shader->set_has_bones(false);
-
-					if (terComp != NULL)
-						m_sel_shader->set_height_minmax(terComp->height_bounds());
-
-					cSub->m_vao.bind();
-
-					glDisable(GL_DEPTH_TEST);
-					glPolygonMode(GL_FRONT, GL_LINE);
-					glStencilFunc(GL_NOTEQUAL, 1, -1);
-					glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-					fvec4 selCol = selComp->color();
-					m_sel_shader->set_frag_color_out(selCol);
-					glDrawElements(cSub->m_prim_type,
-								   static_cast<GLsizei>(cSub->m_indices.size()),
-								   GL_UNSIGNED_INT,
-								   0);
-
-					glPolygonMode(GL_FRONT, GL_FILL);
-					glEnable(GL_DEPTH_TEST);
-					glStencilFunc(GL_EQUAL, 1, 0);
-					selCol.w = selComp->mask_alpha();
-
-					if (m_focus_ent.y == (*iter)->id() && m_focus_ent.z == *selIter)
-						selCol.w = 0.4f;
-
-					m_sel_shader->set_uniform("fragColOut", selCol);
-					glDrawElements(cSub->m_prim_type,
-								   static_cast<GLsizei>(cSub->m_indices.size()),
-								   GL_UNSIGNED_INT,
-								   0);
-					cSub->m_vao.unbind();
-				}
-				++selIter;
-			}
-		}
-
-		_draw_ent_occ(*iter);
-		++iter;
-	}
-
-	_draw_occ();
-	_draw_hidden();
-
-
-	// THIS SHOULD BE MOVED TO BUILD SYSTEM
-	// Draw mirror mode center
-	if (nse.system<nsbuild_system>()->mirror())
-	{
-		nsmesh * tileM = nse.core()->get<nsmesh>(MESH_FULL_TILE);
-		fvec3 mypos = nse.system<nsbuild_system>()->center();
-		mypos.z = nse.system<nsbuild_system>()->layer() * Z_GRID;
-		m_sel_shader->set_transform(translation_mat4(mypos));
-		for (uint32 i = 0; i < tileM->count(); ++i)
-		{
-			nsmesh::submesh * cSub = tileM->sub(i);
-
-			if (cSub->m_node != NULL)
-				m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
-			else
-				m_sel_shader->set_node_transform(fmat4());
-
-			m_sel_shader->set_has_bones(false);
-
-			
-			cSub->m_vao.bind();
-			m_sel_shader->set_frag_color_out(m_mirror_tile_color);
-			glDrawElements(cSub->m_prim_type,
-						   static_cast<GLsizei>(cSub->m_indices.size()),
-						   GL_UNSIGNED_INT,
-						   0);
-			cSub->m_vao.unbind();
-		}
-	}
-
-	m_sel_shader->unbind();
-	glLineWidth(1.0f);
 }
 
 void nsselection_system::set_mirror_tile_color(const fvec4 & color)
@@ -500,54 +270,54 @@ const fvec4 & nsselection_system::mirror_tile_color()
 
 void nsselection_system::_draw_ent_occ(nsentity * ent)
 {
-	// Draw the occupy component if draw enabled
-	nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
-	nssel_comp * selComp = ent->get<nssel_comp>();
-	nstform_comp * tComp = ent->get<nstform_comp>();
-	if (occComp != NULL && selComp != NULL && tComp != NULL && occComp->draw_enabled())
-	{
-		nsmesh * occMesh = nse.resource<nsmesh>(occComp->mesh_id());
-		nsmaterial * mat = nse.resource<nsmaterial>(occComp->material_id());
-		if (occMesh != NULL)
-		{
-			auto selIter = selComp->begin();
-			while (selIter != selComp->end())
-			{
-				for (uint32 i = 0; i < occMesh->count(); ++i)
-				{
-					nsmesh::submesh * occSub = occMesh->sub(i);
+	// // Draw the occupy component if draw enabled
+	// nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
+	// nssel_comp * selComp = ent->get<nssel_comp>();
+	// nstform_comp * tComp = ent->get<nstform_comp>();
+	// if (occComp != NULL && selComp != NULL && tComp != NULL && occComp->draw_enabled())
+	// {
+	// 	nsmesh * occMesh = nse.resource<nsmesh>(occComp->mesh_id());
+	// 	nsmaterial * mat = nse.resource<nsmaterial>(occComp->material_id());
+	// 	if (occMesh != NULL)
+	// 	{
+	// 		auto selIter = selComp->begin();
+	// 		while (selIter != selComp->end())
+	// 		{
+	// 			for (uint32 i = 0; i < occMesh->count(); ++i)
+	// 			{
+	// 				nsmesh::submesh * occSub = occMesh->sub(i);
 
-					if (occSub->m_node != NULL)
-						m_sel_shader->set_node_transform(occSub->m_node->m_world_tform);
-					else
-						m_sel_shader->set_node_transform(fmat4());
+	// 				if (occSub->m_node != NULL)
+	// 					m_sel_shader->set_node_transform(occSub->m_node->m_world_tform);
+	// 				else
+	// 					m_sel_shader->set_node_transform(fmat4());
 
-					m_sel_shader->set_has_bones(false);
-					occSub->m_vao.bind();
+	// 				m_sel_shader->set_has_bones(false);
+	// 				occSub->m_vao.bind();
 
-					glDisable(GL_STENCIL_TEST);
+	// 				glDisable(GL_STENCIL_TEST);
 
-					if (mat != NULL)
-						m_sel_shader->set_frag_color_out(mat->color());
-					else
-						m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 1.0f, 0.5f));
+	// 				if (mat != NULL)
+	// 					m_sel_shader->set_frag_color_out(mat->color());
+	// 				else
+	// 					m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 1.0f, 0.5f));
 
-					auto spaceIter = occComp->begin();
-					while (spaceIter != occComp->end())
-					{
-						m_sel_shader->set_transform(translation_mat4(nstile_grid::world(*spaceIter, tComp->wpos(*selIter))));
-						glDrawElements(occSub->m_prim_type,
-									   static_cast<GLsizei>(occSub->m_indices.size()),
-									   GL_UNSIGNED_INT,
-									   0);
-						++spaceIter;
-					}
-					occSub->m_vao.unbind();
-				}
-				++selIter;
-			}
-		}
-	}
+	// 				auto spaceIter = occComp->begin();
+	// 				while (spaceIter != occComp->end())
+	// 				{
+	// 					m_sel_shader->set_transform(translation_mat4(nstile_grid::world(*spaceIter, tComp->wpos(*selIter))));
+	// 					glDrawElements(occSub->m_prim_type,
+	// 								   static_cast<GLsizei>(occSub->m_indices.size()),
+	// 								   GL_UNSIGNED_INT,
+	// 								   0);
+	// 					++spaceIter;
+	// 				}
+	// 				occSub->m_vao.unbind();
+	// 			}
+	// 			++selIter;
+	// 		}
+	// 	}
+	// }
 }
 
 void nsselection_system::enable_draw_occupied_grid(bool enable_)
@@ -562,129 +332,129 @@ bool nsselection_system::draw_occupied_grid()
 		
 void nsselection_system::_draw_occ()
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL || m_sel_shader == NULL)
-		return;
+	// nsscene * scene = nse.current_scene();
+	// if (scene == NULL || m_sel_shader == NULL)
+	// 	return;
 
-	if (!m_draw_occ)
-		return;
+	// if (!m_draw_occ)
+	// 	return;
 
-	nsmesh * occMesh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
-	for (uint32 i = 0; i < occMesh->count(); ++i)
-	{
-		nsmesh::submesh * occSub = occMesh->sub(i);
+	// nsmesh * occMesh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
+	// for (uint32 i = 0; i < occMesh->count(); ++i)
+	// {
+	// 	nsmesh::submesh * occSub = occMesh->sub(i);
 
-		if (occSub->m_node != NULL)
-			m_sel_shader->set_node_transform(occSub->m_node->m_world_tform);
-		else
-			m_sel_shader->set_node_transform(fmat4());
+	// 	if (occSub->m_node != NULL)
+	// 		m_sel_shader->set_node_transform(occSub->m_node->m_world_tform);
+	// 	else
+	// 		m_sel_shader->set_node_transform(fmat4());
 
-		m_sel_shader->set_has_bones(false);
-		m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 0.1f));
+	// 	m_sel_shader->set_has_bones(false);
+	// 	m_sel_shader->set_frag_color_out(fvec4(1.0f, 0.0f, 0.0f, 0.1f));
 
-		nstile_grid::grid_bounds g = scene->grid().occupied_bounds();
-		for (int32 z = g.min_space.z; z <= g.max_space.z; ++z)
-		{
-			for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
-			{
-				for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
-				{
-					uivec3 id = scene->grid().get(ivec3(x, y, z));
-					nsentity * ent = nse.resource<nsentity>(id.x, id.y);
-					if (ent != NULL)
-					{
-						m_trans.set_column(3, nstile_grid::world(ivec3(x,y,z)));
-						m_sel_shader->set_transform(m_trans);
-						occSub->m_vao.bind();
-						glDrawElements(occSub->m_prim_type,
-									   static_cast<GLsizei>(occSub->m_indices.size()),
-									   GL_UNSIGNED_INT,
-									   0);
-						occSub->m_vao.unbind();
-					}
-				}
-			}
-		}
-	}
+	// 	nstile_grid::grid_bounds g = scene->grid().occupied_bounds();
+	// 	for (int32 z = g.min_space.z; z <= g.max_space.z; ++z)
+	// 	{
+	// 		for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
+	// 		{
+	// 			for (int32 x = g.min_space.x; x <= g.max_space.x; ++x)
+	// 			{
+	// 				uivec3 id = scene->grid().get(ivec3(x, y, z));
+	// 				nsentity * ent = nse.resource<nsentity>(id.x, id.y);
+	// 				if (ent != NULL)
+	// 				{
+	// 					m_trans.set_column(3, nstile_grid::world(ivec3(x,y,z)));
+	// 					m_sel_shader->set_transform(m_trans);
+	// 					occSub->m_vao.bind();
+	// 					glDrawElements(occSub->m_prim_type,
+	// 								   static_cast<GLsizei>(occSub->m_indices.size()),
+	// 								   GL_UNSIGNED_INT,
+	// 								   0);
+	// 					occSub->m_vao.unbind();
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 }
 
 void nsselection_system::_draw_hidden()
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL || m_sel_shader == NULL)
-		return;
+	// nsscene * scene = nse.current_scene();
+	// if (scene == NULL || m_sel_shader == NULL)
+	// 	return;
 
-	nsentity * cam = scene->camera();
-	if (cam == NULL)
-		return;
+	// nsentity * cam = scene->camera();
+	// if (cam == NULL)
+	// 	return;
 
-	// Draw all hidden objects - This should probably be moved to the render system or something - or to a forward
-	// renderer when that gets set up so that we can draw transparent stuff
-	entity_ptr_set sceneEnts = scene->entities();
-	auto sceneEntIter = sceneEnts.begin();
-	while (sceneEntIter != sceneEnts.end())
-	{
-		nstform_comp * tComp = (*sceneEntIter)->get<nstform_comp>();
-		nsrender_comp * renComp = (*sceneEntIter)->get<nsrender_comp>();
+	// // Draw all hidden objects - This should probably be moved to the render system or something - or to a forward
+	// // renderer when that gets set up so that we can draw transparent stuff
+	// entity_ptr_set sceneEnts = scene->entities();
+	// auto sceneEntIter = sceneEnts.begin();
+	// while (sceneEntIter != sceneEnts.end())
+	// {
+	// 	nstform_comp * tComp = (*sceneEntIter)->get<nstform_comp>();
+	// 	nsrender_comp * renComp = (*sceneEntIter)->get<nsrender_comp>();
 
-		if (renComp == NULL)
-		{
-			++sceneEntIter;
-			continue;
-		}
+	// 	if (renComp == NULL)
+	// 	{
+	// 		++sceneEntIter;
+	// 		continue;
+	// 	}
 
-		nsanim_comp * animComp = (*sceneEntIter)->get<nsanim_comp>();
-		nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
+	// 	nsanim_comp * animComp = (*sceneEntIter)->get<nsanim_comp>();
+	// 	nsmesh * rMesh = nse.resource<nsmesh>(renComp->mesh_id());
 
-		if (rMesh == NULL)
-		{
-			++sceneEntIter;
-			continue;
-		}
+	// 	if (rMesh == NULL)
+	// 	{
+	// 		++sceneEntIter;
+	// 		continue;
+	// 	}
 
-		for (uint32 index = 0; index < tComp->count(); ++index)
-		{
-			int32 state = tComp->hidden_state(index);
+	// 	for (uint32 index = 0; index < tComp->count(); ++index)
+	// 	{
+	// 		int32 state = tComp->hidden_state(index);
 
-			bool layerBit = state & nstform_comp::hide_layer && true;
-			bool objectBit = state & nstform_comp::hide_object && true;
-			bool showBit = state & nstform_comp::hide_none && true;
-			bool hideBit = state & nstform_comp::hide_all && true;
+	// 		bool layerBit = state & nstform_comp::hide_layer && true;
+	// 		bool objectBit = state & nstform_comp::hide_object && true;
+	// 		bool showBit = state & nstform_comp::hide_none && true;
+	// 		bool hideBit = state & nstform_comp::hide_all && true;
 
-			if (!hideBit && (!layerBit && objectBit))
-			{
-				m_sel_shader->set_transform(tComp->transform(index));
-				for (uint32 i = 0; i < rMesh->count(); ++i)
-				{
-					nsmesh::submesh * cSub = rMesh->sub(i);
+	// 		if (!hideBit && (!layerBit && objectBit))
+	// 		{
+	// 			m_sel_shader->set_transform(tComp->transform(index));
+	// 			for (uint32 i = 0; i < rMesh->count(); ++i)
+	// 			{
+	// 				nsmesh::submesh * cSub = rMesh->sub(i);
 
-					if (cSub->m_node != NULL)
-						m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
-					else
-						m_sel_shader->set_node_transform(fmat4());
+	// 				if (cSub->m_node != NULL)
+	// 					m_sel_shader->set_node_transform(cSub->m_node->m_world_tform);
+	// 				else
+	// 					m_sel_shader->set_node_transform(fmat4());
 
-					if (animComp != NULL)
-					{
-						m_sel_shader->set_has_bones(true);
-						m_sel_shader->set_bone_transform(*animComp->final_transforms());
-					}
-					else
-						m_sel_shader->set_has_bones(false);
+	// 				if (animComp != NULL)
+	// 				{
+	// 					m_sel_shader->set_has_bones(true);
+	// 					m_sel_shader->set_bone_transform(*animComp->final_transforms());
+	// 				}
+	// 				else
+	// 					m_sel_shader->set_has_bones(false);
 
-					cSub->m_vao.bind();
-					fvec4 col(1.0f, 1.0f, 1.0f, 0.04f);
-					m_sel_shader->set_frag_color_out(col);
-					glDrawElements(cSub->m_prim_type,
-								   static_cast<GLsizei>(cSub->m_indices.size()),
-								   GL_UNSIGNED_INT,
-								   0);
-					cSub->m_vao.unbind();
-				}
-			}
-		}
-		++sceneEntIter;
-	}
+	// 				cSub->m_vao.bind();
+	// 				fvec4 col(1.0f, 1.0f, 1.0f, 0.04f);
+	// 				m_sel_shader->set_frag_color_out(col);
+	// 				glDrawElements(cSub->m_prim_type,
+	// 							   static_cast<GLsizei>(cSub->m_indices.size()),
+	// 							   GL_UNSIGNED_INT,
+	// 							   0);
+	// 				cSub->m_vao.unbind();
+	// 			}
+	// 		}
+	// 	}
+	// 	++sceneEntIter;
+	// }
 }
 
 void nsselection_system::del()
@@ -716,14 +486,6 @@ void nsselection_system::init()
 {
 	set_final_fbo(nse.composite_framebuffer());
 	set_picking_fbo(nse.composite_framebuffer());
-
-	m_sel_shader = nse.core()->load<nsselection_shader>(
-		nsstring(DEFAULT_SELECTION_SHADER) + nsstring(DEFAULT_SHADER_EXTENSION));
-	m_sel_shader->compile();
-	m_sel_shader->link();
-	m_sel_shader->bind();
-	m_sel_shader->init_uniforms();
-	m_sel_shader->unbind();
 	
 	register_handler_func(this, &nsselection_system::_handle_action_event);
 	register_handler_func(this, &nsselection_system::_handle_state_event);
@@ -1396,11 +1158,6 @@ void nsselection_system::set_hidden_state(nstform_comp::h_state pState, bool pSe
 	}
 }
 
-void nsselection_system::set_shader(nsselection_shader * selShader_)
-{
-	m_sel_shader = selShader_;
-}
-
 void nsselection_system::snap(nsentity * ent)
 {
 	if (ent == NULL)
@@ -1759,6 +1516,7 @@ void nsselection_system::update()
 		}
 	}
 
+	// Move the selection the correct amount for this frame
 	if (m_moving)
 	{
 		if (!nse.system<nsbuild_system>()->enabled())
@@ -1770,9 +1528,50 @@ void nsselection_system::update()
 		}
 		
 		translate(m_total_frame_translation);
-		
 		m_total_frame_translation = 0.0f;
 	}
+
+	prepare_selection_for_rendering();
+}
+
+void nsselection_system::prepare_selection_for_rendering()
+{
+	// now go through and resize and sel_comp buffers that need resizing and then
+	// set the tforms if there has been movement this frame
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
+	{
+		nssel_comp * sc = (*iter)->get<nssel_comp>();
+		nstform_comp *tc = (*iter)->get<nstform_comp>();
+		nsbuffer_object * tbuf = sc->transform_buffer();
+		
+		if (sc->update_posted())
+		{
+			tbuf->bind();
+			tbuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, sc->count());
+			sc->post_update(false);
+		}
+
+		tbuf->bind();
+		if (m_moving)
+		{
+			fmat4 * mapped = tbuf->map<fmat4>(
+				0,
+				sc->count(),
+				nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+
+			uint32 count = 0;
+			auto sel_iter = sc->begin();
+			while (sel_iter != sc->end())
+			{
+				mapped[count] = tc->transform(*sel_iter);
+				++sel_iter;
+				++count;
+			}
+			tbuf->unmap();
+		}
+		++iter;
+	}	
 }
 
 bool nsselection_system::_handle_action_event(nsaction_event * evnt)

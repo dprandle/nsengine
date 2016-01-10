@@ -165,6 +165,7 @@ render_shaders::render_shaders() :
 	spot_light(NULL),
 	point_shadow(NULL),
 	spot_shadow(NULL),
+	sel_shader(NULL),
 	dir_shadow(NULL)
 {}
 
@@ -181,6 +182,7 @@ bool render_shaders::error()
 		spot_light->error() != nsshader::error_none ||
 		point_shadow->error() != nsshader::error_none ||
 		spot_shadow->error() != nsshader::error_none ||
+		sel_shader->error() != nsshader::error_none ||
 		dir_shadow->error() != nsshader::error_none );
 }
 
@@ -197,6 +199,7 @@ bool render_shaders::valid()
 		spot_light != NULL &&
 		point_shadow != NULL &&
 		spot_shadow != NULL &&
+		sel_shader != NULL &&
 		dir_shadow != NULL );
 }
 
@@ -328,6 +331,143 @@ void nsrender_system::draw_pre_lighting_pass()
 	glDrawArrays(GL_POINTS, 0, 1);
 }
 
+void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
+{
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glClear(GL_STENCIL_BUFFER_BIT);
+
+	nscam_comp * camc = cam->get<nscam_comp>();
+	m_shaders.sel_shader->bind();
+	m_shaders.sel_shader->set_proj_cam_mat(camc->proj_cam());
+    m_shaders.sel_shader->set_heightmap_enabled(false);
+
+    // Go through and stencil each selected item
+	auto iter = scene->entities<nssel_comp>().begin();
+	while (iter != scene->entities<nssel_comp>().end())
+	{
+		nstform_comp * tc = (*iter)->get<nstform_comp>();
+		nssel_comp * sc = (*iter)->get<nssel_comp>();
+		nsrender_comp * rc = (*iter)->get<nsrender_comp>();
+		nsanim_comp * ac = (*iter)->get<nsanim_comp>();
+		nsterrain_comp * trc = (*iter)->get<nsterrain_comp>();
+
+		if (rc == NULL || tc == NULL || sc == NULL)
+		{
+			++iter;
+			continue;
+		}
+
+		if (sc->selected() && sc->draw_enabled())
+		{
+			nsmaterial * mat;
+			draw_call dc;
+			nsmesh * rc_msh = nse.resource<nsmesh>(rc->mesh_id());
+			for (uint32 i = 0; i < rc_msh->count(); ++i)
+			{
+				dc.submesh = rc_msh->sub(i);
+
+				// make it so the height map is selectable
+				nsmaterial * mat = nse.resource<nsmaterial>(rc->material_id(i));
+				if (mat != NULL)
+				{
+					nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
+					if (tex != NULL)
+					{
+						m_shaders.sel_shader->set_heightmap_enabled(true);
+						set_active_texture_unit(nsmaterial::height);
+						tex->bind();
+					}
+				}
+
+				if (dc.submesh->m_node != NULL)
+					m_shaders.sel_shader->set_node_transform(dc.submesh->m_node->m_world_tform);
+				else
+					m_shaders.sel_shader->set_node_transform(fmat4());
+
+				if (ac != NULL)
+				{
+					m_shaders.sel_shader->set_has_bones(true);
+					m_shaders.sel_shader->set_bone_transform(*ac->final_transforms());
+				}
+				else
+					m_shaders.sel_shader->set_has_bones(false);
+
+				if (trc != NULL)
+					m_shaders.sel_shader->set_height_minmax(trc->height_bounds());
+
+				dc.transform_buffer = sc->transform_buffer();
+				dc.transform_count = sc->count();
+				dc.submesh->m_vao.bind();
+
+				dc.transform_buffer->bind();
+				for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
+				{
+					dc.submesh->m_vao.add(dc.transform_buffer,
+										  nsshader::loc_instance_tform + tfInd);
+					dc.submesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd,
+						4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+					dc.submesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
+				}
+
+				glDepthMask(GL_TRUE);
+				glDisable(GL_DEPTH_TEST);
+				glStencilFunc(GL_ALWAYS, 1, -1);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+				m_final_buf->set_draw_buffer(nsfb_object::att_none);
+				gl_err_check("nsrender_system::draw_selection pre");
+				glDrawElementsInstanced(
+					dc.submesh->m_prim_type,
+					static_cast<GLsizei>(dc.submesh->m_indices.size()),
+					GL_UNSIGNED_INT,
+					0,
+					dc.transform_count);
+				gl_err_check("nsrender_system::draw_selection post");	
+
+				glPolygonMode(GL_FRONT, GL_LINE);
+				glStencilFunc(GL_NOTEQUAL, 1, -1);
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+				fvec4 selCol = sc->color();
+				m_shaders.sel_shader->set_frag_color_out(selCol);
+
+				m_final_buf->set_draw_buffer(nsfb_object::att_color);
+				gl_err_check("nsrender_system::draw_selection pre");
+				glDrawElementsInstanced(
+					dc.submesh->m_prim_type,
+					static_cast<GLsizei>(dc.submesh->m_indices.size()),
+					GL_UNSIGNED_INT,
+					0,
+					dc.transform_count);
+				gl_err_check("nsrender_system::draw_selection post");	
+
+				glPolygonMode(GL_FRONT, GL_FILL);
+				glEnable(GL_DEPTH_TEST);
+				glStencilFunc(GL_EQUAL, 1, 0);
+				selCol.w = sc->mask_alpha();
+				
+				//if (m_focus_ent.y == (*iter)->id() && m_focus_ent.z == *selIter)
+				//	selCol.w = 0.4f;
+				m_shaders.sel_shader->set_uniform("fragColOut", selCol);
+				gl_err_check("nsrender_system::draw_selection pre");
+				glDrawElementsInstanced(
+					dc.submesh->m_prim_type,
+					static_cast<GLsizei>(dc.submesh->m_indices.size()),
+					GL_UNSIGNED_INT,
+					0,
+					dc.transform_count);
+				gl_err_check("nsrender_system::draw_selection post");	
+				dc.transform_id_buffer->bind();
+				dc.submesh->m_vao.remove(dc.transform_id_buffer);
+				dc.submesh->m_vao.unbind();
+			}
+		}
+		++iter;
+	}
+}
+
 void nsrender_system::draw()
 {
 	if (!_valid_check())
@@ -384,7 +524,10 @@ void nsrender_system::draw()
 	glCullFace(GL_FRONT);
 	
 	blend_spot_lights(cam);
-	blend_point_lights(cam);	
+	blend_point_lights(cam);
+
+//	draw_selection(scene, cam);
+	blit_final_frame();
 }
 
 void nsrender_system::blend_spot_lights(nsentity * camera)
@@ -653,6 +796,7 @@ void nsrender_system::init()
 	m_shaders.spot_light = cplg->load<nsspot_light_shader>(nsstring(SPOT_LIGHT_SHADER) + shext);
 	m_shaders.point_shadow = cplg->load<nspoint_shadowmap_shader>(nsstring(POINT_SHADOWMAP_SHADER) + shext);
 	m_shaders.spot_shadow = cplg->load<nsspot_shadowmap_shader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext);
+	m_shaders.sel_shader = cplg->load<nsselection_shader>(nsstring(SELECTION_SHADER) + shext);
 	m_shaders.dir_shadow = cplg->load<nsdir_shadowmap_shader>(nsstring(DIR_SHADOWMAP_SHADER) + shext);
 	cplg->load<nsskybox_shader>(nsstring(SKYBOX_SHADER) + shext);
 	cplg->manager<nsshader_manager>()->compile_all();
@@ -1087,39 +1231,52 @@ void nsrender_system::set_fog_color(const fvec4 & color)
 	m_fog_color = color;
 }
 
-void nsrender_system::_draw_call(drawcall_set::iterator pDCIter)
+void nsrender_system::_draw_call(const draw_call * dc)
 {
 	// Check to make sure each buffer is allocated before setting the shader attribute : un-allocated buffers
 	// are fairly common because not every mesh has tangents for example.. or normals.. or whatever
+	dc->submesh->m_vao.bind();
 
-	pDCIter->submesh->m_vao.bind();
-	pDCIter->transform_buffer->bind();
-
-	for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
+	if (dc->transform_buffer != nullptr)
 	{
-		pDCIter->submesh->m_vao.add(pDCIter->transform_buffer, nsshader::loc_instance_tform + tfInd);
-		pDCIter->submesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-		pDCIter->submesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
+		dc->transform_buffer->bind();
+		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
+		{
+			dc->submesh->m_vao.add(dc->transform_buffer, nsshader::loc_instance_tform + tfInd);
+			dc->submesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+			dc->submesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
+		}
 	}
 
-	pDCIter->transform_id_buffer->bind();
-	pDCIter->submesh->m_vao.add(pDCIter->transform_id_buffer, nsshader::loc_ref_id);
-	pDCIter->submesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
-	pDCIter->submesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);	
-
+	if (dc->transform_id_buffer != nullptr)
+	{
+		dc->transform_id_buffer->bind();
+		dc->submesh->m_vao.add(dc->transform_id_buffer, nsshader::loc_ref_id);
+		dc->submesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
+		dc->submesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);	
+	}
+	
 	gl_err_check("nsrender_system::_draw_call pre");
-	glDrawElementsInstanced(pDCIter->submesh->m_prim_type,
-							static_cast<GLsizei>(pDCIter->submesh->m_indices.size()),
+	glDrawElementsInstanced(dc->submesh->m_prim_type,
+							static_cast<GLsizei>(dc->submesh->m_indices.size()),
 							GL_UNSIGNED_INT,
 							0,
-							pDCIter->transform_count);
+							dc->transform_count);
 	gl_err_check("nsrender_system::_draw_call post");	
 
-	pDCIter->transform_buffer->bind();
-	pDCIter->submesh->m_vao.remove(pDCIter->transform_buffer);
-	pDCIter->transform_id_buffer->bind();
-	pDCIter->submesh->m_vao.remove(pDCIter->transform_id_buffer);
-	pDCIter->submesh->m_vao.unbind();
+	if (dc->transform_buffer != nullptr)
+	{
+		dc->transform_buffer->bind();
+		dc->submesh->m_vao.remove(dc->transform_buffer);
+	}
+
+	if (dc->transform_id_buffer != nullptr)
+	{
+		dc->transform_id_buffer->bind();
+		dc->submesh->m_vao.remove(dc->transform_id_buffer);
+	}
+	
+	dc->submesh->m_vao.unbind();
 }
 
 void nsrender_system::_draw_geometry(const shader_mat_map & sm_map,const mat_drawcall_map & mdc_map, nsentity * camera)
@@ -1208,7 +1365,7 @@ void nsrender_system::_draw_geometry(const shader_mat_map & sm_map,const mat_dra
 
 				currentShader->set_height_minmax(dcIter->height_minmax);
 
-				_draw_call(dcIter);
+				_draw_call(&(*dcIter));
 				++dcIter;
 			}
 			gl_err_check("nsrender_system::draw_geometry");
@@ -1238,7 +1395,7 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 		}
 
 		drawcall_set & currentSet = matIter->second;
-		drawcall_set::iterator  dcIter = currentSet.begin();
+		drawcall_set::iterator dcIter = currentSet.begin();
 		while (dcIter != currentSet.end())
 		{
 			if (dcIter->submesh->m_prim_type != GL_TRIANGLES)
@@ -1267,7 +1424,7 @@ void nsrender_system::_draw_scene_to_depth(nsdepth_shader * pShader)
 				pShader->set_has_bones(false);
 
 			pShader->set_height_minmax(dcIter->height_minmax);
-			_draw_call(dcIter);
+			_draw_call(&(*dcIter));
 			++dcIter;
 		}
 		++matIter;
