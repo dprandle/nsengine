@@ -12,30 +12,33 @@ This file contains all of the neccessary definitions for the nstimer class.
 
 #include <nstimer.h>
 #include <nsengine.h>
+#include <nsfile_os.h>
 
-nstimer::nstimer() : m_start(), m_current(), m_last(), m_lag(0.0f), m_timer(), m_running(false)
+nstimer::nstimer() :
+	m_start(0.0),
+	m_current(0.0),
+	m_last(0.0),
+	m_lag(0.0f),
+	m_running(false)
 {
-	reset();
 }
 
 nstimer::~nstimer()
 {}
 
-float nstimer::dt()
+double nstimer::dt()
 {
-	std::chrono::duration<float> dt = m_current - m_last;
-	return dt.count();
+	return (m_current - m_last);
 }
 
-float nstimer::fixed()
+double nstimer::fixed()
 {
     return FIXED_TIME_STEP;
 }
 
-float nstimer::elapsed()
+double nstimer::elapsed()
 {
-	std::chrono::duration<float> elapsed = m_current - m_start;
-	return elapsed.count();
+	return (m_current - m_start);
 }
 
 float & nstimer::lag()
@@ -55,17 +58,11 @@ void nstimer::resume()
 	m_start += (m_current - m_last);
 }
 
-void nstimer::reset()
-{
-	m_start = m_timer.now();
-	m_current = m_timer.now();
-	m_last = m_timer.now();
-}
-
 void nstimer::start()
 {
-	m_start = m_timer.now();
+	m_start = nsfile_os::system_time();
 	m_current = m_start;
+	m_last = m_start;
 	m_running = true;
 }
 
@@ -73,6 +70,6 @@ void nstimer::update()
 {
 	m_last = m_current;
 	if (m_running)
-		m_current = m_timer.now();
+		m_current = nsfile_os::system_time();
 	m_lag += dt();
 }

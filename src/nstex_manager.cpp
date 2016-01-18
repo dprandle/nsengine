@@ -111,13 +111,13 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	{
 		if (!worked)
 		{
-			dprint("nstex_manager::loadImage Could not load nstex2d from file " + fName);
+			dprint("nstex_manager::load_image Could not load nstex2d from file " + fName);
 			ilDeleteImages(1, &imageID);
 			uint32 err = ilGetError();
 			destroy(resName);
 			return NULL;
 		}
-		dprint("nstex_manager::loadImage Could not convert nstex2d with name " + tex->name() + " to specified format");
+		dprint("nstex_manager::load_image Could not convert nstex2d with name " + tex->name() + " to specified format");
 		ilDeleteImages(1, &imageID);
 		destroy(resName);
 		return NULL;
@@ -139,7 +139,7 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	tex->set_parameter_i(nstexture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
 	tex->unbind();
 	ilDeleteImages(1, &imageID);
-	dprint("nstex_manager::loadImage Successfully loaded nstex2d from file " + fName);
+	dprint("nstex_manager::load_image Successfully loaded nstex2d from file " + fName);
 	return tex;
 }
 
@@ -211,37 +211,36 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		{
 			if (!worked)
 			{
-				dprint("nstex_manager::loadCubemap Could not load NSTexCubemap from file " + fNames[i]);
+				dprint("nstex_manager::load_cubemap Could not load nstex_cubemap from file " + fNames[i]);
 				ilDeleteImages(1, &imageID);
 				destroy(resName);
 				return NULL;
 			}
 
-			dprint("nstex_manager::loadCubemap Could not convert NSTexCubemap with name " + tex->name() + " to specified format");
+			dprint("nstex_manager::load_cubemap Could not convert nstex_cubemap with name " + tex->name() + " to specified format");
 			ilDeleteImages(1, &imageID);
 			destroy(resName);
 			return NULL;
 		}
-
+		tex->set_allocated(false);
 		tex->set_internal_format(GL_RGBA);
 		tex->set_format(GL_RGBA);
-		tex->resize(uivec2(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)));
 		tex->set_pixel_data_type(GL_UNSIGNED_BYTE);
-		tex->set_allocated(false);
+		tex->resize(uivec2(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)));
 		tex->allocate(nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + i), (const void*)ilGetData());
-		dprint("nstex_manager::loadCubemap Successfully loaded NSTexCubemap from file " + fNames[i]);
+		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
 		ilDeleteImages(1, &imageID);
 	}
 
 	// Generate mipmap levels if mMimMapLevel is greater than 0
-	tex->enable_mipmaps();
+//	tex->enable_mipmaps();
 	tex->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
 	tex->set_parameter_i(nstexture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
 	tex->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
 	tex->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
 	tex->set_parameter_i(nstexture::wrap_r, GL_CLAMP_TO_EDGE);
 	tex->unbind();
-	dprint("nstex_manager::loadCubemap Successfully loaded NSTexCubemap with name " + tex->name());
+	dprint("nstex_manager::load_cubemap Successfully loaded nstex_cubemap with name " + tex->name());
 	return tex;
 }
 
@@ -362,7 +361,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname)
 
 	if (glid == 0)
 	{
-		dprint("nstex_manager::loadCubemap Error loading NSTexCubemap from file " + fName);
+		dprint("nstex_manager::load_cubemap Error loading nstex_cubemap from file " + fName);
 		destroy(resName);
 		return NULL;
 	}
@@ -379,7 +378,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname)
 	tex->enable_mipmaps();
 	tex->set_allocated(true);
 	tex->unbind();
-	dprint("nstex_manager::loadCubemap Successfully loaded NSTexCubemap from file " + fName);
+	dprint("nstex_manager::load_cubemap Successfully loaded nstex_cubemap from file " + fName);
 	return tex;
 }
 
@@ -478,13 +477,13 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 			ILenum err = ilGetError();
 			while (err != IL_NO_ERROR)
 			{
-				dprint("nstex_manager::saveCubemap Error saving NSTexCubemap to file " + localFname);
+				dprint("nstex_manager::saveCubemap Error saving nstex_cubemap to file " + localFname);
 				err = ilGetError();
 			}
 		}
 		if (ret)
         {
-			dprint("nstex_manager::loadCubemap Successfully saved NSTexCubemap to file " + fName);
+			dprint("nstex_manager::load_cubemap Successfully saved nstex_cubemap to file " + fName);
         }
 		return ret;
 	}
@@ -522,11 +521,11 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 	
 	if (ret == 0)
 	{
-		dprint("nstex_manager::loadCubemap Could not save NSTexCubemap to file " + fName + " Error: " + nsstring(SOIL_last_result()));
+		dprint("nstex_manager::load_cubemap Could not save nstex_cubemap to file " + fName + " Error: " + nsstring(SOIL_last_result()));
 	}
 	else
 	{
-		dprint("nstex_manager::loadCubemap Successfully saved NSTexCubemap to file " + fName);
+		dprint("nstex_manager::load_cubemap Successfully saved nstex_cubemap to file " + fName);
 	}
 
 	return (ret == 0);

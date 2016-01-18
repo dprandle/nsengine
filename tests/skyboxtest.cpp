@@ -32,17 +32,20 @@ int main()
     nse.start();
 
     nsplugin * plg = setup_basic_plugin();
-	nsinput_map * imap = plg->get<nsinput_map>("basic_input");
-
 	nsentity * skybox = plg->create<nsentity>("skybox");
 
-	nstexture * sky_box = plg->manager<nstex_manager>()->load_cubemap("./import/skydomes/space.cube",".jpg");
+    nstexture * sky_box = plg->manager<nstex_manager>()->load_cubemap("./import/skydomes/sun5deg.cube",".png");
 	nsmaterial * sb_mat = plg->create<nsmaterial>("skybox");
+
 	sb_mat->set_map_tex_id(nsmaterial::diffuse, sky_box->full_id());
 	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
-	sb_mat->set_cull_mode(GL_FRONT);
+    sb_mat->set_cull_mode(GL_FRONT);
+    sb_mat->set_alpha_blend(false);
+    sb_mat->set_color_mode(false);
+    sb_mat->enable_culling(false);
+
 	nsrender_comp * rc = skybox->create<nsrender_comp>();
-	rc->set_cast_shadow(false);
+    rc->set_cast_shadow(false);
 	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_SKYDOME)->full_id());
 	rc->set_material(0, sb_mat->full_id());
 	

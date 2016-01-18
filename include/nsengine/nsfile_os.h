@@ -7,6 +7,8 @@
 namespace nsfile_os
 {
 
+void platform_init();
+
 bool file_exists(const nsstring & filename);
 
 bool path_exists(const nsstring path);
@@ -22,6 +24,8 @@ bool rename(const nsstring & oldname, const nsstring & newname);
 nsstring cwd();
 
 void read(const nsstring & fname, ui8_vector * contents);
+
+double system_time();
 
 nsstring & windows_path(nsstring & convert);
 nsstring & unix_path(nsstring & convert);

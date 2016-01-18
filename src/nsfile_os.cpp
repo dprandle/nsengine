@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
+#include <time.h>
 #endif
 
 #include <nsres_manager.h>
@@ -34,6 +35,15 @@ namespace nsfile_os
 {
 
 #ifdef WIN32
+
+uint64 freq;
+
+void platform_init()
+{
+	LARGE_INTEGER pf;
+	freq = QueryPerformanceFrequency(&pf);
+	freq = pf.QuadPart;
+}
 
 bool file_exists(const nsstring & filename)
 {
@@ -88,6 +98,13 @@ bool rename(const nsstring & oldname, const nsstring & newname)
     return (::rename(oldname.c_str(), newname.c_str()) == 0);
 }
 
+double system_time()
+{
+	LARGE_INTEGER cnt;
+	QueryPerformanceCounter(&cnt);
+	return double(cnt.QuadPart) / double(freq);
+}
+
 nsstring cwd()
 {
 	char buffer[MAX_PATH];
@@ -130,6 +147,14 @@ bool create_dir(const nsstring & path)
 			*p = '/';
 		}
 	return (mkdir(tmp, S_IRWXU) == 0);
+}
+
+double system_time()
+{
+	timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	uint64 ret = ts.tv_sec*1000000 + ts.tv_nsec / 1000; // microseconds
+	return double(ret) / 1000000.0;
 }
 
 uint32 remove_dir(const nsstring & dirpath)
@@ -180,6 +205,11 @@ nsstring cwd()
 	nsstring ret(temp);
 	ret.resize(sz);
 	return nsres_manager::path_from_filename(ret);
+}
+
+void platform_init()
+{
+	
 }
 
 #endif

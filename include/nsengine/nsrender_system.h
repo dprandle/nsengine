@@ -17,6 +17,7 @@
 #define GBUFFER_SHADER "gbufferdefault"
 #define GBUFFER_WF_SHADER "gbufferdefault_wireframe"
 #define GBUFFER_TRANS_SHADER "gbufferdefault_translucent"
+#define RENDER_PARTICLE_SHADER "renderparticle"
 #define LIGHTSTENCIL_SHADER "lightstencil"
 #define SPOT_LIGHT_SHADER "spotlight"
 #define DIR_LIGHT_SHADER "directionlight"
@@ -90,6 +91,7 @@ class nsshader;
 class nsbuffer_object;
 class nscam_comp;
 class nsselection_shader;
+class nsparticle_render_shader;
 
 struct packed_fragment_data // 32 bytes total
 {
@@ -171,6 +173,7 @@ struct render_shaders
 	nsmaterial_shader * deflt;
 	nsmaterial_shader * deflt_wireframe;
 	nsmaterial_shader * deflt_translucent;
+	nsparticle_render_shader * deflt_particle;
 	nslight_stencil_shader * light_stencil;
 	nsfragment_sort_shader * frag_sort;
 	nsdir_light_shader * dir_light;
@@ -204,17 +207,19 @@ public:
 
 	void blit_final_frame();
 
-	void draw();
+	void render_scene();
 
-	void draw_opaque(nsentity * camera);
+	void render_scene_opaque(nsentity * camera);
 
-	void draw_translucent(nsentity * camera);
+	void render_scene_particles(nsscene * scene, nsentity * camera);
 
-	void draw_pre_lighting_pass();
+	void render_scene_translucent(nsentity * camera);
 
-	void draw_selection(nsscene * scene, nsentity * camera);
+	void pre_lighting_pass();
 
-	void enable_debug_draw(bool pDebDraw);
+	void render_scene_selection(nsscene * scene, nsentity * camera);
+
+	void enable_debug_render(bool pDebDraw);
 
 	void enable_lighting(bool pEnable);
 
@@ -271,8 +276,6 @@ public:
 	void add_lights_from_scene(nsscene * scene);
 
 	void update_material_ids();
-
-	virtual int32 draw_priority();
 
 	virtual int32 update_priority();
 	

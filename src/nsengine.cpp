@@ -9,7 +9,6 @@ This file contains all of the neccessary definitions for the nsengine class.
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
-
 #include <hash/crc32.h>
 #include <nsfile_os.h>
 #include <nsengine.h>
@@ -148,12 +147,6 @@ bool nsengine::add_system(nssystem * pSystem)
 
 	if (!it.second)
 		return false;
-
-	int32 drawPriority = pSystem->draw_priority();
-
-	// Only add systems with a draw priority
-	if (drawPriority != NO_DRAW_PR)
-		m_sys_draw_order[drawPriority] = type_hash;
 
 	m_sys_update_order[pSystem->update_priority()] = type_hash;
 	return true;
@@ -475,6 +468,7 @@ void nsengine::set_res_dir(const nsstring & dir)
 
 void nsengine::start()
 {
+	nsfile_os::platform_init();
 	if (current() == NULL)
 		return;
 
@@ -594,7 +588,6 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
 void nsengine::update()
 {
 	timer()->update();
-	
     while (timer()->lag() >= timer()->fixed())
 	{
 		auto sysUpdateIter = m_sys_update_order.begin();
@@ -607,22 +600,11 @@ void nsengine::update()
 		}
 		timer()->lag() -= timer()->fixed();
 	}
-	system<nsrender_system>()->draw();
+	system<nsrender_system>()->render_scene();
 }
 
 void nsengine::_remove_sys(uint32 type_id)
 {
-	auto iter1 = m_sys_draw_order.begin();
-	while (iter1 != m_sys_draw_order.end())
-	{
-		if (iter1->second == type_id)
-		{
-			m_sys_draw_order.erase(iter1);
-			return;
-		}
-		++iter1;
-	}
-
 	auto iter2 = m_sys_update_order.begin();
 	while (iter2 != m_sys_update_order.end())
 	{

@@ -46,7 +46,6 @@ nsselection_system::nsselection_system() :
 	m_moving(false),
 	m_cached_point_last(),
 	m_draw_occ(false),
-	m_final_buf(0),
 	m_picking_buf(0),
 	m_trans(),
 	m_toggle_move(false),
@@ -213,11 +212,6 @@ void nsselection_system::set_picking_fbo(uint32 fbo)
 	m_picking_buf = fbo;
 }
 
-void nsselection_system::set_final_fbo(uint32 fbo)
-{
-	m_final_buf = fbo;
-}
-
 uivec3 nsselection_system::pick(const fvec2 & mpos)
 {
 	return pick(mpos.x, mpos.y);
@@ -252,10 +246,6 @@ uivec3 nsselection_system::pick(float mousex, float mousey)
 
 	pickingBuf->set_read_buffer(nsfb_object::att_none);
 	return index;
-}
-
-void nsselection_system::draw()
-{
 }
 
 void nsselection_system::set_mirror_tile_color(const fvec4 & color)
@@ -484,7 +474,6 @@ bool nsselection_system::empty()
 
 void nsselection_system::init()
 {
-	set_final_fbo(nse.composite_framebuffer());
 	set_picking_fbo(nse.composite_framebuffer());
 	
 	register_handler_func(this, &nsselection_system::_handle_action_event);
@@ -501,11 +490,6 @@ void nsselection_system::init()
 	add_trigger_hash(move_selection_y, NSSEL_MOVE_Y);
 	add_trigger_hash(move_selection_z, NSSEL_MOVE_Z);
 	add_trigger_hash(move_selection_toggle, NSSEL_MOVE_TOGGLE);
-}
-
-int32 nsselection_system::draw_priority()
-{
-	return SEL_SYS_DRAW_PR;
 }
 
 int32 nsselection_system::update_priority()
@@ -571,14 +555,11 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 				remove_from_grid();
 				m_moving = true;
 			}
-
-			//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 		else if (!contains(pID))
 		{
 			clear();
 			m_focus_ent = uivec3();
-			//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 		}
 	}
 	else
@@ -608,8 +589,6 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 				{
 					dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
 				}
-
-				//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 			else
 			{
@@ -644,8 +623,6 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 	if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
 	{
 		m_focus_ent = pi;
-		//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
-
 		nsentity * tileBrush = nse.system<nsbuild_system>()->tile_brush();
 		if (tileBrush == NULL)
 		{
@@ -838,7 +815,6 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 		return;
 	}
 	
-
 	if (contains(pickid))
 	{
 		m_focus_ent = pickid;
@@ -1530,8 +1506,8 @@ void nsselection_system::update()
 		translate(m_total_frame_translation);
 		m_total_frame_translation = 0.0f;
 	}
-
 	prepare_selection_for_rendering();
+
 }
 
 void nsselection_system::prepare_selection_for_rendering()
@@ -1553,23 +1529,20 @@ void nsselection_system::prepare_selection_for_rendering()
 		}
 
 		tbuf->bind();
-		if (m_moving)
+		fmat4 * mapped = tbuf->map<fmat4>(
+			0,
+			sc->count(),
+			nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+		
+		uint32 count = 0;
+		auto sel_iter = sc->begin();
+		while (sel_iter != sc->end())
 		{
-			fmat4 * mapped = tbuf->map<fmat4>(
-				0,
-				sc->count(),
-				nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-
-			uint32 count = 0;
-			auto sel_iter = sc->begin();
-			while (sel_iter != sc->end())
-			{
-				mapped[count] = tc->transform(*sel_iter);
-				++sel_iter;
-				++count;
-			}
-			tbuf->unmap();
+			mapped[count] = tc->transform(*sel_iter);
+			++sel_iter;
+			++count;
 		}
+		tbuf->unmap();
 		++iter;
 	}	
 }

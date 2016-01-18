@@ -65,12 +65,12 @@ nsplugin * setup_basic_plugin()
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 0.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
 	nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
 
-	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 100.0f);
+	//nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 100.0f);
 	//alpha_tile->get<nssel_comp>()->enable_transparent_picking(true);
 	
 	//plg->get<nsmaterial>("grasstile")->set_alpha_blend(true);
 	//plg->get<nsmaterial>("grasstile")->use_alpha_from_color(true);
-	scn->add(point_light);
+	//scn->add(point_light);
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
 	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 	return plg;

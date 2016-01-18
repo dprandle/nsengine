@@ -36,6 +36,7 @@
 #include <nsshader.h>
 #include <nscam_comp.h>
 #include <nsbuffer_object.h>
+#include <nsparticle_comp.h>
 
 translucent_buffers::translucent_buffers():
 	atomic_counter(new nsbuffer_object(nsbuffer_object::atomic_counter, nsbuffer_object::storage_mutable)),
@@ -175,6 +176,7 @@ bool render_shaders::error()
 		deflt->error() != nsshader::error_none ||
 		deflt_wireframe->error() != nsshader::error_none ||
 		deflt_translucent->error() != nsshader::error_none ||
+		deflt_particle->error() != nsshader::error_none ||
 		light_stencil->error() != nsshader::error_none ||
 		frag_sort->error() != nsshader::error_none ||
 		dir_light->error() != nsshader::error_none ||
@@ -192,6 +194,7 @@ bool render_shaders::valid()
 		deflt != NULL &&
 		deflt_wireframe != NULL &&
 		deflt_translucent != NULL &&
+		deflt_particle != NULL &&
 		light_stencil != NULL &&
 		frag_sort != NULL &&
 		dir_light != NULL &&
@@ -310,19 +313,19 @@ bool nsrender_system::_valid_check()
 }
 
 
-void nsrender_system::draw_opaque(nsentity * camera)
+void nsrender_system::render_scene_opaque(nsentity * camera)
 {
 	_draw_geometry(m_shader_mat_map, m_drawcall_map, camera);
 	_bind_gbuffer_textures();	
 }
 
-void nsrender_system::draw_translucent(nsentity * camera)
+void nsrender_system::render_scene_translucent(nsentity * camera)
 {
 	m_final_buf->set_draw_buffer(nsfb_object::att_none);// picking
 	_draw_geometry(m_tshader_mat_map, m_tdrawcall_map, camera);
 }
 
-void nsrender_system::draw_pre_lighting_pass()
+void nsrender_system::pre_lighting_pass()
 {
 	m_final_buf->update_draw_buffers();
 	m_shaders.frag_sort->bind();
@@ -331,7 +334,79 @@ void nsrender_system::draw_pre_lighting_pass()
 	glDrawArrays(GL_POINTS, 0, 1);
 }
 
-void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
+void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
+{
+	nscam_comp * compc = cam->get<nscam_comp>();
+	nstform_comp * camTComp = cam->get<nstform_comp>();
+
+	auto comps = scene->entities<nsparticle_comp>();
+	auto entIter = comps.begin();
+	while (entIter != comps.end())
+	{
+		nsparticle_comp * comp = (*entIter)->get<nsparticle_comp>();
+		if (comp->first() || !comp->simulating())
+		{
+			++entIter;
+			continue;
+		}
+		
+		nsmaterial * mat = nse.resource<nsmaterial>(comp->material_id());
+		if (mat == NULL)
+			mat = m_default_mat;
+
+		nsparticle_render_shader * rshdr = nse.resource<nsparticle_render_shader>(mat->shader_id());
+		if (rshdr == NULL)
+			rshdr = m_shaders.deflt_particle;
+
+		nstform_comp * tComp = (*entIter)->get<nstform_comp>();
+		nstform_comp * camTComp = scene->camera()->get<nstform_comp>();
+		nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
+		if (tex != NULL)
+		{
+			set_active_texture_unit(nsmaterial::diffuse);
+			tex->bind();
+		}
+		else
+			dprint("nsparticle_system::draw() - No random texture set - particles will be lame.");
+
+		if (comp->blend_mode() == nsparticle_comp::b_mix)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else
+			glBlendFunc(GL_ADD, GL_ADD);
+
+		rshdr->bind();
+		rshdr->set_proj_cam_mat(compc->proj_cam());
+		rshdr->set_cam_right(camTComp->dvec(nstform_comp::dir_right));
+		rshdr->set_cam_up(camTComp->dvec(nstform_comp::dir_up));
+		rshdr->set_cam_target(camTComp->dvec(nstform_comp::dir_target));
+		rshdr->set_world_up(fvec3(0.0f, 0.0f, 1.0f));
+		rshdr->set_diffusemap_enabled(mat->contains(nsmaterial::diffuse));
+		rshdr->set_color_mode(mat->color_mode());
+		rshdr->set_frag_color_out(mat->color());
+		rshdr->set_lifetime(float(comp->lifetime()) / 1000.0f);
+		rshdr->set_blend_mode(uint32(comp->blend_mode()));
+
+		
+		comp->va_obj()->bind();
+		tComp->transform_buffer()->bind();
+		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
+		{
+			comp->va_obj()->add(tComp->transform_buffer(), 4 + tfInd);
+			comp->va_obj()->vertex_attrib_ptr(4 + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+			comp->va_obj()->vertex_attrib_div(4 + tfInd, 1);
+		}
+
+		glDrawTransformFeedbackInstanced(GL_POINTS, comp->xfb_id(),tComp->count());
+		gl_err_check("nsparticle_system::draw in glDrawElementsInstanced");
+		tComp->transform_buffer()->bind();
+		comp->va_obj()->remove(tComp->transform_buffer());
+		comp->va_obj()->unbind();
+		rshdr->unbind();
+		++entIter;
+	}
+}
+
+void nsrender_system::render_scene_selection(nsscene * scene, nsentity * cam)
 {
 	nscam_comp * camc = cam->get<nscam_comp>();
 	m_shaders.sel_shader->bind();
@@ -362,6 +437,8 @@ void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
 			for (uint32 i = 0; i < rc_msh->count(); ++i)
 			{
 				dc.submesh = rc_msh->sub(i);
+				dc.transform_buffer = sc->transform_buffer();
+				dc.transform_count = sc->count();
 
 				// make it so the height map is selectable
 				nsmaterial * mat = nse.resource<nsmaterial>(rc->material_id(i));
@@ -392,8 +469,6 @@ void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
 				if (trc != NULL)
 					m_shaders.sel_shader->set_height_minmax(trc->height_bounds());
 
-				dc.transform_buffer = sc->transform_buffer();
-				dc.transform_count = sc->count();
 				dc.submesh->m_vao.bind();
 
 				dc.transform_buffer->bind();
@@ -454,8 +529,8 @@ void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
 					0,
 					dc.transform_count);
 				gl_err_check("nsrender_system::draw_selection post");	
-				dc.transform_id_buffer->bind();
-				dc.submesh->m_vao.remove(dc.transform_id_buffer);
+				dc.transform_buffer->bind();
+				dc.submesh->m_vao.remove(dc.transform_buffer);
 				dc.submesh->m_vao.unbind();
 			}
 		}
@@ -465,7 +540,7 @@ void nsrender_system::draw_selection(nsscene * scene, nsentity * cam)
 					
 }
 
-void nsrender_system::draw()
+void nsrender_system::render_scene()
 {
 	if (!_valid_check())
 		return;
@@ -479,19 +554,18 @@ void nsrender_system::draw()
 		return;
 
 
-	m_gbuffer->bind();
-	
-	if (scene->skydome() == nullptr)
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	else
-		glClear(GL_DEPTH_BUFFER_BIT);
-
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
 	glDepthMask(true);	
+	m_gbuffer->bind();
+	
+//	if (scene->skydome() == nullptr)
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	else
+//		glClear(GL_DEPTH_BUFFER_BIT);
 
-	draw_opaque(cam);	
+	render_scene_opaque(cam);	
 
 	if (m_debug_draw)
 	{
@@ -505,10 +579,10 @@ void nsrender_system::draw()
 
 	m_final_buf->set_target(nsfb_object::fb_draw);
 	m_final_buf->bind();
-	draw_translucent(cam);
+	render_scene_translucent(cam);
 
 	glDisable(GL_DEPTH_TEST);
-	draw_pre_lighting_pass();
+	pre_lighting_pass();
 	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
@@ -520,18 +594,21 @@ void nsrender_system::draw()
 	glEnable(GL_STENCIL_TEST);
 	glCullFace(GL_FRONT);
 	
-	//blend_spot_lights(cam);
-	//blend_point_lights(cam);
+	blend_spot_lights(cam);
+	blend_point_lights(cam);
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
+
+//	render_scene_particles(scene, cam);
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	glClear(GL_STENCIL_BUFFER_BIT);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glStencilFunc(GL_ALWAYS, 1, -1);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-	//draw_selection(scene, cam);
-	
+
+	render_scene_selection(scene, cam);
 	blit_final_frame();
 }
 
@@ -803,7 +880,9 @@ void nsrender_system::init()
 	m_shaders.spot_shadow = cplg->load<nsspot_shadowmap_shader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext);
 	m_shaders.sel_shader = cplg->load<nsselection_shader>(nsstring(SELECTION_SHADER) + shext);
 	m_shaders.dir_shadow = cplg->load<nsdir_shadowmap_shader>(nsstring(DIR_SHADOWMAP_SHADER) + shext);
+	m_shaders.deflt_particle = cplg->load<nsparticle_render_shader>(nsstring(RENDER_PARTICLE_SHADER) + shext);
 	cplg->load<nsskybox_shader>(nsstring(SKYBOX_SHADER) + shext);
+
 	cplg->manager<nsshader_manager>()->compile_all();
 	cplg->manager<nsshader_manager>()->link_all();
 	cplg->manager<nsshader_manager>()->init_uniforms_all();
@@ -838,7 +917,7 @@ void nsrender_system::init()
 	m_single_point->unbind();
 }
 
-void nsrender_system::enable_debug_draw(bool pDebDraw)
+void nsrender_system::enable_debug_render(bool pDebDraw)
 {
 	m_debug_draw = pDebDraw;
 }
@@ -861,7 +940,7 @@ void nsrender_system::set_shaders(const render_shaders & pShaders)
 
 void nsrender_system::toggle_debug_draw()
 {
-	enable_debug_draw(!m_debug_draw);
+	enable_debug_render(!m_debug_draw);
 }
 
 void nsrender_system::update()
@@ -1305,12 +1384,12 @@ void nsrender_system::_draw_geometry(const shader_mat_map & sm_map,const mat_dra
 		{
 			uint32 mat_shader_id = m_mat_shader_ids.find(*matIter)->second;
 
-			glCullFace((*matIter)->cull_mode());
-
 			if ((*matIter)->culling())// && !(*matIter)->alpha_blend())
 				glEnable(GL_CULL_FACE);
 			else
 				glDisable(GL_CULL_FACE);
+
+			glCullFace((*matIter)->cull_mode());
 
 			currentShader->set_diffusemap_enabled((*matIter)->contains(nsmaterial::diffuse));
 			currentShader->set_opacitymap_enabled((*matIter)->contains(nsmaterial::opacity));
@@ -1476,11 +1555,6 @@ void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 					   0);
 		cSub->m_vao.unbind();
 	}
-}
-
-int32 nsrender_system::draw_priority()
-{
-	return RENDER_SYS_DRAW_PR;
 }
 
 int32 nsrender_system::update_priority()

@@ -63,8 +63,6 @@ public:
 
 	bool contains(const uivec3 & itemid);
 
-	virtual void draw();
-
 	bool empty();
 
 	const uivec3 & center();
@@ -76,8 +74,6 @@ public:
 	bool draw_occupied_grid();
 
 	bool mirror_selection();
-
-	virtual int32 draw_priority();
 
 	virtual int32 update_priority();
 
@@ -130,8 +126,6 @@ public:
 	void set_color(const fvec4 & pColor);
 
 	void set_picking_fbo(uint32 fbo);
-
-	void set_final_fbo(uint32 fbo);
 
 	void set_focus_entity(const uivec3 & focus_ent);
 
@@ -260,7 +254,6 @@ protected:
 
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
-	uint32 m_final_buf;
 	uint32 m_picking_buf;
 	fmat4 m_trans;
 };

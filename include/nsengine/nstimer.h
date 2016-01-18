@@ -13,9 +13,7 @@ This file contains all of the neccessary declarations for the nstimer class.
 #ifndef NSTIMER_H
 #define NSTIMER_H
 
-#define FIXED_TIME_STEP 0.01667f
-
-#include <chrono>
+#define FIXED_TIME_STEP 0.005
 
 class nstimer 
 {
@@ -23,11 +21,11 @@ public:
 	nstimer();
 	~nstimer();
 
-	float dt();
+	double dt();
 
-	float elapsed();
+	double elapsed();
 
-	float fixed();
+	double fixed();
 
 	float & lag();
 
@@ -35,17 +33,14 @@ public:
 
 	void resume();
 
-	void reset();
-
 	void start();
 
 	void update();
 
 private:
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_current;
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_last;
-	std::chrono::high_resolution_clock m_timer;
+	double m_start;
+	double m_current;
+	double m_last;
 	bool m_running;
 	float m_lag;
 };

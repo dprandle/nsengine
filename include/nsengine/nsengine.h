@@ -104,16 +104,9 @@ This file contains all of the neccessary declartations for the nsengine class.
 #define MOVE_SYS_UPDATE_PR 60000
 #define PARTICLE_SYS_UPDATE_PR 80000
 #define RENDER_SYS_UPDATE_PR 90000
-#define SEL_SYS_UPDATE_PR 30000
+#define SEL_SYS_UPDATE_PR 65000
 #define INP_SYS_UPDATE_PR 10000
 #define UI_SYS_UPDATE_PR 20000
-
-// System draw priority
-#define RENDER_SYS_DRAW_PR 10000
-#define PARTICLE_SYS_DRAW_PR 20000
-#define SEL_SYS_DRAW_PR 30000
-#define UI_SYS_DRAW_PR 40000
-#define NO_DRAW_PR 0
 
 // Engine macros
 #define nse nsengine::inst()
@@ -738,8 +731,6 @@ private:
 	nsstring m_import_dir;
 	
 	sys_priority_map m_sys_update_order;
-	sys_priority_map m_sys_draw_order;
-
 	type_hash_map m_obj_type_hashes;
 	hash_string_map m_obj_type_names;
 	hash_factory_map m_factories;
