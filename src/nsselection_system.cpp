@@ -1,4 +1,4 @@
-\ /*!
+/*!
 \file nscontroller_system.h
 
 \brief Definition file for NSControllerSystem class
