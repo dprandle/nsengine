@@ -30,13 +30,9 @@ public:
 
 	virtual ~nssystem();
 
-	virtual void draw();
-
 	virtual void init()=0;
 
 	virtual void update() = 0;
-
-	virtual int32 draw_priority();
 
 	virtual int32 update_priority() = 0;
 

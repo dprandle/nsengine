@@ -15,9 +15,11 @@ This file contains all of the neccessary definitions for the nssel_comp class.
 #include <nsentity.h>
 #include <nssel_comp.h>
 #include <nstimer.h>
+#include <nsbuffer_object.h>
 
 nssel_comp::nssel_comp() :
 	nscomponent(),
+	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
 	m_default_sel_color(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A),
 	m_sel_color(m_default_sel_color),
 	m_mask_alpha(DEFAULT_SEL_MASK_A),
@@ -30,6 +32,7 @@ nssel_comp::nssel_comp() :
 
 nssel_comp::nssel_comp(const nssel_comp & copy):
 	nscomponent(copy),
+	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
 	m_default_sel_color(copy.m_default_sel_color),
 	m_sel_color(copy.m_sel_color),
 	m_mask_alpha(copy.m_mask_alpha),
@@ -43,12 +46,16 @@ nssel_comp::nssel_comp(const nssel_comp & copy):
 }
 
 nssel_comp::~nssel_comp()
-{}
+{
+	m_tform_buffer->release();
+	delete m_tform_buffer;
+}
 
 bool nssel_comp::add(uint32 pTransformID)
 {
 	m_selection.insert(pTransformID);
 	set_selected(true);
+	m_update = true;
 	return true;
 }
 
@@ -61,6 +68,7 @@ void nssel_comp::clear()
 {
 	m_selection.clear();
 	set_selected(false);
+	m_update = true;
 }
 
 bool nssel_comp::contains(uint32 pTransformID)
@@ -113,7 +121,10 @@ const fvec4 & nssel_comp::color()
 }
 
 void nssel_comp::init()
-{}
+{
+	m_tform_buffer->init_gl();
+	m_update = true;
+}
 
 bool nssel_comp::draw_enabled()
 {
@@ -181,6 +192,11 @@ bool nssel_comp::transparent_picking_enabled() const
 uint32 nssel_comp::count()
 {
 	return static_cast<uint32>(m_selection.size());
+}
+
+nsbuffer_object * nssel_comp::transform_buffer()
+{
+	return m_tform_buffer;
 }
 
 bool nssel_comp::empty()

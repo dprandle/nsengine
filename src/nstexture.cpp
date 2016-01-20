@@ -1162,7 +1162,7 @@ bool nstex_cubemap::allocate(cube_face f, const void * data)
 		return false;
 
 	if (m_comp_byte_size == 0)
-		glTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_format, m_pixel_data_type, data); // specify base mip map level
+		glTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_format, m_pixel_data_type, data);
 	else
 		glCompressedTexImage2D(f, 0, m_internal_format, m_size.w, m_size.h, m_border, m_comp_byte_size, data);
 
@@ -1194,7 +1194,7 @@ bool nstex_cubemap::allocate_from_screen(cube_face f, const uivec2 & lowerLeft, 
 		return false;
 
 	glCopyTexImage2D(f, 0, m_internal_format, lowerLeft.x, lowerLeft.y, m_size.w, m_size.h, m_border);
-	m_allocated = !gl_err_check("nstexture::allocateFromScreen()");
+	m_allocated = !gl_err_check("nstexture::allocate_from_screen()");
 	return m_allocated;
 }
 

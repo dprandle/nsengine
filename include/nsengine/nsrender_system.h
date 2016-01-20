@@ -17,6 +17,7 @@
 #define GBUFFER_SHADER "gbufferdefault"
 #define GBUFFER_WF_SHADER "gbufferdefault_wireframe"
 #define GBUFFER_TRANS_SHADER "gbufferdefault_translucent"
+#define RENDER_PARTICLE_SHADER "renderparticle"
 #define LIGHTSTENCIL_SHADER "lightstencil"
 #define SPOT_LIGHT_SHADER "spotlight"
 #define DIR_LIGHT_SHADER "directionlight"
@@ -26,6 +27,7 @@
 #define SPOT_SHADOWMAP_SHADER "spotshadowmap"
 #define DIR_SHADOWMAP_SHADER "dirshadowmap"
 #define SKYBOX_SHADER "skybox"
+#define SELECTION_SHADER "selectionsolid"
 
 // Default checkered material
 #define DEFAULT_MATERIAL "default"
@@ -88,6 +90,8 @@ class nsdepth_shader;
 class nsshader;
 class nsbuffer_object;
 class nscam_comp;
+class nsselection_shader;
+class nsparticle_render_shader;
 
 struct packed_fragment_data // 32 bytes total
 {
@@ -128,16 +132,16 @@ struct light_vectors
 
 struct draw_call
 {
-	draw_call(nsmesh::submesh * submesh_,
-			  fmat4_vector * anim_transforms_,
-			  nsbuffer_object * transform_buffer_,
-			  nsbuffer_object * transform_id_buffer_,
-			  const fvec2 & height_minmax_,
-			  uint32 ent_id,
-			  uint32 plug_id,
-			  uint32 transform_count_,
-			  bool casts_shadows_,
-			  bool selectable_
+	draw_call(nsmesh::submesh * submesh_=nullptr,
+			  fmat4_vector * anim_transforms_=nullptr,
+			  nsbuffer_object * transform_buffer_=nullptr,
+			  nsbuffer_object * transform_id_buffer_=nullptr,
+			  const fvec2 & height_minmax_=fvec2(),
+			  uint32 ent_id=0,
+			  uint32 plug_id=0,
+			  uint32 transform_count_=0,
+			  bool casts_shadows_=true,
+			  bool selectable_=false
 		);
 	~draw_call();
 
@@ -169,6 +173,7 @@ struct render_shaders
 	nsmaterial_shader * deflt;
 	nsmaterial_shader * deflt_wireframe;
 	nsmaterial_shader * deflt_translucent;
+	nsparticle_render_shader * deflt_particle;
 	nslight_stencil_shader * light_stencil;
 	nsfragment_sort_shader * frag_sort;
 	nsdir_light_shader * dir_light;
@@ -176,6 +181,7 @@ struct render_shaders
 	nsspot_light_shader * spot_light;
 	nspoint_shadowmap_shader * point_shadow;
 	nsspot_shadowmap_shader * spot_shadow;
+	nsselection_shader * sel_shader;
 	nsdir_shadowmap_shader * dir_shadow;
 };
 
@@ -201,15 +207,19 @@ public:
 
 	void blit_final_frame();
 
-	void draw();
+	void render_scene();
 
-	void draw_opaque(nsentity * camera);
+	void render_scene_opaque(nsentity * camera);
 
-	void draw_translucent(nsentity * camera);
+	void render_scene_particles(nsscene * scene, nsentity * camera);
 
-	void draw_pre_lighting_pass();
+	void render_scene_translucent(nsentity * camera);
 
-	void enable_debug_draw(bool pDebDraw);
+	void pre_lighting_pass();
+
+	void render_scene_selection(nsscene * scene, nsentity * camera);
+
+	void enable_debug_render(bool pDebDraw);
 
 	void enable_lighting(bool pEnable);
 
@@ -267,8 +277,6 @@ public:
 
 	void update_material_ids();
 
-	virtual int32 draw_priority();
-
 	virtual int32 update_priority();
 	
 private:
@@ -282,7 +290,7 @@ private:
 	
 	void _draw_geometry(const shader_mat_map & sm_map, const mat_drawcall_map & mdc_map, nsentity * camera);
 	void _draw_scene_to_depth(nsdepth_shader * pShader);
-	void _draw_call(drawcall_set::iterator pDCIter);
+	void _draw_call(const draw_call * dc);
 	bool _valid_check();
 	void _bind_gbuffer_textures();
 

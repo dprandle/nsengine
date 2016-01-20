@@ -41,26 +41,18 @@ void main()
     vec4 projCamPos = projCamMat * transform * localPos;
     gl_Position = projCamPos.xyww;
     texCoord = position;
-	//texCoord.y *= -1;
 } 
-
-
-
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring></nsstring>
 fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>#version 440
-
+fragment.source:<nsstring>
+#version 440
 in vec3 texCoord;
 
 uniform samplerCube diffuseMap;
-uniform samplerCube opacityMap;
-uniform samplerCube normalMap;
 
-uniform float specPower;
-uniform float specIntensity;
-uniform vec3 specColor;
+uniform uint material_id;
 uniform uint entityID;
 uniform uint pluginID;
 uniform bool colorMode;
@@ -70,25 +62,21 @@ uniform bool hasNormalMap;
 uniform bool hasOpacityMap;
 uniform bool lightingEnabled;
 uniform bool hasHeightMap;
+uniform bool force_alpha;
 
-layout (location = 0) out vec4 colorOut;
-layout (location = 1) out uvec3 pickingOut;
-layout (location = 2) out vec3 worldPosOut;
-layout (location = 3) out vec4 normalOut;
+layout (location = 0) out vec3 colorOut;
+layout (location = 1) out uvec4 pickingOut;
+layout (location = 2) out vec4 worldPosOut;
+layout (location = 3) out vec3 normalOut;
 
 void main()
 {
-	colorOut = vec4(1.0,0.0,0.0,1.0);
+	colorOut = fragColOut.xyz;
+    if (!colorMode && hasDiffuseMap)
+		colorOut = texture(diffuseMap, texCoord).rgb;
 
-	if (!colorMode && hasDiffuseMap)
-		colorOut = texture(diffuseMap, texCoord);
-
-	pickingOut = uvec3(pluginID, entityID, 0);
-	worldPosOut = vec3(0.0,0.0,0.0);
-	normalOut = vec4(1.0,1.0,1.0,0.0);
+	pickingOut = uvec4(pluginID, entityID, 0, 255);
+	worldPosOut = vec4(0.0,0.0,0.0,0.0);
+	normalOut = vec3(1.0,1.0,1.0);
 }
-
-
-
-
 </nsstring>

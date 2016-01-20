@@ -231,12 +231,14 @@ vec4 base_color_from_attachments(vec2 tex_coord)
 	uint id = texture(gMatMap, tex_coord).w; 
 	vec4 base_color = texture(gDiffuseMap, tex_coord);
 	vec4 wpos = texture(gWorldPosMap, tex_coord);
-vec4 normal = texture(gNormalMap, tex_coord);
+	vec4 normal = texture(gNormalMap, tex_coord);
 
 	if (id > MAX_MATERIALS)
-		return vec4(bgColor.xyz, base_color.a);
-
-	if (lightingEnabled)
+	{
+		if (id != 255)
+			base_color = vec4(bgColor.xyz, base_color.a);
+	}
+	else if (lightingEnabled)
 	{
 		fog_factor = linear_fog_factor(wpos.xyz);
 		mat = materials[id]; // id should be good - well see if we can use this

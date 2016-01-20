@@ -401,16 +401,16 @@ void nscamera_system::update()
 					m_anim_elapsed = 0.0f;
 				}
 			}
-
-			// Update the skybox!
-			nsentity * skyDome = scene->skydome();
-			if (skyDome != NULL)
-			{
-				nstform_comp * tComp = skyDome->get<nstform_comp>();
-				tComp->set_pos(camTComp->wpos());
-			}
 		}
 
+		// Update the skybox with the current camera's position
+		nsentity * skyDome = scene->skydome();
+		if (skyDome != NULL)
+		{
+			nstform_comp * tComp = skyDome->get<nstform_comp>();
+			tComp->set_pos(camTComp->wpos());
+		}
+			
 		++iter;
 	}
 }

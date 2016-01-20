@@ -13,7 +13,6 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 #ifndef NSPARTICLESYSTEM_H
 #define NSPARTICLESYSTEM_H
 
-#define DEFAULT_RENDER_PARTICLE_SHADER "renderparticle"
 #define DEFAULT_PROCESS_PARTICLE_SHADER "xfbparticle"
 
 #include <nssystem.h>
@@ -30,17 +29,9 @@ public:
 
 	~nsparticle_system();
 
-	virtual void draw();
-
-	virtual int32 draw_priority();
-
 	virtual int32 update_priority();
 
 	virtual void init();
-
-	uint32 final_fbo();
-
-	void set_final_fbo(uint32 fbo);
 
 	virtual void update();
 
@@ -48,7 +39,6 @@ public:
 
 private:
 	nsparticle_process_shader * m_process_shader;
-	uint32 m_final_buf;
 };
 
 #endif

@@ -16,7 +16,6 @@ This file contains all of the neccessary declarations for the nsselection_system
 #include <nssystem.h>
 #include <nsentity_manager.h>
 
-#define DEFAULT_SELECTION_SHADER "selectionsolid"
 #define NSSEL_SELECT "select_entity"
 #define NSSEL_SHIFTSELECT "shift_select"
 #define NSSEL_MULTISELECT "multi_select"
@@ -64,8 +63,6 @@ public:
 
 	bool contains(const uivec3 & itemid);
 
-	virtual void draw();
-
 	bool empty();
 
 	const uivec3 & center();
@@ -77,8 +74,6 @@ public:
 	bool draw_occupied_grid();
 
 	bool mirror_selection();
-
-	virtual int32 draw_priority();
 
 	virtual int32 update_priority();
 
@@ -132,13 +127,9 @@ public:
 
 	void set_picking_fbo(uint32 fbo);
 
-	void set_final_fbo(uint32 fbo);
-
 	void set_focus_entity(const uivec3 & focus_ent);
 
 	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
-
-	void set_shader(nsselection_shader * selShader);
 
 	void set_occupied_spaces(bool show);
 
@@ -182,6 +173,8 @@ public:
 
 	virtual void update();
 
+	void prepare_selection_for_rendering();
+	
 protected:
 
 	enum input_triggers
@@ -249,7 +242,6 @@ protected:
 
 	uivec3 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
 	entity_ptr_set m_selected_ents;
-	nsselection_shader * m_sel_shader;
 	fvec3 m_total_frame_translation;
 	bool m_moving;
 	bool m_toggle_move;
@@ -262,7 +254,6 @@ protected:
 
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
-	uint32 m_final_buf;
 	uint32 m_picking_buf;
 	fmat4 m_trans;
 };

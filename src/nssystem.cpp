@@ -19,19 +19,9 @@ nssystem::nssystem():
 nssystem::~nssystem()
 {}
 
-void nssystem::draw()
-{
-	// do nothing
-}
-
 uint32 nssystem::type()
 {
 	return m_hashed_type;
-}
-
-int32 nssystem::draw_priority()
-{
-	return NO_DRAW_PR;
 }
 
 void nssystem::add_trigger_hash(uint32 key, const nsstring & trigname)
