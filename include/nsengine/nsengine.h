@@ -637,7 +637,7 @@ public:
 
 	void shutdown();
 
-	void start();
+	void start(const ivec2 & screen_size = ivec2());
 
 	template<class sys_type>
 	sys_type * system()

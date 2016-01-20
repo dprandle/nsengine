@@ -560,10 +560,10 @@ void nsrender_system::render_scene()
 	glDepthMask(true);	
 	m_gbuffer->bind();
 	
-//	if (scene->skydome() == nullptr)
+	if (scene->skydome() == nullptr)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//	else
-//		glClear(GL_DEPTH_BUFFER_BIT);
+	else
+		glClear(GL_DEPTH_BUFFER_BIT);
 
 	render_scene_opaque(cam);	
 
@@ -576,12 +576,13 @@ void nsrender_system::render_scene()
 	}
 
 	glDepthMask(false);
-
 	m_final_buf->set_target(nsfb_object::fb_draw);
 	m_final_buf->bind();
 	render_scene_translucent(cam);
 
 	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	pre_lighting_pass();
 	
 	glEnable(GL_BLEND);
@@ -601,7 +602,7 @@ void nsrender_system::render_scene()
 	glDepthMask(GL_FALSE);
 	glDisable(GL_CULL_FACE);
 
-//	render_scene_particles(scene, cam);
+	render_scene_particles(scene, cam);
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);

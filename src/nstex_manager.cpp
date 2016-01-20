@@ -233,7 +233,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	}
 
 	// Generate mipmap levels if mMimMapLevel is greater than 0
-//	tex->enable_mipmaps();
+	tex->enable_mipmaps();
 	tex->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
 	tex->set_parameter_i(nstexture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
 	tex->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
@@ -252,8 +252,8 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname, const nsstri
 		return load_cubemap(
 			cube_name + "_front." + cube_all_ext,
 			cube_name + "_back." + cube_all_ext,
-			cube_name + "_top." + cube_all_ext,
 			cube_name + "_bottom." + cube_all_ext,
+			cube_name + "_top." + cube_all_ext,
 			cube_name + "_left." + cube_all_ext,
 			cube_name + "_right." + cube_all_ext,
 			fname);
@@ -263,8 +263,8 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname, const nsstri
 		return load_cubemap(
 			cube_name + "_front" + cube_all_ext,
 			cube_name + "_back" + cube_all_ext,
-			cube_name + "_top" + cube_all_ext,
 			cube_name + "_bottom" + cube_all_ext,
+			cube_name + "_top" + cube_all_ext,
 			cube_name + "_left" + cube_all_ext,
 			cube_name + "_right" + cube_all_ext,
 			fname);		

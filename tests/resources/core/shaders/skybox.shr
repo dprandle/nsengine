@@ -41,7 +41,6 @@ void main()
     vec4 projCamPos = projCamMat * transform * localPos;
     gl_Position = projCamPos.xyww;
     texCoord = position;
-	//texCoord.y *= -1;
 } 
 </nsstring>
 geometry.type:<uint32>36313</uint32>
@@ -52,8 +51,6 @@ fragment.source:<nsstring>
 in vec3 texCoord;
 
 uniform samplerCube diffuseMap;
-uniform samplerCube opacityMap;
-uniform samplerCube normalMap;
 
 uniform uint material_id;
 uniform uint entityID;
@@ -78,8 +75,8 @@ void main()
     if (!colorMode && hasDiffuseMap)
 		colorOut = texture(diffuseMap, texCoord).rgb;
 
-	pickingOut = uvec4(pluginID, entityID, 0, material_id);
-	worldPosOut = vec4(0.0,0.0,0.0,gl_FragCoord.z);
+	pickingOut = uvec4(pluginID, entityID, 0, 255);
+	worldPosOut = vec4(0.0,0.0,0.0,0.0);
 	normalOut = vec3(1.0,1.0,1.0);
 }
 </nsstring>

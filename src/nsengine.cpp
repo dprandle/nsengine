@@ -466,7 +466,7 @@ void nsengine::set_res_dir(const nsstring & dir)
 	}
 }
 
-void nsengine::start()
+void nsengine::start(const ivec2 & screen_size)
 {
 	nsfile_os::platform_init();
 	if (current() == NULL)
@@ -496,6 +496,7 @@ void nsengine::start()
 	
 	current()->composite_buf = create_framebuffer();
 	_init_systems();
+	system<nsrender_system>()->resize_screen(screen_size);
 	timer()->start();
 }
 
