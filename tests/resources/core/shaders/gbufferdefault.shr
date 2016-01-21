@@ -135,6 +135,8 @@ void main()
 	float alpha = difCol.a;
 	if (hasOpacityMap)
 		alpha = texture(opacityMap, texCoords).a;
+	if (alpha < 0.1)
+		discard;
 
 	colorOut = difCol.rgb;
 	pickingOut = uvec4(pluginID, entityID, refID, material_id);

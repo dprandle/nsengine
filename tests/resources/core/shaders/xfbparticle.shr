@@ -19,9 +19,6 @@ void main()
 	scaleAndAngleOut = scaleAndAngle;
 	ageOut = age;
 } 
-
-
-
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>#version 440

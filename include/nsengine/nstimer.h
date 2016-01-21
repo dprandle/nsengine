@@ -13,7 +13,7 @@ This file contains all of the neccessary declarations for the nstimer class.
 #ifndef NSTIMER_H
 #define NSTIMER_H
 
-#define FIXED_TIME_STEP 0.005
+#define FIXED_TIME_STEP 1/60.0
 
 class nstimer 
 {
@@ -42,6 +42,5 @@ private:
 	double m_current;
 	double m_last;
 	bool m_running;
-	float m_lag;
 };
 #endif

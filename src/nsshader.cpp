@@ -661,6 +661,17 @@ void nslight_shader::set_shadow_sampler(int32 sampler)
 	set_uniform("shadowMap", sampler);
 }
 
+
+void nslight_shader::set_fog_factor(const uivec2 & factor)
+{
+	set_uniform("fog_factor", factor);
+}
+
+void nslight_shader::set_fog_color(const fvec4 & color)
+{
+	set_uniform("fog_color", color);	
+}
+
 void nslight_shader::set_material_ids(const mat_id_map & mat_ids)
 {
 	nsstring id;
@@ -730,16 +741,6 @@ void nsdir_light_shader::set_bg_color(const fvec4 & col)
 void nsdir_light_shader::set_direction(const fvec3 & dir)
 {
 	set_uniform("light.direction", dir);
-}
-
-void nsdir_light_shader::set_fog_factor(const uivec2 & factor)
-{
-	set_uniform("fog_factor", factor);
-}
-
-void nsdir_light_shader::set_fog_color(const fvec4 & color)
-{
-	set_uniform("fog_color", color);	
 }
 
 nspoint_light_shader::nspoint_light_shader() :nslight_shader() {}

@@ -887,10 +887,10 @@ void nsmesh_plane::init()
 	smsh->m_tex_coords.push_back(fvec2(1,0));
 	smsh->m_tex_coords.push_back(fvec2(1,1));
 
-	smsh->m_normals.push_back(fvec3(0,0,1));
-	smsh->m_normals.push_back(fvec3(0,0,1));
-	smsh->m_normals.push_back(fvec3(0,0,1));
-	smsh->m_normals.push_back(fvec3(0,0,1));
+	smsh->m_normals.push_back(fvec3(0,0,-1));
+	smsh->m_normals.push_back(fvec3(0,0,-1));
+	smsh->m_normals.push_back(fvec3(0,0,-1));
+	smsh->m_normals.push_back(fvec3(0,0,-1));
 
 	smsh->m_tangents.push_back(fvec3(0,1,0));
 	smsh->m_tangents.push_back(fvec3(0,1,0));
@@ -927,10 +927,10 @@ void nsmesh_plane::set_dim(const fvec2 & dim_)
 	submesh * smsh = sub(0);
 	fvec2 hdim = dim_/2.0f;
 	
-        smsh->m_verts[0] = fvec3(-hdim.x,-hdim.y,0);
-        smsh->m_verts[1] = fvec3(-hdim.x,hdim.y,0);
-        smsh->m_verts[2] = fvec3(hdim.x,-hdim.y,0);
-        smsh->m_verts[3] = fvec3(hdim.x,hdim.y,0);
+	smsh->m_verts[0] = fvec3(-hdim.x,-hdim.y,0);
+	smsh->m_verts[1] = fvec3(-hdim.x,hdim.y,0);
+	smsh->m_verts[2] = fvec3(hdim.x,-hdim.y,0);
+	smsh->m_verts[3] = fvec3(hdim.x,hdim.y,0);
 	smsh->allocate_buffers();
 }
 

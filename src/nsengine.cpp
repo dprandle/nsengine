@@ -26,7 +26,6 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nspupper.h>
 #include <nsscene_manager.h>
 #include <nssel_comp.h>
-#include <nsmovement_system.h>
 #include <nsterrain_comp.h>
 #include <nsanim_system.h>
 #include <IL/il.h>
@@ -482,7 +481,6 @@ void nsengine::start(const ivec2 & screen_size)
 		nslog_file("GLEW extensions unable to initialize");
 		return;
 	}
-
 	set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
 	set_import_dir(m_cwd + nsstring(DEFAULT_IMPORT_DIR));
 	set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
@@ -588,18 +586,21 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
 
 void nsengine::update()
 {
+	static double accumulator = 0.0;
 	timer()->update();
-    while (timer()->lag() >= timer()->fixed())
+	accumulator += timer()->dt();
+	std::cout << "frame_rate : " << 1 / timer()->dt() << " fps" << std::endl;
+    while (accumulator >= timer()->fixed())
 	{
-		auto sysUpdateIter = m_sys_update_order.begin();
-		while (sysUpdateIter != m_sys_update_order.end())
+		auto sys_iter = m_sys_update_order.begin();
+		while (sys_iter != m_sys_update_order.end())
 		{
-			nssystem * sys = system(sysUpdateIter->second);
+			nssystem * sys = system(sys_iter->second);
 			event_dispatch()->process(sys);
 			sys->update();
-			++sysUpdateIter;
+			++sys_iter;
 		}
-		timer()->lag() -= timer()->fixed();
+		accumulator -= timer()->fixed();
 	}
 	system<nsrender_system>()->render_scene();
 }
@@ -734,7 +735,6 @@ void nsengine::_init_factories()
 	register_system<nsbuild_system>("nsbuild_system");
 	register_system<nscamera_system>("nscamera_system");
 	register_system<nsinput_system>("nsinput_system");
-	register_system<nsmovement_system>("nsmovement_system");
 	register_system<nsparticle_system>("nsparticle_system");
 	register_system<nsrender_system>("nsrender_system");
 	register_system<nsselection_system>("nsselection_system");

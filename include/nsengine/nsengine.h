@@ -99,12 +99,12 @@ This file contains all of the neccessary declartations for the nsengine class.
 
 // System update priority
 #define ANIM_SYS_UPDATE_PR 70000
-#define CAM_SYS_UPDATE_PR 50000
-#define BUILD_SYS_UPDATE_PR 40000
-#define MOVE_SYS_UPDATE_PR 60000
+#define CAM_SYS_UPDATE_PR 40000
+#define BUILD_SYS_UPDATE_PR 30000
+#define MOVE_SYS_UPDATE_PR 50000
 #define PARTICLE_SYS_UPDATE_PR 80000
 #define RENDER_SYS_UPDATE_PR 90000
-#define SEL_SYS_UPDATE_PR 65000
+#define SEL_SYS_UPDATE_PR 60000
 #define INP_SYS_UPDATE_PR 10000
 #define UI_SYS_UPDATE_PR 20000
 

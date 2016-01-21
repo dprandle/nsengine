@@ -219,7 +219,6 @@ float shadow_factor(vec3 light_to_pixel, float dist)
 			total += texture(shadowMap, texCoord);
 		}
 	}
-
     return total / ( (2*shadowSamples + 1) * (2*shadowSamples+1) );
 }
 
@@ -284,15 +283,21 @@ vec4 base_color_from_attachments(vec2 uv_from_screen_size)
 	vec4 wpos = texture(gWorldPosMap, uv_from_screen_size);
 	vec4 normal = texture(gNormalMap, uv_from_screen_size);
 
-	if (id > MAX_MATERIALS)
-		return vec4(bgColor.xyz, base_color.a);
 
-	fog_factor = linear_fog_factor(wpos.xyz);
-	mat = materials[id]; // id should be good - well see if we can use this
-	if (mat.spec_color == vec3(0.0,0.0,0.0))
-		mat.spec_color = light.color;
-	light_factor = light_influence(wpos.xyz, normal.xyz, mat);
-	base_color = base_color*light_factor;//mix(base_color * light_factor, fog_color, 1 - fog_factor);
+	if (id > MAX_MATERIALS)
+	{
+		if (id != 255)
+			base_color = vec4(bgColor.xyz, base_color.a);
+	}
+	else
+	{
+		fog_factor = linear_fog_factor(wpos.xyz);
+		mat = materials[id]; // id should be good - well see if we can use this
+		if (mat.spec_color == vec3(0.0,0.0,0.0))
+			mat.spec_color = light.color;
+		light_factor = light_influence(wpos.xyz, normal.xyz, mat);
+		base_color = mix(base_color * light_factor, fog_color, 1 - fog_factor);
+	}
 	base_color.a = wpos.w; // use the alpha to store depth
 	return base_color;
 }
@@ -328,7 +333,7 @@ vec4 mix_translucent_fragments(vec4 base_color)
 			mat.spec_color = light.color;
 		light_factor = light_influence(fdat.wpos, fdat.normal, mat);
 		light_factor.a = 1.0;
-		final_col = blend_alpha(fdat.color*light_factor, final_col);//mix(fdat.color * light_factor, fog_color, 1 - fog_factor), final_col);
+		final_col = blend_alpha(mix(fdat.color * light_factor, fog_color, 1 - fog_factor), final_col);
 		frag_index = fdat.next;
 		++cumi_count;
 	}

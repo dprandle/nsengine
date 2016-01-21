@@ -291,6 +291,8 @@ private:
 	void _draw_geometry(const shader_mat_map & sm_map, const mat_drawcall_map & mdc_map, nsentity * camera);
 	void _draw_scene_to_depth(nsdepth_shader * pShader);
 	void _draw_call(const draw_call * dc);
+
+	void _prepare_tforms(nsscene * scene);
 	bool _valid_check();
 	void _bind_gbuffer_textures();
 

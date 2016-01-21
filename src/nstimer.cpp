@@ -18,7 +18,6 @@ nstimer::nstimer() :
 	m_start(0.0),
 	m_current(0.0),
 	m_last(0.0),
-	m_lag(0.0f),
 	m_running(false)
 {
 }
@@ -39,11 +38,6 @@ double nstimer::fixed()
 double nstimer::elapsed()
 {
 	return (m_current - m_start);
-}
-
-float & nstimer::lag()
-{
-	return m_lag;
 }
 
 void nstimer::pause()
@@ -71,5 +65,4 @@ void nstimer::update()
 	m_last = m_current;
 	if (m_running)
 		m_current = nsfile_os::system_time();
-	m_lag += dt();
 }

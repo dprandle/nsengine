@@ -253,6 +253,10 @@ public:
 
 	void set_material_ids(const mat_id_map & mat_ids);
 
+	void set_fog_factor(const uivec2 & factor);
+
+	void set_fog_color(const fvec4 & color);
+
 };
 
 class nsfragment_sort_shader : public nsshader
@@ -286,11 +290,6 @@ public:
     void set_bg_color(const fvec4 & col);
 
 	void set_direction(const fvec3 & dir);
-
-	void set_fog_factor(const uivec2 & factor);
-
-	void set_fog_color(const fvec4 & color);
-
 };
 
 class nspoint_light_shader : public nslight_shader

@@ -340,13 +340,13 @@ void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
 	nstform_comp * camTComp = cam->get<nstform_comp>();
 
 	auto comps = scene->entities<nsparticle_comp>();
-	auto entIter = comps.begin();
-	while (entIter != comps.end())
+	auto ent_iter = comps.begin();
+	while (ent_iter != comps.end())
 	{
-		nsparticle_comp * comp = (*entIter)->get<nsparticle_comp>();
+		nsparticle_comp * comp = (*ent_iter)->get<nsparticle_comp>();
 		if (comp->first() || !comp->simulating())
 		{
-			++entIter;
+			++ent_iter;
 			continue;
 		}
 		
@@ -358,7 +358,7 @@ void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
 		if (rshdr == NULL)
 			rshdr = m_shaders.deflt_particle;
 
-		nstform_comp * tComp = (*entIter)->get<nstform_comp>();
+		nstform_comp * tComp = (*ent_iter)->get<nstform_comp>();
 		nstform_comp * camTComp = scene->camera()->get<nstform_comp>();
 		nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::diffuse));
 		if (tex != NULL)
@@ -402,7 +402,7 @@ void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
 		comp->va_obj()->remove(tComp->transform_buffer());
 		comp->va_obj()->unbind();
 		rshdr->unbind();
-		++entIter;
+		++ent_iter;
 	}
 }
 
@@ -553,6 +553,16 @@ void nsrender_system::render_scene()
 	if (cam == NULL)
 		return;
 
+	_prepare_tforms(scene);
+	m_drawcall_map.clear();
+	m_shader_mat_map.clear();
+	m_tdrawcall_map.clear();
+	m_tshader_mat_map.clear();
+	m_lights.clear();
+	m_tbuffers.reset_atomic_counter();	
+	add_draw_calls_from_scene(scene);
+	add_lights_from_scene(scene);
+	update_material_ids();
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
@@ -674,6 +684,8 @@ void nsrender_system::blend_spot_lights(nsentity * camera)
 			m_shaders.spot_light->set_proj_cam_mat(camc->proj_cam());
 			m_shaders.spot_light->set_proj_light_mat(proj_light_mat);
 			m_shaders.spot_light->set_direction(tc->dvec(nstform_comp::dir_target, i));
+			m_shaders.spot_light->set_fog_factor(m_fog_nf);
+			m_shaders.spot_light->set_fog_color(m_fog_color);
 			_blend_spot_light(lc);
 		}
 	}		
@@ -746,10 +758,87 @@ void nsrender_system::blend_point_lights(nsentity * camera)
 			m_shaders.point_light->set_max_depth(lc->shadow_clipping().y - lc->shadow_clipping().x);
 			m_shaders.point_light->set_transform(lc->transform(i));
 			m_shaders.point_light->set_proj_cam_mat(camc->proj_cam());
+			m_shaders.point_light->set_fog_factor(m_fog_nf);
+			m_shaders.point_light->set_fog_color(m_fog_color);
 			_blend_point_light(lc);
 		}
 	}
-}	
+}
+
+void nsrender_system::_prepare_tforms(nsscene * scene)
+{
+	auto ent_iter = scene->entities().begin();
+	while (ent_iter != scene->entities().end())
+	{
+		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
+		if (tForm->update_posted())
+		{
+			nsbuffer_object & tFormBuf = *tForm->transform_buffer();
+			nsbuffer_object & tFormIDBuf = *tForm->transform_id_buffer();
+
+			if (tForm->buffer_resized())
+			{
+				tFormBuf.bind();
+				tFormBuf.allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
+				tFormIDBuf.bind();
+				tFormIDBuf.allocate<uint32>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
+			}
+
+			tFormBuf.bind();
+			fmat4 * mappedT = tFormBuf.map<fmat4>(0, tForm->count(),
+											   nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+			tFormIDBuf.bind();
+			uint32 * mappedI = tFormIDBuf.map<uint32>(0, tForm->count(), nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+			tFormIDBuf.unbind();
+
+			uint32 visibleCount = 0;
+			for (uint32 i = 0; i < tForm->count(); ++i)
+			{
+				if (tForm->transform_update(i))
+				{
+					uivec3 parentID = tForm->parent_id(i);
+					if (parentID != 0)
+					{
+						nsentity * ent = scene->entity(parentID.x, parentID.y);
+						if (ent != NULL)
+						{
+							nstform_comp * tComp2 = ent->get<nstform_comp>();
+							if (parentID.z < tComp2->count())
+								tForm->set_parent(tComp2->transform(parentID.z));
+						}
+					}
+
+					tForm->compute_transform(i);
+					tForm->set_instance_update(false, i);
+				}
+				int32 state = tForm->hidden_state(i);
+
+				bool layerBit = state & nstform_comp::hide_layer && true;
+				bool objectBit = state & nstform_comp::hide_object && true;
+				bool showBit = state & nstform_comp::hide_none && true;
+				bool hideBit = state & nstform_comp::hide_all && true;
+
+				if (!hideBit && (!layerBit && (showBit || !objectBit)))
+				{
+					mappedT[visibleCount] = tForm->transform(i);
+					mappedI[visibleCount] = i;
+					++visibleCount;
+				}
+			}
+			tForm->set_visible_instance_count(visibleCount);
+
+
+			tFormBuf.bind();
+			tFormBuf.unmap();
+			tFormIDBuf.bind();
+			tFormIDBuf.unmap();
+			tFormIDBuf.unbind();
+			tForm->post_update(tForm->buffer_resized());
+			tForm->set_buffer_resize(false);
+		}
+		++ent_iter;
+	}
+}
 
 void nsrender_system::blend_dir_lights(nsentity * camera, const fvec4 & bg_color)
 {
@@ -946,45 +1035,6 @@ void nsrender_system::toggle_debug_draw()
 
 void nsrender_system::update()
 {
-	static bool sceneerr = false;
-	static bool camerr = false;
-
-	// Warning message switches (so they dont appear every frame)
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL)
-	{
-		if (!sceneerr)
-		{
-			dprint("nsrender_system::update WARNING No current scene set");
-			sceneerr = true;
-		}
-		return;
-	}
-	else
-		sceneerr = false;
-
-	nsentity * cam = scene->camera();
-	if (cam == NULL)
-	{
-		if (!camerr)
-		{
-			dprint("nsrender_system::update WARNING No scene camera set");
-			camerr = true;
-		}
-		return;
-	}
-	else
-		camerr = false;
-
-	m_drawcall_map.clear();
-	m_shader_mat_map.clear();
-	m_tdrawcall_map.clear();
-	m_tshader_mat_map.clear();
-	m_lights.clear();
-	m_tbuffers.reset_atomic_counter();	
-	add_draw_calls_from_scene(scene);
-	add_lights_from_scene(scene);
-	update_material_ids();
 }
 
 void nsrender_system::add_lights_from_scene(nsscene * scene)

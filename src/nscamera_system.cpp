@@ -338,7 +338,7 @@ void nscamera_system::update()
 	// Dont do anything if the scene is NULL
 	if (scene == NULL)
 		return;
-
+	
 	auto iter = scene->entities<nscam_comp>().begin();
 	while (iter != scene->entities<nscam_comp>().end())
 	{
