@@ -170,7 +170,14 @@ private:
 	specular_comp m_spec_comp;
 	texmap_map m_tex_maps;
 	bool m_wireframe;
-	bool m_force_alpha;
+	bool m_force_alpha; // use the diffuse texture (if there) but use alpha from color
+	bool m_depth_write;
+	bool m_depth_test;
+	bool m_stencil_test;
+	ivec2 m_blend_func;
+	ivec3 m_stencil_func;
+	ivec3 m_stencil_op_front;
+	ivec3 m_stencil_op_back;
 };
 
 
@@ -187,6 +194,13 @@ void pup(PUPer & p, nsmaterial & mat)
 	pup(p, mat.m_tex_maps, "texture_maps");
 	pup(p, mat.m_wireframe, "wireframe");
 	pup(p, mat.m_force_alpha, "force_alpha");	
+	pup(p, mat.m_depth_write,"depth_write");
+	pup(p, mat.m_depth_test,"depth_test");
+	pup(p, mat.m_stencil_test,"stencil_test");
+	pup(p, mat.m_blend_func,"blend_func");
+	pup(p, mat.m_stencil_func,"stencil_func");
+	pup(p, mat.m_stencil_op_front,"stencil_op_front");
+	pup(p, mat.m_stencil_op_back,"stencil_op_back");
 }
 
 template<class PUPer>

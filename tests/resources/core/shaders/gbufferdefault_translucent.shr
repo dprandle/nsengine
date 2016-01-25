@@ -142,12 +142,6 @@ uniform bool hasOpacityMap;
 uniform bool hasHeightMap;
 uniform uint entityID;
 uniform uint pluginID;
-uniform bool lightingEnabled;
-							  
-//layout (location = 0) out vec3 frag_col_out;
-//layout (location = 1) out uvec4 pickingOut;
-//layout (location = 2) out vec4 worldPosOut;
-//layout (location = 3) out vec3 normalOut;
 
 uint pack_color(vec4 color)
 {

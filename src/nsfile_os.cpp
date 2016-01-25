@@ -152,9 +152,8 @@ bool create_dir(const nsstring & path)
 double system_time()
 {
 	timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
-	uint64 ret = ts.tv_sec*1000000 + ts.tv_nsec / 1000; // microseconds
-	return double(ret) / 1000000.0;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
 }
 
 uint32 remove_dir(const nsstring & dirpath)

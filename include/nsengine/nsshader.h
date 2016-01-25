@@ -336,6 +336,8 @@ public:
 
 };
 
+struct draw_call;
+
 class nsmaterial_shader : public nsshader
 {
 public:
@@ -346,45 +348,9 @@ public:
 
 	virtual void init();
 
-	void set_diffuse_sampler(int32 sampler);
+	virtual void set_for_draw_call(const draw_call * dc);
 
-	void set_opacity_sampler(int32 sampler);
-
-	void set_normal_sampler(int32 sampler);
-
-	void set_height_sampler(int32 sampler);
-
-	void set_heightmap_enabled(bool enabled);
-
-	void set_height_minmax(const fvec2 & hu);
-
-	void set_material_id(uint32 mat_id);
-
-	void set_entity_id(uint32 id);
-
-	void set_plugin_id(uint32 id);
-
-	void set_color_mode(bool enable);
-
-	void set_frag_color_out(const fvec4 & fragcol);
-
-	void set_diffusemap_enabled(bool enabled);
-
-	void set_opacitymap_enabled(bool enabled);
-
-	void set_normalmap_enabled(bool enabled);
-
-	void set_lighting_enabled(bool enabled);
-
-	void set_node_transform(const fmat4 & tform);
-
-	void set_proj_cam_mat(const fmat4 & projCam);
-
-	void set_bone_transforms(const fmat4_vector & transforms);
-
-	void set_has_bones(bool hasthem);
-
-	void set_force_alpha(bool force);
+	virtual void set_for_material(nsmaterial * mat, uint32 mat_shader_id, const fvec2 & window_size);
 };
 
 class nsparticle_process_shader : public nsshader

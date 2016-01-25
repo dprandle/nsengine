@@ -23,13 +23,7 @@ void nsgbuf_object::debug_blit(const ivec2 & scrn)
 	ivec2 hlf = scrn / 2;
 
 	m_tex_fb->set_target(nsfb_object::fb_read);
-	m_tex_fb->bind();
-
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_BLEND);
-	
+	m_tex_fb->bind();	
 
 	m_tex_fb->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_diffuse));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, 0, 0, hlf.w, hlf.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);

@@ -58,7 +58,7 @@ nsplugin * setup_basic_plugin()
 	nse.set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	nsentity * dirl = plg->create_dir_light("dirlight", 0.8f, 0.2f);
+	nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.2f);
 	scn->set_camera(cam);
 	scn->add(dirl, fvec3(20.0f, 20.0f, -50.0f));
 	
@@ -70,9 +70,9 @@ nsplugin * setup_basic_plugin()
 	
 //	plg->get<nsmaterial>("grasstile")->set_alpha_blend(true);
 //	plg->get<nsmaterial>("grasstile")->use_alpha_from_color(true);
-	scn->add(point_light);
+//	scn->add(point_light);
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
-	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
+//	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 	return plg;
 }
 

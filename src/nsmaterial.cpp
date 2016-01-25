@@ -29,7 +29,14 @@ nsmaterial::nsmaterial():
 	m_culling_enabled(true),
 	m_cull_mode(GL_BACK),
 	m_wireframe(false),
-	m_force_alpha(false)
+	m_force_alpha(false),
+	m_depth_write(true),
+	m_depth_test(true),
+	m_stencil_test(false),
+	m_blend_func(),
+	m_stencil_func(),
+	m_stencil_op_back(),
+	m_stencil_op_front()
 {
 	set_ext(DEFAULT_MAT_EXTENSION);
 }
@@ -45,7 +52,14 @@ nsmaterial::nsmaterial(const nsmaterial & copy_):
 	m_spec_comp(copy_.m_spec_comp),
 	m_tex_maps(copy_.m_tex_maps),
 	m_wireframe(copy_.m_wireframe),
-	m_force_alpha(copy_.m_force_alpha)
+	m_force_alpha(copy_.m_force_alpha),
+	m_depth_write(copy_.m_depth_write),
+	m_depth_test(copy_.m_depth_test),
+	m_stencil_test(copy_.m_stencil_test),
+	m_blend_func(copy_.m_blend_func),
+	m_stencil_func(copy_.m_stencil_func),
+	m_stencil_op_back(copy_.m_stencil_op_back),
+	m_stencil_op_front(copy_.m_stencil_op_front)
 {}
 
 nsmaterial::~nsmaterial()
@@ -64,6 +78,13 @@ nsmaterial & nsmaterial::operator=(nsmaterial rhs)
 	std::swap(m_tex_maps, rhs.m_tex_maps);
 	std::swap(m_wireframe, rhs.m_wireframe);
 	std::swap(m_force_alpha, rhs.m_force_alpha);
+	std::swap(m_depth_write,rhs.m_depth_write);
+	std::swap(m_depth_test,rhs.m_depth_test);
+	std::swap(m_stencil_test,rhs.m_stencil_test);
+	std::swap(m_blend_func,rhs.m_blend_func);
+	std::swap(m_stencil_func,rhs.m_stencil_func);
+	std::swap(m_stencil_op_back,rhs.m_stencil_op_back);
+	std::swap(m_stencil_op_front,rhs.m_stencil_op_front);
 	return *this;
 }
 

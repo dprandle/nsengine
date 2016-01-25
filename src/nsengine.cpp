@@ -53,6 +53,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nslight_comp.h>
 #include <nscam_comp.h>
 #include <nsrender_comp.h>
+#include <nsui_comp.h>
 #ifdef NSDEBUG
 #include <nsdebug.h>
 #endif
@@ -589,7 +590,7 @@ void nsengine::update()
 	static double accumulator = 0.0;
 	timer()->update();
 	accumulator += timer()->dt();
-	std::cout << "frame_rate : " << 1 / timer()->dt() << " fps" << std::endl;
+	std::cout << "dt : " << timer()->dt() << std::endl;
     while (accumulator >= timer()->fixed())
 	{
 		auto sys_iter = m_sys_update_order.begin();
@@ -730,7 +731,8 @@ void nsengine::_init_factories()
 	register_component<nstile_brush_comp>("nstile_brush_comp");
 	register_component<nstile_comp>("nstile_comp");
 	register_component<nsterrain_comp>("nsterrain_comp");
-
+	register_component<nsui_comp>("nsui_comp");
+	
 	register_system<nsanim_system>("nsanim_system");
 	register_system<nsbuild_system>("nsbuild_system");
 	register_system<nscamera_system>("nscamera_system");

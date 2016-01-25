@@ -93,6 +93,33 @@ class nscam_comp;
 class nsselection_shader;
 class nsparticle_render_shader;
 
+struct opengl_state
+{
+	opengl_state():
+		depth_write(false),
+		depth_test(false),
+		stencil_test(false),
+		blending(false),
+		culling(false),
+		cull_face(0),
+		blend_func(),
+		stencil_func(),
+		stencil_op_back(),
+		stencil_op_front()
+	{}
+	
+	bool depth_write; // material
+	bool depth_test; // material
+	bool stencil_test; // material
+	bool blending; // renderer
+	bool culling; // material
+	int32 cull_face; // material
+	ivec2 blend_func; // renderer
+	ivec3 stencil_func; // submesh
+	ivec3 stencil_op_back; // submesh
+	ivec3 stencil_op_front;
+};
+
 struct packed_fragment_data // 32 bytes total
 {
 	fvec3 wpos;
@@ -133,22 +160,26 @@ struct light_vectors
 struct draw_call
 {
 	draw_call(nsmesh::submesh * submesh_=nullptr,
-			  fmat4_vector * anim_transforms_=nullptr,
+			  const fmat4 & transform_=fmat4(),
 			  nsbuffer_object * transform_buffer_=nullptr,
 			  nsbuffer_object * transform_id_buffer_=nullptr,
+			  fmat4_vector * anim_transforms_=nullptr,
+			  const fmat4 & proj_cam_=fmat4(),
 			  const fvec2 & height_minmax_=fvec2(),
 			  uint32 ent_id=0,
 			  uint32 plug_id=0,
 			  uint32 transform_count_=0,
 			  bool casts_shadows_=true,
-			  bool selectable_=false
+			  bool transparent_picking_=false
 		);
 	~draw_call();
 
 	nsmesh::submesh * submesh;
-	fmat4_vector * anim_transforms;
+	fmat4 transform;
 	nsbuffer_object * transform_buffer;
 	nsbuffer_object * transform_id_buffer;
+	fmat4_vector * anim_transforms;
+	fmat4 proj_cam;
 	fvec2 height_minmax;
 	uint32 entity_id;
 	uint32 plugin_id;
@@ -173,6 +204,7 @@ struct render_shaders
 	nsmaterial_shader * deflt;
 	nsmaterial_shader * deflt_wireframe;
 	nsmaterial_shader * deflt_translucent;
+
 	nsparticle_render_shader * deflt_particle;
 	nslight_stencil_shader * light_stencil;
 	nsfragment_sort_shader * frag_sort;
@@ -207,7 +239,11 @@ public:
 
 	void blit_final_frame();
 
+	void bind_textures(nsmaterial * material);
+
 	void render_scene();
+
+	void render_ui(nsscene * scene);
 
 	void render_scene_opaque(nsentity * camera);
 
@@ -229,6 +265,8 @@ public:
 
 	uivec3 pick(float mousex, float mousey);
 
+	opengl_state current_gl_state();
+
 	virtual void init();
 
 	void resize_screen(const ivec2 & size);
@@ -248,6 +286,38 @@ public:
 	void set_screen_fbo(uint32 fbo);
 
 	bool debug_draw();
+
+	void enable_depth_write(bool enable);
+
+	void enable_depth_test(bool enable);
+
+	void enable_stencil_test(bool enable);
+
+	void enable_blending(bool enable);
+
+	void enable_culling(bool enable);
+
+	void set_cull_face(int32 cull_face);
+
+	void set_blend_func(int32 sfactor, int32 dfactor);
+	
+	void set_blend_func(const ivec2 & blend_func);
+
+	void set_stencil_func(int32 func, int32 ref, int32 mask);
+	
+	void set_stencil_func(const ivec3 & stencil_func);
+
+	void set_stencil_op(int32 sfail, int32 dpfail, int32 dppass);
+	
+	void set_stencil_op(const ivec3 & stencil_op);
+
+	void set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass);
+	
+	void set_stencil_op_back(const ivec3 & stencil_op);
+
+	void set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass);
+	
+	void set_stencil_op_front(const ivec3 & stencil_op);
 
 	void set_default_mat(nsmaterial * pDefMaterial);
 
@@ -288,7 +358,7 @@ private:
 	void _blend_spot_light(nslight_comp * pLight);
 	void _stencil_spot_light(nslight_comp * pLight);
 	
-	void _draw_geometry(const shader_mat_map & sm_map, const mat_drawcall_map & mdc_map, nsentity * camera);
+	void _draw_geometry(const shader_mat_map & sm_map, const mat_drawcall_map & mdc_map);
 	void _draw_scene_to_depth(nsdepth_shader * pShader);
 	void _draw_call(const draw_call * dc);
 
@@ -320,6 +390,8 @@ private:
 	render_shaders m_shaders;
 	translucent_buffers m_tbuffers;
 	nsbuffer_object * m_single_point;
+
+	opengl_state m_gl_state;
 };
 
 #endif

@@ -20,6 +20,7 @@ Description:
 #include <exception>
 #include <string.h>
 #include <nsgl_context.h>
+#include <nsrender_system.h>
 
 nsshader::nsshader():
 	nsresource(),
@@ -816,28 +817,10 @@ nsmaterial_shader::~nsmaterial_shader(){}
 
 void nsmaterial_shader::init_uniforms()
 {
-	fmat4_vector b;
-	b.resize(MAX_BONE_TFORMS);
-	set_diffuse_sampler(DIFFUSE_TEX_UNIT);
-	set_normal_sampler(NORMAL_TEX_UNIT);
-	set_opacity_sampler(OPACITY_TEX_UNIT);
-	set_height_sampler(HEIGHT_TEX_UNIT);
-	set_heightmap_enabled(false);
-	set_height_minmax(fvec2(0.0f, 1.0f));
-	set_entity_id(0);
-	set_material_id(0);
-	set_plugin_id(0);
-	set_color_mode(false);
-	set_frag_color_out(fvec4());
-	set_diffusemap_enabled(false);
-	set_opacitymap_enabled(false);
-	set_normalmap_enabled(false);
-	set_lighting_enabled(false);
-	set_node_transform(fmat4());
-	set_proj_cam_mat(fmat4());
-	set_bone_transforms(b);
-	set_has_bones(false);
-	set_force_alpha(false);
+	set_uniform("diffuseMap", DIFFUSE_TEX_UNIT);
+	set_uniform("opacityMap", NORMAL_TEX_UNIT);
+	set_uniform("normalMap", OPACITY_TEX_UNIT);
+	set_uniform("heightMap", HEIGHT_TEX_UNIT);
 }
 
 void nsmaterial_shader::init()
@@ -845,105 +828,49 @@ void nsmaterial_shader::init()
 	
 }
 
-void nsmaterial_shader::set_diffuse_sampler(int32 sampler)
+void nsmaterial_shader::set_for_draw_call(const draw_call * dc)
 {
-	set_uniform("diffuseMap", sampler);
+	uint32 ent_id = dc->entity_id;
+	if (dc->transparent_picking)
+		ent_id = 0;
+
+	set_uniform("hminmax", dc->height_minmax);
+	set_uniform("entityID", ent_id);
+	set_uniform("pluginID", dc->plugin_id);
+
+	if (dc->submesh->m_node != NULL)
+		set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
+	else
+		set_uniform("nodeTransform", fmat4());
+
+	if (!dc->submesh->m_has_tex_coords)
+		set_uniform("colorMode", true);
+
+	set_uniform("projCamMat", dc->proj_cam);
+
+	if (dc->anim_transforms != NULL)
+	{
+		set_uniform("hasBones", true);
+		for (uint32 i = 0; i < dc->anim_transforms->size(); ++i)
+			set_uniform("boneTransforms[" + std::to_string(i) + "]", (*dc->anim_transforms)[i]);
+	}
+	else
+		set_uniform("hasBones", false);	
 }
 
-void nsmaterial_shader::set_opacity_sampler(int32 sampler)
+void nsmaterial_shader::set_for_material(nsmaterial * mat, uint32 mat_shader_id, const fvec2 & window_size)
 {
-	set_uniform("opacityMap", sampler);
-}
+	if (mat->alpha_blend())
+		set_uniform("window_size", window_size);
 
-void nsmaterial_shader::set_normal_sampler(int32 sampler)
-{
-	set_uniform("normalMap", sampler);
-}
-
-void nsmaterial_shader::set_height_sampler(int32 sampler)
-{
-	set_uniform("heightMap", sampler);
-}
-
-void nsmaterial_shader::set_heightmap_enabled(bool enabled)
-{
-	set_uniform("hasHeightMap", enabled);
-}
-
-void nsmaterial_shader::set_height_minmax(const fvec2 & hu)
-{
-	set_uniform("hminmax", hu);
-}
-
-void nsmaterial_shader::set_material_id(uint32 mat_id)
-{
-	set_uniform("material_id",  mat_id);	
-}
-
-void nsmaterial_shader::set_entity_id(uint32 id)
-{
-	set_uniform("entityID", id);
-}
-
-void nsmaterial_shader::set_plugin_id(uint32 id)
-{
-	set_uniform("pluginID", id);
-}
-
-void nsmaterial_shader::set_color_mode(bool enable)
-{
-	set_uniform("colorMode", enable);
-}
-
-void nsmaterial_shader::set_frag_color_out(const fvec4 & fragcol)
-{
-	set_uniform("fragColOut", fragcol);
-}
-
-void nsmaterial_shader::set_diffusemap_enabled(bool enabled)
-{
-	set_uniform("hasDiffuseMap", enabled);
-}
-
-void nsmaterial_shader::set_opacitymap_enabled(bool enabled)
-{
-	set_uniform("hasOpacityMap", enabled);
-}
-
-void nsmaterial_shader::set_normalmap_enabled(bool enabled)
-{
-	set_uniform("hasNormalMap", enabled);
-}
-
-void nsmaterial_shader::set_lighting_enabled(bool enabled)
-{
-	set_uniform("lightingEnabled", enabled);
-}
-
-void nsmaterial_shader::set_node_transform(const fmat4 & tform)
-{
-	set_uniform("nodeTransform", tform);
-}
-
-void nsmaterial_shader::set_proj_cam_mat(const fmat4 & projCam)
-{
-	set_uniform("projCamMat", projCam);
-}
-
-void nsmaterial_shader::set_bone_transforms(const fmat4_vector & transforms)
-{
-	for (uint32 i = 0; i < transforms.size(); ++i)
-		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
-}
-
-void nsmaterial_shader::set_has_bones(bool hasthem)
-{
-	set_uniform("hasBones", hasthem);
-}
-
-void nsmaterial_shader::set_force_alpha(bool force)
-{
-	set_uniform("force_alpha", force);		
+	set_uniform("hasHeightMap", mat->contains(nsmaterial::height));
+	set_uniform("hasDiffuseMap", mat->contains(nsmaterial::diffuse));
+	set_uniform("hasOpacityMap", mat->contains(nsmaterial::opacity));
+	set_uniform("hasNormalMap", mat->contains(nsmaterial::normal));
+	set_uniform("colorMode", mat->color_mode());
+	set_uniform("fragColOut", mat->color());
+	set_uniform("force_alpha", mat->using_alpha_from_color());
+	set_uniform("material_id",  mat_shader_id);			
 }
 
 nsparticle_process_shader::nsparticle_process_shader() : nsshader() {}

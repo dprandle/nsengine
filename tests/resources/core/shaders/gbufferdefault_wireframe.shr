@@ -164,7 +164,6 @@ uniform vec4 fragColOut;
 uniform bool hasDiffuseMap;
 uniform bool hasNormalMap;
 uniform bool hasOpacityMap;
-uniform bool lightingEnabled;
 uniform bool hasHeightMap;
 uniform bool force_alpha;
 
@@ -209,8 +208,7 @@ void main()
 	colorOut = difCol.rgb;
 	worldPosOut = vec4(worldPos.xyz, gl_FragCoord.z);
 	pickingOut = uvec4(pluginID, entityID, refID, material_id);
-	if (lightingEnabled)
-		normalOut = calculateNormalMap();
+	normalOut = calculateNormalMap();
 }
 
 </nsstring>

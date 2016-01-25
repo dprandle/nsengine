@@ -13,6 +13,7 @@ This file contains all of the neccessary definitions for the nstimer class.
 #include <nstimer.h>
 #include <nsengine.h>
 #include <nsfile_os.h>
+#include <iostream>
 
 nstimer::nstimer() :
 	m_start(0.0),

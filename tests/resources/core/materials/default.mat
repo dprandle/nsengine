@@ -20,3 +20,17 @@ texture_maps[Key][0]:<uint32>1788357623</uint32>
 texture_maps[Key][1]:<uint32>142955658</uint32>
 wireframe:<bool>false</bool>
 alpha_mode:<bool>false</bool>
+depth_write:<bool>true</bool>
+depth_test:<bool>true</bool>
+stencil_test:<bool>false</bool>
+blend_func[0]:<int32>0</int32>
+blend_func[1]:<int32>0</int32>
+stencil_func[0]:<int32>0</int32>
+stencil_func[1]:<int32>0</int32>
+stencil_func[2]:<int32>0</int32>
+stencil_op_front[0]:<int32>0</int32>
+stencil_op_front[1]:<int32>0</int32>
+stencil_op_front[2]:<int32>0</int32>
+stencil_op_back[0]:<int32>0</int32>
+stencil_op_back[1]:<int32>0</int32>
+stencil_op_back[2]:<int32>0</int32>
