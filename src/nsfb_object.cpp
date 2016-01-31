@@ -86,6 +86,9 @@ void nsfb_object::bind() const
 	gl_err_check("nsfb_object::bind");
 }
 
+void nsfb_object::init()
+{}
+
 nsfb_object::attachment * nsfb_object::create(attach_point pAttPoint, uint32 pSampleNumber, int32 pInternalFormat, bool overwrite)
 {
 	nsrenderbuf_object * rBuf = new nsrenderbuf_object();
@@ -130,7 +133,7 @@ nsfb_object::attachment * nsfb_object::att(attach_point pAttPoint)
 	return NULL;
 }
 
-const uivec2 & nsfb_object::size()
+const ivec2 & nsfb_object::size()
 {
 	return m_size;
 }
@@ -176,12 +179,12 @@ void nsfb_object::release()
 	m_gl_name = 0;
 }
 
-void nsfb_object::resize(const uivec2 & size_, uint32 layers)
+void nsfb_object::resize(const ivec2 & size_, uint32 layers)
 {
 	resize(size_.x, size_.y, layers);
 }
 
-void nsfb_object::resize(uint32 w, uint32 h, uint32 layers)
+void nsfb_object::resize(int32 w, int32 h, uint32 layers)
 {
 	// Resize the frame buffer by resizing all associated textures
 	// This is relatively expensive operation and should only

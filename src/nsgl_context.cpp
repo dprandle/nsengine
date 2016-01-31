@@ -14,7 +14,6 @@ gl_ctxt::gl_ctxt(uint32 id) :
 	systems(new system_hash_map()),
 	plugins(new nsplugin_manager()),
 	event_disp(new nsevent_dispatcher()),
-	fb_map(),
 	timer(new nstimer()),
 	composite_buf(0),
 	context_id(id)

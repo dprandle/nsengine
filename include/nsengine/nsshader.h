@@ -210,10 +210,31 @@ void pup(PUPer & p, nsshader & shader)
 
 }
 
-class nsmaterial;
-typedef std::map<nsmaterial*, uint32> mat_id_map;
+struct draw_call;
 
-class nslight_shader : public nsshader
+class nsrender_shader : public nsshader
+{
+  public:
+	nsrender_shader() {}
+	virtual ~nsrender_shader() {}
+
+	void set_viewport(const ivec4 & viewport_);
+
+	virtual void set_for_draw_call(draw_call * dc) {}
+};
+
+class nsmaterial_shader : public nsrender_shader
+{
+public:
+	nsmaterial_shader();
+	~nsmaterial_shader();
+
+	virtual void init_uniforms();
+
+	virtual void set_for_draw_call(draw_call * dc);
+};
+
+class nslight_shader : public nsrender_shader
 {
 public:
 	nslight_shader();
@@ -221,56 +242,17 @@ public:
 
 	virtual void init_uniforms();
 
-	void set_ambient_intensity(float intensity);
-
-	void set_cast_shadows(bool cast);
-
-	void set_diffuse_intensity(float intensity);
-
-	void set_light_color(const fvec3 & col);
-
-	void set_shadow_samples(int32 samples);
-
-	void set_shadow_darkness(float darkness);
-
-	void set_screen_size(const fvec2 & size);
-
-	void set_cam_world_pos(const fvec3 & camPos);
-
-	void set_epsilon(float epsilon);
-
-	void set_shadow_tex_size(const fvec2 & size);
-
-	void set_world_pos_sampler(int32 sampler);
-
-	void set_diffuse_sampler(int32 sampler);
-
-	void set_normal_sampler(int32 sampler);
-
-	void set_material_sampler(int32 sampler);
-
-	void set_shadow_sampler(int32 sampler);
-
-	void set_material_ids(const mat_id_map & mat_ids);
-
-	void set_fog_factor(const uivec2 & factor);
-
-	void set_fog_color(const fvec4 & color);
+	virtual void set_for_draw_call(draw_call * dc);
 
 };
 
-class nsfragment_sort_shader : public nsshader
+class nsfragment_sort_shader : public nsrender_shader
 {
 public:
 	nsfragment_sort_shader();
 	~nsfragment_sort_shader();
 
 	virtual void init_uniforms();
-
-	virtual void init();
-
-	void set_screen_size(const fvec2 & screen_size);
-
 };
 
 class nsdir_light_shader : public nslight_shader
@@ -281,15 +263,7 @@ public:
 
 	virtual void init_uniforms();
 
-	virtual void init();
-
-	void set_proj_light_mat(const fmat4 & projLightMat);
-
-	void set_lighting_enabled(bool enable);
-
-    void set_bg_color(const fvec4 & col);
-
-	void set_direction(const fvec3 & dir);
+	virtual void set_for_draw_call(draw_call * dc);
 };
 
 class nspoint_light_shader : public nslight_shader
@@ -300,24 +274,7 @@ public:
 
 	virtual void init_uniforms();
 
-	virtual void init();
-
-	void set_const_atten(float att);
-
-	void set_lin_atten(float lin);
-
-	void set_exp_atten(float exp);
-
-	void set_position(const fvec3 & pos);
-
-	void set_max_depth(float maxd);
-
-	void set_transform(const fmat4 & mat) { set_uniform("transform", mat); }
-
-	void set_proj_cam_mat(const fmat4 & mat) { set_uniform("projCamMat", mat); }
-
-	void set_node_transform(const fmat4 & mat) { set_uniform("nodeTransform", mat); }
-
+	virtual void set_for_draw_call(draw_call * dc);
 };
 
 class nsspot_light_shader : public nspoint_light_shader
@@ -328,29 +285,7 @@ public:
 
 	virtual void init_uniforms();
 
-	void set_proj_light_mat(const fmat4 & projLightMat);
-
-	void set_direction(const fvec3 & dir);
-
-	void set_cutoff(float cutoff);
-
-};
-
-struct draw_call;
-
-class nsmaterial_shader : public nsshader
-{
-public:
-	nsmaterial_shader();
-	~nsmaterial_shader();
-
-	virtual void init_uniforms();
-
-	virtual void init();
-
-	virtual void set_for_draw_call(const draw_call * dc);
-
-	virtual void set_for_material(nsmaterial * mat, uint32 mat_shader_id, const fvec2 & window_size);
+	virtual void set_for_draw_call(draw_call * dc);
 };
 
 class nsparticle_process_shader : public nsshader
@@ -431,210 +366,45 @@ public:
 
 };
 
-class nsdepth_shader : public nsshader
+struct light_draw_call;
+
+class nsshadow_2dmap_shader : public nsrender_shader
 {
 public:
-	nsdepth_shader();
-	~nsdepth_shader();
+	nsshadow_2dmap_shader();
+	~nsshadow_2dmap_shader();
 
 	virtual void init_uniforms();
 
-	void set_node_transform(const fmat4 & tform);
+	virtual void set_for_draw_call(draw_call * dc);
 
-	void set_bone_transform(const fmat4_vector & transforms);
-
-	void set_has_bones(bool hasthem);
-
-	void set_proj_mat(const fmat4 & mat) { set_uniform("projMat", mat); }
-
-	void set_height_sampler(int32 sampler) { set_uniform("heightMap", sampler); }
-
-	void set_height_map_enabled(bool enabled) { set_uniform("hasHeightMap", enabled); }
-
-	void set_height_minmax(const fvec2 & hu) { set_uniform("hminmax", hu); }
-
+	virtual void set_for_light_draw_call(light_draw_call * dc);
 };
 
-class nsdir_shadowmap_shader : public nsdepth_shader
+class nsshadow_cubemap_shader : public nsshadow_2dmap_shader
 {
 public:
-	nsdir_shadowmap_shader();
-	~nsdir_shadowmap_shader();
+	nsshadow_cubemap_shader();
+	~nsshadow_cubemap_shader();
 
 	virtual void init_uniforms();
 
-	void init();
+	virtual void set_for_light_draw_call(light_draw_call * dc);
 
 };
 
-class nspoint_shadowmap_shader : public nsdepth_shader
+class nslight_stencil_shader : public nsrender_shader
 {
 public:
-	nspoint_shadowmap_shader();
-	~nspoint_shadowmap_shader();
+	nslight_stencil_shader();
+	~nslight_stencil_shader();
 
 	virtual void init_uniforms();
 
-	void init() {}
-
-	void set_light_pos(const fvec3 & pos);
-
-	void set_max_depth(float maxd);
-
-	void set_inverse_trans_mat(const fmat4 & invt);
-
+	virtual void set_for_draw_call(draw_call * dc);
 };
 
-class nsspot_shadowmap_shader : public nsdepth_shader
-{
-public:
-	nsspot_shadowmap_shader();
-	~nsspot_shadowmap_shader();
-
-	virtual void init_uniforms();
-
-	void init();
-
-};
-
-class nsearlyz_shader : public nsdepth_shader
-{
-public:
-	nsearlyz_shader();
-	~nsearlyz_shader();
-
-	virtual void init_uniforms();
-
-	void init();
-
-};
-
-class nsdir_shadowmap_xfb_shader : public nsshader
-{
-public:
-	nsdir_shadowmap_xfb_shader(){}
-	~nsdir_shadowmap_xfb_shader(){}
-
-	virtual void init_uniforms() { set_proj_light_mat(fmat4()); }
-
-	void init(){ nsshader::init(); }
-
-	void set_proj_light_mat(const fmat4 & mat){ set_uniform("projLightMat", mat); }
-};
-
-class nspoint_shadowmap_xfb_shader : public nsshader
-{
-public:
-	nspoint_shadowmap_xfb_shader(){}
-	~nspoint_shadowmap_xfb_shader(){}
-
-	void init(){ nsshader::init(); }
-
-	virtual void init_uniforms() {
-		set_proj_mat(fmat4());
-		set_inverse_trans_mat(fmat4());
-		set_proj_light_mat(fmat4());
-		set_light_pos(fvec3());
-		set_max_depth(0.0f);
-	}
-
-	void set_proj_mat(const fmat4 & mat){ set_uniform("projMat", mat); }
-
-	void set_inverse_trans_mat(const fmat4 & mat){ set_uniform("inverseTMat", mat); }
-
-	void set_proj_light_mat(const fmat4 & mat){ set_uniform("projLightMat", mat); }
-
-	void set_light_pos(fvec3 pos) { set_uniform("lightPos", pos); }
-
-	void set_max_depth(float d) { set_uniform("maxDepth", d); }
-
-};
-
-class nsspot_shadowmap_xfb_shader : public nsshader
-{
-public:
-	nsspot_shadowmap_xfb_shader() {}
-	~nsspot_shadowmap_xfb_shader() {}
-
-	virtual void init_uniforms() { set_proj_light_mat(fmat4()); }
-
-	void init(){ nsshader::init(); }
-
-	void set_proj_light_mat(const fmat4 & mat){ set_uniform("projLightMat", mat); }
-
-};
-
-class nsearlyz_xfb_shader : public nsspot_shadowmap_xfb_shader
-{
-public:
-	nsearlyz_xfb_shader(){}
-	~nsearlyz_xfb_shader(){}
-
-	virtual void init_uniforms() { set_proj_cam_mat(fmat4()); }
-
-	void init(){ nsshader::init(); }
-
-	void set_proj_cam_mat(const fmat4 & mat){ set_uniform("projCamMat", mat); }
-
-};
-
-class nsrender_xfb_shader : public nsmaterial_shader
-{
-public:
-	nsrender_xfb_shader();
-	~nsrender_xfb_shader();
-};
-
-class nsxfb_shader : public nsshader
-{
-public:
-	nsxfb_shader();
-	~nsxfb_shader();
-
-	virtual void init_uniforms();
-
-	void init();
-
-	void set_node_transform(const fmat4 & mat);
-
-};
-
-class nslight_stencil_shader : public nsshader
-{
-public:
-	nslight_stencil_shader() {}
-	~nslight_stencil_shader() {}
-
-	virtual void init_uniforms() {
-		set_transform(fmat4());
-		set_proj_cam_mat(fmat4());
-	}
-
-	void init() {}
-
-	void set_node_transform(const fmat4 & mat) { set_uniform("nodeTransform", mat); }
-
-	void set_transform(const fmat4 & mat) { set_uniform("transform", mat); }
-
-	void set_proj_cam_mat(const fmat4 & mat){ set_uniform("projCamMat", mat); }
-};
-
-class nsskybox_shader : public nsmaterial_shader
-{
-public:
-	nsskybox_shader() : nsmaterial_shader() {}
-	~nsskybox_shader() {}
-
-};
-
-class nstransparency_shader : public nsmaterial_shader
-{
-public:
-	nstransparency_shader() : nsmaterial_shader() {}
-	~nstransparency_shader() {}
-};
-
-class nsselection_shader : public nsshader
+class nsselection_shader : public nsrender_shader
 {
 public:
 	nsselection_shader();
@@ -642,25 +412,7 @@ public:
 
 	virtual void init_uniforms();
 
-	void init();
-
-	void set_frag_color_out(const fvec4 & col);
-
-	void set_node_transform(const fmat4 & tform);
-
-	void set_proj_cam_mat(const fmat4 & projCam);
-
-	void set_bone_transform(const fmat4_vector & transforms);
-
-	void set_has_bones(bool hasthem);
-
-	void set_transform(const fmat4 & mat);
-
-	void set_height_sampler(int32 sampler) { set_uniform("heightMap", sampler); }
-
-	void set_heightmap_enabled(bool enabled) { set_uniform("hasHeightMap", enabled); }
-
-	void set_height_minmax(const fvec2 & hu) { set_uniform("hminmax", hu); }
+	virtual void set_for_draw_call(draw_call * dc);
 };
 
 #endif

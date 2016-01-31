@@ -85,11 +85,6 @@ bool nsengine::add_plugin(nsplugin * plugin)
 	return current()->plugins->add(plugin);
 }
 
-uint32 nsengine::composite_framebuffer()
-{
-	return current()->composite_buf;
-}
-
 void nsengine::set_current_scene(const nsstring & scn, bool newSceneOverwriteFile, bool saveprevious)
 {
 	if (active() == NULL)
@@ -169,33 +164,6 @@ nsresource * nsengine::resource(uint32 res_typeid, nsplugin * plg, const nsstrin
 	if (plg == NULL)
 		return NULL;
 	return plg->get(res_typeid, resname);
-}
-
-uint32 nsengine::create_framebuffer()
-{
-	nsfb_object * fb = new nsfb_object();
-	fb->init_gl();
-	current()->fb_map.emplace(fb->gl_id(), fb);
-	return fb->gl_id();
-}
-
-bool nsengine::del_framebuffer(uint32 fbid)
-{
-	nsfb_object * obj = framebuffer(fbid);
-	if (obj == NULL)
-		return false;
-	obj->release();
-	delete obj;
-	current()->fb_map.erase(fbid);
-	return true;
-}
-
-nsfb_object * nsengine::framebuffer(uint32 id)
-{
-	auto iter = current()->fb_map.find(id);
-	if (iter != current()->fb_map.end())
-		return iter->second;
-	return NULL;
 }
 
 nsplugin * nsengine::load_plugin(const nsstring & fname)
@@ -493,9 +461,7 @@ void nsengine::start(const ivec2 & screen_size)
 	plg->set_res_dir(m_cwd + DEFAULT_CORE_DIR);
 	plg->add_name_to_res_path(false);
 	
-	current()->composite_buf = create_framebuffer();
 	_init_systems();
-	system<nsrender_system>()->resize_screen(screen_size);
 	timer()->start();
 }
 
@@ -509,17 +475,6 @@ void nsengine::shutdown()
 		++iter;
 	}
 	current()->systems->clear();
-
-	auto iterfb = current()->fb_map.begin();
-	while (iterfb != current()->fb_map.end())
-	{
-		iterfb->second->release();
-		delete iterfb->second;
-		iterfb->second = NULL;
-		++iterfb;
-	}
-	current()->fb_map.clear();
-
 	core()->unbind();
 }
 
@@ -603,7 +558,7 @@ void nsengine::update()
 		}
 		accumulator -= timer()->fixed();
 	}
-	system<nsrender_system>()->render_scene();
+	system<nsrender_system>()->render();
 }
 
 void nsengine::_remove_sys(uint32 type_id)
@@ -778,24 +733,16 @@ void nsengine::_init_factories()
 	register_resource<nsdir_light_shader, nsshader_manager>("nsdir_light_shader");
 	register_resource<nsspot_light_shader, nsshader_manager>("nsspot_light_shader");
 	register_resource<nspoint_light_shader, nsshader_manager>("nspoint_light_shader");
+	register_resource<nsrender_shader, nsshader_manager>("nsrender_shader");
 	register_resource<nsmaterial_shader, nsshader_manager>("nsmaterial_shader");
 	register_resource<nsparticle_process_shader, nsshader_manager>("nsparticle_process_shader");
 	register_resource<nsparticle_render_shader, nsshader_manager>("nsparticle_render_shader");
 	register_resource<nsfragment_sort_shader, nsshader_manager>("nsfragment_sort_shader");
-	register_resource<nsdir_shadowmap_shader, nsshader_manager>("nsdir_shadowmap_shader");
-	register_resource<nspoint_shadowmap_shader, nsshader_manager>("nspoint_shadowmap_shader");
-	register_resource<nsspot_shadowmap_shader, nsshader_manager>("nsspot_shadowmap_shader");
-	register_resource<nsearlyz_shader, nsshader_manager>("nsearlyz_shader");
-	register_resource<nsdir_shadowmap_xfb_shader, nsshader_manager>("nsdir_shadowmap_xfb_shader");
-	register_resource<nspoint_shadowmap_xfb_shader, nsshader_manager>("nspoint_shadowmap_xfb_shader");
-	register_resource<nsspot_shadowmap_xfb_shader, nsshader_manager>("nsspot_shadowmap_xfb_shader");
-	register_resource<nsearlyz_xfb_shader, nsshader_manager>("nsearlyz_xfb_shader");
-	register_resource<nsrender_xfb_shader, nsshader_manager>("nsrender_xfb_shader");
-	register_resource<nsxfb_shader, nsshader_manager>("nsxfb_shader");
+	register_resource<nsshadow_2dmap_shader, nsshader_manager>("nsshadow_2dmap_shader");
+	register_resource<nsshadow_cubemap_shader, nsshader_manager>("nsshadow_cubemap_shader");
 	register_resource<nslight_stencil_shader, nsshader_manager>("nslight_stencil_shader");
-	register_resource<nsskybox_shader, nsshader_manager>("nsskybox_shader");
-	register_resource<nstransparency_shader, nsshader_manager>("nstransparency_shader");
 	register_resource<nsselection_shader, nsshader_manager>("nsselection_shader");
+
 	register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
 }
 

@@ -71,7 +71,7 @@ public:
 		tex->set_format(format_);
 		tex->set_internal_format(internal_format_);
 		tex->set_pixel_data_type(pixel_data_t_);
-		tex->resize(m_size);
+		tex->resize(m_size.x,m_size.y);
 		tex->bind();
 		// Fill the texture with NULL data
 		tex->allocate(NULL);
@@ -96,7 +96,7 @@ public:
     // there is no attachment at the attachment point
 	attachment * att(attach_point att_point_);
 
-	const uivec2 & size();
+	const ivec2 & size();
 
 	fb_target target();
 
@@ -104,11 +104,13 @@ public:
 
 	virtual void init_gl();
 
+	virtual void init();
+
 	virtual void release();
 
-	virtual void resize(uint32 w, uint32 h=0, uint32 layers_=0);
+	virtual void resize(int32 w, int32 h=0, uint32 layers_=0);
 
-	virtual void resize(const uivec2 & size_, uint32 layers_=0);
+	virtual void resize(const ivec2 & size_, uint32 layers_=0);
 
 	bool set_cube_face(attach_point att_point_, nstex_cubemap::cube_face face_);
 
@@ -126,7 +128,7 @@ public:
 
 protected:
 	fb_target m_target;
-	uivec2 m_size;
+	ivec2 m_size;
 
 	attachment * m_depth_stencil_att;
 	attachment_array m_color_atts;

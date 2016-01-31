@@ -565,271 +565,36 @@ nsshader::shader_stage::shader_stage(shader_type pType):
 {}
 
 
-nslight_shader::nslight_shader():nsshader() {}
-
-nslight_shader::~nslight_shader() {}
-
-void nslight_shader::init_uniforms()
+void nsrender_shader::set_viewport(const ivec4 & viewport_)
 {
-	set_shadow_sampler(SHADOW_TEX_UNIT);
-	set_diffuse_sampler(G_DIFFUSE_TEX_UNIT);
-	set_material_sampler(G_PICKING_TEX_UNIT);
-	set_world_pos_sampler(G_WORLD_POS_TEX_UNIT);
-	set_normal_sampler(G_NORMAL_TEX_UNIT);
-	set_epsilon(DEFAULT_SHADOW_EPSILON);
-	set_ambient_intensity(0);
-	set_cast_shadows(false);
-	set_diffuse_intensity(0);
-	set_light_color(fvec3());
-	set_shadow_samples(0);
-	set_shadow_darkness(0);
-	set_screen_size(fvec2());
-	set_cam_world_pos(fvec3());
+	set_uniform("viewport", fvec4(viewport_.x,viewport_.y, viewport_.z, viewport_.w));
 }
 
-void nslight_shader::set_ambient_intensity(float intensity)
-{
-	set_uniform("light.ambientIntensity", intensity);
-}
-
-void nslight_shader::set_diffuse_intensity(float intensity)
-{
-	set_uniform("light.diffuseIntensity", intensity);
-}
-
-void nslight_shader::set_cast_shadows(bool cast)
-{
-	set_uniform("castShadows", cast);
-}
-
-void nslight_shader::set_light_color(const fvec3 & col)
-{
-	set_uniform("light.color", col);
-}
-
-void nslight_shader::set_shadow_samples(int32 samples)
-{
-	set_uniform("shadowSamples", samples);
-}
-
-void nslight_shader::set_shadow_darkness(float darkness)
-{
-	set_uniform("light.shadowDarkness", darkness);
-}
-
-void nslight_shader::set_shadow_tex_size(const fvec2 & size)
-{
-	set_uniform("shadowTexSize", size);
-}
-
-void nslight_shader::set_screen_size(const fvec2 & size)
-{
-	set_uniform("screenSize", size);
-}
-
-void nslight_shader::set_cam_world_pos(const fvec3 & camPos)
-{
-	set_uniform("camWorldPos", camPos);
-}
-
-void nslight_shader::set_epsilon(float epsilon)
-{
-	set_uniform("epsilon", epsilon);
-}
-
-void nslight_shader::set_world_pos_sampler(int32 sampler)
-{
-	set_uniform("gWorldPosMap", sampler);
-}
-
-void nslight_shader::set_diffuse_sampler(int32 sampler)
-{
-	set_uniform("gDiffuseMap", sampler);
-}
-
-void nslight_shader::set_normal_sampler(int32 sampler)
-{
-	set_uniform("gNormalMap", sampler);
-}
-
-void nslight_shader::set_material_sampler(int32 sampler)
-{
-	set_uniform("gMatMap", sampler);
-}
-
-void nslight_shader::set_shadow_sampler(int32 sampler)
-{
-	set_uniform("shadowMap", sampler);
-}
-
-
-void nslight_shader::set_fog_factor(const uivec2 & factor)
-{
-	set_uniform("fog_factor", factor);
-}
-
-void nslight_shader::set_fog_color(const fvec4 & color)
-{
-	set_uniform("fog_color", color);	
-}
-
-void nslight_shader::set_material_ids(const mat_id_map & mat_ids)
-{
-	nsstring id;
-	id.reserve(64);
-	auto iter = mat_ids.begin();
-	while (iter != mat_ids.end())
-	{
-		id = "materials[" + std::to_string(iter->second) + "].spec_";
-		set_uniform(id+"color",iter->first->specular_color());
-		set_uniform(id+"power",iter->first->specular_power());
-		set_uniform(id+"intensity",iter->first->specular_intensity());
-		++iter;
-	}
-}
-
-nsfragment_sort_shader::nsfragment_sort_shader()
-{}
-
-nsfragment_sort_shader::~nsfragment_sort_shader()
-{}
-
-void nsfragment_sort_shader::init_uniforms()
-{
-	set_screen_size(fvec2());
-	set_uniform("gMatMap", int32(G_PICKING_TEX_UNIT));
-}
-
-void nsfragment_sort_shader::init()
-{
-}
-
-void nsfragment_sort_shader::set_screen_size(const fvec2 & screen_size)
-{
-	set_uniform("screen_size", screen_size);	
-}
-
-nsdir_light_shader::nsdir_light_shader() :nslight_shader() {}
-
-nsdir_light_shader::~nsdir_light_shader() {}
-
-void nsdir_light_shader::init_uniforms()
-{
-	nslight_shader::init_uniforms();
-	set_proj_light_mat(fmat4());
-	set_lighting_enabled(false);
-    set_bg_color(fvec4());
-	set_direction(fvec3());
-}
-
-void nsdir_light_shader::init() {}
-
-void nsdir_light_shader::set_proj_light_mat(const fmat4 & projLightMat)
-{
-	set_uniform("projLightMat", projLightMat);
-}
-
-void nsdir_light_shader::set_lighting_enabled(bool enable)
-{
-	set_uniform("lightingEnabled", enable);
-}
-
-void nsdir_light_shader::set_bg_color(const fvec4 & col)
-{
-	set_uniform("bgColor", col);
-}
-
-void nsdir_light_shader::set_direction(const fvec3 & dir)
-{
-	set_uniform("light.direction", dir);
-}
-
-nspoint_light_shader::nspoint_light_shader() :nslight_shader() {}
-
-nspoint_light_shader::~nspoint_light_shader() {}
-
-void nspoint_light_shader::init_uniforms()
-{
-	nslight_shader::init_uniforms();
-	set_const_atten(0);
-	set_lin_atten(0);
-	set_exp_atten(0);
-	set_position(0);
-}
-
-void nspoint_light_shader::init()
-{}
-
-void nspoint_light_shader::set_const_atten(float att)
-{
-	set_uniform("light.attConstant", att);
-}
-
-void nspoint_light_shader::set_lin_atten(float lin)
-{
-	set_uniform("light.attLinear", lin);
-}
-
-void nspoint_light_shader::set_exp_atten(float exp)
-{
-	set_uniform("light.attExp", exp);
-}
-
-void nspoint_light_shader::set_position(const fvec3 & pos)
-{
-	set_uniform("light.position", pos);
-}
-
-void nspoint_light_shader::set_max_depth(float maxd)
-{
-	set_uniform("maxDepth", maxd);
-}
-
-nsspot_light_shader::nsspot_light_shader() :nspoint_light_shader() {}
-
-nsspot_light_shader::~nsspot_light_shader() {}
-
-void nsspot_light_shader::init_uniforms()
-{
-	nslight_shader::init_uniforms();
-	set_cutoff(0);
-	set_direction(fvec3());
-	set_proj_light_mat(fmat4());
-}
-
-void nsspot_light_shader::set_proj_light_mat(const fmat4 & projLightMat)
-{
-	set_uniform("projLightMat", projLightMat);
-}
-
-void nsspot_light_shader::set_direction(const fvec3 & dir)
-{
-	set_uniform("light.direction", dir);
-}
-
-void nsspot_light_shader::set_cutoff(float cutoff)
-{
-	set_uniform("light.cutoff", cutoff);
-}
-
-nsmaterial_shader::nsmaterial_shader() : nsshader() {}
+nsmaterial_shader::nsmaterial_shader() : nsrender_shader() {}
 nsmaterial_shader::~nsmaterial_shader(){}
 
 void nsmaterial_shader::init_uniforms()
 {
 	set_uniform("diffuseMap", DIFFUSE_TEX_UNIT);
-	set_uniform("opacityMap", NORMAL_TEX_UNIT);
-	set_uniform("normalMap", OPACITY_TEX_UNIT);
+	set_uniform("normalMap", NORMAL_TEX_UNIT);
+	set_uniform("opacityMap", OPACITY_TEX_UNIT);
 	set_uniform("heightMap", HEIGHT_TEX_UNIT);
+	nsrender_shader::init_uniforms();
 }
 
-void nsmaterial_shader::init()
+void nsmaterial_shader::set_for_draw_call(draw_call * drawc)
 {
-	
-}
+	instanced_draw_call * dc = static_cast<instanced_draw_call*>(drawc);
 
-void nsmaterial_shader::set_for_draw_call(const draw_call * dc)
-{
+	set_uniform("hasHeightMap", drawc->mat->contains(nsmaterial::height));
+	set_uniform("hasDiffuseMap", drawc->mat->contains(nsmaterial::diffuse));
+	set_uniform("hasOpacityMap", drawc->mat->contains(nsmaterial::opacity));
+	set_uniform("hasNormalMap", drawc->mat->contains(nsmaterial::normal));
+	set_uniform("colorMode", drawc->mat->color_mode());
+	set_uniform("fragColOut", drawc->mat->color());
+	set_uniform("force_alpha", drawc->mat->using_alpha_from_color());
+	set_uniform("material_id",  drawc->mat_index);
+
 	uint32 ent_id = dc->entity_id;
 	if (dc->transparent_picking)
 		ent_id = 0;
@@ -858,19 +623,121 @@ void nsmaterial_shader::set_for_draw_call(const draw_call * dc)
 		set_uniform("hasBones", false);	
 }
 
-void nsmaterial_shader::set_for_material(nsmaterial * mat, uint32 mat_shader_id, const fvec2 & window_size)
-{
-	if (mat->alpha_blend())
-		set_uniform("window_size", window_size);
+nslight_shader::nslight_shader():nsrender_shader() {}
+nslight_shader::~nslight_shader() {}
 
-	set_uniform("hasHeightMap", mat->contains(nsmaterial::height));
-	set_uniform("hasDiffuseMap", mat->contains(nsmaterial::diffuse));
-	set_uniform("hasOpacityMap", mat->contains(nsmaterial::opacity));
-	set_uniform("hasNormalMap", mat->contains(nsmaterial::normal));
-	set_uniform("colorMode", mat->color_mode());
-	set_uniform("fragColOut", mat->color());
-	set_uniform("force_alpha", mat->using_alpha_from_color());
-	set_uniform("material_id",  mat_shader_id);			
+void nslight_shader::init_uniforms()
+{
+	set_uniform("shadowMap", SHADOW_TEX_UNIT);
+	set_uniform("gDiffuseMap", G_DIFFUSE_TEX_UNIT);
+	set_uniform("gNormalMap", G_NORMAL_TEX_UNIT);
+	set_uniform("gWorldPosMap", G_WORLD_POS_TEX_UNIT);
+	set_uniform("gMatMap", G_PICKING_TEX_UNIT);
+	set_uniform("epsilon", DEFAULT_SHADOW_EPSILON);
+	nsrender_shader::init_uniforms();
+}
+
+void nslight_shader::set_for_draw_call(draw_call *dc)
+{
+	light_draw_call * ldc = (light_draw_call*)dc;
+
+	set_uniform("light.diffuseIntensity", ldc->diffuse_intensity);
+	set_uniform("light.ambientIntensity", ldc->ambient_intensity);
+	set_uniform("castShadows", ldc->cast_shadows);
+	set_uniform("light.color", ldc->light_color);
+	set_uniform("shadowSamples", ldc->shadow_samples);
+	set_uniform("light.shadowDarkness", ldc->shadow_darkness);
+	set_uniform("shadowTexSize", fvec2(ldc->shadow_tex_size.x, ldc->shadow_tex_size.y));
+	set_uniform("camWorldPos", ldc->cam_world_pos);
+	set_uniform("fog_factor", ldc->fog_factor);
+	set_uniform("fog_color", ldc->fog_color);	
+
+	nsstring id;
+	id.reserve(64);
+	auto iter = ldc->material_ids->begin();
+	while (iter != ldc->material_ids->end())
+	{
+		id = "materials[" + std::to_string(iter->second) + "].spec_";
+		set_uniform(id+"color",iter->first->specular_color());
+		set_uniform(id+"power",iter->first->specular_power());
+		set_uniform(id+"intensity",iter->first->specular_intensity());
+		++iter;
+	}
+}
+
+nsfragment_sort_shader::nsfragment_sort_shader(): nsrender_shader()
+{}
+
+nsfragment_sort_shader::~nsfragment_sort_shader()
+{}
+
+void nsfragment_sort_shader::init_uniforms()
+{
+	set_uniform("gMatMap", int32(G_PICKING_TEX_UNIT));
+	nsrender_shader::init_uniforms();
+}
+
+nsdir_light_shader::nsdir_light_shader() :nslight_shader() {}
+
+nsdir_light_shader::~nsdir_light_shader() {}
+
+void nsdir_light_shader::init_uniforms()
+{
+	nslight_shader::init_uniforms();
+}
+
+void nsdir_light_shader::set_for_draw_call(draw_call * dc)
+{
+	light_draw_call * ldc = (light_draw_call*)dc;
+	set_uniform("projLightMat", ldc->proj_light_mat);
+	set_uniform("lightingEnabled", ldc->lighting_enabled);	
+	set_uniform("bgColor", ldc->bg_color);
+	set_uniform("light.direction", ldc->direction);
+	nslight_shader::set_for_draw_call(dc);
+}
+
+nspoint_light_shader::nspoint_light_shader() :nslight_shader() {}
+
+nspoint_light_shader::~nspoint_light_shader() {}
+
+void nspoint_light_shader::init_uniforms()
+{
+	nslight_shader::init_uniforms();
+}
+
+void nspoint_light_shader::set_for_draw_call(draw_call * dc)
+{
+	light_draw_call * ldc = (light_draw_call*)dc;
+	set_uniform("light.attConstant", ldc->spot_atten.x);
+	set_uniform("light.attLinear", ldc->spot_atten.y);
+	set_uniform("light.attExp", ldc->spot_atten.z);
+	set_uniform("light.position", ldc->light_pos);
+	set_uniform("maxDepth", ldc->max_depth);
+	set_uniform("transform", ldc->light_transform);
+	set_uniform("projCamMat", ldc->proj_cam_mat);
+	if (ldc->submesh->m_node != nullptr)
+		set_uniform("nodeTransform", ldc->submesh->m_node->m_world_tform);
+	else
+		set_uniform("nodeTransform", fmat4());
+	nslight_shader::set_for_draw_call(dc);
+}
+
+nsspot_light_shader::nsspot_light_shader() :nspoint_light_shader() {}
+
+nsspot_light_shader::~nsspot_light_shader() {}
+
+void nsspot_light_shader::init_uniforms()
+{
+	nspoint_light_shader::init_uniforms();
+}
+
+void nsspot_light_shader::set_for_draw_call(draw_call * dc)
+{
+	light_draw_call * ldc = (light_draw_call*)dc;
+	set_uniform("projLightMat", ldc->proj_light_mat);
+	set_uniform("light.direction", ldc->direction);
+	set_uniform("light.cutoff", ldc->cutoff);
+	nspoint_light_shader::set_for_draw_call(dc);
 }
 
 nsparticle_process_shader::nsparticle_process_shader() : nsshader() {}
@@ -1076,172 +943,110 @@ void nsparticle_render_shader::set_world_up(const fvec3 & vec)
 	set_uniform("worldUp", vec);
 }
 
-nsdepth_shader::nsdepth_shader() : nsshader(){}
-nsdepth_shader::~nsdepth_shader() {}
+nsshadow_2dmap_shader::nsshadow_2dmap_shader() : nsrender_shader(){}
+nsshadow_2dmap_shader::~nsshadow_2dmap_shader() {}
 
-void nsdepth_shader::init_uniforms()
+void nsshadow_2dmap_shader::init_uniforms()
 {
-	fmat4_vector b;
-	b.resize(MAX_BONE_TFORMS);
-	set_height_sampler(HEIGHT_TEX_UNIT);
-	set_height_map_enabled(false);
-	set_height_minmax(fvec2(0.0f, 1.0f));
-	set_node_transform(fmat4());
-	set_bone_transform(b);
-	set_proj_mat(fmat4());
-	set_has_bones(false);
+	set_uniform("heightMap", HEIGHT_TEX_UNIT);
+	nsrender_shader::init_uniforms();
 }
 
-void nsdepth_shader::set_node_transform(const fmat4 & tform)
+void nsshadow_2dmap_shader::set_for_draw_call(draw_call * dc)
 {
-	set_uniform("nodeTransform", tform);
+	instanced_draw_call * idc = dynamic_cast<instanced_draw_call*>(dc);
+	if (idc->submesh->m_node != nullptr)
+		set_uniform("nodeTransform", idc->submesh->m_node->m_world_tform);
+	else
+		set_uniform("nodeTransform", fmat4());
+
+	if (idc->anim_transforms != nullptr)
+	{
+		for (uint32 i = 0; i < idc->anim_transforms->size(); ++i)
+			set_uniform("boneTransforms[" + std::to_string(i) + "]", (*idc->anim_transforms)[i]);
+		set_uniform("hasBones", true);
+	}
+	else
+	{
+		set_uniform("hasBones", false);
+	}
+	set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
+	set_uniform("hminmax", idc->height_minmax);
 }
 
-void nsdepth_shader::set_bone_transform(const fmat4_vector & transforms)
+void nsshadow_2dmap_shader::set_for_light_draw_call(light_draw_call * dc)
 {
-	for (uint32 i = 0; i < transforms.size(); ++i)
-		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
+	set_uniform("projMat", dc->proj_light_mat);	
 }
 
-void nsdepth_shader::set_has_bones(bool hasthem)
+nsshadow_cubemap_shader::nsshadow_cubemap_shader() :nsshadow_2dmap_shader() {}
+nsshadow_cubemap_shader::~nsshadow_cubemap_shader() {}
+
+void nsshadow_cubemap_shader::init_uniforms()
 {
-	set_uniform("hasBones", hasthem);
+	nsshadow_2dmap_shader::init_uniforms();
 }
 
-nsdir_shadowmap_shader::nsdir_shadowmap_shader() :nsdepth_shader() {}
-
-nsdir_shadowmap_shader::~nsdir_shadowmap_shader() {}
-
-void nsdir_shadowmap_shader::init_uniforms()
-{}
-
-void nsdir_shadowmap_shader::init() {}
-
-nspoint_shadowmap_shader::nspoint_shadowmap_shader() :nsdepth_shader() {}
-
-nspoint_shadowmap_shader::~nspoint_shadowmap_shader() {}
-
-void nspoint_shadowmap_shader::init_uniforms()
+void nsshadow_cubemap_shader::set_for_light_draw_call(light_draw_call * dc)
 {
-	set_light_pos(fvec3());
-	set_max_depth(0.0f);
-	set_inverse_trans_mat(fmat4());
-	nsdepth_shader::init_uniforms();
-}
-
-void init()
-{
-
-}
-
-void nspoint_shadowmap_shader::set_light_pos(const fvec3 & pos)
-{
-	set_uniform("lightPos", pos);
-}
-
-void nspoint_shadowmap_shader::set_max_depth(float maxd)
-{
-	set_uniform("maxDepth", maxd);
-}
-
-void nspoint_shadowmap_shader::set_inverse_trans_mat(const fmat4 & invt)
-{
+	fmat4 invt;
+	set_uniform("lightPos", dc->light_pos);
+	set_uniform("maxDepth", dc->max_depth);
+	invt.set_column(3, fvec4(dc->light_pos*-1.0f,1.0f));
 	set_uniform("inverseTMat", invt);
+	nsshadow_2dmap_shader::set_for_light_draw_call(dc);
 }
 
-nsspot_shadowmap_shader::nsspot_shadowmap_shader() :nsdepth_shader() {}
-
-nsspot_shadowmap_shader::~nsspot_shadowmap_shader() {}
-
-void nsspot_shadowmap_shader::init_uniforms()
+nslight_stencil_shader::nslight_stencil_shader(): nsrender_shader()
+{}
+nslight_stencil_shader::~nslight_stencil_shader()
 {}
 
-void nsspot_shadowmap_shader::init() {}
-
-nsearlyz_shader::nsearlyz_shader() : nsdepth_shader() {}
-
-nsearlyz_shader::~nsearlyz_shader() {}
-
-void nsearlyz_shader::init_uniforms()
-{}
-
-void nsearlyz_shader::init()
-{}
-
-nsrender_xfb_shader::nsrender_xfb_shader() : nsmaterial_shader() {}
-nsrender_xfb_shader::~nsrender_xfb_shader() {}
-
-
-nsxfb_shader::nsxfb_shader() : nsshader() {}
-nsxfb_shader::~nsxfb_shader() {}
-
-void nsxfb_shader::init_uniforms()
+void nslight_stencil_shader::init_uniforms()
 {
-	set_node_transform(fmat4());
+	nsrender_shader::init_uniforms();
 }
 
-void nsxfb_shader::init()
+void nslight_stencil_shader::set_for_draw_call(draw_call * dc)
 {
-	std::vector<nsstring> outLocs;
-	outLocs.push_back("worldPos");
-	outLocs.push_back("texCoords");
-	outLocs.push_back("normal");
-	outLocs.push_back("tangent");
-	set_xfb(nsshader::xfb_separate, &outLocs);
+	light_draw_call * ldc = (light_draw_call*)dc;
+	if (ldc->submesh->m_node != nullptr)
+		set_uniform("nodeTransform", ldc->submesh->m_node->m_world_tform);
+	else
+		set_uniform("nodeTransform", fmat4());
+	set_uniform("transform", ldc->light_transform);
+	set_uniform("projCamMat", ldc->proj_cam_mat);
 }
 
-void nsxfb_shader::set_node_transform(const fmat4 & mat)
-{
-	set_uniform("nodeTransform", mat);
-}
-
-nsselection_shader::nsselection_shader() : nsshader() {}
+nsselection_shader::nsselection_shader() : nsrender_shader() {}
 nsselection_shader::~nsselection_shader() {}
 
 void nsselection_shader::init_uniforms()
 {
-	fmat4_vector b;
-	b.resize(MAX_BONE_TFORMS);
-	set_height_sampler(HEIGHT_TEX_UNIT);
-	set_heightmap_enabled(false);
-	set_height_minmax(fvec2(0.0f, 1.0f));
-	set_node_transform(fmat4());
-	set_bone_transform(b);
-	set_has_bones(false);
-	set_proj_cam_mat(fmat4());
-	set_frag_color_out(fvec4());
-	set_transform(fmat4());
+	set_uniform("heightMap", HEIGHT_TEX_UNIT);
+	nsrender_shader::init_uniforms();	
 }
 
-void nsselection_shader::init() {}
-
-void nsselection_shader::set_frag_color_out(const fvec4 & col)
+void nsselection_shader::set_for_draw_call(draw_call * dc)
 {
-	set_uniform("fragColOut", col);
-}
+	instanced_draw_call * idc = (instanced_draw_call*)dc;
+	if (idc->submesh->m_node != nullptr)
+		set_uniform("nodeTransform", idc->submesh->m_node->m_world_tform);
+	else
+		set_uniform("nodeTransform", fmat4());
 
-void nsselection_shader::set_node_transform(const fmat4 & tform)
-{
-	set_uniform("nodeTransform", tform);
-}
-
-void nsselection_shader::set_proj_cam_mat(const fmat4 & projCam)
-{
-	set_uniform("projCamMat", projCam);
-}
-
-void nsselection_shader::set_bone_transform(const fmat4_vector & transforms)
-{
-	for (uint32 i = 0; i < transforms.size(); ++i)
-		set_uniform("boneTransforms[" + std::to_string(i) + "]", transforms[i]);
-}
-
-void nsselection_shader::set_has_bones(bool hasthem)
-{
-	set_uniform("hasBones", hasthem);
-}
-
-void nsselection_shader::set_transform(const fmat4 & mat)
-{
-	set_uniform("transform", mat);
+	if (idc->anim_transforms != nullptr)
+	{
+		for (uint32 i = 0; i < idc->anim_transforms->size(); ++i)
+			set_uniform("boneTransforms[" + std::to_string(i) + "]", (*idc->anim_transforms)[i]);
+		set_uniform("hasBones", true);
+	}
+	else
+	{
+		set_uniform("hasBones", false);
+	}
+	set_uniform("projMat", idc->proj_cam);
+	set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
+	set_uniform("hminmax", idc->height_minmax);
+	set_uniform("fragColOut", idc->mat->color());
 }

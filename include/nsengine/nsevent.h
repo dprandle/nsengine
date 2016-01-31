@@ -1,9 +1,9 @@
 /*!
 \file nsevent.h
 
-\brief Header file for NSEvent class
+\brief Header file for NSEvent struct
 
-This file contains all of the neccessary declarations for the NSEvent class.
+This file contains all of the neccessary declarations for the NSEvent struct.
 
 \author Daniel Randle
 \date November 23 2013
@@ -18,9 +18,9 @@ This file contains all of the neccessary declarations for the NSEvent class.
 
 #include <iostream>
 
-class nsevent
+struct nsevent
 {
-public:
+
 	nsevent():
 		ref_count(0)
 	{}
@@ -29,9 +29,9 @@ public:
 	uint32 ref_count;
 };
 
-class nskey_event : public nsevent
+struct nskey_event : public nsevent
 {
-public:
+
 	nskey_event(nsinput_map::key_val key_, bool pressed_) :
 		nsevent(),
 		pressed(pressed_),
@@ -42,9 +42,9 @@ public:
 	nsinput_map::key_val key;
 };
 
-class nsmouse_button_event : public nsevent
+struct nsmouse_button_event : public nsevent
 {
-public:
+
 	nsmouse_button_event(nsinput_map::mouse_button_val mb_, bool pressed_, const fvec2 & normalized_mpos_) :
 		nsevent(),
 		mb(mb_),
@@ -57,9 +57,9 @@ public:
 	fvec2 normalized_mpos;
 };
 
-class nsmouse_move_event : public nsevent
+struct nsmouse_move_event : public nsevent
 {
-public:
+
 	nsmouse_move_event(const fvec2 & normalized_mpos_) :
 		nsevent(),
 		normalized_mpos(normalized_mpos_)
@@ -68,9 +68,9 @@ public:
 	fvec2 normalized_mpos;
 };
 
-class nsmouse_scroll_event : public nsevent
+struct nsmouse_scroll_event : public nsevent
 {
-public:
+
 	nsmouse_scroll_event(float scroll_delta_, const fvec2 & normalized_mpos_) :
 		nsevent(),
 		scroll_delta(scroll_delta_),
@@ -81,9 +81,8 @@ public:
 	fvec2 normalized_mpos;
 };
 
-class nsaction_event : public nsevent
+struct nsaction_event : public nsevent
 {
-public:
 	nsaction_event(uint32 trigger_hashid_):
 		nsevent(),
 		trigger_hash_name(trigger_hashid_)
@@ -95,9 +94,9 @@ public:
 	nsinput_map::axis_map axes;
 };
 
-class nsstate_event : public nsaction_event
+struct nsstate_event : public nsaction_event
 {
-public:
+
 	nsstate_event(uint32 trigger_hashid_, bool toggle_):
 		nsaction_event(trigger_hashid_),
 		toggle(toggle_)
@@ -106,10 +105,8 @@ public:
 	bool toggle;
 };
 
-class nssel_focus_event : public nsevent
-{
-  public:
-	
+struct nssel_focus_event : public nsevent
+{  	
 	nssel_focus_event(const uivec3 & focid_):
 		nsevent(),
 		focus_id(focid_)
@@ -118,11 +115,20 @@ class nssel_focus_event : public nsevent
 	uivec3 focus_id;
 };
 
-class nscam_change_event : public nsevent
-{
-  public:
+struct nscam_change_event : public nsevent
+{  
 	nscam_change_event()
 	{}
+};
+
+struct window_resize_event : public nsevent
+{
+	window_resize_event(const ivec2 & new_size_):
+		nsevent(),
+		new_size(new_size_)
+	{}
+	
+	ivec2 new_size;
 };
 
 #endif

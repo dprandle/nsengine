@@ -29,6 +29,7 @@ public:
 	virtual void unbind() const = 0;
 
 	uint32 gl_id() const;
+	void set_gl_id(uint32 id);
 
 protected:
 	uint32 m_gl_name;

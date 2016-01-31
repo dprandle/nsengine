@@ -29,6 +29,13 @@ uint32 nsgl_object::gl_id() const
 	return m_gl_name;
 }
 
+void nsgl_object::set_gl_id(uint32 id)
+{
+	if (m_gl_name != 0)
+		release();
+	m_gl_name = id;
+}
+
 bool gl_err_check(nsstring errorMessage)
 {
 	GLenum err = glGetError();
@@ -43,3 +50,4 @@ bool gl_err_check(nsstring errorMessage)
 	}
 	return false;
 }
+

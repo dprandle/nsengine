@@ -158,7 +158,6 @@ typedef std::unordered_map<std::type_index, uint32> type_hash_map;
 typedef std::unordered_map<uint32, nsstring> hash_string_map;
 typedef std::unordered_map<uint32, nsfactory*> hash_factory_map;
 typedef std::unordered_map<uint32, gl_ctxt*> gl_context_map;
-typedef std::unordered_map<uint32, nsfb_object*> framebuffer_map;
 
 uint32 hash_id(const nsstring & str);
 
@@ -223,8 +222,6 @@ public:
 
 	system_hash_map::iterator begin_system();
 
-	uint32 composite_framebuffer();
-
 	/*!
 	Create a GLContext and return a unique id - this id can be used to set the current context and
 	delete the context later
@@ -236,8 +233,6 @@ public:
 	*/
 	uint32 create_context(bool addDefaultFactories = true //<! Add the normal system/component/resource/resource manager factories
 		);
-
-	uint32 create_framebuffer();
 
 	nsplugin * create_plugin(const nsstring & plugname, bool makeactive=true);
 
@@ -272,8 +267,6 @@ public:
 	}
 
 	bool del_plugin(nsplugin * plg);
-
-	bool del_framebuffer(uint32 fbid);
 
 	template<class sys_type>
 	bool destroy_system()
@@ -336,8 +329,6 @@ public:
 		uint32 hashed_type = type_id(std::type_index(typeid(obj_type)));
 		return static_cast<base_fac_type*>(factory(hashed_type));
 	}
-
-	nsfb_object * framebuffer(uint32 id);
 
 	template<class sys_type>
 	bool has_system()

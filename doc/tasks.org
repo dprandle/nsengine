@@ -99,17 +99,17 @@
 * TODO Create audio system
 * TODO Create thread mechanism full multiplatform
 * DONE Reintegrate the new engine version in to the toolkit
-* TODO Create method for transparency
-* TODO Implement copy ctor and assignment operators for components and resources [60%]
-** TODO nsentity
+* DONE Create method for transparency
+* DONE Implement copy ctor and assignment operators for components and resources [100%]
+** DONE nsentity
 ** DONE nsmesh
-** TODO nsanim_set
-** TODO nsshader
-** TODO nstexture
-** TODO nsmaterial
-** TODO nsinput_map
-** TODO nsscene
-** TODO nsplugin
+** DONE nsanim_set
+** DONE nsshader
+** DONE nstexture
+** DONE nsmaterial
+** DONE nsinput_map
+** DONE nsscene
+** DONE nsplugin
 ** DONE nsanim_comp
 ** DONE nscam_comp
 ** DONE nslight_comp
@@ -122,10 +122,10 @@
 ** DONE nstile_brush_comp
 ** DONE nstile_comp
 * TODO Make copy function protected or remove all together
-* TODO Remove all XFB stuff - didn't work out and complicates code unnecessarily [50%]
-** DONE Remove from tform_comp
-** TODO Remove from render system
 
 
-Left off with moving the copy command in entity to the copy constructor - nsmesh is only resource with stuff implemented
+Left off with creating a render_pass struct.. my idea is as follows:
 
+each render pass has some opengl state associated with it, along with a set of shader/material/draw calls
+
+a pre_render function can be implemented to do special things, along with a post_render function for each render pass - this 

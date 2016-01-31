@@ -1,4 +1,4 @@
-type:<nsstring>nspoint_shadowmap_shader</nsstring>
+type:<nsstring>nsshadow_cubemap_shader</nsstring>
 vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>#version 410
 
@@ -49,10 +49,7 @@ void main()
 	}
 
 	gl_Position = worldPos;
-} 
-
-
-
+}
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>#version 440
@@ -108,9 +105,6 @@ void main()
 		EndPrimitive();
 	}
 }
-
-
-
 </nsstring>
 fragment.type:<uint32>35632</uint32>
 fragment.source:<nsstring>#version 440
@@ -123,8 +117,4 @@ void main()
 {
 	gl_FragDepth = length(worldPos.xyz - lightPos) / maxDepth;
 }
-
-
-
-
 </nsstring>

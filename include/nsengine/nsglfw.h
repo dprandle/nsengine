@@ -78,7 +78,7 @@ bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title
 	glfwSetMouseButtonCallback(win, glfw_mousebutton_callback);
 	glfwSetCursorPosCallback(win, glfw_cursorpos_callback);
 	glfwSetScrollCallback(win, glfw_scroll_callback);
-	glfwSetWindowSizeCallback(win, glfw_resizewindow_callback); 
+	glfwSetFramebufferSizeCallback(win, glfw_resizewindow_callback); 
     return true;
 }
 
@@ -468,16 +468,11 @@ void glfw_mousebutton_callback(GLFWwindow * pWindow, int32 pButton, int32 pActio
 void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 {
     int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
-    glfwGetFramebufferSize(pWindow, &frameBufX, &frameBufY);
     glfwGetWindowSize(pWindow, &winX, &winY);
-
     pPosY = winY - pPosY; // Switch to opengl coords
-
     // normalize coords
-    pPosY /= double(frameBufY);
-    pPosX /= double(frameBufX);
-
-
+    pPosY /= double(winY);
+    pPosX /= double(winX);
     nse.event_dispatch()->push<nsmouse_move_event>(fvec2(float(pPosX),float(pPosY)));
 }
 
@@ -489,9 +484,7 @@ void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset
 
 void glfw_resizewindow_callback(GLFWwindow* window, int32 width, int32 height)
 {
-	nsrender_system * rs = nse.system<nsrender_system>();
-	if (rs != NULL)
-		rs->resize_screen(ivec2(width,height));
+	nse.event_dispatch()->push<window_resize_event>(ivec2(width,height));
 }
 
 

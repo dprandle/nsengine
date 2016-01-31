@@ -3,7 +3,7 @@
 
 #include <nsfb_object.h>
 
-class nsgbuf_object
+class nsgbuf_object : public nsfb_object
 {
 public:
 	enum color_attachment_t {
@@ -16,44 +16,19 @@ public:
 	nsgbuf_object();
 	~nsgbuf_object();
 
-	void bind();
-
 	void debug_blit(const ivec2 & scrn);
-
-	void enabled_color_write(bool pEnable);
 
 	nsfb_object::attachment * color(uint32 att_type);
 
 	nsfb_object::attachment * depth();
 
-	const uivec2 & fb_size();
-
-	nsfb_object * fb();
-
-	uivec3 pick(float mousex, float mousey);
-
-	const uivec2 & screen_size();
+	uivec3 pick(float norm_mouse_x, float norm_mouse_y);
 
 	void init();
-
-	void resize_fb(uint32 w, uint32 h);
-
-	void resize_fb(const uivec2 & size_);
-
-	void resize_screen(uint32 w, uint32 h);
-
-	void resize_screen(const uivec2 & size_);
-
-	void set_fb(nsfb_object * fb);
-
-	void unbind();
 
 private:
 
 	bool _create_texture_attachments();
-
-	nsfb_object * m_tex_fb;
-	uivec2 m_screen_size;
 	uint32 m_multisample_level;
 };
 

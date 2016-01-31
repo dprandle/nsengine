@@ -15,7 +15,6 @@ struct gl_ctxt
 	system_hash_map * systems;
 	nsplugin_manager * plugins;
 	nsevent_dispatcher * event_disp;
-	framebuffer_map fb_map;
 	nstimer * timer;
 	uint32 composite_buf;
 	uint32 context_id;

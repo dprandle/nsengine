@@ -11,9 +11,6 @@ void main()
 {
 	gl_Position = projCamMat * transform * nodeTransform * vec4(position, 1.0);
 }
-
-
-
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring></nsstring>

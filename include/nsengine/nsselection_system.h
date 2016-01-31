@@ -125,8 +125,6 @@ public:
 
 	void set_color(const fvec4 & pColor);
 
-	void set_picking_fbo(uint32 fbo);
-
 	void set_focus_entity(const uivec3 & focus_ent);
 
 	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
@@ -254,7 +252,6 @@ protected:
 
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
-	uint32 m_picking_buf;
 	fmat4 m_trans;
 };
 

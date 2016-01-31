@@ -28,9 +28,6 @@ void main()
 	scaleAndAngleOut = scaleAndAngle;
 	ageV = age.x;
 } 
-
-
-
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>#version 440
@@ -207,8 +204,4 @@ void main()
 
 	colorOut = difCol;
 }
-
-
-
-
 </nsstring>

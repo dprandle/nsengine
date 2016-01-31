@@ -16,6 +16,8 @@
 #include <nsmesh_manager.h>
 #include <nsmaterial.h>
 #include <nssel_comp.h>
+#include <nsmath.h>
+
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
 
@@ -31,6 +33,7 @@ int main()
 	
     uint32 i = nse.create_context();
     nse.start();
+    nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
@@ -60,7 +63,7 @@ nsplugin * setup_basic_plugin()
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
 	nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.2f);
 	scn->set_camera(cam);
-	scn->add(dirl, fvec3(20.0f, 20.0f, -50.0f));
+	scn->add(dirl, fvec3(20.0f, 20.0f, -50.0f), orientation(fvec4(0,1,0,45)));
 	
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 0.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
 	nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);

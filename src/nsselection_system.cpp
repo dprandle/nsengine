@@ -46,7 +46,6 @@ nsselection_system::nsselection_system() :
 	m_moving(false),
 	m_cached_point_last(),
 	m_draw_occ(false),
-	m_picking_buf(0),
 	m_trans(),
 	m_toggle_move(false),
 	m_send_foc_event(false),
@@ -207,11 +206,6 @@ void nsselection_system::clear()
 	m_send_foc_event = true;
 }
 
-void nsselection_system::set_picking_fbo(uint32 fbo)
-{
-	m_picking_buf = fbo;
-}
-
 uivec3 nsselection_system::pick(const fvec2 & mpos)
 {
 	return pick(mpos.x, mpos.y);
@@ -219,32 +213,11 @@ uivec3 nsselection_system::pick(const fvec2 & mpos)
 
 uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL)
+	nsgbuf_object * gbuf = (nsgbuf_object*)nse.system<nsrender_system>()->render_target(GBUFFER_TARGET);
+	if (gbuf == NULL)
 		return uivec3();
 
-	nsentity * cam = scene->camera();
-	if (cam == NULL)
-		return uivec3();
-
-	nsfb_object * pickingBuf = nse.framebuffer(m_picking_buf);
-	if (pickingBuf == NULL)
-		return uivec3();
-
-	nscam_comp * cc = cam->get<nscam_comp>();
-	ivec2 dim = cc->screen_size();
-	float mouseX = mousex * float(dim.w);
-	float mouseY = mousey * float(dim.h);
-
-	pickingBuf->set_target(nsfb_object::fb_read);
-	pickingBuf->bind();
-	pickingBuf->set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + nsgbuf_object::col_picking));
-
-	uivec3 index;
-	glReadPixels(int32(mouseX), int32(mouseY), 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
-	gl_err_check("nsselection_system::pick");
-
-	pickingBuf->set_read_buffer(nsfb_object::att_none);
+	uivec3 index = gbuf->pick(mousex, mousey);
 	return index;
 }
 
@@ -473,9 +446,7 @@ bool nsselection_system::empty()
 }
 
 void nsselection_system::init()
-{
-	set_picking_fbo(nse.composite_framebuffer());
-	
+{	
 	register_handler_func(this, &nsselection_system::_handle_action_event);
 	register_handler_func(this, &nsselection_system::_handle_state_event);
 

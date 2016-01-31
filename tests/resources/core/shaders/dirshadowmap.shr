@@ -1,4 +1,4 @@
-type:<nsstring>nsdir_shadowmap_shader</nsstring>
+type:<nsstring>nsshadow_2dmap_shader</nsstring>
 vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>#version 440
 
@@ -54,9 +54,6 @@ void main()
 
     gl_Position = projMat * worldPos;
 }
-
-
-
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring></nsstring>

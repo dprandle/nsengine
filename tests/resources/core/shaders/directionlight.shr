@@ -99,7 +99,7 @@ uniform usampler2D gMatMap;
 uniform sampler2D gWorldPosMap;
 uniform sampler2D gNormalMap;
 
-uniform vec2 screenSize;
+uniform vec4 viewport;
 uniform vec3 camWorldPos;
 uniform vec4 bgColor;
 uniform vec2 shadowTexSize;
@@ -193,20 +193,20 @@ float linear_fog_factor(vec3 worldPos)
 
 vec2 uv_from_screen_size()
 {
-   return gl_FragCoord.xy / screenSize;
+	return gl_FragCoord.xy / viewport.zw - viewport.xy;
 }
 
 vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)
 {
 	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
-	float diffuseFactor = dot(norm,-light.direction);
+	float diffuseFactor = dot(norm, -light.direction);
 
 	vec4 diffuseColor  = vec4(0.0, 0.0, 0.0, 0.0);
 	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
 
 	float shadowFactor = 1.0;
-	if (castShadows)
-		shadowFactor = shadow_factor(worldPos);
+//	if (castShadows)
+//		shadowFactor = shadow_factor(worldPos);
 
 	if (diffuseFactor > 0) 
 	{
@@ -266,7 +266,7 @@ vec4 mix_translucent_fragments(vec4 base_color)
 	unpacked_fragment_data fdat;
 	
     // get header index
-	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*screenSize.x);
+	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*viewport.z);
 	int frag_index = header_indices[header_index];
 	header_indices[header_index] = -1; // reset header indice to -1 at this pixel location
 
