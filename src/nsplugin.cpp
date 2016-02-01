@@ -242,6 +242,7 @@ nsentity * nsplugin::create_dir_light(const nsstring & name,
 	}
 	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
 	lc->set_type(nslight_comp::l_dir);
+	lc->set_angle(30.0f);
 	lc->set_intensity(diffuse, ambient);
 	lc->set_color(color);
 	lc->set_cast_shadows(castshadows);
@@ -336,7 +337,6 @@ int32 shadowsamples)
 	nsrender_comp * rc = lt->create<nsrender_comp>();
 	rc->set_mesh_id(bounds->full_id());
 	rc->set_cast_shadow(false);
-
 	lt->create<nssel_comp>();
 
 	return lt;

@@ -23,9 +23,9 @@ void nsshadow_tex2d_target::init()
 	att->m_texture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
 	att->m_texture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
 	att->m_texture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
-	att->m_texture->set_parameter_i(nstexture::compare_func, GL_LESS);
-	att->m_texture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
-	att->m_texture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
+	att->m_texture->set_parameter_i(nstexture::compare_func, GL_LEQUAL);
+//	att->m_texture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
+//	att->m_texture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
 }
 
 

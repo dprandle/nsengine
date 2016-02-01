@@ -61,19 +61,19 @@ nsplugin * setup_basic_plugin()
 	nse.set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.2f);
+    nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.2f,fvec3(1.0f),true,0.3f,4);
 	scn->set_camera(cam);
-	scn->add(dirl, fvec3(20.0f, 20.0f, -50.0f), orientation(fvec4(0,1,0,45)));
+    scn->add(dirl, fvec3(5.0f, 5.0f, -100.0f));
 	
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 0.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
 	nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
 
-	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
+    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
 	alpha_tile->get<nssel_comp>()->enable_transparent_picking(true);
 	
 //	plg->get<nsmaterial>("grasstile")->set_alpha_blend(true);
 //	plg->get<nsmaterial>("grasstile")->use_alpha_from_color(true);
-//	scn->add(point_light);
+    scn->add(point_light);
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
 //	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 	return plg;

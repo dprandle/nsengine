@@ -992,8 +992,6 @@ void nsshadow_cubemap_shader::set_for_light_draw_call(light_draw_call * dc)
 	fmat4 invt;
 	set_uniform("lightPos", dc->light_pos);
 	set_uniform("maxDepth", dc->max_depth);
-	invt.set_column(3, fvec4(dc->light_pos*-1.0f,1.0f));
-	set_uniform("inverseTMat", invt);
 	nsshadow_2dmap_shader::set_for_light_draw_call(dc);
 }
 

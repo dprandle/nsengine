@@ -43,7 +43,7 @@ bool gl_err_check(nsstring errorMessage)
 	{
 #ifdef NSDEBUG
 		nsstringstream ss;
-		ss << "context-" << nse.current_id() << " " << errorMessage << "\nOpenGL Error Code : " << err;
+		ss << errorMessage << "\nOpenGL Error Code : " << err;
 		dprint(ss.str());
 #endif
 		return true;

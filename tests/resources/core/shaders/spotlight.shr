@@ -49,7 +49,7 @@ uniform sampler2D gWorldPosMap;
 uniform sampler2D gNormalMap;
 
 uniform SpotLight light;
-uniform vec2 screenSize;
+uniform vec4 viewport;
 uniform vec3 camWorldPos;
 uniform mat4 projLightMat;
 uniform vec2 shadowTexSize;
@@ -66,7 +66,7 @@ float shadow_factor(vec3 worldPos)
 	vec3 uvCoords;
 	uvCoords.x = 0.5 * coords.x + 0.5;
 	uvCoords.y = 0.5 * coords.y + 0.5;
-	uvCoords.z = 0.5 * coords.z + 0.5 - epsilon*8;
+	uvCoords.z = 0.5 * coords.z + 0.5 - epsilon;
 
 	if (shadowSamples == 0)
 		return texture(shadowMap, uvCoords);
@@ -91,7 +91,7 @@ float shadow_factor(vec3 worldPos)
 
 vec2 tex_coord()
 {
-   return gl_FragCoord.xy / screenSize;
+   return gl_FragCoord.xy / viewport.zw - viewport.xy;
 }
 
 vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)

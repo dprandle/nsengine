@@ -155,7 +155,7 @@ float shadow_factor(vec3 worldPos)
 	vec3 uvCoords;
 	uvCoords.x = 0.5 * coords.x + 0.5;
 	uvCoords.y = 0.5 * coords.y + 0.5;
-	uvCoords.z = 0.5 * coords.z + 0.5 - epsilon/4;
+	uvCoords.z = 0.5 * coords.z + 0.5 - epsilon;
 
 	if (shadowSamples == 0)
 		return light.shadowDarkness*texture(shadowMap, uvCoords) + (1 - light.shadowDarkness);
@@ -205,8 +205,8 @@ vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)
 	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
 
 	float shadowFactor = 1.0;
-//	if (castShadows)
-//		shadowFactor = shadow_factor(worldPos);
+	if (castShadows)
+		shadowFactor = shadow_factor(worldPos);
 
 	if (diffuseFactor > 0) 
 	{

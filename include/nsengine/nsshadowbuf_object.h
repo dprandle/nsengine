@@ -9,6 +9,7 @@ class nsfb_object;
 
 class nsshadow_tex2d_target : public nsfb_object
 {
+  public:
 	nsshadow_tex2d_target();
 	~nsshadow_tex2d_target();
 
@@ -17,6 +18,7 @@ class nsshadow_tex2d_target : public nsfb_object
 
 class nsshadow_tex_cubemap_target : public nsfb_object
 {
+  public:
 	nsshadow_tex_cubemap_target();
 	~nsshadow_tex_cubemap_target();
 

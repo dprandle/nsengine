@@ -38,6 +38,7 @@ bool nsfb_object::add(attachment * pAttachment, bool pOverwrite)
 	if (has(pAttachment->m_att_point) && att(pAttachment->m_att_point)->m_texture == pAttachment->m_texture)
 		return false;
 
+	gl_err_check("pre nsfb_object::add");
 	//bind();
 	if (pAttachment->m_renderbuf != NULL)
 		// Render buffers always must use the GL_RENDERBUFFER flag.. so I will just pass it explicitly here (no wrapper name)
@@ -54,7 +55,7 @@ bool nsfb_object::add(attachment * pAttachment, bool pOverwrite)
 			glFramebufferTexture2D(m_target, pAttachment->m_att_point, pAttachment->m_texture->texture_type(), pAttachment->m_texture->gl_id(),0);
 	}
 
-	gl_err_check("nsfb_object::addAttachment");
+	gl_err_check("post nsfb_object::add");
 
 	// I do not need to check if I'm overwriting here because it would have failed already
 	// If it is a depth attachment of any kind attach it to the depth/stencil attachment.. otherwise it is a color attachment
@@ -62,8 +63,6 @@ bool nsfb_object::add(attachment * pAttachment, bool pOverwrite)
 		m_depth_stencil_att = pAttachment;
 	else
 		m_color_atts.push_back(pAttachment);
-
-	gl_err_check("nsfb_object::addAttachment");
 
 #ifdef NSDEBUG_RT
 	// Check for buffer completeness - should catch any mipmap errors etc..
@@ -82,8 +81,9 @@ bool nsfb_object::add(attachment * pAttachment, bool pOverwrite)
 void nsfb_object::bind() const
 {
 	// use mTarget - easily set with setTarget
+	gl_err_check("pre nsfb_object::bind");
 	glBindFramebuffer(m_target, m_gl_name);
-	gl_err_check("nsfb_object::bind");
+	gl_err_check("post nsfb_object::bind");
 }
 
 void nsfb_object::init()
@@ -152,8 +152,9 @@ bool nsfb_object::has(attach_point pAttPoint)
 
 void nsfb_object::init_gl()
 {
+	gl_err_check("pre nsfb_object::init_gl");
 	glGenFramebuffers(1, &m_gl_name);
-	gl_err_check("nsfb_object::initGL");
+	gl_err_check("post nsfb_object::init_gl");
 }
 
 void nsfb_object::release()
@@ -174,8 +175,9 @@ void nsfb_object::release()
 
 	// Attachment destructor deletes the render buffer and texture - which in turn release their
 	// open gl resources
+	gl_err_check("pre nsfb_object::release");
 	glDeleteFramebuffers(1, &m_gl_name);
-	gl_err_check("nsfb_object::release");
+	gl_err_check("post nsfb_object::release");
 	m_gl_name = 0;
 }
 
@@ -238,8 +240,9 @@ bool nsfb_object::set_cube_face(attach_point pAttPoint, nstex_cubemap::cube_face
 	if (attmt == NULL || attmt->m_texture == NULL || attmt->m_texture->texture_type() != nstexture::tex_cubemap)
 		return false;
 
+	gl_err_check("pre nsfb_object::set_cube_face");
 	glFramebufferTexture2D(m_target, pAttPoint, pFace, attmt->m_texture->gl_id(), 0);
-	gl_err_check("nsfb_object::setCubeAttachmentFace");
+	gl_err_check("post nsfb_object::set_cube_face");
 
 #ifdef NSDEBUG_RT
 	// Check for buffer completeness - should catch any mipmap errors etc..
@@ -257,32 +260,34 @@ bool nsfb_object::set_cube_face(attach_point pAttPoint, nstex_cubemap::cube_face
 
 void nsfb_object::set_draw_buffer(attach_point pAttPoint)
 {
+	gl_err_check("pre nsfb_object::set_draw_buffer");
 	glDrawBuffer(pAttPoint);
-	gl_err_check("nsfb_object::setDrawBuffer");
+	gl_err_check("post nsfb_object::set_draw_buffer");
 }
 
 void nsfb_object::set_draw_buffers(attachment_point_array * pAttArray)
 {
 	if (pAttArray == NULL)
 	{
-		dprint("nsfb_object::setDrawBuffers - Error passed NULL attachment point array");
+		dprint("nsfb_object::set_draw_buffers - Error passed NULL attachment point array");
 		return;
 	}
 
 	if (pAttArray->empty())
 	{
-		dprint("nsfb_object::setDrawBuffers - Error empty attachment point array");
+		dprint("nsfb_object::set_draw_buffers - Error empty attachment point array");
 		return;
 	}
-
+	gl_err_check("pre nsfb_object::set_draw_buffers");
 	glDrawBuffers(static_cast<GLsizei>(pAttArray->size()), &(*pAttArray)[0]);
-	gl_err_check("nsfb_object::setDrawBuffers");
+	gl_err_check("post nsfb_object::set_draw_buffers");
 }
 
 void nsfb_object::set_read_buffer(attach_point pAttPoint)
 {
+	gl_err_check("pre nsfb_object::setReadBuffer");
 	glReadBuffer(pAttPoint);
-	gl_err_check("nsfb_object::setReadBuffer");
+	gl_err_check("post nsfb_object::setReadBuffer");
 }
 
 void nsfb_object::set_target(fb_target pTarget)
@@ -292,9 +297,10 @@ void nsfb_object::set_target(fb_target pTarget)
 
 void nsfb_object::unbind() const
 {
+	gl_err_check("pre nsfb_object::unbind");
 	// By unbind I just mean bind the main frame buffer back
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	gl_err_check("nsfb_object::unbind");
+	gl_err_check("post nsfb_object::unbind");
 }
 
 void nsfb_object::update_draw_buffers()

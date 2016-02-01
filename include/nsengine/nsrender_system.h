@@ -63,12 +63,12 @@
 #define MESH_SKYDOME "skydome"
 
 // Framebuffer sizes
-#define DEFAULT_SPOTLIGHT_SHADOW_W 1024
-#define DEFAULT_SPOTLIGHT_SHADOW_H 1024
-#define DEFAULT_POINTLIGHT_SHADOW_W 1024
-#define DEFAULT_POINTLIGHT_SHADOW_H 1024
-#define DEFAULT_DIRLIGHT_SHADOW_W 2048
-#define DEFAULT_DIRLIGHT_SHADOW_H 2048
+#define DEFAULT_SPOT_LIGHT_SHADOW_W 1024
+#define DEFAULT_SPOT_LIGHT_SHADOW_H 1024
+#define DEFAULT_POINT_LIGHT_SHADOW_W 1024
+#define DEFAULT_POINT_LIGHT_SHADOW_H 1024
+#define DEFAULT_DIR_LIGHT_SHADOW_W 2048
+#define DEFAULT_DIR_LIGHT_SHADOW_H 2048
 #define DEFAULT_GBUFFER_RES_X 1920
 #define DEFAULT_GBUFFER_RES_Y 1080
 #define DEFAULT_ACCUM_BUFFER_RES_X 1920
@@ -126,7 +126,9 @@ struct opengl_state
 		blending(false),
 		culling(false),
 		cull_face(0),
+		clear_mask(0),
 		blend_func(),
+		blend_eqn(0),
 		stencil_func(),
 		stencil_op_back(),
 		stencil_op_front()
@@ -138,7 +140,9 @@ struct opengl_state
 	bool blending; // renderer
 	bool culling; // material
 	int32 cull_face; // material
+	int32 clear_mask;
 	ivec2 blend_func; // renderer
+	int32 blend_eqn;
 	ivec3 stencil_func; // submesh
 	ivec3 stencil_op_back; // submesh
 	ivec3 stencil_op_front;
@@ -301,6 +305,7 @@ struct render_pass
 	render_pass():
 		ren_target(nullptr),
 		draw_calls(nullptr),
+		enabled(true),
 		norm_viewport(0.0f,0.0f,1.0f,1.0f)
 	{}
 	
@@ -308,17 +313,13 @@ struct render_pass
 
 	virtual void setup_pass();
 
-	virtual void render() {}
+	virtual void render();
 
+	bool enabled;
 	drawcall_queue * draw_calls;
 	nsfb_object * ren_target;
 	fvec4 norm_viewport;
 	opengl_state gl_state;
-};
-
-struct dir_light_shadow_pass : public render_pass
-{
-	virtual void render();
 };
 
 struct gbuffer_render_pass : public render_pass
@@ -331,12 +332,24 @@ struct oit_render_pass : public render_pass
 	virtual void render();
 };
 
-struct dir_light_pass : public render_pass
+struct light_shadow_pass : public render_pass
 {
 	virtual void render();
-	drawcall_queue * lit_items_draw_calls;
-	nsfb_object * accum_buf;
+	light_draw_call * ldc;
+	nsshadow_2dmap_shader * shdr;
+};
+
+struct light_pass : public render_pass
+{
+	virtual void render();
+	light_shadow_pass * rpass;
 	translucent_buffers * tbuffers;
+};
+
+struct culled_light_pass : public light_pass
+{
+	virtual void render();
+	nslight_stencil_shader * stencil_shdr;
 };
 
 struct final_render_pass : public render_pass
@@ -456,6 +469,8 @@ public:
 	static void set_active_texture_unit(uint32 tex_unit);
 	
 	static uint32 bound_fbo();
+
+	static void clear_framebuffer(uint32 clear_mask);
 	
 	static void enable_depth_write(bool enable);
 
@@ -472,6 +487,8 @@ public:
 	static void set_blend_func(int32 sfactor, int32 dfactor);
 	
 	static void set_blend_func(const ivec2 & blend_func);
+
+	static void set_blend_eqn(int32 eqn);
 
 	static void set_stencil_func(int32 func, int32 ref, int32 mask);
 	

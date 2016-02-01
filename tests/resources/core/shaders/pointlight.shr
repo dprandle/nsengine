@@ -48,7 +48,6 @@ struct Material
 	vec3 spec_color;
 };
 
-
 struct packed_fragment_data // 32 bytes total
 {
 	vec3 wpos;
@@ -89,7 +88,7 @@ uniform usampler2D gMatMap;
 uniform sampler2D gWorldPosMap;
 uniform sampler2D gNormalMap;
 
-uniform vec2 screenSize;
+uniform vec4 viewport;
 uniform vec3 camWorldPos;
 uniform vec2 shadowTexSize;
 uniform int shadowSamples;
@@ -172,8 +171,8 @@ float shadow_factor(vec3 light_to_pixel, float dist)
 {
 	float depth = dist / maxDepth;
 
-	if (shadowSamples == 0)
-		return texture(shadowMap, vec4(light_to_pixel,depth - 8*epsilon));
+//	if (shadowSamples == 0)
+		return texture(shadowMap, vec4(light_to_pixel,depth-0.01));
 
 	float total = 0.0;
 	float xDelta = 1.0 / shadowTexSize.x;
@@ -224,7 +223,7 @@ float shadow_factor(vec3 light_to_pixel, float dist)
 
 vec2 uv_from_screen_size()
 {
-   return gl_FragCoord.xy / screenSize;
+   return gl_FragCoord.xy / viewport.zw - viewport.xy;
 }
 
 vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)
@@ -298,7 +297,7 @@ vec4 base_color_from_attachments(vec2 uv_from_screen_size)
 		light_factor = light_influence(wpos.xyz, normal.xyz, mat);
 		base_color = mix(base_color * light_factor, fog_color, 1 - fog_factor);
 	}
-	base_color.a = wpos.w; // use the alpha to store depth
+	base_color.a = 1.0;//wpos.w; // use the alpha to store depth
 	return base_color;
 }
 
@@ -317,7 +316,7 @@ vec4 mix_translucent_fragments(vec4 base_color)
 	unpacked_fragment_data fdat;
 	
     // get header index
-	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*screenSize.x);
+	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*viewport.w);
 	int frag_index = header_indices[header_index];
 
 	uint cumi_count = 0;
@@ -344,6 +343,6 @@ void main()
 {
 	vec2 texCoord = uv_from_screen_size();
 	vec4 base_color = base_color_from_attachments(texCoord);
-	final_frag_color = mix_translucent_fragments(base_color);
+	final_frag_color = base_color;//mix_translucent_fragments(base_color);
 }
 </nsstring>

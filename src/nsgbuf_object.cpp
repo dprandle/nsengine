@@ -17,8 +17,9 @@ uivec3 nsgbuf_object::pick(float mouse_x, float mouse_y)
 	bind();
 	set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + nsgbuf_object::col_picking));
 	uivec3 index;
+	gl_err_check("pre nsfb_object::pick");
 	glReadPixels(tex_dim.x, tex_dim.y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
-	gl_err_check("nsselection_system::pick");
+	gl_err_check("post nsfb_object::post");
 	set_read_buffer(nsfb_object::att_none);
 	return index;
 }
@@ -30,6 +31,7 @@ void nsgbuf_object::debug_blit(const ivec2 & scrn)
 	set_target(nsfb_object::fb_read);
 	bind();
 
+	gl_err_check("pre nsfb_object::debug_blit");
 	set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_diffuse));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, 0, 0, hlf.w, hlf.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
@@ -38,6 +40,7 @@ void nsgbuf_object::debug_blit(const ivec2 & scrn)
 
 	set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + col_normal));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, hlf.w, hlf.h, scrn.w, scrn.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	gl_err_check("post nsfb_object::debug_blit");
 
 	set_read_buffer(nsfb_object::att_none);
 	unbind();
@@ -48,7 +51,7 @@ nsfb_object::attachment * nsgbuf_object::color(uint32 att_type)
     // If this check fails it probably means the GBuffer was not initialized
 	if (att_type >= attrib_count)
 	{
-		dprint("NSGFrameBuffer::getColorAttachment Parameter att_type is larger than the color attachments vector");
+		dprint("nsgbuf_object::color Parameter att_type is larger than the color attachments vector");
 		return NULL;
 	}
 	return att(nsfb_object::attach_point(nsfb_object::att_color + att_type));

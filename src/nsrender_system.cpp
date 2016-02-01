@@ -160,12 +160,11 @@ void instanced_draw_call::render()
 
 void light_draw_call::render()
 {
+	gl_err_check("pre dir_light_pass::render");
 	if (draw_point != nullptr)
 	{
-		gl_err_check("dir_light_pass::render pre draw error");
 		draw_point->bind();
 		glDrawArrays(GL_POINTS, 0, 1);
-		gl_err_check("dir_light_pass post draw error");
 	}
 	else
 	{
@@ -176,6 +175,7 @@ void light_draw_call::render()
 					   0);
 		submesh->m_vao.unbind();
 	}
+	gl_err_check("post dir_light_pass::render");
 }
 
 instanced_draw_call::~instanced_draw_call()
@@ -239,20 +239,27 @@ void render_pass::setup_pass()
 	nsrender_system::set_gl_state(gl_state);
 }
 
-void gbuffer_render_pass::render()
+void render_pass::render()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (uint32 i = 0; i < draw_calls->size(); ++i)
 	{
 		draw_call * dc = (*draw_calls)[i];
 		dc->shdr->bind(); 
 		dc->shdr->set_viewport(gl_state.current_viewport);
 		dc->shdr->set_for_draw_call(dc);
-		nsrender_system::enable_culling(dc->mat->culling());
-		nsrender_system::set_cull_face(dc->mat->cull_mode());
-		nsrender_system::bind_textures(dc->mat);
+		if (dc->mat != nullptr)
+		{
+			nsrender_system::enable_culling(dc->mat->culling());
+			nsrender_system::set_cull_face(dc->mat->cull_mode());
+			nsrender_system::bind_textures(dc->mat);
+		}
 		dc->render();
-	}
+	}	
+}
+
+void gbuffer_render_pass::render()
+{
+	render_pass::render();
 	nsrender_system::bind_gbuffer_textures(ren_target);
 }
 
@@ -261,37 +268,74 @@ void oit_render_pass::render()
 	
 }
 
-void dir_light_shadow_pass::render()
+void light_shadow_pass::render()
 {
-	glClear(GL_DEPTH_BUFFER_BIT);
+	shdr->bind();
+	shdr->set_for_light_draw_call(ldc);
+	shdr->set_viewport(gl_state.current_viewport);
 	for (uint32 i = 0; i < draw_calls->size(); ++i)
 	{
-		draw_call * dc = (*draw_calls)[i];
+		instanced_draw_call * dc = (instanced_draw_call*)(*draw_calls)[i];
+		if (dc->casts_shadows)
+		{
+			shdr->set_for_draw_call(dc);
+			nsrender_system::enable_culling(dc->mat->culling());
+			nsrender_system::set_cull_face(dc->mat->cull_mode());
+			dc->render();
+		}
+	}
+}
+
+void light_pass::render()
+{
+	for (uint32 i = 0; i < draw_calls->size(); ++i)
+	{
+		light_draw_call * dc = (light_draw_call*)(*draw_calls)[i];
+		if (dc->cast_shadows)
+		{
+			rpass->ldc = dc;
+			rpass->setup_pass();
+			rpass->render();
+			nsfb_object::attachment * attch = rpass->ren_target->att(nsfb_object::att_depth);
+			nsrender_system::set_active_texture_unit(attch->m_tex_unit);
+			attch->m_texture->bind();
+			render_pass::setup_pass();
+		}
 		dc->shdr->bind();
 		dc->shdr->set_viewport(gl_state.current_viewport);
 		dc->shdr->set_for_draw_call(dc);
-		nsrender_system::enable_culling(dc->mat->culling());
-		nsrender_system::set_cull_face(dc->mat->cull_mode());
-		nsrender_system::bind_textures(dc->mat);
+		tbuffers->bind_buffers();
 		dc->render();
+		tbuffers->unbind_buffers();
 	}
-
-	//m_shaders.dir_shadow->bind();
-	//m_shaders.dir_shadow->set_proj_mat(proj_light_mat);
-	//_draw_scene_to_depth(m_shaders.dir_shadow);
-	// Bind the shadow buffer's attachment texture for use in the dir light shader
-	//nsfb_object::attachment * attch =
-	//	m_shadow_buf->fb(nsshadowbuf_object::Direction)->att(nsfb_object::att_depth);
-	//set_active_texture_unit(attch->m_tex_unit);
-	//attch->m_texture->bind();
 }
 
-void dir_light_pass::render()
+void culled_light_pass::render()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
 	for (uint32 i = 0; i < draw_calls->size(); ++i)
 	{
-		draw_call * dc = (*draw_calls)[i];
+		light_draw_call * dc = (light_draw_call*)(*draw_calls)[i];
+		if (dc->cast_shadows)
+		{
+			rpass->ldc = dc;
+			rpass->setup_pass();
+			rpass->render();
+			nsfb_object::attachment * attch = rpass->ren_target->att(nsfb_object::att_depth);
+			nsrender_system::set_active_texture_unit(attch->m_tex_unit);
+			attch->m_texture->bind();
+			render_pass::setup_pass();
+		}
+		ren_target->set_draw_buffer(nsfb_object::att_none);
+		stencil_shdr->bind();
+		stencil_shdr->set_viewport(gl_state.current_viewport);
+		stencil_shdr->set_for_draw_call(dc);
+		dc->render();
+		
+		nsrender_system::enable_depth_test(false);
+		nsrender_system::enable_culling(true);
+		nsrender_system::set_cull_face(GL_FRONT);
+		nsrender_system::set_stencil_func(GL_NOTEQUAL, 0, 0xFF);
+		ren_target->set_draw_buffer(nsfb_object::att_color);
 		dc->shdr->bind();
 		dc->shdr->set_viewport(gl_state.current_viewport);
 		dc->shdr->set_for_draw_call(dc);
@@ -415,6 +459,25 @@ void nsrender_system::create_default_render_targets(uint32 screen_fbo)
 	}
 	accum_buffer->update_draw_buffers();
 	add_render_target(ACCUM_TARGET, accum_buffer);
+
+	// 2d shadow map targets
+	nsshadow_tex2d_target * dir_shadow_target = new nsshadow_tex2d_target;
+	dir_shadow_target->init_gl();
+	dir_shadow_target->resize(DEFAULT_DIR_LIGHT_SHADOW_W, DEFAULT_DIR_LIGHT_SHADOW_H);
+	dir_shadow_target->init();
+	add_render_target(DIR_SHADOW2D_TARGET, dir_shadow_target);
+	
+	nsshadow_tex2d_target * spot_shadow_target = new nsshadow_tex2d_target;
+	spot_shadow_target->init_gl();
+	spot_shadow_target->resize(DEFAULT_SPOT_LIGHT_SHADOW_W, DEFAULT_SPOT_LIGHT_SHADOW_H);
+	spot_shadow_target->init();
+	add_render_target(SPOT_SHADOW2D_TARGET, spot_shadow_target);
+	
+	nsshadow_tex_cubemap_target * point_shadow_target = new nsshadow_tex_cubemap_target;
+	point_shadow_target->init_gl();
+	point_shadow_target->resize(DEFAULT_POINT_LIGHT_SHADOW_W, DEFAULT_POINT_LIGHT_SHADOW_H);
+	point_shadow_target->init();
+	add_render_target(POINT_SHADOW_TARGET, point_shadow_target);
 	
 	// final fbo
 	m_default_fbo->set_gl_id(screen_fbo);
@@ -432,9 +495,24 @@ void nsrender_system::create_default_render_passes()
 	gbuf_pass->gl_state.cull_face = GL_BACK;
 	gbuf_pass->gl_state.blending = false;
 	gbuf_pass->gl_state.stencil_test = false;
+	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+
+	// setup dir light shadow stage
+	light_shadow_pass * dir_shadow_pass = new light_shadow_pass;
+	dir_shadow_pass->draw_calls = queue(SCENE_OPAQUE_QUEUE);
+	dir_shadow_pass->ren_target = render_target(DIR_SHADOW2D_TARGET);
+	dir_shadow_pass->shdr = m_shaders.shadow_2d;
+	dir_shadow_pass->gl_state.depth_test = true;
+	dir_shadow_pass->gl_state.depth_write = true;
+	dir_shadow_pass->gl_state.culling = true;
+	dir_shadow_pass->gl_state.cull_face = GL_BACK;
+	dir_shadow_pass->gl_state.blending = false;
+	dir_shadow_pass->gl_state.stencil_test = false;
+	dir_shadow_pass->gl_state.clear_mask = GL_DEPTH_BUFFER_BIT;
+	dir_shadow_pass->enabled = false;
 
 	// setup dir light stage
-	dir_light_pass * dir_pass = new dir_light_pass;
+	light_pass * dir_pass = new light_pass;
 	dir_pass->draw_calls = queue(DIR_LIGHT_QUEUE);
 	dir_pass->ren_target = render_target(ACCUM_TARGET);
 	dir_pass->gl_state.depth_test = false;
@@ -444,8 +522,71 @@ void nsrender_system::create_default_render_passes()
 	dir_pass->gl_state.blending = false;
 	dir_pass->gl_state.stencil_test = false;
 	dir_pass->tbuffers = &m_tbuffers;
+	dir_pass->rpass = dir_shadow_pass;
+	dir_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT;
 	
-	// setup final blit stage
+	light_shadow_pass * spot_shadow_pass = new light_shadow_pass;
+	spot_shadow_pass->draw_calls = queue(SCENE_OPAQUE_QUEUE);
+	spot_shadow_pass->ren_target = render_target(SPOT_SHADOW2D_TARGET);
+	spot_shadow_pass->shdr = m_shaders.shadow_2d;
+	spot_shadow_pass->enabled = false;
+	spot_shadow_pass->gl_state.depth_test = true;
+	spot_shadow_pass->gl_state.depth_write = true;
+	spot_shadow_pass->gl_state.culling = true;
+	spot_shadow_pass->gl_state.cull_face = GL_BACK;
+	spot_shadow_pass->gl_state.blending = false;
+	spot_shadow_pass->gl_state.stencil_test = false;
+	spot_shadow_pass->gl_state.clear_mask = GL_DEPTH_BUFFER_BIT;
+
+	culled_light_pass * spot_pass = new culled_light_pass;
+	spot_pass->draw_calls = queue(SPOT_LIGHT_QUEUE);
+	spot_pass->ren_target = render_target(ACCUM_TARGET);
+	spot_pass->stencil_shdr = m_shaders.light_stencil;
+	spot_pass->tbuffers = &m_tbuffers;
+	spot_pass->rpass = spot_shadow_pass;
+	spot_pass->gl_state.depth_test = true;
+	spot_pass->gl_state.depth_write = false;
+	spot_pass->gl_state.culling = false;
+	spot_pass->gl_state.blending = true;
+	spot_pass->gl_state.blend_eqn = GL_FUNC_ADD;
+	spot_pass->gl_state.blend_func = ivec2(GL_ONE, GL_ONE);
+	spot_pass->gl_state.stencil_test = true;
+	spot_pass->gl_state.stencil_func = ivec3(GL_ALWAYS, 0, 0);
+	spot_pass->gl_state.stencil_op_back = ivec3(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	spot_pass->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	spot_pass->gl_state.clear_mask = GL_STENCIL_BUFFER_BIT;
+
+	light_shadow_pass * point_shadow_pass = new light_shadow_pass;
+	point_shadow_pass->draw_calls = queue(SCENE_OPAQUE_QUEUE);
+	point_shadow_pass->ren_target = render_target(POINT_SHADOW_TARGET);
+	point_shadow_pass->shdr = m_shaders.shadow_cube;
+	point_shadow_pass->gl_state.depth_test = true;
+	point_shadow_pass->gl_state.depth_write = true;
+	point_shadow_pass->gl_state.culling = true;
+	point_shadow_pass->gl_state.cull_face = GL_BACK;
+	point_shadow_pass->gl_state.blending = false;
+	point_shadow_pass->gl_state.stencil_test = false;
+	point_shadow_pass->gl_state.clear_mask = GL_DEPTH_BUFFER_BIT;
+	point_shadow_pass->enabled = false;
+
+	culled_light_pass * point_pass = new culled_light_pass;
+	point_pass->draw_calls = queue(POINT_LIGHT_QUEUE);
+	point_pass->ren_target = render_target(ACCUM_TARGET);
+	point_pass->stencil_shdr = m_shaders.light_stencil;
+	point_pass->tbuffers = &m_tbuffers;
+	point_pass->rpass = point_shadow_pass;
+	point_pass->gl_state.depth_test = true;
+	point_pass->gl_state.depth_write = false;
+	point_pass->gl_state.culling = false;
+	point_pass->gl_state.blending = true;
+	point_pass->gl_state.blend_func = ivec2(GL_ONE, GL_ONE);
+	point_pass->gl_state.stencil_test = true;
+	point_pass->gl_state.stencil_func = ivec3(GL_ALWAYS, 0, 0);
+	point_pass->gl_state.blend_eqn = GL_FUNC_ADD;
+	point_pass->gl_state.stencil_op_back = ivec3(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	point_pass->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	point_pass->gl_state.clear_mask = GL_STENCIL_BUFFER_BIT;
+
 	final_render_pass * final_pass = new final_render_pass;
 	final_pass->ren_target = m_default_fbo;
 	final_pass->read_buffer = render_target(ACCUM_TARGET);
@@ -458,8 +599,13 @@ void nsrender_system::create_default_render_passes()
 	final_pass->gl_state.cull_face = GL_BACK;
 	
 	m_render_passes.push_back(gbuf_pass);
+	m_render_passes.push_back(dir_shadow_pass);
 	m_render_passes.push_back(dir_pass);
-	m_render_passes.push_back(final_pass);		
+//	m_render_passes.push_back(spot_shadow_pass);
+//	m_render_passes.push_back(spot_pass);
+	m_render_passes.push_back(point_shadow_pass);
+	m_render_passes.push_back(point_pass);
+	m_render_passes.push_back(final_pass);
 }
 
 render_pass_vector * nsrender_system::render_passes()
@@ -581,30 +727,27 @@ void nsrender_system::render()
 	{
 		render_pass * rp = m_render_passes[i];
 
-		if (rp == nullptr)
+		if (rp == nullptr || rp->ren_target == nullptr)
 		{
-			dprint("nsrender_system::render - Warning render_target for render pass set to nullptr");
-			return;
+			dprint("nsrender_system::render - Warning render pass is not correctly setup");
+			continue;
 		}
-		rp->setup_pass();
-		rp->render();
+		if (rp->enabled)
+		{
+			rp->setup_pass();
+			rp->render();
+		}
 	}
 }
 
 void nsrender_system::set_gl_state(const opengl_state & state)
 {
 	set_viewport(state.current_viewport);
-	enable_depth_write(state.depth_write);
 	enable_depth_test(state.depth_test);
+	enable_depth_write(state.depth_write);
 	enable_stencil_test(state.stencil_test);
 	enable_blending(state.blending);
 	enable_culling(state.culling);
-
-	if (state.culling)
-		set_cull_face(state.cull_face);
-
-	if (state.blending)
-		set_blend_func(state.blend_func);
 
 	if (state.stencil_test)
 	{
@@ -612,6 +755,28 @@ void nsrender_system::set_gl_state(const opengl_state & state)
 		set_stencil_op_back(state.stencil_op_back);
 		set_stencil_op_front(state.stencil_op_front);
 	}
+
+	if (state.culling)
+		set_cull_face(state.cull_face);
+
+	if (state.blending)
+	{
+		set_blend_func(state.blend_func);
+		set_blend_eqn(state.blend_eqn);
+	}
+
+	if (state.clear_mask != 0)
+		clear_framebuffer(state.clear_mask);
+}
+
+void nsrender_system::set_blend_eqn(int32 eqn)
+{
+	if (eqn == 0)
+		return;
+	
+	glBlendEquation(eqn);
+	m_gl_state.blend_eqn = eqn;
+	gl_err_check("nsrender_system::set_blend_eqn");	
 }
 
 void nsrender_system::setup_default_rendering(uint32 final_fbo)
@@ -760,64 +925,54 @@ opengl_state nsrender_system::m_gl_state = opengl_state();
 
 void nsrender_system::enable_depth_write(bool enable)
 {
-	if (enable != m_gl_state.depth_write)
-	{
-		glDepthMask(enable);
-		m_gl_state.depth_write = enable;
-	}
+	glDepthMask(enable);
+	m_gl_state.depth_write = enable;
+	gl_err_check("nsrender_system::enable_depth_write");
 }
 
 void nsrender_system::enable_depth_test(bool enable)
 {
-	if (enable != m_gl_state.depth_test)
-	{	   
-		if (enable)
-		{
-			glEnable(GL_DEPTH_TEST);
-		}
-		else
-		{
-			glDisable(GL_DEPTH_TEST);
-			m_gl_state.depth_write = enable;
-		}
-		m_gl_state.depth_test = enable;
+	if (enable)
+	{
+		glEnable(GL_DEPTH_TEST);
 	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST);
+		m_gl_state.depth_write = enable;
+	}
+	gl_err_check("nsrender_system::enable_depth_test");
+	m_gl_state.depth_test = enable;
 }
 
 void nsrender_system::enable_stencil_test(bool enable)
 {
-	if (enable != m_gl_state.stencil_test)
-	{
-		if (enable)
-			glEnable(GL_STENCIL_TEST);
-		else
-			glDisable(GL_STENCIL_TEST);
-		m_gl_state.stencil_test = enable;
-	}				
+	if (enable)
+		glEnable(GL_STENCIL_TEST);
+	else
+		glDisable(GL_STENCIL_TEST);
+	gl_err_check("nsrender_system::enable_stencil_test");
+	m_gl_state.stencil_test = enable;
 }
 
 void nsrender_system::enable_blending(bool enable)
 {
-	if (enable != m_gl_state.blending)
-	{
-		if (enable)
-			glEnable(GL_BLEND);
-		else
-			glDisable(GL_BLEND);
-		m_gl_state.blending = enable;
-	}			
+	if (enable)
+		glEnable(GL_BLEND);
+	else
+		glDisable(GL_BLEND);
+	m_gl_state.blending = enable;
+	gl_err_check("nsrender_system::enable_blending");
 }
 
 void nsrender_system::enable_culling(bool enable)
 {
-	if (enable != m_gl_state.culling)
-	{
-		if (enable)
-			glEnable(GL_CULL_FACE);
-		else
-			glDisable(GL_CULL_FACE);
-		m_gl_state.culling = enable;
-	}		
+	if (enable)
+		glEnable(GL_CULL_FACE);
+	else
+		glDisable(GL_CULL_FACE);
+	m_gl_state.culling = enable;
+	gl_err_check("nsrender_system::enable_culling");
 }
 
 void nsrender_system::set_cull_face(int32 cull_face)
@@ -826,6 +981,7 @@ void nsrender_system::set_cull_face(int32 cull_face)
 	{
 		glCullFace(cull_face);
 		m_gl_state.cull_face = cull_face;
+		gl_err_check("nsrender_system::set_cull_face");
 	}	
 }
 
@@ -841,11 +997,9 @@ void nsrender_system::set_blend_func(int32 sfactor, int32 dfactor)
 
 void nsrender_system::set_blend_func(const ivec2 & blend_func)
 {
-	if (blend_func != m_gl_state.blend_func)
-	{
-		glBlendFunc(blend_func.x, blend_func.y);
-		m_gl_state.blend_func = blend_func;
-	}		
+	glBlendFunc(blend_func.x, blend_func.y);
+	m_gl_state.blend_func = blend_func;
+	gl_err_check("nsrender_system::set_blend_func");
 }
 
 void nsrender_system::set_stencil_func(int32 func, int32 ref, int32 mask)
@@ -855,11 +1009,9 @@ void nsrender_system::set_stencil_func(int32 func, int32 ref, int32 mask)
 
 void nsrender_system::set_stencil_func(const ivec3 & stencil_func)
 {
-    if (stencil_func != m_gl_state.stencil_func)
-	{
-		glStencilFunc(stencil_func.x, stencil_func.y, stencil_func.z);
-		m_gl_state.stencil_func = stencil_func;
-	}	
+	glStencilFunc(stencil_func.x, stencil_func.y, stencil_func.z);
+	m_gl_state.stencil_func = stencil_func;
+	gl_err_check("nsrender_system::set_stencil_func");
 }
 
 void nsrender_system::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
@@ -869,12 +1021,10 @@ void nsrender_system::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
 
 void nsrender_system::set_stencil_op(const ivec3 & stencil_op)
 {
-	if (stencil_op != m_gl_state.stencil_op_back || stencil_op != m_gl_state.stencil_op_front)
-	{
-		glStencilOp(stencil_op.x, stencil_op.y, stencil_op.z);
-		m_gl_state.stencil_op_back = stencil_op;
-		m_gl_state.stencil_op_front = stencil_op;
-	}
+	glStencilOp(stencil_op.x, stencil_op.y, stencil_op.z);
+	m_gl_state.stencil_op_back = stencil_op;
+	m_gl_state.stencil_op_front = stencil_op;
+	gl_err_check("nsrender_system::set_stencil_op");
 }
 
 void nsrender_system::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass)
@@ -884,11 +1034,9 @@ void nsrender_system::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppas
 	
 void nsrender_system::set_stencil_op_back(const ivec3 & stencil_op)
 {
-	if (stencil_op != m_gl_state.stencil_op_back)
-	{
-		glStencilOpSeparate(GL_BACK, stencil_op.x, stencil_op.y, stencil_op.z);
-		m_gl_state.stencil_op_back = stencil_op;
-	}	
+	glStencilOpSeparate(GL_BACK, stencil_op.x, stencil_op.y, stencil_op.z);
+	m_gl_state.stencil_op_back = stencil_op;
+	gl_err_check("nsrender_system::set_stencil_op_back");
 }
 
 void nsrender_system::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass)
@@ -898,11 +1046,9 @@ void nsrender_system::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppa
 	
 void nsrender_system::set_stencil_op_front(const ivec3 & stencil_op)
 {
-	if (stencil_op != m_gl_state.stencil_op_front)
-	{
-		glStencilOpSeparate(GL_FRONT, stencil_op.x, stencil_op.y, stencil_op.z);
-		m_gl_state.stencil_op_front = stencil_op;
-	}	
+	glStencilOpSeparate(GL_FRONT, stencil_op.x, stencil_op.y, stencil_op.z);
+	m_gl_state.stencil_op_front = stencil_op;
+	gl_err_check("nsrender_system::set_stencil_op_front");
 }
 
 void nsrender_system::render_scene_selection(nsscene * scene, nsentity * cam)
@@ -1484,7 +1630,7 @@ void nsrender_system::enable_debug_render(bool pDebDraw)
 void nsrender_system::set_active_texture_unit(uint32 tex_unit)
 {
 	glActiveTexture(BASE_TEX_UNIT + tex_unit);
-	gl_err_check("nstexture::enable");
+	gl_err_check("nsrender_system::set_active_texture_unit");
 }
 
 void nsrender_system::set_default_mat(nsmaterial * pDefMat)
@@ -1535,7 +1681,11 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 		
 		m_light_draw_calls.resize(m_light_draw_calls.size()+1);
 
-		fmat4 proj = perspective(160.0f, 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		fmat4 proj;
+		if (lcomp->type() != nslight_comp::l_point)
+			proj = perspective(lcomp->angle(), 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else
+			proj = perspective(90.0f, 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
 
 		for (uint32 i = 0; i < lcomp->transform_count(); ++i)
 		{
@@ -1543,7 +1693,7 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 
 			ldc->submesh = nullptr;
 			ldc->draw_point = nullptr;
-			ldc->proj_light_mat = proj * lcomp->pov(i);
+			ldc->proj_cam_mat = scene->camera()->get<nscam_comp>()->proj_cam();
 			ldc->lighting_enabled = m_lighting_enabled;
 			ldc->bg_color = scene->bg_color();
 			ldc->direction = lcomp->transform(i).target();
@@ -1560,18 +1710,20 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 			ldc->spot_atten = lcomp->atten();
 			ldc->light_pos = tcomp->wpos(i);
 			ldc->light_transform = lcomp->transform(i);
-			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
+			ldc->max_depth = lcomp->shadow_clipping().y;
 			if (lcomp->type() == nslight_comp::l_dir)
 			{
 				ldc->draw_point = m_single_point;
+				ldc->proj_light_mat = proj * lcomp->pov(i);
 				ldc->shdr = m_shaders.dir_light;
-//				ldc->shadow_tex_size = render_target(DIR_SHADOW2D_TARGET)->size();
+				ldc->shadow_tex_size = render_target(DIR_SHADOW2D_TARGET)->size();
 				dc_dq->push_back(ldc);
 			}
 			else if (lcomp->type() == nslight_comp::l_spot)
 			{
 				ldc->shadow_tex_size = render_target(SPOT_SHADOW2D_TARGET)->size();
 				ldc->shdr = m_shaders.spot_light;
+				ldc->proj_light_mat = proj * lcomp->pov(i);
 				if (boundingMesh != nullptr)
 				{
 					for (uint32 i = 0; i < boundingMesh->count(); ++i)
@@ -1585,6 +1737,7 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 			{
 				ldc->shadow_tex_size = render_target(POINT_SHADOW_TARGET)->size();
 				ldc->shdr = m_shaders.point_light;
+				ldc->proj_light_mat = proj;
 				if (boundingMesh != nullptr)
 				{
 					for (uint32 i = 0; i < boundingMesh->count(); ++i)
@@ -1886,6 +2039,7 @@ void nsrender_system::set_viewport(const ivec4 & val)
 	{
 		glViewport(val.x, val.y, val.z, val.w);
 		m_gl_state.current_viewport = val;
+		gl_err_check("nsrender_system::set_viewport");
 	}
 }
 
@@ -2047,6 +2201,12 @@ void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
 	// 				   0);
 	// 	cSub->m_vao.unbind();
 	// }
+}
+
+void nsrender_system::clear_framebuffer(uint32 clear_mask)
+{
+	glClear(clear_mask);
+	gl_err_check("nsrender_system::clear_framebuffer");
 }
 
 int32 nsrender_system::update_priority()
