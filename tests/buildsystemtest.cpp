@@ -19,6 +19,7 @@
 #include <nstile_brush_comp.h>
 #include <nsrender_system.h>
 #include <nsmesh.h>
+#include <nsfont.h>
 
 nsplugin * setup_basic_plugin();
 
@@ -28,6 +29,7 @@ int main()
 	
     uint32 i = nse.create_context();
     nse.start();
+    nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = setup_basic_plugin();
 
@@ -140,7 +142,11 @@ int main()
 	imap->rename("bb_toolkit");
     nse.system<nsinput_system>()->set_input_map(imap->full_id());
     nse.system<nsinput_system>()->push_context("Main");
+
+    plg->load<nsfont>("./import/cosn.fnt");
+
 	nse.save_plugins(true);
+
 //	nse.save_core();
 	
 	while (glfw_window_open())

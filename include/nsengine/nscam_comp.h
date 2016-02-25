@@ -14,7 +14,7 @@ This file contains all of the neccessary declarations for the nscam_comp class.
 #define NSCAMCOMP_H
 
 #define DEFAULT_Z_NEAR 1.0f
-#define DEFAULT_Z_FAR 200.0f
+#define DEFAULT_Z_FAR 1000.0f
 #define DEFAULT_CAM_VIEW_Z -15.0f
 #define DEFAULT_CAM_SENSITIVITY 80.0f
 #define DEFAULT_CAM_SPEED 10.0f

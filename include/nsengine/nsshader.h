@@ -220,7 +220,7 @@ class nsrender_shader : public nsshader
 
 	void set_viewport(const ivec4 & viewport_);
 
-	virtual void set_for_draw_call(draw_call * dc) {}
+	virtual void set_for_draw_call(draw_call *) {}
 };
 
 class nsmaterial_shader : public nsrender_shader
@@ -413,6 +413,10 @@ public:
 	virtual void init_uniforms();
 
 	virtual void set_for_draw_call(draw_call * dc);
+
+	virtual void set_border_color(const fvec3 & rgb);
+
+	virtual void set_main_color(const fvec4 & rgba);
 };
 
 #endif

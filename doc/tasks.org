@@ -98,6 +98,7 @@
 * TODO Create UI System
 * TODO Create audio system
 * TODO Create thread mechanism full multiplatform
+* TODO Get basic text rendering working
 * DONE Reintegrate the new engine version in to the toolkit
 * DONE Create method for transparency
 * DONE Implement copy ctor and assignment operators for components and resources [100%]
@@ -120,12 +121,8 @@
 ** DONE nsterrain_comp
 ** DONE nstform_comp
 ** DONE nstile_brush_comp
-** DONE nstile_comp
-* TODO Make copy function protected or remove all together
-
-
-Left off with creating a render_pass struct.. my idea is as follows:
-
-each render pass has some opengl state associated with it, along with a set of shader/material/draw calls
-
-a pre_render function can be implemented to do special things, along with a post_render function for each render pass - this 
+** nstile_comp
+* TODO Moving driver over to specialized class
+** TODO Add events for resource creation and deletion
+** TODO Move the gl_context stuff over to gl driver - no need for multiple plugin managers anymore
+** TODO Create necessary management code for creating all the gl stuff outside of the resources themselves

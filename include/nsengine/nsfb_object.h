@@ -58,6 +58,8 @@ public:
 
 	void bind() const;
 
+	uivec3 pick(float norm_mouse_x, float norm_mouse_y, uint32 att_index);
+
 	attachment * create(attach_point att_point_, uint32 sampler_num_, int32 internal_format_, bool overwrite_ = true);
 
 	template<class tex_type>
@@ -118,7 +120,7 @@ public:
 
 	void set_draw_buffers(attachment_point_array * att_array_);
 
-	void set_read_buffer(attach_point att_point_);
+	void set_read_buffer(uint32 att_point);
 
 	void set_target(fb_target target_);
 	

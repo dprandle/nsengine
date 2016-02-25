@@ -35,7 +35,6 @@ nsui_comp* nsui_comp::copy(const nscomponent * to_copy)
 void nsui_comp::init()
 {}
 
-
 void nsui_comp::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)

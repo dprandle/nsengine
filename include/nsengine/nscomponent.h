@@ -14,7 +14,7 @@
 #define NSCOMPONENT_H
 
 #include <nspupper.h>
-#include <nsvector.h>
+#include <nsrouter.h>
 
 class nsentity;
 class nsevent;
@@ -61,13 +61,14 @@ class nscomponent
 	nsentity * m_owner;
 	uint32 m_hashed_type;
 	bool m_update;
+	nsrouter m_router;
 };
 
 class nscomponent_inst : public nscomponent
 {
 	nscomponent_inst(const nscomponent & rhs):nscomponent(rhs) {}
 	void init() {std::terminate();}
- 	void pup(nsfile_pupper * p) {std::terminate();}
+ 	void pup(nsfile_pupper *) {std::terminate();}
 };
 
 

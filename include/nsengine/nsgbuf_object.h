@@ -22,8 +22,6 @@ public:
 
 	nsfb_object::attachment * depth();
 
-	uivec3 pick(float norm_mouse_x, float norm_mouse_y);
-
 	void init();
 
 private:

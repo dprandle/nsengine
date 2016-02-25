@@ -24,6 +24,7 @@
 #include <nsresource.h>
 #include <nsvector.h>
 #include <nsgl_object.h>
+#include <nssignal.h>
 
 class nstexture_inst;
 
@@ -35,7 +36,7 @@ class nstexture : public nsresource, public nsgl_object
 		image_data(uint8 * data_=nullptr, uint32 size_=0, uint32 bpp_=0);
 		~image_data();
 		image_data(const image_data & copy_);
-		image_data & operator=(const image_data & rhs);
+		image_data & operator=(image_data rhs);
 		
 		uint8 * data;
 		uint32 size;
@@ -159,6 +160,8 @@ class nstexture : public nsresource, public nsgl_object
 
 	tex_type texture_type() const;
 
+//	virtual void set_data(image_data) = 0;
+
 	/*
 	  Set the format - see opengl specs for which formats are allowable - this determines how pixel data is read in
 	  when we allocate or how it is returned when we get the texture data from the GPU
@@ -223,6 +226,10 @@ class nstexture : public nsresource, public nsgl_object
 
 	void unbind() const;
 
+	// signals
+
+	ns::signal<image_data*> tex_data_changed;
+
   protected:
 	
 	tex_type m_tex_type;
@@ -233,17 +240,18 @@ class nstexture : public nsresource, public nsgl_object
 	int32 m_mipmap_level;
 	bool m_generate_mipmaps;
 	uint32 m_border;
+	image_data m_data;
 };
 
 class nstexture_inst : public nstexture
 {
 	nstexture_inst(const nstexture & rhs):nstexture(rhs) {}
 	void init() {std::terminate();}
- 	void pup(nsfile_pupper * p) {std::terminate();}
-	bool allocate(const void * data) {std::terminate();}
+ 	void pup(nsfile_pupper *) {std::terminate();}
+	bool allocate(const void *) {std::terminate();}
 	image_data data() const {std::terminate();}
-	void data(uint8 * array_, uint32 size_) const {std::terminate();}
-	void data(ui8_vector * array_) const {std::terminate();}
+	void data(uint8 *, uint32) const {std::terminate();}
+	void data(ui8_vector *) const {std::terminate();}
 };
 
 

@@ -171,8 +171,8 @@ float shadow_factor(vec3 light_to_pixel, float dist)
 {
 	float depth = dist / maxDepth;
 
-//	if (shadowSamples == 0)
-		return texture(shadowMap, vec4(light_to_pixel,depth-0.01));
+	if (shadowSamples == 0)
+		return texture(shadowMap, vec4(light_to_pixel,depth-0.0001));
 
 	float total = 0.0;
 	float xDelta = 1.0 / shadowTexSize.x;
@@ -186,7 +186,7 @@ float shadow_factor(vec3 light_to_pixel, float dist)
 	{
 		for (int j = negBoundary; j <= shadowSamples; ++j)
 		{
-			vec4 texCoord = vec4(light_to_pixel,depth-epsilon);
+			vec4 texCoord = vec4(light_to_pixel,depth-0.0001);
 			switch (face)
 			{
 				case (PosX):
@@ -343,6 +343,6 @@ void main()
 {
 	vec2 texCoord = uv_from_screen_size();
 	vec4 base_color = base_color_from_attachments(texCoord);
-	final_frag_color = base_color;//mix_translucent_fragments(base_color);
+	final_frag_color = mix_translucent_fragments(base_color);
 }
 </nsstring>

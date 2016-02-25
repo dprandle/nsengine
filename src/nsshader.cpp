@@ -990,6 +990,8 @@ void nsshadow_cubemap_shader::init_uniforms()
 void nsshadow_cubemap_shader::set_for_light_draw_call(light_draw_call * dc)
 {
 	fmat4 invt;
+//	invt.set_column(3, fvec4(-1.0f * dc->light_pos, 1.0f));
+//	set_uniform("test_mat", invt);
 	set_uniform("lightPos", dc->light_pos);
 	set_uniform("maxDepth", dc->max_depth);
 	nsshadow_2dmap_shader::set_for_light_draw_call(dc);
@@ -1043,8 +1045,18 @@ void nsselection_shader::set_for_draw_call(draw_call * dc)
 	{
 		set_uniform("hasBones", false);
 	}
-	set_uniform("projMat", idc->proj_cam);
+	set_uniform("projCamMat", idc->proj_cam);
 	set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
 	set_uniform("hminmax", idc->height_minmax);
-	set_uniform("fragColOut", idc->mat->color());
 }
+
+void nsselection_shader::set_border_color(const fvec3 & rgb)
+{
+	set_uniform("fragColOut", fvec4(rgb,1.0f));	
+}
+
+void nsselection_shader::set_main_color(const fvec4 & rgba)
+{
+	set_uniform("fragColOut", rgba);		
+}
+

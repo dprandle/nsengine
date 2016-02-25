@@ -49,6 +49,12 @@ nsbuffer_object::target_buffer nsbuffer_object::target() const
 	return m_target;
 }
 
+void nsbuffer_object::clear(int32 internal_format, int32 format, int32 type, const void * data)
+{
+	glClearBufferData(m_target, internal_format, format, type, data);
+	gl_err_check("nsbuffer_object::initGL()");
+}
+
 void nsbuffer_object::init_gl()
 {
 	glGenBuffers(1, &m_gl_name);

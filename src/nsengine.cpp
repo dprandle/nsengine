@@ -9,6 +9,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 \date November 23 2013
 \copywrite Earth Banana Games 2013
 */
+
 #include <hash/crc32.h>
 #include <nsfile_os.h>
 #include <nsengine.h>
@@ -54,6 +55,8 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nscam_comp.h>
 #include <nsrender_comp.h>
 #include <nsui_comp.h>
+#include <nsfont_manager.h>
+
 #ifdef NSDEBUG
 #include <nsdebug.h>
 #endif
@@ -545,7 +548,6 @@ void nsengine::update()
 	static double accumulator = 0.0;
 	timer()->update();
 	accumulator += timer()->dt();
-	std::cout << "dt : " << timer()->dt() << std::endl;
     while (accumulator >= timer()->fixed())
 	{
 		auto sys_iter = m_sys_update_order.begin();
@@ -706,6 +708,7 @@ void nsengine::_init_factories()
 	register_manager<nstex_manager>("nstex_manager");
 	register_manager<nsinput_map_manager>("nsinput_map_manager");
 	register_manager<nsplugin_manager>("nsplugin_manager");
+	register_manager<nsfont_manager>("nsfont_manager");
 	
 	register_resource<nsanim_set, nsanim_manager>("nsanim_set");
 	register_resource<nsentity, nsentity_manager>("nsentity");
@@ -743,6 +746,7 @@ void nsengine::_init_factories()
 	register_resource<nslight_stencil_shader, nsshader_manager>("nslight_stencil_shader");
 	register_resource<nsselection_shader, nsshader_manager>("nsselection_shader");
 
+	register_resource<nsfont, nsfont_manager>("nsfont");
 	register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
 }
 

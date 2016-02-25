@@ -19,7 +19,7 @@ fragment.source:<nsstring>#version 440
 
 #define MAX_MATERIALS 64
 
-out vec4 fragColor;
+layout (location = 0) out vec4 fragColor;
 
 struct SpotLight
 {

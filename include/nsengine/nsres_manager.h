@@ -22,6 +22,7 @@
 #define LOCAL_INPUT_DIR_DEFAULT "input/"
 #define LOCAL_SCENE_DIR_DEFAULT "maps/"
 #define LOCAL_PLUGIN_DIR_DEFAULT "plugins/"
+#define LOCAL_FONT_DIR_DEFAULT "fonts/"
 
 #include <nsengine.h>
 
@@ -141,7 +142,7 @@ public:
 
 	virtual nsresource * create(uint32 res_type_id, const nsstring & res_name, nsresource * to_copy=nullptr);
 
-	nsresource * create(const nsstring & guid_, const nsstring & res_name);
+	nsresource * create(const nsstring & guid_, const nsstring & res_name, nsresource * to_copy=nullptr);
 
 	virtual bool del(nsresource * res);
 

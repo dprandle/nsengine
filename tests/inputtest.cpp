@@ -17,6 +17,9 @@
 #include <nsmaterial.h>
 #include <nssel_comp.h>
 #include <nsmath.h>
+#include <nsrender_comp.h>
+#include <nsanim_comp.h>
+#include <nsfont.h>
 
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
@@ -31,15 +34,17 @@ int main()
 {
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
 	
-    uint32 i = nse.create_context();
+    nse.create_context();
     nse.start();
     nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
-
+	
 	// Save the input map
 	plg->save<nsinput_map>("basic_input");
+
+    plg->save<nsfont>("cosn");
 
     while (glfw_window_open())
     {
@@ -61,21 +66,24 @@ nsplugin * setup_basic_plugin()
 	nse.set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-    nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.2f,fvec3(1.0f),true,0.3f,4);
+//	nsentity * cam = plg->create_camera("scene_cam", fvec2(-100,100), fvec2(100,-100), fvec2(100,-100));
+    nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.1f,fvec3(1.0f),true,0.5f,2);	
 	scn->set_camera(cam);
-    scn->add(dirl, fvec3(5.0f, 5.0f, -100.0f));
+    scn->add(dirl, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 	
-    nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 0.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
+    nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
 	nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
 
-    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
-	alpha_tile->get<nssel_comp>()->enable_transparent_picking(true);
+    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.2f, 30.0f, 20.0f);
+	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
+	alpha_tile->get<nssel_comp>()->enable_transparent_picking(false);
 	
 //	plg->get<nsmaterial>("grasstile")->set_alpha_blend(true);
 //	plg->get<nsmaterial>("grasstile")->use_alpha_from_color(true);
     scn->add(point_light);
+	scn->add(spot_light, fvec3(10,10,0.0f));
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
-//	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
+	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 	return plg;
 }
 

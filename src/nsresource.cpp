@@ -23,7 +23,8 @@ nsresource::nsresource() :
 	m_id(0),
 	m_plugin_id(0),
 	m_hashed_type(0),
-	m_owned(false)
+	m_owned(false),
+	m_ctxt_id(-1)
 {}
 
 nsresource::nsresource(const nsresource & copy):
@@ -74,6 +75,16 @@ uint32 nsresource::plugin_id() const
 uint32 nsresource::id() const
 {
 	return m_id;
+}
+
+uint32 nsresource::context_id()
+{
+	return m_ctxt_id;
+}
+
+void nsresource::set_context_id(uint32 id)
+{
+	m_ctxt_id = id;
 }
 
 const nsstring & nsresource::subdir() const

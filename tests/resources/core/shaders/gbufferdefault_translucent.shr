@@ -127,7 +127,7 @@ in vec4 worldPos;
 
 flat in uint refID;
 
-uniform vec2 window_size;
+uniform vec4 viewport;
 
 uniform sampler2D diffuseMap;
 uniform sampler2D opacityMap;
@@ -216,7 +216,7 @@ void main()
 		fdata.color.a = fragColOut.a;
 
 	// get header index
-	header_index = int(gl_FragCoord.x + gl_FragCoord.y*window_size.x);
+	header_index = int(gl_FragCoord.x + gl_FragCoord.y*viewport.z);
 	new_ll_index = int(atomicCounterIncrement(atom_counter));
 	if (new_ll_index < MAX_RES_X*MAX_RES_Y*2)
 	{

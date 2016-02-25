@@ -10,20 +10,6 @@ m_multisample_level(0)
 nsgbuf_object::~nsgbuf_object()
 {}
 
-uivec3 nsgbuf_object::pick(float mouse_x, float mouse_y)
-{
-	ivec2 tex_dim(mouse_x*m_size.x,mouse_y*m_size.y);
-	set_target(nsfb_object::fb_read);
-	bind();
-	set_read_buffer(nsfb_object::attach_point(nsfb_object::att_color + nsgbuf_object::col_picking));
-	uivec3 index;
-	gl_err_check("pre nsfb_object::pick");
-	glReadPixels(tex_dim.x, tex_dim.y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
-	gl_err_check("post nsfb_object::post");
-	set_read_buffer(nsfb_object::att_none);
-	return index;
-}
-
 void nsgbuf_object::debug_blit(const ivec2 & scrn)
 {
 	ivec2 hlf = scrn / 2;

@@ -44,7 +44,7 @@ const nsstring & nsdebug::get_log_file() const
 	return m_log_file->file_name();
 }
 
-const message_callback nsdebug::get_message_callback() const
+const message_callback & nsdebug::get_message_callback() const
 {
 	return m_msg_cb;
 }

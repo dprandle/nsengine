@@ -129,6 +129,8 @@ public:
 	*/
 	void bind(uint32 index_);
 
+	void clear(int32 internal_format, int32 format, int32 type, const void * data);
+
 	template<class data_type>
 	void data(std::vector<data_type> & data_, int32 offset_bytes_ = 0)
 	{

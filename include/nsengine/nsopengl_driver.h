@@ -1,17 +1,18 @@
-/*! 
-	\file nsrender_system.h
-	
-	\brief Header file for nsrender_system class
+/*!
+  \file nsopengl_driver.h
 
-	This file contains all of the neccessary declarations for the nsrender_system class.
+  \brief Definition file for nsopengl_driver class
 
-	\author Daniel Randle
-	\date November 23 2013
-	\copywrite Earth Banana Games 2013
+  This file contains all of the neccessary definitions for the nsopengl_driver class.
+
+  \author Daniel Randle
+  \date Feb 23 2016
+  \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSRENDERSYSTEM_H
-#define NSRENDERSYSTEM_H
+#ifndef NSOPENGL_DRIVER
+#define NSOPENGL_DRIVER
+
 
 // Default shaders
 #define GBUFFER_SHADER "gbufferdefault"
@@ -73,71 +74,23 @@
 #define DEFAULT_ACCUM_BUFFER_RES_X 1920
 #define DEFAULT_ACCUM_BUFFER_RES_Y 1080
 
-// Some default fog settings
-#define DEFAULT_FOG_FACTOR_NEAR 40
-#define DEFAULT_FOG_FACTOR_FAR 80
-
-// default light counts
-#define MAX_DIR_LIGHT 64
-#define MAX_SPOT_LIGHT 256
-#define MAX_POINT_LIGHT 256
-
-#include <nssystem.h>
+#include <nsvideo_driver.h>
 #include <nsmesh.h>
-#include <nssignal.h>
 
 class nsmaterial;
 class nsfb_object;
-class nsshadowbuf_object;
-class nsgbuf_object;
-class nsbuffer_object;
-class nsentity;
 class nsmaterial_shader;
-class nsearlyz_shader;
 class nslight_stencil_shader;
 class nsdir_light_shader;
 class nspoint_light_shader;
 class nsspot_light_shader;
 class nsshadow_cubemap_shader;
-class nsspot_shadowmap_shader;
-class nsdir_shadowmap_shader;
-class nsxfb_shader;
-class nsrender_xfb_shader;
-class nsearlyz_xfb_shader;
-class nsdir_shadowmap_xfb_shader;
-class nspoint_shadowmap_xfb_shader;
-class nsspot_shadowmap_xfb_shader;
 class nsfragment_sort_shader;
-class nslight_comp;
 class nsshadow_2dmap_shader;
-class nsshader;
 class nsbuffer_object;
-class nscam_comp;
 class nsselection_shader;
 class nsparticle_render_shader;
 class nsrender_shader;
-
-
-namespace nsrender
-{
-
-struct viewport
-{
-	ivec4 bounds;
-	bool spot_lights;
-	bool spot_light_shadows;
-	bool point_lights;
-	bool point_light_shadows;
-	bool dir_lights;
-	bool dir_light_shadows;
-	bool order_independent_transparency;
-	bool picking_enabled;
-	bool debug_draw;
-	nsentity * camera;
-	ns::signal<ivec4> size_changed;
-};
-
-}
 
 struct opengl_state
 {
@@ -195,17 +148,6 @@ struct translucent_buffers
 	nsbuffer_object * header;
 	nsbuffer_object * fragments;
 	ui_vector header_clr_data;
-};
-
-typedef std::vector<nsentity*> light_vector;
-
-struct light_vectors
-{
-	light_vectors();
-	light_vector dir_lights;
-	light_vector point_lights;
-	light_vector spot_lights;
-	void clear();
 };
 
 struct render_shaders
@@ -390,15 +332,9 @@ struct selection_render_pass : public render_pass
 	virtual void render();
 };
 
-
-typedef std::vector<render_pass*> render_pass_vector;
-typedef std::map<nsstring, drawcall_queue*> queue_map;
-
-class nsrender_system : public nssystem
+class nsopengl_driver : public nsvideo_driver
 {
-public:
-	nsrender_system();
-	~nsrender_system();
+  public:
 
 	uint32 active_tex_unit();
 
@@ -443,38 +379,6 @@ public:
 	opengl_state current_gl_state();
 
 	nsfb_object * default_fbo();
-
-	nsmaterial * default_mat();
-
-	virtual void init();
-
-	bool debug_draw();
-
-	void render();
-
-	void enable_debug_render(bool pDebDraw);
-
-	void enable_lighting(bool pEnable);
-
-	void set_default_mat(nsmaterial * pDefMaterial);
-
-	void set_fog_factor(const uivec2 & near_far);
-
-	const uivec2 & fog_factor();
-
-	void set_fog_color(const fvec4 & near_far);
-
-	const fvec4 & fog_color();
-
-	void toggle_debug_draw();
-
-	void update();
-
-	void add_draw_calls_from_scene(nsscene * scene);
-
-	void add_lights_from_scene(nsscene * scene);
-
-	virtual int32 update_priority();
 
 	static void set_active_texture_unit(uint32 tex_unit);
 	
@@ -524,35 +428,6 @@ public:
 
 	static void bind_gbuffer_textures(nsfb_object * fb);
 	
-private:
-
-	bool _handle_window_resize(window_resize_event * evt);	
-	void _prepare_tforms(nsscene * scene);
-	bool _valid_check();
-
-	bool m_debug_draw;
-	bool m_lighting_enabled;
-
-	uivec2 m_fog_nf;
-	fvec4 m_fog_color;
-
-	mat_id_map m_mat_shader_ids;
-	std::vector<instanced_draw_call> m_all_draw_calls;
-	std::vector<light_draw_call> m_light_draw_calls;
-	
-	light_vectors m_lights;
-
-	rt_map m_render_targets;
-	render_pass_vector m_render_passes;
-	queue_map m_render_queues;
-
-	nsfb_object * m_default_fbo;
-	nsmaterial * m_default_mat;
-	render_shaders m_shaders;
-	translucent_buffers m_tbuffers;
-	nsbuffer_object * m_single_point;
-	
-	static opengl_state m_gl_state;
 };
 
 #endif

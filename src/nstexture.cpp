@@ -374,8 +374,11 @@ nstexture::image_data::~image_data()
 	delete [] data;
 }
 
-nstexture::image_data & nstexture::image_data::operator=(const image_data & rhs)
+nstexture::image_data & nstexture::image_data::operator=(image_data rhs)
 {
+	std::swap(data, rhs.data);
+	std::swap(size, rhs.size);
+	std::swap(bpp, rhs.bpp);
 	return *this;
 }
 

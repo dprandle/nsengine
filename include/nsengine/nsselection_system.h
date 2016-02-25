@@ -27,6 +27,7 @@ This file contains all of the neccessary declarations for the nsselection_system
 #define NSSEL_MOVE_Y "move_selection_y"
 #define NSSEL_MOVE_Z "move_selection_z"
 #define NSSEL_MOVE_TOGGLE "move_selection_toggle"
+#define SELECTION_INPUT_CTXT "selection_controls"
 
 class nsscene;
 class nssel_comp;

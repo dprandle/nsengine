@@ -64,12 +64,12 @@ layout (std430, binding=1) buffer fragment_linked_list
 
 int frag_ind[MAX_FRAGMENTS];
 
-uniform vec2 screen_size;
+uniform vec4 viewport;
 uniform usampler2D gMatMap;
 
 vec2 uv_from_screen_size()
 {
-	return gl_FragCoord.xy / screen_size;
+	return gl_FragCoord.xy / viewport.zw - viewport.xy;
 }
 
 uint sort_fragment_list(int start_ind)
@@ -126,7 +126,7 @@ void reorder_linked_list(uint header_index, uint frag_count)
 
 void main()
 {
-	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*screen_size.x);
+	int header_index = int(gl_FragCoord.x + gl_FragCoord.y*viewport.z);
 	vec2 tex_coord = uv_from_screen_size();
 	int first_indice = header_indices[header_index];
 	final_picking = texture(gMatMap, tex_coord).xyz;

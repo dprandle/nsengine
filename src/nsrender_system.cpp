@@ -257,6 +257,33 @@ void render_pass::render()
 	}	
 }
 
+void selection_render_pass::render()
+{
+	for (uint32 i = 0; i < draw_calls->size(); ++i)
+	{
+		instanced_draw_call * dc = (instanced_draw_call*)(*draw_calls)[i];
+		
+		dc->shdr->bind(); 
+		dc->shdr->set_for_draw_call(dc);
+		ren_target->set_draw_buffer(nsfb_object::att_none);
+		dc->render();
+		
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glLineWidth(4.0f);
+		nsrender_system::set_stencil_func(GL_NOTEQUAL, 1, -1);
+		ren_target->set_draw_buffer(nsfb_object::att_color);
+		((nsselection_shader*)dc->shdr)->set_border_color(dc->sel_color.rgb());
+		dc->render();
+		
+		glLineWidth(1.0f);
+		glPolygonMode(GL_FRONT, GL_FILL);
+		nsrender_system::enable_depth_test(false);
+		nsrender_system::set_stencil_func(GL_EQUAL, 1, 0);
+		((nsselection_shader*)dc->shdr)->set_main_color(dc->sel_color);
+		dc->render();
+	}	
+}
+
 void gbuffer_render_pass::render()
 {
 	render_pass::render();
@@ -265,7 +292,32 @@ void gbuffer_render_pass::render()
 
 void oit_render_pass::render()
 {
-	
+	ren_target->set_draw_buffer(nsfb_object::att_none);
+	for (uint32 i = 0; i < draw_calls->size(); ++i)
+	{
+		draw_call * dc = (*draw_calls)[i];
+		dc->shdr->bind(); 
+		dc->shdr->set_viewport(gl_state.current_viewport);
+		dc->shdr->set_for_draw_call(dc);
+		if (dc->mat != nullptr)
+		{
+			nsrender_system::enable_culling(dc->mat->culling());
+			nsrender_system::set_cull_face(dc->mat->cull_mode());
+			nsrender_system::bind_textures(dc->mat);
+		}
+		tbuffers->bind_buffers();
+		dc->render();
+	}
+	ren_target->update_draw_buffers();
+	nsrender_system::enable_depth_test(false);
+	nsrender_system::enable_culling(true);
+	nsrender_system::set_cull_face(GL_BACK);
+	sort_shader->bind();
+	sort_shader->set_viewport(gl_state.current_viewport);
+	single_point->bind();
+	tbuffers->bind_buffers();
+	glDrawArrays(GL_POINTS, 0, 1);	
+	tbuffers->unbind_buffers();
 }
 
 void light_shadow_pass::render()
@@ -301,6 +353,7 @@ void light_pass::render()
 			attch->m_texture->bind();
 			render_pass::setup_pass();
 		}
+		ren_target->set_draw_buffer(nsfb_object::att_color);
 		dc->shdr->bind();
 		dc->shdr->set_viewport(gl_state.current_viewport);
 		dc->shdr->set_for_draw_call(dc);
@@ -369,9 +422,10 @@ nsrender_system::nsrender_system() :
 	nssystem(),
 	m_debug_draw(false),
 	m_lighting_enabled(true),
-	m_default_fbo(0),
 	m_fog_nf(DEFAULT_FOG_FACTOR_NEAR, DEFAULT_FOG_FACTOR_FAR),
 	m_fog_color(1),
+	m_default_fbo(nullptr),
+	m_default_mat(nullptr),
 	m_single_point(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable))
 {
 	m_single_point->init_gl();
@@ -416,6 +470,7 @@ void nsrender_system::create_default_render_queues()
 {
 	create_queue(SCENE_OPAQUE_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
 	create_queue(SCENE_TRANSLUCENT_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
+	create_queue(SCENE_SELECTION_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
 	create_queue(DIR_LIGHT_QUEUE)->reserve(MAX_LIGHTS_IN_SCENE);
 	create_queue(SPOT_LIGHT_QUEUE)->reserve(MAX_LIGHTS_IN_SCENE);
 	create_queue(POINT_LIGHT_QUEUE)->reserve(MAX_LIGHTS_IN_SCENE);
@@ -497,6 +552,20 @@ void nsrender_system::create_default_render_passes()
 	gbuf_pass->gl_state.stencil_test = false;
 	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
+	// setup gbuffer geometry stage
+	oit_render_pass * oit_pass = new oit_render_pass;
+	oit_pass->tbuffers = &m_tbuffers;
+	oit_pass->single_point = m_single_point;
+	oit_pass->sort_shader = m_shaders.frag_sort;
+	oit_pass->draw_calls = queue(SCENE_TRANSLUCENT_QUEUE);
+	oit_pass->ren_target = render_target(ACCUM_TARGET);
+	oit_pass->gl_state.depth_test = true;
+	oit_pass->gl_state.depth_write = false;
+	oit_pass->gl_state.culling = true;
+	oit_pass->gl_state.cull_face = GL_BACK;
+	oit_pass->gl_state.blending = false;
+	oit_pass->gl_state.stencil_test = false;
+
 	// setup dir light shadow stage
 	light_shadow_pass * dir_shadow_pass = new light_shadow_pass;
 	dir_shadow_pass->draw_calls = queue(SCENE_OPAQUE_QUEUE);
@@ -523,7 +592,6 @@ void nsrender_system::create_default_render_passes()
 	dir_pass->gl_state.stencil_test = false;
 	dir_pass->tbuffers = &m_tbuffers;
 	dir_pass->rpass = dir_shadow_pass;
-	dir_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT;
 	
 	light_shadow_pass * spot_shadow_pass = new light_shadow_pass;
 	spot_shadow_pass->draw_calls = queue(SCENE_OPAQUE_QUEUE);
@@ -587,6 +655,22 @@ void nsrender_system::create_default_render_passes()
 	point_pass->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 	point_pass->gl_state.clear_mask = GL_STENCIL_BUFFER_BIT;
 
+	selection_render_pass * sel_pass_opaque = new selection_render_pass;
+	sel_pass_opaque->draw_calls = queue(SCENE_SELECTION_QUEUE);
+	sel_pass_opaque->ren_target = render_target(ACCUM_TARGET);
+	sel_pass_opaque->gl_state.blending = true;
+	sel_pass_opaque->gl_state.blend_func = ivec2(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	sel_pass_opaque->gl_state.blend_eqn = GL_FUNC_ADD;
+	sel_pass_opaque->gl_state.culling = true;
+	sel_pass_opaque->gl_state.cull_face = GL_BACK;
+	sel_pass_opaque->gl_state.clear_mask = GL_STENCIL_BUFFER_BIT;
+	sel_pass_opaque->gl_state.depth_test = false;
+	sel_pass_opaque->gl_state.depth_write = true;
+	sel_pass_opaque->gl_state.stencil_test = true;
+	sel_pass_opaque->gl_state.stencil_op_back = ivec3(GL_KEEP, GL_KEEP, GL_REPLACE);
+	sel_pass_opaque->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_KEEP, GL_REPLACE);
+	sel_pass_opaque->gl_state.stencil_func = ivec3(GL_ALWAYS, 1, -1);
+
 	final_render_pass * final_pass = new final_render_pass;
 	final_pass->ren_target = m_default_fbo;
 	final_pass->read_buffer = render_target(ACCUM_TARGET);
@@ -599,12 +683,14 @@ void nsrender_system::create_default_render_passes()
 	final_pass->gl_state.cull_face = GL_BACK;
 	
 	m_render_passes.push_back(gbuf_pass);
+	m_render_passes.push_back(oit_pass);
 	m_render_passes.push_back(dir_shadow_pass);
 	m_render_passes.push_back(dir_pass);
-//	m_render_passes.push_back(spot_shadow_pass);
-//	m_render_passes.push_back(spot_pass);
+	m_render_passes.push_back(spot_shadow_pass);
+	m_render_passes.push_back(spot_pass);
 	m_render_passes.push_back(point_shadow_pass);
 	m_render_passes.push_back(point_pass);
+	m_render_passes.push_back(sel_pass_opaque);
 	m_render_passes.push_back(final_pass);
 }
 
@@ -688,31 +774,6 @@ void nsrender_system::destroy_queue(const nsstring & name)
 	delete q;		
 }
 
-void nsrender_system::blit_final_frame()
-{
-	// if (m_debug_draw)
-	// 	return;
-
-	// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_default_fbo);
-	// if (nse.current_scene() != nullptr)
-	// {
-	// 	m_accum_buf->set_target(nsfb_object::fb_read);
-	// 	m_accum_buf->bind();
-	// 	m_accum_buf->set_read_buffer(nsfb_object::att_color);
-	// 	enable_depth_test(false);
-	// 	enable_stencil_test(false);
-	// 	enable_blending(false);
-	// 	glBlitFramebuffer(0, 0, DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y, 0, 0, m_screen_size.x, m_screen_size.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	// 	m_accum_buf->set_read_buffer(nsfb_object::att_none);
-	// 	m_accum_buf->unbind();
-	// }
-	// else
-	// {
-	// 	glClearColor(0.11f, 0.11f, 0.11f, 0.11f);
-	// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// }
-}
-
 void nsrender_system::enable_lighting(bool pEnable)
 {
 	m_lighting_enabled = pEnable;
@@ -738,6 +799,7 @@ void nsrender_system::render()
 			rp->render();
 		}
 	}
+	m_tbuffers.reset_atomic_counter();
 }
 
 void nsrender_system::set_gl_state(const opengl_state & state)
@@ -827,30 +889,8 @@ bool nsrender_system::_valid_check()
 	return true;
 }
 
-
-void nsrender_system::render_scene_opaque(nsentity * camera)
-{
-	// _draw_geometry(m_shader_mat_map, m_drawcall_map);
-	// bind_gbuffer_textures();	
-}
-
-void nsrender_system::render_scene_translucent(nsentity * camera)
-{
-	// m_accum_buf->set_draw_buffer(nsfb_object::att_none);
-	// _draw_geometry(m_tshader_mat_map, m_tdrawcall_map);
-}
-
-void nsrender_system::pre_lighting_pass()
-{
-	// m_accum_buf->update_draw_buffers();
-	// m_shaders.frag_sort->bind();
-	// m_shaders.frag_sort->set_screen_size(fvec2(m_accum_buf->size().x, m_accum_buf->size().y));
-	// m_single_point->bind();
-	// glDrawArrays(GL_POINTS, 0, 1);
-}
-
-void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
-{
+//void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
+//{
 	// nscam_comp * compc = cam->get<nscam_comp>();
 	// nstform_comp * camTComp = cam->get<nstform_comp>();
 
@@ -919,7 +959,7 @@ void nsrender_system::render_scene_particles(nsscene * scene, nsentity * cam)
 	// 	rshdr->unbind();
 	// 	++ent_iter;
 	// }
-}
+//}
 
 opengl_state nsrender_system::m_gl_state = opengl_state();
 
@@ -1051,358 +1091,6 @@ void nsrender_system::set_stencil_op_front(const ivec3 & stencil_op)
 	gl_err_check("nsrender_system::set_stencil_op_front");
 }
 
-void nsrender_system::render_scene_selection(nsscene * scene, nsentity * cam)
-{
-	// nscam_comp * camc = cam->get<nscam_comp>();
-	// m_shaders.sel_shader->bind();
-	// m_shaders.sel_shader->set_proj_cam_mat(camc->proj_cam());
-    // m_shaders.sel_shader->set_heightmap_enabled(false);
-
-    // // Go through and stencil each selected item
-	// auto iter = scene->entities<nssel_comp>().begin();
-	// while (iter != scene->entities<nssel_comp>().end())
-	// {
-	// 	nstform_comp * tc = (*iter)->get<nstform_comp>();
-	// 	nssel_comp * sc = (*iter)->get<nssel_comp>();
-	// 	nsrender_comp * rc = (*iter)->get<nsrender_comp>();
-	// 	nsanim_comp * ac = (*iter)->get<nsanim_comp>();
-	// 	nsterrain_comp * trc = (*iter)->get<nsterrain_comp>();
-
-	// 	if (rc == nullptr || tc == nullptr || sc == nullptr)
-	// 	{
-	// 		++iter;
-	// 		continue;
-	// 	}
-
-	// 	if (sc->selected() && sc->draw_enabled())
-	// 	{
-	// 		nsmaterial * mat;
-	// 		draw_call dc;
-	// 		nsmesh * rc_msh = nse.resource<nsmesh>(rc->mesh_id());
-	// 		for (uint32 i = 0; i < rc_msh->count(); ++i)
-	// 		{
-	// 			dc.submesh = rc_msh->sub(i);
-	// 			dc.transform_buffer = sc->transform_buffer();
-	// 			dc.transform_count = sc->count();
-
-	// 			// make it so the height map is selectable
-	// 			nsmaterial * mat = nse.resource<nsmaterial>(rc->material_id(i));
-	// 			if (mat != nullptr)
-	// 			{
-	// 				nstexture * tex = nse.resource<nstexture>(mat->map_tex_id(nsmaterial::height));
-	// 				if (tex != nullptr)
-	// 				{
-	// 					m_shaders.sel_shader->set_heightmap_enabled(true);
-	// 					set_active_texture_unit(nsmaterial::height);
-	// 					tex->bind();
-	// 				}
-	// 			}
-
-	// 			if (dc.submesh->m_node != nullptr)
-	// 				m_shaders.sel_shader->set_node_transform(dc.submesh->m_node->m_world_tform);
-	// 			else
-	// 				m_shaders.sel_shader->set_node_transform(fmat4());
-
-	// 			if (ac != nullptr)
-	// 			{
-	// 				m_shaders.sel_shader->set_has_bones(true);
-	// 				m_shaders.sel_shader->set_bone_transform(*ac->final_transforms());
-	// 			}
-	// 			else
-	// 				m_shaders.sel_shader->set_has_bones(false);
-
-	// 			if (trc != nullptr)
-	// 				m_shaders.sel_shader->set_height_minmax(trc->height_bounds());
-
-	// 			dc.submesh->m_vao.bind();
-
-	// 			dc.transform_buffer->bind();
-	// 			for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
-	// 			{
-	// 				dc.submesh->m_vao.add(dc.transform_buffer,
-	// 									  nsshader::loc_instance_tform + tfInd);
-	// 				dc.submesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd,
-	// 					4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-	// 				dc.submesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
-	// 			}
-
-	// 			enable_depth_write(true);
-	// 			enable_depth_test(false);
-	// 			set_stencil_func(GL_ALWAYS, 1, -1);
-	// 			set_stencil_op(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-	// 			m_accum_buf->set_draw_buffer(nsfb_object::att_none);
-	// 			gl_err_check("nsrender_system::draw_selection pre");
-	// 			glDrawElementsInstanced(
-	// 				dc.submesh->m_prim_type,
-	// 				static_cast<GLsizei>(dc.submesh->m_indices.size()),
-	// 				GL_UNSIGNED_INT,
-	// 				0,
-	// 				dc.transform_count);
-	// 			gl_err_check("nsrender_system::draw_selection post");	
-
-	// 			glPolygonMode(GL_FRONT, GL_LINE);
-	// 			set_stencil_func(GL_NOTEQUAL, 1, -1);
-	// 			set_stencil_op(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-	// 			fvec4 selCol = sc->color();
-	// 			m_shaders.sel_shader->set_frag_color_out(selCol);
-
-	// 			m_accum_buf->set_draw_buffer(nsfb_object::att_color);
-	// 			gl_err_check("nsrender_system::draw_selection pre");
-	// 			glDrawElementsInstanced(
-	// 				dc.submesh->m_prim_type,
-	// 				static_cast<GLsizei>(dc.submesh->m_indices.size()),
-	// 				GL_UNSIGNED_INT,
-	// 				0,
-	// 				dc.transform_count);
-	// 			gl_err_check("nsrender_system::draw_selection post");	
-
-	// 			glPolygonMode(GL_FRONT, GL_FILL);
-	// 			enable_depth_test(true);
-	// 			set_stencil_func(GL_EQUAL, 1, 0);
-	// 			selCol.w = sc->mask_alpha();
-				
-	// 			//if (m_focus_ent.y == (*iter)->id() && m_focus_ent.z == *selIter)
-	// 			//	selCol.w = 0.4f;
-	// 			m_shaders.sel_shader->set_uniform("fragColOut", selCol);
-	// 			gl_err_check("nsrender_system::draw_selection pre");
-	// 			glDrawElementsInstanced(
-	// 				dc.submesh->m_prim_type,
-	// 				static_cast<GLsizei>(dc.submesh->m_indices.size()),
-	// 				GL_UNSIGNED_INT,
-	// 				0,
-	// 				dc.transform_count);
-	// 			gl_err_check("nsrender_system::draw_selection post");	
-	// 			dc.transform_buffer->bind();
-	// 			dc.submesh->m_vao.remove(dc.transform_buffer);
-	// 			dc.submesh->m_vao.unbind();
-	// 		}
-	// 	}
-	// 	++iter;
-	// }
-	// enable_depth_test(true);
-}
-
-void nsrender_system::render_ui(nsscene * scene)
-{
-	// auto ui_iter = scene->entities<nsui_comp>().begin();
-	// while (ui_iter != scene->entities<nsui_comp>().end())
-	// {
-	// 	nsui_comp * uic = (*ui_iter)->get<nsui_comp>();
-		
-	// 	++ui_iter;
-	// }
-}
-
-void nsrender_system::render_scene()
-{
-
-	// set_viewport(ivec4(0,0,m_gbuffer->size()));
-	// m_gbuffer->bind();
-	// enable_depth_test(true);
-	// enable_depth_write(true);
-	// enable_culling(true);
-	// enable_blending(false);
-	// enable_stencil_test(false);
-	// set_cull_face(GL_BACK);
-
-	// if (scene->skydome() == nullptr)
-	// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// else
-	// 	glClear(GL_DEPTH_BUFFER_BIT);
-
-	// render_scene_opaque(cam);	
-
-	// if (m_debug_draw)
-	// {
-	// 	enable_depth_test(false);
-	// 	enable_stencil_test(false);
-	// 	enable_blending(false);
-	// 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_screen_fbo);
-	// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// 	m_gbuffer->debug_blit(m_screen_size);	
-	// 	return;
-	// }
-
-	// enable_depth_write(false);
-
-	// set_viewport(ivec4(0,0,m_accum_buf->size()));
-	// m_accum_buf->set_target(nsfb_object::fb_draw);
-	// m_accum_buf->bind();
-
-	// render_scene_translucent(cam);
-
-	// enable_depth_test(false);
-	// enable_culling(true);
-	// set_cull_face(GL_BACK);
-
-	// pre_lighting_pass();
-
-	// enable_blending(true);
-	// set_blend_func(GL_ONE, GL_ONE);
-
-	// blend_dir_lights(cam, scene->bg_color());
-
-	// enable_stencil_test(true);
-	// set_cull_face(GL_FRONT);
-	
-	// blend_spot_lights(cam);
-	// blend_point_lights(cam);
-
-	// enable_depth_test(true);
-	// enable_depth_write(false);
-	// enable_culling(false);
-
-	// render_scene_particles(scene, cam);
-	
-	// enable_culling(true);
-	// set_cull_face(GL_BACK);
-	// set_blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// glClear(GL_STENCIL_BUFFER_BIT);
-
-	// render_scene_selection(scene, cam);
-	// blit_final_frame();
-}
-
-void nsrender_system::blend_spot_lights(nsentity * camera)
-{
-	// nstform_comp * camt = camera->get<nstform_comp>();
-	// nscam_comp * camc = camera->get<nscam_comp>();
-	// float ar = float(m_shadow_buf->size(nsshadowbuf_object::Spot).w) /
-	// 	float(m_shadow_buf->size(nsshadowbuf_object::Spot).h);
-	// fmat4 proj, proj_light_mat;
-	
-	// for (uint32 light_index = 0; light_index < m_lights.spot_lights.size(); ++light_index)
-	// {
-	// 	nslight_comp * lc = m_lights.spot_lights[light_index]->get<nslight_comp>();
-	// 	nstform_comp * tc = m_lights.spot_lights[light_index]->get<nstform_comp>();
-	// 	proj = perspective(lc->angle()*2.0f, ar, lc->shadow_clipping().x, lc->shadow_clipping().y);
-	// 	for (uint32 i = 0; i < lc->transform_count(); ++i)
-	// 	{
-	// 		proj_light_mat = proj * lc->pov(i);
-	// 		if (lc->cast_shadows())
-	// 		{
-	// 			enable_depth_test(true);
-	// 			enable_depth_write(true);
-	// 			set_viewport(ivec4(0, 0, m_shadow_buf->size(nsshadowbuf_object::Spot)));
-	// 			m_shadow_buf->bind(nsshadowbuf_object::Spot);
-	// 			glClear(GL_DEPTH_BUFFER_BIT);
-	// 			m_shaders.spot_shadow->bind();
-	// 			m_shaders.spot_shadow->set_proj_mat(proj_light_mat);
-	// 			_draw_scene_to_depth(m_shaders.spot_shadow);
-	// 			nsfb_object::attachment * attch =
-	// 				m_shadow_buf->fb(nsshadowbuf_object::Spot)->att(nsfb_object::att_depth);
-	// 			set_active_texture_unit(attch->m_tex_unit);
-	// 			attch->m_texture->bind();
-	// 		}
-
-	// 		set_viewport(ivec4(0,0,m_accum_buf->size()));
-	// 		m_accum_buf->bind();
-	// 		enable_depth_write(false);
-	// 		enable_culling(false);
-	// 		set_stencil_func(GL_ALWAYS, 0, 0);
-	// 		set_stencil_op_back(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	// 		set_stencil_op_front(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-	// 		m_accum_buf->set_draw_buffer(nsfb_object::att_none);
-	// 		glClear(GL_STENCIL_BUFFER_BIT);
-	// 		m_shaders.light_stencil->bind();
-	// 		m_shaders.light_stencil->set_proj_cam_mat(camc->proj_cam());
-	// 		m_shaders.light_stencil->set_transform(lc->transform(i));
-	// 		_stencil_spot_light(lc);
-
-	// 		enable_depth_test(false);
-	// 		enable_culling(true);
-	// 		set_stencil_func(GL_NOTEQUAL, 0, 0xFF);
-			
-	// 		m_accum_buf->set_draw_buffer(nsfb_object::att_color);
-	// 		m_shaders.spot_light->bind();
-	// 		m_shaders.spot_light->set_cam_world_pos(camt->wpos());
-	// 		m_shaders.spot_light->set_position(tc->wpos(i));
-	// 		m_shaders.spot_light->set_max_depth(lc->shadow_clipping().y - lc->shadow_clipping().x);
-	// 		m_shaders.spot_light->set_transform(lc->transform(i));
-	// 		m_shaders.spot_light->set_proj_cam_mat(camc->proj_cam());
-	// 		m_shaders.spot_light->set_proj_light_mat(proj_light_mat);
-	// 		m_shaders.spot_light->set_direction(tc->dvec(nstform_comp::dir_target, i));
-	// 		m_shaders.spot_light->set_fog_factor(m_fog_nf);
-	// 		m_shaders.spot_light->set_fog_color(m_fog_color);
-	// 		_blend_spot_light(lc);
-	// 	}
-	// }		
-}
-
-void nsrender_system::blend_point_lights(nsentity * camera)
-{
-	// float ar = float(m_shadow_buf->size(nsshadowbuf_object::Point).w) /
-	// 	float(m_shadow_buf->size(nsshadowbuf_object::Point).h);
-	// fmat4 proj;
-	// fmat4 proj_light_mat;
-	// fmat4 inv_trans;
-	// nscam_comp * camc = camera->get<nscam_comp>();
-	// nstform_comp * camt = camera->get<nstform_comp>();
-	// for (uint32 light_index = 0; light_index < m_lights.point_lights.size(); ++light_index)
-	// {
-	// 	nslight_comp * lc = m_lights.point_lights[light_index]->get<nslight_comp>();
-	// 	nstform_comp * tc = m_lights.point_lights[light_index]->get<nstform_comp>();
-		
-	// 	proj = perspective(90.0f, ar, lc->shadow_clipping().x, lc->shadow_clipping().y);
-	// 	for (uint32 i = 0; i < lc->transform_count(); ++i)
-	// 	{
-	// 		proj_light_mat = proj * lc->pov(i);
-
-	// 		if (lc->cast_shadows())
-	// 		{
-	// 			enable_depth_test(true);
-	// 			enable_depth_write(true);
-	// 			set_viewport(ivec4(0,0,m_shadow_buf->size(nsshadowbuf_object::Point)));
-	// 			m_shadow_buf->bind(nsshadowbuf_object::Point);
-	// 			glClear(GL_DEPTH_BUFFER_BIT);
-	// 			m_shaders.point_shadow->bind();
-	// 			m_shaders.point_shadow->set_light_pos(tc->wpos());
-	// 			m_shaders.point_shadow->set_max_depth(lc->shadow_clipping().y - lc->shadow_clipping().x);
-	// 			m_shaders.point_shadow->set_proj_mat(proj);
-	// 			inv_trans.set_column(3,fvec4(tc->wpos(i)*-1.0f,1.0f));
-	// 			m_shaders.point_shadow->set_inverse_trans_mat(inv_trans);
-	// 			_draw_scene_to_depth(m_shaders.point_shadow);
-	// 			// bind the point light shadow fb's attachment for use in the shader
-	// 			nsfb_object::attachment * attch =
-	// 				m_shadow_buf->fb(nsshadowbuf_object::Point)->att(nsfb_object::att_depth);
-	// 			set_active_texture_unit(attch->m_tex_unit);
-	// 			attch->m_texture->bind();
-	// 		}
-
-	// 		enable_depth_write(false);
-	// 		enable_culling(false);
-	// 		set_stencil_func(GL_ALWAYS, 0, 0);
-	// 		set_stencil_op_back(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	// 		set_stencil_op_front(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-	// 		set_viewport(ivec4(0,0,m_accum_buf->size()));
-	// 		m_accum_buf->bind();
-	// 		m_accum_buf->set_draw_buffer(nsfb_object::att_none);
-	// 		glClear(GL_STENCIL_BUFFER_BIT);
-	// 		m_shaders.light_stencil->bind();
-	// 		m_shaders.light_stencil->set_proj_cam_mat(camc->proj_cam());
-	// 		m_shaders.light_stencil->set_transform(lc->transform(i));
-	// 		_stencil_point_light(lc);
-
-	// 		enable_depth_test(false);
-	// 		enable_culling(true);
-	// 		set_stencil_func(GL_NOTEQUAL, 0, 0xFF);
-
-	// 		m_accum_buf->set_draw_buffer(nsfb_object::att_color);
-	// 		m_shaders.point_light->bind();
-	// 		m_shaders.point_light->set_cam_world_pos(camt->wpos());
-	// 		m_shaders.point_light->set_position(tc->wpos(i));
-	// 		m_shaders.point_light->set_max_depth(lc->shadow_clipping().y - lc->shadow_clipping().x);
-	// 		m_shaders.point_light->set_transform(lc->transform(i));
-	// 		m_shaders.point_light->set_proj_cam_mat(camc->proj_cam());
-	// 		m_shaders.point_light->set_fog_factor(m_fog_nf);
-	// 		m_shaders.point_light->set_fog_color(m_fog_color);
-	// 		_blend_point_light(lc);
-	// 	}
-	// }
-}
-
 void nsrender_system::_prepare_tforms(nsscene * scene)
 {
 	auto ent_iter = scene->entities().begin();
@@ -1476,56 +1164,6 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
 		}
 		++ent_iter;
 	}
-}
-
-void nsrender_system::blend_dir_lights(nsentity * camera, const fvec4 & bg_color)
-{
-	// nscam_comp * camc = camera->get<nscam_comp>();
-	// nstform_comp * camt = camera->get<nstform_comp>();	
-	// for (uint32 light_index = 0; light_index < m_lights.dir_lights.size(); ++light_index)
-	// {
-	// 	nslight_comp * lc = m_lights.dir_lights[light_index]->get<nslight_comp>();
-	// 	proj = perspective(160.0f, ar, lc->shadow_clipping().x, lc->shadow_clipping().y);
-	// 	for (uint32 i = 0; i < lc->transform_count(); ++i)
-	// 	{
-	// 		proj_light_mat = proj * lc->pov(i);
-
-	// 		if (lc->cast_shadows() && m_lighting_enabled)
-	// 		{
-	// 			enable_depth_test(true);
-	// 			enable_depth_write(true);
-	// 			set_viewport(ivec4(0,0,m_shadow_buf->size(nsshadowbuf_object::Direction)));
-	// 			m_shadow_buf->bind(nsshadowbuf_object::Direction);
-	// 			glClear(GL_DEPTH_BUFFER_BIT);
-	// 			m_shaders.dir_shadow->bind();
-	// 			m_shaders.dir_shadow->set_proj_mat(proj_light_mat);
-	// 			_draw_scene_to_depth(m_shaders.dir_shadow);
-	// 			// Bind the shadow buffer's attachment texture for use in the dir light shader
-	// 			nsfb_object::attachment * attch =
-	// 				m_shadow_buf->fb(nsshadowbuf_object::Direction)->att(nsfb_object::att_depth);
-	// 			set_active_texture_unit(attch->m_tex_unit);
-	// 			attch->m_texture->bind();
-	// 		}
-
-	// 		enable_depth_write(false);
-	// 		enable_depth_test(false);
-
-	// 		set_viewport(ivec4(0,0,m_accum_buf->size()));
-	// 		m_accum_buf->bind();
-	// 		m_accum_buf->set_draw_buffer(nsfb_object::att_color);
-	// 		m_shaders.dir_light->bind();
-	// 		m_shaders.dir_light->set_proj_light_mat(proj_light_mat);
-	// 		m_shaders.dir_light->set_lighting_enabled(m_lighting_enabled);
-	// 		m_shaders.dir_light->set_bg_color(bg_color);
-	// 		m_shaders.dir_light->set_direction(lc->transform(i).target());
-	// 		m_shaders.dir_light->set_cam_world_pos(camt->wpos());
-	// 		m_shaders.dir_light->set_fog_factor(m_fog_nf);
-	// 		m_shaders.dir_light->set_fog_color(m_fog_color);
-	// 		m_tbuffers.bind_buffers();
-	// 		_blend_dir_light(lc);
-	// 		m_tbuffers.unbind_buffers();
-	// 	}
-	// }
 }
 
 uint32 nsrender_system::bound_fbo()
@@ -1624,7 +1262,7 @@ void nsrender_system::init()
 
 void nsrender_system::enable_debug_render(bool pDebDraw)
 {
-	m_debug_draw = pDebDraw;
+	clear_render_passes();
 }
 
 void nsrender_system::set_active_texture_unit(uint32 tex_unit)
@@ -1657,7 +1295,7 @@ void nsrender_system::update()
 
 	m_mat_shader_ids.clear();
 	m_all_draw_calls.resize(0);
-	m_tbuffers.reset_atomic_counter();	
+	m_light_draw_calls.resize(0);
 	add_draw_calls_from_scene(scene);
 	add_lights_from_scene(scene);
 }
@@ -1682,10 +1320,12 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 		m_light_draw_calls.resize(m_light_draw_calls.size()+1);
 
 		fmat4 proj;
-		if (lcomp->type() != nslight_comp::l_point)
-			proj = perspective(lcomp->angle(), 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
-		else
+		if (lcomp->type() == nslight_comp::l_spot)
+			proj = perspective(2*lcomp->angle(), 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else if(lcomp->type() == nslight_comp::l_point)
 			proj = perspective(90.0f, 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else
+			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
 
 		for (uint32 i = 0; i < lcomp->transform_count(); ++i)
 		{
@@ -1710,7 +1350,7 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 			ldc->spot_atten = lcomp->atten();
 			ldc->light_pos = tcomp->wpos(i);
 			ldc->light_transform = lcomp->transform(i);
-			ldc->max_depth = lcomp->shadow_clipping().y;
+			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
 			if (lcomp->type() == nslight_comp::l_dir)
 			{
 				ldc->draw_point = m_single_point;
@@ -1755,17 +1395,14 @@ void nsrender_system::add_lights_from_scene(nsscene * scene)
 void nsrender_system::add_draw_calls_from_scene(nsscene * scene)
 {
 	nsentity * camera = scene->camera();
-	if (camera == nullptr)
-	{
-		dprint("nsrender_system::add_draw_calls_from_scene - no camera set in scene");
-		return;
-	}
 
 	// update render components and the draw call list
 	drawcall_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
 	drawcall_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
+	drawcall_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
 	scene_dcq->resize(0);
 	scene_tdcq->resize(0);
+	scene_sel->resize(0);
 	
 	nscam_comp * cc = camera->get<nscam_comp>();	
 	fvec2 terh;
@@ -1806,7 +1443,9 @@ void nsrender_system::add_draw_calls_from_scene(nsscene * scene)
 		}
 
 		if (sc != nullptr)
+		{
 			transparent_picking = sc->transparent_picking_enabled();
+		}
 		
 		nsmesh::submesh * mSMesh = nullptr;
 		nsmaterial * mat = nullptr;
@@ -1868,6 +1507,23 @@ void nsrender_system::add_draw_calls_from_scene(nsscene * scene)
 					scene_dcq->push_back(dc);
 				}
 
+				if (sc != nullptr && sc->selected())
+				{
+					m_all_draw_calls.resize(m_all_draw_calls.size()+1);
+					instanced_draw_call * sel_dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
+					sel_dc->submesh = mSMesh;
+					sel_dc->transform_buffer = sc->transform_buffer();
+					sel_dc->transform_id_buffer = nullptr;
+					sel_dc->anim_transforms = fTForms;
+					sel_dc->proj_cam = cc->proj_cam();
+					sel_dc->height_minmax = terh;
+					sel_dc->transform_count = sc->count();
+					sel_dc->shdr = m_shaders.sel_shader;
+					sel_dc->mat = mat;
+					sel_dc->sel_color = sc->color();
+					scene_sel->push_back(sel_dc);
+				}
+
 				auto inserted = m_mat_shader_ids.emplace(mat, mat_id);
 				if (inserted.second)
 					++mat_id;
@@ -1877,156 +1533,6 @@ void nsrender_system::add_draw_calls_from_scene(nsscene * scene)
 		++iter;
 	}
 }
-
-void nsrender_system::_blend_dir_light(nslight_comp * pLight)
-{
-	// nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
-	// for (uint32 i = 0; i < boundingMesh->count(); ++i)
-	// {
-	// 	nsmesh::submesh * cSub = boundingMesh->sub(i);
-	// 	cSub->m_vao.bind();
-	// 	GLsizei sz = static_cast<GLsizei>(cSub->m_indices.size());
-	// 	glDrawElements(cSub->m_prim_type,
-	// 				   sz,
-	// 				   GL_UNSIGNED_INT,
-	// 				   nullptr);
-    //     gl_err_check("_blendDirectionLight: Draw Error");
-	// 	cSub->m_vao.unbind();
-	// }
-}
-
-void nsrender_system::_blend_point_light(nslight_comp * pLight)
-{
-	// m_shaders.point_light->set_ambient_intensity(pLight->intensity().y);
-	// m_shaders.point_light->set_cast_shadows(pLight->cast_shadows());
-	// m_shaders.point_light->set_diffuse_intensity(pLight->intensity().x);
-	// m_shaders.point_light->set_light_color(pLight->color());
-	// m_shaders.point_light->set_shadow_samples(pLight->shadow_samples());
-	// m_shaders.point_light->set_shadow_darkness(pLight->shadow_darkness());
-	// m_shaders.point_light->set_screen_size(fvec2(float(m_accum_buf->size().x), float(m_accum_buf->size().y)));
-	// m_shaders.point_light->set_shadow_tex_size(
-	// 	fvec2(float(m_shadow_buf->size(nsshadowbuf_object::Point).w),
-	// 		  float(m_shadow_buf->size(nsshadowbuf_object::Point).y)));
-	// m_shaders.point_light->set_const_atten(pLight->atten().x);
-	// m_shaders.point_light->set_lin_atten(pLight->atten().y);
-	// m_shaders.point_light->set_exp_atten(pLight->atten().z);
-	// m_shaders.point_light->set_material_ids(m_mat_shader_ids);
-
-	// nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
-	// for (uint32 i = 0; i < boundingMesh->count(); ++i)
-	// {
-	// 	nsmesh::submesh * cSub = boundingMesh->sub(i);
-
-	// 	if (cSub->m_node != nullptr)
-	// 		m_shaders.point_light->set_uniform("nodeTransform", cSub->m_node->m_world_tform);
-	// 	else
-	// 		m_shaders.point_light->set_uniform("nodeTransform", fmat4());
-
-	// 	cSub->m_vao.bind();
-	// 	glDrawElements(cSub->m_prim_type,
-	// 				   static_cast<GLsizei>(cSub->m_indices.size()),
-	// 				   GL_UNSIGNED_INT,
-	// 				   0);
-	// 	cSub->m_vao.unbind();
-	// }
-}
-
-void nsrender_system::_blend_spot_light(nslight_comp * pLight)
-{
-	// m_shaders.spot_light->set_ambient_intensity(pLight->intensity().y);
-	// m_shaders.spot_light->set_cast_shadows(pLight->cast_shadows());
-	// m_shaders.spot_light->set_diffuse_intensity(pLight->intensity().x);
-	// m_shaders.spot_light->set_light_color(pLight->color());
-	// m_shaders.spot_light->set_shadow_samples(pLight->shadow_samples());
-	// m_shaders.spot_light->set_shadow_darkness(pLight->shadow_darkness());
-	// m_shaders.spot_light->set_screen_size(fvec2(float(m_accum_buf->size().x),
-	// 											float(m_accum_buf->size().y)));
-	// m_shaders.spot_light->set_shadow_tex_size(
-	// 	fvec2(float(m_shadow_buf->size(nsshadowbuf_object::Spot).w),
-	// 		  float(m_shadow_buf->size(nsshadowbuf_object::Spot).y)));
-	// m_shaders.spot_light->set_const_atten(pLight->atten().x);
-	// m_shaders.spot_light->set_lin_atten(pLight->atten().y);
-	// m_shaders.spot_light->set_exp_atten(pLight->atten().z);
-	// m_shaders.spot_light->set_cutoff(pLight->cutoff());
-	// m_shaders.spot_light->set_material_ids(m_mat_shader_ids);
-	
-	// nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
-	// for (uint32 i = 0; i < boundingMesh->count(); ++i)
-	// {
-	// 	nsmesh::submesh * cSub = boundingMesh->sub(i);
-
-	// 	if (cSub->m_node != nullptr)
-	// 		m_shaders.spot_light->set_uniform("nodeTransform", cSub->m_node->m_world_tform);
-	// 	else
-	// 		m_shaders.spot_light->set_uniform("nodeTransform", fmat4());
-
-	// 	cSub->m_vao.bind();
-	// 	glDrawElements(cSub->m_prim_type,
-	// 				   static_cast<GLsizei>(cSub->m_indices.size()),
-	// 				   GL_UNSIGNED_INT,
-	// 				   0);
-	// 	cSub->m_vao.unbind();
-	// }
-}
-
-// uivec3 nsrender_system::shadow_fbo()
-// {
-// 	nsfb_object * d = m_shadow_buf->fb(nsshadowbuf_object::Direction);
-// 	nsfb_object * s = m_shadow_buf->fb(nsshadowbuf_object::Spot);
-// 	nsfb_object * p = m_shadow_buf->fb(nsshadowbuf_object::Point);
-// 	uivec3 ret;
-// 	if (d != nullptr)
-// 		ret.x = d->gl_id();
-// 	if (s != nullptr)
-// 		ret.y = s->gl_id();
-// 	if (p != nullptr)
-// 		ret.z = s->gl_id();
-// 	return ret;
-// }
-
-// uint32 nsrender_system::final_fbo()
-// {
-// 	if (m_accum_buf != nullptr)
-// 		return m_accum_buf->gl_id();
-// 	return 0;
-// }
-
-// uint32 nsrender_system::gbuffer_fbo()
-// {
-// 	return m_gbuffer->gl_id();
-// }
-
-// void nsrender_system::set_shadow_fbo(uint32 fbodir, uint32 fbospot, uint32 fbopoint)
-// {
-// 	m_shadow_buf->set_fb(nse.framebuffer(fbodir), nsshadowbuf_object::Direction);
-// 	m_shadow_buf->set_fb(nse.framebuffer(fbospot), nsshadowbuf_object::Spot);
-// 	m_shadow_buf->set_fb(nse.framebuffer(fbopoint), nsshadowbuf_object::Point);
-// 	m_shadow_buf->resize(nsshadowbuf_object::Direction, DEFAULT_DIRLIGHT_SHADOW_W, DEFAULT_DIRLIGHT_SHADOW_H);
-// 	m_shadow_buf->resize(nsshadowbuf_object::Spot, DEFAULT_SPOTLIGHT_SHADOW_W, DEFAULT_SPOTLIGHT_SHADOW_H);
-// 	m_shadow_buf->resize(nsshadowbuf_object::Point, DEFAULT_POINTLIGHT_SHADOW_W, DEFAULT_POINTLIGHT_SHADOW_H);
-// 	m_shadow_buf->init();
-// }
-
-// void nsrender_system::set_final_fbo(uint32 fbo)
-// {
-// 	m_accum_buf = nse.framebuffer(fbo);
-// 	if (m_accum_buf == nullptr)
-// 		return;
-
-// 	m_accum_buf->resize(DEFAULT_FB_RES_X, DEFAULT_FB_RES_Y);
-// 	m_accum_buf->set_target(nsfb_object::fb_read_draw);
-// 	m_accum_buf->bind();
-// 	m_accum_buf->create<nstex2d>("RenderedFrame", nsfb_object::att_color, FINAL_TEX_UNIT, GL_RGBA8, GL_RGBA, GL_FLOAT);
-// 	m_accum_buf->add(m_gbuffer->depth());
-
-// 	nsfb_object::attachment * att = m_accum_buf->create<nstex2d>("FinalPicking", nsfb_object::attach_point(nsfb_object::att_color + nsgbuf_object::col_picking), G_PICKING_TEX_UNIT, GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT);
-// 	if (att != nullptr)
-// 	{
-// 		att->m_texture->set_parameter_i(nstexture::min_filter, GL_NEAREST);
-// 		att->m_texture->set_parameter_i(nstexture::mag_filter, GL_NEAREST);
-// 	}
-// 	m_accum_buf->update_draw_buffers();
-// }
 
 nsfb_object * nsrender_system::default_fbo()
 {
@@ -2061,146 +1567,6 @@ const fvec4 & nsrender_system::fog_color()
 void nsrender_system::set_fog_color(const fvec4 & color)
 {
 	m_fog_color = color;
-}
-
-void nsrender_system::_draw_call(const draw_call * dc)
-{
-}
-
-void nsrender_system::_draw_geometry(const shader_mat_map & sm_map,const mat_drawcall_map & mdc_map)
-{
-	// shader_mat_map::const_iterator shader_iter = sm_map.begin();
-	// while (shader_iter != sm_map.end())
-	// {
-	// 	nsmaterial_shader * current_shader = shader_iter->first;
-	// 	current_shader->bind();
-		
-	// 	auto mat_iter = shader_iter->second.begin();
-	// 	while (mat_iter != shader_iter->second.end())
-	// 	{
-	// 		uint32 mat_shader_id = m_mat_shader_ids.find(*mat_iter)->second;
-
-	// 		enable_culling((*mat_iter)->culling());
-	// 		set_cull_face((*mat_iter)->cull_mode());
-
-	// 		ivec2 sz = m_accum_buf->size();
-	// 		current_shader->set_for_material((*mat_iter), mat_shader_id, fvec2((float)sz.x, (float)sz.y));
-	// 		bind_textures(*mat_iter);
-
-	// 		if ((*mat_iter)->alpha_blend())
-	// 			m_tbuffers.bind_buffers();
-
-	// 		const drawcall_set & currentSet = mdc_map.find(*mat_iter)->second;
-	// 		drawcall_set::iterator  dc_iter = currentSet.begin();
-	// 		while (dc_iter != currentSet.end())
-	// 		{
-	// 			current_shader->set_for_draw_call(&(*dc_iter));
-	// 			(*dc_iter)->render();
-	// 			_draw_call(&(*dc_iter));
-	// 			++dc_iter;
-	// 		}
-
-	// 		if ((*mat_iter)->alpha_blend())
-	// 			m_tbuffers.unbind_buffers();
-
-	// 		++mat_iter;
-	// 	}
-	// 	++shader_iter;
-	// }
-}
-
-void nsrender_system::_draw_scene_to_depth(nsshadow_2dmap_shader * pShader)
-{
-
-	// mat_drawcall_map::iterator mat_iter = m_drawcall_map.begin();
-	// while (mat_iter != m_drawcall_map.end())
-	// {
-	// 	pShader->set_height_map_enabled(false);
-	// 	nstexture * tex = nse.resource<nstexture>(mat_iter->first->map_tex_id(nsmaterial::height));
-	// 	if (tex != nullptr)
-	// 	{
-	// 		pShader->set_height_map_enabled(true);
-	// 		set_active_texture_unit(nsmaterial::height);
-	// 		tex->bind();
-	// 	}
-
-	// 	drawcall_set & currentSet = mat_iter->second;
-	// 	drawcall_set::iterator dc_iter = currentSet.begin();
-	// 	while (dc_iter != currentSet.end())
-	// 	{
-	// 		if (dc_iter->submesh->m_prim_type != GL_TRIANGLES)
-	// 		{
-	// 			++dc_iter;
-	// 			continue;
-	// 		}
-
-	// 		if (!dc_iter->casts_shadows)
-	// 		{
-	// 			++dc_iter;
-	// 			continue;
-	// 		}
-
-	// 		if (dc_iter->submesh->m_node != nullptr)
-	// 			pShader->set_node_transform(dc_iter->submesh->m_node->m_world_tform);
-	// 		else
-	// 			pShader->set_node_transform(fmat4());
-
-	// 		if (dc_iter->anim_transforms != nullptr)
-	// 		{
-	// 			pShader->set_has_bones(true);
-	// 			pShader->set_bone_transform(*dc_iter->anim_transforms);
-	// 		}
-	// 		else
-	// 			pShader->set_has_bones(false);
-
-	// 		pShader->set_height_minmax(dc_iter->height_minmax);
-	// 		_draw_call(&(*dc_iter));
-	// 		++dc_iter;
-	// 	}
-	// 	++mat_iter;
-	// }
-}
-
-void nsrender_system::_stencil_point_light(nslight_comp * pLight)
-{
-	// nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
-	// for (uint32 i = 0; i < boundingMesh->count(); ++i)
-	// {
-	// 	nsmesh::submesh * cSub = boundingMesh->sub(i);
-
-	// 	if (cSub->m_node != nullptr)
-	// 		m_shaders.light_stencil->set_node_transform(cSub->m_node->m_world_tform);
-	// 	else
-	// 		m_shaders.light_stencil->set_node_transform(fmat4());
-
-	// 	cSub->m_vao.bind();
-	// 	glDrawElements(cSub->m_prim_type,
-	// 				   static_cast<GLsizei>(cSub->m_indices.size()),
-	// 				   GL_UNSIGNED_INT,
-	// 				   0);
-	// 	cSub->m_vao.unbind();
-	// }
-}
-
-void nsrender_system::_stencil_spot_light(nslight_comp * pLight)
-{
-	// nsmesh * boundingMesh = nse.resource<nsmesh>(pLight->mesh_id());
-	// for (uint32 i = 0; i < boundingMesh->count(); ++i)
-	// {
-	// 	nsmesh::submesh * cSub = boundingMesh->sub(i);
-
-	// 	if (cSub->m_node != nullptr)
-	// 		m_shaders.light_stencil->set_node_transform(cSub->m_node->m_world_tform);
-	// 	else
-	// 		m_shaders.light_stencil->set_node_transform(fmat4());
-
-	// 	cSub->m_vao.bind();
-	// 	glDrawElements(cSub->m_prim_type,
-	// 				   static_cast<GLsizei>(cSub->m_indices.size()),
-	// 				   GL_UNSIGNED_INT,
-	// 				   0);
-	// 	cSub->m_vao.unbind();
-	// }
 }
 
 void nsrender_system::clear_framebuffer(uint32 clear_mask)

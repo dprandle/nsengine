@@ -78,6 +78,21 @@ bool nsfb_object::add(attachment * pAttachment, bool pOverwrite)
 	return true;
 }
 
+uivec3 nsfb_object::pick(float mouse_x, float mouse_y, uint32 att_index)
+{
+	ivec2 tex_dim(mouse_x*m_size.x,mouse_y*m_size.y);
+	set_target(nsfb_object::fb_read);
+	bind();
+	set_read_buffer(nsfb_object::att_color+att_index);
+	uivec3 index;
+	gl_err_check("pre nsfb_object::pick");
+	glReadPixels(tex_dim.x, tex_dim.y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
+	gl_err_check("post nsfb_object::pick");
+	set_read_buffer(nsfb_object::att_none);
+	return index;
+}
+
+
 void nsfb_object::bind() const
 {
 	// use mTarget - easily set with setTarget
@@ -283,10 +298,10 @@ void nsfb_object::set_draw_buffers(attachment_point_array * pAttArray)
 	gl_err_check("post nsfb_object::set_draw_buffers");
 }
 
-void nsfb_object::set_read_buffer(attach_point pAttPoint)
+void nsfb_object::set_read_buffer(uint32 att_point)
 {
 	gl_err_check("pre nsfb_object::setReadBuffer");
-	glReadBuffer(pAttPoint);
+	glReadBuffer(att_point);
 	gl_err_check("post nsfb_object::setReadBuffer");
 }
 

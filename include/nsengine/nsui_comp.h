@@ -15,8 +15,10 @@ This file contains all of the neccessary declarations for the nsui_comp class.
 
 #include <nscomponent.h>
 #include <nsstring.h>
+#include <nsrouter.h>
 
 class nsmaterial;
+class nsfont;
 
 struct ui_widget
 {
@@ -24,17 +26,6 @@ struct ui_widget
 	nsmaterial * bg_mat;
 	fvec2 center_npos;
 	fvec2 size;
-};
-
-enum layout_dir
-{
-	layout_horizontal,
-	layout_verticle
-};
-
-struct ui_layout : ui_widget
-{
-	layout_dir ldir;
 	std::vector<ui_widget*> children;
 };
 

@@ -23,6 +23,7 @@
 #define DEFAULT_ENTITY_EXTENSION ".ent"
 #define DEFAULT_PLUGIN_EXTENSION ".bbp"
 #define DEFAULT_INPUT_MAP_EXTENSION ".nsi"
+#define DEFAULT_FONT_EXTENSION ".bft"
 #define CUBEMAP_TEX_EXTENSION ".cube"
 
 #include <nspupper.h>
@@ -65,6 +66,8 @@ public:
 
 	const uivec2 & icon_tex_id() const;
 
+	uint32 context_id();
+
 	/*!
 	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
 	is then it will update the handle
@@ -76,6 +79,8 @@ public:
 	bool owned() { return m_owned; }
 
 	void set_ext( const nsstring & pExt);
+
+	void set_context_id(uint32 id);
 
 	void rename(const nsstring & pResName);
 
@@ -100,13 +105,14 @@ protected:
 	uint32 m_id;
 	uint32 m_plugin_id;
 	bool m_owned;
+	uint32 m_ctxt_id;
 };
 
 class nsresource_inst : public nsresource
 {
 	nsresource_inst(const nsresource & rhs):nsresource(rhs) {}
 	void init() {std::terminate();}
- 	void pup(nsfile_pupper * p) {std::terminate();}
+ 	void pup(nsfile_pupper *) {std::terminate();}
 };
 
 #endif

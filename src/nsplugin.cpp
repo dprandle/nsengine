@@ -23,7 +23,9 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsentity.h>
 #include <nstexture.h>
 #include <nsshader.h>
+#include <nsfont.h>
 
+#include <nsfont_manager.h>
 #include <nsres_manager.h>
 #include <nsscene_manager.h>
 #include <nsmat_manager.h>
@@ -416,7 +418,10 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	{
 		mat->set_color_mode(true);
 		if (mat->color().a < 1.0f)
+		{
+			mat->enable_culling(false);
 			mat->set_alpha_blend(true);
+		}
 	}
 	return create_tile(name, mat, collides, type);
 }

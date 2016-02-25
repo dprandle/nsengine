@@ -33,6 +33,8 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 
 #define NSCAM_TOGGLEMODE "camera_toggle_mode"
 
+#define CAMERA_INPUT_CTXT "camera_controls"
+
 #include <nssystem.h>
 
 class nscam_comp;

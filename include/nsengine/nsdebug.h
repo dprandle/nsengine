@@ -40,7 +40,7 @@ public:
 
 	const nsstring & get_log_file() const;
 
-	const message_callback get_message_callback() const;
+	const message_callback & get_message_callback() const;
 
 	bool console_open() const;
 

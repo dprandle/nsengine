@@ -732,5 +732,4 @@ private:
 	nsstring m_cwd;
 };
 
-
 #endif

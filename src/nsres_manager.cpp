@@ -104,7 +104,13 @@ nsresource * nsres_manager::create(uint32 res_type_id, const nsstring & resName,
 		return NULL;
 	}
 	res->init();
+	res->set_context_id(nse.current_id());
 	return res;
+}
+
+nsresource * nsres_manager::create(const nsstring &guid_, const nsstring &res_name, nsresource * to_copy)
+{
+	return create(hash_id(guid_), res_name, to_copy);
 }
 
 bool nsres_manager::contains(nsresource * res)
@@ -238,12 +244,14 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 	}
 
 	nsresource * res = get(resName);
+	nsstring restype(nse.guid(res_type_id));
 	if (res == NULL)
 	{
 		res = create(res_type_id, resName);
 	}
 	else
 	{
+		dprint("nsres_manager::load - Error trying to load " + restype  + " with same name as already existing " + restype + " - " + resName);
 		file.close();
 		delete p;
 		return NULL;
@@ -261,7 +269,7 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 
 	if (rt != nse.guid(res_type_id))
 	{
-		dprint("nsres_manager::load Attempted to load resource type " + nse.guid(res_type_id) + " from file that is not of that type: " + fName);
+		dprint("nsres_manager::load Attempted to load resource type " + restype + " from file that is not of that type: " + fName);
 		delete p;
 		file.close();
 		destroy(res);

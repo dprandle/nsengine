@@ -213,11 +213,11 @@ uivec3 nsselection_system::pick(const fvec2 & mpos)
 
 uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	nsgbuf_object * gbuf = (nsgbuf_object*)nse.system<nsrender_system>()->render_target(GBUFFER_TARGET);
-	if (gbuf == NULL)
+	nsfb_object * pck = nse.system<nsrender_system>()->render_target(ACCUM_TARGET);
+	if (pck == NULL)
 		return uivec3();
 
-	uivec3 index = gbuf->pick(mousex, mousey);
+	uivec3 index = pck->pick(mousex, mousey, 1);
 	return index;
 }
 
@@ -1469,7 +1469,7 @@ void nsselection_system::update()
 		if (!nse.system<nsbuild_system>()->enabled())
 		{
 			if (!collision())
-				set_color(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+				set_color(fvec4(1.0f, 0.0f, 0.0f, 0.5f));
 			else
 				reset_color();
 		}
