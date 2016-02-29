@@ -18,7 +18,6 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsfactory.h>
 
 #include <nsrender_system.h>
-
 #include <nsplugin.h>
 #include <nsentity.h>
 #include <nstexture.h>

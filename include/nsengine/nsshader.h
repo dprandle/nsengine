@@ -218,7 +218,9 @@ class nsrender_shader : public nsshader
 	nsrender_shader() {}
 	virtual ~nsrender_shader() {}
 
-	void set_viewport(const ivec4 & viewport_);
+	void set_viewport(const ivec4 & vp);
+
+	void set_proj_cam_mat(const fmat4 & pcmat);
 
 	virtual void set_for_draw_call(draw_call *) {}
 };

@@ -484,7 +484,7 @@ void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset
 
 void glfw_resizewindow_callback(GLFWwindow* window, int32 width, int32 height)
 {
-	nse.event_dispatch()->push<window_resize_event>(ivec2(width,height));
+	nse.event_dispatch()->push<window_resize_event>(0,ivec2(width,height));
 }
 
 

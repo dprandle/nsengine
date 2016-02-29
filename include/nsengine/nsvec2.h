@@ -498,6 +498,26 @@ struct nsvec2
 		return ((x == rhs_.x) && (y == rhs_.y));
 	}
 
+	bool operator<(const nsvec2<T> & rhs_) const
+	{
+		return (x < rhs_.x && y < rhs_.y);
+	}
+
+	bool operator<=(const nsvec2<T> & rhs_) const
+	{
+		return (*this == rhs_ || *this < rhs_);
+	}
+
+	bool operator>(const nsvec2<T> & rhs_) const
+	{
+		return (x > rhs_.x && y > rhs_.y);
+	}
+
+	bool operator>=(const nsvec2<T> & rhs_) const
+	{
+		return !(*this == rhs_ || *this > rhs_);
+	}
+
 	bool operator!=(const nsvec2<T> & rhs_) const
 	{
 		return !(*this == rhs_);

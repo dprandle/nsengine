@@ -16,9 +16,18 @@
 #include <nsgl_object.h>
 #include <nstexture.h>
 
+class nsrender_target
+{
+  public:
+	nsrender_target() {};
+	virtual ~nsrender_target() {};
+	virtual void init() = 0;
+	virtual void release() = 0;
+};
+
 class nsrenderbuf_object;
 
-class nsfb_object : public nsgl_object
+class nsfb_object : public nsgl_object, public nsrender_target
 {
 public:
 

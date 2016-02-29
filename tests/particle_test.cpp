@@ -136,7 +136,7 @@ int main()
 
 	// This tells the engine to add and initialize all the main systems/components/factories 
     nse.start(screen_size);
-    nse.system<nsrender_system>()->setup_default_rendering();
+//    nse.system<nsrender_system>()->setup_default_rendering();
 
 	// create a plugin to allow us to load and save groups of stuff easily
     nsplugin * plg = nse.create_plugin("ship_resources.bbp");

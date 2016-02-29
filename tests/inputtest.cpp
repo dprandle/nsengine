@@ -20,6 +20,7 @@
 #include <nsrender_comp.h>
 #include <nsanim_comp.h>
 #include <nsfont.h>
+#include <nsopengl_driver.h>
 
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
@@ -35,8 +36,10 @@ int main()
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
 	
     nse.create_context();
+	nse.create_video_driver<nsopengl_driver>();
     nse.start();
-    nse.system<nsrender_system>()->setup_default_rendering();
+
+//    nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
@@ -62,7 +65,6 @@ nsplugin * setup_basic_plugin()
     nsplugin * plg = nse.create_plugin("testplug");
     nsscene * scn = plg->create<nsscene>("mainscene");
 	scn->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-	nse.system<nsrender_system>()->set_fog_color(scn->bg_color());
 	nse.set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
@@ -84,6 +86,19 @@ nsplugin * setup_basic_plugin()
 	scn->add(spot_light, fvec3(10,10,0.0f));
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
 	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
+
+    nse.system<nsrender_system>()->insert_viewport(
+		"main_view",
+		nsrender::viewport(
+            fvec4(0.0f,0.0f,0.5f,0.5f),
+			cam));
+
+    nse.system<nsrender_system>()->insert_viewport(
+        "main_view2",
+        nsrender::viewport(
+            fvec4(0.5f,0.5f,1.0f,1.0f),
+            cam));
+
 	return plg;
 }
 

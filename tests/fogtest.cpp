@@ -56,8 +56,6 @@ int main()
     nse.system<nsselection_system>()->enable_mirror_selection(true);
 	nse.system<nsselection_system>()->set_mirror_tile_color(fvec4(1.0f,1.0f,0.0f,0.7f));
 	
-	nse.system<nsrender_system>()->set_fog_factor(uivec2(10,100));
-    nse.system<nsrender_system>()->set_fog_color(nse.current_scene()->bg_color());
 
 	while (glfw_window_open())
     {

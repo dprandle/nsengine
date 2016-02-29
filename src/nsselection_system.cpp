@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsvideo_driver.h>
 #include <iostream>
 #include <nsvector.h>
 #include <nsselection_system.h>
@@ -213,12 +214,7 @@ uivec3 nsselection_system::pick(const fvec2 & mpos)
 
 uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	nsfb_object * pck = nse.system<nsrender_system>()->render_target(ACCUM_TARGET);
-	if (pck == NULL)
-		return uivec3();
-
-	uivec3 index = pck->pick(mousex, mousey, 1);
-	return index;
+	return nse.system<nsrender_system>()->pick(fvec2(mousex,mousey));
 }
 
 void nsselection_system::set_mirror_tile_color(const fvec4 & color)

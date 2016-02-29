@@ -21,6 +21,7 @@ Description:
 #include <string.h>
 #include <nsgl_context.h>
 #include <nsrender_system.h>
+#include <nsopengl_driver.h>
 
 nsshader::nsshader():
 	nsresource(),
@@ -565,9 +566,14 @@ nsshader::shader_stage::shader_stage(shader_type pType):
 {}
 
 
-void nsrender_shader::set_viewport(const ivec4 & viewport_)
+void nsrender_shader::set_viewport(const ivec4 & vp)
 {
-	set_uniform("viewport", fvec4(viewport_.x,viewport_.y, viewport_.z, viewport_.w));
+	set_uniform("viewport", fvec4(vp.x, vp.y, vp.z, vp.w));
+}
+
+void nsrender_shader::set_proj_cam_mat(const fmat4 & pcmat)
+{
+	set_uniform("projCamMat", pcmat);	
 }
 
 nsmaterial_shader::nsmaterial_shader() : nsrender_shader() {}
@@ -611,7 +617,7 @@ void nsmaterial_shader::set_for_draw_call(draw_call * drawc)
 	if (!dc->submesh->m_has_tex_coords)
 		set_uniform("colorMode", true);
 
-	set_uniform("projCamMat", dc->proj_cam);
+//	set_uniform("projCamMat", dc->proj_cam);
 
 	if (dc->anim_transforms != NULL)
 	{
@@ -649,8 +655,6 @@ void nslight_shader::set_for_draw_call(draw_call *dc)
 	set_uniform("light.shadowDarkness", ldc->shadow_darkness);
 	set_uniform("shadowTexSize", fvec2(ldc->shadow_tex_size.x, ldc->shadow_tex_size.y));
 	set_uniform("camWorldPos", ldc->cam_world_pos);
-	set_uniform("fog_factor", ldc->fog_factor);
-	set_uniform("fog_color", ldc->fog_color);	
 
 	nsstring id;
 	id.reserve(64);
@@ -690,7 +694,6 @@ void nsdir_light_shader::set_for_draw_call(draw_call * dc)
 {
 	light_draw_call * ldc = (light_draw_call*)dc;
 	set_uniform("projLightMat", ldc->proj_light_mat);
-	set_uniform("lightingEnabled", ldc->lighting_enabled);	
 	set_uniform("bgColor", ldc->bg_color);
 	set_uniform("light.direction", ldc->direction);
 	nslight_shader::set_for_draw_call(dc);
@@ -714,7 +717,7 @@ void nspoint_light_shader::set_for_draw_call(draw_call * dc)
 	set_uniform("light.position", ldc->light_pos);
 	set_uniform("maxDepth", ldc->max_depth);
 	set_uniform("transform", ldc->light_transform);
-	set_uniform("projCamMat", ldc->proj_cam_mat);
+//	set_uniform("projCamMat", ldc->proj_cam_mat);
 	if (ldc->submesh->m_node != nullptr)
 		set_uniform("nodeTransform", ldc->submesh->m_node->m_world_tform);
 	else
@@ -990,8 +993,6 @@ void nsshadow_cubemap_shader::init_uniforms()
 void nsshadow_cubemap_shader::set_for_light_draw_call(light_draw_call * dc)
 {
 	fmat4 invt;
-//	invt.set_column(3, fvec4(-1.0f * dc->light_pos, 1.0f));
-//	set_uniform("test_mat", invt);
 	set_uniform("lightPos", dc->light_pos);
 	set_uniform("maxDepth", dc->max_depth);
 	nsshadow_2dmap_shader::set_for_light_draw_call(dc);
@@ -1015,7 +1016,7 @@ void nslight_stencil_shader::set_for_draw_call(draw_call * dc)
 	else
 		set_uniform("nodeTransform", fmat4());
 	set_uniform("transform", ldc->light_transform);
-	set_uniform("projCamMat", ldc->proj_cam_mat);
+//	set_uniform("projCamMat", ldc->proj_cam_mat);
 }
 
 nsselection_shader::nsselection_shader() : nsrender_shader() {}
@@ -1045,7 +1046,7 @@ void nsselection_shader::set_for_draw_call(draw_call * dc)
 	{
 		set_uniform("hasBones", false);
 	}
-	set_uniform("projCamMat", idc->proj_cam);
+//	set_uniform("projCamMat", idc->proj_cam);
 	set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
 	set_uniform("hminmax", idc->height_minmax);
 }

@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsvideo_driver.h>
 #include <hash/crc32.h>
 #include <nsfile_os.h>
 #include <nsengine.h>
@@ -443,21 +444,13 @@ void nsengine::start(const ivec2 & screen_size)
 	if (current() == NULL)
 		return;
 
-    glewExperimental = true;
-
-	// Initialize the glew extensions - if this fails we want a crash because there is nothing
-	// useful the program can do without these initialized
-	GLenum cont = glewInit();
-	if (cont != GLEW_OK)
-	{
-		nslog_file("GLEW extensions unable to initialize");
+	if (m_driver == nullptr || !m_driver->initialized() )
 		return;
-	}
+	
 	set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
 	set_import_dir(m_cwd + nsstring(DEFAULT_IMPORT_DIR));
 	set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
 	
-
 	nsplugin * plg = core();	
 	plg->init();
 	plg->bind();
@@ -636,6 +629,11 @@ bool nsengine::destroy_context(uint32 cID)
 	return true;
 }
 
+nsvideo_driver * nsengine::video_driver()
+{
+	return m_driver;
+}
+
 void nsengine::set_plugin_dir(const nsstring & plugdir)
 {
 	current()->plugins->set_plugin_dir(plugdir);
@@ -673,6 +671,19 @@ const nsstring & nsengine::cwd()
 nsplugin * nsengine::remove_plugin(nsplugin * plg)
 {
 	return current()->plugins->remove(plg);
+}
+
+void nsengine::_cleanup_driver()
+{
+	if (m_driver != nullptr)
+		m_driver->release();
+	delete m_driver;
+	m_driver = nullptr;
+}
+
+void nsengine::_init_driver()
+{
+	m_driver->init();
 }
 
 void nsengine::_init_factories()

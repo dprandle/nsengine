@@ -16,11 +16,13 @@
 #include <nsgl_context.h>
 #include <nsengine.h>
 
-nsfb_object::nsfb_object() : m_target(fb_read_draw),
-m_size(),
-m_depth_stencil_att(NULL),
-m_color_atts(),
-nsgl_object()
+nsfb_object::nsfb_object() :
+	m_target(fb_read_draw),
+	m_size(),
+	m_depth_stencil_att(NULL),
+	m_color_atts(),
+	nsgl_object(),
+	nsrender_target()
 {}
 
 nsfb_object::~nsfb_object()

@@ -8,3 +8,6 @@ A pointer to the resource can be used as the resource's identifier - this can ge
 
 In the event of a name change - the driver doesn't care because its using the resource's memory address to store the needed gpu memory. If the resource is deleted, a resource deleted event needs to be propagated to the render system.
 
+Just finished moving render queues, render passes, and render targets in to a base video driver class. Now we need to go through and figure out how we want to push draw calls to the different queues, and also how to get the camera transform effectively to the shaders.
+
+Finally we will need to make the opengl_driver responsible for initializing and keeping track of all opengl resources.

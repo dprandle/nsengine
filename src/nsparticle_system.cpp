@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsvertex_array_object.h>
 #include <nsevent_dispatcher.h>
 #include <nsparticle_system.h>
 #include <nsparticle_comp.h>
@@ -92,7 +93,7 @@ void nsparticle_system::update()
 		nstexture * texRand = nse.resource<nstexture>(comp->rand_tex_id());
 		if (texRand != NULL)
 		{
-			nse.system<nsrender_system>()->set_active_texture_unit(RAND_TEX_UNIT);
+//			nse.video_driver()->set_active_texture_unit(RAND_TEX_UNIT);
 			texRand->bind();
 		}
 

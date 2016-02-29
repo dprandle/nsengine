@@ -130,6 +130,7 @@ This file contains all of the neccessary declartations for the nsengine class.
 #include <unordered_map>
 
 class nsscene;
+class nsvideo_driver;
 class nsrender_system;
 class nsanim_manager;
 class nsmesh_manager;
@@ -221,6 +222,16 @@ public:
 	hash_factory_map::iterator begin_factory();
 
 	system_hash_map::iterator begin_system();
+
+	template<class T>
+	T * create_video_driver()
+	{
+		_cleanup_driver();
+		m_driver = new T();
+		_init_driver();
+	}
+
+	nsvideo_driver * video_driver();
 
 	/*!
 	Create a GLContext and return a unique id - this id can be used to set the current context and
@@ -658,6 +669,9 @@ public:
 
 private:
 
+	void _cleanup_driver();
+	void _init_driver();
+	
 	template<class obj_type>
 	bool _add_factory(nsfactory * fac)
 	{
@@ -726,6 +740,8 @@ private:
 	hash_string_map m_obj_type_names;
 	hash_factory_map m_factories;
 	res_manager_type_map m_res_manager_map;
+
+	nsvideo_driver * m_driver;
 	
 	gl_context_map m_contexts;
 	uint32 m_current_context;

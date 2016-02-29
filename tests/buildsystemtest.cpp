@@ -29,7 +29,7 @@ int main()
 	
     uint32 i = nse.create_context();
     nse.start();
-    nse.system<nsrender_system>()->setup_default_rendering();
+//    nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = setup_basic_plugin();
 

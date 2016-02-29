@@ -123,11 +123,13 @@ struct nscam_change_event : public nsevent
 
 struct window_resize_event : public nsevent
 {
-	window_resize_event(const ivec2 & new_size_):
+	window_resize_event(uint32 window_tag_, const ivec2 & new_size_):
 		nsevent(),
+		window_tag(window_tag_),
 		new_size(new_size_)
 	{}
-	
+
+	uint32 window_tag;
 	ivec2 new_size;
 };
 
