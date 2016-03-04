@@ -323,12 +323,10 @@ void nsinput_map::pup(nsfile_pupper * p)
 nsinput_map::trigger::trigger(
 	const nsstring & pName,
 	t_state triggerOn,
-    uint32 interestedAxis,
 	bool overwrite_lower_contexts_):
 	name(pName),
 	hash_name(0),
 	trigger_state(triggerOn),
-	axis_bitfield(interestedAxis),
 	overwrite_lower_contexts(overwrite_lower_contexts_)
 	{}
 
@@ -355,7 +353,6 @@ const nsinput_map::trigger & nsinput_map::trigger::operator=(const trigger & pRh
 {
 	name = pRhs.name;
 	trigger_state = pRhs.trigger_state;
-	axis_bitfield = pRhs.axis_bitfield;
 	key_modifiers = pRhs.key_modifiers;
 	mouse_modifiers = pRhs.mouse_modifiers;
 	return *this;

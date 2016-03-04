@@ -39,78 +39,62 @@ int main()
 
 	nsinput_map::trigger insert_ent(
 		NSINSERT_ENTITY,
-		nsinput_map::t_toggle,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-		);
+		nsinput_map::t_toggle);
 	imap->add_mouse_trigger(BUILD_MODE_CTXT, nsinput_map::left_button, insert_ent);
 
 	nsinput_map::trigger toggle_build(
 		NSTOGGLE_BUILD,
-		nsinput_map::t_pressed
-		);
+		nsinput_map::t_pressed);
 	imap->add_key_trigger("Main", nsinput_map::key_b, toggle_build);
 	
 	nsinput_map::trigger toggle_build_erase_mode(
 		NSTOGGLE_BUILD_ERASE_MODE,
-		nsinput_map::t_pressed
-		);
+		nsinput_map::t_pressed);
 	imap->add_key_trigger("Main", nsinput_map::key_e, toggle_build_erase_mode);
 
 	nsinput_map::trigger toggle_tile_build_mode(
 		NSTOGGLE_TILE_BUILD_MODE,
-		nsinput_map::t_pressed
-		);
+		nsinput_map::t_pressed);
 	imap->add_key_trigger("Main", nsinput_map::key_t, toggle_tile_build_mode);
 
 	nsinput_map::trigger move_brush_xy(
 		NSSEL_MOVE_XY,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
     imap->add_mouse_trigger(BUILD_MODE_CTXT, nsinput_map::movement, move_brush_xy);
 
 	nsinput_map::trigger move_brush_click_xy(
 		NSSEL_MOVE_XY,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	move_brush_click_xy.add_mouse_mod(nsinput_map::left_button);
     imap->add_mouse_trigger(BUILD_MODE_CTXT, nsinput_map::movement, move_brush_click_xy);
 
 	nsinput_map::trigger move_brush_z(
         NSSEL_MOVE_Z,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	move_brush_z.add_key_mod(nsinput_map::key_z);
     imap->add_mouse_trigger(BUILD_MODE_CTXT, nsinput_map::movement,move_brush_z);
 
 	nsinput_map::trigger initial_snap_brush_z(
         NSINITIAL_SNAP_BRUSH_Z,
 		nsinput_map::t_pressed,
-		false
-		);
+		false);
     imap->add_key_trigger(BUILD_MODE_CTXT, nsinput_map::key_z,initial_snap_brush_z);
 
 	nsinput_map::trigger snap_brush_z(
         NSSNAP_BRUSH_Z,
 		nsinput_map::t_released,
-		false
-		);
+		false);
     imap->add_key_trigger(BUILD_MODE_CTXT, nsinput_map::key_z,snap_brush_z);
 
 	nsinput_map::trigger move_brush_click_z(
         NSINSERT_ENTITY,
-		nsinput_map::t_toggle,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-		);
+		nsinput_map::t_toggle);
 	move_brush_click_z.add_key_mod(nsinput_map::key_z);
     imap->add_mouse_trigger(BUILD_MODE_CTXT, nsinput_map::left_button, move_brush_click_z);
 
 	nsinput_map::trigger save_map(
         "save_map",
-		nsinput_map::t_pressed
-		);
+		nsinput_map::t_pressed);
 	save_map.add_key_mod(nsinput_map::key_lctrl);
     imap->add_key_trigger("Main", nsinput_map::key_s, save_map);
 

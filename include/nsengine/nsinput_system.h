@@ -26,7 +26,7 @@ public:
 
 	nsinput_system();
 
-	~nsinput_system();
+	virtual ~nsinput_system();
 
 	const fvec2 & cursor_pos();
 
@@ -76,7 +76,7 @@ private:
 
 	void _create_state_event(nsinput_map::trigger & trigger, bool toggle);
 
-	void _set_axis_from_trigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t);
+	void _set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t);
 
 	bool _handle_action(nsaction_event * evnt);
 	

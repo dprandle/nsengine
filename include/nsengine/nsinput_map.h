@@ -130,16 +130,6 @@ class nsinput_map : public nsresource
 		any_button
 	};
 
-	enum axis_type
-	{
-		no_axis = 0x0000,
-		axis_mouse_xpos = 0x0001,
-		axis_mouse_ypos = 0x0002,
-		axis_mouse_xdelta = 0x0004,
-		axis_mouse_ydelta = 0x0008,
-		axis_scroll_delta = 0x0010
-	};
-
 	enum t_state
 	{
 		t_pressed,
@@ -151,14 +141,12 @@ class nsinput_map : public nsresource
 	
     typedef std::unordered_set<key_val, EnumHash> key_modifier_set;
     typedef std::unordered_set<mouse_button_val, EnumHash> mouse_modifier_set;
-    typedef std::unordered_map<axis_type, float, EnumHash> axis_map;
 
 	struct trigger
 	{
 		trigger(
 			const nsstring & name_="",
 			t_state trigger_state_=t_pressed,
-            uint32 interested_axes=0,
 			bool overwrite_lower_contexts_=true
 			);
 
@@ -173,7 +161,6 @@ class nsinput_map : public nsresource
 		
 		nsstring name;
         uint32 hash_name;
-        uint32 axis_bitfield;
 		t_state trigger_state;
 		key_modifier_set key_modifiers;
 		mouse_modifier_set mouse_modifiers;
@@ -287,14 +274,6 @@ void pup(PUPer & p, nsinput_map::ctxt * & c, const nsstring & var_name)
 }
 
 template<class PUPer>
-void pup(PUPer & p, nsinput_map::axis_type & en, const nsstring & var_name)
-{
-	uint32 in = static_cast<uint32>(en);
-	pup(p, in, var_name);
-	en = static_cast<nsinput_map::axis_type>(in);
-}
-
-template<class PUPer>
 void pup(PUPer & p, nsinput_map::t_state & en, const nsstring & var_name)
 {
 	uint32 in = static_cast<uint32>(en);
@@ -310,7 +289,6 @@ void pup(PUPer & p, nsinput_map::trigger & t, const nsstring & var_name)
 	pup(p, t.name, var_name + ".name");
 	t.hash_name = hash_id(t.name);
 	pup(p, t.trigger_state, var_name + ".trigger_state");
-	pup(p, t.axis_bitfield, var_name + ".axis_bitfield");
 	pup(p, t.key_modifiers, var_name + ".key_modifiers");
 	pup(p, t.mouse_modifiers, var_name + ".mouse_modifiers");
 	pup(p, t.overwrite_lower_contexts, var_name + ".overwrite_lower_contexts");

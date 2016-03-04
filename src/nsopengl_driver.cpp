@@ -75,7 +75,6 @@ instanced_draw_call::instanced_draw_call():
 	transform_buffer(nullptr),
 	transform_id_buffer(nullptr),
 	anim_transforms(nullptr),
-	//proj_cam(),
 	height_minmax(),
 	entity_id(0),
 	plugin_id(0),
@@ -292,9 +291,10 @@ void light_pass::render()
 		}
 		((nsfb_object*)ren_target)->set_draw_buffer(nsfb_object::att_color);
 		dc->shdr->bind();
-		dc->shdr->set_proj_cam_mat(dc->proj_cam_mat);
+		dc->shdr->set_proj_cam_mat(vp->camera->get<nscam_comp>()->proj_cam());
 		dc->shdr->set_viewport(gl_state.current_viewport);
 		dc->shdr->set_for_draw_call(dc);
+		dc->shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->wpos());
 		dc->shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		dc->shdr->set_uniform("fog_color", vp->m_fog_color);
 		dc->shdr->set_uniform("lightingEnabled", vp->dir_lights);
@@ -321,7 +321,7 @@ void culled_light_pass::render()
 		}
 		((nsfb_object*)ren_target)->set_draw_buffer(nsfb_object::att_none);
 		stencil_shdr->bind();
-		stencil_shdr->set_proj_cam_mat(dc->proj_cam_mat);
+		stencil_shdr->set_proj_cam_mat(vp->camera->get<nscam_comp>()->proj_cam());
 		stencil_shdr->set_viewport(gl_state.current_viewport);
 		stencil_shdr->set_for_draw_call(dc);
 		dc->render();
@@ -333,7 +333,7 @@ void culled_light_pass::render()
 		((nsfb_object*)ren_target)->set_draw_buffer(nsfb_object::att_color);
 		dc->shdr->bind();
 		dc->shdr->set_viewport(gl_state.current_viewport);
-		dc->shdr->set_proj_cam_mat(dc->proj_cam_mat);
+		dc->shdr->set_proj_cam_mat(vp->camera->get<nscam_comp>()->proj_cam());
 		dc->shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		dc->shdr->set_uniform("fog_color", vp->m_fog_color);		
 		dc->shdr->set_for_draw_call(dc);
@@ -1069,7 +1069,7 @@ void nsopengl_driver::_add_lights_from_scene(nsscene * scene)
 	{
 		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
 		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
-		nstform_comp * camt = scene->camera()->get<nstform_comp>();
+//		nstform_comp * camt = scene->camera()->get<nstform_comp>();
 		nsmesh * boundingMesh = nse.resource<nsmesh>(lcomp->mesh_id());
 		
 		m_light_draw_calls.resize(m_light_draw_calls.size()+1);
@@ -1088,10 +1088,8 @@ void nsopengl_driver::_add_lights_from_scene(nsscene * scene)
 
 			ldc->submesh = nullptr;
 			ldc->draw_point = nullptr;
-			ldc->proj_cam_mat = scene->camera()->get<nscam_comp>()->proj_cam();
 			ldc->bg_color = scene->bg_color();
 			ldc->direction = lcomp->transform(i).target();
-			ldc->cam_world_pos = camt->wpos();
 			ldc->diffuse_intensity = lcomp->intensity().x;
 			ldc->ambient_intensity = lcomp->intensity().y;
 			ldc->cast_shadows = lcomp->cast_shadows();

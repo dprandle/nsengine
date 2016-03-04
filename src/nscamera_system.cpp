@@ -15,6 +15,7 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <nscamera_system.h>
 #include <nsentity.h>
 #include <nsselection_system.h>
+#include <nsplugin.h>
 #include <nsevent_dispatcher.h>
 #include <nsevent.h>
 #include <nscam_comp.h>
@@ -432,29 +433,28 @@ bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 	nscam_comp * camc = camera->get<nscam_comp>();
 	nstform_comp * tcomp = camera->get<nstform_comp>();
 
-	fvec2 mouseDelta;
-	float scroll;
-	auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta),
-		ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta),
-		scroll_iter = evnt->axes.find(nsinput_map::axis_scroll_delta);
-
-	if (xpos_iter != evnt->axes.end())
-		mouseDelta.x = xpos_iter->second;
-
-	if (ypos_iter != evnt->axes.end())
-		mouseDelta.y = ypos_iter->second;
-
-	if (scroll_iter != evnt->axes.end())
-		scroll = scroll_iter->second;
-
 	if (evnt->trigger_hash_name == trigger_hash(camera_tilt_pan))
-		_on_cam_turn(camc, tcomp, mouseDelta);
+		_on_cam_turn(camc, tcomp, evnt->norm_delta);
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_move))
-		_on_cam_move(camc, tcomp, mouseDelta);
+		_on_cam_move(camc, tcomp, evnt->norm_delta);
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_zoom))
-		_on_cam_zoom(camc, tcomp, scroll);
+		_on_cam_zoom(camc, tcomp, evnt->scroll);
+	
+	if (evnt->trigger_hash_name == hash_id("ToggleCam"))
+	{
+		nsstring camname = nse.current_scene()->camera()->name();
+		if (camname == "scenecam")
+			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam1"));
+		else if (camname == "scenecam1")
+			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam2"));
+		else if (camname == "scenecam2")
+			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam3"));
+		else
+			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam"));
+	}
+
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_top_view_0))
 		set_view(view_top_0);

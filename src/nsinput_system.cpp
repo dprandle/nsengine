@@ -20,8 +20,8 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 #include <nsplugin.h>
 
 nsinput_system::nsinput_system() :
-	m_scroll_delta(0.0f),
-	nssystem()
+	nssystem(),
+	m_scroll_delta(0.0f)
 {
 
 }
@@ -38,9 +38,6 @@ const fvec2 & nsinput_system::cursor_pos()
 
 bool nsinput_system::key_event(nskey_event * evnt)
 {
-#ifdef INPUTTEST
-	std::cout << "Key was pressed: " << evnt->mPressed << " and key was: " << evnt->mKey << std::endl;
-#endif
 	if (evnt->pressed)
 		_key_press(evnt->key);
 	else
@@ -50,10 +47,6 @@ bool nsinput_system::key_event(nskey_event * evnt)
 
 bool nsinput_system::mouse_button_event(nsmouse_button_event * evnt)
 {
-#ifdef INPUTTEST
-	std::cout << "Mouse was pressed: " << evnt->mPressed << " and key was: " << evnt->mb << std::endl;
-	std::cout << "Mouse coords:" << evnt->mNormMousePos.toString() << std::endl;
-#endif
 	if (evnt->pressed)
 		_mouse_press(evnt->mb, evnt->normalized_mpos);
 	else
@@ -63,18 +56,12 @@ bool nsinput_system::mouse_button_event(nsmouse_button_event * evnt)
 
 bool nsinput_system::mouse_move_event(nsmouse_move_event * evnt)
 {
-#ifdef INPUTTEST
-	std::cout << "Mouse moved: Mouse coords:" << evnt->mNormMousePos.toString() << std::endl;
-#endif
 	_mouse_move(evnt->normalized_mpos);
 	return true;
 }
 
 bool nsinput_system::mouse_scroll_event(nsmouse_scroll_event * evnt)
 {
-#ifdef INPUTTEST
-	std::cout << "Mouse Scrolled: Mouse coords:" << evnt->mNormMousePos.toString() << " Scroll amount: " << evnt->mScroll << std::endl;
-#endif
 	_mouse_scroll(evnt->scroll_delta, evnt->normalized_mpos);
 	return true;
 }
@@ -121,14 +108,14 @@ void nsinput_system::_create_action_event(nsinput_map::trigger & trigger)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
 	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(trigger.hash_name);
-	_set_axis_from_trigger(evnt->axes, trigger);
+	_set_event_from_trigger(evnt, trigger);
 }
 
 void nsinput_system::_create_state_event(nsinput_map::trigger & trigger, bool toggle)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
 	nsstate_event * evnt = nse.event_dispatch()->push<nsstate_event>(trigger.hash_name, toggle);
-	_set_axis_from_trigger(evnt->axes, trigger);
+	_set_event_from_trigger(evnt, trigger);
 }
 
 void nsinput_system::_key_release(nsinput_map::key_val pKey)
@@ -173,18 +160,11 @@ void nsinput_system::set_cursor_pos(const fvec2 & cursorPos)
 	m_current_pos = cursorPos;
 }
 
-void nsinput_system::_set_axis_from_trigger(nsinput_map::axis_map & am, const nsinput_map::trigger & t)
+void nsinput_system::_set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t)
 {
-	if ((t.axis_bitfield & nsinput_map::axis_mouse_xpos) == nsinput_map::axis_mouse_xpos)
-		am[nsinput_map::axis_mouse_xpos] = m_current_pos.x;
-	if ((t.axis_bitfield & nsinput_map::axis_mouse_ypos) == nsinput_map::axis_mouse_ypos)
-		am[nsinput_map::axis_mouse_ypos] = m_current_pos.y;
-	if ((t.axis_bitfield & nsinput_map::axis_mouse_xdelta) == nsinput_map::axis_mouse_xdelta)
-		am[nsinput_map::axis_mouse_xdelta] = m_current_pos.x - m_last_pos.x;
-	if ((t.axis_bitfield & nsinput_map::axis_mouse_ydelta) == nsinput_map::axis_mouse_ydelta)
-		am[nsinput_map::axis_mouse_ydelta] = m_current_pos.y - m_last_pos.y;
-	if ((t.axis_bitfield & nsinput_map::axis_scroll_delta) == nsinput_map::axis_scroll_delta)
-		am[nsinput_map::axis_scroll_delta] = m_scroll_delta;
+	evnt->norm_mpos = m_current_pos;
+	evnt->norm_delta = m_current_pos - m_last_pos;
+	evnt->scroll = m_scroll_delta;
 }
 
 void nsinput_system::_mouse_move(const fvec2 & cursorPos)

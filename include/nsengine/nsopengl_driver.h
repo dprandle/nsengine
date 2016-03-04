@@ -86,7 +86,6 @@ struct single_draw_call : public draw_call
 	nsmesh::submesh * submesh;
 	fmat4 transform;
 	fmat4_vector * anim_transforms;
-//	fmat4 proj_cam;
 	fvec2 height_minmax;
 	uint32 entity_id;
 	uint32 plugin_id;
@@ -106,7 +105,6 @@ struct instanced_draw_call : public draw_call
 	nsbuffer_object * transform_buffer;
 	nsbuffer_object * transform_id_buffer;
 	fmat4_vector * anim_transforms;
-//	fmat4 proj_cam;
 	fvec2 height_minmax;
 	uint32 entity_id;
 	uint32 plugin_id;
@@ -127,12 +125,10 @@ struct light_draw_call : public draw_call
 
 	nsbuffer_object * draw_point;
 	fmat4 proj_light_mat;
-	fmat4 proj_cam_mat;
 	fmat4 light_transform;
 	fvec3 light_pos;
 	fvec4 bg_color;
 	fvec3 direction;
-	fvec3 cam_world_pos;
 	bool cast_shadows;
 	fvec3 light_color;
 	fvec3 spot_atten;

@@ -654,7 +654,6 @@ void nslight_shader::set_for_draw_call(draw_call *dc)
 	set_uniform("shadowSamples", ldc->shadow_samples);
 	set_uniform("light.shadowDarkness", ldc->shadow_darkness);
 	set_uniform("shadowTexSize", fvec2(ldc->shadow_tex_size.x, ldc->shadow_tex_size.y));
-	set_uniform("camWorldPos", ldc->cam_world_pos);
 
 	nsstring id;
 	id.reserve(64);

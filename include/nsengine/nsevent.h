@@ -91,7 +91,9 @@ struct nsaction_event : public nsevent
 	virtual ~nsaction_event() {}
 
 	uint32 trigger_hash_name;
-	nsinput_map::axis_map axes;
+	fvec2 norm_mpos;
+	fvec2 norm_delta;
+	float scroll;
 };
 
 struct nsstate_event : public nsaction_event

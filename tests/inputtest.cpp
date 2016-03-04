@@ -68,9 +68,14 @@ nsplugin * setup_basic_plugin()
 	nse.set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-//	nsentity * cam = plg->create_camera("scene_cam", fvec2(-100,100), fvec2(100,-100), fvec2(100,-100));
+    nsentity * cam2 = plg->create_camera("scenecam1", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+    nsentity * cam3 = plg->create_camera("scenecam2", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+    nsentity * cam4 = plg->create_camera("scenecam3", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.1f,fvec3(1.0f),true,0.5f,2);	
 	scn->set_camera(cam);
+    scn->add(cam2);
+    scn->add(cam3);
+    scn->add(cam4);
     scn->add(dirl, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 	
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
@@ -88,22 +93,28 @@ nsplugin * setup_basic_plugin()
 	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 
     nse.system<nsrender_system>()->insert_viewport(
-        "main_view2",
-        nsrender::viewport(
-            fvec4(0.0f,0.5f,0.5f,1.0f),
-            cam));
-
-    nse.system<nsrender_system>()->insert_viewport(
         "main_view",
         nsrender::viewport(
             fvec4(0.0f,0.0f,0.5f,0.5f),
             cam));
 
     nse.system<nsrender_system>()->insert_viewport(
+        "main_view2",
+        nsrender::viewport(
+            fvec4(0.0f,0.5f,0.5f,1.0f),
+            cam2));
+
+    nse.system<nsrender_system>()->insert_viewport(
         "main_view3",
         nsrender::viewport(
-            fvec4(0.25f,0.25f,0.9f,0.9f),
-            cam));
+            fvec4(0.5f,0.0f,1.0f,0.5f),
+            cam3));
+
+    nse.system<nsrender_system>()->insert_viewport(
+        "main_view4",
+        nsrender::viewport(
+            fvec4(0.5f,0.5f,1.0f,1.0f),
+            cam4));
 
 
 
@@ -114,52 +125,51 @@ void setup_input_map(nsplugin * plg)
 {
 	nsinput_map * im = plg->create<nsinput_map>("basic_input");
 	im->create_context("Main");
-		
+
+    nsinput_map::trigger toggle_cam(
+        "ToggleCam",
+        nsinput_map::t_pressed);
+    toggle_cam.add_mouse_mod(nsinput_map::any_button);
+    im->add_key_trigger("Main", nsinput_map::key_g, toggle_cam);
+
 	nsinput_map::trigger camforward(
 		NSCAM_FORWARD,
-		nsinput_map::t_toggle,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
+		nsinput_map::t_toggle
 		);
 	camforward.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_w, camforward);
 
 	nsinput_map::trigger cambackward(
 		NSCAM_BACKWARD,
-		nsinput_map::t_toggle,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
+		nsinput_map::t_toggle
 		);
 	cambackward.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_s, cambackward);
 
 	nsinput_map::trigger camleft(
 		NSCAM_LEFT,
-		nsinput_map::t_toggle,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
+		nsinput_map::t_toggle
 		);
 	camleft.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_a, camleft);
 
 	nsinput_map::trigger camright(
 		NSCAM_RIGHT,
-		nsinput_map::t_toggle,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
+		nsinput_map::t_toggle
 		);
 	camright.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_d, camright);
 
 	nsinput_map::trigger camtilt(
 		NSCAM_TILTPAN,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta | nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos);
+		nsinput_map::t_pressed);
     camtilt.add_key_mod(nsinput_map::key_any);
     camtilt.add_mouse_mod(nsinput_map::right_button);
 	im->add_mouse_trigger("Main", nsinput_map::movement, camtilt);
 
 	nsinput_map::trigger cammove(
 		NSCAM_MOVE,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta | nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-		);
+		nsinput_map::t_pressed);
 	cammove.add_key_mod(nsinput_map::key_any);
     cammove.add_mouse_mod(nsinput_map::left_button);
     cammove.add_mouse_mod(nsinput_map::right_button);
@@ -167,126 +177,95 @@ void setup_input_map(nsplugin * plg)
 
 	nsinput_map::trigger camzoom(
 		NSCAM_ZOOM,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_scroll_delta | nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos);
+		nsinput_map::t_pressed);
 	camzoom.add_key_mod(nsinput_map::key_any);
     im->add_mouse_trigger("Main", nsinput_map::scrolling, camzoom);
 
 	nsinput_map::trigger camtopview_0(
         NSCAM_TOPVIEW_0,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     camtopview_0.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_8, camtopview_0);
 
     nsinput_map::trigger cameraiso_0(
         NSCAM_ISOVIEW_0,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     cameraiso_0.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_5, cameraiso_0);
 
     nsinput_map::trigger camfrontview_0(
         NSCAM_FRONTVIEW_0,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     camfrontview_0.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_2, camfrontview_0);
 
 	nsinput_map::trigger camtopview_120(
 		NSCAM_TOPVIEW_120,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
 	camtopview_120.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_7, camtopview_120);
 
     nsinput_map::trigger cameraiso_120(
         NSCAM_ISOVIEW_120,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     cameraiso_120.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_4, cameraiso_120);
 
     nsinput_map::trigger camfrontview_120(
         NSCAM_FRONTVIEW_120,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     camfrontview_120.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_1, camfrontview_120);
 
 	nsinput_map::trigger camtopview_240(
         NSCAM_TOPVIEW_240,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     camtopview_240.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_9, camtopview_240);
 
     nsinput_map::trigger cameraiso_240(
         NSCAM_ISOVIEW_240,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     cameraiso_240.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_6, cameraiso_240);
 
     nsinput_map::trigger camfrontview_240(
         NSCAM_FRONTVIEW_240,
-        nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-        );
+        nsinput_map::t_pressed);
     camfrontview_240.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_keypad_3, camfrontview_240);
 	
 	nsinput_map::trigger camtogglemode(
         NSCAM_TOGGLEMODE,
-        nsinput_map::t_pressed
-        );
+        nsinput_map::t_pressed);
     camtogglemode.add_mouse_mod(nsinput_map::any_button);
     im->add_key_trigger("Main", nsinput_map::key_f, camtogglemode);
 
 	nsinput_map::trigger selectentity(
 		NSSEL_SELECT,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-		);
+		nsinput_map::t_pressed);
     im->add_mouse_trigger("Main", nsinput_map::left_button,selectentity);
 
 	nsinput_map::trigger shiftselect(
 		NSSEL_SHIFTSELECT,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-		);
+		nsinput_map::t_pressed);
 	shiftselect.add_key_mod(nsinput_map::key_lshift);
     im->add_mouse_trigger("Main", nsinput_map::movement,shiftselect);
-
 	nsinput_map::trigger multiselect(
 		NSSEL_MULTISELECT,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xpos | nsinput_map::axis_mouse_ypos
-		);
+		nsinput_map::t_pressed);
 	multiselect.add_key_mod(nsinput_map::key_lctrl);
     im->add_mouse_trigger("Main", nsinput_map::left_button,multiselect);
 
     nsinput_map::trigger selectmove(
         NSSEL_MOVE,
-        nsinput_map::t_pressed,
-        nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-        );
+        nsinput_map::t_pressed);
     selectmove.add_mouse_mod(nsinput_map::left_button);
     im->add_mouse_trigger("Main", nsinput_map::movement,selectmove);
 	
 	nsinput_map::trigger selectmovexy(
 		NSSEL_MOVE_XY,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
     selectmovexy.add_key_mod(nsinput_map::key_x);
     selectmovexy.add_key_mod(nsinput_map::key_y);
 	selectmovexy.add_mouse_mod(nsinput_map::left_button);
@@ -294,9 +273,7 @@ void setup_input_map(nsplugin * plg)
 
 	nsinput_map::trigger selectmovezy(
 		NSSEL_MOVE_ZY,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	selectmovezy.add_key_mod(nsinput_map::key_z);
 	selectmovezy.add_key_mod(nsinput_map::key_y);
 	selectmovezy.add_mouse_mod(nsinput_map::left_button);
@@ -304,9 +281,7 @@ void setup_input_map(nsplugin * plg)
 
 	nsinput_map::trigger selectmovezx(
         NSSEL_MOVE_ZX,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	selectmovezx.add_key_mod(nsinput_map::key_z);
 	selectmovezx.add_key_mod(nsinput_map::key_x);
     selectmovezx.add_mouse_mod(nsinput_map::left_button);
@@ -314,27 +289,21 @@ void setup_input_map(nsplugin * plg)
 
 	nsinput_map::trigger selectmovex(
 		NSSEL_MOVE_X,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	selectmovex.add_mouse_mod(nsinput_map::left_button);
 	selectmovex.add_key_mod(nsinput_map::key_x);
     im->add_mouse_trigger("Main", nsinput_map::movement,selectmovex);
 
 	nsinput_map::trigger selectmovey(
 		NSSEL_MOVE_Y,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	selectmovey.add_key_mod(nsinput_map::key_y);
 	selectmovey.add_mouse_mod(nsinput_map::left_button);
     im->add_mouse_trigger("Main", nsinput_map::movement,selectmovey);
 
 	nsinput_map::trigger selectmovez(
         NSSEL_MOVE_Z,
-		nsinput_map::t_pressed,
-		nsinput_map::axis_mouse_xdelta | nsinput_map::axis_mouse_ydelta
-		);
+		nsinput_map::t_pressed);
 	selectmovez.add_key_mod(nsinput_map::key_z);
     selectmovez.add_mouse_mod(nsinput_map::left_button);
     im->add_mouse_trigger("Main", nsinput_map::movement,selectmovez);
