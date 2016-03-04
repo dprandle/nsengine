@@ -130,6 +130,11 @@ bool nsvideo_driver::add_render_target(const nsstring & name, nsrender_target * 
 	return m_render_targets.emplace(name, rt).second;
 }
 
+nsrender_target * nsvideo_driver::default_target()
+{
+	return m_default_target;
+}
+
 nsrender_target * nsvideo_driver::remove_render_target(const nsstring & name)
 {
 	nsrender_target * fb = nullptr;
@@ -185,6 +190,9 @@ void nsvideo_driver::set_render_shaders(render_shaders rs)
 
 void nsvideo_driver::release()
 {
+	delete m_default_target;
+	m_default_target = nullptr;
+
 	clear_render_queues();
 	clear_render_passes();
 	clear_render_targets();

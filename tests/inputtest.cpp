@@ -88,16 +88,24 @@ nsplugin * setup_basic_plugin()
 	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 
     nse.system<nsrender_system>()->insert_viewport(
-		"main_view",
-		nsrender::viewport(
-            fvec4(0.0f,0.0f,0.5f,0.5f),
-			cam));
-
-    nse.system<nsrender_system>()->insert_viewport(
         "main_view2",
         nsrender::viewport(
-            fvec4(0.5f,0.5f,1.0f,1.0f),
+            fvec4(0.0f,0.5f,0.5f,1.0f),
             cam));
+
+    nse.system<nsrender_system>()->insert_viewport(
+        "main_view",
+        nsrender::viewport(
+            fvec4(0.0f,0.0f,0.5f,0.5f),
+            cam));
+
+    nse.system<nsrender_system>()->insert_viewport(
+        "main_view3",
+        nsrender::viewport(
+            fvec4(0.25f,0.25f,0.9f,0.9f),
+            cam));
+
+
 
 	return plg;
 }

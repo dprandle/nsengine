@@ -23,6 +23,13 @@ class nsrender_target
 	virtual ~nsrender_target() {};
 	virtual void init() = 0;
 	virtual void release() = 0;
+	const ivec2 & size();
+	virtual void resize(int32 w, int32 h=0, uint32 layers_=0) = 0;
+	virtual void resize(const ivec2 & size_, uint32 layers_=0);
+
+
+  protected:
+	ivec2 m_size;
 };
 
 class nsrenderbuf_object;
@@ -107,8 +114,6 @@ public:
     // there is no attachment at the attachment point
 	attachment * att(attach_point att_point_);
 
-	const ivec2 & size();
-
 	fb_target target();
 
 	bool has(attach_point att_point_);
@@ -120,8 +125,6 @@ public:
 	virtual void release();
 
 	virtual void resize(int32 w, int32 h=0, uint32 layers_=0);
-
-	virtual void resize(const ivec2 & size_, uint32 layers_=0);
 
 	bool set_cube_face(attach_point att_point_, nstex_cubemap::cube_face face_);
 
@@ -139,7 +142,6 @@ public:
 
 protected:
 	fb_target m_target;
-	ivec2 m_size;
 
 	attachment * m_depth_stencil_att;
 	attachment_array m_color_atts;

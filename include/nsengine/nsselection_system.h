@@ -232,7 +232,8 @@ protected:
 	virtual void _on_draw_object(
 		nsentity * ent,
 		const fvec2 & pDelta,
-		uint16 _axis
+		uint16 _axis,
+		const fvec4 & norm_vp=fvec4(1.0f)
 		);
 
 	void _draw_occ();

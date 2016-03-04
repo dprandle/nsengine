@@ -69,7 +69,8 @@ uniform usampler2D gMatMap;
 
 vec2 uv_from_screen_size()
 {
-	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw - viewport.xy);
+	return gl_FragCoord.xy/vec2(1920,1080);
+//	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw - viewport.xy);
 }
 
 uint sort_fragment_list(int start_ind)

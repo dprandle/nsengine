@@ -87,6 +87,7 @@ struct nsvec4
 	nsvec4(const T & x_, const T & y_, const T & z_ = static_cast<T>(0), const T & w_ = static_cast<T>(0)) : x(x_), y(y_), z(z_), w(w_) {}
 	nsvec4(const nsvec3<T> & xyz, const T & w_ = static_cast<T>(1)) : x(xyz.x), y(xyz.y), z(xyz.z), w(w_) {}
 	nsvec4(const T & x_, const nsvec3<T> & yzw) : x(x_), y(yzw.x), z(yzw.y), w(yzw.z) {}
+	nsvec4(const nsvec2<T> & xy, const nsvec2<T> & zw) : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
 	nsvec4(const nsvec2<T> & xy, const T & z_ = static_cast<T>(0), const T & w_ = static_cast<T>(0)) : x(xy.x), y(xy.y), z(z_), w(w_) {}
 	nsvec4(const T & x_, const nsvec2<T> & yz, const T & w_ = static_cast<T>(0)) : x(x_), y(yz.x), z(yz.z), w(w_) {}
 	nsvec4(const T & x_, const T & y_, const nsvec2<T> & zw) : x(x_), y(y_), z(zw.x), w(zw.y) {}

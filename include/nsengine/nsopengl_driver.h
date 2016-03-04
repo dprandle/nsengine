@@ -225,8 +225,6 @@ class nsopengl_driver : public nsvideo_driver
 
 	opengl_state current_gl_state();
 
-	nsfb_object * default_fbo();
-
 	uivec3 pick(const fvec2 & mouse_pos);
 
 	virtual void init();
@@ -295,7 +293,6 @@ class nsopengl_driver : public nsvideo_driver
 
 	translucent_buffers * m_tbuffers;
 	nsbuffer_object * m_single_point;
-	nsfb_object * m_default_fbo;
 
 	std::vector<instanced_draw_call> m_all_draw_calls;
 	std::vector<light_draw_call> m_light_draw_calls;

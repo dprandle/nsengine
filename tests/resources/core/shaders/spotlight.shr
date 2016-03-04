@@ -91,7 +91,8 @@ float shadow_factor(vec3 worldPos)
 
 vec2 tex_coord()
 {
-	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw - viewport.xy);
+	return gl_FragCoord.xy/vec2(1920,1080);
+//	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw - viewport.xy);
 }
 
 vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)

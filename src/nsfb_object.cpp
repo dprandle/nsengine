@@ -16,13 +16,23 @@
 #include <nsgl_context.h>
 #include <nsengine.h>
 
+
+void nsrender_target::resize(const ivec2 & size_, uint32 layers)
+{
+	resize(size_.x, size_.y, layers);
+}
+
+const ivec2 & nsrender_target::size()
+{
+	return m_size;
+}
+
 nsfb_object::nsfb_object() :
+	nsrender_target(),
 	m_target(fb_read_draw),
-	m_size(),
 	m_depth_stencil_att(NULL),
 	m_color_atts(),
-	nsgl_object(),
-	nsrender_target()
+	nsgl_object()
 {}
 
 nsfb_object::~nsfb_object()
@@ -150,11 +160,6 @@ nsfb_object::attachment * nsfb_object::att(attach_point pAttPoint)
 	return NULL;
 }
 
-const ivec2 & nsfb_object::size()
-{
-	return m_size;
-}
-
 nsfb_object::fb_target nsfb_object::target()
 {
 	return m_target;
@@ -196,11 +201,6 @@ void nsfb_object::release()
 	glDeleteFramebuffers(1, &m_gl_name);
 	gl_err_check("post nsfb_object::release");
 	m_gl_name = 0;
-}
-
-void nsfb_object::resize(const ivec2 & size_, uint32 layers)
-{
-	resize(size_.x, size_.y, layers);
 }
 
 void nsfb_object::resize(int32 w, int32 h, uint32 layers)

@@ -189,7 +189,11 @@ class nsvideo_driver
 {
   public:
 
-	nsvideo_driver():m_initialized(false) {}	
+	nsvideo_driver():
+		m_default_target(nullptr),
+		m_initialized(false)
+	{}
+	
 	virtual ~nsvideo_driver() {}
 
 	bool add_queue(const nsstring & name, drawcall_queue * rt);
@@ -200,6 +204,8 @@ class nsvideo_driver
 	nsrender_target * render_target(const nsstring & name);
 
 	nsrender_target * remove_render_target(const nsstring & name);
+
+	virtual nsrender_target * default_target();
 
 	void destroy_render_target(const nsstring & name);
 
@@ -240,7 +246,7 @@ class nsvideo_driver
 	virtual void render(nsrender::viewport * vp);
 
   protected:
-
+	nsrender_target * m_default_target;
 	render_shaders m_shaders;
 	queue_map m_render_queues;
 	rt_map m_render_targets;

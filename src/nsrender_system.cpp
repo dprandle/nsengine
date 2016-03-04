@@ -22,6 +22,7 @@
 #include <nstexture.h>
 #include <nsmaterial.h>
 #include <nsshader.h>
+#include <nsfb_object.h>
 
 nsrender_system::nsrender_system() :
 	nssystem(),
@@ -224,20 +225,21 @@ void nsrender_system::move_viewport_to_back(const nsstring & vp_name)
 	}
 }
 
-uivec3 nsrender_system::pick(const fvec2 & screen_pos)
+nsrender::viewport * nsrender_system::front_viewport(const fvec2 & screen_pos)
 {
 	auto riter = vp_list.rbegin();
 	while (riter != vp_list.rend())
 	{
 		if (screen_pos < riter->vp->normalized_bounds.zw() && screen_pos > riter->vp->normalized_bounds.xy())
-		{
-			float x = (screen_pos.x - riter->vp->normalized_bounds.x) / (riter->vp->normalized_bounds.z - riter->vp->normalized_bounds.x);
-			float y = (screen_pos.y - riter->vp->normalized_bounds.y) / (riter->vp->normalized_bounds.w - riter->vp->normalized_bounds.y);
-			return nse.video_driver()->pick(fvec2(x,y));
-		}
+			return riter->vp;
 		++riter;
 	}
-	return uivec3();
+	return nullptr;
+}
+
+uivec3 nsrender_system::pick(const fvec2 & screen_pos)
+{
+	return nse.video_driver()->pick(screen_pos);
 }
 
 void nsrender_system::move_viewport_to_front(const nsstring & vp_name)
@@ -268,11 +270,13 @@ bool nsrender_system::_handle_window_resize(window_resize_event * evt)
 			if (iter->vp->camera != nullptr)
 			{
 				nscam_comp * cc = iter->vp->camera->get<nscam_comp>();
-				cc->resize_screen(evt->new_size);
+				cc->resize_screen(iter->vp->bounds.zw() - iter->vp->bounds.xy());
 			}
 		}
 		++iter;
 	}
+	nsrender_target * rt = nse.video_driver()->default_target();
+	rt->resize(evt->new_size);
 	return true;
 }
 

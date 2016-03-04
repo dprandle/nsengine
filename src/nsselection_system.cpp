@@ -630,7 +630,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 	}
 }
 
-void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_)
+void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_, const fvec4 & norm_vp)
 {
 	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
@@ -648,9 +648,8 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tComp = ent->get<nstform_comp>();
 
-	// get change in terms of NDC
-	fvec2 delta(pDelta * 2.0f);
-
+	
+	fvec2 delta(pDelta * 2.0f / (norm_vp.zw() - norm_vp.xy()));
 	fvec3 originalPos = tComp->wpos(m_focus_ent.z);
 	fvec4 screenSpace = camc->proj_cam() * fvec4(originalPos, 1.0f);
 	screenSpace /= screenSpace.w;
@@ -1577,98 +1576,147 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
-		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_x | axis_y | axis_z);
+		_on_draw_object(ent, mdelta, axis_x | axis_y | axis_z, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_xy))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
 		fvec2 mdelta;
-		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_x | axis_y);
+		_on_draw_object(ent, mdelta, axis_x | axis_y, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zy))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
-		fvec2 mdelta;
-		
+		fvec2 mdelta;		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
-		
+
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;		
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_y | axis_z);
+		_on_draw_object(ent, mdelta, axis_y | axis_z, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zx))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
-		fvec2 mdelta;
-		
+		fvec2 mdelta;		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_x | axis_z);
+		_on_draw_object(ent, mdelta, axis_x | axis_z, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_x))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
-		fvec2 mdelta;
-		
+		fvec2 mdelta;		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_x);
+		_on_draw_object(ent, mdelta, axis_x, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_y))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
-		fvec2 mdelta;
-		
+		fvec2 mdelta;		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_y);
+		_on_draw_object(ent, mdelta, axis_y, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_z))
 	{
 		auto xdelta_iter = evnt->axes.find(nsinput_map::axis_mouse_xdelta);
 		auto ydelta_iter = evnt->axes.find(nsinput_map::axis_mouse_ydelta);
-		fvec2 mdelta;
-		
+		fvec2 mdelta;		
 		if (xdelta_iter != evnt->axes.end())
 			mdelta.x = xdelta_iter->second;
 		if (ydelta_iter != evnt->axes.end())
 			mdelta.y = ydelta_iter->second;
 
+		auto xpos_iter = evnt->axes.find(nsinput_map::axis_mouse_xpos);
+		auto ypos_iter = evnt->axes.find(nsinput_map::axis_mouse_ypos);
+		fvec2 mpos;
+		if (xpos_iter != evnt->axes.end())
+			mpos.x = xpos_iter->second;
+		if (ypos_iter != evnt->axes.end())
+			mpos.y = ypos_iter->second;
+		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(mpos);
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, mdelta, axis_z);
+		_on_draw_object(ent, mdelta, axis_z,vp->normalized_bounds);
 	}
 	return true;	
 }

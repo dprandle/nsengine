@@ -161,7 +161,9 @@ void render_pass::setup_pass()
 	tgt->bind();
 
 	if (use_vp_size && vp != nullptr)
-		gl_state.current_viewport = vp->bounds;
+	{
+		gl_state.current_viewport = ivec4(vp->bounds.xy(), vp->bounds.zw() - vp->bounds.xy());
+	}
 	else
 		gl_state.current_viewport = ivec4(0,0,tgt->size());
 	
@@ -346,17 +348,19 @@ void final_render_pass::render()
 	read_buffer->set_target(nsfb_object::fb_read);
 	read_buffer->bind();
 	read_buffer->set_read_buffer(nsfb_object::att_color);
+
 	glBlitFramebuffer(
-		gl_state.current_viewport.x,
-		gl_state.current_viewport.y,
-		gl_state.current_viewport.z,
-		gl_state.current_viewport.w,
-		gl_state.current_viewport.x,
-		gl_state.current_viewport.y,
-		gl_state.current_viewport.z,
-		gl_state.current_viewport.w,
+		vp->bounds.x,
+		vp->bounds.y,
+		vp->bounds.z,
+		vp->bounds.w,
+		vp->bounds.x,
+		vp->bounds.y,
+		vp->bounds.z,
+		vp->bounds.w,
 		GL_COLOR_BUFFER_BIT,
 		GL_NEAREST);
+
 	read_buffer->set_read_buffer(nsfb_object::att_none);
 	read_buffer->unbind();	
 }
@@ -364,8 +368,7 @@ void final_render_pass::render()
 nsopengl_driver::nsopengl_driver() :
 	nsvideo_driver(),
 	m_tbuffers(nullptr),
-	m_single_point(nullptr),
-	m_default_fbo(nullptr)
+	m_single_point(nullptr)
 {
 	m_all_draw_calls.reserve(MAX_INSTANCED_DRAW_CALLS);
 	m_light_draw_calls.reserve(MAX_LIGHTS_IN_SCENE);
@@ -445,7 +448,7 @@ void nsopengl_driver::create_default_render_passes()
 	gbuf_pass->gl_state.cull_face = GL_BACK;
 	gbuf_pass->gl_state.blending = false;
 	gbuf_pass->gl_state.stencil_test = false;
-	gbuf_pass->use_vp_size = false;
+	gbuf_pass->use_vp_size = true;
 	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
 	// setup gbuffer geometry stage
@@ -568,7 +571,7 @@ void nsopengl_driver::create_default_render_passes()
 	sel_pass_opaque->gl_state.stencil_func = ivec3(GL_ALWAYS, 1, -1);
 
 	final_render_pass * final_pass = new final_render_pass;
-	final_pass->ren_target = m_default_fbo;
+	final_pass->ren_target = m_default_target;
 	final_pass->read_buffer = static_cast<nsfb_object*>(render_target(ACCUM_TARGET));
 	final_pass->gl_state.depth_test = false;
 	final_pass->gl_state.depth_write = false;
@@ -605,8 +608,6 @@ void nsopengl_driver::release()
 	m_single_point->release();
 	delete m_single_point;
 	m_single_point = nullptr;
-	delete m_default_fbo;
-	m_default_fbo = nullptr;
 	nsvideo_driver::release();
 	m_initialized = false;
 }
@@ -1022,8 +1023,8 @@ void nsopengl_driver::init()
 	glDisable(GL_CULL_FACE);
 
 	// Create the default framebuffer
-	m_default_fbo = new nsfb_object;
-	m_default_fbo->set_gl_id(0);
+	m_default_target = new nsfb_object;
+	((nsfb_object*)m_default_target)->set_gl_id(0);
 
 	m_single_point = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
 	m_single_point->init_gl();
@@ -1283,11 +1284,6 @@ void nsopengl_driver::_add_draw_calls_from_scene(nsscene * scene)
 	}
 }
 
-nsfb_object * nsopengl_driver::default_fbo()
-{
-	return m_default_fbo;
-}
-
 void nsopengl_driver::set_viewport(const ivec4 & val)
 {
 	if (m_gl_state.current_viewport != val)
@@ -1325,7 +1321,10 @@ uivec3 nsopengl_driver::pick(const fvec2 & mouse_pos)
 	if (pck == NULL)
 		return uivec3();
 
-	uivec3 index = pck->pick(mouse_pos.x, mouse_pos.y, 1);
+	fvec2 screen_size = fvec2(m_default_target->size().x, m_default_target->size().y);
+	fvec2 accum_size = fvec2(pck->size().x,pck->size().y);
+	fvec2 rmpos = mouse_pos % (screen_size / accum_size);
+	uivec3 index = pck->pick(rmpos.x, rmpos.y, 1);
 	return index;
 }
 

@@ -95,6 +95,8 @@ class nsrender_system : public nssystem
 	void move_viewport_to_front(const nsstring & vp_name);
 
 	uivec3 pick(const fvec2 & screen_pos);
+
+	nsrender::viewport * front_viewport(const fvec2 & screen_pos);
 	
 	nsmaterial * default_mat();
 
