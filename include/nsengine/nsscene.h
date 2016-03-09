@@ -100,8 +100,6 @@ public:
 
     const fvec4 & bg_color() const;
 
-	nsentity * camera() const;
-
 	bool has_dir_light() const;
 
 	uint32 max_players() const;
@@ -214,14 +212,6 @@ public:
 
 	const nsstring & creator() const;
 
-	void set_camera(nsentity * cam, bool addToSceneIfNeeded = true);
-
-	template<class T1, class T2>
-	void set_camera(const T1 & plug_, const T2 & camid, bool addToSceneIfNeeded = true)
-	{
-		set_camera(nse.resource<nsentity>(plug_, camid), addToSceneIfNeeded);
-	}
-
 	void set_max_players(uint32 pMaxPlayers);
 
 	void set_notes(const nsstring & pNotes);
@@ -240,7 +230,6 @@ public:
 
 private:
 
-	uivec2 m_camera_id;
 	uivec2 m_skydome_id;
 	uint32 m_max_players;
     fvec4 m_bg_color;
@@ -258,7 +247,6 @@ private:
 template<class PUPer>
 void pup(PUPer & p, nsscene & sc)
 {
-	pup(p, sc.m_camera_id, "camera_id");
 	pup(p, sc.m_skydome_id, "skydome_id");
 	pup(p, sc.m_max_players, "max_players");
 	pup(p, sc.m_bg_color, "bg_color");

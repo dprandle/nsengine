@@ -72,7 +72,7 @@ nsplugin * setup_basic_plugin()
     nsentity * cam3 = plg->create_camera("scenecam2", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * cam4 = plg->create_camera("scenecam3", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.1f,fvec3(1.0f),true,0.5f,2);	
-	scn->set_camera(cam);
+    scn->add(cam);
     scn->add(cam2);
     scn->add(cam3);
     scn->add(cam4);
@@ -314,6 +314,10 @@ void setup_input_map(nsplugin * plg)
 		);
 	selectmovetoggle.add_key_mod(nsinput_map::key_any);
     im->add_mouse_trigger("Main", nsinput_map::left_button,selectmovetoggle);
+
+    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
+    change_vp.add_key_mod(nsinput_map::key_any);
+    im->add_mouse_trigger("Main", nsinput_map::left_button, change_vp);
 
 	nse.system<nsinput_system>()->set_input_map(im->full_id());
 	nse.system<nsinput_system>()->push_context("Main");

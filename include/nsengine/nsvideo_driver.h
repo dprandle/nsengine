@@ -13,6 +13,7 @@
 #ifndef NSVIDEO_DRIVER
 #define NSVIDEO_DRIVER
 
+#include <nsrender_system.h>
 #include <nsstring.h>
 #include <nsmath.h>
 #include <nsunordered_map.h>
@@ -88,57 +89,6 @@ struct opengl_state
 	ivec3 stencil_op_front;
 	ivec4 current_viewport;
 };
-
-namespace nsrender
-{
-
-struct viewport
-{
-	viewport(
-		const fvec4 & norm_bounds = fvec4(),
-		nsentity * cam=nullptr,
-		uint32 window_tag_=0,
-		const ivec4 & bounds_=ivec4(),
-		const fvec4 & fog_color=fvec4(1,1,1,1),
-		const uivec2 & fog_near_far=uivec2(200,300),
-		bool lighting=true,
-		bool shadows=true,
-		bool oit=true,
-		bool selection=true,
-		bool debug_draw=false):
-		normalized_bounds(norm_bounds),
-		camera(cam),
-		window_tag(window_tag_),
-		bounds(bounds_),
-		m_fog_nf(fog_near_far),
-		m_fog_color(fog_color),
-		spot_lights(lighting),
-		spot_light_shadows(shadows),
-		point_lights(lighting),
-		point_light_shadows(shadows),
-		dir_lights(true),
-		dir_light_shadows(shadows),
-		order_independent_transparency(oit),
-		picking_enabled(selection) {}
-
-	fvec4 normalized_bounds;
-	uint32 window_tag;
-	ivec4 bounds;
-	bool spot_lights;
-	bool spot_light_shadows;
-	bool point_lights;
-	bool point_light_shadows;
-	bool dir_lights;
-	bool dir_light_shadows;
-	bool order_independent_transparency;
-	bool picking_enabled;
-	bool debug_draw;
-	uivec2 m_fog_nf;
-	fvec4 m_fog_color;
-	nsentity * camera;
-};
-
-}
 
 struct draw_call
 {

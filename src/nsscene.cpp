@@ -30,7 +30,6 @@
 
 nsscene::nsscene():
 	nsresource(),
-	m_camera_id(),
 	m_skydome_id(),
 	m_max_players(0),
 	m_bg_color(),
@@ -46,7 +45,6 @@ nsscene::nsscene():
 
 nsscene::nsscene(const nsscene & copy_):
 	nsresource(copy_),
-	m_camera_id(copy_.m_camera_id),
 	m_skydome_id(copy_.m_skydome_id),
 	m_max_players(copy_.m_max_players),
 	m_bg_color(copy_.m_bg_color),
@@ -65,7 +63,6 @@ nsscene::~nsscene()
 nsscene & nsscene::operator=(nsscene rhs)
 {
 	nsresource::operator=(rhs);
-	std::swap(m_camera_id,rhs.m_camera_id);
 	std::swap(m_skydome_id,rhs.m_skydome_id);
 	std::swap(m_max_players,rhs.m_max_players);
 	std::swap(m_bg_color,rhs.m_bg_color);
@@ -291,11 +288,6 @@ void nsscene::pup(nsfile_pupper * p)
 	}
 }
 
-nsentity * nsscene::camera() const
-{
-	return entity(m_camera_id.x, m_camera_id.y);
-}
-
 uint32 nsscene::max_players() const
 {
 	return m_max_players;
@@ -479,13 +471,6 @@ This should be called if there was a name change to a resource
 */
 void nsscene::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	if (m_camera_id.x == oldid.x)
-	{
-		m_camera_id.x = newid.x;
-		if (m_camera_id.y == oldid.y)
-			m_camera_id.y = newid.y;
-	}
-
 	if (m_skydome_id.x == oldid.x)
 	{
 		m_skydome_id.x = newid.x;
@@ -588,8 +573,6 @@ bool nsscene::remove(nsentity * entity, uint32 tformid)
 		// camera or current skybox then make sure to set these to 0
 		if (m_skydome_id == uivec2(entity->plugin_id(), entity->id()))
 			m_skydome_id = 0;
-		if (m_camera_id == uivec2(entity->plugin_id(),entity->id()))
-			m_camera_id = 0;
 	}
 	
 	return ret;
@@ -635,41 +618,6 @@ void nsscene::set_bg_color(const fvec4 & bg_color)
 void nsscene::set_creator(const nsstring & pCreator)
 {
 	m_creator = pCreator;
-}
-
-
-void nsscene::set_camera(nsentity * cam, bool addToSceneIfNeeded)
-{
-	if (cam == NULL)
-		return;
-
-	nstform_comp * camtf = cam->get<nstform_comp>();
-
-	if (camtf != NULL)
-	{
-		// The parent must be enabled in the transform component for the camera to be
-		// able to switch between camera modes properly
-		camtf->enable_parent(true);
-		m_camera_id = uivec2(cam->plugin_id(),cam->id());
-		nsstring msg = "nsscene::set_camera Map \"" + m_name + "\"'s camera set to \"" + cam->name() + "\"";
-		dprint(msg);
-	}
-	else
-	{
-		// If cam is still NULL this means that it did not exist already in the scene.. Here we will add it or not depending
-		// on whether or not pAddToSceneIfNeeded is true or false
-		if (addToSceneIfNeeded)
-		{
-			if (add(cam,fvec3(0.0f,0.0f,-10.0f)) != -1) // -1 indicates failure
-			{
-				set_camera(cam);
-			}
-			else
-			{
-				dprint("nsscene::setCamera - Camera " + cam->name() + " could not be loaded in to the scene");
-			}
-		}
-	}
 }
 
 void nsscene::set_max_players(uint32 pMaxPlayers)

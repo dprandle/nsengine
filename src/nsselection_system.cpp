@@ -493,11 +493,11 @@ void nsselection_system::_on_rotate_z(nsentity * ent, bool pPressed)
 
 void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL)
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
 		return;
 
-	nsentity * cam = scene->camera();
+	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return;
 
@@ -542,9 +542,14 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 
 		if (m_moving)
 		{		
+			nsscene * scene = nse.current_scene();
+			if (scene == nullptr)
+				return;
+			
 			nsentity * ent = scene->entity(m_focus_ent.x, m_focus_ent.y);
 			if (ent == NULL)
 				return;
+
 			if (!collision())
 			{
 				ent->get<nstform_comp>()->compute_transform(m_focus_ent.z);
@@ -632,11 +637,11 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 
 void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_, const fvec4 & norm_vp)
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL)
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
 		return;
 
-	nsentity * cam = scene->camera();
+	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return;
 
@@ -1545,42 +1550,56 @@ bool nsselection_system::_handle_action_event(nsaction_event * evnt)
 	else if (evnt->trigger_hash_name == trigger_hash(move_select))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y | axis_z, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_xy))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;		
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zy))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;		
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_y | axis_z, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zx))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;		
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_x | axis_z, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_x))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;		
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_x, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_y))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;		
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_y, vp->normalized_bounds);
 	}
 	else if (evnt->trigger_hash_name == trigger_hash(move_selection_z))
 	{
 		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+		if (vp == nullptr)
+			return true;		
 		nsentity * ent = nse.resource<nsentity>(m_focus_ent.xy());
 		_on_draw_object(ent, evnt->norm_delta, axis_z,vp->normalized_bounds);
 	}

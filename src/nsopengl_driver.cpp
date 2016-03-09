@@ -1144,7 +1144,13 @@ void nsopengl_driver::_add_lights_from_scene(nsscene * scene)
 
 void nsopengl_driver::_add_draw_calls_from_scene(nsscene * scene)
 {
-	nsentity * camera = scene->camera();
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return;
+
+	nsentity * camera = vp->camera;
+	if (camera == NULL)
+		return;
 
 	// update render components and the draw call list
 	drawcall_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);

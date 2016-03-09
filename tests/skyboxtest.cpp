@@ -70,7 +70,6 @@ nsplugin * setup_basic_plugin()
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
 	nsentity * dirl = plg->create_dir_light("dirlight", 0.8f, 0.6f);
-	scn->set_camera(cam);
 	scn->add(dirl, fvec3(20.0f, 20.0f, -20.0f));
     nsentity * tile = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec3(1.0, 1.0, 0.0), 16.0f, 0.5f, fvec3(1.0f), true);
     scn->add_gridded(tile, ivec3(32, 32, 2), fvec3(0.0f,0.0f,0.0f));

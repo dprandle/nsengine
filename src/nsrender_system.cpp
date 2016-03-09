@@ -26,7 +26,8 @@
 
 nsrender_system::nsrender_system() :
 	nssystem(),
-	m_default_mat(nullptr)
+	m_default_mat(nullptr),
+	m_current_vp(nullptr)
 {}
 
 nsrender_system::~nsrender_system()
@@ -39,7 +40,9 @@ nsmaterial * nsrender_system::default_mat()
 
 void nsrender_system::init()
 {
+	add_trigger_hash(0, VIEWPORT_CHANGE);
 	register_handler_func(this, &nsrender_system::_handle_window_resize);
+	register_handler_func(this, &nsrender_system::_handle_viewport_change);
 
 	nsplugin * cplg = nse.core();	
 		
@@ -123,7 +126,8 @@ bool nsrender_system::insert_viewport(const nsstring & vp_name, const nsrender::
 		if (vp_name.empty())
 			return false;
 		
-		vp_list.push_back(vp_node(vp_name, new nsrender::viewport(vp)));
+		m_current_vp = new nsrender::viewport(vp);
+		vp_list.push_back(vp_node(vp_name, m_current_vp));
 		return true;
 	}
 	else
@@ -133,7 +137,8 @@ bool nsrender_system::insert_viewport(const nsstring & vp_name, const nsrender::
 		{
 			if (liter->vp_name == insert_before)
 			{
-				vp_list.insert(liter, vp_node(vp_name, new nsrender::viewport(vp)));
+				m_current_vp = new nsrender::viewport(vp);
+				vp_list.insert(liter, vp_node(vp_name, m_current_vp));
 				return true;
 			}
 			++liter;
@@ -149,9 +154,16 @@ bool nsrender_system::remove_viewport(const nsstring & vp_name)
 	{
 		if (liter->vp_name == vp_name)
 		{
+			if (m_current_vp == liter->vp)
+				m_current_vp = nullptr;
+			
 			delete liter->vp;
 			liter->vp = nullptr;
 			vp_list.erase(liter);
+
+			if (m_current_vp == nullptr && !vp_list.empty())
+				m_current_vp = vp_list.back().vp;
+			
 			return true;
 		}
 		++liter;
@@ -277,6 +289,22 @@ bool nsrender_system::_handle_window_resize(window_resize_event * evt)
 	}
 	nsrender_target * rt = nse.video_driver()->default_target();
 	rt->resize(evt->new_size);
+	return true;
+}
+
+nsrender::viewport * nsrender_system::current_viewport()
+{
+	return m_current_vp;
+}
+
+bool nsrender_system::_handle_viewport_change(nsaction_event * evt)
+{
+	if (evt->trigger_hash_name == trigger_hash(0))
+	{
+		nsrender::viewport * vp = front_viewport(evt->norm_mpos);
+		if (vp != nullptr)
+			m_current_vp = vp;
+	}
 	return true;
 }
 

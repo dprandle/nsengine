@@ -41,6 +41,9 @@
 #define MESH_TERRAIN "terrain"
 #define MESH_SKYDOME "skydome"
 
+// Input Events
+#define VIEWPORT_CHANGE "mouse_pressed_in_viewport"
+
 // Some default fog settings
 #define DEFAULT_FOG_FACTOR_NEAR 40
 #define DEFAULT_FOG_FACTOR_FAR 80
@@ -55,8 +58,60 @@
 #include <nsunordered_map.h>
 #include <list>
 
+
 class nsentity;
 class nsmaterial;
+
+namespace nsrender
+{
+
+struct viewport
+{
+	viewport(
+		const fvec4 & norm_bounds = fvec4(),
+		nsentity * cam=nullptr,
+		uint32 window_tag_=0,
+		const ivec4 & bounds_=ivec4(),
+		const fvec4 & fog_color=fvec4(1,1,1,1),
+		const uivec2 & fog_near_far=uivec2(200,300),
+		bool lighting=true,
+		bool shadows=true,
+		bool oit=true,
+		bool selection=true,
+		bool debug_draw=false):
+		normalized_bounds(norm_bounds),
+		camera(cam),
+		window_tag(window_tag_),
+		bounds(bounds_),
+		m_fog_nf(fog_near_far),
+		m_fog_color(fog_color),
+		spot_lights(lighting),
+		spot_light_shadows(shadows),
+		point_lights(lighting),
+		point_light_shadows(shadows),
+		dir_lights(true),
+		dir_light_shadows(shadows),
+		order_independent_transparency(oit),
+		picking_enabled(selection) {}
+
+	fvec4 normalized_bounds;
+	uint32 window_tag;
+	ivec4 bounds;
+	bool spot_lights;
+	bool spot_light_shadows;
+	bool point_lights;
+	bool point_light_shadows;
+	bool dir_lights;
+	bool dir_light_shadows;
+	bool order_independent_transparency;
+	bool picking_enabled;
+	bool debug_draw;
+	uivec2 m_fog_nf;
+	fvec4 m_fog_color;
+	nsentity * camera;
+};
+
+}
 
 namespace nsrender
 {
@@ -96,6 +151,8 @@ class nsrender_system : public nssystem
 
 	uivec3 pick(const fvec2 & screen_pos);
 
+	nsrender::viewport * current_viewport();
+
 	nsrender::viewport * front_viewport(const fvec2 & screen_pos);
 	
 	nsmaterial * default_mat();
@@ -115,8 +172,10 @@ class nsrender_system : public nssystem
   private:
 
 	bool _handle_window_resize(window_resize_event * evt);
+	bool _handle_viewport_change(nsaction_event * evt);
 
 	nsmaterial * m_default_mat;
+	nsrender::viewport * m_current_vp;
 	std::list<vp_node> vp_list;
 };
 

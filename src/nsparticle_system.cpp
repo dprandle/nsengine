@@ -11,6 +11,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 */
 
 #include <nsvertex_array_object.h>
+#include <nsvideo_driver.h>
 #include <nsevent_dispatcher.h>
 #include <nsparticle_system.h>
 #include <nsparticle_comp.h>
@@ -55,9 +56,15 @@ void nsparticle_system::update()
 	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
-	nsentity * cam = scene->camera();
+
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return;
+	
+	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return;
+
 	nscam_comp * compc = cam->get<nscam_comp>();
 	nstform_comp * camTComp = cam->get<nstform_comp>();
 

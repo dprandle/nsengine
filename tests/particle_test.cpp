@@ -158,7 +158,6 @@ int main()
 										fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
 	nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f);
 	new_level->add(dirl, fvec3(20.0f, 20.0f, -50.0f));
-	new_level->set_camera(cam);
 
 	// Now we will make a texture from an image on file, then create a new material
 	// and assign the new texture to the material

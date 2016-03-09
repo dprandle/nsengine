@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the NSCamController cla
 */
 
 #include <iostream>
-
+#include <nsrender_system.h>
 #include <nscamera_system.h>
 #include <nsentity.h>
 #include <nsselection_system.h>
@@ -142,7 +142,11 @@ void nscamera_system::set_view(camera_view_t view_)
 	if (scene == NULL)
 		return;
 
-	nsentity * cam = scene->camera();
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return;
+
+	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return;
 
@@ -231,11 +235,16 @@ void nscamera_system::set_zoom(float pZFactor)
 void nscamera_system::set_mode(camera_mode pMode)
 {
 	m_cam_mode = pMode;
+
 	nsscene * scene = nse.current_scene();
 	if (scene == NULL)
 		return;
 
-	nsentity * cam = scene->camera();
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return;
+
+	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return;
 
@@ -339,7 +348,15 @@ void nscamera_system::update()
 	// Dont do anything if the scene is NULL
 	if (scene == NULL)
 		return;
-	
+
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return;
+
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
+		return;
+
 	auto iter = scene->entities<nscam_comp>().begin();
 	while (iter != scene->entities<nscam_comp>().end())
 	{
@@ -350,7 +367,7 @@ void nscamera_system::update()
 		if (camComp->update_posted())
 		{
 			// generate a camera changed event
-			if ((*iter) == scene->camera() && !m_anim_view)
+			if ((*iter) == cam && !m_anim_view)
 				nse.event_dispatch()->push<nscam_change_event>();
 			
 			if (camComp->strafe().animating)
@@ -376,7 +393,7 @@ void nscamera_system::update()
 				m_anim_view);
 		}
 
-		if ((*iter) == scene->camera())
+		if ((*iter) == cam)
 		{
 			if (m_anim_view)
 			{
@@ -418,20 +435,19 @@ void nscamera_system::update()
 
 bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 {
-	nsscene * scene = nse.current_scene();
-
-	if (scene == NULL)
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
 		return true;
 
-	nsentity * camera = scene->camera();
-	if (camera == NULL)
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
 		return true;
 
 	if (m_anim_view)
 		return true;
 
-	nscam_comp * camc = camera->get<nscam_comp>();
-	nstform_comp * tcomp = camera->get<nstform_comp>();
+	nscam_comp * camc = cam->get<nscam_comp>();
+	nstform_comp * tcomp = cam->get<nstform_comp>();
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_tilt_pan))
 		_on_cam_turn(camc, tcomp, evnt->norm_delta);
@@ -441,20 +457,6 @@ bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_zoom))
 		_on_cam_zoom(camc, tcomp, evnt->scroll);
-	
-	if (evnt->trigger_hash_name == hash_id("ToggleCam"))
-	{
-		nsstring camname = nse.current_scene()->camera()->name();
-		if (camname == "scenecam")
-			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam1"));
-		else if (camname == "scenecam1")
-			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam2"));
-		else if (camname == "scenecam2")
-			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam3"));
-		else
-			nse.current_scene()->set_camera(nse.active()->get<nsentity>("scenecam"));
-	}
-
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_top_view_0))
 		set_view(view_top_0);
@@ -491,17 +493,18 @@ bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 
 bool nscamera_system::_handle_state_event(nsstate_event * evnt)
 {
-	nsscene * scene = nse.current_scene();
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return true;
 
-	if (scene == NULL)
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
 		return true;
-	
-	nsentity * camera = scene->camera();
-	if (camera == NULL)
-		return true;
+
 	if (m_anim_view)
 		return true;
-	nscam_comp * camc = camera->get<nscam_comp>();
+	
+	nscam_comp * camc = cam->get<nscam_comp>();
 
 	if (evnt->trigger_hash_name == trigger_hash(camera_forward))
 		camc->set_fly(nscam_comp::dir_pos, evnt->toggle);
@@ -550,10 +553,12 @@ bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 
 	if (m_cam_mode == mode_free)
 		return true;
-	nsscene * scn = nse.current_scene();
-	if (scn == NULL)
+	
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
 		return true;
-	nsentity * cam = scn->camera();
+
+	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return true;
 

@@ -346,11 +346,11 @@ bool nsbuild_system::mirror() const
 
 void nsbuild_system::to_cursor()
 {
-	nsscene * scene = nse.current_scene();
-	if (scene == NULL)
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
 		return;
 
-	nsentity * camera = scene->camera();
+	nsentity * camera = vp->camera;
 	if (camera == NULL)
 		return;
 
