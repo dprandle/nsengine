@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(nsengine)
 
 # Set the source directory
-set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src/nsengine)
 set(HASH_SRC_DIR ${PROJECT_SOURCE_DIR}/src/hash)
 set(SOIL_SRC_DIR ${PROJECT_SOURCE_DIR}/src/soil)
 set(GLEW_SRC_DIR ${PROJECT_SOURCE_DIR}/src/glew)
@@ -30,6 +30,11 @@ file(GLOB SRC_FILES
 "${SOIL_SRC_DIR}/*.c"
 "${GLEW_SRC_DIR}/*.c"
 "${NSENGINE_SRC_DIR}/*.cpp"
+"${NSENGINE_SRC_DIR}/math/*.cpp"
+"${NSENGINE_SRC_DIR}/component/*.cpp"
+"${NSENGINE_SRC_DIR}/system/*.cpp"
+"${NSENGINE_SRC_DIR}/resource/*.cpp"
+"${NSENGINE_SRC_DIR}/opengl_driver/*.cpp"
 "${HASH_SRC_DIR}/*.cpp"
 "${SOIL_SRC_DIR}/*.cpp"
 "${GLEW_SRC_DIR}/*.cpp"
@@ -37,12 +42,22 @@ file(GLOB SRC_FILES
 
 file(GLOB HEADER_FILES
 "${NSENGINE_INCLUDE_DIR}/*.h"
+"${NSENGINE_INCLUDE_DIR}/math/*.h"
+"${NSENGINE_INCLUDE_DIR}/component/*.h"
+"${NSENGINE_INCLUDE_DIR}/system/*.h"
+"${NSENGINE_INCLUDE_DIR}/resource/*.h"
+"${NSENGINE_INCLUDE_DIR}/opengl_driver/*.h"
 "${NSENGINE_INCLUDE_DIR}/*.hpp"
 )
 
 # Set project includes dir
 include_directories(
 "${NSENGINE_INCLUDE_DIR}"
+"${NSENGINE_INCLUDE_DIR}/math"
+"${NSENGINE_INCLUDE_DIR}/component"
+"${NSENGINE_INCLUDE_DIR}/system"
+"${NSENGINE_INCLUDE_DIR}/resource"
+"${NSENGINE_INCLUDE_DIR}/opengl_driver"
 "${ASSIMP_INCLUDE_DIR}"
 "${DEVIL_INCLUDE_DIR}"
 "${LIB_INCLUDE_DIR}"

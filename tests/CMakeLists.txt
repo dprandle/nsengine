@@ -36,23 +36,23 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 add_executable(inputtest inputtest.cpp)
 set_target_properties(inputtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(buildsystemtest buildsystemtest.cpp)
-set_target_properties(buildsystemtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(buildsystemtest buildsystemtest.cpp)
+#set_target_properties(buildsystemtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(skyboxtest skyboxtest.cpp)
-set_target_properties(skyboxtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(skyboxtest skyboxtest.cpp)
+#set_target_properties(skyboxtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(fogtest fogtest.cpp)
-set_target_properties(fogtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(fogtest fogtest.cpp)
+#set_target_properties(fogtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(res_load_test resource_load_test.cpp)
-set_target_properties(res_load_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(res_load_test resource_load_test.cpp)
+#set_target_properties(res_load_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(animation_test animation_test.cpp)
-set_target_properties(animation_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(animation_test animation_test.cpp)
+#set_target_properties(animation_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(particle_test particle_test.cpp)
-set_target_properties(particle_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(particle_test particle_test.cpp)
+#set_target_properties(particle_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(resource_copy_test resource_copy_test.cpp)
-set_target_properties(particle_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#add_executable(resource_copy_test resource_copy_test.cpp)
+#set_target_properties(particle_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

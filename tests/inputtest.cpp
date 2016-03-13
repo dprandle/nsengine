@@ -21,6 +21,7 @@
 #include <nsanim_comp.h>
 #include <nsfont.h>
 #include <nsopengl_driver.h>
+#include <nsplugin_manager.h>
 
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
@@ -35,9 +36,11 @@ int main()
 {
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
 	
-    nse.create_context();
-	nse.create_video_driver<nsopengl_driver>();
+	nsopengl_driver * gl_driver = nse.create_video_driver<nsopengl_driver>();
+	gl_driver->create_context();
+    gl_driver->init();
     nse.start();
+    nse.create_default_systems();
 
 //    nse.system<nsrender_system>()->setup_default_rendering();
 
@@ -62,10 +65,13 @@ int main()
 
 nsplugin * setup_basic_plugin()
 {
-    nsplugin * plg = nse.create_plugin("testplug");
+    nsplugin * plg = nsep.create("testplug");
+    plg->bind();
+    nsep.set_active(plg);
+
     nsscene * scn = plg->create<nsscene>("mainscene");
 	scn->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-	nse.set_current_scene(scn, true, false);
+	nsep.active()->set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * cam2 = plg->create_camera("scenecam1", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));

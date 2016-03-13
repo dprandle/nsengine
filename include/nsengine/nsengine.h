@@ -108,26 +108,6 @@ This file contains all of the neccessary declartations for the nsengine class.
 #define INP_SYS_UPDATE_PR 10000
 #define UI_SYS_UPDATE_PR 20000
 
-// Engine macros
-#define nse nsengine::inst()
-#define type_to_guid(type) nse.guid(std::type_index(typeid(type)))
-#define hash_to_guid(hash) nse.guid(hash)
-#define type_to_hash(type) nse.type_id(std::type_index(typeid(type)))
-
-// Debuggin setup
-//#define NSDEBUG
-#define NSDEBUG_RT
-#ifdef NSDEBUG
-#define dprint(str) nse.debug_print(str)
-#else
-#define dprint(str)
-#endif
-
-#include <map>
-#include <nsfactory.h>
-#include <typeindex>
-#include <nsmath.h>
-#include <unordered_map>
 
 class nsscene;
 class nsvideo_driver;
@@ -147,8 +127,28 @@ class nsplugin;
 class nsevent_dispatcher;
 struct nssave_resouces_callback;
 class nsres_manager;
-struct gl_ctxt;
-class nsfb_object;
+class nsengine;
+
+
+// Debuggin setup
+//#define NSDEBUG
+#define NSDEBUG_RT
+#ifdef NSDEBUG
+#define dprint(str) nsengine::inst().debug_print(str)
+#else
+#define dprint(str)
+#endif
+
+#define type_to_guid(type) nsengine::inst().guid(std::type_index(typeid(type)))
+#define hash_to_guid(hash) nsengine::inst().guid(hash)
+#define type_to_hash(type) nsengine::inst().type_id(std::type_index(typeid(type)))
+
+#include <map>
+#include <nsfactory.h>
+#include <typeindex>
+#include <nsmath.h>
+#include <unordered_map>
+
 #ifdef NSDEBUG
 class nsdebug;
 #endif
@@ -158,66 +158,18 @@ typedef std::unordered_map<uint32, uint32> res_manager_type_map;
 typedef std::unordered_map<std::type_index, uint32> type_hash_map;
 typedef std::unordered_map<uint32, nsstring> hash_string_map;
 typedef std::unordered_map<uint32, nsfactory*> hash_factory_map;
-typedef std::unordered_map<uint32, gl_ctxt*> gl_context_map;
 
 uint32 hash_id(const nsstring & str);
 
-// make sure all directories end with "/"
-
-/*!
-Multiple contexts works like this - GLEW has a context struct for storing the function pointers for the opengl functions...
-Basically - as far as I understand - when initializing GLEW it will use whichever gl context is the current context to get the function
-pointers - a GLEWContext is NOT the actual opengl context but just a struct to hold function pointers.. This means, for example, you could
-have to different "contexts" (being GLEWContext not actual opengl contexts) that define function pointers for the same actual context...
-
-For this reason from now on I will refer to an actual opengl context as a "rendering context", and a GLEWContext (which has a bunch of function
-pointers initialized from whicher rendering context was current at the time of initialization) as a glew context.
-
-The engine doesnt care about which rendering context is current, or which device context (which is the window) is being used by the rendering
-context - the engine only cares about which glew context is being used and whoever is using the engine must take care to make sure that
-each rendering context has a glew context and that the rendering context is active when initializing the glew context.
-
-The user must make sure that when switching rendering contexts, the engine's current glew context is also changed to match. When a rendering context is created
-and made current, a glew context should be created and initialized (in that order). When a rendering context is made active, the corresponding glew context should be made active. When a rendering
-context is deleted, the corresponding glew context should be deleted (freeing all opengl resources used by that context). The rendering context should be deleted AFTER the glew context is
-deleted, and the rendering context should be the current context when deleting the glew context. This is so that the glDeleteX functions do not fail.
-
-Summary (leaving out device context instructions - see MSDN for that)
-
-****Creation*****
-Create rendering context and make current
-Create glew context and initialize (engine initializes automatically when creating)
-
-****Switching Contexts****
-Make different rendering context current
-Change the current glew context to match the rendering context
-
-****Deleting Contexts****
-Make context current
-Delete the glew context (engine will delete all resources on deleteContext call)
-Delete rendering context
-
-To associate a glew context with a rendering context, the engine stores the glew contexts under a string name. You can pick
-whatever string you want, but make sure you do not give two rendering contexts the same name. They are stored in a map so adding a glew
-context with the same name will fail.
-
-We dont share resources between contexts in the engine, because VAOs are used for almost everything which doesn't allow for
-sharing - we could if we really wanted make everything just use VBOs, then a different context could do its thing, but thats annoying
-Its easier to just not allow sharing
-*/
 class nsengine
 {
 public:
 	nsengine();
 	~nsengine();
+
 	typedef std::map<int32, uint32> sys_priority_map;
-
-	bool add_plugin(nsplugin * plug);
-
-	/* Add a system to the current context */
+	
 	bool add_system(nssystem * pSystem);
-
-	nsplugin * active();
 
 	hash_factory_map::iterator begin_factory();
 
@@ -228,25 +180,13 @@ public:
 	{
 		_cleanup_driver();
 		m_driver = new T();
-		_init_driver();
+		return static_cast<T*>(m_driver);
 	}
 
 	nsvideo_driver * video_driver();
 
-	/*!
-	Create a GLContext and return a unique id - this id can be used to set the current context and
-	delete the context later
-
-	This does not initialize the context - call start/shutdown to initialize and release opengl and all
-	resources associated with the context
-
-	The newly created context will be set as the current context.
-	*/
-	uint32 create_context(bool addDefaultFactories = true //<! Add the normal system/component/resource/resource manager factories
-		);
-
-	nsplugin * create_plugin(const nsstring & plugname, bool makeactive=true);
-
+	void create_default_systems();
+	
 	template<class sys_type>
 	sys_type * create_system()
 	{
@@ -257,27 +197,6 @@ public:
 	nssystem * create_system(uint32 type_id);
 	
 	nssystem * create_system(const nsstring & guid_);
-
-	gl_ctxt * current();
-
-	uint32 current_id();
-
-	nsscene * current_scene();
-
-	/*!
-	Delete the context with ID cID
-	Make sure shutdown has been called with the context to be deleted set as the current context
-	*/
-	bool destroy_context(uint32 cID);
-
-	template<class T>
-	bool del_plugin(const T & name)
-	{
-		nsplugin * plg = plugin(name);
-		return del_plugin(plg);
-	}
-
-	bool del_plugin(nsplugin * plg);
 
 	template<class sys_type>
 	bool destroy_system()
@@ -303,15 +222,6 @@ public:
 	nsplugin_manager * plugins();
 
 	nsevent_dispatcher * event_dispatch();
-
-	template<class T>
-	bool has_plugin(const T & name)
-	{
-		nsplugin * plg = plugin(name);
-		return has_plugin(plg);
-	}
-
-	bool has_plugin(nsplugin * plg);
 
 	template<class obj_type>
 	nsfactory * factory()
@@ -351,19 +261,6 @@ public:
 	bool has_system(uint32 type_id);
 	
 	bool has_system(const nsstring & guid_);
-
-	nsplugin * load_plugin(const nsstring & fname);
-
-	template<class manager_type, class T>
-	manager_type * manager(const T & plugname)
-	{
-		uint32 hashed_type = type_to_hash(manager_type);
-		return static_cast<manager_type*>(manager(hashed_type, plugin(plugname)));
-	}
-
-	nsres_manager * manager(uint32 manager_typeid, nsplugin * plg);
-
-	nsres_manager * manager(const nsstring & manager_guid, nsplugin * plg);
 
 	template<class comp_type>
 	bool register_component(const nsstring & guid_)
@@ -526,33 +423,6 @@ public:
 		return true;
 	}
 
-	void save_core(nssave_resouces_callback * scallback=NULL);
-
-	bool save_plugin(nsplugin * plg, bool saveOwnedResources=false, nssave_resouces_callback * scallback=NULL);
-
-    //! Save all plugins to the plugins file - if saveOwnedResources then save each plugin's owned rcs also. 
-	//! The callback function can be used to track progress of saving as the exec function is executed after
-	//! each resource is saved.
-	/*!
-	  \param saveOwnedResources If true save each plugin's owned resources
-	  \param scallback The callback's exec function is called after each resource save - if null then does
-	  nothing
-    */
-	void save_plugins(bool saveOwnedResources=false, nssave_resouces_callback * scallback = NULL);
-
-	void set_plugin_dir(const nsstring & plugdir);
-
-	const nsstring & plugin_dir();
-
-	template<class T>
-	nsplugin * remove_plugin(const T & name)
-	{
-		nsplugin * plg = plugin(name);
-		return remove_plugin(plg);
-	}
-
-	nsplugin * remove_plugin(nsplugin * plg);
-
 	template<class sys_type>
 	sys_type * remove_system()
 	{
@@ -563,47 +433,8 @@ public:
 	nssystem * remove_system(uint32 type_id);
 
 	nssystem * remove_system(const nsstring & gui);
-
-	nsplugin * plugin(const nsstring & name);
-
-	nsplugin * plugin(uint32 id);
-
-	nsplugin * plugin(nsplugin * plg);
-
-	template<class T>
-	bool destroy_plugin(const T & name)
-	{
-		return destroy_plugin(plugin(name));
-	}
-
-	bool destroy_plugin(nsplugin * plug);
-
-	template<class res_type>
-	res_type * resource(const uivec2 & resID)
-	{
-		uint32 hashed_type = type_to_hash(res_type);
-		return static_cast<res_type*>(resource(hashed_type,resID));
-	}
-
-	template<class res_type,class T1, class T2>
-	res_type * resource(const T1 & plg, const T2 & res)
-	{
-		nsplugin * plug = plugin(plg);
-		return static_cast<res_type*>(resource(type_to_hash(res_type),plug,res));
-	}
-
-	nsresource * resource(uint32 res_typeid, const uivec2 & resid);
-
-	nsresource * resource(uint32 res_typeid, nsplugin * plg, uint32 resid);
-
-	nsresource * resource(uint32 res_typeid, nsplugin * plg, const nsstring & resname);
 	
-	/*!
-	Overload of Propagate name change
-	*/
 	void name_change(const uivec2 & oldid, const uivec2 newid);
-
-	const nsstring & res_dir();
 
 	nsstring guid(uint32 hash);
 
@@ -617,29 +448,13 @@ public:
 
 	uint32 type_id(std::type_index type);
 	
-	void set_active(const nsstring & plugname);
-
-	void set_active(nsplugin * plug);
-
-	void set_active(uint32 plugid);
-
-	void set_current_scene(const nsstring & scn, bool new_scene, bool save_previous);
-
-	void set_current_scene(nsscene * scn, bool new_scene, bool save_previous);
-
-	void set_current_scene(uint32 scn, bool new_scene, bool save_previous);
-
-	bool make_current(uint32 cID);
-
 	const nsstring & import_dir();
 
 	void set_import_dir(const nsstring & dir);
 
-	void set_res_dir(const nsstring & dir);
-
 	void shutdown();
 
-	void start(const ivec2 & screen_size = ivec2());
+	void start();
 
 	template<class sys_type>
 	sys_type * system()
@@ -670,7 +485,6 @@ public:
 private:
 
 	void _cleanup_driver();
-	void _init_driver();
 	
 	template<class obj_type>
 	bool _add_factory(nsfactory * fac)
@@ -728,24 +542,41 @@ private:
         return static_cast<base_fac_type*>(_remove_factory(iter->second));
 	}
 
-	void _init_systems();
 	void _init_factories();
 	void _remove_sys(uint32 type_id);
-	
-	nsstring m_res_dir;
-	nsstring m_import_dir;
-	
-	sys_priority_map m_sys_update_order;
+		
 	type_hash_map m_obj_type_hashes;
 	hash_string_map m_obj_type_names;
 	hash_factory_map m_factories;
 	res_manager_type_map m_res_manager_map;
 
 	nsvideo_driver * m_driver;
-	
-	gl_context_map m_contexts;
-	uint32 m_current_context;
+
+	sys_priority_map m_sys_update_order;
+	system_hash_map * m_systems;
+	nsplugin_manager * m_plugins;
+	nsevent_dispatcher * m_event_disp;
+	nstimer * m_timer;
+
+#ifdef NSDEBUG
+	nsdebug * m_deb;
+#endif
+
+	nsstring m_import_dir;
 	nsstring m_cwd;
 };
+
+// Engine macros
+#define nse nsengine::inst()
+
+nsresource * get_resource(uint32 res_type, const uivec2 & res_id);
+
+template<class res_type>
+res_type * get_resource(const uivec2 & res_id)
+{
+	uint32 hashed_type = type_to_hash(res_type);
+	return static_cast<res_type*>(get_resource(hashed_type,res_id));	
+}
+
 
 #endif
