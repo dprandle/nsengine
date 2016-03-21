@@ -90,8 +90,6 @@ public:
 
 	virtual bool save(nsresource * res, const nsstring & path);
 	
-	virtual nstex_cubemap * load_cubemap(const nsstring & fname);
-
 	virtual nstex_cubemap * load_cubemap(const nsstring & fname, const nsstring & cube_all_ext);
 
 	virtual nstex_cubemap * load_cubemap(const nsstring & pXPlus,
@@ -107,6 +105,10 @@ public:
 	virtual bool save(nstex2d * image, const nsstring & path);
 
 	virtual bool save(nstex_cubemap * cubemap, const nsstring & path);
+
+  private:
+	uint32 _translate_format_il(tex_format ft);
+	uint32 _translate_pixel_type_il(pixel_component_type pt);
 };
 
 #endif

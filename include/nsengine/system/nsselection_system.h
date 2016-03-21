@@ -191,9 +191,18 @@ protected:
 		move_selection_toggle
 	};
    	
-	bool _handle_action_event(nsaction_event * evnt);
-	bool _handle_state_event(nsstate_event * evnt);
-
+	bool _handle_selected_entity(nsaction_event * evnt);
+	bool _handle_multi_select(nsaction_event * evnt);
+	bool _handle_shift_select(nsaction_event * evnt);
+	bool _handle_move_select(nsaction_event * evnt);
+	bool _handle_move_selection_xy(nsaction_event * evnt);
+	bool _handle_move_selection_zy(nsaction_event * evnt);
+	bool _handle_move_selection_zx(nsaction_event * evnt);
+	bool _handle_move_selection_x(nsaction_event * evnt);
+	bool _handle_move_selection_y(nsaction_event * evnt);
+	bool _handle_move_selection_z(nsaction_event * evnt);
+	bool _handle_move_selection_toggle(nsaction_event * evnt);
+	
 	void _reset_focus(const uivec3 & pickid);
 
 	virtual void _on_rotate_x(

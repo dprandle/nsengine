@@ -1,6 +1,7 @@
 #include <nsshadowbuf_object.h>
 #include <nsshader.h>
 #include <nsfb_object.h>
+#include <nsgl_texture.h>
 
 nsshadow_tex2d_target::nsshadow_tex2d_target()
 {}
@@ -8,24 +9,26 @@ nsshadow_tex2d_target::nsshadow_tex2d_target()
 nsshadow_tex2d_target::~nsshadow_tex2d_target()
 {}
 
-void nsshadow_tex2d_target::init()
+void nsshadow_tex2d_target::init(const nsstring & tex_name)
 {
 	set_target(nsgl_framebuffer::fb_draw);
 	bind();
 	set_draw_buffer(nsgl_framebuffer::att_none);
-	nsgl_framebuffer::attachment * att = create<nstex2d>(
-		"shadow_map_2d",
+
+	tex_params tp;
+	tp.edge_behavior.set(te_clamp,te_clamp,te_clamp);
+	tp.min_filter = tmin_linear;
+
+	nsgl_framebuffer::attachment * att = create_texture_attachment<nstex2d>(
+		tex_name,
 		nsgl_framebuffer::att_depth,
 		SHADOW_TEX_UNIT,
-		GL_DEPTH_COMPONENT,
-		GL_DEPTH_COMPONENT,
-		GL_FLOAT);
-	att->m_texture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
-	att->m_texture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
-	att->m_texture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
-	att->m_texture->set_parameter_i(nstexture::compare_func, GL_LESS);
-	att->m_texture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
-	att->m_texture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
+		tex_depth,
+		tex_float,
+		tp);
+
+	att->m_texture->video_texture<nsgl_texture>()->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
+	att->m_texture->video_texture<nsgl_texture>()->depth_func = GL_LESS;
 }
 
 
@@ -35,23 +38,24 @@ nsshadow_tex_cubemap_target::nsshadow_tex_cubemap_target()
 nsshadow_tex_cubemap_target::~nsshadow_tex_cubemap_target()
 {}
 
-void nsshadow_tex_cubemap_target::init()
+void nsshadow_tex_cubemap_target::init(const nsstring & tex_name)
 {
 	set_target(nsgl_framebuffer::fb_draw);
 	bind();
+
+	tex_params tp;
+	tp.edge_behavior.set(te_clamp,te_clamp,te_clamp);
+	tp.min_filter = tmin_linear;
+
 	set_draw_buffer(nsgl_framebuffer::att_none);
-	nsgl_framebuffer::attachment * att3 = create<nstex_cubemap>(
-		"point_light_shadow",
+	nsgl_framebuffer::attachment * att = create_texture_attachment<nstex_cubemap>(
+		tex_name,
 		nsgl_framebuffer::att_depth,
 		SHADOW_TEX_UNIT,
-		GL_DEPTH_COMPONENT,
-		GL_DEPTH_COMPONENT,
-		GL_FLOAT);
-	att3->m_texture->set_parameter_i(nstexture::min_filter, GL_LINEAR);
-	att3->m_texture->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
-	att3->m_texture->set_parameter_i(nstexture::compare_mode, GL_COMPARE_REF_TO_TEXTURE);
-	att3->m_texture->set_parameter_i(nstexture::compare_func, GL_LEQUAL);
-	att3->m_texture->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
-	att3->m_texture->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
-	att3->m_texture->set_parameter_i(nstexture::wrap_r, GL_CLAMP_TO_EDGE);
+		tex_depth,
+		tex_float,
+		tp);
+		
+	att->m_texture->video_texture<nsgl_texture>()->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
+	att->m_texture->video_texture<nsgl_texture>()->depth_func = GL_LESS;
 }

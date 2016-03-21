@@ -30,8 +30,8 @@ public:
 	void bind() const;
 	void end();
 	primitive_mode primitive();
-	void init_gl();
-	void release();
+	void video_init();
+	void video_release();
 	void set_primitive(primitive_mode mode_);
 	void set_update(bool update_);
 	void unbind() const;

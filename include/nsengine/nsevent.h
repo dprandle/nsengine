@@ -21,12 +21,14 @@ This file contains all of the neccessary declarations for the NSEvent struct.
 struct nsevent
 {
 
-	nsevent():
-		ref_count(0)
+	nsevent(uint32 id_=0):
+		ref_count(0),
+		id(id_)
 	{}
     virtual ~nsevent() {}
 
 	uint32 ref_count;
+	uint32 id;
 };
 
 struct nskey_event : public nsevent
@@ -83,28 +85,24 @@ struct nsmouse_scroll_event : public nsevent
 
 struct nsaction_event : public nsevent
 {
-	nsaction_event(uint32 trigger_hashid_):
-		nsevent(),
-		trigger_hash_name(trigger_hashid_)
+	enum state_t
+	{
+		none=-1,
+		end,
+		begin
+	};
+	
+	nsaction_event(uint32 trigger_hashid_, state_t current_state=none):
+		nsevent(trigger_hashid_),
+		cur_state(current_state)
 	{}
 
 	virtual ~nsaction_event() {}
 
-	uint32 trigger_hash_name;
 	fvec2 norm_mpos;
 	fvec2 norm_delta;
 	float scroll;
-};
-
-struct nsstate_event : public nsaction_event
-{
-
-	nsstate_event(uint32 trigger_hashid_, bool toggle_):
-		nsaction_event(trigger_hashid_),
-		toggle(toggle_)
-	{}
-
-	bool toggle;
+	state_t cur_state;
 };
 
 struct nssel_focus_event : public nsevent

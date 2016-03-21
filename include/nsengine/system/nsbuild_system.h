@@ -126,9 +126,14 @@ private:
 		toggle_tile_build_mode,
 		select_move_toggle // this is for snapping after z movement and continuing move mode
 	};
-	
-	bool _handle_state_event(nsstate_event * evnt);
-	bool _handle_action_event(nsaction_event * evnt);
+
+	bool _handle_initial_snap_brush_z(nsaction_event * evnt);
+	bool _handle_snap_z(nsaction_event * evnt);
+	bool _handle_toggle_build_erase_mode(nsaction_event * evnt);
+	bool _handle_toggle_build(nsaction_event * evnt);
+	bool _handle_toggle_tile_build_mode(nsaction_event * evnt);
+	bool _handle_insert_entity(nsaction_event * evnt);
+	bool _handle_select_move_toggle(nsaction_event * evnt);
 	bool _handle_cam_change_event(nscam_change_event * evnt);
 	
 	nsentity * m_tile_brush;

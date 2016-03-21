@@ -86,8 +86,8 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_check_trigger_modifiers(keyIter.first->second))
 			{
-				if (keyIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_create_state_event(keyIter.first->second, true);
+				if (keyIter.first->second.trigger_state == nsinput_map::t_both)
+					_create_action_state_event(keyIter.first->second, true);
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_released)
 					_create_action_event(keyIter.first->second);
 				
@@ -108,14 +108,16 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 void nsinput_system::_create_action_event(nsinput_map::trigger & trigger)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(trigger.hash_name);
+	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(trigger.hash_name, nsaction_event::none);
 	_set_event_from_trigger(evnt, trigger);
 }
 
-void nsinput_system::_create_state_event(nsinput_map::trigger & trigger, bool toggle)
+void nsinput_system::_create_action_state_event(nsinput_map::trigger & trigger, bool toggle)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
-	nsstate_event * evnt = nse.event_dispatch()->push<nsstate_event>(trigger.hash_name, toggle);
+	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(
+		trigger.hash_name,
+		nsaction_event::state_t(toggle));
 	_set_event_from_trigger(evnt, trigger);
 }
 
@@ -140,8 +142,8 @@ void nsinput_system::_key_release(nsinput_map::key_val pKey)
 		{
 			if (_check_trigger_modifiers(keyIter.first->second))
 			{
-				if (keyIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_create_state_event(keyIter.first->second, false);
+				if (keyIter.first->second.trigger_state == nsinput_map::t_both)
+					_create_action_state_event(keyIter.first->second, false);
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_pressed)
 					_create_action_event(keyIter.first->second);
 				
@@ -217,8 +219,8 @@ void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const f
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
-				if (mouseIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_create_state_event(mouseIter.first->second, true);
+				if (mouseIter.first->second.trigger_state == nsinput_map::t_both)
+					_create_action_state_event(mouseIter.first->second, true);
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_released)
 					_create_action_event(mouseIter.first->second);
 
@@ -255,8 +257,8 @@ void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const
 		{
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
-				if (mouseIter.first->second.trigger_state == nsinput_map::t_toggle)
-					_create_state_event(mouseIter.first->second, false);
+				if (mouseIter.first->second.trigger_state == nsinput_map::t_both)
+					_create_action_state_event(mouseIter.first->second, false);
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_pressed)
 					_create_action_event(mouseIter.first->second);
 
@@ -328,18 +330,10 @@ void nsinput_system::push_context(const nsstring & pName)
 
 void nsinput_system::init()
 {
-    register_handler_func(this, &nsinput_system::key_event);
-    register_handler_func(this, &nsinput_system::mouse_button_event);
-    register_handler_func(this, &nsinput_system::mouse_scroll_event);
-    register_handler_func(this, &nsinput_system::mouse_move_event);
-	register_handler_func(this, &nsinput_system::_handle_action);
-}
-
-bool nsinput_system::_handle_action(nsaction_event * evnt)
-{
-	if (evnt->trigger_hash_name == hash_id("save_map"))
-		nsep.active()->save<nsscene>("mainscene");
-	return true;
+    register_handler(nsinput_system::key_event);
+    register_handler(nsinput_system::mouse_button_event);
+    register_handler(nsinput_system::mouse_scroll_event);
+    register_handler(nsinput_system::mouse_move_event);
 }
 
 int32 nsinput_system::update_priority()

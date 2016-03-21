@@ -101,7 +101,7 @@ public:
 
 	error_state error() const;
 
-	void init_gl();
+	void video_init();
 
 	uint32 init_uniform_loc(const nsstring & pVariable);
 
@@ -115,11 +115,13 @@ public:
 
 	virtual void pup(nsfile_pupper * p, shader_type type);
 
-	void release();
+	void video_release();
 
 	void reset_error();
 
 	const nsstring & source(shader_type type);
+
+	void set_gl_id(uint32 id, shader_type type);
 
 	void set_name(shader_type type, const nsstring & name);
 
@@ -166,7 +168,7 @@ protected:
 	{
 		shader_stage(shader_type pType);
 		nsstring m_source;
-		uint32 m_stage_id;
+		uint32 m_stage_id[MAX_CONTEXT_COUNT];
 		shader_type m_type;
 	};
 

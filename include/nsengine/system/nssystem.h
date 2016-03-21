@@ -39,14 +39,8 @@ public:
 
 	uint32 type();
 
-  protected:
-	
-	void add_trigger_hash(uint32 key, const nsstring & trigname);
-	void remove_trigger_hash(uint32 key);
-	uint32 trigger_hash(uint32 key);
-	
   private:
-	ui_ui_umap m_hashed_input_triggers;
+
 	uint32 m_hashed_type;
 };
 

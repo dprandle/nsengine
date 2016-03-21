@@ -136,9 +136,24 @@ class nscamera_system : public nssystem
     void _on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
 	void _on_cam_move(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
 	void _on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, float pScroll);
-	
-	bool _handle_action_event(nsaction_event * evnt);
-	bool _handle_state_event(nsstate_event * evnt);
+
+	bool _handle_camera_tilt_pan(nsaction_event * evnt);
+	bool _handle_camera_move(nsaction_event * evnt);
+	bool _handle_camera_zoom(nsaction_event * evnt);
+	bool _handle_camera_top_view_0(nsaction_event * evnt);
+	bool _handle_camera_iso_view_0(nsaction_event * evnt);
+	bool _handle_camera_front_view_0(nsaction_event * evnt);
+	bool _handle_camera_top_view_120(nsaction_event * evnt);
+	bool _handle_camera_iso_view_120(nsaction_event * evnt);
+	bool _handle_camera_front_view_120(nsaction_event * evnt);
+	bool _handle_camera_top_view_240(nsaction_event * evnt);
+	bool _handle_camera_iso_view_240(nsaction_event * evnt);
+	bool _handle_camera_front_view_240(nsaction_event * evnt);
+	bool _handle_camera_toggle_mode(nsaction_event * evnt);
+	bool _handle_camera_forward(nsaction_event * evnt);
+	bool _handle_camera_backward(nsaction_event * evnt);
+	bool _handle_camera_left(nsaction_event * evnt);
+	bool _handle_camera_right(nsaction_event * evnt);	
 	bool _handle_sel_focus_event(nssel_focus_event * evnt);
 	
 	float m_zoom_factor;

@@ -13,7 +13,7 @@ class nsshadow_tex2d_target : public nsgl_framebuffer
 	nsshadow_tex2d_target();
 	~nsshadow_tex2d_target();
 
-	void init();
+	void init(const nsstring & tex_name);
 };
 
 class nsshadow_tex_cubemap_target : public nsgl_framebuffer
@@ -22,6 +22,6 @@ class nsshadow_tex_cubemap_target : public nsgl_framebuffer
 	nsshadow_tex_cubemap_target();
 	~nsshadow_tex_cubemap_target();
 
-	void init();
+	void init(const nsstring & tex_name);
 };
 #endif

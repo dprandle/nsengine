@@ -13,8 +13,10 @@
 #ifndef NSFRAMEBUFFER_H
 #define NSFRAMEBUFFER_H
 
+#include <nsengine.h>
 #include <nsgl_object.h>
 #include <nstexture.h>
+#include <nsplugin_manager.h>
 
 class nsgl_renderbuffer;
 
@@ -60,38 +62,46 @@ public:
 
 	uivec3 pick(float norm_mouse_x, float norm_mouse_y, uint32 att_index);
 
-	attachment * create(attach_point att_point_, uint32 sampler_num_, int32 internal_format_, bool overwrite_ = true);
+	attachment * create_renderbuffer_attachment(
+		attach_point att_point_,
+		uint32 sampler_num_,
+		int32 internal_format_,
+		bool overwrite_ = true);
 
 	template<class tex_type>
-	attachment * create(const nsstring & pName, attach_point att_point_, uint32 tex_unit_, int32 internal_format_, int32 format_, int32 pixel_data_t_)
+	attachment * create_texture_attachment(
+		const nsstring & pName,
+		attach_point att_point_,
+		uint32 tex_unit_,
+		tex_format format_,
+		pixel_component_type pixel_type_,
+		tex_params pms = tex_params(),
+		bool mipmaps=false)
 	{
-		tex_type * tex = new tex_type();
-
-		// Set up the texture according to the format provided in the function arguements
-		tex->init_gl();
-		tex->rename(pName);
+		nsplugin * plg = nsep.get(ENGINE_PLUG);
+		tex_type * tex = plg->create<tex_type>(pName);
 		tex->set_format(format_);
-		tex->set_internal_format(internal_format_);
-		tex->set_pixel_data_type(pixel_data_t_);
-		tex->resize(m_size.x,m_size.y);
-		tex->bind();
-		// Fill the texture with NULL data
-		tex->allocate(NULL);
+		tex->set_parameters(pms);
+		tex->enable_mipmap_autogen(mipmaps);
+		tex->set_component_data_type(pixel_type_);
+		tex->resize(m_size, false);
 
-		// Render buffer is left as NULL to indicate that we are using a texture at this attachment location on not a render buffer
+		gl_err_check("here");
+		tex->bind();
+		tex->video_allocate();
+		gl_err_check("here2");
+
 		attachment * att = new attachment();
 		att->m_att_point = att_point_;
 		att->m_texture = tex;
-		att->m_owning_fb = m_gl_name;
+		att->m_owning_fb = gl_id();
 		att->m_tex_unit = tex_unit_;
-
 		if (!add(att, true))
 		{
 			delete att;
-			att = NULL;
+			att = nullptr;
 		}
-
-		return att;
+		return att;	
 	}
 
     // Will return attachment with NULL as renderbuffer pointer and texture pointer if
@@ -102,11 +112,11 @@ public:
 
 	bool has(attach_point att_point_);
 
-	virtual void init_gl();
+	virtual void video_init();
 
 	virtual void init();
 
-	virtual void release();
+	virtual void video_release();
 
 	virtual void resize(int32 w, int32 h=0, uint32 layers_=0);
 
@@ -114,7 +124,7 @@ public:
 
 	const ivec2 & size();
 
-	bool set_cube_face(attach_point att_point_, nstex_cubemap::cube_face face_);
+	bool set_cube_face(attach_point att_point_, uint8 face_);
 
 	void set_draw_buffer(attach_point att_point_);
 

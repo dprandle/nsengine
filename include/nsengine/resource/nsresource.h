@@ -44,6 +44,8 @@ public:
 
 	virtual void init() = 0;
 
+	virtual void release() {}
+
 	const nsstring & extension() const;
 
 	const nsstring & name() const;

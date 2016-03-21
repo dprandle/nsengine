@@ -28,13 +28,13 @@ nsbuffer_object::~nsbuffer_object()
 	
 void nsbuffer_object::bind() const
 {
-	glBindBuffer(m_target, m_gl_name);
+	glBindBuffer(m_target, gl_id());
 	gl_err_check("nsbuffer_object::bind()");
 }
 
 void nsbuffer_object::bind(uint32 pIndex)
 {
-	glBindBufferBase(m_target, pIndex, m_gl_name);
+	glBindBufferBase(m_target, pIndex, gl_id());
 	gl_err_check("nsbuffer_object::bind(uint32 index)");
 }
 
@@ -54,9 +54,11 @@ void nsbuffer_object::clear(int32 internal_format, int32 format, int32 type, con
 	gl_err_check("nsbuffer_object::initGL()");
 }
 
-void nsbuffer_object::init_gl()
+void nsbuffer_object::video_init()
 {
-	glGenBuffers(1, &m_gl_name);
+	uint32 glid;
+	glGenBuffers(1, &glid);
+	set_gl_id(glid);
 	gl_err_check("nsbuffer_object::initGL()");
 }
 
@@ -81,11 +83,11 @@ void nsbuffer_object::allocate(usage_flag pFlag, uint32 pTotalByteSize)
 	m_allocated = true;
 }
 
-void nsbuffer_object::release()
+void nsbuffer_object::video_release()
 {
-	if (m_gl_name != 0)
-		glDeleteBuffers(1, &m_gl_name);
-	m_gl_name = 0;
+	uint32 glid = gl_id();
+	glDeleteBuffers(1, &glid);
+	set_gl_id(0);
 	m_mapped = false;
 	m_allocated = false;
 	gl_err_check("nsbuffer_object::release()");

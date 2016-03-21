@@ -443,20 +443,17 @@ bool nsselection_system::empty()
 
 void nsselection_system::init()
 {	
-	register_handler_func(this, &nsselection_system::_handle_action_event);
-	register_handler_func(this, &nsselection_system::_handle_state_event);
-
-	add_trigger_hash(selected_entity, NSSEL_SELECT);
-	add_trigger_hash(multi_select, NSSEL_MULTISELECT);
-	add_trigger_hash(shift_select, NSSEL_SHIFTSELECT);
-	add_trigger_hash(move_select, NSSEL_MOVE);
-	add_trigger_hash(move_selection_xy, NSSEL_MOVE_XY);
-	add_trigger_hash(move_selection_zy, NSSEL_MOVE_ZY);
-	add_trigger_hash(move_selection_zx, NSSEL_MOVE_ZX);
-	add_trigger_hash(move_selection_x, NSSEL_MOVE_X);
-	add_trigger_hash(move_selection_y, NSSEL_MOVE_Y);
-	add_trigger_hash(move_selection_z, NSSEL_MOVE_Z);
-	add_trigger_hash(move_selection_toggle, NSSEL_MOVE_TOGGLE);
+	register_action_handler(nsselection_system::_handle_selected_entity, NSSEL_SELECT);
+	register_action_handler(nsselection_system::_handle_multi_select, NSSEL_MULTISELECT);
+	register_action_handler(nsselection_system::_handle_shift_select, NSSEL_SHIFTSELECT);
+	register_action_handler(nsselection_system::_handle_move_select, NSSEL_MOVE);
+	register_action_handler(nsselection_system::_handle_move_selection_xy, NSSEL_MOVE_XY);
+	register_action_handler(nsselection_system::_handle_move_selection_zy, NSSEL_MOVE_ZY);
+	register_action_handler(nsselection_system::_handle_move_selection_zx, NSSEL_MOVE_ZX);
+	register_action_handler(nsselection_system::_handle_move_selection_x, NSSEL_MOVE_X);
+	register_action_handler(nsselection_system::_handle_move_selection_y, NSSEL_MOVE_Y);
+	register_action_handler(nsselection_system::_handle_move_selection_z, NSSEL_MOVE_Z);
+	register_action_handler(nsselection_system::_handle_move_selection_toggle, NSSEL_MOVE_TOGGLE);
 }
 
 int32 nsselection_system::update_priority()
@@ -1518,100 +1515,111 @@ void nsselection_system::prepare_selection_for_rendering()
 	}	
 }
 
-bool nsselection_system::_handle_action_event(nsaction_event * evnt)
-{
-	if (evnt->trigger_hash_name == trigger_hash(selected_entity))
-	{		
-		uivec3 pickid = pick(evnt->norm_mpos);
-		if (!contains(pickid))
-			clear();		
-		nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
-        add(selectedEnt, pickid.z);
-		_reset_focus(pickid);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(multi_select))
-	{		
-		uivec3 pickid = pick(evnt->norm_mpos);
-		nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());		
-		if (contains(pickid))
-			remove(selectedEnt,pickid.z);
-		else
-			add(selectedEnt, pickid.z);
-		_reset_focus(pickid);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(shift_select))
-	{
-		
-		uivec3 pickid = pick(evnt->norm_mpos);
-		nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
-		add(selectedEnt, pickid.z);
-		_reset_focus(pickid);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_select))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y | axis_z, vp->normalized_bounds);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_selection_xy))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;		
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zy))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;		
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_y | axis_z, vp->normalized_bounds);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_selection_zx))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;		
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_x | axis_z, vp->normalized_bounds);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_selection_x))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;		
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_x, vp->normalized_bounds);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_selection_y))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;		
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_y, vp->normalized_bounds);
-	}
-	else if (evnt->trigger_hash_name == trigger_hash(move_selection_z))
-	{
-		nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
-		if (vp == nullptr)
-			return true;		
-		nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
-		_on_draw_object(ent, evnt->norm_delta, axis_z,vp->normalized_bounds);
-	}
-	return true;	
+bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
+{		
+	uivec3 pickid = pick(evnt->norm_mpos);
+	if (!contains(pickid))
+		clear();		
+	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+	add(selectedEnt, pickid.z);
+	_reset_focus(pickid);
+	return true;
 }
 
-bool nsselection_system::_handle_state_event(nsstate_event * evnt)
+bool nsselection_system::_handle_multi_select(nsaction_event * evnt)
+{		
+	uivec3 pickid = pick(evnt->norm_mpos);
+	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());		
+	if (contains(pickid))
+		remove(selectedEnt,pickid.z);
+	else
+		add(selectedEnt, pickid.z);
+	_reset_focus(pickid);
+	return true;
+}
+
+bool nsselection_system::_handle_shift_select(nsaction_event * evnt)
 {
-	if (evnt->trigger_hash_name == trigger_hash(move_selection_toggle))
-	{
-		m_toggle_move = true;
-		m_moving = evnt->toggle;
-	}
+	uivec3 pickid = pick(evnt->norm_mpos);
+	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+	add(selectedEnt, pickid.z);
+	_reset_focus(pickid);
+	return true;
+}
+
+bool nsselection_system::_handle_move_select(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y | axis_z, vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_xy(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_zy(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_y | axis_z, vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_zx(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_z, vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_x(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_x, vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_y(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_y, vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	_on_draw_object(ent, evnt->norm_delta, axis_z,vp->normalized_bounds);
+	return true;
+}
+
+bool nsselection_system::_handle_move_selection_toggle(nsaction_event * evnt)
+{
+	m_toggle_move = true;
+	m_moving = evnt->cur_state;
 	return true;
 }

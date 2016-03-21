@@ -36,13 +36,11 @@ int main()
 {
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
 	
+    nse.start();
 	nsopengl_driver * gl_driver = nse.create_video_driver<nsopengl_driver>();
 	gl_driver->create_context();
     gl_driver->init();
-    nse.start();
     nse.create_default_systems();
-
-//    nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
@@ -85,7 +83,10 @@ nsplugin * setup_basic_plugin()
     scn->add(dirl, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 	
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
-	nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
+    nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
+    //nsmaterial * mat = plg->get<nsmaterial>(tile_grass->get<nsrender_comp>()->material_id(0).y);
+   // mat->set_color(fvec4(0.7,0.1,0.5,1.0));
+    //mat->set_color_mode(true);
 
     nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.2f, 30.0f, 20.0f);
 	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
@@ -140,28 +141,28 @@ void setup_input_map(nsplugin * plg)
 
 	nsinput_map::trigger camforward(
 		NSCAM_FORWARD,
-		nsinput_map::t_toggle
+		nsinput_map::t_both
 		);
 	camforward.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_w, camforward);
 
 	nsinput_map::trigger cambackward(
 		NSCAM_BACKWARD,
-		nsinput_map::t_toggle
+		nsinput_map::t_both
 		);
 	cambackward.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_s, cambackward);
 
 	nsinput_map::trigger camleft(
 		NSCAM_LEFT,
-		nsinput_map::t_toggle
+		nsinput_map::t_both
 		);
 	camleft.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_a, camleft);
 
 	nsinput_map::trigger camright(
 		NSCAM_RIGHT,
-		nsinput_map::t_toggle
+		nsinput_map::t_both
 		);
 	camright.add_mouse_mod(nsinput_map::any_button);
 	im->add_key_trigger("Main", nsinput_map::key_d, camright);
@@ -316,7 +317,7 @@ void setup_input_map(nsplugin * plg)
 
 	nsinput_map::trigger selectmovetoggle(
         NSSEL_MOVE_TOGGLE,
-		nsinput_map::t_toggle
+		nsinput_map::t_both
 		);
 	selectmovetoggle.add_key_mod(nsinput_map::key_any);
     im->add_mouse_trigger("Main", nsinput_map::left_button,selectmovetoggle);

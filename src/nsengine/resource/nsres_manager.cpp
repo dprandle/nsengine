@@ -484,6 +484,7 @@ bool nsres_manager::destroy(nsresource * res)
 	{
 		uint32 id = res->id();
 		nsstring name = res->name();
+		res->release();
 		delete res;
 		m_id_resmap.erase(id);
 		dprint("nsres_manager::destroy Successfully destroyed " + name);

@@ -64,45 +64,56 @@ bool nsgbuf_object::_create_texture_attachments()
 	// Attach the different textures for the Gbuffer - doing it explicitly using the enum because
 	// its a lot less confusing later than if you use a for loop to attach the colors.. to add more
 	// texture attachments to the gbuffer simply add an enum value and two lines to this function
-	bool flag = true;
 	nsgl_framebuffer::attachment * att = NULL;
 
 	bind();
-	// Depth attachment
-	att = create(nsgl_framebuffer::att_depth_stencil, 0, GL_DEPTH32F_STENCIL8);
+
+    // Depth attachment
+	att = create_renderbuffer_attachment(nsgl_framebuffer::att_depth_stencil, 0, GL_DEPTH32F_STENCIL8);
+
+	tex_params lin;
+	lin.anistropic_filtering = 4.0f;
+	lin.min_filter = tmin_linear;
+	lin.mag_filter = tmag_linear;
 
 	// The order these are added here determines the layout in the shader
 	// Diffuse color data texture: layout = 0
-	att = create<nstex2d>("GBufferDiffuse", nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_diffuse), G_DIFFUSE_TEX_UNIT, GL_RGB8, GL_RGB, GL_FLOAT);
-	if (att != NULL)
-	{
-		att->m_texture->set_parameter_f(nstexture::min_filter, GL_LINEAR);
-		att->m_texture->set_parameter_f(nstexture::mag_filter, GL_LINEAR);
-	}
+	att = create_texture_attachment<nstex2d>(
+		"GBufferDiffuse",
+		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_diffuse),
+		G_DIFFUSE_TEX_UNIT,
+		tex_rgb,
+		tex_float,
+		lin);	
 
-	// Picking data texture: layout = 1
-	att = create<nstex2d>("GBufferPicking", nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_picking), G_PICKING_TEX_UNIT, GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT);
-	if (att != NULL)
-	{
-		att->m_texture->set_parameter_i(nstexture::min_filter, GL_NEAREST);
-		att->m_texture->set_parameter_i(nstexture::mag_filter, GL_NEAREST);
-	}
+	lin.anistropic_filtering = 0.0f;
+	lin.min_filter = tmin_nearest;
+	lin.mag_filter = tmag_nearest;
 
-	// Position data texture: layout = 2
-	att = create<nstex2d>("GBufferPosition", nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_position), G_WORLD_POS_TEX_UNIT, GL_RGBA32F, GL_RGBA, GL_FLOAT);
-	if (att != NULL)
-	{
-		att->m_texture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
-		att->m_texture->set_parameter_f(nstexture::mag_filter, GL_NEAREST);
-	}
+	att = create_texture_attachment<nstex2d>(
+		"GBufferPicking",
+		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_picking),
+		G_PICKING_TEX_UNIT,
+		tex_irgba,
+		tex_u32,
+		lin);	
 
-	// Normal data texture: layout = 3
-	att = create<nstex2d>("GBufferNormal", nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_normal), G_NORMAL_TEX_UNIT, GL_RGB16F, GL_RGB, GL_FLOAT);
-	if (att != NULL)
-	{
-		att->m_texture->set_parameter_f(nstexture::min_filter, GL_NEAREST);
-		att->m_texture->set_parameter_f(nstexture::mag_filter, GL_NEAREST);
-	}
+	att = create_texture_attachment<nstex2d>(
+		"GBufferPosition",
+		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_position),
+		G_WORLD_POS_TEX_UNIT,
+		tex_rgba,
+		tex_float,
+		lin);
+
+	att = create_texture_attachment<nstex2d>(
+		"GBufferNormal",
+		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_normal),
+		G_NORMAL_TEX_UNIT,
+		tex_rgb,
+		tex_float,
+		lin);
+	
 	update_draw_buffers();
 	return (att != NULL);
 }

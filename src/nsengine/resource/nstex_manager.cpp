@@ -56,8 +56,6 @@ nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname)
 
 		if (texExtension == ".cube" || texExtension == ".CUBE")
 			return load_cubemap(fname,".png");
-		else
-			return load_cubemap(fname);
 	}
 	else
 		return static_cast<nstexture*>(nsres_manager::load(res_type_id, fname));
@@ -132,20 +130,19 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 		return NULL;
 	}
 
-	uivec2 dim;
+	ivec2 dim;
+	
 	// Generate the texture and assign data from the data loaded by IL
-	tex->set_internal_format(GL_RGBA);
-	tex->set_format(GL_RGBA);
+	tex->set_format(tex_rgba);
+	tex->set_component_data_type(tex_u8);
 	dim.w = ilGetInteger(IL_IMAGE_WIDTH);
 	dim.h = ilGetInteger(IL_IMAGE_HEIGHT);
 	tex->resize(dim);
-	tex->set_pixel_data_type(GL_UNSIGNED_BYTE);
-
+	tex->copy_data(ilGetData());
+	tex->enable_mipmap_autogen(true);
+	
 	tex->bind();
-	tex->allocate(ilGetData());
-	tex->enable_mipmaps(0);
-	tex->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
-	tex->set_parameter_i(nstexture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
+	tex->video_allocate();
 	tex->unbind();
 	ilDeleteImages(1, &imageID);
 	dprint("nstex_manager::load_image Successfully loaded nstex2d from file " + fName);
@@ -206,7 +203,13 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	fNames[2] = fName + pYPlus; fNames[3] = fName + pYMinus;
 	fNames[4] = fName + pZPlus; fNames[5] = fName + pZMinus;
 
-	tex->bind();
+	tex_params tp;
+	tp.edge_behavior.set(te_clamp,te_clamp,te_clamp);
+
+	tex->set_parameters(tp);
+	tex->set_format(tex_rgba);
+	tex->set_component_data_type(tex_u8);
+	tex->enable_mipmap_autogen(true);
 
 	for (uint32 i = 0; i < fNames.size(); ++i)
 	{
@@ -231,23 +234,14 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 			destroy(resName);
 			return NULL;
 		}
-		tex->set_allocated(false);
-		tex->set_internal_format(GL_RGBA);
-		tex->set_format(GL_RGBA);
-		tex->set_pixel_data_type(GL_UNSIGNED_BYTE);
-		tex->resize(uivec2(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)));
-		tex->allocate(nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + i), (const void*)ilGetData());
+		tex->resize(ivec2(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)));
+		tex->copy_data(ilGetData(), i);
 		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
 		ilDeleteImages(1, &imageID);
 	}
 
-	// Generate mipmap levels if mMimMapLevel is greater than 0
-	tex->enable_mipmaps();
-	tex->set_parameter_i(nstexture::mag_filter, GL_LINEAR);
-	tex->set_parameter_i(nstexture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
-	tex->set_parameter_i(nstexture::wrap_s, GL_CLAMP_TO_EDGE);
-	tex->set_parameter_i(nstexture::wrap_t, GL_CLAMP_TO_EDGE);
-	tex->set_parameter_i(nstexture::wrap_r, GL_CLAMP_TO_EDGE);
+	tex->bind();
+	tex->video_allocate();
 	tex->unbind();
 	dprint("nstex_manager::load_cubemap Successfully loaded nstex_cubemap with name " + tex->name());
 	return tex;
@@ -308,87 +302,6 @@ bool nstex_manager::del(nsresource * res)
 	}
 	
 	return ret;
-}
-
-nstex_cubemap * nstex_manager::load_cubemap(const nsstring & fname)
-{
-	nsstring resName(fname);
-	nsstring resExtension;
-	nsstring fName;
-	nsstring subDir;
-	bool shouldPrefix = false;
-	
-	nsstring prefixdirs = m_res_dir + m_local_dir;
-
-	size_t pos = resName.find_last_of("/\\");
-	if (pos != nsstring::npos)
-	{
-		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
-		{
-			subDir = resName.substr(0, pos + 1);
-			shouldPrefix = true;
-		}
-		resName = resName.substr(pos + 1);
-	}
-	else
-		shouldPrefix = true;
-
-	size_t extPos = resName.find_last_of(".");
-	resExtension = resName.substr(extPos);
-	resName = resName.substr(0, extPos);
-
-	if (shouldPrefix)
-		fName = prefixdirs + subDir;
-	else
-		fName = path_from_filename(fname);
-
-	nstex_cubemap * tex = get<nstex_cubemap>(resName);
-	if (tex == NULL)
-		tex = create<nstex_cubemap>(resName); // possible else clear - will overwrite existing tex though
-	else
-		return NULL;
-
-	tex->set_subdir(subDir); // should be "" for false appendDirectories
-	tex->set_ext(resExtension);
-
-	uint32 glid = 0;
-
-	if (tex->extension() == ".dds")
-		glid = SOIL_load_OGL_single_cubemap(
-			fName.c_str(),
-			SOIL_DDS_CUBEMAP_FACE_ORDER,
-			SOIL_LOAD_AUTO,
-			SOIL_CREATE_NEW_ID,
-			SOIL_FLAG_MIPMAPS);
-	else
-		glid = SOIL_load_OGL_single_cubemap(
-			fName.c_str(),
-			"EWUDNS",
-			SOIL_LOAD_AUTO,
-			SOIL_CREATE_NEW_ID,
-			SOIL_FLAG_MIPMAPS);
-
-	if (glid == 0)
-	{
-		dprint("nstex_manager::load_cubemap Error loading nstex_cubemap from file " + fName);
-		destroy(resName);
-		return NULL;
-	}
-
-	tex->set_gl_name(glid);
-	tex->bind();
-	tex->set_format(GL_RGBA);
-	uivec2 dim;
-	dim.w = tex->parameter_i(nstexture::tex_width);
-	dim.h = tex->parameter_i(nstexture::tex_height);
-	tex->set_internal_format(tex->parameter_i(nstexture::tex_internal_format));
-	tex->resize(dim);
-	tex->set_pixel_data_type(GL_UNSIGNED_BYTE);
-	tex->enable_mipmaps();
-	tex->set_allocated(true);
-	tex->unbind();
-	dprint("nstex_manager::load_cubemap Successfully loaded nstex_cubemap from file " + fName);
-	return tex;
 }
 
 bool nstex_manager::save(nsresource * res, const nsstring & path)
@@ -460,11 +373,8 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 			}
             localFname = fName + cubemap->name() + faceName + nsstring(DEFAULT_TEX_EXTENSION);
 
-			cubemap->bind();
-			nstexture::image_data tex_data = cubemap->data(
-				nstex_cubemap::cube_face(BASE_CUBEMAP_FACE + curFace));
-			cubemap->unbind();
-			if (tex_data.data == NULL)
+			uint8 * cube_dat = cubemap->data(curFace);
+			if (cube_dat == nullptr)
 			{
 				ret = false;
 				continue;
@@ -477,9 +387,9 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 					   cubemap->size().h,
 					   1,
 					   cubemap->channels(),
-					   cubemap->format(),
-					   cubemap->pixel_data_type(),
-					   tex_data.data);
+					   _translate_format_il(cubemap->format()),
+					   _translate_pixel_type_il(cubemap->component_data_type()),
+					   cube_dat);
 			ret = true && ilSaveImage((const ILstring)localFname.c_str());
 			ilDeleteImages(1, &imageID);
 			imageID = 0;
@@ -513,11 +423,9 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 		dprint("nstex_manager::saveCubemap Unsupported cubemap format " + cubemap->extension());
 		return false;
 	}
-	cubemap->bind();
-	nstexture::image_data tex_data = cubemap->data();
-	cubemap->unbind();
 
-	if (tex_data.data == NULL)
+	uint8 * cube_dat = cubemap->data();
+	if (cube_dat == nullptr)
 		return false;
 
 	uint32 ret = SOIL_save_image(
@@ -526,7 +434,7 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 		cubemap->size().w,
 		cubemap->size().h*6,
 		cubemap->channels(),
-		tex_data.data);
+		cube_dat);
 	
 	if (ret == 0)
 	{
@@ -561,11 +469,8 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 		dprint("nstex_manager::save Created directory " + fName);
     }
 
-	image->bind();
-	nstexture::image_data tex_data = image->data();
-	image->unbind();
-
-	if (tex_data.data == NULL)
+	uint8 * image_data = image->data();
+	if (image_data == NULL)
 		return false;
 
 	ILuint imageID = 0;
@@ -576,9 +481,9 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 			   image->size().h,
 			   1,
 			   image->channels(),
-			   image->format(),
-			   image->pixel_data_type(),
-			   tex_data.data);
+			   _translate_format_il(image->format()),
+			   _translate_pixel_type_il(image->component_data_type()),
+			   image_data);
 
 	bool ret = ilSaveImage((const ILstring)fName.c_str()) && true;
 	ilDeleteImages(1, &imageID);
@@ -586,18 +491,60 @@ bool nstex_manager::save(nstex2d * image, const nsstring & path)
 	ILenum err = ilGetError();
 	while (err != IL_NO_ERROR)
 	{
-		dprint("nstex_manager::saveImage Error saving nstex2d to file " + fName);
+		dprint("nstex_manager::save Error saving nstex2d to file " + fName);
 		err = ilGetError();
 	}
 
 	if (ret)
 	{
-		dprint("nstex_manager::saveImage Successfully saved nstex2d to file " + fName);
+		dprint("nstex_manager::save Successfully saved nstex2d to file " + fName);
 	}
 	else
 	{
-		dprint("nstex_manager::saveImage Could not save nstex2d to file " + fName);
+		dprint("nstex_manager::save Could not save nstex2d to file " + fName);
 	}
 
 	return ret;
+}
+
+uint32 nstex_manager::_translate_format_il(tex_format ft)
+{
+	switch(ft)
+	{
+	  case(tex_rgba):
+		  return IL_RGBA;
+	  case(tex_bgra):
+		  return IL_BGRA;
+	  case(tex_rgb):
+		  return IL_RGB;
+	  case(tex_bgr):
+		  return IL_BGR;
+	  default:
+		  dprint("nstex_manager::_translate_format_il Cannot translate format for saving with il");
+		  return 0;
+	}
+}
+
+uint32 nstex_manager::_translate_pixel_type_il(pixel_component_type pt)
+{
+	switch(pt)
+	{
+	  case(tex_u8):
+		  return IL_UNSIGNED_BYTE;
+	  case(tex_s8):
+		  return IL_BYTE;
+	  case(tex_u16):
+		  return IL_UNSIGNED_SHORT;
+	  case(tex_s16):
+		  return IL_SHORT;
+	  case(tex_u32):
+		  return IL_UNSIGNED_INT;
+	  case(tex_s32):
+		  return IL_INT;
+	  case(tex_float):
+		  return IL_FLOAT;
+	  default:
+		  dprint("nstex_manager::_translate_pixel_type_il Cannot translate data type for saving with il");
+		  return 0;
+	}
 }

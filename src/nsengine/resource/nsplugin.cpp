@@ -578,9 +578,6 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 		return NULL;
 	}
 
-	hm->set_parameter_i(nstexture::wrap_s, GL_REPEAT);
-	hm->set_parameter_i(nstexture::wrap_t, GL_REPEAT);
-
 	if (!dmfile.empty())
 	{
 		
@@ -596,7 +593,6 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 			destroy(terr);
 			return NULL;
 		}
-		dm->enable_mipmaps();
 	}
 
 	if (!nmfile.empty())

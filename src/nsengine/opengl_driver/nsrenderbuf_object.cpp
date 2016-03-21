@@ -20,21 +20,24 @@ void nsgl_renderbuffer::allocate()
 
 void nsgl_renderbuffer::bind() const
 {
-	glBindRenderbuffer(GL_RENDERBUFFER, m_gl_name);
+	glBindRenderbuffer(GL_RENDERBUFFER, gl_id());
 	gl_err_check("nsrenderbuf_object::bind");
 }
 
-void nsgl_renderbuffer::init_gl()
+void nsgl_renderbuffer::video_init()
 {
-	glGenRenderbuffers(1, &m_gl_name);
+	uint32 glid;
+	glGenRenderbuffers(1, &glid);
+	set_gl_id(glid);
 	gl_err_check("nsrenderbuf_object::initGL");
 }
 
-void nsgl_renderbuffer::release()
+void nsgl_renderbuffer::video_release()
 {
-	glDeleteRenderbuffers(1, &m_gl_name);
+	uint32 glid = gl_id();
+	glDeleteRenderbuffers(1, &glid);
 	gl_err_check("nsrenderbuf_object::release");
-	m_gl_name = 0;
+	set_gl_id(0);
 	m_allocated = false;
 }
 
@@ -70,9 +73,9 @@ void nsgl_renderbuffer::resize(uint32 w, uint32 h)
 		m_size.set(w, h);
 	else
 	{
-		release();
+		video_release();
 		m_size.set(w, h);
-		init_gl();
+		video_init();
 		bind();
 		allocate();
 		unbind();

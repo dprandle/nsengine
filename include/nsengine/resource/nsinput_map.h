@@ -134,8 +134,7 @@ class nsinput_map : public nsresource
 	{
 		t_pressed,
 		t_released,
-		t_both,
-		t_toggle
+		t_both
 	};
 
 	

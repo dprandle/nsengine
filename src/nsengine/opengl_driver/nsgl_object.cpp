@@ -14,26 +14,47 @@
 #include <nsgl_object.h>
 #include <nslog_file.h>
 #include <nsengine.h>
+#include <nsopengl_driver.h>
 
-nsgl_object::nsgl_object() :m_gl_name(0)
-{}
+nsgl_object::nsgl_object()
+{
+	for (uint32 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+		m_gl_name[i] = 0;
+}
 
 nsgl_object::~nsgl_object()
 {
-	if (m_gl_name != 0)
-		nslog_file("Warning : Failed to call \"release()\" on NSBuffer object - openGL resource was not released","enginecreatedestroy.log");
+	for (uint32 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+	{
+		if (m_gl_name[i] != 0)
+		{
+			dprint("nsgl_object::~nsgl_object Warning - did not delete gl resource from context " + std::to_string(i));
+		}
+	}
+}
+
+bool nsgl_object::all_ids_released()
+{
+	for (uint32 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+	{
+		if (m_gl_name[i] != 0)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 uint32 nsgl_object::gl_id() const
 {
-	return m_gl_name;
+	nsopengl_driver * gl_driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	return m_gl_name[gl_driver->current_context()->context_id];
 }
 
 void nsgl_object::set_gl_id(uint32 id)
 {
-	if (m_gl_name != 0)
-		release();
-	m_gl_name = id;
+	nsopengl_driver * gl_driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	m_gl_name[gl_driver->current_context()->context_id] = id;
 }
 
 bool gl_err_check(nsstring errorMessage)

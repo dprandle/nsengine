@@ -127,8 +127,8 @@ void nstform_comp::enable_parent(bool enable_, uint32 tform_id_)
 
 void nstform_comp::init()
 {
-	m_tform_buffer->init_gl();
-	m_tform_id_buffer->init_gl();
+	m_tform_buffer->video_init();
+	m_tform_id_buffer->video_init();
 }
 
 const fvec3 nstform_comp::dvec(dir_vec dir_, uint32 tform_id_) const
@@ -245,8 +245,8 @@ bool nstform_comp::transform_update(uint32 tform_id_) const
 
 void nstform_comp::release()
 {
-	m_tform_buffer->release();
-	m_tform_id_buffer->release();
+	m_tform_buffer->video_release();
+	m_tform_id_buffer->video_release();
 }
 
 uint32 nstform_comp::remove(uint32 tform_id_)

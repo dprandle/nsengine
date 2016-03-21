@@ -76,7 +76,7 @@ void nsbuild_system::enable(const bool & pEnable)
 		nse.system<nsinput_system>()->push_context(BUILD_MODE_CTXT);
 		nse.system<nsselection_system>()->clear();
 
-		nse.event_dispatch()->push<nsstate_event>(hash_id(NSSEL_MOVE_TOGGLE), true);
+		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::begin);
 
 		if (m_current_brush_type == brush_tile)
 		{
@@ -189,7 +189,7 @@ void nsbuild_system::enable(const bool & pEnable)
 	else if (!pEnable && m_enabled)
 	{
 		m_enabled = pEnable;
-		nse.event_dispatch()->push<nsstate_event>(hash_id(NSSEL_MOVE_TOGGLE), false);
+		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::end);
 		nse.system<nsinput_system>()->pop_context();
 
 		if (m_current_brush_type == brush_object && m_object_brush != NULL)
@@ -316,17 +316,14 @@ void nsbuild_system::init()
 	sc->enable_draw(true);
 	sc->enable_move(true);
 
-	register_handler_func(this, &nsbuild_system::_handle_cam_change_event);
-	register_handler_func(this, &nsbuild_system::_handle_state_event);
-	register_handler_func(this, &nsbuild_system::_handle_action_event);
-	
-	add_trigger_hash(insert_entity, NSINSERT_ENTITY);
-	add_trigger_hash(snap_brush_z, NSSNAP_BRUSH_Z);
-	add_trigger_hash(initial_snap_brush_z, NSINITIAL_SNAP_BRUSH_Z);
-	add_trigger_hash(toggle_build_erase_mode, NSTOGGLE_BUILD_ERASE_MODE);
-	add_trigger_hash(toggle_build, NSTOGGLE_BUILD);
-	add_trigger_hash(toggle_tile_build_mode, NSTOGGLE_TILE_BUILD_MODE);
-	add_trigger_hash(select_move_toggle, NSSEL_MOVE_TOGGLE);
+	register_action_handler(nsbuild_system::_handle_select_move_toggle, NSSEL_MOVE_TOGGLE);
+	register_action_handler(nsbuild_system::_handle_snap_z, NSSNAP_BRUSH_Z);
+	register_action_handler(nsbuild_system::_handle_initial_snap_brush_z, NSINITIAL_SNAP_BRUSH_Z);
+	register_action_handler(nsbuild_system::_handle_insert_entity, NSINSERT_ENTITY);
+	register_action_handler(nsbuild_system::_handle_toggle_build_erase_mode, NSTOGGLE_BUILD_ERASE_MODE);
+	register_action_handler(nsbuild_system::_handle_toggle_build, NSTOGGLE_BUILD);
+	register_action_handler(nsbuild_system::_handle_toggle_tile_build_mode, NSTOGGLE_TILE_BUILD_MODE);
+	register_handler(nsbuild_system::_handle_cam_change_event);
 }
 
 bool nsbuild_system::enabled() const
@@ -719,9 +716,29 @@ bool nsbuild_system::_handle_cam_change_event(nscam_change_event * evnt)
 	return true;
 }
 
-bool nsbuild_system::_handle_action_event(nsaction_event * evnt)
+bool nsbuild_system::_handle_initial_snap_brush_z(nsaction_event * evnt)
 {
-	if (evnt->trigger_hash_name == trigger_hash(snap_brush_z) && m_enabled)
+	if (m_enabled)
+	{
+		if (m_object_brush != NULL)
+		{
+			nstform_comp * tc = m_object_brush->get<nstform_comp>();
+			if (tc != NULL)
+				tc->snap();
+		}
+		if (m_tile_brush != NULL)
+		{
+			nstform_comp * tc = m_tile_brush->get<nstform_comp>();
+			if (tc != NULL)
+				tc->snap();
+		}
+	}
+	return true;
+}
+
+bool nsbuild_system::_handle_snap_z(nsaction_event * evnt)
+{
+	if (m_enabled)
 	{
 		if (m_object_brush != NULL)
 		{
@@ -742,61 +759,53 @@ bool nsbuild_system::_handle_action_event(nsaction_event * evnt)
 			}
 		}
 	}
-
-	if (evnt->trigger_hash_name == trigger_hash(initial_snap_brush_z) && m_enabled)
-	{
-		if (m_object_brush != NULL)
-		{
-			nstform_comp * tc = m_object_brush->get<nstform_comp>();
-			if (tc != NULL)
-				tc->snap();
-		}
-		if (m_tile_brush != NULL)
-		{
-			nstform_comp * tc = m_tile_brush->get<nstform_comp>();
-			if (tc != NULL)
-				tc->snap();
-		}
-	}
-
-	if (evnt->trigger_hash_name == trigger_hash(toggle_build))
-		toggle();
-	
-	if (evnt->trigger_hash_name == trigger_hash(toggle_build_erase_mode))
-	{
-		if (m_current_mode == erase_mode)
-			set_mode(build_mode);
-		else
-			set_mode(erase_mode);
-	}
-
-	if (evnt->trigger_hash_name == trigger_hash(toggle_tile_build_mode))
-	{
-		if (m_current_brush_type == brush_object)
-			set_brush_type(brush_tile);
-		else
-			set_brush_type(brush_object);
-	}
-
 	return true;
 }
 
-bool nsbuild_system::_handle_state_event(nsstate_event * evnt)
+bool nsbuild_system::_handle_toggle_build_erase_mode(nsaction_event * evnt)
 {
-	if (evnt->trigger_hash_name == trigger_hash(insert_entity) && m_enabled)
+	if (m_current_mode == erase_mode)
+		set_mode(build_mode);
+	else
+		set_mode(erase_mode);
+	return true;
+}
+
+bool nsbuild_system::_handle_toggle_build(nsaction_event * evnt)
+{
+	toggle();
+	return true;
+}
+
+bool nsbuild_system::_handle_toggle_tile_build_mode(nsaction_event * evnt)
+{
+	if (m_current_brush_type == brush_object)
+		set_brush_type(brush_tile);
+	else
+		set_brush_type(brush_object);
+	return true;
+}
+
+bool nsbuild_system::_handle_select_move_toggle(nsaction_event * evnt)
+{
+	if (m_enabled && !evnt->cur_state)
+		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::begin);
+	return true;
+}
+
+bool nsbuild_system::_handle_insert_entity(nsaction_event * evnt)
+{
+	if (m_enabled)
 	{
 		switch (m_current_mode)
 		{
 		  case(build_mode) :
-			  m_painting = evnt->toggle;
+			  m_painting = evnt->cur_state;
 			  break;
 		  case(erase_mode) :
-			  m_erasing = evnt->toggle;
+			  m_erasing = evnt->cur_state;
 			  break;
 		}
 	}
-  	else if (evnt->trigger_hash_name == trigger_hash(select_move_toggle) && m_enabled && !evnt->toggle)
-  			nse.event_dispatch()->push<nsstate_event>(hash_id(NSSEL_MOVE_TOGGLE), true);
-
 	return true;
 }

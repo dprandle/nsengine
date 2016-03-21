@@ -32,7 +32,7 @@ nsshader::nsshader():
 	m_xfb_mode(xfb_interleaved)
 {
 	set_ext(DEFAULT_SHADER_EXTENSION);
-	init_gl();
+	video_init();
 }
 
 nsshader::nsshader(const nsshader & copy_):
@@ -44,12 +44,12 @@ nsshader::nsshader(const nsshader & copy_):
 	m_uniform_locs(copy_.m_uniform_locs),
 	m_xfb_mode(copy_.m_xfb_mode)
 {
-	init_gl();
+	video_init();
 }
 
 nsshader::~nsshader()
 {
-	release();
+	video_release();
 }
 
 
@@ -87,25 +87,25 @@ bool nsshader::compile()
 bool nsshader::compile(shader_type type)
 {
 	if (_stage(type).m_stage_id != 0)
-		glDeleteShader(_stage(type).m_stage_id);
+		glDeleteShader(gl_id(type));
 
-	_stage(type).m_stage_id = glCreateShader(type);
+	set_gl_id(glCreateShader(type), type);
 	gl_err_check("nsshader::compile error creating shader");
 	// create arguements for glShaderSource
 	const char* c_str = _stage(type).m_source.c_str();
 
-	glShaderSource(_stage(type).m_stage_id, 1, &c_str, NULL); // Attach source to shader
+	glShaderSource(gl_id(type), 1, &c_str, NULL); // Attach source to shader
 	gl_err_check("nsshader::compile error setting shader source");
 
-	glCompileShader(_stage(type).m_stage_id);
+	glCompileShader(gl_id(type));
 	gl_err_check("nsshader::compile error compiling shader");
 
 	GLint worked;
-	glGetShaderiv(_stage(type).m_stage_id, GL_COMPILE_STATUS, &worked);
+	glGetShaderiv(gl_id(type), GL_COMPILE_STATUS, &worked);
 	if (!worked)
 	{
 		char infoLog[1024];
-		glGetShaderInfoLog(_stage(type).m_stage_id, sizeof(infoLog), NULL, (GLchar*)infoLog);
+		glGetShaderInfoLog(gl_id(type), sizeof(infoLog), NULL, (GLchar*)infoLog);
 		nsstring info(infoLog);
 		m_error_sate = error_compile;
 
@@ -116,9 +116,9 @@ bool nsshader::compile(shader_type type)
 		dprint(ss.str());
 #endif
 
-		glDeleteShader(_stage(type).m_stage_id);
+		glDeleteShader(gl_id(type));
 		gl_err_check("nsshader::compile error deleting shader");
-		_stage(type).m_stage_id = 0;
+		set_gl_id(0, type);
 		return false;
 	}
 	dprint("nsshader::compile - Succesfully compiled shader stage " + stage_name(type) + " from " + m_name);
@@ -132,7 +132,7 @@ bool nsshader::compiled(shader_type type)
 
 bool nsshader::linked()
 {
-	return (m_gl_name != 0);
+	return (nsgl_object::gl_id() != 0);
 }
 
 void nsshader::set_source(shader_type type, const nsstring & source)
@@ -140,20 +140,27 @@ void nsshader::set_source(shader_type type, const nsstring & source)
 	_stage(type).m_source = source;
 }
 
-void nsshader::init_gl()
+void nsshader::video_init()
 {
-	m_gl_name = glCreateProgram();
+	nsgl_object::set_gl_id(glCreateProgram());
 	gl_err_check("nsshader::link Error creating program");
 }
 
 uint32 nsshader::gl_id(shader_type type)
 {
-	return _stage(type).m_stage_id;
+	nsopengl_driver * gl_driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	return _stage(type).m_stage_id[gl_driver->current_context()->context_id];
+}
+
+void nsshader::set_gl_id(uint32 id, shader_type type)
+{
+	nsopengl_driver * gl_driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	_stage(type).m_stage_id[gl_driver->current_context()->context_id] = id;	
 }
 
 uint32 nsshader::init_uniform_loc(const nsstring & var_name)
 {
-	uint32 loc = glGetUniformLocation( m_gl_name, var_name.c_str() );
+	uint32 loc = glGetUniformLocation(nsgl_object::gl_id(), var_name.c_str() );
 	gl_err_check("nsshader::initUniformLoc");
 	m_uniform_locs[hash_id(var_name)] = loc;
 	return loc;
@@ -161,39 +168,39 @@ uint32 nsshader::init_uniform_loc(const nsstring & var_name)
 
 bool nsshader::link()
 {
-	if (m_gl_name == 0)
+	if (nsgl_object::gl_id() == 0)
 	{
 		m_error_sate = error_program;
 		return false;
 	}
 
-	if (m_fragment.m_stage_id)
-		glAttachShader(m_gl_name, m_fragment.m_stage_id);
-	if (m_vertex.m_stage_id)
-		glAttachShader(m_gl_name, m_vertex.m_stage_id);
-	if (m_geometry.m_stage_id)
-		glAttachShader(m_gl_name, m_geometry.m_stage_id);
+	if (gl_id(fragment_shader) != 0)
+		glAttachShader(nsgl_object::gl_id(), gl_id(fragment_shader));
+	if (gl_id(vertex_shader) != 0)
+		glAttachShader(nsgl_object::gl_id(), gl_id(vertex_shader));
+	if (gl_id(geometry_shader) != 0)
+		glAttachShader(nsgl_object::gl_id(), gl_id(geometry_shader));
 
 	gl_err_check("nsshader::link Error attaching program");
 	if (!m_xfb_locs.empty())
 		_setup_xfb();
 
-	glLinkProgram(m_gl_name);
+	glLinkProgram(nsgl_object::gl_id());
 	gl_err_check("nsshader::link Error linking program");
-	if (m_fragment.m_stage_id)
-		glDetachShader(m_gl_name, m_fragment.m_stage_id);
-	if (m_vertex.m_stage_id)
-		glDetachShader(m_gl_name, m_vertex.m_stage_id);
-	if (m_geometry.m_stage_id)
-		glDetachShader(m_gl_name, m_geometry.m_stage_id);
+	if (gl_id(fragment_shader) != 0)
+		glDetachShader(nsgl_object::gl_id(), gl_id(fragment_shader));
+	if (gl_id(vertex_shader) != 0)
+		glDetachShader(nsgl_object::gl_id(), gl_id(vertex_shader));
+	if (gl_id(geometry_shader) != 0)
+		glDetachShader(nsgl_object::gl_id(), gl_id(geometry_shader));
 
 	gl_err_check("nsshader::link Error detaching program");
 	GLint worked;
-	glGetProgramiv(m_gl_name, GL_LINK_STATUS, &worked);
+	glGetProgramiv(nsgl_object::gl_id(), GL_LINK_STATUS, &worked);
 	if (!worked)
 	{
 		char infoLog[1024];
-		glGetProgramInfoLog(m_gl_name, sizeof(infoLog), NULL,(GLchar*)infoLog);
+		glGetProgramInfoLog(nsgl_object::gl_id(), sizeof(infoLog), NULL,(GLchar*)infoLog);
 		nsstring info(infoLog);
 		m_error_sate = error_link;
 		#ifdef NSDEBUG
@@ -202,9 +209,8 @@ bool nsshader::link()
 		ss << info;
 		dprint(ss.str());
 		#endif
-		glDeleteProgram(m_gl_name);
+		glDeleteProgram(nsgl_object::gl_id());
 		gl_err_check("nsshader::link Error deleting program");
-		m_gl_name = 0;
 		return false;
 	}
 	dprint("nsshader::link - Succesfully linked shader " + m_name);
@@ -291,7 +297,7 @@ void nsshader::_setup_xfb()
 		varyings[i] = str;
 	}
 
- 	glTransformFeedbackVaryings(m_gl_name, 4, varyings, m_xfb_mode);
+ 	glTransformFeedbackVaryings(nsgl_object::gl_id(), 4, varyings, m_xfb_mode);
 	gl_err_check("nsshader::_setupTransformFeedback()");
 
 	for (uint32 i = 0; i < m_xfb_locs.size(); ++i)
@@ -314,7 +320,7 @@ void nsshader::set_xfb(xfb_mode pMode, nsstring_vector * pOutLocs)
 
 void nsshader::bind() const
 {
-	glUseProgram(m_gl_name);
+	glUseProgram(nsgl_object::gl_id());
 	gl_err_check("nsshader::bind");
 }
 
@@ -489,27 +495,27 @@ void nsshader::set_uniform(const nsstring & var_name, uint32 data)
 	gl_err_check("nsshader::set_uniform");
 }
 
-void nsshader::release()
+void nsshader::video_release()
 {
-	if (m_gl_name)
+	if (nsgl_object::gl_id())
 	{
-		glDeleteProgram(m_gl_name);
-		m_gl_name = 0;
+		glDeleteProgram(nsgl_object::gl_id());
+		nsgl_object::set_gl_id(0);
 	}
 	if (m_fragment.m_stage_id)
 	{
-		glDeleteShader(m_fragment.m_stage_id);
-		m_fragment.m_stage_id = 0;
+		glDeleteShader(gl_id(fragment_shader));
+		set_gl_id(0, fragment_shader);
 	}
 	if (m_vertex.m_stage_id)
 	{
-		glDeleteShader(m_vertex.m_stage_id);
-		m_vertex.m_stage_id = 0;
+		glDeleteShader(gl_id(vertex_shader));
+		set_gl_id(0, vertex_shader);
 	}
 	if (m_geometry.m_stage_id)
 	{
-		glDeleteShader(m_geometry.m_stage_id);
-		m_geometry.m_stage_id = 0;
+		glDeleteShader(gl_id(geometry_shader));
+		set_gl_id(0, geometry_shader);
 	}
 	gl_err_check("nsshader::release");
 }
@@ -531,19 +537,19 @@ nsshader::error_state nsshader::error() const
 
 uint32 nsshader::attrib_loc(const nsstring & var_name) const
 {
-	return glGetAttribLocation(m_gl_name, var_name.c_str());
+	return glGetAttribLocation(nsgl_object::gl_id(), var_name.c_str());
 	gl_err_check("nsshader::attrib");
 }
 
 bool nsshader::_validate()
 {
-	glValidateProgram(m_gl_name);
+	glValidateProgram(nsgl_object::gl_id());
 	GLint worked;
-    glGetProgramiv(m_gl_name, GL_VALIDATE_STATUS, &worked);
+    glGetProgramiv(nsgl_object::gl_id(), GL_VALIDATE_STATUS, &worked);
     if (!worked) 
 	{
 		char infoLog[1024];
-        glGetProgramInfoLog(m_gl_name, sizeof(infoLog), NULL, infoLog);
+        glGetProgramInfoLog(nsgl_object::gl_id(), sizeof(infoLog), NULL, infoLog);
 		nsstring info(infoLog);
 		m_error_sate = error_validation;
 
@@ -560,9 +566,11 @@ bool nsshader::_validate()
 
 nsshader::shader_stage::shader_stage(shader_type pType):
 	m_source(),
-	m_stage_id(0),
 	m_type(pType)
-{}
+{
+	for (uint32 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+		m_stage_id[i] = 0;
+}
 
 
 void nsrender_shader::set_viewport(const ivec4 & vp)

@@ -27,7 +27,7 @@ void nsxfb_object::begin()
 
 void nsxfb_object::bind() const
 {
-	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_gl_name);
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, gl_id());
 	gl_err_check("nsxfb_object::bind");
 }
 
@@ -42,16 +42,19 @@ nsxfb_object::primitive_mode nsxfb_object::primitive()
 	return m_prim_mode;
 }
 
-void nsxfb_object::init_gl()
+void nsxfb_object::video_init()
 {
-	glGenTransformFeedbacks(1, &m_gl_name);
+	uint32 glid;
+	glGenTransformFeedbacks(1, &glid);
+	set_gl_id(glid);
 	gl_err_check("nsxfb_object::initGL");
 }
 
-void nsxfb_object::release()
+void nsxfb_object::video_release()
 {
-	glDeleteTransformFeedbacks(1, &m_gl_name);
-	m_gl_name = 0;
+	uint32 glid = gl_id();
+	glDeleteTransformFeedbacks(1, &glid);
+	set_gl_id(0);
 	gl_err_check("nsxfb_object::release");
 }
 

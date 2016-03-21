@@ -13,26 +13,27 @@
 #ifndef NSGL_OBJECT_H
 #define NSGL_OBJECT_H
 
+#define MAX_CONTEXT_COUNT 16
+
 #include <myGL/glew.h>
 #include <nsvector.h>
 
 bool gl_err_check(nsstring errorMessage);
 
-class nsgl_object
+struct nsgl_object
 {
 public:
 	nsgl_object();
 	virtual ~nsgl_object();
-	virtual void bind() const = 0;
-	virtual void init_gl()=0;
-	virtual void release()=0;
-	virtual void unbind() const = 0;
+//	virtual void bind() const = 0;
+//	virtual void video_init()=0;
+//	virtual void video_release()=0;
+//	virtual void unbind() const = 0;
 
+	bool all_ids_released();
 	uint32 gl_id() const;
 	void set_gl_id(uint32 id);
-
-protected:
-	uint32 m_gl_name;
+	uint32 m_gl_name[MAX_CONTEXT_COUNT];
 };
 
 #endif

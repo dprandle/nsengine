@@ -19,6 +19,17 @@ This file contains all of the neccessary declarations for the NSEventHandler cla
 #include <nsengine.h>
 #include <nsevent_dispatcher.h>
 
+//1) Make it so that events have one more parameter - uint32 id - use this for action events
+
+//2) Remove state events all together
+
+#define register_handler(func) register_handler_func(this, &func, 0)
+#define unregister_handler(func) unregister_handler_func(this, &func, 0)
+#define register_id_handler(func,id) register_handler_func(this, &func, id)
+#define unregister_id_handler(func,id) unregister_handler_func(this, &func, id)
+#define register_action_handler(func,str) register_handler_func(this, &func, hash_id(str))
+#define unregister_action_handler(func,str) unregister_handler_func(this, &func, hash_id(str))
+
 class nshandler_func
 {
   public:
@@ -53,37 +64,55 @@ class nsevent_handler
 {
   public:
 	
-	typedef std::unordered_map<std::type_index, nshandler_func*> handler_map;
-	
+	typedef std::unordered_map<uint32, nshandler_func*> handler_func_map;
+	typedef std::unordered_map<std::type_index, handler_func_map> handler_map;
+
 	nsevent_handler();
 	~nsevent_handler();
 	
 	bool handle_event(nsevent * event);
 
 	template<class class_type,class event_type>
-	bool register_handler_func(class_type * class_inst_, bool (class_type::*memberFunc)(event_type*))
+	bool register_handler_func(
+		class_type * class_inst_,
+		bool (class_type::*memberFunc)(event_type*),
+		uint32 event_id)
 	{
 		std::type_index ti(typeid(event_type));
 		nshandler_func * hf = new nshandler_func_type<class_type,event_type>(class_inst_,memberFunc);
-		if (!m_handlers.emplace(ti, hf).second)
+		auto handler_iter = m_handlers.emplace(ti, handler_func_map());
+		if (!handler_iter.first->second.emplace(event_id, hf).second)
 		{
 			delete hf;
+			dprint("nsevent_handler::register_handler_func Cannot add handler function for event id " + std::to_string(event_id) + " as there is one already");
 			return false;
 		}
 		nse.event_dispatch()->register_listener<event_type>(class_inst_);
 		return true;
 	}
 
-	template<class event_type>
-	bool unregister_handler_func()
+	template<class class_type, class event_type>
+	bool unregister_handler_func(
+		class_type * class_inst_,
+		bool (class_type::*memberFunc)(event_type*),
+		uint32 event_id)
 	{
 		std::type_index ti(typeid(event_type));
 		auto fiter = m_handlers.find(ti);
 		if (fiter != m_handlers.end())
 		{
-			delete fiter->second;
-			m_handlers.erase(fiter);
-			return true;
+			auto func_iter = fiter->second.find(event_id);
+			if (func_iter != fiter->second.end())
+			{
+				delete func_iter->second;
+				fiter->second.erase(func_iter);
+				if (fiter->second.empty())
+				{
+					m_handlers.erase(fiter);
+					return nse.event_dispatch()->unregister_listener<event_type>(class_inst_);
+				}
+				return true;
+			}
 		}
 		return false;
 	}

@@ -21,9 +21,9 @@ class nsgl_renderbuffer : public nsgl_object
 
 	uint32 multisample() const;
 
-	void init_gl();
+	void video_init();
 
-	void release();
+	void video_release();
 
 	void resize(uint32 w_, uint32 h_);
 

@@ -293,6 +293,8 @@ void nsengine::start()
 
 void nsengine::shutdown()
 {
+	m_plugins->destroy_all();
+	m_event_disp->clear();
 	m_driver->release();
 	auto iter = m_systems->begin();
 	while (iter != m_systems->end())
@@ -490,16 +492,9 @@ void nsengine::_init_factories()
 	
 	register_abstract_resource<nstexture, nstex_manager>("nstexture");
 	register_resource<nstex1d, nstex_manager>("nstex1d");
-	register_resource<nstex1d_array, nstex_manager>("nstex1d_array");
 	register_resource<nstex2d, nstex_manager>("nstex2d");
-	register_resource<nstex2d_array, nstex_manager>("nstex2d_array");
 	register_resource<nstex3d, nstex_manager>("nstex3d");
-	register_resource<nstex_rectangle, nstex_manager>("nstex_rectangle");
-	register_resource<nstex_buffer, nstex_manager>("nstex_buffer");
 	register_resource<nstex_cubemap, nstex_manager>("nstex_cubemap");
-	register_resource<nstex_cubemap_array, nstex_manager>("nstex_cubemap_array");
-	register_resource<nstex2d_multisample, nstex_manager>("nstex2d_multisample");
-	register_resource<nstex2d_multisample_array, nstex_manager>("nstex2d_multisample_array");
 
 	register_resource<nsshader, nsshader_manager>("nsshader");
 	register_resource<nsdir_light_shader, nsshader_manager>("nsdir_light_shader");

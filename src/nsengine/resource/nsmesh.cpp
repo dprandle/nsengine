@@ -633,13 +633,13 @@ nsmesh::submesh & nsmesh::submesh::operator=(submesh rhs_)
 
 nsmesh::submesh::~submesh()
 {
-	m_vert_buf.release();
-	m_tex_buf.release();
-	m_norm_buf.release();
-	m_tang_buf.release();
-	m_joint_buf.release();
-	m_indice_buf.release();
-	m_vao.release();
+	m_vert_buf.video_release();
+	m_tex_buf.video_release();
+	m_norm_buf.video_release();
+	m_tang_buf.video_release();
+	m_joint_buf.video_release();
+	m_indice_buf.video_release();
+	m_vao.video_release();
 }
 
 void nsmesh::submesh::allocate_buffers()
@@ -673,13 +673,13 @@ void nsmesh::submesh::allocate_buffers()
 
 void nsmesh::submesh::init_gl()
 {
-	m_vert_buf.init_gl();
-	m_tex_buf.init_gl();
-	m_norm_buf.init_gl();
-	m_tang_buf.init_gl();
-	m_joint_buf.init_gl();
-	m_indice_buf.init_gl();
-	m_vao.init_gl();
+	m_vert_buf.video_init();
+	m_tex_buf.video_init();
+	m_norm_buf.video_init();
+	m_tang_buf.video_init();
+	m_joint_buf.video_init();
+	m_indice_buf.video_init();
+	m_vao.video_init();
 }
 
 void nsmesh::submesh::calc_aabb()

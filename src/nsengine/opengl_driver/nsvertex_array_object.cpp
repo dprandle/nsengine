@@ -29,7 +29,7 @@ void nsvertex_array_object::add(nsbuffer_object * mBuffer, uint32 pAttLoc)
 
 void nsvertex_array_object::bind() const
 {
-	glBindVertexArray(m_gl_name);
+	glBindVertexArray(gl_id());
 	gl_err_check("nsvertex_array_object::bind()");
 }
 
@@ -50,9 +50,11 @@ void nsvertex_array_object::disable(uint32 pAttLoc)
 	gl_err_check("nsvertex_array_object::disableAttribute()");
 }
 
-void nsvertex_array_object::init_gl()
+void nsvertex_array_object::video_init()
 {
-	glGenVertexArrays(1, &m_gl_name);
+	uint32 glid;
+	glGenVertexArrays(1, &glid);
+	set_gl_id(glid);
 	gl_err_check("nsvertex_array_object::initGL()");
 }
 
@@ -89,10 +91,11 @@ void nsvertex_array_object::remove(nsbuffer_object * mBuffer, uint32 pAttLoc)
 	
 }
 
-void nsvertex_array_object::release()
+void nsvertex_array_object::video_release()
 {
-	glDeleteVertexArrays(1, &m_gl_name);
-	m_gl_name = 0;
+	uint32 glid = gl_id();
+	glDeleteVertexArrays(1, &glid);
+	set_gl_id(0);
 	gl_err_check("nsvertex_array_object::release()");
 }
 

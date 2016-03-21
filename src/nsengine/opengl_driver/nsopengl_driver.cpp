@@ -25,6 +25,7 @@
 #include <nsshader_manager.h>
 #include <nslight_comp.h>
 #include <nsrender_comp.h>
+#include <nsgl_texture.h>
 
 translucent_buffers::translucent_buffers():
 	atomic_counter(new nsbuffer_object(nsbuffer_object::atomic_counter, nsbuffer_object::storage_mutable)),
@@ -32,16 +33,16 @@ translucent_buffers::translucent_buffers():
 	fragments(new nsbuffer_object(nsbuffer_object::shader_storage, nsbuffer_object::storage_mutable)),
 	header_clr_data(DEFAULT_ACCUM_BUFFER_RES_X*DEFAULT_ACCUM_BUFFER_RES_Y, -1)
 {
-	atomic_counter->init_gl();
-	header->init_gl();
-	fragments->init_gl();
+	atomic_counter->video_init();
+	header->video_init();
+	fragments->video_init();
 }
 
 translucent_buffers::~translucent_buffers()
 {
-	atomic_counter->release();
-	header->release();
-	fragments->release();
+	atomic_counter->video_release();
+	header->video_release();
+	fragments->video_release();
 	delete atomic_counter;
 	delete header;
 	delete fragments;
@@ -427,7 +428,7 @@ void gl_ctxt::init()
 	((nsgl_framebuffer*)m_default_target)->set_gl_id(0);
 
 	m_single_point = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
-	m_single_point->init_gl();
+	m_single_point->video_init();
 	
 	uint32 data_ = 0;
 	uint32 sz = DEFAULT_ACCUM_BUFFER_RES_X*DEFAULT_ACCUM_BUFFER_RES_Y;
@@ -452,60 +453,57 @@ void gl_ctxt::release()
 {
 	delete m_default_target;
 	delete m_tbuffers;
-	m_single_point->release();	
+	m_single_point->video_release();	
 	m_default_target = nullptr;
 	initialized = false;
 }
 
 
 nsopengl_driver::nsopengl_driver() :
-	nsvideo_driver()
+	nsvideo_driver(),
+	m_current_context(nullptr),
+	m_auto_cleanup(true)
 {
 	m_all_draw_calls.reserve(MAX_INSTANCED_DRAW_CALLS);
 	m_light_draw_calls.reserve(MAX_LIGHTS_IN_SCENE);
+	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+		m_contexts[i] = nullptr;
 }
 
 nsopengl_driver::~nsopengl_driver()
 {
-	while (m_contexts.begin() != m_contexts.end())
-		destroy_context(m_contexts.begin()->first);
+	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+	{
+		delete m_contexts[i];
+		m_contexts[i] = nullptr;
+	}
 }
 
-uint32 nsopengl_driver::create_context()
+uint8 nsopengl_driver::create_context()
 {
-	static uint32 id = 1; // forever increasing id
-	m_current_context = new gl_ctxt(id);
-	auto iter = m_contexts.emplace(id, m_current_context);
-	if (!iter.second)
-	{
-		delete m_current_context;
-		m_current_context = nullptr;
-		return -1;
-	}
+	static uint8 id = 0; // forever increasing id
+	m_contexts[id] = new gl_ctxt(id);
+	m_current_context = m_contexts[id];
 	return id++;
 }
 
-bool nsopengl_driver::destroy_context(uint32 c_id)
+bool nsopengl_driver::destroy_context(uint8 c_id)
 {
-	auto fiter = m_contexts.find(c_id);
-	if (fiter == m_contexts.end())
+	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
-
-	if (m_current_context == fiter->second)
-		m_current_context = nullptr;
-
-	delete fiter->second;
-	fiter->second = NULL;
-	m_contexts.erase(fiter);
+	
+	delete m_contexts[c_id];
+	m_contexts[c_id] = nullptr;
 	return true;
 }
 
-bool nsopengl_driver::make_context_current(uint32 c_id)
+bool nsopengl_driver::make_context_current(uint8 c_id)
 {
-	auto fIter = m_contexts.find(c_id);
-	if (fIter == m_contexts.end())
+	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
-	m_current_context = fIter->second;
+	m_current_context = m_contexts[c_id];
+	if (m_auto_cleanup)
+		cleanup_vid_objs();
 	return true;
 }
 
@@ -518,59 +516,63 @@ void nsopengl_driver::create_default_render_targets()
 {
 	// Create all of the framebuffers
 	nsgbuf_object * gbuffer = new nsgbuf_object;
-	gbuffer->init_gl();
+	gbuffer->video_init();
 	gbuffer->resize(DEFAULT_GBUFFER_RES_X, DEFAULT_GBUFFER_RES_Y);
 	gbuffer->init();
 	add_render_target(GBUFFER_TARGET, gbuffer);
 
+	tex_params tp;
+	tp.min_filter = tmin_linear;
+	tp.mag_filter = tmag_linear;
+	
 	// Accumulation buffer
 	nsgl_framebuffer * accum_buffer = new nsgl_framebuffer;
-	accum_buffer->init_gl();
+	accum_buffer->video_init();
 	accum_buffer->resize(DEFAULT_ACCUM_BUFFER_RES_X, DEFAULT_ACCUM_BUFFER_RES_Y);
 	accum_buffer->init();
 	accum_buffer->set_target(nsgl_framebuffer::fb_draw);
-	accum_buffer->bind();
-	accum_buffer->create<nstex2d>(
-		"rendered_frame",
-		nsgl_framebuffer::att_color,
-		FINAL_TEX_UNIT,
-		GL_RGBA8,
-		GL_RGBA,
-		GL_FLOAT);
-	accum_buffer->add(gbuffer->depth());
 
-	nsgl_framebuffer::attachment * att = accum_buffer->create<nstex2d>(
+	accum_buffer->bind();
+	accum_buffer->create_texture_attachment<nstex2d>(
+		"rendered_frame",
+		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color),
+		FINAL_TEX_UNIT,
+		tex_rgba,
+		tex_float,
+		tp);
+	accum_buffer->add(gbuffer->depth());
+	
+	tp.min_filter = tmin_nearest;
+	tp.mag_filter = tmag_nearest;
+
+	accum_buffer->create_texture_attachment<nstex2d>(
 		"final_picking",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + nsgbuf_object::col_picking),
 		G_PICKING_TEX_UNIT,
-		GL_RGB32UI,
-		GL_RGB_INTEGER,
-		GL_UNSIGNED_INT);
-	if (att != nullptr)
-	{
-		att->m_texture->set_parameter_i(nstexture::min_filter, GL_NEAREST);
-		att->m_texture->set_parameter_i(nstexture::mag_filter, GL_NEAREST);
-	}
+		tex_irgb,
+		tex_u32,
+		tp);
+
 	accum_buffer->update_draw_buffers();
 	add_render_target(ACCUM_TARGET, accum_buffer);
 
 	// 2d shadow map targets
 	nsshadow_tex2d_target * dir_shadow_target = new nsshadow_tex2d_target;
-	dir_shadow_target->init_gl();
+	dir_shadow_target->video_init();
 	dir_shadow_target->resize(DEFAULT_DIR_LIGHT_SHADOW_W, DEFAULT_DIR_LIGHT_SHADOW_H);
-	dir_shadow_target->init();
+	dir_shadow_target->init("direction_light_shadow");
 	add_render_target(DIR_SHADOW2D_TARGET, dir_shadow_target);
 	
 	nsshadow_tex2d_target * spot_shadow_target = new nsshadow_tex2d_target;
-	spot_shadow_target->init_gl();
+	spot_shadow_target->video_init();
 	spot_shadow_target->resize(DEFAULT_SPOT_LIGHT_SHADOW_W, DEFAULT_SPOT_LIGHT_SHADOW_H);
-	spot_shadow_target->init();
+	spot_shadow_target->init("spot_light_shadow");
 	add_render_target(SPOT_SHADOW2D_TARGET, spot_shadow_target);
 	
 	nsshadow_tex_cubemap_target * point_shadow_target = new nsshadow_tex_cubemap_target;
-	point_shadow_target->init_gl();
+	point_shadow_target->video_init();
 	point_shadow_target->resize(DEFAULT_POINT_LIGHT_SHADOW_W, DEFAULT_POINT_LIGHT_SHADOW_H);
-	point_shadow_target->init();
+	point_shadow_target->init("point_light_shadow");
 	add_render_target(POINT_SHADOW_TARGET, point_shadow_target);	
 }
 
@@ -670,7 +672,7 @@ nsgl_framebuffer * nsopengl_driver::render_target(const nsstring & name)
 void nsopengl_driver::destroy_render_target(const nsstring & name)
 {
 	nsgl_framebuffer * rt = remove_render_target(name);
-	rt->release();
+	rt->video_release();
 	delete rt;
 }
 
@@ -1209,7 +1211,7 @@ uint32 nsopengl_driver::active_tex_unit()
 
 void nsopengl_driver::init(bool setup_default_rend)
 {
-	if (m_contexts.empty())
+	if (m_current_context == nullptr)
 	{
 		dprint("nsopengl_driver::init You must first create a context before initializing");
 		return;
@@ -1515,4 +1517,99 @@ void nsopengl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 		set_active_texture_unit(att->m_tex_unit);
 		att->m_texture->bind();
 	}
+}
+
+void nsopengl_driver::init_texture(nstexture * tex)
+{
+	if (tex->video_texture() != nullptr)
+	{
+		dprint("nsopengl_driver::init_texture Trying to initialize already initialized gl_texture");
+		return;
+	}
+	nsgl_texture * gltex = new nsgl_texture;
+	gltex->video_init();
+	if (tex->type() == type_to_hash(nstex1d))
+	{
+		gltex->m_target = nsgl_texture::tex_1d;
+	}
+	else if (tex->type() == type_to_hash(nstex2d))
+	{
+		gltex->m_target = nsgl_texture::tex_2d;
+		gltex->set_parameter_i(nsgl_texture::mag_filter, GL_LINEAR);
+		gltex->set_parameter_i(nsgl_texture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
+	}
+	else if (tex->type() == type_to_hash(nstex3d))
+	{
+		gltex->m_target = nsgl_texture::tex_3d;
+	}
+	else if (tex->type() == type_to_hash(nstex_cubemap))
+	{
+		gltex->m_target = nsgl_texture::tex_cubemap;
+	}
+	else
+	{
+		dprint("nsopengl_driver::init_texture - Unrecognized texture type");
+	}
+	tex->set_video_texture(gltex);
+}
+
+gl_ctxt * nsopengl_driver::context(uint8 id)
+{
+	if (id >= MAX_CONTEXT_COUNT)
+		return nullptr;
+	return m_contexts[id];
+}
+
+void nsopengl_driver::release_texture(nstexture * tex)
+{
+	nsgl_texture * gltex = tex->video_texture<nsgl_texture>();
+	if (gltex == nullptr)
+	{
+		dprint("nsopengl_driver::release_texture Trying to release uninitialized gl_texture");
+		return;
+	}
+	gltex->video_release();
+	if (gltex->gl_obj.all_ids_released())
+	{
+		delete gltex;
+		return;
+	}
+	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+	{
+		if (gltex->gl_obj.m_gl_name[i] != 0)
+		{
+			vid_obj_rel vobj;
+			vobj.vo = gltex;
+			vobj.gl_obj = &gltex->gl_obj;
+			
+			gl_ctxt * ctx = m_contexts[i];
+			if (ctx == nullptr)
+			{
+				dprint("nsopengl_texture::release_texture Crash: non zero gl id when context is null");
+			}
+			ctx->need_release.push_back(vobj);
+		}
+	}
+	tex->set_video_texture(nullptr);
+}
+
+void nsopengl_driver::cleanup_vid_objs()
+{
+	for (uint32 i = 0; i < current_context()->need_release.size(); ++i)
+	{
+		current_context()->need_release[i].vo->video_release();
+		if (current_context()->need_release[i].gl_obj->all_ids_released())
+			delete current_context()->need_release[i].vo;
+	}
+	current_context()->need_release.clear();
+}
+
+void nsopengl_driver::enable_auto_cleanup(bool enable)
+{
+	m_auto_cleanup = enable;
+}
+
+bool nsopengl_driver::auto_cleanup()
+{
+	return m_auto_cleanup;
 }

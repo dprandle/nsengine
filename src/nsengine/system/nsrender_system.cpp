@@ -40,9 +40,8 @@ nsmaterial * nsrender_system::default_mat()
 
 void nsrender_system::init()
 {
-	add_trigger_hash(0, VIEWPORT_CHANGE);
-	register_handler_func(this, &nsrender_system::_handle_window_resize);
-	register_handler_func(this, &nsrender_system::_handle_viewport_change);
+	register_handler(nsrender_system::_handle_window_resize);
+	register_action_handler(nsrender_system::_handle_viewport_change, VIEWPORT_CHANGE);
 
 	nsplugin * cplg = nse.core();	
 		
@@ -295,12 +294,9 @@ nsrender::viewport * nsrender_system::current_viewport()
 
 bool nsrender_system::_handle_viewport_change(nsaction_event * evt)
 {
-	if (evt->trigger_hash_name == trigger_hash(0))
-	{
-		nsrender::viewport * vp = front_viewport(evt->norm_mpos);
-		if (vp != nullptr)
-			m_current_vp = vp;
-	}
+	nsrender::viewport * vp = front_viewport(evt->norm_mpos);
+	if (vp != nullptr)
+		m_current_vp = vp;
 	return true;
 }
 

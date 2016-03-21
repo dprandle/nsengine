@@ -74,11 +74,9 @@ private:
 
 	void _create_action_event(nsinput_map::trigger & trigger);
 
-	void _create_state_event(nsinput_map::trigger & trigger, bool toggle);
+	void _create_action_state_event(nsinput_map::trigger & trigger, bool toggle);
 
 	void _set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t);
-
-	bool _handle_action(nsaction_event * evnt);
 	
 	context_stack m_ctxt_stack;
 	nsinput_map::key_modifier_set m_key_modifiers;

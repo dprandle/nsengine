@@ -41,27 +41,24 @@ nscamera_system::~nscamera_system()
 
 void nscamera_system::init()
 {
-	register_handler_func(this, &nscamera_system::_handle_state_event);
-	register_handler_func(this, &nscamera_system::_handle_action_event);
-	register_handler_func(this, &nscamera_system::_handle_sel_focus_event);
-
-	add_trigger_hash(camera_forward, NSCAM_FORWARD);
-	add_trigger_hash(camera_backward, NSCAM_BACKWARD);
-	add_trigger_hash(camera_left, NSCAM_LEFT);
-	add_trigger_hash(camera_right, NSCAM_RIGHT);
-	add_trigger_hash(camera_tilt_pan, NSCAM_TILTPAN);
-	add_trigger_hash(camera_zoom, NSCAM_ZOOM);
-	add_trigger_hash(camera_move, NSCAM_MOVE);
-	add_trigger_hash(camera_top_view_0, NSCAM_TOPVIEW_0);
-	add_trigger_hash(camera_iso_view_0, NSCAM_ISOVIEW_0);
-	add_trigger_hash(camera_front_view_0, NSCAM_FRONTVIEW_0);
-	add_trigger_hash(camera_top_view_120, NSCAM_TOPVIEW_120);
-	add_trigger_hash(camera_iso_view_120, NSCAM_ISOVIEW_120);
-	add_trigger_hash(camera_front_view_120, NSCAM_FRONTVIEW_120);
-	add_trigger_hash(camera_top_view_240, NSCAM_TOPVIEW_240);
-	add_trigger_hash(camera_iso_view_240, NSCAM_ISOVIEW_240);
-	add_trigger_hash(camera_front_view_240, NSCAM_FRONTVIEW_240);
-	add_trigger_hash(camera_toggle_mode, NSCAM_TOGGLEMODE);
+	register_handler(nscamera_system::_handle_sel_focus_event);
+	register_action_handler(nscamera_system::_handle_camera_forward, NSCAM_FORWARD);
+	register_action_handler(nscamera_system::_handle_camera_backward, NSCAM_BACKWARD);
+	register_action_handler(nscamera_system::_handle_camera_left, NSCAM_LEFT);
+	register_action_handler(nscamera_system::_handle_camera_right, NSCAM_RIGHT);
+	register_action_handler(nscamera_system::_handle_camera_tilt_pan, NSCAM_TILTPAN);
+	register_action_handler(nscamera_system::_handle_camera_zoom, NSCAM_ZOOM);
+	register_action_handler(nscamera_system::_handle_camera_move, NSCAM_MOVE);
+	register_action_handler(nscamera_system::_handle_camera_top_view_0, NSCAM_TOPVIEW_0);
+	register_action_handler(nscamera_system::_handle_camera_iso_view_0, NSCAM_ISOVIEW_0);
+	register_action_handler(nscamera_system::_handle_camera_front_view_0, NSCAM_FRONTVIEW_0);
+	register_action_handler(nscamera_system::_handle_camera_top_view_120, NSCAM_TOPVIEW_120);
+	register_action_handler(nscamera_system::_handle_camera_iso_view_120, NSCAM_ISOVIEW_120);
+	register_action_handler(nscamera_system::_handle_camera_front_view_120, NSCAM_FRONTVIEW_120);
+	register_action_handler(nscamera_system::_handle_camera_top_view_240, NSCAM_TOPVIEW_240);
+	register_action_handler(nscamera_system::_handle_camera_iso_view_240, NSCAM_ISOVIEW_240);
+	register_action_handler(nscamera_system::_handle_camera_front_view_240, NSCAM_FRONTVIEW_240);
+	register_action_handler(nscamera_system::_handle_camera_toggle_mode, NSCAM_TOGGLEMODE);
 }
 
 void nscamera_system::change_sensitivity(float pAmount, const sensitivity_t & pWhich)
@@ -433,7 +430,7 @@ void nscamera_system::update()
 	}
 }
 
-bool nscamera_system::_handle_action_event(nsaction_event * evnt)
+bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 {
 	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
 	if (vp == nullptr)
@@ -448,50 +445,11 @@ bool nscamera_system::_handle_action_event(nsaction_event * evnt)
 
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tcomp = cam->get<nstform_comp>();
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_tilt_pan))
-		_on_cam_turn(camc, tcomp, evnt->norm_delta);
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_move))
-		_on_cam_move(camc, tcomp, evnt->norm_delta);
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_zoom))
-		_on_cam_zoom(camc, tcomp, evnt->scroll);
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_top_view_0))
-		set_view(view_top_0);
-		
-	if (evnt->trigger_hash_name == trigger_hash(camera_iso_view_0))
-		set_view(view_iso_0);
-	
-	if (evnt->trigger_hash_name == trigger_hash(camera_front_view_0))
-		set_view(view_front_0);
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_top_view_120))
-		set_view(view_top_120);
-		
-	if (evnt->trigger_hash_name == trigger_hash(camera_iso_view_120))
-		set_view(view_iso_120);
-	
-	if (evnt->trigger_hash_name == trigger_hash(camera_front_view_120))
-		set_view(view_front_120);
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_top_view_240))
-		set_view(view_top_240);
-		
-	if (evnt->trigger_hash_name == trigger_hash(camera_iso_view_240))
-		set_view(view_iso_240);
-	
-	if (evnt->trigger_hash_name == trigger_hash(camera_front_view_240))
-		set_view(view_front_240);
-
-	if (evnt->trigger_hash_name == trigger_hash(camera_toggle_mode))
-		toggle_mode();
-
+	_on_cam_turn(camc, tcomp, evnt->norm_delta);
 	return true;
 }
 
-bool nscamera_system::_handle_state_event(nsstate_event * evnt)
+bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 {
 	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
 	if (vp == nullptr)
@@ -503,20 +461,155 @@ bool nscamera_system::_handle_state_event(nsstate_event * evnt)
 
 	if (m_anim_view)
 		return true;
+
+	nscam_comp * camc = cam->get<nscam_comp>();
+	nstform_comp * tcomp = cam->get<nstform_comp>();
+	_on_cam_move(camc, tcomp, evnt->norm_delta);
+	return true;
+}
+
+bool nscamera_system::_handle_camera_zoom(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return true;
+
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
+		return true;
+
+	if (m_anim_view)
+		return true;
+
+	nscam_comp * camc = cam->get<nscam_comp>();
+	nstform_comp * tcomp = cam->get<nstform_comp>();
+	_on_cam_zoom(camc, tcomp, evnt->scroll);
+	return true;
+}
+
+bool nscamera_system::_handle_camera_top_view_0(nsaction_event * evnt)
+{
+	set_view(view_top_0);
+	return true;
+}		
+
+bool nscamera_system::_handle_camera_iso_view_0(nsaction_event * evnt)
+{
+	set_view(view_iso_0);
+	return true;
+}	
+
+bool nscamera_system::_handle_camera_front_view_0(nsaction_event * evnt)
+{
+	set_view(view_front_0);
+	return true;
+}
+
+bool nscamera_system::_handle_camera_top_view_120(nsaction_event * evnt)
+{
+	set_view(view_top_120);
+	return true;
+}		
+
+bool nscamera_system::_handle_camera_iso_view_120(nsaction_event * evnt)
+{
+	set_view(view_iso_120);
+	return true;
+}	
+
+bool nscamera_system::_handle_camera_front_view_120(nsaction_event * evnt)
+{
+	set_view(view_front_120);
+	return true;
+}
+
+bool nscamera_system::_handle_camera_top_view_240(nsaction_event * evnt)
+{
+	set_view(view_top_240);
+	return true;
+}		
+
+bool nscamera_system::_handle_camera_iso_view_240(nsaction_event * evnt)
+{
+	set_view(view_iso_240);
+	return true;
+}	
+
+bool nscamera_system::_handle_camera_front_view_240(nsaction_event * evnt)
+{
+	set_view(view_front_240);
+	return true;
+}
+
+bool nscamera_system::_handle_camera_toggle_mode(nsaction_event * evnt)
+{
+	toggle_mode();
+	return true;
+}
+
+bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return true;
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
+		return true;
+	if (m_anim_view)
+		return true;
+	
+	nscam_comp * camc = cam->get<nscam_comp>();
+	camc->set_fly(nscam_comp::dir_pos, evnt->cur_state);
+	return true;
+}
+
+bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return true;
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
+		return true;
+	if (m_anim_view)
+		return true;
 	
 	nscam_comp * camc = cam->get<nscam_comp>();
 
-	if (evnt->trigger_hash_name == trigger_hash(camera_forward))
-		camc->set_fly(nscam_comp::dir_pos, evnt->toggle);
+	camc->set_fly(nscam_comp::dir_neg, evnt->cur_state);
+	return true;
+}
 
-	if (evnt->trigger_hash_name == trigger_hash(camera_backward))
-		camc->set_fly(nscam_comp::dir_neg, evnt->toggle);
+bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return true;
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
+		return true;
+	if (m_anim_view)
+		return true;
+	
+	nscam_comp * camc = cam->get<nscam_comp>();
 
-	if (evnt->trigger_hash_name == trigger_hash(camera_left))
-		camc->set_strafe(nscam_comp::dir_neg, evnt->toggle);
+	camc->set_strafe(nscam_comp::dir_neg, evnt->cur_state);
+	return true;
+}
 
-	if (evnt->trigger_hash_name == trigger_hash(camera_right))
-		camc->set_strafe(nscam_comp::dir_pos, evnt->toggle);
+bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return true;
+	nsentity * cam = vp->camera;
+	if (cam == NULL)
+		return true;
+	if (m_anim_view)
+		return true;
+	
+	nscam_comp * camc = cam->get<nscam_comp>();
+	camc->set_strafe(nscam_comp::dir_pos, evnt->cur_state);
 	return true;
 }
 

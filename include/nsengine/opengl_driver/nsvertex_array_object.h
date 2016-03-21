@@ -35,13 +35,13 @@ public:
 
 	void disable(uint32 attrib_loc_);
 
-	void init_gl();
+	void video_init();
 
 	void remove(nsbuffer_object * buffer_);
 
 	void remove(nsbuffer_object * buffer_, uint32 attrib_loc_);
 
-	void release();
+	void video_release();
 
 	void unbind() const;
 

@@ -275,12 +275,12 @@ fvec3 nsparticle_comp::visual_key_at(float pTime)
 
 void nsparticle_comp::init()
 {
-	m_xfb_bufs[0]->init_gl();
-	m_xfb_bufs[1]->init_gl();
-	m_vaos[0]->init_gl();
-	m_vaos[1]->init_gl();
-	front_buffer->init_gl();
-	back_buffer->init_gl();
+	m_xfb_bufs[0]->video_init();
+	m_xfb_bufs[1]->video_init();
+	m_vaos[0]->video_init();
+	m_vaos[1]->video_init();
+	front_buffer->video_init();
+	back_buffer->video_init();
 
 	m_particles.resize(m_max_particle_count);
 	m_particles[0].age_type_reserved.y = 1.0f;
@@ -628,12 +628,12 @@ bool nsparticle_comp::looping()
 
 void nsparticle_comp::release()
 {
-	m_xfb_bufs[0]->release();
-	m_xfb_bufs[1]->release();
-	m_vaos[0]->release();
-	m_vaos[1]->release();
-	front_buffer->release();
-	back_buffer->release();
+	m_xfb_bufs[0]->video_release();
+	m_xfb_bufs[1]->video_release();
+	m_vaos[0]->video_release();
+	m_vaos[1]->video_release();
+	front_buffer->video_release();
+	back_buffer->video_release();
 }
 
 void nsparticle_comp::set_rand_tex_id(const uivec2 & pID)

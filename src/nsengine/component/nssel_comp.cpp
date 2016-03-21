@@ -47,7 +47,7 @@ nssel_comp::nssel_comp(const nssel_comp & copy):
 
 nssel_comp::~nssel_comp()
 {
-	m_tform_buffer->release();
+	m_tform_buffer->video_release();
 	delete m_tform_buffer;
 }
 
@@ -122,7 +122,7 @@ const fvec4 & nssel_comp::color()
 
 void nssel_comp::init()
 {
-	m_tform_buffer->init_gl();
+	m_tform_buffer->video_init();
 	m_update = true;
 }
 

@@ -272,14 +272,27 @@ struct selection_render_pass : public render_pass
 
 GLEWContext * glewGetContext();
 
+class nstexture;
+class nstex1d;
+class nstex2d;
+class nstex3d;
+class nstex_cubemap;
+
+struct vid_obj_rel
+{
+	nsvid_obj * vo;
+	nsgl_object * gl_obj;
+};
+
+typedef std::vector<vid_obj_rel> vid_obj_array;
 struct gl_ctxt
 {
 	gl_ctxt(uint32 id);
 	~gl_ctxt();
 	
-	void init();
-	void release();
-	
+	virtual void init();
+	virtual void release();
+
 	uint32 context_id;
 	bool initialized;
 	
@@ -292,6 +305,8 @@ struct gl_ctxt
 	rt_map m_render_targets; // created and removed by driver
 	render_pass_vector m_render_passes; // created and removed by driver
 	opengl_state m_gl_state;
+
+	vid_obj_array need_release;
 };
 
 typedef std::map<uint32, gl_ctxt*> gl_context_map;
@@ -337,6 +352,8 @@ class nsopengl_driver : public nsvideo_driver
 	void clear_render_queues();
 
 	render_pass_vector * render_passes();
+
+	void cleanup_vid_objs();
 	
 	drawcall_queue * create_queue(const nsstring & name);
 
@@ -354,13 +371,15 @@ class nsopengl_driver : public nsvideo_driver
 
 	void create_default_render_queues();
 
-	uint32 create_context();
+	uint8 create_context();
 
-	bool destroy_context(uint32 c_id);
+	bool destroy_context(uint8 c_id);
 
-	bool make_context_current(uint32 c_id);
+	bool make_context_current(uint8 c_id);
 
 	gl_ctxt * current_context();
+
+	gl_ctxt * context(uint8 id);
 
 	opengl_state current_gl_state();
 
@@ -423,7 +442,15 @@ class nsopengl_driver : public nsvideo_driver
 	void bind_textures(nsmaterial * material);
 
 	void bind_gbuffer_textures(nsgl_framebuffer * fb);
+	
+	void init_texture(nstexture * tex);
 
+	void release_texture(nstexture * tex);
+
+	void enable_auto_cleanup(bool enable);
+
+	bool auto_cleanup();
+	
   private:
 	void _add_draw_calls_from_scene(nsscene * scene);
 	void _add_lights_from_scene(nsscene * scene);
@@ -436,8 +463,10 @@ class nsopengl_driver : public nsvideo_driver
 	std::vector<light_draw_call> m_light_draw_calls;
 	mat_id_map m_mat_shader_ids;
 	
-	gl_context_map m_contexts;
+	gl_ctxt * m_contexts[MAX_CONTEXT_COUNT];
 	gl_ctxt * m_current_context;
+
+	bool m_auto_cleanup;
 };
 
 #endif

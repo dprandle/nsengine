@@ -144,13 +144,13 @@ public:
 
 	target_buffer target() const;
 
-	void init_gl();
+	void video_init();
 
 	bool allocated() const;
 
 	bool mapped() const;
 
-	void release();
+	void video_release();
 
 	template<class data_type>
 	data_type * map(access_map access_)
