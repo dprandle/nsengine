@@ -1,0 +1,62 @@
+type:<nsstring>nsshader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>
+#version 440
+layout (location = 0) in vec3 position;
+
+void main()
+{
+	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
+}
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring>
+#version 440
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+uniform vec2 center;
+uniform vec2 widget_size;
+uniform vec4 tex_coord_rect;
+out vec2 tex_coord;
+vec2 center_ndc;
+vec2 widget_size_ndc;
+void main()
+{
+	center_ndc = center * 2.0 - vec2(1.0);
+	widget_size_ndc = widget_size * 2;
+    gl_Position = vec4(center_ndc - widget_size_ndc/2.0, 1.0, 1.0);
+	tex_coord = tex_coord_rect.xy;
+    EmitVertex();
+	gl_Position = vec4(center_ndc.x - widget_size_ndc.x/2.0, center_ndc.y + widget_size_ndc.y/2.0, 1.0, 1.0);
+	tex_coord = tex_coord_rect.xw;
+	EmitVertex();
+	gl_Position = vec4(center_ndc.x + widget_size_ndc.x/2.0, center_ndc.y - widget_size_ndc.y/2.0, 1.0, 1.0);
+	tex_coord = tex_coord_rect.zy;
+	EmitVertex();
+    gl_Position = vec4(center_ndc + widget_size_ndc/2.0, 1.0, 1.0);
+	tex_coord = tex_coord_rect.zw;
+    EmitVertex();
+    EndPrimitive();
+}
+</nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring>
+#version 440
+
+layout (location = 0) out vec4 final_frag_color;
+layout (location = 1) out uvec3 final_picking;
+
+in vec2 tex_coord;
+uniform sampler2D uitexture;
+uniform vec4 frag_color_out;
+uniform uvec3 entity_id;
+uniform bool color_mode;
+
+void main()
+{
+	final_frag_color = frag_color_out;
+	if (!color_mode)
+		final_frag_color = texture(uitexture, tex_coord);
+	final_picking = entity_id;
+}
+</nsstring>

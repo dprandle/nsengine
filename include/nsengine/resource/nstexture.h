@@ -144,9 +144,9 @@ class nstexture : public nsresource
 
 	void set_data(uint8 * image_data);
 
-	void copy_data(uint8 * to_copy, uint32 write_offset=0);
+	void copy_data(uint8 * to_copy, uint32 write_offset_in_bytes=0);
 
-	void copy_data(uint8 * to_copy, uint32 max_size, uint32 write_offset);
+	void copy_data(uint8 * to_copy, uint32 buffer_max_size_in_bytes, uint32 write_offset_in_bytes);
 
 	uint8 * data();
 

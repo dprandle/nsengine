@@ -430,9 +430,9 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 		tnorm = load<nstex2d>(normtex);
 	
 	if (tdiff != NULL)
-		mat->set_map_tex_id(nsmaterial::diffuse, tdiff->full_id());
+		mat->add_tex_map(nsmaterial::diffuse, tdiff->full_id(), true);
 	if (tnorm != NULL)
-		mat->set_map_tex_id(nsmaterial::normal, tnorm->full_id());
+		mat->add_tex_map(nsmaterial::normal, tnorm->full_id(), true);
 	if (tdiff == NULL && tnorm == NULL)
 	{
 		mat->set_color_mode(true);
@@ -519,7 +519,7 @@ nsentity * nsplugin::create_skydome(const nsstring & name,
 	sky_box->set_subdir(tex_subdir);
 	
 	nsmaterial * sb_mat = create<nsmaterial>(name);
-	sb_mat->set_map_tex_id(nsmaterial::diffuse, sky_box->full_id());
+	sb_mat->add_tex_map(nsmaterial::diffuse, sky_box->full_id(), true);
 	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
 	sb_mat->set_cull_mode(GL_FRONT);
 	
@@ -612,11 +612,11 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 		}
 	}
 
-	termat->set_map_tex_id(nsmaterial::height, hm->full_id(), true);
+	termat->add_tex_map(nsmaterial::height, hm->full_id(), true);
 	if (dm != NULL)
-		termat->set_map_tex_id(nsmaterial::diffuse, dm->full_id(), true);
+		termat->add_tex_map(nsmaterial::diffuse, dm->full_id(), true);
 	if (nm != NULL)
-		termat->set_map_tex_id(nsmaterial::normal, nm->full_id(), true);
+		termat->add_tex_map(nsmaterial::normal, nm->full_id(), true);
 
 	
 	return terr;

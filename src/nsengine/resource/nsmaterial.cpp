@@ -174,12 +174,28 @@ void nsmaterial::pup(nsfile_pupper * p)
 	}
 }
 
-uivec2 nsmaterial::map_tex_id(map_type pMapType)
+tex_map_info nsmaterial::mat_tex_info(map_type mt)
 {
-	texmap_map::iterator iter = m_tex_maps.find(pMapType);
+	texmap_map::iterator iter = m_tex_maps.find(mt);
 	if (iter != m_tex_maps.end())
 		return iter->second;
+	return tex_map_info();
+}
+
+uivec2 nsmaterial::map_tex_id(map_type mt)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+		return iter->second.tex_id;
 	return uivec2();
+}
+
+fvec4 nsmaterial::map_tex_coord_rect(map_type mt)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+		return iter->second.coord_rect;
+	return fvec4();
 }
 
 const uivec2 & nsmaterial::shader_id()
@@ -223,7 +239,7 @@ uivec3_vector nsmaterial::resources()
 	auto iter = m_tex_maps.begin();
 	while (iter != m_tex_maps.end())
 	{
-		nstexture * _tex_ = get_resource<nstexture>(iter->second);
+		nstexture * _tex_ = get_resource<nstexture>(iter->second.tex_id);
 		if (_tex_ != NULL)
 		{
 			uivec3_vector tmp = _tex_->resources();
@@ -273,11 +289,11 @@ void nsmaterial::name_change(const uivec2 & oldid, const uivec2 newid)
 	texmap_map::iterator iter = m_tex_maps.begin();
 	while (iter != m_tex_maps.end())
 	{
-		if (iter->second.x == oldid.x)
+		if (iter->second.tex_id.x == oldid.x)
 		{
-			iter->second.x = newid.x;
-			if (iter->second.y == oldid.y)
-				iter->second.y = newid.y;
+			iter->second.tex_id.x = newid.x;
+			if (iter->second.tex_id.y == oldid.y)
+				iter->second.tex_id.y = newid.y;
 		}
 		++iter;
 	}
@@ -290,9 +306,9 @@ void nsmaterial::name_change(const uivec2 & oldid, const uivec2 newid)
 	}
 }
 
-bool nsmaterial::remove_tex_map(map_type pMapType)
+bool nsmaterial::remove_tex_map(map_type mt)
 {
-	return m_tex_maps.erase(pMapType) >= 1;
+	return m_tex_maps.erase(mt) >= 1;
 }
 
 void nsmaterial::set_alpha_blend(bool pBlend)
@@ -357,21 +373,61 @@ bool nsmaterial::using_alpha_from_color() const
 	return m_force_alpha;
 }
 
-bool nsmaterial::set_map_tex_id(map_type pMapType, const uivec2 & pID, bool pOverwrite)
+bool nsmaterial::add_tex_map(map_type mt, const tex_map_info & ti, bool overwrite_existing)
 {
-	texmap_map::iterator iter = m_tex_maps.find(pMapType);
+	texmap_map::iterator iter = m_tex_maps.find(mt);
 	if (iter != m_tex_maps.end())
 	{
-		if (pOverwrite)
+		if (overwrite_existing)
 		{
-			m_tex_maps.erase(iter);
-			m_tex_maps.emplace(pMapType, pID);
+			iter->second = ti;
 			return true;
 		}
 		else
 			return false;
 	}
+	m_tex_maps.emplace(mt, ti);
+	return true;		
+}
 
-	m_tex_maps.emplace(pMapType, pID);
-	return true;
+bool nsmaterial::add_tex_map(
+	map_type mt,
+	const uivec2 & tex_id,
+	const fvec4 & coord_rect,
+	bool overwrite_existing)
+{
+	return add_tex_map(mt, tex_map_info(tex_id,coord_rect),overwrite_existing);
+}
+
+bool nsmaterial::set_map_tex_info(map_type mt, tex_map_info ti)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+	{
+		iter->second = ti;
+		return true;
+	}
+	return false;
+}
+
+bool nsmaterial::set_map_tex_coord_rect(map_type mt, fvec4 tex_coord_rect)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+	{
+		iter->second.coord_rect = tex_coord_rect;
+		return true;
+	}
+	return false;	
+}
+
+bool nsmaterial::set_map_tex_id(map_type mt, const uivec2 & pID)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+	{
+		iter->second.tex_id = pID;
+		return true;
+	}
+	return false;
 }

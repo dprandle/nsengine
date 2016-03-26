@@ -183,7 +183,11 @@ public:
 		return static_cast<T*>(m_driver);
 	}
 
-	nsvideo_driver * video_driver();
+	template<class T=nsvideo_driver>
+	T * video_driver()
+	{
+		return static_cast<T*>(m_driver);
+	}
 
 	void create_default_systems();
 	
@@ -466,6 +470,8 @@ public:
 	nssystem * system(uint32 type_id);
 
 	nssystem * system(const nsstring & guid_);
+
+	void setup_core_plug();
 
 	nstimer * timer();
 

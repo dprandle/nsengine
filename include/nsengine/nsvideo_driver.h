@@ -20,41 +20,6 @@
 #include <nsmesh.h>
 #include <nstexture.h>
 
-// shader types
-class nsrender_shader;
-class nsrender_target;
-class nsmaterial_shader;
-class nslight_stencil_shader;
-class nsdir_light_shader;
-class nspoint_light_shader;
-class nsspot_light_shader;
-class nsshadow_cubemap_shader;
-class nsfragment_sort_shader;
-class nsshadow_2dmap_shader;
-class nsbuffer_object;
-class nsselection_shader;
-class nsparticle_render_shader;
-
-struct render_shaders
-{
-	render_shaders();
-	bool error();
-	bool valid();
-	
-	nsmaterial_shader * deflt;
-	nsmaterial_shader * deflt_wireframe;
-	nsmaterial_shader * deflt_translucent;
-	nsdir_light_shader * dir_light;
-	nspoint_light_shader * point_light;
-	nsspot_light_shader * spot_light;
-	nslight_stencil_shader * light_stencil;
-	nsshadow_cubemap_shader * shadow_cube;
-	nsshadow_2dmap_shader * shadow_2d;
-	nsfragment_sort_shader * frag_sort;
-	nsparticle_render_shader * deflt_particle;
-	nsselection_shader * sel_shader;
-};
-
 class nsvideo_driver
 {
   public:
@@ -75,12 +40,6 @@ class nsvideo_driver
 
 	virtual void resize_screen(const ivec2 & new_size) = 0;
 
-	void set_render_shaders(render_shaders rs);
-
-	render_shaders & get_render_shaders();
-
-	virtual void push_scene(nsscene * scn) = 0;
-
 	virtual void render(nsrender::viewport * vp) = 0;
 
 	virtual void init_texture(nstexture * tex) = 0;
@@ -89,7 +48,6 @@ class nsvideo_driver
 	
   protected:
 	
-	render_shaders m_shaders;
 	bool m_initialized;
 };
 

@@ -204,3 +204,23 @@ bool nsshader_manager::link_all()
 	}
 	return ret;
 }
+
+void nsshader_manager::video_init_all()
+{
+	auto iter = begin();
+	while (iter != end())
+	{
+		static_cast<nsshader*>(iter->second)->video_init();
+		++iter;
+	}
+}
+
+void nsshader_manager::video_release_all()
+{
+	auto iter = begin();
+	while (iter != end())
+	{
+		static_cast<nsshader*>(iter->second)->video_release();
+		++iter;
+	}	
+}

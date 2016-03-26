@@ -1,4 +1,4 @@
-type:<nsstring>nsselection_shader</nsstring>
+type:<nsstring>nsshader</nsstring>
 vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>#version 440
 layout (location = 0) in vec3 position;

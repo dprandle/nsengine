@@ -17,6 +17,16 @@
 #include <nsresource.h>
 #include <nsunordered_map.h>
 
+struct tex_map_info
+{
+	tex_map_info(const uivec2 & tex_id_=uivec2(), const fvec4 coord_rect_=fvec4(0.0f,0.0f,1.0f,1.0f)):
+		tex_id(tex_id_),
+		coord_rect(coord_rect_)
+	{}
+	uivec2 tex_id;
+	fvec4 coord_rect;
+};
+
 class nsmaterial : public nsresource
 {
 public:
@@ -34,7 +44,7 @@ public:
 		reflection
 	};
 
-	typedef std::unordered_map<map_type, uivec2, EnumHash> texmap_map;
+	typedef std::unordered_map<map_type, tex_map_info, EnumHash> texmap_map;
 	typedef texmap_map::iterator texmap_map_iter;
 	typedef texmap_map::const_iterator texmap_map_const_iter;
 
@@ -86,7 +96,11 @@ public:
 
 	const uint32 & cull_mode() const;
 
+	tex_map_info mat_tex_info(map_type mt);
+	
 	uivec2 map_tex_id(map_type pMapType);
+
+	fvec4 map_tex_coord_rect(map_type mt);
 
 	const uivec2 & shader_id();
 
@@ -136,19 +150,17 @@ public:
 
 	void set_cull_mode(uint32 pMode);
 
-	bool set_map_tex_id(map_type pMapType, const uivec2 & resID, bool pOverwrite = false);
+	bool add_tex_map(map_type mt, const tex_map_info & ti, bool overwrite_existing);
 
-	bool set_map_tex_id(map_type pMapType, uint32 plugID, uint32 resID, bool pOverwrite = false)
-	{
-		return set_map_tex_id(pMapType, uivec2(plugID,resID), pOverwrite);
-	}
+	bool add_tex_map(map_type mt, const uivec2 & tex_id, const fvec4 & coord_rect, bool overwrite_existing);
+
+	bool set_map_tex_info(map_type pMapType, tex_map_info ti);
+
+	bool set_map_tex_coord_rect(map_type pMapType, fvec4 tex_coord_rect);
+
+	bool set_map_tex_id(map_type pMapType, const uivec2 & resID);
 
 	void set_shader_id(const uivec2 & resID);
-
-	void set_shader_id(uint32 plugID, uint32 resID)
-	{
-		m_shader_id.set(plugID, resID);
-	}
 
 	void set_specular(const specular_comp & pSpecComp);
 
@@ -180,6 +192,28 @@ private:
 	ivec3 m_stencil_op_back;
 };
 
+template<class PUPer>
+void pup(PUPer & p, nsmaterial::specular_comp & mat, const nsstring & val_name)
+{
+	pup(p, mat.power, val_name + ".power");
+	pup(p, mat.intensity, val_name + ".intensity");
+	pup(p, mat.color, val_name + ".color");
+}
+
+template<class PUPer>
+void pup(PUPer & p, nsmaterial::map_type & my, const nsstring & val_name)
+{
+	uint32 mt = static_cast<uint32>(my);
+	pup(p, mt, val_name);
+	my = static_cast<nsmaterial::map_type>(mt);
+}
+
+template<class PUPer>
+void pup(PUPer & p, tex_map_info & ti, const nsstring & val_name)
+{
+	pup(p, ti.tex_id, val_name + ".tex_id");
+	pup(p, ti.coord_rect, val_name + ".coord_rect");
+}
 
 template<class PUPer>
 void pup(PUPer & p, nsmaterial & mat)
@@ -202,21 +236,4 @@ void pup(PUPer & p, nsmaterial & mat)
 	pup(p, mat.m_stencil_op_front,"stencil_op_front");
 	pup(p, mat.m_stencil_op_back,"stencil_op_back");
 }
-
-template<class PUPer>
-void pup(PUPer & p, nsmaterial::specular_comp & mat, const nsstring & val_name)
-{
-	pup(p, mat.power, val_name + ".power");
-	pup(p, mat.intensity, val_name + ".intensity");
-	pup(p, mat.color, val_name + ".color");
-}
-
-template<class PUPer>
-void pup(PUPer & p, nsmaterial::map_type & my, const nsstring & val_name)
-{
-	uint32 mt = static_cast<uint32>(my);
-	pup(p, mt, val_name);
-	my = static_cast<nsmaterial::map_type>(mt);
-}
-
 #endif

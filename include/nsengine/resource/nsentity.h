@@ -36,6 +36,8 @@ public:
 
 	bool add(nscomponent * pComp);
 
+	bool add_derived(nscomponent * to_add, uint32 base_type_id);
+
 	comp_set::iterator begin();
 	comp_set::iterator end();
 
@@ -48,11 +50,24 @@ public:
 		return static_cast<comp_type*>(create(tid));
 	}
 
+	template<class derived_type, class base_type>
+	derived_type * create_derived()
+	{
+		uint32 tid = nse.type_id(std::type_index(typeid(derived_type)));
+		uint32 bid = nse.type_id(std::type_index(typeid(base_type)));
+		return static_cast<derived_type*>(create_derived(tid,bid));
+	}
+
+
 	nscomponent * create(nscomponent * to_copy);
 
 	nscomponent * create(const nsstring & guid);
 
 	nscomponent * create(uint32 type_id);
+
+	nscomponent * create_derived(nscomponent * derived_to_copy, uint32 base_type_id);
+	
+	nscomponent * create_derived(uint32 derived_type_id, uint32 base_type_id);
 
 	template<class comp_type>
 	bool del()

@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsui_system.h>
 #include <nsvideo_driver.h>
 #include <hash/crc32.h>
 #include <nsfile_os.h>
@@ -385,12 +386,6 @@ void nsengine::_remove_sys(uint32 type_id)
 
 void nsengine::create_default_systems()
 {
-	if (m_driver == nullptr || !m_driver->initialized() )
-	{
-		dprint("nsengine::create_default_systems - You need to create a video driver before creating default systems");
-		return;
-	}
-	
 	auto fiter = nse.begin_factory();
 	while (fiter != nse.end_factory())
 	{
@@ -406,11 +401,6 @@ nsdebug * nsengine::debug()
 	return m_deb;
 }
 #endif
-
-nsvideo_driver * nsengine::video_driver()
-{
-	return m_driver;
-}
 
 uint32 nsengine::manager_id(uint32 res_id)
 {
@@ -468,7 +458,7 @@ void nsengine::_init_factories()
 	register_system<nsparticle_system>("nsparticle_system");
 	register_system<nsrender_system>("nsrender_system");
 	register_system<nsselection_system>("nsselection_system");
-	
+	register_system<nsui_system>("nsui_system");
 	
 	register_manager<nsanim_manager>("nsanim_manager");
 	register_manager<nsentity_manager>("nsentity_manager");
@@ -486,32 +476,80 @@ void nsengine::_init_factories()
 	register_resource<nsmaterial, nsmat_manager>("nsmaterial");
 	register_resource<nsplugin, nsplugin_manager>("nsplugin");
 	register_resource<nsscene, nsscene_manager>("nsscene");
-
 	register_resource<nsmesh, nsmesh_manager>("nsmesh");
 	register_resource<nsmesh_plane, nsmesh_manager>("nsmesh_plane");
-	
 	register_abstract_resource<nstexture, nstex_manager>("nstexture");
 	register_resource<nstex1d, nstex_manager>("nstex1d");
 	register_resource<nstex2d, nstex_manager>("nstex2d");
 	register_resource<nstex3d, nstex_manager>("nstex3d");
 	register_resource<nstex_cubemap, nstex_manager>("nstex_cubemap");
-
 	register_resource<nsshader, nsshader_manager>("nsshader");
-	register_resource<nsdir_light_shader, nsshader_manager>("nsdir_light_shader");
-	register_resource<nsspot_light_shader, nsshader_manager>("nsspot_light_shader");
-	register_resource<nspoint_light_shader, nsshader_manager>("nspoint_light_shader");
-	register_resource<nsrender_shader, nsshader_manager>("nsrender_shader");
-	register_resource<nsmaterial_shader, nsshader_manager>("nsmaterial_shader");
-	register_resource<nsparticle_process_shader, nsshader_manager>("nsparticle_process_shader");
-	register_resource<nsparticle_render_shader, nsshader_manager>("nsparticle_render_shader");
-	register_resource<nsfragment_sort_shader, nsshader_manager>("nsfragment_sort_shader");
-	register_resource<nsshadow_2dmap_shader, nsshader_manager>("nsshadow_2dmap_shader");
-	register_resource<nsshadow_cubemap_shader, nsshader_manager>("nsshadow_cubemap_shader");
-	register_resource<nslight_stencil_shader, nsshader_manager>("nslight_stencil_shader");
-	register_resource<nsselection_shader, nsshader_manager>("nsselection_shader");
-
 	register_resource<nsfont, nsfont_manager>("nsfont");
 	register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
+}
+
+void nsengine::setup_core_plug()
+{
+	nsplugin * cplg = nse.core();
+		
+	// Default material
+	nsmaterial * def_mat;
+	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION));
+	def_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
+	def_mat->add_tex_map(nsmaterial::diffuse, tex->full_id(), true);
+	def_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
+
+	render_shaders rh;
+    nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
+	rh.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext);
+	rh.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext);
+	rh.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext);
+	rh.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext);
+	rh.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext);
+	rh.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext);
+	rh.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext);
+	rh.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext);
+	rh.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext);
+	rh.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext);
+	rh.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext);
+	rh.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext);
+
+	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext);
+	cplg->load<nsshader>(nsstring(UI_SHADER) + shext);
+	nsshader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext);
+	std::vector<nsstring> outLocs2;
+	outLocs2.push_back("gPosOut");
+	outLocs2.push_back("gVelOut");
+	outLocs2.push_back("gScaleAndAngleOut");
+	outLocs2.push_back("gAgeOut");
+	ps->set_xfb(nsshader::xfb_interleaved, &outLocs2);
+	
+	// create build system jazz
+	nsentity * object_brush = cplg->create<nsentity>(ENT_OBJECT_BRUSH);
+	nssel_comp * sc = object_brush->create<nssel_comp>();	
+	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	sc->set_mask_alpha(0.2f);
+	sc->enable_draw(true);
+	sc->enable_move(true);
+	nse.system<nsbuild_system>()->set_object_brush(object_brush);
+
+    // init gl all the shaders
+	cplg->manager<nsshader_manager>()->compile_all();
+	cplg->manager<nsshader_manager>()->link_all();
+	cplg->manager<nsshader_manager>()->init_uniforms_all();
+
+	// Light bounds, skydome, and tile meshes
+    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
+    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
+	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
+
+	nse.system<nsrender_system>()->set_render_shaders(rh);
+	nse.system<nsrender_system>()->set_default_mat(def_mat);
 }
 
 nsengine & nsengine::inst()

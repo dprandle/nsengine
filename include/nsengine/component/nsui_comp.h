@@ -19,29 +19,31 @@ This file contains all of the neccessary declarations for the nsui_comp class.
 
 class nsmaterial;
 class nsfont;
-
-struct ui_widget
-{
-	ui_widget * parent;
-	nsmaterial * bg_mat;
-	fvec2 center_npos;
-	fvec2 size;
-	std::vector<ui_widget*> children;
-};
-
-struct ui_button : ui_widget
-{
-	bool stretch_to_fit;
-	nsstring text;
-	bool pressed;
-	bool hover;
-	nsmaterial * hover_mat;
-	nsmaterial * pressed_mat;
-};
+class nsui_comp;
 
 class nsui_comp : public nscomponent
 {
 public:
+
+	struct widget_content
+	{
+		fvec2 nsize;
+		uivec2 mat_id;
+		fvec4 tex_coords_rect; // to remove in a bit
+		uivec2 font_id;
+		nsstring text;
+	};
+
+	struct widget_outer
+	{
+		uivec2 mat_id;
+		uivec4 padding; // pixels
+		uivec4 border; // pixels
+		uivec4 margin; // pixels
+		fvec4 border_color;
+		fvec4 padding_tex_coords_rect; // to remove in a bit
+	};
+
 	template <class PUPer>
 	friend void pup(PUPer & p, nsui_comp & tc);
 
@@ -58,8 +60,33 @@ public:
 
 	nsui_comp & operator=(nsui_comp rhs_);
 
-  private:
-	ui_widget * m_widget;
+	void add_child(nsentity * child);
+	void remove_child(nsentity * child);
+
+	bool is_child(nsentity * child);
+	void set_parent(nsentity * parent);
+	const uivec2 & parent();
+
+	widget_content content_properties;
+	widget_outer outer_properties;
+	
+	uivec2 content_shader_id;
+	uivec2 border_shader_id;
+
+	bool show;
+	fvec2 center_npos;
+	bool resize_with_parent;
+	int32 layer;	
+
+	ns::signal<> clicked;
+	ns::signal<> pressed;
+	ns::signal<> released;
+	
+	bool is_pressed;
+	bool is_hover;
+  protected:
+	uivec2 m_parent;
+	uivec2_vector m_children;
 };
 
 template <class PUPer>

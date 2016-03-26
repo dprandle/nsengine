@@ -1,6 +1,7 @@
-type:<nsstring>nsparticle_render_shader</nsstring>
+type:<nsstring>nsshader</nsstring>
 vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 440
+vertex.source:<nsstring>
+#version 440
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec4 velocity;
@@ -171,13 +172,10 @@ void main()
 
 	EndPrimitive();
 }
-
-
-
-
 </nsstring>
 fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>#version 440
+fragment.source:<nsstring>
+#version 440
 
 in vec2 texCoord;
 in float alphaOut;

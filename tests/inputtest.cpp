@@ -1,5 +1,6 @@
 #define INPUTTEST
 
+#include <nsshader.h>
 #include <nsinput_system.h>
 #include <nsinput_map.h>
 #include <iostream>
@@ -21,7 +22,11 @@
 #include <nsanim_comp.h>
 #include <nsfont.h>
 #include <nsopengl_driver.h>
+#include <nsui_comp.h>
 #include <nsplugin_manager.h>
+#include <nsmaterial.h>
+#include <nsui_system.h>
+#include <nsrender_system.h>
 
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
@@ -35,12 +40,17 @@ void setup_input_map(nsplugin * plg);
 int main()
 {
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
-	
+
+
     nse.start();
+    nse.create_default_systems();
+
 	nsopengl_driver * gl_driver = nse.create_video_driver<nsopengl_driver>();
 	gl_driver->create_context();
-    gl_driver->init();
-    nse.create_default_systems();
+    gl_driver->init(true);
+
+	nse.setup_core_plug();
+
 
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
@@ -72,14 +82,8 @@ nsplugin * setup_basic_plugin()
 	nsep.active()->set_current_scene(scn, true, false);
 	
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-    nsentity * cam2 = plg->create_camera("scenecam1", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-    nsentity * cam3 = plg->create_camera("scenecam2", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-    nsentity * cam4 = plg->create_camera("scenecam3", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.1f,fvec3(1.0f),true,0.5f,2);	
     scn->add(cam);
-    scn->add(cam2);
-    scn->add(cam3);
-    scn->add(cam4);
     scn->add(dirl, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 	
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
@@ -90,10 +94,37 @@ nsplugin * setup_basic_plugin()
 
     nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.2f, 30.0f, 20.0f);
 	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
-	alpha_tile->get<nssel_comp>()->enable_transparent_picking(false);
+    nsentity * ui_button = plg->create<nsentity>("ui_button");
+
+//    ui_button->create<nssel_comp>();
+    nsui_comp * uic = ui_button->create<nsui_comp>();
+
+	nsmaterial * mat = plg->create<nsmaterial>("contents_mat");
+	nsmaterial * pad_mat = plg->create<nsmaterial>("padding_mat");
+	pad_mat->set_color_mode(true);
+	pad_mat->set_color(fvec4(1.0f,0.0f,0.0f,0.3f));
 	
-//	plg->get<nsmaterial>("grasstile")->set_alpha_blend(true);
-//	plg->get<nsmaterial>("grasstile")->use_alpha_from_color(true);
+    nstexture * reg_tex = plg->get<nstexture>("diffuseGrass");
+    mat->add_tex_map(nsmaterial::diffuse, reg_tex->full_id(), true);
+	mat->set_color_mode(false);
+
+
+    uic->content_properties.nsize = fvec2(0.5,0.5);
+	uic->content_properties.mat_id = mat->full_id();
+	uic->content_properties.tex_coords_rect = fvec4(0.0f,0.0f,1.0f,1.0f);
+	uic->outer_properties.mat_id = pad_mat->full_id();
+	uic->outer_properties.border_color = fvec4(0.0f,1.0f,0.0f,1.0f);
+	uic->outer_properties.padding = uivec4(5);
+	uic->outer_properties.border = uivec4(10);
+	uic->outer_properties.margin = uivec4(5);
+
+	uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+    uic->show = true;
+    uic->center_npos = fvec2(0.5,0.5);
+	uic->resize_with_parent = true;
+	uic->layer = 0;
+
+	alpha_tile->get<nssel_comp>()->enable_transparent_picking(false);	
     scn->add(point_light);
 	scn->add(spot_light, fvec3(10,10,0.0f));
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
@@ -102,28 +133,8 @@ nsplugin * setup_basic_plugin()
     nse.system<nsrender_system>()->insert_viewport(
         "main_view",
         nsrender::viewport(
-            fvec4(0.0f,0.0f,0.5f,0.5f),
+            fvec4(0.0f,0.0f,1.0f,1.0f),
             cam));
-
-    nse.system<nsrender_system>()->insert_viewport(
-        "main_view2",
-        nsrender::viewport(
-            fvec4(0.0f,0.5f,0.5f,1.0f),
-            cam2));
-
-    nse.system<nsrender_system>()->insert_viewport(
-        "main_view3",
-        nsrender::viewport(
-            fvec4(0.5f,0.0f,1.0f,0.5f),
-            cam3));
-
-    nse.system<nsrender_system>()->insert_viewport(
-        "main_view4",
-        nsrender::viewport(
-            fvec4(0.5f,0.5f,1.0f,1.0f),
-            cam4));
-
-
 
 	return plg;
 }

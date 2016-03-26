@@ -359,11 +359,8 @@ m_tex_unit(0)
 
 nsgl_framebuffer::attachment::~attachment()
 {
-	if (m_texture != NULL)
-		m_texture->video_release();
 	if (m_renderbuf != NULL)
 		m_renderbuf->video_release();
-	delete m_texture;
 	delete m_renderbuf;
 }
 

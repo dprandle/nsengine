@@ -10,17 +10,29 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#define OPENGL
+
 #ifndef NSRENDERSYSTEM_H
 #define NSRENDERSYSTEM_H
 
 // Default checkered material
 #define DEFAULT_MATERIAL "default"
 
+// Default drawcall queues
+#define SCENE_OPAQUE_QUEUE "scene_opaque_queue"
+#define SCENE_SELECTION_QUEUE "scene_selection_queue"
+#define SCENE_TRANSLUCENT_QUEUE "scene_translucent_queue"
+#define DIR_LIGHT_QUEUE "dir_light_queue"
+#define SPOT_LIGHT_QUEUE "spot_light_queue"
+#define POINT_LIGHT_QUEUE "point_light_queue"
+#define UI_RENDER_QUEUE "ui_render_queue"
+
 // Default shaders
 #define GBUFFER_SHADER "gbufferdefault"
 #define GBUFFER_WF_SHADER "gbufferdefault_wireframe"
 #define GBUFFER_TRANS_SHADER "gbufferdefault_translucent"
 #define RENDER_PARTICLE_SHADER "renderparticle"
+#define PARTICLE_PROCESS_SHADER "xfbparticle"
 #define LIGHTSTENCIL_SHADER "lightstencil"
 #define SPOT_LIGHT_SHADER "spotlight"
 #define DIR_LIGHT_SHADER "directionlight"
@@ -31,6 +43,7 @@
 #define DIR_SHADOWMAP_SHADER "dirshadowmap"
 #define SELECTION_SHADER "selectionsolid"
 #define SKYBOX_SHADER "skybox"
+#define UI_SHADER "render_ui"
 
 // Light bounds, skydome, and tile meshes
 #define MESH_FULL_TILE "fulltile"
@@ -52,15 +65,158 @@
 #define MAX_INSTANCED_DRAW_CALLS 4096
 #define MAX_LIGHTS_IN_SCENE 4096
 #define MAX_GBUFFER_DRAWS 2048
+#define MAX_UI_DRAW_CALLS 1024
 
 #include <nssystem.h>
 #include <nssignal.h>
 #include <nsunordered_map.h>
 #include <list>
-
+#include <nsmesh.h>
 
 class nsentity;
 class nsmaterial;
+class nsbuffer_object;
+class nsshader;
+
+class nsshader;
+
+struct render_shaders
+{
+	render_shaders();
+	bool error() const;
+	bool valid() const;
+	
+	nsshader * deflt;
+	nsshader * deflt_wireframe;
+	nsshader * deflt_translucent;
+	nsshader * dir_light;
+	nsshader * point_light;
+	nsshader * spot_light;
+	nsshader * light_stencil;
+	nsshader * shadow_cube;
+	nsshader * shadow_2d;
+	nsshader * frag_sort;
+	nsshader * deflt_particle;
+	nsshader * sel_shader;
+};
+
+struct draw_call
+{
+	draw_call():
+		shdr(nullptr),
+		mat(nullptr)
+	{}	
+	virtual ~draw_call() {}
+	
+	nsshader * shdr;
+	nsmaterial * mat;
+	uint32 mat_index;
+};
+
+typedef std::vector<draw_call*> drawcall_queue;
+typedef std::unordered_map<nsstring, drawcall_queue*> queue_map;
+
+struct single_draw_call : public draw_call
+{
+	single_draw_call(): draw_call() {}
+	~single_draw_call() {}
+
+	nsmesh::submesh * submesh;
+	fmat4 transform;
+	fmat4_vector * anim_transforms;
+	fvec2 height_minmax;
+	uint32 entity_id;
+	uint32 plugin_id;
+	uint32 transform_count;
+	bool casts_shadows;
+	bool transparent_picking;
+};
+
+struct instanced_draw_call : public draw_call
+{
+	instanced_draw_call():
+		submesh(nullptr),
+		transform_buffer(nullptr),
+		transform_id_buffer(nullptr),
+		anim_transforms(nullptr),
+		height_minmax(),
+		entity_id(0),
+		plugin_id(0),
+		transform_count(0),
+		casts_shadows(false),
+		transparent_picking(false)
+	{}
+	
+	~instanced_draw_call() {}
+
+	nsmesh::submesh * submesh;
+	nsbuffer_object * transform_buffer;
+	nsbuffer_object * transform_id_buffer;
+	fmat4_vector * anim_transforms;
+	fvec2 height_minmax;
+	uint32 entity_id;
+	uint32 plugin_id;
+	uint32 transform_count;
+	bool casts_shadows;
+	bool transparent_picking;
+	fvec4 sel_color;
+};
+
+typedef std::map<nsmaterial*, uint32> mat_id_map;
+
+struct light_draw_call : public draw_call
+{
+	light_draw_call(): draw_call() {}
+	~light_draw_call() {}
+	
+	fmat4 proj_light_mat;
+	fmat4 light_transform;
+	fvec3 light_pos;
+	fvec4 bg_color;
+	fvec3 direction;
+	bool cast_shadows;
+	fvec3 light_color;
+	fvec3 spot_atten;
+	int32 shadow_samples;
+	float shadow_darkness;
+	float diffuse_intensity;
+	float ambient_intensity;
+	mat_id_map * material_ids;
+	float max_depth;
+	float cutoff;
+	uint32 light_type;
+	nsmesh::submesh * submesh;
+};
+
+class nsui_shader;
+class nsui_border_shader;
+
+struct ui_draw_call : public draw_call
+{
+	ui_draw_call():
+		draw_call()
+	{}
+
+	~ui_draw_call() {}
+	
+	nsmaterial * pad_mat;
+	nsshader * border_shader;
+
+	uivec3 entity_id;
+	fvec2 center;
+	fvec2 content_size;
+	fvec4 border_color;
+
+	fvec4 content_tex_coord_rect;
+	fvec4 padding_tex_coord_rect;
+
+	fvec4 padding;
+	fvec4 border;
+};
+
+typedef std::set<nsmaterial*> pmatset;
+typedef std::map<nsmaterial*, drawcall_queue> mat_drawcall_map;
+typedef std::map<nsshader*, pmatset> shader_mat_map;
 
 namespace nsrender
 {
@@ -135,6 +291,20 @@ class nsrender_system : public nssystem
 	nsrender_system();
 	~nsrender_system();
 
+	bool add_queue(const nsstring & name, drawcall_queue * rt);
+
+	void clear_render_queues();
+
+	void create_default_render_queues();
+	
+	drawcall_queue * create_queue(const nsstring & name);
+
+	void destroy_queue(const nsstring & name);
+
+	drawcall_queue * queue(const nsstring & name);
+
+	drawcall_queue * remove_queue(const nsstring & name);
+
 	bool insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before="");
 
 	bool remove_viewport(const nsstring & vp_name);
@@ -150,6 +320,8 @@ class nsrender_system : public nssystem
 	void move_viewport_to_front(const nsstring & vp_name);
 
 	uivec3 pick(const fvec2 & screen_pos);
+
+	void push_scene(nsscene * scn);
 
 	nsrender::viewport * current_viewport();
 
@@ -168,8 +340,15 @@ class nsrender_system : public nssystem
 	void render();
 
 	virtual int32 update_priority();
+
+	const render_shaders & get_render_shaders();
+
+	void set_render_shaders(const render_shaders & rs);
 	
   private:
+	void _add_draw_calls_from_scene(nsscene * scene);
+	void _add_lights_from_scene(nsscene * scene);
+	void _prepare_tforms(nsscene * scene);
 
 	bool _handle_window_resize(window_resize_event * evt);
 	bool _handle_viewport_change(nsaction_event * evt);
@@ -177,6 +356,13 @@ class nsrender_system : public nssystem
 	nsmaterial * m_default_mat;
 	nsrender::viewport * m_current_vp;
 	std::list<vp_node> vp_list;
+
+	std::vector<instanced_draw_call> m_all_draw_calls;
+	std::vector<light_draw_call> m_light_draw_calls;
+
+	render_shaders m_shaders;
+	queue_map m_render_queues;
+	mat_id_map m_mat_shader_ids;
 };
 
 #endif

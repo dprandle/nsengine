@@ -548,3 +548,24 @@ uint32 nstex_manager::_translate_pixel_type_il(pixel_component_type pt)
 		  return 0;
 	}
 }
+
+
+void nstex_manager::video_init_all()
+{
+	auto iter = begin();
+	while (iter != end())
+	{
+		static_cast<nstexture*>(iter->second)->video_init();
+		++iter;
+	}
+}
+
+void nstex_manager::video_release_all()
+{
+	auto iter = begin();
+	while (iter != end())
+	{
+		static_cast<nstexture*>(iter->second)->video_release();
+		++iter;
+	}
+}

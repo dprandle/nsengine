@@ -10,6 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
+#include <nsopengl_driver.h>
 #include <nsengine.h>
 #include <nsplugin_manager.h>
 #include <nsshader_manager.h>
@@ -23,15 +24,28 @@
 #include <nsmaterial.h>
 #include <nsshader.h>
 #include <nsfb_object.h>
+#include <nsui_system.h>
+
+#include <nsanim_comp.h>
+#include <nsterrain_comp.h>
+#include <nssel_comp.h>
+#include <nsrender_comp.h>
+#include <nslight_comp.h>
+
 
 nsrender_system::nsrender_system() :
 	nssystem(),
 	m_default_mat(nullptr),
 	m_current_vp(nullptr)
-{}
+{
+	m_all_draw_calls.reserve(MAX_INSTANCED_DRAW_CALLS);
+	m_light_draw_calls.reserve(MAX_LIGHTS_IN_SCENE);
+}
 
 nsrender_system::~nsrender_system()
-{}
+{
+	clear_render_queues();	
+}
 
 nsmaterial * nsrender_system::default_mat()
 {
@@ -40,44 +54,9 @@ nsmaterial * nsrender_system::default_mat()
 
 void nsrender_system::init()
 {
+	create_default_render_queues();
 	register_handler(nsrender_system::_handle_window_resize);
 	register_action_handler(nsrender_system::_handle_viewport_change, VIEWPORT_CHANGE);
-
-	nsplugin * cplg = nse.core();	
-		
-	// Default material
-	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION));
-	m_default_mat = cplg->load<nsmaterial>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_MAT_EXTENSION));
-
-    nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-	render_shaders rs;
-	rs.deflt = cplg->load<nsmaterial_shader>(nsstring(GBUFFER_SHADER) + shext);
-	rs.deflt_wireframe = cplg->load<nsmaterial_shader>(nsstring(GBUFFER_WF_SHADER) + shext);
-	rs.deflt_translucent = cplg->load<nsmaterial_shader>(nsstring(GBUFFER_TRANS_SHADER) + shext);
-	rs.light_stencil = cplg->load<nslight_stencil_shader>(nsstring(LIGHTSTENCIL_SHADER) + shext);
-	rs.frag_sort = cplg->load<nsfragment_sort_shader>(nsstring(FRAGMENT_SORT_SHADER) + shext);
-	rs.dir_light = cplg->load<nsdir_light_shader>(nsstring(DIR_LIGHT_SHADER) + shext);
-	rs.point_light = cplg->load<nspoint_light_shader>(nsstring(POINT_LIGHT_SHADER) + shext);
-	rs.spot_light = cplg->load<nsspot_light_shader>(nsstring(SPOT_LIGHT_SHADER) + shext);
-	rs.shadow_cube = cplg->load<nsshadow_cubemap_shader>(nsstring(POINT_SHADOWMAP_SHADER) + shext);
-	rs.shadow_2d = cplg->load<nsshadow_2dmap_shader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext);
-	rs.sel_shader = cplg->load<nsselection_shader>(nsstring(SELECTION_SHADER) + shext);
-	rs.deflt_particle = cplg->load<nsparticle_render_shader>(nsstring(RENDER_PARTICLE_SHADER) + shext);
-	cplg->load<nsmaterial_shader>(nsstring(SKYBOX_SHADER) + shext);
-	cplg->manager<nsshader_manager>()->compile_all();
-	cplg->manager<nsshader_manager>()->link_all();
-	cplg->manager<nsshader_manager>()->init_uniforms_all();
-	
-	// Light bounds, skydome, and tile meshes
-    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
-    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
-
-	nse.video_driver()->set_render_shaders(rs);
 }
 
 void nsrender_system::set_default_mat(nsmaterial * pDefMat)
@@ -89,8 +68,12 @@ void nsrender_system::update()
 {
 	nsscene * scn = current_scene();
 	if (scn != nullptr)
-	{
-		nse.video_driver()->push_scene(scn);
+	{		
+		_prepare_tforms(scn);
+		m_mat_shader_ids.clear();
+		m_all_draw_calls.resize(0);
+		m_light_draw_calls.resize(0);
+		push_scene(scn);
 	}	
 }
 
@@ -102,6 +85,12 @@ void nsrender_system::render()
 		nse.video_driver()->render(iter->vp);
 		++iter;
 	}
+}
+
+void nsrender_system::push_scene(nsscene * scn)
+{
+	_add_draw_calls_from_scene(scn);
+	_add_lights_from_scene(scn);
 }
 
 int32 nsrender_system::update_priority()
@@ -245,6 +234,68 @@ nsrender::viewport * nsrender_system::front_viewport(const fvec2 & screen_pos)
 	return nullptr;
 }
 
+
+// system takes ownership and will delete on shutdown
+bool nsrender_system::add_queue(const nsstring & name, drawcall_queue * q)
+{
+	return m_render_queues.emplace(name, q).second;	
+}
+
+void nsrender_system::clear_render_queues()
+{
+	while (m_render_queues.begin() != m_render_queues.end())
+		destroy_queue(m_render_queues.begin()->first);
+	m_render_queues.clear();
+}
+
+drawcall_queue * nsrender_system::create_queue(const nsstring & name)
+{
+	drawcall_queue * q = new drawcall_queue;
+	if (!add_queue(name,q))
+	{
+		delete q;
+		q = nullptr;
+	}
+	return q;
+}
+
+void nsrender_system::destroy_queue(const nsstring & name)
+{
+	drawcall_queue * q = remove_queue(name);
+	delete q;		
+}
+
+drawcall_queue * nsrender_system::queue(const nsstring & name)
+{
+	auto iter = m_render_queues.find(name);
+	if (iter != m_render_queues.end())
+		return iter->second;
+	return nullptr;	
+}
+
+drawcall_queue * nsrender_system::remove_queue(const nsstring & name)
+{
+	drawcall_queue * q = nullptr;
+	auto iter = m_render_queues.find(name);
+	if (iter != m_render_queues.end())
+	{
+		q = iter->second;
+		m_render_queues.erase(iter);
+	}
+	return q;
+}
+
+void nsrender_system::create_default_render_queues()
+{
+	create_queue(SCENE_OPAQUE_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
+	create_queue(SCENE_TRANSLUCENT_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
+	create_queue(SCENE_SELECTION_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
+	create_queue(DIR_LIGHT_QUEUE)->reserve(MAX_LIGHTS_IN_SCENE);
+	create_queue(SPOT_LIGHT_QUEUE)->reserve(MAX_LIGHTS_IN_SCENE);
+	create_queue(POINT_LIGHT_QUEUE)->reserve(MAX_LIGHTS_IN_SCENE);
+	create_queue(UI_RENDER_QUEUE)->reserve(MAX_UI_DRAW_CALLS);
+}
+
 uivec3 nsrender_system::pick(const fvec2 & screen_pos)
 {
 	return nse.video_driver()->pick(screen_pos);
@@ -307,3 +358,319 @@ vp_node::vp_node(const nsstring & vp_name_, nsrender::viewport * vp_):
 
 vp_node::~vp_node()
 {}
+
+
+void nsrender_system::_add_lights_from_scene(nsscene * scene)
+{
+	auto l_iter = scene->entities<nslight_comp>().begin();
+	drawcall_queue * dc_dq = queue(DIR_LIGHT_QUEUE);
+	drawcall_queue * dc_sq = queue(SPOT_LIGHT_QUEUE);
+	drawcall_queue * dc_pq = queue(POINT_LIGHT_QUEUE);
+
+	dc_dq->resize(0);
+	dc_sq->resize(0);
+	dc_pq->resize(0);
+
+	while (l_iter != scene->entities<nslight_comp>().end())
+	{
+		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
+		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
+		nsmesh * boundingMesh = get_resource<nsmesh>(lcomp->mesh_id());
+		
+		m_light_draw_calls.resize(m_light_draw_calls.size()+1);
+
+		fmat4 proj;
+		if (lcomp->get_light_type() == nslight_comp::l_spot)
+			proj = perspective(2*lcomp->angle(), 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else if(lcomp->get_light_type() == nslight_comp::l_point)
+			proj = perspective(90.0f, 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else
+			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
+
+		for (uint32 i = 0; i < lcomp->transform_count(); ++i)
+		{
+			light_draw_call * ldc = &m_light_draw_calls[m_light_draw_calls.size()-1];
+
+			ldc->submesh = nullptr;
+			ldc->bg_color = scene->bg_color();
+			ldc->direction = lcomp->transform(i).target();
+			ldc->diffuse_intensity = lcomp->intensity().x;
+			ldc->ambient_intensity = lcomp->intensity().y;
+			ldc->cast_shadows = lcomp->cast_shadows();
+			ldc->light_color = lcomp->color();
+			ldc->light_type = lcomp->get_light_type();
+			ldc->shadow_samples = lcomp->shadow_samples();
+			ldc->shadow_darkness = lcomp->shadow_darkness();
+			ldc->material_ids = &m_mat_shader_ids;
+			ldc->spot_atten = lcomp->atten();
+			ldc->light_pos = tcomp->wpos(i);
+			ldc->light_transform = lcomp->transform(i);
+			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
+			if (lcomp->get_light_type() == nslight_comp::l_dir)
+			{
+				ldc->proj_light_mat = proj * lcomp->pov(i);
+				ldc->shdr = nse.core()->get<nsshader>(DIR_LIGHT_SHADER);
+				dc_dq->push_back(ldc);
+			}
+			else if (lcomp->get_light_type() == nslight_comp::l_spot)
+			{
+				ldc->shdr = nse.core()->get<nsshader>(SPOT_LIGHT_SHADER);
+				ldc->proj_light_mat = proj * lcomp->pov(i);
+				if (boundingMesh != nullptr)
+				{
+					for (uint32 i = 0; i < boundingMesh->count(); ++i)
+					{
+						ldc->submesh = boundingMesh->sub(i);
+						dc_sq->push_back(ldc);
+					}
+				}
+			}
+			else
+			{
+				ldc->shdr = nse.core()->get<nsshader>(POINT_LIGHT_SHADER);
+				ldc->proj_light_mat = proj;
+				if (boundingMesh != nullptr)
+				{
+					for (uint32 i = 0; i < boundingMesh->count(); ++i)
+					{
+						ldc->submesh = boundingMesh->sub(i);
+						dc_pq->push_back(ldc);
+					}
+				}
+			}
+		}
+		++l_iter;
+	}
+}
+
+void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
+{
+	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	if (vp == nullptr)
+		return;
+
+	nsentity * camera = vp->camera;
+	if (camera == NULL)
+		return;
+
+	// update render components and the draw call list
+	drawcall_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
+	drawcall_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
+	drawcall_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
+
+	scene_dcq->resize(0);
+	scene_tdcq->resize(0);
+	scene_sel->resize(0);
+	
+	nscam_comp * cc = camera->get<nscam_comp>();	
+	fvec2 terh;
+	nsrender_comp * rComp = nullptr;
+	nstform_comp * tComp = nullptr;
+	nsanim_comp * animComp = nullptr;
+	nsterrain_comp * terComp = nullptr;
+	nsmesh * currentMesh = nullptr;
+	nslight_comp * lc = nullptr;
+	nssel_comp * sc = nullptr;
+	bool transparent_picking = false;
+	uint32 mat_id = 0;
+	auto iter = scene->entities<nsrender_comp>().begin();
+	while (iter != scene->entities<nsrender_comp>().end())
+	{
+		terh.set(0.0f, 1.0f);
+		rComp = (*iter)->get<nsrender_comp>();
+		tComp = (*iter)->get<nstform_comp>();
+		lc = (*iter)->get<nslight_comp>();
+		sc = (*iter)->get<nssel_comp>();
+		animComp = (*iter)->get<nsanim_comp>();
+		terComp = (*iter)->get<nsterrain_comp>();
+		currentMesh = get_resource<nsmesh>(rComp->mesh_id());
+		
+		if (lc != nullptr)
+		{
+			if (lc->update_posted())
+				lc->post_update(false);
+		}
+
+		if (rComp->update_posted())
+			rComp->post_update(false);
+
+		if (currentMesh == nullptr)
+		{
+			++iter;
+			continue;
+		}
+
+		if (sc != nullptr)
+		{
+			transparent_picking = sc->transparent_picking_enabled();
+		}
+		
+		nsmesh::submesh * mSMesh = nullptr;
+		nsmaterial * mat = nullptr;
+		fmat4_vector * fTForms = nullptr;
+		nsshader * shader = nullptr;
+		for (uint32 i = 0; i < currentMesh->count(); ++i)
+		{
+			mSMesh = currentMesh->sub(i);
+			mat = get_resource<nsmaterial>(rComp->material_id(i));
+
+			if (mat == nullptr)
+				mat = nse.system<nsrender_system>()->default_mat();
+
+			shader = get_resource<nsshader>(mat->shader_id());
+			fTForms = nullptr;
+
+			if (shader == nullptr)
+			{
+				if (mat->wireframe())
+					shader = m_shaders.deflt_wireframe;
+				else if (mat->alpha_blend())
+					shader = m_shaders.deflt_translucent;
+				else
+					shader = m_shaders.deflt;
+			}
+
+			if (animComp != nullptr)
+				fTForms = animComp->final_transforms();
+
+			if (terComp != nullptr)
+				terh = terComp->height_bounds();
+
+			
+			if (tComp != nullptr)
+			{
+				m_all_draw_calls.resize(m_all_draw_calls.size()+1);
+				instanced_draw_call * dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
+				dc->submesh = mSMesh;
+				dc->transform_buffer = tComp->transform_buffer();
+				dc->transform_id_buffer = tComp->transform_id_buffer();
+				dc->anim_transforms = fTForms;
+				dc->height_minmax = terh;
+				dc->entity_id = (*iter)->id();
+				dc->plugin_id = (*iter)->plugin_id();
+				dc->transform_count = tComp->visible_count();
+				dc->casts_shadows = rComp->cast_shadow();
+				dc->transparent_picking = false;
+				dc->mat_index = mat_id;
+				dc->mat = mat;
+				dc->shdr = shader;
+				if (mat->alpha_blend())
+				{
+					dc->transparent_picking = transparent_picking;
+					scene_tdcq->push_back(dc);
+				}
+				else
+				{
+					scene_dcq->push_back(dc);
+				}
+
+				if (sc != nullptr && sc->selected())
+				{
+					m_all_draw_calls.resize(m_all_draw_calls.size()+1);
+					instanced_draw_call * sel_dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
+					sel_dc->submesh = mSMesh;
+					sel_dc->transform_buffer = sc->transform_buffer();
+					sel_dc->transform_id_buffer = nullptr;
+					sel_dc->anim_transforms = fTForms;
+					sel_dc->height_minmax = terh;
+					sel_dc->transform_count = sc->count();
+					sel_dc->shdr = m_shaders.sel_shader;
+					sel_dc->mat = mat;
+					sel_dc->sel_color = sc->color();
+					scene_sel->push_back(sel_dc);
+				}
+
+				auto inserted = m_mat_shader_ids.emplace(mat, mat_id);
+				if (inserted.second)
+					++mat_id;
+			}
+ 		}
+		
+		++iter;
+	}
+}
+
+void nsrender_system::_prepare_tforms(nsscene * scene)
+{
+	auto ent_iter = scene->entities().begin();
+	while (ent_iter != scene->entities().end())
+	{
+		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
+		if (tForm->update_posted())
+		{
+			nsbuffer_object & tFormBuf = *tForm->transform_buffer();
+			nsbuffer_object & tFormIDBuf = *tForm->transform_id_buffer();
+
+			if (tForm->buffer_resized())
+			{
+				tFormBuf.bind();
+				tFormBuf.allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
+				tFormIDBuf.bind();
+				tFormIDBuf.allocate<uint32>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
+			}
+
+			tFormBuf.bind();
+			fmat4 * mappedT = tFormBuf.map<fmat4>(0, tForm->count(),
+											   nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+			tFormIDBuf.bind();
+			uint32 * mappedI = tFormIDBuf.map<uint32>(0, tForm->count(), nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+			tFormIDBuf.unbind();
+
+			uint32 visibleCount = 0;
+			for (uint32 i = 0; i < tForm->count(); ++i)
+			{
+				if (tForm->transform_update(i))
+				{
+					uivec3 parentID = tForm->parent_id(i);
+					if (parentID != 0)
+					{
+						nsentity * ent = scene->get_entity(parentID.x, parentID.y);
+						if (ent != nullptr)
+						{
+							nstform_comp * tComp2 = ent->get<nstform_comp>();
+							if (parentID.z < tComp2->count())
+								tForm->set_parent(tComp2->transform(parentID.z));
+						}
+					}
+
+					tForm->compute_transform(i);
+					tForm->set_instance_update(false, i);
+				}
+				int32 state = tForm->hidden_state(i);
+
+				bool layerBit = state & nstform_comp::hide_layer && true;
+				bool objectBit = state & nstform_comp::hide_object && true;
+				bool showBit = state & nstform_comp::hide_none && true;
+				bool hideBit = state & nstform_comp::hide_all && true;
+
+				if (!hideBit && (!layerBit && (showBit || !objectBit)))
+				{
+					mappedT[visibleCount] = tForm->transform(i);
+					mappedI[visibleCount] = i;
+					++visibleCount;
+				}
+			}
+			tForm->set_visible_instance_count(visibleCount);
+
+
+			tFormBuf.bind();
+			tFormBuf.unmap();
+			tFormIDBuf.bind();
+			tFormIDBuf.unmap();
+			tFormIDBuf.unbind();
+			tForm->post_update(tForm->buffer_resized());
+			tForm->set_buffer_resize(false);
+		}
+		++ent_iter;
+	}
+}
+
+const render_shaders & nsrender_system::get_render_shaders()
+{
+	return m_shaders;
+}
+
+void nsrender_system::set_render_shaders(const render_shaders & rs)
+{
+	m_shaders = rs;
+}

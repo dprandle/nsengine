@@ -30,7 +30,7 @@ render_shaders::render_shaders() :
 	sel_shader(nullptr)
 {}
 
-bool render_shaders::error()
+bool render_shaders::error() const
 {
 	return (
 		deflt->error() != nsshader::error_none ||
@@ -47,7 +47,7 @@ bool render_shaders::error()
 		sel_shader->error() != nsshader::error_none);
 }
 
-bool render_shaders::valid()
+bool render_shaders::valid() const
 {
 	return (
 		deflt != nullptr &&
@@ -76,21 +76,11 @@ bool nsvideo_driver::initialized()
 	return m_initialized;
 }
 
-render_shaders & nsvideo_driver::get_render_shaders()
-{
-	return m_shaders;
-}
-
 void nsvideo_driver::init(bool setup_default_rend)
 {
 	if (setup_default_rend)
 		setup_default_rendering();
 	m_initialized = true;
-}
-
-void nsvideo_driver::set_render_shaders(render_shaders rs)
-{
-	m_shaders = rs;
 }
 
 void nsvideo_driver::release()

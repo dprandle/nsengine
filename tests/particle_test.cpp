@@ -164,7 +164,7 @@ int main()
 	nstex2d * ship_tex = plg->load<nstex2d>("./import/my_ship.png");
 	nsmaterial * ship_mat = plg->create<nsmaterial>("ship_mat");
 	ship_mat->set_alpha_blend(true);
-	ship_mat->set_map_tex_id(nsmaterial::diffuse, ship_tex->full_id());
+	ship_mat->add_tex_map(nsmaterial::diffuse, ship_tex->full_id(), true);
 	
 	// lets create the 2d plane which we will draw the sprite on
 	nsmesh_plane * ship_mesh = plg->create<nsmesh_plane>("ship_mesh");

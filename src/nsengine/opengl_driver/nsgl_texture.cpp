@@ -25,6 +25,8 @@ nsgl_texture::~nsgl_texture()
 
 void nsgl_texture::video_init()
 {
+	if (gl_obj.gl_id() != 0)
+		return;
 	uint32 glid;
 	glGenTextures(1, &glid);
 	gl_obj.set_gl_id(glid);

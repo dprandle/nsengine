@@ -105,11 +105,11 @@ uint8 nstexture::channels() const
 {
 	if (m_format <= tex_ired || m_format == tex_depth)
 		return 1;
-	else if ((m_format >= tex_rg && m_format <= tex_irg) || m_format == tex_depth_stencil)
+	else if ((m_format <= tex_irg) || m_format == tex_depth_stencil)
 		return 2;
-	else if (m_format >= tex_rgb && m_format <= tex_ibgr)
+	else if (m_format <= tex_ibgr)
 		return 3;
-	else if (m_format >= tex_rgba && m_format <= tex_ibgra)
+	else if (m_format <= tex_ibgra)
 		return 4;
 	else
 		return 0;
@@ -119,9 +119,9 @@ uint8 nstexture::bytes_per_channel() const
 {
 	if (m_data_type <= tex_u8)
 		return 1;
-	else if (m_data_type == tex_s16 || m_data_type == tex_u16)
+	else if (m_data_type <= tex_u16)
 		return 2;
-	else if (m_data_type >= tex_s32 && m_data_type <= tex_float)
+	else if (m_data_type <= tex_float)
 		return 4;
 	else
 		return 0;	
@@ -137,20 +137,20 @@ void nstexture::video_release()
 	m_vid_tex->video_release();
 }
 
-void nstexture::copy_data(uint8 * to_copy, uint32 write_offset)
+void nstexture::copy_data(uint8 * to_copy, uint32 write_offset_in_bytes)
 {
-	for (uint32 i = write_offset; i < pixel_count(); ++i)
-		m_raw_data[i] = to_copy[i-write_offset];
+	for (uint32 i = write_offset_in_bytes; i < pixel_count()*bytes_per_pixel(); ++i)
+		m_raw_data[i] = to_copy[i-write_offset_in_bytes];
 	m_compressed_size = 0;	
 }
 
-void nstexture::copy_data(uint8 * to_copy, uint32 max_size, uint32 write_offset)
+void nstexture::copy_data(uint8 * to_copy, uint32 buffer_max_size_in_bytes, uint32 write_offset_in_bytes)
 {
-	max_size = write_offset + max_size;
-	if (max_size > pixel_count())
-		max_size = pixel_count();
-	for (uint32 i = write_offset; i < max_size; ++i)
-		m_raw_data[i] = to_copy[i-write_offset];
+	buffer_max_size_in_bytes = write_offset_in_bytes + buffer_max_size_in_bytes;
+	if (buffer_max_size_in_bytes > pixel_count()*bytes_per_pixel())
+		buffer_max_size_in_bytes = pixel_count()*bytes_per_pixel();
+	for (uint32 i = write_offset_in_bytes; i < buffer_max_size_in_bytes; ++i)
+		m_raw_data[i] = to_copy[i-write_offset_in_bytes];
 	m_compressed_size = 0;
 }
 
@@ -300,10 +300,10 @@ void nstex1d::resize(int32 w, bool resize_data)
 	else
 	{
 		uint8 * tmp = m_raw_data;
-		m_raw_data = new uint8[w];
-		for (uint32 i = 0; i < w; ++i)
+		m_raw_data = new uint8[w*bytes_per_pixel()];
+		for (uint32 i = 0; i < w*bytes_per_pixel(); ++i)
 		{
-			if (i < m_width)
+			if (i < m_width*bytes_per_pixel())
 				m_raw_data[i] = tmp[i];
 			else
 				m_raw_data[i] = 0;
@@ -394,8 +394,8 @@ void nstex2d::resize(const ivec2 & size, bool resize_data)
 		return;
 	}
 
-	uint32 new_size = size.x * size.y;
-	if (pixel_count() >= new_size)
+	uint32 new_size = size.x * size.y * bytes_per_pixel();
+	if (pixel_count()*bytes_per_pixel() >= new_size)
 		m_size = size;
 	else
 	{
@@ -403,7 +403,7 @@ void nstex2d::resize(const ivec2 & size, bool resize_data)
 		m_raw_data = new uint8[new_size];
 		for (uint32 i = 0; i < new_size; ++i)
 		{
-			if (i < pixel_count())
+			if (i < pixel_count()*bytes_per_pixel())
 				m_raw_data[i] = tmp[i];
 			else
 				m_raw_data[i] = 0;
@@ -464,8 +464,8 @@ void nstex3d::resize(const ivec3 & size, bool resize_data)
 		return;
 	}
 		
-	uint32 new_size = size.x * size.y * size.z;
-	if (pixel_count() >= new_size)
+	uint32 new_size = size.x * size.y * size.z * bytes_per_pixel();
+	if (pixel_count()*bytes_per_pixel() >= new_size)
 		m_size = size;
 	else
 	{
@@ -473,7 +473,7 @@ void nstex3d::resize(const ivec3 & size, bool resize_data)
 		m_raw_data = new uint8[new_size];
 		for (uint32 i = 0; i < new_size; ++i)
 		{
-			if (i < pixel_count())
+			if (i < pixel_count()*bytes_per_pixel())
 				m_raw_data[i] = tmp[i];
 			else
 				m_raw_data[i] = 0;
@@ -550,8 +550,8 @@ void nstex_cubemap::resize(const ivec2 & size, bool resize_data)
 		return;
 	}
 
-	uint32 new_size = size.x * size.y * 6;
-	if (pixel_count() >= new_size)
+	uint32 new_size = size.x * size.y * 6 * bytes_per_pixel();
+	if (pixel_count()*bytes_per_pixel() >= new_size)
 		m_size = size;
 	else
 	{
@@ -559,7 +559,7 @@ void nstex_cubemap::resize(const ivec2 & size, bool resize_data)
 		m_raw_data = new uint8[new_size];
 		for (uint32 i = 0; i < new_size; ++i)
 		{
-			if (i < pixel_count())
+			if (i < pixel_count()*bytes_per_pixel())
 				m_raw_data[i] = tmp[i];
 			else
 				m_raw_data[i] = 0;
@@ -573,14 +573,14 @@ void nstex_cubemap::copy_data(uint8 * to_copy, uint8 cube_face)
 {
 	if (cube_face > 5)
 		return;
-	nstexture::copy_data(to_copy, cube_face*m_size.w*m_size.h);
+	nstexture::copy_data(to_copy, cube_face*m_size.w*m_size.h*bytes_per_pixel());
 }
 
 uint8 * nstex_cubemap::data(uint8 cube_face)
 {
 	if (cube_face > 5)
 		return nullptr;
-	return m_raw_data + cube_face * m_size.x * m_size.y;
+	return m_raw_data + cube_face * m_size.x * m_size.y * bytes_per_pixel();
 }
 
 void nstex_cubemap::video_download(uint8 cube_face)
@@ -589,9 +589,15 @@ void nstex_cubemap::video_download(uint8 cube_face)
 		return;
 
 	if (m_compressed_size > 0)
-		m_vid_tex->download_data_compressed(m_raw_data + m_size.x*m_size.y*cube_face, cube_face);
+		m_vid_tex->download_data_compressed(
+			m_raw_data + m_size.x*m_size.y*cube_face*bytes_per_pixel(),
+			cube_face);
 	else
-		m_vid_tex->download_data(m_raw_data + m_size.x*m_size.y*cube_face, m_format, m_data_type, cube_face);
+		m_vid_tex->download_data(
+			m_raw_data + m_size.x*m_size.y*cube_face*bytes_per_pixel(),
+			m_format,
+			m_data_type,
+			cube_face);
 }
 
 void nstex_cubemap::pup(nsfile_pupper * p)

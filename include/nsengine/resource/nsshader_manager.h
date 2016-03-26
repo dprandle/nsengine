@@ -122,6 +122,10 @@ public:
 	}
 
 	bool save_stage(nsshader * sh, const nsstring & filename, nsshader::shader_type stagetype);
+
+	void video_init_all();
+
+	void video_release_all();
 };
 
 #endif

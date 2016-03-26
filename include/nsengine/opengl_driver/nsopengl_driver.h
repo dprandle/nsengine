@@ -13,14 +13,6 @@
 #ifndef NSOPENGL_DRIVER
 #define NSOPENGL_DRIVER
 
-// Default drawcall queues
-#define SCENE_OPAQUE_QUEUE "scene_opaque_queue"
-#define SCENE_SELECTION_QUEUE "scene_selection_queue"
-#define SCENE_TRANSLUCENT_QUEUE "scene_translucent_queue"
-#define DIR_LIGHT_QUEUE "dir_light_queue"
-#define SPOT_LIGHT_QUEUE "spot_light_queue"
-#define POINT_LIGHT_QUEUE "point_light_queue"
-
 // Default render targets
 #define GBUFFER_TARGET "gbuffer_target"
 #define ACCUM_TARGET "accum_target"
@@ -83,24 +75,6 @@ struct opengl_state
 	ivec4 current_viewport;
 };
 
-struct draw_call
-{
-	draw_call():
-		shdr(nullptr),
-		mat(nullptr)
-	{}
-	
-	virtual ~draw_call() {}
-	virtual void render() = 0;
-	
-	nsrender_shader * shdr;
-	nsmaterial * mat;
-	uint32 mat_index;
-};
-
-typedef std::vector<draw_call*> drawcall_queue;
-typedef std::unordered_map<nsstring, drawcall_queue*> queue_map;
-
 class nsopengl_driver;
 
 struct render_pass
@@ -117,7 +91,7 @@ struct render_pass
 
 	virtual void setup_pass();
 
-	virtual void render();
+	virtual void render() = 0;
 
 	bool enabled;
 	bool use_vp_size;
@@ -157,78 +131,6 @@ struct translucent_buffers
 	ui_vector header_clr_data;
 };
 
-struct single_draw_call : public draw_call
-{
-	single_draw_call(): draw_call() {}
-	~single_draw_call() {}
-
-	void render() {}
-
-	nsmesh::submesh * submesh;
-	fmat4 transform;
-	fmat4_vector * anim_transforms;
-	fvec2 height_minmax;
-	uint32 entity_id;
-	uint32 plugin_id;
-	uint32 transform_count;
-	bool casts_shadows;
-	bool transparent_picking;
-};
-
-struct instanced_draw_call : public draw_call
-{
-	instanced_draw_call();
-	~instanced_draw_call();
-
-	void render();
-
-	nsmesh::submesh * submesh;
-	nsbuffer_object * transform_buffer;
-	nsbuffer_object * transform_id_buffer;
-	fmat4_vector * anim_transforms;
-	fvec2 height_minmax;
-	uint32 entity_id;
-	uint32 plugin_id;
-	uint32 transform_count;
-	bool casts_shadows;
-	bool transparent_picking;
-	fvec4 sel_color;
-};
-
-typedef std::map<nsmaterial*, uint32> mat_id_map;
-
-struct light_draw_call : public draw_call
-{
-	light_draw_call(): draw_call() {}
-	~light_draw_call() {}
-	
-	void render();
-
-	nsbuffer_object * draw_point;
-	fmat4 proj_light_mat;
-	fmat4 light_transform;
-	fvec3 light_pos;
-	fvec4 bg_color;
-	fvec3 direction;
-	bool cast_shadows;
-	fvec3 light_color;
-	fvec3 spot_atten;
-	int32 shadow_samples;
-	float shadow_darkness;
-	float diffuse_intensity;
-	float ambient_intensity;
-	mat_id_map * material_ids;
-	ivec2 shadow_tex_size;
-	float max_depth;
-	float cutoff;
-	uint32 light_type;
-	nsmesh::submesh * submesh;
-};
-
-typedef std::set<nsmaterial*> pmatset;
-typedef std::map<nsmaterial*, drawcall_queue> mat_drawcall_map;
-typedef std::map<nsrender_shader*, pmatset> shader_mat_map;
-
 struct gbuffer_render_pass : public render_pass
 {
 	virtual void render();
@@ -238,7 +140,6 @@ struct oit_render_pass : public render_pass
 {
 	virtual void render();
 	translucent_buffers * tbuffers;
-	nsbuffer_object * single_point;
 };
 
 struct light_shadow_pass : public render_pass
@@ -266,6 +167,11 @@ struct final_render_pass : public render_pass
 };
 
 struct selection_render_pass : public render_pass
+{
+	virtual void render();
+};
+
+struct ui_render_pass : public render_pass
 {
 	virtual void render();
 };
@@ -298,10 +204,9 @@ struct gl_ctxt
 	
 	GLEWContext * glew_context; // created in ctor
 	translucent_buffers * m_tbuffers; // created in init
-	nsbuffer_object * m_single_point; // created in init
 	nsgl_framebuffer * m_default_target; // created in init
+	nsbuffer_object * m_single_point;
 	
-	queue_map m_render_queues; // created and removed by driver
 	rt_map m_render_targets; // created and removed by driver
 	render_pass_vector m_render_passes; // created and removed by driver
 	opengl_state m_gl_state;
@@ -332,8 +237,6 @@ class nsopengl_driver : public nsvideo_driver
 	~nsopengl_driver();
 	
 	uint32 active_tex_unit();
-
-	bool add_queue(const nsstring & name, drawcall_queue * rt);
 	
 	bool add_render_target(const nsstring & name, nsgl_framebuffer * rt);
 
@@ -348,28 +251,16 @@ class nsopengl_driver : public nsvideo_driver
 	void clear_render_targets();
 
 	void clear_render_passes();
-	
-	void clear_render_queues();
 
 	render_pass_vector * render_passes();
 
 	void cleanup_vid_objs();
 	
-	drawcall_queue * create_queue(const nsstring & name);
-
-	void destroy_queue(const nsstring & name);
-
-	drawcall_queue * queue(const nsstring & name);
-
-	drawcall_queue * remove_queue(const nsstring & name);
-
 	void setup_default_rendering();
 
 	void create_default_render_targets();
 
 	void create_default_render_passes();
-
-	void create_default_render_queues();
 
 	uint8 create_context();
 
@@ -390,8 +281,6 @@ class nsopengl_driver : public nsvideo_driver
 	virtual void release();
 
 	virtual void resize_screen(const ivec2 & new_size);
-
-	virtual void push_scene(nsscene * scn);
 
 	virtual void render(nsrender::viewport * vp);
 
@@ -450,18 +339,16 @@ class nsopengl_driver : public nsvideo_driver
 	void enable_auto_cleanup(bool enable);
 
 	bool auto_cleanup();
+
+	void render_instanced_dc(instanced_draw_call * idc);
+
+	void render_light_dc(light_draw_call * idc);
+
+	void render_ui_dc(ui_draw_call * idc);
 	
   private:
-	void _add_draw_calls_from_scene(nsscene * scene);
-	void _add_lights_from_scene(nsscene * scene);
-
 	bool _handle_window_resize(window_resize_event * evt);	
-	void _prepare_tforms(nsscene * scene);
 	bool _valid_check();
-
-	std::vector<instanced_draw_call> m_all_draw_calls;
-	std::vector<light_draw_call> m_light_draw_calls;
-	mat_id_map m_mat_shader_ids;
 	
 	gl_ctxt * m_contexts[MAX_CONTEXT_COUNT];
 	gl_ctxt * m_current_context;

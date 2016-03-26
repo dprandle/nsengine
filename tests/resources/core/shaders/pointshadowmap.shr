@@ -1,4 +1,4 @@
-type:<nsstring>nsshadow_cubemap_shader</nsstring>
+type:<nsstring>nsshader</nsstring>
 vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>#version 410
 

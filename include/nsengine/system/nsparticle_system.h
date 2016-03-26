@@ -19,7 +19,7 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 
 class nsscene;
 class nssel_comp;
-class nsparticle_process_shader;
+class nsshader;
 
 class nsparticle_system : public nssystem
 {
@@ -34,11 +34,6 @@ public:
 	virtual void init();
 
 	virtual void update();
-
-	void set_process_shader(nsparticle_process_shader * shader) { m_process_shader = shader; }
-
-private:
-	nsparticle_process_shader * m_process_shader;
 };
 
 #endif

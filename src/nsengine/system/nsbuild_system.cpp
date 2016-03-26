@@ -307,15 +307,6 @@ const nsbuild_system::mode_t & nsbuild_system::mode() const
 
 void nsbuild_system::init()
 {
-	m_object_brush = nse.core()->create<nsentity>(ENT_OBJECT_BRUSH);
-	nssel_comp * sc = m_object_brush->create<nssel_comp>();
-	
-	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_mask_alpha(0.2f);
-	sc->enable_draw(true);
-	sc->enable_move(true);
-
 	register_action_handler(nsbuild_system::_handle_select_move_toggle, NSSEL_MOVE_TOGGLE);
 	register_action_handler(nsbuild_system::_handle_snap_z, NSSNAP_BRUSH_Z);
 	register_action_handler(nsbuild_system::_handle_initial_snap_brush_z, NSINITIAL_SNAP_BRUSH_Z);

@@ -102,7 +102,8 @@ void nsvertex_array_object::video_release()
 void nsvertex_array_object::unbind() const
 {
 	glBindVertexArray(0);
-	gl_err_check("nsvertex_array_object::unbind()");
+	if (gl_err_check("nsvertex_array_object::unbind()"))
+		std::terminate();
 }
 
 void nsvertex_array_object::vertex_attrib_div(uint32 pAttLoc, uint32 pDivisor)

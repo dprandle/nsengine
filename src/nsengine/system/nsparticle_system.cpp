@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsopengl_driver.h>
 #include <nsvertex_array_object.h>
 #include <nsvideo_driver.h>
 #include <nsevent_dispatcher.h>
@@ -40,11 +41,6 @@ nsparticle_system::~nsparticle_system()
 
 void nsparticle_system::init()
 {
-	nsplugin * cplg = nse.core();
-	nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-	
-	m_process_shader = cplg->load<nsparticle_process_shader>(
-		nsstring(DEFAULT_PROCESS_PARTICLE_SHADER) + shext);
 }
 
 int32 nsparticle_system::update_priority()
@@ -86,10 +82,14 @@ void nsparticle_system::update()
 			comp->enable_simulation(comp->looping());
 		}
 
-		nsparticle_process_shader * pshdr = get_resource<nsparticle_process_shader>(comp->shader_id());
+		nsshader * pshdr = get_resource<nsshader>(comp->shader_id());
 		if (pshdr == NULL)
-			pshdr = m_process_shader;
-
+		{
+			dprint("nsparticle_system::update No processing shader set in component - skipping");
+			++entIter;
+			continue;
+		}
+		
 		if (pshdr->error() != nsshader::error_none)
 		{
 			dprint("nsparticle_system::update XFBShader shader has an error set to " + std::to_string(pshdr->error()) + " in entity \"" + (*entIter)->name() + "\"");
@@ -101,26 +101,56 @@ void nsparticle_system::update()
 		nstexture * texRand = get_resource<nstexture>(comp->rand_tex_id());
 		if (texRand != NULL)
 		{
-//			nse.video_driver()->set_active_texture_unit(RAND_TEX_UNIT);
+			nse.video_driver<nsopengl_driver>()->set_active_texture_unit(RAND_TEX_UNIT);
 			texRand->bind();
 		}
-
-		pshdr->set_elapsed(comp->elapsed());
-		pshdr->set_dt(nse.timer()->fixed());
-		pshdr->set_angular_vel(comp->angular_vel());
-		pshdr->set_lifetime(comp->lifetime());
-		pshdr->set_launch_freq(float(comp->emission_rate())); // for now
-		pshdr->set_motion_key_global(comp->motion_global_time());
-		pshdr->set_interpolated_motion_keys(comp->motion_key_interpolation());
+		
+		pshdr->set_uniform("randomTex", RAND_TEX_UNIT);
+		pshdr->set_uniform("dt", float(nse.timer()->fixed()));
+		pshdr->set_uniform("timeElapsed", comp->elapsed());
+		pshdr->set_uniform("lifetime", comp->lifetime());
+		pshdr->set_uniform("launchFrequency", float(comp->emission_rate()));
+		pshdr->set_uniform("angVelocity", comp->angular_vel());
+		pshdr->set_uniform("motionGlobal", comp->motion_global_time());
+		pshdr->set_uniform("visualGlobal", comp->visual_global_time());
+		pshdr->set_uniform("interpolateMotion", comp->motion_key_interpolation());
+		pshdr->set_uniform("interpolateVisual", comp->visual_key_interpolation());
+		pshdr->set_uniform("startingSize", comp->starting_size());
+		pshdr->set_uniform("emitterSize", comp->emitter_size());
+		pshdr->set_uniform("emitterShape", comp->emitter_shape());
+		pshdr->set_uniform("initVelocityMult", comp->init_vel_mult());
 		pshdr->set_uniform("motionKeyType", uint32(comp->motion_key_type()));
-		pshdr->set_starting_size(comp->starting_size());
-		pshdr->set_emitter_size(comp->emitter_size());
-		pshdr->set_emitter_shape(comp->emitter_shape());
-		pshdr->set_interpolated_visual_keys(comp->visual_key_interpolation());
-		pshdr->set_visual_key_global(comp->visual_global_time());
-		pshdr->set_initial_vel_mult(comp->init_vel_mult());
-		pshdr->set_motion_keys(comp->m_motion_keys,comp->m_max_motion_keys, comp->m_lifetime);
-		pshdr->set_visual_keys(comp->m_visual_keys, comp->m_max_visual_keys, comp->m_lifetime);
+
+		uint32 index = 0;
+		ui_fvec3_map::const_iterator keyIter = comp->m_motion_keys.begin();
+		while (keyIter != comp->m_motion_keys.end())
+		{
+			pshdr->set_uniform(
+				"forceKeys[" + std::to_string(index) + "].time",
+				float(keyIter->first) / float(comp->m_max_motion_keys * 1000) * float(comp->m_lifetime));
+			pshdr->set_uniform(
+				"forceKeys[" + std::to_string(index) + "].force",
+				keyIter->second);
+			++index;
+			++keyIter;
+		}
+
+		index = 0;
+		keyIter = comp->m_visual_keys.begin();
+		while (keyIter != comp->m_visual_keys.end())
+		{
+			pshdr->set_uniform(
+				"sizeKeys[" + std::to_string(index) + "].time",
+				float(keyIter->first) / float(comp->m_max_visual_keys * 1000) * float(comp->m_lifetime));
+			pshdr->set_uniform(
+				"sizeKeys[" + std::to_string(index) + "].sizeVel",
+				fvec2(keyIter->second.x, keyIter->second.y));
+			pshdr->set_uniform(
+				"sizeKeys[" + std::to_string(index) + "].alpha",
+				keyIter->second.z);
+			++index;
+			++keyIter;
+		}
 		
 		comp->xfb_obj()->bind();
 		comp->va_obj()->bind();
