@@ -20,6 +20,9 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #include <nsentity_manager.h>
 #include <nsopengl_driver.h>
 #include <nsfb_object.h>
+#include <nstimer.h>
+#include <nsrect_tform_comp.h>
+#include <nsui_canvas_comp.h>
 
 nsui_system::nsui_system()
 {
@@ -34,7 +37,7 @@ nsui_system::~nsui_system()
 
 void nsui_system::init()
 {
-	
+	register_handler(nsui_system::_handle_mouse_event);
 }
 
 void nsui_system::release()
@@ -42,70 +45,85 @@ void nsui_system::release()
 	
 }
 
-void nsui_system::update()
+void nsui_system::set_active_viewport(nsrender::viewport * vp)
 {
+	m_active_vp = vp;
+}
+
+nsrender::viewport * nsui_system::active_viewport()
+{
+	return m_active_vp;
+}
+
+void nsui_system::push_draw_calls()
+{
+	if (m_active_vp == nullptr)
+		return;
+	
 	m_ui_draw_calls.resize(0);
 	drawcall_queue * dc_dq = nse.system<nsrender_system>()->queue(UI_RENDER_QUEUE);
 	dc_dq->resize(0);
 
-	// go through and add only parent widgets that are showing
-	m_ordered_ents.resize(0);
-	auto ents = nsep.active()->manager<nsentity_manager>()->entities<nsui_comp>();
-	auto ui_iter = ents.begin();
-	while (ui_iter != ents.end())
+	for (uint32 i = 0; i < m_active_vp->ui_canvases.size(); ++i)
 	{
-		nsui_comp * uic = (*ui_iter)->get<nsui_comp>();
-		if (uic->show && uic->parent() == uivec2(0))
-			m_ordered_ents.push_back(*ui_iter);
-		++ui_iter;
-	}
-	_sort_ents();
+		nsui_canvas_comp * uicc = m_active_vp->ui_canvases[i]->get<nsui_canvas_comp>();
+		m_ordered_ents.resize(0);
+		auto ents = uicc->entities_in_canvas();
+		if (ents == nullptr)
+			continue;
+	
+		auto ui_iter = ents->begin();
+		while (ui_iter != ents->end())
+		{
+			nsui_comp * uic = (*ui_iter)->get<nsui_comp>();
+			nsrect_tform_comp * tuic = (*ui_iter)->get<nsrect_tform_comp>();
+			if (uic != nullptr && uic->show)
+				m_ordered_ents.push_back(*ui_iter);
+			++ui_iter;
+		}
+		_sort_ents(uicc);
 
-	for (uint32 i = 0; i < m_ordered_ents.size(); ++i)
-	{
-		nsentity * cur_ent = m_ordered_ents[i];
-		nsui_comp * uic = cur_ent->get<nsui_comp>();
+		for (uint32 i = 0; i < m_ordered_ents.size(); ++i)
+		{
+			nsentity * cur_ent = m_ordered_ents[i];
+			nsui_comp * uic = cur_ent->get<nsui_comp>();
+			nsrect_tform_comp * tuic = cur_ent->get<nsrect_tform_comp>();
+			m_ui_draw_calls.resize(m_ui_draw_calls.size()+1);
+			ui_draw_call * uidc = &m_ui_draw_calls[m_ui_draw_calls.size()-1];
 
-		m_ui_draw_calls.resize(m_ui_draw_calls.size()+1);
-		ui_draw_call * uidc = &m_ui_draw_calls[m_ui_draw_calls.size()-1];
-
-		uidc->mat = get_resource<nsmaterial>(uic->content_properties.mat_id);
-		uidc->pad_mat = get_resource<nsmaterial>(uic->outer_properties.mat_id);
-		uidc->shdr = get_resource<nsshader>(uic->content_shader_id);
-		uidc->border_shader = get_resource<nsshader>(uic->border_shader_id);
-
-		uidc->entity_id = uivec3(cur_ent->full_id(),0);
-		uidc->center = uic->center_npos;
-		uidc->content_size = uic->content_properties.nsize;
-		uidc->border_color = uic->outer_properties.border_color;
-
-		uidc->content_tex_coord_rect = uic->content_properties.tex_coords_rect;
-		uidc->padding_tex_coord_rect = uic->outer_properties.padding_tex_coords_rect;
-		
-		ivec2 screen_size = nse.video_driver<nsopengl_driver>()->default_target()->size();
-		uidc->padding = fvec4(
-			uic->outer_properties.padding.x,
-			uic->outer_properties.padding.y,
-			uic->outer_properties.padding.z,
-			uic->outer_properties.padding.w) / fvec4(screen_size.w,screen_size.w,screen_size.h,screen_size.h);
-		
-		uidc->border = fvec4(
-			uic->outer_properties.border.x,
-			uic->outer_properties.border.y,
-			uic->outer_properties.border.z,
-			uic->outer_properties.border.w) / fvec4(screen_size.w,screen_size.w,screen_size.h,screen_size.h);
-
-		fvec4 nmargins = fvec4(
-			uic->outer_properties.margin.x,
-			uic->outer_properties.margin.y,
-			uic->outer_properties.margin.z,
-			uic->outer_properties.margin.w) / fvec4(screen_size.w,screen_size.w,screen_size.h,screen_size.h);
-
-		dc_dq->push_back(uidc);
+			uidc->mat = get_resource<nsmaterial>(uic->content_properties.mat_id);
+			uidc->shdr = get_resource<nsshader>(uic->content_shader_id);
+			uidc->border_shader = get_resource<nsshader>(uic->border_shader_id);
+			uidc->entity_id = uivec3(cur_ent->full_id(),0);
+			uidc->border_tform = tuic->border_transform(uicc);
+			uidc->content_tform = tuic->content_transform(uicc);
+			uidc->border_color = uic->outer_properties.border_color;
+			uidc->content_tex_coord_rect = uidc->mat->map_tex_coord_rect(nsmaterial::diffuse);
+			dc_dq->push_back(uidc);
+		}
 	}
 }
 
-void nsui_system::_sort_ents()
+void nsui_system::update()
+{
+	auto vp_list = nse.system<nsrender_system>()->viewports();
+	auto vp_iter = vp_list->begin();
+	while (vp_iter != vp_list->end())
+	{
+		for (uint32 i = 0; i < vp_iter->vp->ui_canvases.size(); ++i)
+		{
+			const ivec2 & sz = nse.video_driver<nsopengl_driver>()->default_target()->size();
+			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
+			fvec2 fsz(sz.x,sz.y);
+			nsentity * canvas = vp_iter->vp->ui_canvases[i];
+			nsui_canvas_comp * uicc = canvas->get<nsui_canvas_comp>();
+			uicc->update_rects(vp_size % fsz);
+		}
+		++vp_iter;
+	}
+}
+
+void nsui_system::_sort_ents(nsui_canvas_comp * uicc)
 {
 	if (m_ordered_ents.size() <= 1)
 		return;
@@ -114,8 +132,8 @@ void nsui_system::_sort_ents()
 	{
 		for (uint32 d = 0 ; d < m_ordered_ents.size() - c - 1; d++)
 		{
-			nsui_comp * uic = m_ordered_ents[d]->get<nsui_comp>();
-			nsui_comp * uic2 = m_ordered_ents[d+1]->get<nsui_comp>();
+			auto * uic = m_ordered_ents[d]->get<nsrect_tform_comp>()->canvas_info(uicc);
+			auto * uic2 = m_ordered_ents[d+1]->get<nsrect_tform_comp>()->canvas_info(uicc);
 			if (uic->layer > uic2->layer) /* For decreasing order use < */
 			{
 				nsentity * tmp = m_ordered_ents[d];
@@ -126,12 +144,35 @@ void nsui_system::_sort_ents()
 	}
 }
 
-void nsui_system::set_ui_shader(nsui_shader * shdr)
-{
-	main_ui_shader = shdr;
-}
-
 int32 nsui_system::update_priority()
 {
 	return UI_SYS_UPDATE_PR;
+}
+
+bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
+{
+	for (uint32 i = 0; i < m_ordered_ents.size(); ++i)
+	{
+		// nsrect_tform_comp * uic = m_ordered_ents[i]->get<nsrect_tform_comp>();
+		// nsui_comp * uicc = m_ordered_ents[i]->get<nsui_comp>();
+		// if (uic->owner()->name() == "button_fun" || uic->owner()->name() == "button_start-screen")
+		// 	continue;
+		// nsmaterial * mat = get_resource<nsmaterial>(uicc->content_properties.mat_id);
+
+		// fvec2 mouse_vec = evnt->normalized_mpos - uic->global_pos;
+		// const ivec2 & sz= nse.video_driver<nsopengl_driver>()->default_target()->size();
+		// mouse_vec = mouse_vec % fvec2(sz.w,sz.h);
+		// fvec2 moved_vec = rotation2d_mat2(-uic->angle) * mouse_vec;
+		// moved_vec = moved_vec / fvec2(sz.w,sz.h) + uic->global_pos;
+		// fvec4 rect = fvec4(uic->global_pos - uic->global_size/2.0f,uic->global_pos + uic->global_size/2.0f);
+		// if (moved_vec > rect.xy() && moved_vec < rect.zw())
+		// {
+		// 	mat->set_map_tex_coord_rect(nsmaterial::diffuse, fvec4(0.0,0.5,1.0,0.75));
+		// }
+		// else
+		// {
+		// 	mat->set_map_tex_coord_rect(nsmaterial::diffuse, fvec4(0.0,0.75,1.0,1.0));	
+		// }
+	}
+	return true;
 }

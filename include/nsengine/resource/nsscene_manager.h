@@ -48,14 +48,14 @@ public:
 	}
 
 	template<class res_type>
-	res_type * load(const nsstring & fname)
+	res_type * load(const nsstring & fname, bool finalize_)
 	{
-		return nsres_manager::load<res_type>(fname);
+		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nsscene * load(const nsstring & fname)
+	nsscene * load(const nsstring & fname, bool finalize_)
 	{
-		return load<nsscene>(fname);
+		return load<nsscene>(fname, finalize_);
 	}
 
 	virtual nsscene * load(uint32 res_type_id, const nsstring & fname);

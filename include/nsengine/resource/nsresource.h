@@ -28,6 +28,7 @@
 
 #include <nspupper.h>
 #include <nsvector.h>
+#include <nssignal.h>
 
 class nsresource_inst;
 
@@ -55,6 +56,8 @@ public:
 	uint32 id() const;
 
 	uint32 type() const;
+
+	virtual void finalize() {};
 
 	const nsstring & subdir() const;
 
@@ -96,6 +99,8 @@ public:
 
 	nsresource & operator=(nsresource_inst rhs);
 
+	ns::signal<uint32, uivec2> resource_destroyed;
+	
 protected:
 
 	uint32 m_hashed_type;

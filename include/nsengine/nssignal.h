@@ -15,12 +15,15 @@ This file contains all of the neccessary definitions for the nssignal class.
 
 #include <nsvector.h>
 
+class nsrouter;
+
 namespace ns
 {
 
 struct slot_base
 {
-	virtual ~slot_base();
+	virtual ~slot_base() {}
+	nsrouter * router;
 };
 
 template<class... Args>
@@ -29,7 +32,8 @@ struct signal;
 template<class... Args>
 struct slot : public slot_base
 {
-	~slot();	
+	~slot();
+	
     virtual void call(Args...) = 0;
 	signal<Args...> * connected_signal;
 };
@@ -53,9 +57,19 @@ struct slot_concrete : public slot<Args...>
     mem_func_t func;
 };
 
+class nsrouter;
+
+void assist_delete(slot_base * del);
+
 template<class... Args>
 struct signal
 {
+	~signal()
+	{
+		while (slots.begin() != slots.end())
+			assist_delete(slots.back());
+	}
+	
     void operator()(Args... args)
     {
 		auto iter = slots.begin();

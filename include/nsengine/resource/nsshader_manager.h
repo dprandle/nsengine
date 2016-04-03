@@ -50,14 +50,14 @@ public:
 	}
 
 	template<class res_type>
-	res_type * load(const nsstring & fname)
+	res_type * load(const nsstring & fname, bool finalize_)
 	{
-		return nsres_manager::load<res_type>(fname);
+		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nsshader * load(const nsstring & fname)
+	nsshader * load(const nsstring & fname, bool finalize_)
 	{
-		return load<nsshader>(fname);
+		return load<nsshader>(fname, finalize_);
 	}
 	
 	template<class res_type, class T >

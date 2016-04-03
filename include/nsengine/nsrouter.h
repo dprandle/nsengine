@@ -15,6 +15,10 @@
 
 #include <nssignal.h>
 
+#define sig_connect(signal, slot) m_router.connect(this, &slot, signal)
+#define sig_disconnect(signal) m_router.disconnect(signal)
+
+
 class nsrouter
 {
   public:
@@ -26,8 +30,9 @@ class nsrouter
 	template <class T,class... Args>
 	void connect(T * inst, void(T::*mf)(Args...), ns::signal<Args...> & sig)
 	{
-		ns::slot_concrete<T, Args...> * slot_ptr = new ns::slot<T, Args...>(inst, mf);
+		ns::slot_concrete<T, Args...> * slot_ptr = new ns::slot_concrete<T, Args...>(inst, mf);
 		slot_ptr->connected_signal = &sig;
+		slot_ptr->router = this;
 		sig.slots.push_back(slot_ptr);
 		slots.push_back(slot_ptr);
 	}
@@ -49,8 +54,11 @@ class nsrouter
 		}
 	}
 
+	void remove_slot(ns::slot_base * slot);
+
   private:
 	
 	std::vector<ns::slot_base*> slots;
 };
+
 #endif

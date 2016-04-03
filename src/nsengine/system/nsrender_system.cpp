@@ -674,3 +674,9 @@ void nsrender_system::set_render_shaders(const render_shaders & rs)
 {
 	m_shaders = rs;
 }
+
+
+std::list<vp_node> * nsrender_system::viewports()
+{
+	return &vp_list;
+}

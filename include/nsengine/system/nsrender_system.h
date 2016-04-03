@@ -44,6 +44,7 @@
 #define SELECTION_SHADER "selectionsolid"
 #define SKYBOX_SHADER "skybox"
 #define UI_SHADER "render_ui"
+#define UI_BORDER_SHADER "ui_render_border"
 
 // Light bounds, skydome, and tile meshes
 #define MESH_FULL_TILE "fulltile"
@@ -199,19 +200,15 @@ struct ui_draw_call : public draw_call
 
 	~ui_draw_call() {}
 	
-	nsmaterial * pad_mat;
 	nsshader * border_shader;
 
 	uivec3 entity_id;
-	fvec2 center;
-	fvec2 content_size;
-	fvec4 border_color;
+	
+	fmat3 content_tform;
+	fmat3 border_tform;
 
 	fvec4 content_tex_coord_rect;
-	fvec4 padding_tex_coord_rect;
-
-	fvec4 padding;
-	fvec4 border;
+	fvec4 border_color;
 };
 
 typedef std::set<nsmaterial*> pmatset;
@@ -248,7 +245,8 @@ struct viewport
 		dir_lights(true),
 		dir_light_shadows(shadows),
 		order_independent_transparency(oit),
-		picking_enabled(selection) {}
+		picking_enabled(selection)
+	{}
 
 	fvec4 normalized_bounds;
 	uint32 window_tag;
@@ -265,6 +263,7 @@ struct viewport
 	uivec2 m_fog_nf;
 	fvec4 m_fog_color;
 	nsentity * camera;
+	std::vector<nsentity*> ui_canvases;
 };
 
 }
@@ -338,6 +337,8 @@ class nsrender_system : public nssystem
 	void update();
 
 	void render();
+
+	std::list<vp_node> * viewports();
 
 	virtual int32 update_priority();
 

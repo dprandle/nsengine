@@ -29,3 +29,22 @@ void nsrouter::disconnect_all()
 	}		
 }
 
+void nsrouter::remove_slot(ns::slot_base * slot)
+{
+	auto iter = slots.begin();
+	while (iter != slots.end())
+	{
+		if (*iter == slot)
+		{
+			delete *iter;
+			iter = slots.erase(iter);
+		}
+		else
+			++iter;
+	}	
+}
+
+void ns::assist_delete(ns::slot_base * del)
+{
+	del->router->remove_slot(del);
+}

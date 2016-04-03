@@ -32,7 +32,7 @@ nsfont_manager::nsfont_manager(): nsres_manager()
 nsfont_manager::~nsfont_manager()
 {}
 
-nsfont * nsfont_manager::load(uint32 res_type_id, const nsstring & fname)
+nsfont * nsfont_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize_)
 {
 	if (fname.empty())
 		return nullptr;
@@ -49,9 +49,14 @@ nsfont * nsfont_manager::load(uint32 res_type_id, const nsstring & fname)
 	}
 
 	if (font_extension == ".fnt" || font_extension == ".FNT")
-		return load_external(fname);
+	{
+		nsfont * fnt = load_external(fname);
+		if (fnt != nullptr && finalize_)
+			fnt->finalize();
+		return fnt;
+	}
 	else
-		return static_cast<nsfont*>(nsres_manager::load(res_type_id, fname));
+		return static_cast<nsfont*>(nsres_manager::load(res_type_id, fname, finalize_));
 }
 
 nsfont * nsfont_manager::load_external(const nsstring & fname)
@@ -109,7 +114,7 @@ nsfont * nsfont_manager::load_external(const nsstring & fname)
 			
 			t = tm->load_image(path+tex_name);
 			if (t == nullptr)
-				t = tm->load<nstex2d>(tex_name);
+				t = tm->load<nstex2d>(tex_name, true);
 			if (chars_check != chars_index)
 			{
 				dprint("nsfont_manager::load_external - Warning - character index for page " + std::to_string(page_index) + " does not match character count");

@@ -89,39 +89,55 @@ void ui_render_pass::render()
 {
 	ren_target->bind();
 	ren_target->update_draw_buffers();
-
+	const ivec4 & viewp = gl_state.current_viewport;
+	
 	for (uint32 i = 0; i < draw_calls->size(); ++i)
 	{
 		ui_draw_call * uidc = (ui_draw_call*)(*draw_calls)[i];		
+		
+		if (uidc->border_color.a >= 0.03f && uidc->border_shader != nullptr)
+		{
+			// uidc->border_shader->bind();
+			// uidc->border_shader->set_uniform("rotation", rotation2d_mat2(uidc->rotation));
+			// uidc->border_shader->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
+			// uidc->border_shader->set_uniform("pivot", adj_pivot);
+			
+			// fvec4 bir(
+			// 	uidc->content_rect.xy() - uidc->padding.xz(),
+			// 	uidc->content_rect.zw() + uidc->padding.yw()
+			// 	);
+			
+			// fvec4 bor(
+			// 	bir.xy() - uidc->border.xz(),
+			// 	bir.zw() + uidc->border.yw()
+			// 	);
+			
+			// uidc->border_shader->set_uniform("border_inner_rect", bir);
+			// uidc->border_shader->set_uniform("border_outer_rect", bor);
+			// uidc->border_shader->set_uniform("frag_color_out", uidc->border_color);
+			// uidc->border_shader->set_uniform("entity_id", uidc->entity_id);
+			// driver->render_ui_dc(uidc);
+		}
+
 		uidc->shdr->bind();
 		uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 		uidc->shdr->set_uniform("entity_id", uidc->entity_id);
-		uidc->shdr->set_uniform("center", uidc->center);
+		uidc->shdr->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
+        uidc->shdr->set_uniform("content_tform", uidc->content_tform);
+		uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
 
-		// draw padding area
-		uidc->shdr->set_uniform("widget_size", uidc->content_size +
-								fvec2(uidc->padding.x+uidc->padding.y,uidc->padding.z+uidc->padding.w));
-		uidc->shdr->set_uniform("tex_coord_rect", uidc->padding_tex_coord_rect);
-		uidc->shdr->set_uniform("frag_color_out", uidc->pad_mat->color());
-		uidc->shdr->set_uniform("color_mode", uidc->pad_mat->color_mode());
-		if (uidc->pad_mat != nullptr)
+		if (uidc->mat != nullptr)
 		{
+			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
+			uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
 			driver->enable_culling(uidc->mat->culling());
 			driver->set_cull_face(uidc->mat->cull_mode());
 			driver->bind_textures(uidc->mat);
 		}
-		driver->render_ui_dc(uidc);
-
-		// draw contents
-		uidc->shdr->set_uniform("widget_size", uidc->content_size);
-		uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
-		uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
-		uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
-		if (uidc->mat != nullptr)
+		else
 		{
-			driver->enable_culling(uidc->mat->culling());
-			driver->set_cull_face(uidc->mat->cull_mode());
-			driver->bind_textures(uidc->mat);
+			uidc->shdr->set_uniform("frag_color_out", fvec4(1,0,0,1));
+			uidc->shdr->set_uniform("color_mode", true);
 		}
 		driver->render_ui_dc(uidc);
 	}

@@ -152,6 +152,15 @@ bool nsres_manager::empty()
 	return m_id_resmap.empty();
 }
 
+void nsres_manager::finalize_all()
+{
+	auto iter = begin();
+	while (iter != end())
+	{
+		iter->second->finalize();
+		++iter;
+	}
+}
 nsresource * nsres_manager::get(uint32 resid)
 {
 	map_type::iterator iter = m_id_resmap.find(resid);
@@ -181,12 +190,13 @@ void nsres_manager::set_save_mode(s_mode sm)
 }
 
 nsresource * nsres_manager::load(const nsstring & res_guid,
-								const nsstring & fname)
+								 const nsstring & fname,
+								 bool finalize_)
 {
-	return load(hash_id(res_guid), fname);
+	return load(hash_id(res_guid), fname, finalize_);
 }
 
-nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
+nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize_)
 {
 	if (fname.empty())
 		return NULL;
@@ -277,6 +287,8 @@ nsresource * nsres_manager::load(uint32 res_type_id, const nsstring & fname)
 
 	res->pup(p);
 	dprint("nsres_manager::load Succesfully loaded resource from file " + fName);
+	if (finalize_)
+		res->finalize();
 	delete p;
 	file.close();
 	return res;

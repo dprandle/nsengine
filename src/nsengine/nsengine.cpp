@@ -10,6 +10,8 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsui_canvas_comp.h>
+#include <nsrect_tform_comp.h>
 #include <nsui_system.h>
 #include <nsvideo_driver.h>
 #include <hash/crc32.h>
@@ -367,7 +369,6 @@ void nsengine::update()
 		}
 		accumulator -= timer()->fixed();
 	}
-	system<nsrender_system>()->render();
 }
 
 void nsengine::_remove_sys(uint32 type_id)
@@ -438,6 +439,7 @@ void nsengine::_cleanup_driver()
 
 void nsengine::_init_factories()
 {
+	register_component<nsrect_tform_comp>("nsrect_tform_comp");
 	register_component<nsanim_comp>("nsanim_comp");
 	register_component<nscam_comp>("nscam_comp");
 	register_component<nslight_comp>("nslight_comp");
@@ -450,6 +452,7 @@ void nsengine::_init_factories()
 	register_component<nstile_comp>("nstile_comp");
 	register_component<nsterrain_comp>("nsterrain_comp");
 	register_component<nsui_comp>("nsui_comp");
+	register_component<nsui_canvas_comp>("nsui_canvas_comp");
 	
 	register_system<nsanim_system>("nsanim_system");
 	register_system<nsbuild_system>("nsbuild_system");
@@ -494,29 +497,30 @@ void nsengine::setup_core_plug()
 		
 	// Default material
 	nsmaterial * def_mat;
-	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION));
+	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
 	def_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
 	def_mat->add_tex_map(nsmaterial::diffuse, tex->full_id(), true);
 	def_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
 
 	render_shaders rh;
     nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-	rh.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext);
-	rh.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext);
-	rh.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext);
-	rh.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext);
-	rh.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext);
-	rh.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext);
-	rh.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext);
-	rh.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext);
-	rh.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext);
-	rh.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext);
-	rh.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext);
-	rh.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext);
+	rh.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
+	rh.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
+	rh.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	rh.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
+	rh.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
+	rh.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
+	rh.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
+	rh.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
+	rh.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
+	rh.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	rh.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
+	rh.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
 
-	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext);
-	cplg->load<nsshader>(nsstring(UI_SHADER) + shext);
-	nsshader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext);
+	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_BORDER_SHADER) + shext, true);
+	nsshader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true);
 	std::vector<nsstring> outLocs2;
 	outLocs2.push_back("gPosOut");
 	outLocs2.push_back("gVelOut");
@@ -540,13 +544,13 @@ void nsengine::setup_core_plug()
 	cplg->manager<nsshader_manager>()->init_uniforms_all();
 
 	// Light bounds, skydome, and tile meshes
-    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION));
-    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION));
-	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION));
+    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);
 
 	nse.system<nsrender_system>()->set_render_shaders(rh);
 	nse.system<nsrender_system>()->set_default_mat(def_mat);

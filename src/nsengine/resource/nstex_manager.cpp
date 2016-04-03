@@ -36,13 +36,18 @@ nstex_manager::nstex_manager(): nsres_manager()
 nstex_manager::~nstex_manager()
 {}
 
-nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname)
+nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize_)
 {
 	if (fname.empty())
 		return NULL;
-	
+	nstexture * ret = nullptr;
 	if (res_type_id == type_to_hash(nstex2d))
-		return load_image(fname);
+	{
+		ret = load_image(fname);
+		if (ret != nullptr && finalize_)
+			ret->finalize();
+		return ret;
+	}
 	else if (res_type_id == type_to_hash(nstex_cubemap))
 	{
 		nsstring texExtension = "";
@@ -55,10 +60,13 @@ nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname)
 			return NULL;
 
 		if (texExtension == ".cube" || texExtension == ".CUBE")
-			return load_cubemap(fname,".png");
+			ret = load_cubemap(fname,".png");
+		if (ret != nullptr && finalize_)
+			ret->finalize();
+		return ret;
 	}
 	else
-		return static_cast<nstexture*>(nsres_manager::load(res_type_id, fname));
+		return static_cast<nstexture*>(nsres_manager::load(res_type_id, fname, finalize_));
 }
 
 nstex2d * nstex_manager::load_image(const nsstring & fname)

@@ -354,6 +354,17 @@ void nsshader::set_uniform(const nsstring & var_name, const fmat3 & data)
 	gl_err_check("nsshader::set_uniform");
 }
 
+void nsshader::set_uniform(const nsstring & var_name, const fmat2 & data)
+{
+	fmat2 mat(data);
+	uniform_loc_map::iterator iter = m_uniform_locs.find(hash_id(var_name));
+	if (iter == m_uniform_locs.end())
+		glUniformMatrix2fv(init_uniform_loc(var_name), 1, GL_TRUE, mat.data_ptr());
+	else
+		glUniformMatrix2fv(iter->second, 1, GL_TRUE, mat.data_ptr());
+	gl_err_check("nsshader::set_uniform");	
+}
+
 void nsshader::set_uniform(const nsstring & var_name, bool val)
 {
 	set_uniform(var_name, int32(val));

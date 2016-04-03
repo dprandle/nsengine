@@ -253,13 +253,13 @@ public:
 	const nsstring & notes();
 	
 	template<class ResType>
-	ResType * load(const nsstring & fname)
+	ResType * load(const nsstring & fname, bool finalize_)
 	{
 		uint32 hashed_type = type_to_hash(ResType);
-		return static_cast<ResType*>(load(hashed_type, fname));
+		return static_cast<ResType*>(load(hashed_type, fname, finalize_));
 	}
 
-	nsresource * load(uint32 res_typeid, const nsstring & fname);
+	nsresource * load(uint32 res_typeid, const nsstring & fname, bool finalize_);
 
 	nsentity * load_model(const nsstring & entname,
 						 nsstring fname,

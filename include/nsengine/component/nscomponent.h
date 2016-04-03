@@ -39,14 +39,14 @@ class nscomponent
 
 	virtual void init()=0;
 
+	virtual void release() {}
+
+	virtual void finalize() {}
+
 	uint32 type();
 
 	virtual void name_change(const uivec2 &, const uivec2);
 
-	/*!
-	  Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
-	  /return Map of resource ID to resource type containing all used resources
-	*/
 	virtual uivec3_vector resources();
 
 	virtual void pup(nsfile_pupper * p) = 0;
@@ -61,7 +61,6 @@ class nscomponent
 	nsentity * m_owner;
 	uint32 m_hashed_type;
 	bool m_update;
-	nsrouter m_router;
 };
 
 class nscomponent_inst : public nscomponent

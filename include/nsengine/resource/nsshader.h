@@ -131,6 +131,8 @@ public:
 
 	void set_uniform(const nsstring & var_name, const fmat3 & data);
 
+	void set_uniform(const nsstring & var_name, const fmat2 & data);
+
 	void set_uniform(const nsstring & var_name, const fvec4 & data);
 
 	void set_uniform(const nsstring & var_name, const fvec3 & data);

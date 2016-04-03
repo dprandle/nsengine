@@ -48,17 +48,17 @@ public:
 	}
 
 	template<class res_type>
-	res_type * load(const nsstring & fname)
+	res_type * load(const nsstring & fname, bool finalize_)
 	{
-		return nsres_manager::load<res_type>(fname);
+		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nsfont * load(const nsstring & fname)
+	nsfont * load(const nsstring & fname, bool finalize_)
 	{
-		return load<nsfont>(fname);
+		return load<nsfont>(fname, finalize_);
 	}
 
-	virtual nsfont * load(uint32 res_type_id, const nsstring & fname);
+	virtual nsfont * load(uint32 res_type_id, const nsstring & fname, bool finalize_);
 	
 	template<class res_type, class T >
 	res_type * remove(const T & res_name)

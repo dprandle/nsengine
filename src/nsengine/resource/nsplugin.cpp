@@ -423,11 +423,11 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 
 	nstexture * tdiff = get<nstex2d>(difftex);
 	if (tdiff == NULL)
-		tdiff = load<nstex2d>(difftex);
+		tdiff = load<nstex2d>(difftex, true);
 	
 	nstexture * tnorm = get<nstex2d>(normtex);
 	if (tnorm == NULL)
-		tnorm = load<nstex2d>(normtex);
+		tnorm = load<nstex2d>(normtex, true);
 	
 	if (tdiff != NULL)
 		mat->add_tex_map(nsmaterial::diffuse, tdiff->full_id(), true);
@@ -567,9 +567,9 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 
 	nstex2d * hm = NULL, * dm = NULL, * nm = NULL;
 	if (importdir)
-		hm = load<nstex2d>(m_import_dir + hmfile);
+		hm = load<nstex2d>(m_import_dir + hmfile, true);
 	else
-		hm = load<nstex2d>(hmfile);
+		hm = load<nstex2d>(hmfile, true);
 
 	if (hm == NULL)
 	{
@@ -582,9 +582,9 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	{
 		
 		if (importdir)
-			dm = load<nstex2d>(m_import_dir + dmfile);
+			dm = load<nstex2d>(m_import_dir + dmfile, true);
 		else
-			dm = load<nstex2d>(dmfile);
+			dm = load<nstex2d>(dmfile, true);
 
 		if (dm == NULL)
 		{
@@ -598,9 +598,9 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	if (!nmfile.empty())
 	{
 		if (importdir)
-			nm = load<nstex2d>(m_import_dir + nmfile);
+			nm = load<nstex2d>(m_import_dir + nmfile, true);
 		else
-			nm = load<nstex2d>(nmfile);
+			nm = load<nstex2d>(nmfile, true);
 
 		if (nm == NULL)
 		{
@@ -732,7 +732,7 @@ void nsplugin::init()
 	}
 }
 
-nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname)
+nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname, bool finalize_)
 {
 	if (!m_bound)
 	{
@@ -741,7 +741,7 @@ nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname)
 	}
 
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
-	return rm->load(res_typeid, fname);
+	return rm->load(res_typeid, fname, finalize_);
 }
 
 
@@ -1158,7 +1158,7 @@ bool nsplugin::bind()
 	while (liter != m_resmap.end())
 	{
 		nsres_manager * rm = manager(liter->first);
-		nsresource * r = rm->load(liter->second.m_res_guid,liter->second.m_res_subdir_and_name);
+		nsresource * r = rm->load(liter->second.m_res_guid,liter->second.m_res_subdir_and_name, false);
 
 		if (r == NULL)
 			m_unloaded.emplace(liter->first, liter->second);
@@ -1167,6 +1167,18 @@ bool nsplugin::bind()
 		
 		++liter;
 	}
+
+	// Finalize loading - the finalize function is for resources that may have dependencies on
+	// themselves - or other resources. This allows the engine to save these dependencies as uivec3
+	// ids on loading - and once all is loaded - the finalize replaces the ids with pointers
+	liter = m_resmap.begin();
+	while (liter != m_resmap.end())
+	{
+		nsres_manager * rm = manager(liter->first);
+		rm->finalize_all();
+		++liter;
+	}
+
 
 	return (m_bound = true);
 }

@@ -69,23 +69,20 @@ bool nsentity::add(nscomponent * pComp)
 	if (ret.second)
 	{
 		pComp->set_owner(this);
+		component_added(pComp);
 		update_scene();
 	}
 	return ret.second;
 }
 
-bool nsentity::add_derived(nscomponent * to_add, uint32 base_type_id)
+void nsentity::finalize()
 {
-	if (to_add == nullptr)
-		return false;
-
-	auto ret = m_components.emplace(base_type_id, to_add);
-	if (ret.second)
+	auto iter = m_components.begin();
+	while (iter != m_components.end())
 	{
-		to_add->set_owner(this);
-		update_scene();
+		iter->second->finalize();
+		++iter;
 	}
-	return ret.second;	
 }
 
 void nsentity::clear()
@@ -123,11 +120,6 @@ nscomponent * nsentity::create(uint32 type_id)
 	return comp_t;
 }
 
-nscomponent * create_derived(uint32 derived_type_id, uint32 base_type_id)
-{
-	
-}
-
 nscomponent * nsentity::create(nscomponent * to_copy)
 {
 	if (to_copy == nullptr)
@@ -137,23 +129,6 @@ nscomponent * nsentity::create(nscomponent * to_copy)
 	if (!add(comp_t))
 	{
 		dprint(nsstring("nsentity::create - Failed copying comp_t type ") + nse.guid(to_copy->type()) +
-			   nsstring(" to Entity ") + m_name);
-		delete comp_t;
-		return NULL;
-	}
-	comp_t->init();
-	return comp_t;	
-}
-
-nscomponent * nsentity::create_derived(nscomponent * derived_to_copy, uint32 base_type_id)
-{
-	if (derived_to_copy == nullptr)
-		return nullptr;
-	
-	nscomponent * comp_t = nse.factory<nscomp_factory>(derived_to_copy->type())->create(derived_to_copy);
-	if (!add(comp_t))
-	{
-		dprint(nsstring("nsentity::create - Failed copying comp_t type ") + nse.guid(derived_to_copy->type()) +
 			   nsstring(" to Entity ") + m_name);
 		delete comp_t;
 		return NULL;
@@ -269,8 +244,10 @@ nscomponent * nsentity::remove(uint32 type_id)
 	if (iter != m_components.end())
 	{
 		comp_t = iter->second;
+		comp_t->release();
 		comp_t->set_owner(NULL);
 		m_components.erase(iter);
+		component_removed(comp_t);
 		update_scene();
 		dprint("nsentity::remove - Removing \"" + nse.guid(type_id) + "\" from Entity " + m_name + "\"");
 	}

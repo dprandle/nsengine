@@ -179,7 +179,7 @@ struct nsmat3
 		return normalize((*this)(0));
 	}
 
-	nsmat3<T> & rotation2d_from(const T angle_, bool rads_ = false)
+	nsmat3<T> & rotation2d_from(T angle_, bool rads_ = false)
 	{
 		if (!rads_)
 			angle_ = radians(angle_);
@@ -853,7 +853,7 @@ T determinant(const nsmat3<T> & mat_)
 }
 
 template <class T>
-nsmat3<T> rotation2d_mat3(const T angle_, bool rads_)
+nsmat3<T> rotation2d_mat3(T angle_, bool rads_)
 {
 	return nsmat3<T>().rotation2d_from(angle_, rads_);
 }

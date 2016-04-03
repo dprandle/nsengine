@@ -26,22 +26,16 @@ class nsui_comp : public nscomponent
 public:
 
 	struct widget_content
-	{
-		fvec2 nsize;
+	{		
 		uivec2 mat_id;
-		fvec4 tex_coords_rect; // to remove in a bit
 		uivec2 font_id;
 		nsstring text;
 	};
 
 	struct widget_outer
 	{
-		uivec2 mat_id;
-		uivec4 padding; // pixels
-		uivec4 border; // pixels
-		uivec4 margin; // pixels
+		fvec4 border; // pixels
 		fvec4 border_color;
-		fvec4 padding_tex_coords_rect; // to remove in a bit
 	};
 
 	template <class PUPer>
@@ -60,13 +54,6 @@ public:
 
 	nsui_comp & operator=(nsui_comp rhs_);
 
-	void add_child(nsentity * child);
-	void remove_child(nsentity * child);
-
-	bool is_child(nsentity * child);
-	void set_parent(nsentity * parent);
-	const uivec2 & parent();
-
 	widget_content content_properties;
 	widget_outer outer_properties;
 	
@@ -74,9 +61,6 @@ public:
 	uivec2 border_shader_id;
 
 	bool show;
-	fvec2 center_npos;
-	bool resize_with_parent;
-	int32 layer;	
 
 	ns::signal<> clicked;
 	ns::signal<> pressed;
@@ -84,9 +68,7 @@ public:
 	
 	bool is_pressed;
 	bool is_hover;
-  protected:
-	uivec2 m_parent;
-	uivec2_vector m_children;
+	
 };
 
 template <class PUPer>

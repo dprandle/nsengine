@@ -2,42 +2,58 @@ type:<nsstring>nsshader</nsstring>
 vertex.type:<uint32>35633</uint32>
 vertex.source:<nsstring>
 #version 440
+
 layout (location = 0) in vec3 position;
 
 void main()
 {
 	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
 }
+
 </nsstring>
 geometry.type:<uint32>36313</uint32>
 geometry.source:<nsstring>
 #version 440
+
 layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
-uniform vec2 center;
-uniform vec2 widget_size;
+
+struct vert_info
+{
+	vec2 pos;
+	vec2 tex_coord;
+};
+
+uniform mat3 content_tform;
 uniform vec4 tex_coord_rect;
+uniform vec4 viewport;
+
 out vec2 tex_coord;
-vec2 center_ndc;
-vec2 widget_size_ndc;
+
+vert_info verts[4];
+
 void main()
 {
-	center_ndc = center * 2.0 - vec2(1.0);
-	widget_size_ndc = widget_size * 2;
-    gl_Position = vec4(center_ndc - widget_size_ndc/2.0, 1.0, 1.0);
-	tex_coord = tex_coord_rect.xy;
-    EmitVertex();
-	gl_Position = vec4(center_ndc.x - widget_size_ndc.x/2.0, center_ndc.y + widget_size_ndc.y/2.0, 1.0, 1.0);
-	tex_coord = tex_coord_rect.xw;
-	EmitVertex();
-	gl_Position = vec4(center_ndc.x + widget_size_ndc.x/2.0, center_ndc.y - widget_size_ndc.y/2.0, 1.0, 1.0);
-	tex_coord = tex_coord_rect.zy;
-	EmitVertex();
-    gl_Position = vec4(center_ndc + widget_size_ndc/2.0, 1.0, 1.0);
-	tex_coord = tex_coord_rect.zw;
-    EmitVertex();
+	verts[0].pos = vec2(0.0, 0.0);
+	verts[1].pos = vec2(0.0, 1.0);
+	verts[2].pos = vec2(1.0, 0.0);
+	verts[3].pos = vec2(1.0, 1.0);
+	verts[0].tex_coord = tex_coord_rect.xy;
+	verts[1].tex_coord = tex_coord_rect.xw;
+	verts[2].tex_coord = tex_coord_rect.zy;
+	verts[3].tex_coord = tex_coord_rect.zw;
+
+	for (uint i = 0; i < 4; ++i)
+	{
+		verts[i].pos = (content_tform * vec3(verts[i].pos, 1.0)).xy;
+		verts[i].pos = verts[i].pos/viewport.zw * 2.0 - vec2(1.0);
+		gl_Position = vec4(verts[i].pos, 1.0, 1.0);
+		tex_coord = verts[i].tex_coord;
+		EmitVertex();
+	}	
     EndPrimitive();
 }
+
 </nsstring>
 fragment.type:<uint32>35632</uint32>
 fragment.source:<nsstring>

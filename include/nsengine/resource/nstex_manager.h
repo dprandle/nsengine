@@ -55,17 +55,17 @@ public:
 	}
 
 	template<class res_type>
-	res_type * load(const nsstring & fname)
+	res_type * load(const nsstring & fname, bool finalize_)
 	{
-		return nsres_manager::load<res_type>(fname);
+		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nstexture * load(const nsstring & fname)
+	nstexture * load(const nsstring & fname, bool finalize_)
 	{
-		return load<nstexture>(fname);
+		return load<nstexture>(fname, finalize_);
 	}
 
-	virtual nstexture * load(uint32 res_type_id, const nsstring & fname);
+	virtual nstexture * load(uint32 res_type_id, const nsstring & fname, bool finalize_);
 	
 	template<class res_type, class T >
 	res_type * remove(const T & rname)

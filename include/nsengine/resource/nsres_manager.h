@@ -105,10 +105,10 @@ public:
 	}
 
 	template<class res_type>
-	res_type * load(const nsstring & fname)
+	res_type * load(const nsstring & fname, bool finalize_)
 	{
 		uint32 res_type_id = type_to_hash(res_type);
-		return static_cast<res_type*>(load(res_type_id, fname));
+		return static_cast<res_type*>(load(res_type_id, fname, finalize_));
 	}
 	
 	template<class res_type, class T >
@@ -152,6 +152,8 @@ public:
 
 	uint32 type();
 
+	void finalize_all();
+
 	virtual nsresource * get(uint32 resid);
 
 	virtual nsresource * get(const nsstring & res_name);
@@ -164,11 +166,11 @@ public:
 
 	uint32 plugin_id();
 
-	virtual nsresource * load(const nsstring & fname) = 0;
+	virtual nsresource * load(const nsstring & fname, bool finalize) = 0;
 	
-	virtual nsresource * load(uint32 res_type_id, const nsstring & fname);
+	virtual nsresource * load(uint32 res_type_id, const nsstring & fname, bool finalize);
 	
-	nsresource * load(const nsstring & res_guid, const nsstring & fname);
+	nsresource * load(const nsstring & res_guid, const nsstring & fname, bool finalize);
 	
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 

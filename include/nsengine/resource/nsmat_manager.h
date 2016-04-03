@@ -50,14 +50,14 @@ public:
 	}
 
 	template<class res_type>
-	res_type * load(const nsstring & fname_)
+	res_type * load(const nsstring & fname_, bool finalize_)
 	{
-		return nsres_manager::load<res_type>(fname_);
+		return nsres_manager::load<res_type>(fname_, finalize_);
 	}
 
-	nsmaterial * load(const nsstring & fname_)
+	nsmaterial * load(const nsstring & fname_, bool finalize_)
 	{
-		return load<nsmaterial>(fname_);
+		return load<nsmaterial>(fname_, finalize_);
 	}
 	
 	template<class res_type, class T >

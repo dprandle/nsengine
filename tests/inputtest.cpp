@@ -1,5 +1,6 @@
 #define INPUTTEST
 
+#include <nstimer.h>
 #include <nsshader.h>
 #include <nsinput_system.h>
 #include <nsinput_map.h>
@@ -23,14 +24,24 @@
 #include <nsfont.h>
 #include <nsopengl_driver.h>
 #include <nsui_comp.h>
+#include <nsrect_tform_comp.h>
 #include <nsplugin_manager.h>
 #include <nsmaterial.h>
 #include <nsui_system.h>
 #include <nsrender_system.h>
+#include <nsui_canvas_comp.h>
 
 nsplugin * setup_basic_plugin();
 void setup_input_map(nsplugin * plg);
-
+void create_button(
+	nsplugin * plg,
+	nsentity * canvas,
+	const nsstring & tex_name,
+	const nsstring & tex_ext,
+	const fvec4 & pix_offset,
+	const fvec4 & anchors,
+	int32 layer,
+	const fvec4 & tex_coords = fvec4(0,0.75,1,1));
 
 /*
   This test adds camera controls and movement controls to an input map from scratch
@@ -63,6 +74,9 @@ int main()
     while (glfw_window_open())
     {
         nse.update();
+		nse.system<nsui_system>()->set_active_viewport(nse.system<nsrender_system>()->viewport("main_view"));
+		nse.system<nsui_system>()->push_draw_calls();
+		nse.system<nsrender_system>()->render();
         glfw_update();
     }
 
@@ -88,41 +102,29 @@ nsplugin * setup_basic_plugin()
 	
     nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
     nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
-    //nsmaterial * mat = plg->get<nsmaterial>(tile_grass->get<nsrender_comp>()->material_id(0).y);
-   // mat->set_color(fvec4(0.7,0.1,0.5,1.0));
-    //mat->set_color_mode(true);
 
     nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.2f, 30.0f, 20.0f);
 	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
-    nsentity * ui_button = plg->create<nsentity>("ui_button");
+	nsentity * canvas = plg->create<nsentity>("canvas_ent");
 
-//    ui_button->create<nssel_comp>();
-    nsui_comp * uic = ui_button->create<nsui_comp>();
+	canvas->create<nsui_canvas_comp>();
 
-	nsmaterial * mat = plg->create<nsmaterial>("contents_mat");
-	nsmaterial * pad_mat = plg->create<nsmaterial>("padding_mat");
-	pad_mat->set_color_mode(true);
-	pad_mat->set_color(fvec4(1.0f,0.0f,0.0f,0.3f));
-	
-    nstexture * reg_tex = plg->get<nstexture>("diffuseGrass");
-    mat->add_tex_map(nsmaterial::diffuse, reg_tex->full_id(), true);
-	mat->set_color_mode(false);
+    float pix_offset = 0;
+    create_button(plg, canvas, "fun", ".jpg", fvec4(),
+				  fvec4(0,0,1,1), 0, fvec4(0,0,1,1));
+    create_button(plg, canvas,"start-screen", ".png",
+				  fvec4(-350/2, -227.5, 350/2, 227.5), fvec4(0.5f,0.5f,0.5f,0.5f), 1, fvec4(0,0,1,1));
+    pix_offset = 2*88;
+    create_button(plg, canvas,"new-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+    pix_offset = 88;
+    create_button(plg, canvas,"join-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+    pix_offset = 0;
+    create_button(plg, canvas,"plugins", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+    pix_offset = -88;
+    create_button(plg, canvas,"options", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+    pix_offset = -2*88;
+    create_button(plg, canvas,"exit-game", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
 
-
-    uic->content_properties.nsize = fvec2(0.5,0.5);
-	uic->content_properties.mat_id = mat->full_id();
-	uic->content_properties.tex_coords_rect = fvec4(0.0f,0.0f,1.0f,1.0f);
-	uic->outer_properties.mat_id = pad_mat->full_id();
-	uic->outer_properties.border_color = fvec4(0.0f,1.0f,0.0f,1.0f);
-	uic->outer_properties.padding = uivec4(5);
-	uic->outer_properties.border = uivec4(10);
-	uic->outer_properties.margin = uivec4(5);
-
-	uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
-    uic->show = true;
-    uic->center_npos = fvec2(0.5,0.5);
-	uic->resize_with_parent = true;
-	uic->layer = 0;
 
 	alpha_tile->get<nssel_comp>()->enable_transparent_picking(false);	
     scn->add(point_light);
@@ -130,13 +132,52 @@ nsplugin * setup_basic_plugin()
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
 	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 
-    nse.system<nsrender_system>()->insert_viewport(
-        "main_view",
-        nsrender::viewport(
-            fvec4(0.0f,0.0f,1.0f,1.0f),
-            cam));
+    nsrender::viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f),cam);
+    vp.ui_canvases.push_back(canvas);
+    nse.system<nsrender_system>()->insert_viewport("main_view",vp);
 
 	return plg;
+}
+
+void create_button(
+	nsplugin * plg,
+	nsentity * canvas,
+	const nsstring & tex_name,
+	const nsstring & tex_ext,
+	const fvec4 & pix_offset,
+	const fvec4 & anchors,
+	int32 layer,
+	const fvec4 & tex_coords)
+{
+    nsentity * ui_button = plg->create<nsentity>("button_" + tex_name);
+    nsui_comp * uic = ui_button->create<nsui_comp>();
+    nsui_canvas_comp * uicc = canvas->get<nsui_canvas_comp>();
+	
+    uicc->add(ui_button);
+	nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
+
+    nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat_" + tex_name);
+    nsmaterial * pad_mat = plg->create<nsmaterial>("btn_padding_mat_" + tex_name);
+    pad_mat->set_color_mode(true);
+    pad_mat->set_color(fvec4(1.0f,1.0f,0.0f,0.0f));
+    nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + tex_name + tex_ext, true);
+    mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),tex_coords), true);
+    mat->set_color_mode(false);
+
+    auto pic = tuic->canvas_info(uicc);
+    pic->anchor_rect = anchors;
+    pic->pixel_offset_rect = pix_offset;//fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset);
+    pic->pivot = fvec2(0.5f,0.5f);
+    pic->layer = layer;
+	pic->angle = 30.0f;
+
+    uic->content_properties.mat_id = mat->full_id();
+    uic->outer_properties.border_color = fvec4(0.0f,1.0f,0.0f,0.5f);
+    uic->outer_properties.border = fvec4(3,3,3,3);
+
+    uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+    uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
+    uic->show = true;
 }
 
 void setup_input_map(nsplugin * plg)

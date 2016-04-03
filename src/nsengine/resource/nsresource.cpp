@@ -41,7 +41,9 @@ nsresource::nsresource(const nsresource & copy):
 {}
 
 nsresource::~nsresource()
-{}
+{
+	resource_destroyed(type(), full_id());
+}
 
 const nsstring & nsresource::extension() const
 {
