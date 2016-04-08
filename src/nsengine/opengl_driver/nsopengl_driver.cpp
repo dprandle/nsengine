@@ -97,32 +97,21 @@ void ui_render_pass::render()
 		
 		if (uidc->border_color.a >= 0.03f && uidc->border_shader != nullptr)
 		{
-			// uidc->border_shader->bind();
-			// uidc->border_shader->set_uniform("rotation", rotation2d_mat2(uidc->rotation));
-			// uidc->border_shader->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
-			// uidc->border_shader->set_uniform("pivot", adj_pivot);
-			
-			// fvec4 bir(
-			// 	uidc->content_rect.xy() - uidc->padding.xz(),
-			// 	uidc->content_rect.zw() + uidc->padding.yw()
-			// 	);
-			
-			// fvec4 bor(
-			// 	bir.xy() - uidc->border.xz(),
-			// 	bir.zw() + uidc->border.yw()
-			// 	);
-			
-			// uidc->border_shader->set_uniform("border_inner_rect", bir);
-			// uidc->border_shader->set_uniform("border_outer_rect", bor);
-			// uidc->border_shader->set_uniform("frag_color_out", uidc->border_color);
-			// uidc->border_shader->set_uniform("entity_id", uidc->entity_id);
-			// driver->render_ui_dc(uidc);
+			uidc->border_shader->bind();
+			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z-viewp.x,viewp.w-viewp.y));
+			uidc->border_shader->set_uniform("border_pix", uidc->border_pix);
+			uidc->border_shader->set_uniform("content_wscale", uidc->content_wscale);
+			uidc->border_shader->set_uniform("content_tform", uidc->content_tform);
+			uidc->border_shader->set_uniform("frag_color_out", uidc->border_color);
+			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);			
+			driver->render_ui_dc(uidc);
 		}
 
 		uidc->shdr->bind();
 		uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 		uidc->shdr->set_uniform("entity_id", uidc->entity_id);
-		uidc->shdr->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
+		uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z-viewp.x,viewp.w-viewp.y));
+		uidc->shdr->set_uniform("wscale", uidc->content_wscale);
         uidc->shdr->set_uniform("content_tform", uidc->content_tform);
 		uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
 

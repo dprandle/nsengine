@@ -41,7 +41,8 @@ void create_button(
 	const fvec4 & pix_offset,
 	const fvec4 & anchors,
 	int32 layer,
-	const fvec4 & tex_coords = fvec4(0,0.75,1,1));
+    float angle = 0.0f,
+    const fvec4 & tex_coords = fvec4(0,0.75,1,1));
 
 /*
   This test adds camera controls and movement controls to an input map from scratch
@@ -65,6 +66,10 @@ int main()
 
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
+
+    auto tfc = plg->get<nsentity>("button_start-screen")->get<nsrect_tform_comp>();
+    auto tfc2 = plg->get<nsentity>("button_new-match")->get<nsrect_tform_comp>();
+    auto can = plg->get<nsentity>("canvas_ent")->get<nsui_canvas_comp>();
 	
 	// Save the input map
 	plg->save<nsinput_map>("basic_input");
@@ -77,6 +82,9 @@ int main()
 		nse.system<nsui_system>()->set_active_viewport(nse.system<nsrender_system>()->viewport("main_view"));
 		nse.system<nsui_system>()->push_draw_calls();
 		nse.system<nsrender_system>()->render();
+
+        tfc->canvas_info(can)->angle += nse.timer()->dt() * 90.0f;
+        tfc2->canvas_info(can)->angle += nse.timer()->dt() * 90.0f;
         glfw_update();
     }
 
@@ -111,11 +119,11 @@ nsplugin * setup_basic_plugin()
 
     float pix_offset = 0;
     create_button(plg, canvas, "fun", ".jpg", fvec4(),
-				  fvec4(0,0,1,1), 0, fvec4(0,0,1,1));
+                  fvec4(0,0,1,1), 0, 0.0f, fvec4(0,0,1,1));
     create_button(plg, canvas,"start-screen", ".png",
-				  fvec4(-350/2, -227.5, 350/2, 227.5), fvec4(0.5f,0.5f,0.5f,0.5f), 1, fvec4(0,0,1,1));
+                  fvec4(-350/2, -227.5, 350/2, 227.5), fvec4(0.5f,0.5f,0.5f,0.5f), 1, 0.0f, fvec4(0,0,1,1));
     pix_offset = 2*88;
-    create_button(plg, canvas,"new-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+    create_button(plg, canvas,"new-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2, 0.0f);
     pix_offset = 88;
     create_button(plg, canvas,"join-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
     pix_offset = 0;
@@ -147,7 +155,8 @@ void create_button(
 	const fvec4 & pix_offset,
 	const fvec4 & anchors,
 	int32 layer,
-	const fvec4 & tex_coords)
+    float angle,
+    const fvec4 & tex_coords)
 {
     nsentity * ui_button = plg->create<nsentity>("button_" + tex_name);
     nsui_comp * uic = ui_button->create<nsui_comp>();
@@ -169,15 +178,20 @@ void create_button(
     pic->pixel_offset_rect = pix_offset;//fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset);
     pic->pivot = fvec2(0.5f,0.5f);
     pic->layer = layer;
-	pic->angle = 30.0f;
+    pic->angle = angle;
 
     uic->content_properties.mat_id = mat->full_id();
-    uic->outer_properties.border_color = fvec4(0.0f,1.0f,0.0f,0.5f);
+    uic->outer_properties.border_color = fvec4(0.0f,0.0f,0.0f,1.0f);
     uic->outer_properties.border = fvec4(3,3,3,3);
 
     uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
     uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
     uic->show = true;
+
+    if (tex_name != "fun" && tex_name != "start-screen")
+    {
+        tuic->set_parent(uicc, plg->get<nsentity>("button_start-screen")->get<nsrect_tform_comp>());
+    }
 }
 
 void setup_input_map(nsplugin * plg)

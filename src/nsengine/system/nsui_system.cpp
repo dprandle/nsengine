@@ -95,7 +95,8 @@ void nsui_system::push_draw_calls()
 			uidc->shdr = get_resource<nsshader>(uic->content_shader_id);
 			uidc->border_shader = get_resource<nsshader>(uic->border_shader_id);
 			uidc->entity_id = uivec3(cur_ent->full_id(),0);
-			uidc->border_tform = tuic->border_transform(uicc);
+			uidc->content_wscale = tuic->content_world_scale(uicc);
+			uidc->border_pix = uic->outer_properties.border;
 			uidc->content_tform = tuic->content_transform(uicc);
 			uidc->border_color = uic->outer_properties.border_color;
 			uidc->content_tex_coord_rect = uidc->mat->map_tex_coord_rect(nsmaterial::diffuse);

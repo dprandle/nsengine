@@ -27,6 +27,7 @@ struct vert_info
 uniform mat3 content_tform;
 uniform vec4 tex_coord_rect;
 uniform vec4 viewport;
+uniform vec2 wscale;
 
 out vec2 tex_coord;
 
@@ -34,10 +35,10 @@ vert_info verts[4];
 
 void main()
 {
-	verts[0].pos = vec2(0.0, 0.0);
-	verts[1].pos = vec2(0.0, 1.0);
-	verts[2].pos = vec2(1.0, 0.0);
-	verts[3].pos = vec2(1.0, 1.0);
+	verts[0].pos = viewport.xy * wscale;
+	verts[1].pos = viewport.xw * wscale;
+	verts[2].pos = viewport.zy * wscale;
+	verts[3].pos = viewport.zw * wscale;
 	verts[0].tex_coord = tex_coord_rect.xy;
 	verts[1].tex_coord = tex_coord_rect.xw;
 	verts[2].tex_coord = tex_coord_rect.zy;

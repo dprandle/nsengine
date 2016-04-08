@@ -65,47 +65,42 @@ bool nsrect_tform_comp::has_child(nsrect_tform_comp * child)
 	return false;
 }
 
+const fvec2 & nsrect_tform_comp::content_world_scale(nsui_canvas_comp * canvas)
+{
+	auto fiter = m_canvas_settings.find(canvas);
+	return fiter->second.scale;	
+}
+
 void nsrect_tform_comp::update_recursively(nsui_canvas_comp * canvas, const fvec2 & pscreen_size)
 {
 	auto fiter = m_canvas_settings.find(canvas);
 	auto pci = &fiter->second.pci;
-	fvec4 screen_rect(pscreen_size % pci->anchor_rect.xy() + pci->pixel_offset_rect.xy(),
-					  pscreen_size % pci->anchor_rect.zw() + pci->pixel_offset_rect.zw());
-	fvec2 scale = screen_rect.zw() - screen_rect.xy();
-	fvec2 pos = screen_rect.xy() + scale % pci->pivot;
-	fiter->second.content_world_tform = rotation2d_mat3(pci->angle) % fvec3(scale,1.0f);
+	fvec4 screen_rect(pci->anchor_rect.xy() + pci->pixel_offset_rect.xy() / pscreen_size,
+					  pci->anchor_rect.zw() + pci->pixel_offset_rect.zw() / pscreen_size);
+	fvec2 local_scale = screen_rect.zw() - screen_rect.xy();
+	fvec2 pos = pscreen_size % (screen_rect.xy() + local_scale % pci->pivot);
+	fiter->second.content_world_tform = rotation2d_mat3(pci->angle);
 	fiter->second.content_world_tform.set_column(2, fvec3(pos, 1.0f));
+	fiter->second.content_world_tform = fiter->second.content_world_tform *
+		translation2d_mat3(-1.0f * pscreen_size % local_scale % pci->pivot);
 
-	nsui_comp * uic = m_owner->get<nsui_comp>();
-	if (uic != nullptr)
-	{
-		fvec2 border_scale = screen_rect.zw() + uic->outer_properties.border.zw() - (screen_rect.xy() + uic->outer_properties.border.xy());
-		fiter->second.border_world_tform = rotation2d_mat3(pci->angle) % fvec3(border_scale,1.0f);
-		pos.x += uic->outer_properties.border.z - uic->outer_properties.border.x;
-		pos.y += uic->outer_properties.border.w - uic->outer_properties.border.y;
-		fiter->second.border_world_tform.set_column(2, fvec3(pos, 1.0f));
-	}
-
+	fiter->second.scale = local_scale;
 	if (fiter->second.m_parent != nullptr)
 	{
 		auto parent_fiter = fiter->second.m_parent->m_canvas_settings.find(canvas);
-		fiter->second.content_world_tform = parent_fiter->second.content_world_tform * fiter->second.content_world_tform;
+		fiter->second.content_world_tform = parent_fiter->second.content_world_tform *
+			fiter->second.content_world_tform;
+		fiter->second.scale = parent_fiter->second.scale % fiter->second.scale;
 	}
 
 	for (uint32 i = 0; i < fiter->second.m_children.size(); ++i)
-		fiter->second.m_children[i]->update_recursively(canvas, pscreen_size);	
+		fiter->second.m_children[i]->update_recursively(canvas, pscreen_size % local_scale);	
 }
 
 const fmat3 & nsrect_tform_comp::content_transform(nsui_canvas_comp * canvas)
 {
 	auto fiter = m_canvas_settings.find(canvas);
 	return fiter->second.content_world_tform;
-}
-
-const fmat3 & nsrect_tform_comp::border_transform(nsui_canvas_comp * canvas)
-{
-	auto fiter = m_canvas_settings.find(canvas);
-	return fiter->second.border_world_tform;
 }
 
 void nsrect_tform_comp::add_child(nsrect_tform_comp * child)

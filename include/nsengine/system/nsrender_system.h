@@ -205,7 +205,8 @@ struct ui_draw_call : public draw_call
 	uivec3 entity_id;
 	
 	fmat3 content_tform;
-	fmat3 border_tform;
+	fvec2 content_wscale;
+	fvec4 border_pix;
 
 	fvec4 content_tex_coord_rect;
 	fvec4 border_color;

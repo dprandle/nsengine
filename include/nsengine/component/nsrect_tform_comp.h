@@ -69,7 +69,7 @@ public:
 
 	const fmat3 & content_transform(nsui_canvas_comp * canvas);
 
-	const fmat3 & border_transform(nsui_canvas_comp * canvas);
+	const fvec2 & content_world_scale(nsui_canvas_comp * canvas);
 	
 	void update_recursively(nsui_canvas_comp * canvas, const fvec2 & pscreen_size);
 	
@@ -84,10 +84,8 @@ public:
 		{}
 		
 		per_canvas_info pci;
-
-		fmat3 content_world_tform;
-		fmat3 border_world_tform;
-		
+		fvec2 scale;
+		fmat3 content_world_tform;		
 		nsrect_tform_comp * m_parent;
 		std::vector<nsrect_tform_comp*> m_children;		
 	};

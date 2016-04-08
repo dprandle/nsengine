@@ -16,58 +16,64 @@ geometry.source:<nsstring>
 layout (points) in;
 layout (triangle_strip, max_vertices = 16) out;
 
-uniform vec4 border_inner_rect;
-uniform vec4 border_outer_rect;
-uniform mat2 rotation;
+uniform mat3 content_tform;
+uniform vec2 content_wscale;
+uniform vec4 border_pix;
 uniform vec4 viewport;
-uniform vec2 pivot;
 
-vec2 verts[16];
-vec2 center;
+vec2 inner_rect[4];
+vec2 outer_rect[4];
+vec2 verts[4];
 
 void draw_trap()
 {
 	for (uint i = 0; i < 4; ++i)
 	{
-		gl_Position = vec4( (rotation * verts[i] + center) / viewport.zw * 2 - vec2(1.0), 1.0, 1.0);
-		EmitVertex();		
+		gl_Position = vec4( verts[i] / viewport.zw * 2 - vec2(1.0), 1.0, 1.0);
+		EmitVertex();
 	}
     EndPrimitive();	
 }
 
-vec4 bir_ndc;
-vec4 bor_ndc;
-
 void main()
-{
-	bir_ndc = border_inner_rect * vec4(viewport.zw,viewport.zw);
-	bor_ndc = border_outer_rect * vec4(viewport.zw,viewport.zw);
-	center = (bir_ndc.zw - bir_ndc.xy) * pivot + bir_ndc.xy;
-	bir_ndc = bir_ndc - vec4(center, center);
-	bor_ndc = bor_ndc - vec4(center, center);
+{	
+	inner_rect[0] = viewport.xy * content_wscale;
+	inner_rect[1] = viewport.xw * content_wscale;
+	inner_rect[2] = viewport.zy * content_wscale;
+	inner_rect[3] = viewport.zw * content_wscale;
+	outer_rect[0] = inner_rect[0] - border_pix.xy;
+	outer_rect[1] = inner_rect[1] + vec2(-border_pix.x, border_pix.w);
+	outer_rect[2] = inner_rect[2] + vec2( border_pix.z,-border_pix.y);
+	outer_rect[3] = inner_rect[3] + border_pix.zw;
+	
+	for (uint i = 0; i < 4; ++i)
+	{
+		inner_rect[i] = (content_tform * vec3(inner_rect[i], 1.0)).xy;
+		outer_rect[i] = (content_tform * vec3(outer_rect[i], 1.0)).xy;
+	}
 
-	verts[0] = bor_ndc.xy;
-	verts[1] = bor_ndc.xw;
-	verts[2] = bir_ndc.xy;
-	verts[3] = bir_ndc.xw;
+	verts[0] = outer_rect[0];
+	verts[1] = outer_rect[1];
+	verts[2] = inner_rect[0];
+	verts[3] = inner_rect[1];
 	draw_trap();
 	
-	verts[0] = bor_ndc.xy;
-	verts[1] = bir_ndc.xy;
-	verts[2] = bor_ndc.zy;
-	verts[3] = bir_ndc.zy;
+	verts[0] = inner_rect[1];
+	verts[1] = outer_rect[1];
+	verts[2] = inner_rect[3];
+	verts[3] = outer_rect[3];
 	draw_trap();
 	
-	verts[0] = bir_ndc.xw;
-	verts[1] = bor_ndc.xw;
-	verts[2] = bir_ndc.zw;
-	verts[3] = bor_ndc.zw;
+	verts[0] = inner_rect[2];
+	verts[1] = inner_rect[3];
+	verts[2] = outer_rect[2];
+	verts[3] = outer_rect[3];
 	draw_trap();
 	
-	verts[0] = bir_ndc.zy;
-	verts[1] = bir_ndc.zw;
-	verts[2] = bor_ndc.zy;
-	verts[3] = bor_ndc.zw;
+	verts[0] = outer_rect[0];
+	verts[1] = inner_rect[0];
+	verts[2] = outer_rect[2];
+	verts[3] = inner_rect[2];
 	draw_trap();
 }
 </nsstring>
