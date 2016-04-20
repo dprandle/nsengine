@@ -67,24 +67,24 @@ int main()
     nsplugin * plg = setup_basic_plugin();
 	setup_input_map(plg);
 
-    auto tfc = plg->get<nsentity>("button_start-screen")->get<nsrect_tform_comp>();
-    auto tfc2 = plg->get<nsentity>("button_new-match")->get<nsrect_tform_comp>();
-    auto can = plg->get<nsentity>("canvas_ent")->get<nsui_canvas_comp>();
+    //auto tfc = plg->get<nsentity>("button_start-screen")->get<nsrect_tform_comp>();
+    //auto tfc2 = plg->get<nsentity>("button_new-match")->get<nsrect_tform_comp>();
+    //auto can = plg->get<nsentity>("canvas_ent")->get<nsui_canvas_comp>();
 	
 	// Save the input map
-	plg->save<nsinput_map>("basic_input");
+    //plg->save<nsinput_map>("basic_input");
 
-    plg->save<nsfont>("cosn");
+    //plg->save<nsfont>("cosn");
 
     while (glfw_window_open())
     {
         nse.update();
-		nse.system<nsui_system>()->set_active_viewport(nse.system<nsrender_system>()->viewport("main_view"));
-		nse.system<nsui_system>()->push_draw_calls();
-		nse.system<nsrender_system>()->render();
+        //nse.system<nsui_system>()->set_active_viewport(nse.system<nsrender_system>()->viewport("main_view"));
+        //nse.system<nsui_system>()->push_draw_calls();
+        nse.system<nsrender_system>()->render();
 
-        tfc->canvas_info(can)->angle += nse.timer()->dt() * 90.0f;
-        tfc2->canvas_info(can)->angle += nse.timer()->dt() * 90.0f;
+        //tfc->canvas_info(can)->angle += nse.timer()->dt() * 90.0f;
+        //tfc2->canvas_info(can)->angle += nse.timer()->dt() * 90.0f;
         glfw_update();
     }
 
@@ -108,40 +108,40 @@ nsplugin * setup_basic_plugin()
     scn->add(cam);
     scn->add(dirl, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 	
-    nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
+   // nsentity * alpha_tile = plg->create_tile("alpha_tile", fvec4(1.0f, 1.0f, 0.0f, 0.5f), 16.0f, 0.5f, fvec3(1.0f), true);
     nsentity * tile_grass = plg->create_tile("grasstile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(0.0, 0.0, 1.0, 0.5f), 16.0f, 0.5f, fvec3(0.5f,0.0f,0.0f), true);
 
-    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.2f, 30.0f, 20.0f);
-	nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
-	nsentity * canvas = plg->create<nsentity>("canvas_ent");
+   // nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.2f, 30.0f, 20.0f);
+    //nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 20.0f);
+    //nsentity * canvas = plg->create<nsentity>("canvas_ent");
 
-	canvas->create<nsui_canvas_comp>();
+    //canvas->create<nsui_canvas_comp>();
 
-    float pix_offset = 0;
-    create_button(plg, canvas, "fun", ".jpg", fvec4(),
-                  fvec4(0,0,1,1), 0, 0.0f, fvec4(0,0,1,1));
-    create_button(plg, canvas,"start-screen", ".png",
-                  fvec4(-350/2, -227.5, 350/2, 227.5), fvec4(0.5f,0.5f,0.5f,0.5f), 1, 0.0f, fvec4(0,0,1,1));
-    pix_offset = 2*88;
-    create_button(plg, canvas,"new-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2, 0.0f);
-    pix_offset = 88;
-    create_button(plg, canvas,"join-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
-    pix_offset = 0;
-    create_button(plg, canvas,"plugins", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
-    pix_offset = -88;
-    create_button(plg, canvas,"options", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
-    pix_offset = -2*88;
-    create_button(plg, canvas,"exit-game", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+//    float pix_offset = 0;
+//    create_button(plg, canvas, "fun", ".jpg", fvec4(),
+//                  fvec4(0,0,1,1), 0, 0.0f, fvec4(0,0,1,1));
+//    create_button(plg, canvas,"start-screen", ".png",
+//                  fvec4(-350/2, -227.5, 350/2, 227.5), fvec4(0.5f,0.5f,0.5f,0.5f), 1, 0.0f, fvec4(0,0,1,1));
+//    pix_offset = 2*88;
+//    create_button(plg, canvas,"new-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2, 0.0f);
+//    pix_offset = 88;
+//    create_button(plg, canvas,"join-match", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+//    pix_offset = 0;
+//    create_button(plg, canvas,"plugins", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+//    pix_offset = -88;
+//    create_button(plg, canvas,"options", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
+//    pix_offset = -2*88;
+//    create_button(plg, canvas,"exit-game", ".png", fvec4(-321/2, -308/8 + pix_offset, 321/2, 308/8 + pix_offset), fvec4(0.5f,0.5f,0.5f,0.5f), 2);
 
 
-	alpha_tile->get<nssel_comp>()->enable_transparent_picking(false);	
-    scn->add(point_light);
-	scn->add(spot_light, fvec3(10,10,0.0f));
+    //alpha_tile->get<nssel_comp>()->enable_transparent_picking(false);
+    //scn->add(point_light);
+    //scn->add(spot_light, fvec3(10,10,0.0f));
     scn->add_gridded(tile_grass, ivec3(16, 16, 1), fvec3(0.0f,0.0f,10.0f));
-	scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
+    //scn->add_gridded(alpha_tile, ivec3(4, 4, 1), fvec3(0.0f,0.0f,0.0f));
 
     nsrender::viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f),cam);
-    vp.ui_canvases.push_back(canvas);
+    //vp.ui_canvases.push_back(canvas);
     nse.system<nsrender_system>()->insert_viewport("main_view",vp);
 
 	return plg;
