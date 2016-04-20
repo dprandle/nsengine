@@ -354,8 +354,7 @@ const uivec2 & nsinput_system::input_map()
 
 void nsinput_system::update()
 {
-	nsscene * scene = current_scene();
-	if (scene == NULL)
+	if (scene_error_check())
 		return;
 }
 

@@ -25,10 +25,14 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 class nsshader;
 class nstimer;
 class nsbuffer_object;
+class nsscene;
 
 class nssel_comp : public nscomponent
 {
 public:
+
+	friend nsscene;
+	
 	template <class PUPer>
 	friend void pup(PUPer & p, nssel_comp & sc);
 
@@ -37,28 +41,18 @@ public:
 	nssel_comp(const nssel_comp & copy);
 
 	~nssel_comp();
-
-	bool add(uint32 tform_id_);
-
-	ui_uset::iterator begin();
-
-	bool contains(uint32 tform_id_);
-
-	uint32 count();
-
-	void clear();
+	
+	void clear_all_selections();
 
 	void enable_draw(bool enable_);
 
 	void enable_move(const bool & enable_);
 
-	ui_uset::iterator end();
-
 	bool empty();
 
 	const fvec4 & default_color();
 
-	const float & mask_alpha();
+	float mask_alpha();
 
 	const fvec4 & color();
 
@@ -66,19 +60,17 @@ public:
 
 	bool draw_enabled();
 
-	const bool & move_enabled();
+	bool move_enabled();
 
-	bool selected();
-
-	bool remove(uint32 tform_id_);
-
-	bool set(uint32 tform_id_);
+	bool selected(nsscene * scn);
 
 	void enable_transparent_picking(bool enable);
 
 	bool transparent_picking_enabled() const;
 
-	nsbuffer_object * transform_buffer();
+	nsbuffer_object * transform_buffer(nsscene * scn);
+
+	ui_uset * selection(nsscene * scn);
 
 	virtual void pup(nsfile_pupper * p);
 
@@ -86,22 +78,32 @@ public:
 
 	void set_mask_alpha(const float & alpha_);
 
-	void set_selected(bool selected_);
+	void set_selected(nsscene * scn, bool selected_);
 
 	void set_color(const fvec4 & col_);
 
 	nssel_comp & operator=(nssel_comp rhs_);
 
 private:
-	nsbuffer_object * m_tform_buffer;
+
+	struct per_scene_info
+	{
+		per_scene_info();
+		~per_scene_info();
+		
+		nsbuffer_object * m_tform_buffer;
+		ui_uset m_selection;
+		bool m_selected;
+	};
+
+	std::unordered_map<nsscene*, per_scene_info*> m_scene_selection;
+
 	fvec4 m_default_sel_color;
 	fvec4 m_sel_color;
 	float m_mask_alpha;
-	bool m_selected;
 	bool m_draw_enabled;
 	bool m_move_with_input;
 	bool m_transparent_picking_enabled;
-	ui_uset m_selection;
 };
 
 template <class PUPer>

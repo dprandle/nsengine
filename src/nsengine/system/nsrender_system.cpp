@@ -66,19 +66,48 @@ void nsrender_system::set_default_mat(nsmaterial * pDefMat)
 
 void nsrender_system::update()
 {
-	nsscene * scn = current_scene();
-	if (scn != nullptr)
-	{		
-		_prepare_tforms(scn);
-		m_mat_shader_ids.clear();
-		m_all_draw_calls.resize(0);
-		m_light_draw_calls.resize(0);
-		push_scene(scn);
-	}	
+	if (scene_error_check())
+		return;
+	
+	auto scene_ents = m_active_scene->entities_in_scene();
+	if (scene_ents == nullptr)
+		return;
+	
+	auto ent_iter = scene_ents->begin();
+	while (ent_iter != scene_ents->end())
+	{
+		nstform_comp *tfc = (*ent_iter)->get<nstform_comp>();
+		if (tfc->update_posted())
+		{
+			for (uint32 i = 0; i < tfc->instance_count(m_active_scene); ++i)
+			{
+				auto itf = tfc->instance_transform(m_active_scene, i);
+				if (itf->parent() == nullptr)
+					itf->recursive_compute();
+			}
+		}
+		++ent_iter;
+	}
+	
+	_prepare_tforms(m_active_scene);
+	m_mat_shader_ids.clear();
+	m_all_draw_calls.resize(0);
+	m_light_draw_calls.resize(0);
+	push_scene(m_active_scene);
 }
 
 void nsrender_system::render()
 {
+	static bool vperr = false;
+    if (vp_list.empty())
+	{
+        if (!vperr)
+            dprint("nsrender_system::render Warning - no viewports - will render nothing");
+		vperr = true;
+        return;
+	}
+    vperr = false;
+	
 	auto iter = vp_list.begin();
 	while (iter != vp_list.end())
 	{
@@ -362,7 +391,10 @@ vp_node::~vp_node()
 
 void nsrender_system::_add_lights_from_scene(nsscene * scene)
 {
-	auto l_iter = scene->entities<nslight_comp>().begin();
+	auto ents = scene->entities_with_comp<nslight_comp>();
+	if (ents == nullptr)
+		return;
+	
 	drawcall_queue * dc_dq = queue(DIR_LIGHT_QUEUE);
 	drawcall_queue * dc_sq = queue(SPOT_LIGHT_QUEUE);
 	drawcall_queue * dc_pq = queue(POINT_LIGHT_QUEUE);
@@ -371,7 +403,8 @@ void nsrender_system::_add_lights_from_scene(nsscene * scene)
 	dc_sq->resize(0);
 	dc_pq->resize(0);
 
-	while (l_iter != scene->entities<nslight_comp>().end())
+	auto l_iter = ents->begin();
+	while (l_iter != ents->end())
 	{
 		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
 		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
@@ -387,13 +420,14 @@ void nsrender_system::_add_lights_from_scene(nsscene * scene)
 		else
 			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
 
-		for (uint32 i = 0; i < lcomp->transform_count(); ++i)
+		for (uint32 i = 0; i < tcomp->instance_count(scene); ++i)
 		{
 			light_draw_call * ldc = &m_light_draw_calls[m_light_draw_calls.size()-1];
-
+			auto itf = tcomp->instance_transform(scene, i);
+			
 			ldc->submesh = nullptr;
 			ldc->bg_color = scene->bg_color();
-			ldc->direction = lcomp->transform(i).target();
+			ldc->direction = itf->orient.target();
 			ldc->diffuse_intensity = lcomp->intensity().x;
 			ldc->ambient_intensity = lcomp->intensity().y;
 			ldc->cast_shadows = lcomp->cast_shadows();
@@ -403,19 +437,19 @@ void nsrender_system::_add_lights_from_scene(nsscene * scene)
 			ldc->shadow_darkness = lcomp->shadow_darkness();
 			ldc->material_ids = &m_mat_shader_ids;
 			ldc->spot_atten = lcomp->atten();
-			ldc->light_pos = tcomp->wpos(i);
-			ldc->light_transform = lcomp->transform(i);
+			ldc->light_pos = itf->world_position();
+			ldc->light_transform = itf->world_tf() % lcomp->scaling();
 			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
 			if (lcomp->get_light_type() == nslight_comp::l_dir)
 			{
-				ldc->proj_light_mat = proj * lcomp->pov(i);
+				ldc->proj_light_mat = proj * itf->world_inv_tf();
 				ldc->shdr = nse.core()->get<nsshader>(DIR_LIGHT_SHADER);
 				dc_dq->push_back(ldc);
 			}
 			else if (lcomp->get_light_type() == nslight_comp::l_spot)
 			{
 				ldc->shdr = nse.core()->get<nsshader>(SPOT_LIGHT_SHADER);
-				ldc->proj_light_mat = proj * lcomp->pov(i);
+				ldc->proj_light_mat = proj * itf->world_inv_tf();
 				if (boundingMesh != nullptr)
 				{
 					for (uint32 i = 0; i < boundingMesh->count(); ++i)
@@ -453,6 +487,10 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 	if (camera == NULL)
 		return;
 
+	auto ents = scene->entities_with_comp<nsrender_comp>();
+	if (ents == nullptr)
+		return;
+
 	// update render components and the draw call list
 	drawcall_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
 	drawcall_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
@@ -473,8 +511,9 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 	nssel_comp * sc = nullptr;
 	bool transparent_picking = false;
 	uint32 mat_id = 0;
-	auto iter = scene->entities<nsrender_comp>().begin();
-	while (iter != scene->entities<nsrender_comp>().end())
+
+	auto iter = ents->begin();
+	while (iter != ents->end())
 	{
 		terh.set(0.0f, 1.0f);
 		rComp = (*iter)->get<nsrender_comp>();
@@ -542,13 +581,13 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 				m_all_draw_calls.resize(m_all_draw_calls.size()+1);
 				instanced_draw_call * dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
 				dc->submesh = mSMesh;
-				dc->transform_buffer = tComp->transform_buffer();
-				dc->transform_id_buffer = tComp->transform_id_buffer();
+				dc->transform_buffer = tComp->transform_buffer(scene);
+				dc->transform_id_buffer = tComp->transform_id_buffer(scene);
 				dc->anim_transforms = fTForms;
 				dc->height_minmax = terh;
 				dc->entity_id = (*iter)->id();
 				dc->plugin_id = (*iter)->plugin_id();
-				dc->transform_count = tComp->visible_count();
+				dc->transform_count = tComp->instance_count(scene);
 				dc->casts_shadows = rComp->cast_shadow();
 				dc->transparent_picking = false;
 				dc->mat_index = mat_id;
@@ -564,16 +603,16 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 					scene_dcq->push_back(dc);
 				}
 
-				if (sc != nullptr && sc->selected())
+				if (sc != nullptr && sc->selected(scene))
 				{
 					m_all_draw_calls.resize(m_all_draw_calls.size()+1);
 					instanced_draw_call * sel_dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
 					sel_dc->submesh = mSMesh;
-					sel_dc->transform_buffer = sc->transform_buffer();
+					sel_dc->transform_buffer = sc->transform_buffer(scene);
 					sel_dc->transform_id_buffer = nullptr;
 					sel_dc->anim_transforms = fTForms;
 					sel_dc->height_minmax = terh;
-					sel_dc->transform_count = sc->count();
+					sel_dc->transform_count = sc->selection(scene)->size();
 					sel_dc->shdr = m_shaders.sel_shader;
 					sel_dc->mat = mat;
 					sel_dc->sel_color = sc->color();
@@ -592,74 +631,82 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 
 void nsrender_system::_prepare_tforms(nsscene * scene)
 {
-	auto ent_iter = scene->entities().begin();
-	while (ent_iter != scene->entities().end())
+	auto ents = scene->entities_in_scene();
+	if (ents == nullptr)
+		return;
+	
+	auto ent_iter = ents->begin();
+	while (ent_iter != ents->end())
 	{
 		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-		if (tForm->update_posted())
+        //if (tForm->update_posted())
 		{
-			nsbuffer_object & tFormBuf = *tForm->transform_buffer();
-			nsbuffer_object & tFormIDBuf = *tForm->transform_id_buffer();
+			nstform_comp::per_scene_info * psi = tForm->m_scenes_info.find(scene)->second; 
+			nsbuffer_object * tFormBuf = psi->m_tform_buffer;
+			nsbuffer_object * tFormIDBuf = psi->m_tform_id_buffer;
 
-			if (tForm->buffer_resized())
+			if (psi->m_buffer_resized)
 			{
-				tFormBuf.bind();
-				tFormBuf.allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
-				tFormIDBuf.bind();
-				tFormIDBuf.allocate<uint32>(nsbuffer_object::mutable_dynamic_draw, tForm->count());
+				tFormBuf->bind();
+				tFormBuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, psi->m_tforms.size());
+				tFormIDBuf->bind();
+				tFormIDBuf->allocate<uint32>(nsbuffer_object::mutable_dynamic_draw, psi->m_tforms.size());
+				psi->m_buffer_resized = false;
 			}
 
-			tFormBuf.bind();
-			fmat4 * mappedT = tFormBuf.map<fmat4>(0, tForm->count(),
-											   nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-			tFormIDBuf.bind();
-			uint32 * mappedI = tFormIDBuf.map<uint32>(0, tForm->count(), nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-			tFormIDBuf.unbind();
+			tFormBuf->bind();
+			fmat4 * mappedT = tFormBuf->map<fmat4>(
+				0,
+				psi->m_tforms.size(),
+				nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+			
+			tFormIDBuf->bind();
+			uint32 * mappedI = tFormIDBuf->map<uint32>(
+				0,
+				psi->m_tforms.size(),
+				nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+			tFormIDBuf->unbind();
 
-			uint32 visibleCount = 0;
-			for (uint32 i = 0; i < tForm->count(); ++i)
+			psi->m_visible_count = 0;
+			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 			{
-				if (tForm->transform_update(i))
-				{
-					uivec3 parentID = tForm->parent_id(i);
-					if (parentID != 0)
-					{
-						nsentity * ent = scene->get_entity(parentID.x, parentID.y);
-						if (ent != nullptr)
-						{
-							nstform_comp * tComp2 = ent->get<nstform_comp>();
-							if (parentID.z < tComp2->count())
-								tForm->set_parent(tComp2->transform(parentID.z));
-						}
-					}
+				instance_tform * itf = &psi->m_tforms[i];				
+				// if (tForm->transform_update(i))
+				// {
+				// 	uivec3 parentID = tForm->parent_id(i);
+				// 	if (parentID != 0)
+				// 	{
+				// 		nsentity * ent = scene->get_entity(parentID.x, parentID.y);
+				// 		if (ent != nullptr)
+				// 		{
+				// 			nstform_comp * tComp2 = ent->get<nstform_comp>();
+				// 			if (parentID.z < tComp2->count())
+				// 				tForm->set_parent(tComp2->transform(parentID.z));
+				// 		}
+				// 	}
 
-					tForm->compute_transform(i);
-					tForm->set_instance_update(false, i);
-				}
-				int32 state = tForm->hidden_state(i);
+				// 	tForm->compute_transform(i);
+				// 	tForm->set_instance_update(false, i);
+				// }
+				int32 state = itf->hidden_state;
+				bool layerBit = (state & nstform_comp::hide_layer) == nstform_comp::hide_layer;
+				bool objectBit = (state & nstform_comp::hide_object) == nstform_comp::hide_object;
+				bool showBit = (state & nstform_comp::hide_none) == nstform_comp::hide_none;
+				bool hideBit = (state & nstform_comp::hide_all) == nstform_comp::hide_all;
 
-				bool layerBit = state & nstform_comp::hide_layer && true;
-				bool objectBit = state & nstform_comp::hide_object && true;
-				bool showBit = state & nstform_comp::hide_none && true;
-				bool hideBit = state & nstform_comp::hide_all && true;
-
-				if (!hideBit && (!layerBit && (showBit || !objectBit)))
-				{
-					mappedT[visibleCount] = tForm->transform(i);
-					mappedI[visibleCount] = i;
-					++visibleCount;
-				}
+                if (!hideBit && (!layerBit && (showBit || !objectBit)))
+                {
+					mappedT[psi->m_visible_count] = itf->world_tf();
+					mappedI[psi->m_visible_count] = i;
+					++psi->m_visible_count;
+                }
 			}
-			tForm->set_visible_instance_count(visibleCount);
-
-
-			tFormBuf.bind();
-			tFormBuf.unmap();
-			tFormIDBuf.bind();
-			tFormIDBuf.unmap();
-			tFormIDBuf.unbind();
-			tForm->post_update(tForm->buffer_resized());
-			tForm->set_buffer_resize(false);
+			tFormBuf->bind();
+			tFormBuf->unmap();
+			tFormIDBuf->bind();
+			tFormIDBuf->unmap();
+			tFormIDBuf->unbind();
+			tForm->post_update(false);
 		}
 		++ent_iter;
 	}

@@ -295,6 +295,6 @@ void main()
 {
 	vec2 texCoord = uv_from_screen_size();
 	vec4 base_color = base_color_from_attachments(texCoord);
-	final_frag_color = mix_translucent_fragments(base_color);
+	final_frag_color = vec4(1,0,0,1);//mix_translucent_fragments(base_color);
 }
 </nsstring>

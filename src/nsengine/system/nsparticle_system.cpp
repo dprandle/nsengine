@@ -50,10 +50,9 @@ int32 nsparticle_system::update_priority()
 
 void nsparticle_system::update()
 {
-	nsscene * scene = current_scene();
-	if (scene == NULL)
+	if (scene_error_check())
 		return;
-
+	
 	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
 	if (vp == nullptr)
 		return;
@@ -67,9 +66,13 @@ void nsparticle_system::update()
 
 	glEnable(GL_RASTERIZER_DISCARD);
 	static uint32 count = 1;
-	auto comps = scene->entities<nsparticle_comp>();
-	auto entIter = comps.begin();
-	while (entIter != comps.end())
+
+	auto ents = m_active_scene->entities_with_comp<nsparticle_comp>();
+	if (ents == nullptr)
+		return;
+	
+	auto entIter = ents->begin();
+	while (entIter != ents->end())
 	{
 		nsparticle_comp * comp = (*entIter)->get<nsparticle_comp>();
 

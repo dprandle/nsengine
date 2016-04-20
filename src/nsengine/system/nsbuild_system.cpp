@@ -35,11 +35,11 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 
 nsbuild_system::nsbuild_system():
 m_enabled(false),
-m_tile_brush(NULL),
-m_object_brush(NULL),
-m_tile_build_ent(NULL),
-m_object_build_ent(NULL),
-m_mirror_brush(NULL),
+m_tile_brush(nullptr),
+m_object_brush(nullptr),
+m_tile_build_ent(nullptr),
+m_object_build_ent(nullptr),
+m_mirror_brush(nullptr),
 m_layer(0),
 m_current_mode(build_mode),
 m_current_brush_type(brush_none),
@@ -66,21 +66,20 @@ void nsbuild_system::change_layer(const int32 & pAmount)
 
 void nsbuild_system::enable(const bool & pEnable)
 {
-	nsscene * scene = current_scene();
-	if (scene == NULL)
+	if (m_active_scene == nullptr)
 		return;
 	
 	if (pEnable && !m_enabled)
 	{
 		m_enabled = pEnable;
 		nse.system<nsinput_system>()->push_context(BUILD_MODE_CTXT);
-		nse.system<nsselection_system>()->clear();
+		nse.system<nsselection_system>()->clear_selection();
 
 		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::begin);
 
 		if (m_current_brush_type == brush_tile)
 		{
-			if (m_tile_brush == NULL)
+			if (m_tile_brush == nullptr)
 				return;
 
 			if (m_mirror_mode)
@@ -91,32 +90,34 @@ void nsbuild_system::enable(const bool & pEnable)
 			nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
 
 			nssel_comp * selComp = m_tile_brush->get<nssel_comp>();
-			if (selComp == NULL || brushComp == NULL)
+			if (selComp == nullptr || brushComp == nullptr)
 				return;
 
-            bool tmp = nse.system<nsselection_system>()->mirror_selection();
+            bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();
             nse.system<nsselection_system>()->enable_mirror_selection(false);
 
 			auto brushIter = brushComp->begin();
 			while (brushIter != brushComp->end())
 			{
 				fvec3 pos = nstile_grid::world(ivec3(brushIter->x, brushIter->y, m_layer));
-				uint32 tFormID = scene->add(m_tile_brush, pos);	
-				nse.system<nsselection_system>()->add(m_tile_brush, tFormID);
+				uint32 tFormID = m_active_scene->add(m_tile_brush, nullptr, true, pos);	
+				nse.system<nsselection_system>()->add_to_selection(m_tile_brush, tFormID);
 				nse.system<nsselection_system>()->set_focus_entity(uivec3(m_tile_brush->full_id(),tFormID));					
 				if (m_mirror_mode)
 				{
 					fvec3 mirrorPos = m_mirror_center*2.0f - pos;
 					mirrorPos.z = pos.z;
-					uint32 mirror_tform_id = scene->add(m_mirror_brush, mirrorPos);
-					nse.system<nsselection_system>()->add(m_mirror_brush, mirror_tform_id);
-					m_mirror_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, mirror_tform_id);
+					uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, true, mirrorPos);
+					nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
+					auto tfi = m_mirror_brush->get<nstform_comp>()->instance_transform(m_active_scene, mirror_tform_id);
+					tfi->hidden_state = nstform_comp::hide_all;
 				}
 
 				if (*brushIter == ivec2())
 					m_tile_brush_center_tform_id = tFormID;
-
-				m_tile_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, tFormID);
+				
+				auto tfi = m_tile_brush->get<nstform_comp>()->instance_transform(m_active_scene, tFormID);
+				tfi->hidden_state = nstform_comp::hide_all;
 				++brushIter;
 			}
 
@@ -124,7 +125,7 @@ void nsbuild_system::enable(const bool & pEnable)
 			//	uivec3(m_tile_brush->full_id(),m_tile_brush_center_tform_id)
 			//	);
 			
-			selComp->set_selected(true);
+			selComp->set_selected(m_active_scene, true);
 
             nse.system<nsselection_system>()->enable_mirror_selection(tmp);
 			to_cursor();
@@ -132,10 +133,10 @@ void nsbuild_system::enable(const bool & pEnable)
 		else if (m_current_brush_type == brush_object)
 		{
 			
-			if (m_object_brush == NULL)
+			if (m_object_brush == nullptr)
 				return;
 
-			if (m_object_build_ent == NULL)
+			if (m_object_build_ent == nullptr)
 				return;
 
 			m_object_brush->del<nsrender_comp>();
@@ -148,26 +149,28 @@ void nsbuild_system::enable(const bool & pEnable)
 				m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH, m_object_brush);
 
 			nssel_comp * selComp = m_object_brush->get<nssel_comp>();
-			uint32 tFormID = scene->add(m_object_brush, pos);
-			nse.system<nsselection_system>()->add(m_object_brush, tFormID);
-			selComp->set_selected(true);
+			uint32 tFormID = m_active_scene->add(m_object_brush, nullptr, false, pos);
+			nse.system<nsselection_system>()->add_to_selection(m_object_brush, tFormID);
+			selComp->set_selected(m_active_scene, true);
 
 			nse.system<nsselection_system>()->set_focus_entity(
 				uivec3(m_object_brush->full_id(),tFormID)
 				);
 
-			m_object_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, tFormID);
+			auto tfi = m_object_brush->get<nstform_comp>()->instance_transform(m_active_scene, tFormID);
+			tfi->hidden_state = nstform_comp::hide_all;
 			
-			bool tmp = nse.system<nsselection_system>()->mirror_selection();				
+			bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();				
 			nse.system<nsselection_system>()->enable_mirror_selection(false);				
 				
 			if (m_mirror_mode)
 			{
 				fvec3 mirrorPos = m_mirror_center*2.0f - pos;
 				mirrorPos.z = pos.z;
-				uint32 mirror_tform_id = scene->add(m_mirror_brush, mirrorPos);
-				nse.system<nsselection_system>()->add(m_mirror_brush, mirror_tform_id);
-				m_mirror_brush->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_all, true, mirror_tform_id);
+				uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, false, mirrorPos);
+				nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
+				auto tfi = m_mirror_brush->get<nstform_comp>()->instance_transform(m_active_scene, mirror_tform_id);
+				tfi->hidden_state = nstform_comp::hide_all;
 			}
 
 			m_object_brush->del<nsoccupy_comp>();
@@ -192,22 +195,22 @@ void nsbuild_system::enable(const bool & pEnable)
 		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::end);
 		nse.system<nsinput_system>()->pop_context();
 
-		if (m_current_brush_type == brush_object && m_object_brush != NULL)
+		if (m_current_brush_type == brush_object && m_object_brush != nullptr)
 		{
 			m_object_brush->del<nsoccupy_comp>();
 			m_object_brush->del<nsrender_comp>();
 			m_object_brush->del<nslight_comp>();
-			scene->remove(m_object_brush);
+			m_active_scene->remove(m_object_brush, true);
 		}
 
-		if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
+		if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
 		{
-			scene->remove(m_tile_brush);
+			m_active_scene->remove(m_tile_brush, true);
 		}
 
-		nse.system<nsselection_system>()->clear();
+		nse.system<nsselection_system>()->clear_selection();
         nse.core()->destroy<nsentity>(ENT_MIRROR_BRUSH);
-		m_mirror_brush = NULL;
+		m_mirror_brush = nullptr;
 	}
 }
 
@@ -233,17 +236,16 @@ void nsbuild_system::enable_mirror(bool pEnable)
 
 void nsbuild_system::erase()
 {
-	nsscene * scene = current_scene();
-	if (scene == NULL)
+	if (m_active_scene == nullptr)
 		return;
 
 	if (m_current_brush_type == brush_tile)
 	{
-		if (m_tile_brush == NULL)
+		if (m_tile_brush == nullptr)
 			return;
 
 		nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
-		if (brushComp == NULL)
+		if (brushComp == nullptr)
 			return;
 
 		auto brushIter = brushComp->begin();
@@ -251,14 +253,15 @@ void nsbuild_system::erase()
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				fvec3 pos = m_tile_brush->get<nstform_comp>()->lpos(m_tile_brush_center_tform_id) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
-				scene->remove(pos);
-
+				auto tfi = m_tile_brush->get<nstform_comp>()->instance_transform(m_active_scene,
+																				 m_tile_brush_center_tform_id);
+				fvec3 pos = tfi->world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i));
+				m_active_scene->remove(pos, false);
 				if (m_mirror_mode)
 				{
 					fvec3 new_pos = m_mirror_center*2.0f - pos;
 					new_pos.z = pos.z;
-					scene->remove(new_pos);
+					m_active_scene->remove(new_pos, false);
 				}
 			}
 			++brushIter;
@@ -268,9 +271,9 @@ void nsbuild_system::erase()
 
 const fvec4 nsbuild_system::active_brush_color() const
 {
-	if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
+	if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
 		return m_tile_brush->get<nssel_comp>()->default_color();
-	else if (m_current_brush_type == brush_object && m_object_brush != NULL)
+	else if (m_current_brush_type == brush_object && m_object_brush != nullptr)
 		return m_object_brush->get<nssel_comp>()->default_color();
 	return fvec4();
 }
@@ -339,33 +342,36 @@ void nsbuild_system::to_cursor()
 		return;
 
 	nsentity * camera = vp->camera;
-	if (camera == NULL)
+	if (camera == nullptr)
 		return;
 
 	nstform_comp * cam_tform = camera->get<nstform_comp>();
 	nscam_comp * camc = camera->get<nscam_comp>();
 	fvec2 cursor_pos = platform_normalized_mpos();
 
-	nstform_comp * brush_tform = NULL;
+	nstform_comp * brush_tform = nullptr;
+	instance_tform * itf = nullptr;
 	fvec3 original_pos;
 	
 	if (m_current_brush_type == brush_tile)
 	{
-		if (m_tile_brush == NULL)
+		if (m_tile_brush == nullptr)
 			return;
 		brush_tform = m_tile_brush->get<nstform_comp>();
-		if (brush_tform == NULL)
+		if (brush_tform == nullptr)
 			return;
-		original_pos = brush_tform->lpos(m_tile_brush_center_tform_id);
+		itf = brush_tform->instance_transform(m_active_scene, m_tile_brush_center_tform_id);
+		original_pos = itf->world_position();
 	}
 	else if (m_current_brush_type == brush_object)
 	{
-		if (m_object_brush == NULL)
+		if (m_object_brush == nullptr)
 			return;
 		brush_tform = m_object_brush->get<nstform_comp>();
-		if (brush_tform == NULL)
+		if (brush_tform == nullptr)
 			return;
-		original_pos = brush_tform->lpos();
+		itf = brush_tform->instance_transform(m_active_scene, 0);
+		original_pos = itf->world_position();
 	}
 	else
 		return;
@@ -381,7 +387,7 @@ void nsbuild_system::to_cursor()
 	new_pos /= new_pos.w;
 
 	fvec3 fpos(new_pos.xyz());
-	fvec3 castVec = fpos - cam_tform->wpos();
+	fvec3 castVec = fpos - cam_tform->instance_transform(m_active_scene, 0)->world_position();
 	castVec.normalize();
 
 	fvec3 normal(0.0f,0.0f,-1.0f);
@@ -392,8 +398,8 @@ void nsbuild_system::to_cursor()
 	fpos += castVec*depth;
 	fpos -= original_pos;
 	
-	for (uint32 i = 0; i < brush_tform->count(); ++i)
-		brush_tform->translate(fpos, i);
+	// for (uint32 i = 0; i < brush_tform->instance_count(m_active_scene); ++i)
+	// 	brush_tform->translate(fpos, i);
 }
 
 nsentity * nsbuild_system::tile_brush()
@@ -408,20 +414,19 @@ nsentity * nsbuild_system::object_brush()
 
 void nsbuild_system::paint()
 {
-	nsscene * scene = current_scene();
-	if (scene == NULL)
+	if (m_active_scene == nullptr)
 		return;
-
+	
 	if (m_current_brush_type == brush_tile)
 	{
-		if (m_tile_build_ent == NULL)
+		if (m_tile_build_ent == nullptr)
 			return;
 
-		if (m_tile_brush == NULL)
+		if (m_tile_brush == nullptr)
 			return;
 
 		nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
-		if (brushComp == NULL)
+		if (brushComp == nullptr)
 			return;
 
 		auto brushIter = brushComp->begin();
@@ -429,21 +434,21 @@ void nsbuild_system::paint()
 		{
 			for (int32 i = 0; i < brushComp->height(); ++i)
 			{
-				fvec3 pos = m_tile_brush->get<nstform_comp>()->wpos(m_tile_brush_center_tform_id) + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				fvec3 pos = m_tile_brush->get<nstform_comp>()->instance_transform(m_active_scene, m_tile_brush_center_tform_id)->world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				nstile_grid::snap(pos);
 				
 				if (m_overwrite)
 				{
-					scene->remove(pos);
+					m_active_scene->remove(pos, false);
 					if (m_mirror_mode)
 					{
 						fvec3 new_pos = m_mirror_center*2.0f - pos;
 						new_pos.z = pos.z;
-						scene->remove(new_pos);
+						m_active_scene->remove(new_pos, false);
 					}
 				}
 
-				uint32 tFormID = scene->add(m_tile_build_ent, pos);
+				uint32 tFormID = m_active_scene->add(m_tile_build_ent, nullptr, true, pos);
 				
 				if (tFormID != -1)
 				{
@@ -451,10 +456,10 @@ void nsbuild_system::paint()
 					{
 						fvec3 new_pos = m_mirror_center*2.0f - pos;
 						new_pos.z = pos.z;
-						uint32 tFormMID = scene->add(m_tile_build_ent, new_pos);
+						uint32 tFormMID = m_active_scene->add(m_tile_build_ent, nullptr, true, new_pos);
 						if (tFormMID == -1)
 						{
-							scene->remove(m_tile_build_ent, tFormID);
+							m_active_scene->remove(m_tile_build_ent, tFormID);
 							continue;
 						}
 					}
@@ -465,12 +470,12 @@ void nsbuild_system::paint()
 	}
 	else if (m_current_brush_type == brush_object)
 	{
-		if (m_object_brush == NULL || m_object_build_ent == NULL)
+		if (m_object_brush == nullptr || m_object_build_ent == nullptr)
 			return;
 
-		fvec3 pos = m_object_brush->get<nstform_comp>()->wpos();
+		fvec3 pos = m_object_brush->get<nstform_comp>()->instance_transform(m_active_scene, 0)->world_position();
 		nstile_grid::snap(pos);
-		uint32 tFormID = scene->add(m_object_build_ent, pos);
+		uint32 tFormID = m_active_scene->add(m_object_build_ent, nullptr, false, pos);
 
 		if (tFormID != -1)
 		{
@@ -478,10 +483,10 @@ void nsbuild_system::paint()
 			{
 				fvec3 new_pos = m_mirror_center*2.0f - pos;
 				new_pos.z = pos.z;
-				uint32 tFormMID = scene->add(m_object_build_ent, new_pos);
+				uint32 tFormMID = m_active_scene->add(m_object_build_ent, nullptr, false, new_pos);
 				if (tFormMID == -1)
 				{
-					scene->remove(m_object_build_ent, tFormID);
+					m_active_scene->remove(m_object_build_ent, tFormID, false);
 					return;
 				}
 			}
@@ -492,12 +497,12 @@ void nsbuild_system::paint()
 
 void nsbuild_system::set_active_brush_color(const fvec4 & pColor)
 {
-	if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
+	if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
 		m_tile_brush->get<nssel_comp>()->set_color(pColor);
-	else if (m_current_brush_type == brush_object && m_object_brush != NULL)
+	else if (m_current_brush_type == brush_object && m_object_brush != nullptr)
 		m_object_brush->get<nssel_comp>()->set_color(pColor);
 	
-	if (m_mirror_mode && m_mirror_brush != NULL)
+	if (m_mirror_mode && m_mirror_brush != nullptr)
 		m_mirror_brush->get<nssel_comp>()->set_color(pColor);
 }
 
@@ -514,20 +519,20 @@ void nsbuild_system::set_brush_type(const brush_t & brush_type_)
 	switch (m_current_brush_type)
 	{
 	case (brush_none) :
-		m_tile_build_ent = NULL;
-		m_object_build_ent = NULL;
+		m_tile_build_ent = nullptr;
+		m_object_build_ent = nullptr;
 		break;
 	case (brush_tile):
-		if (m_tile_build_ent == NULL)
+		if (m_tile_build_ent == nullptr)
 			return;
 		if (!m_tile_build_ent->has<nstile_comp>())
-			m_tile_build_ent = NULL;
+			m_tile_build_ent = nullptr;
 		break;
 	case (brush_object):
-		if (m_object_build_ent == NULL)
+		if (m_object_build_ent == nullptr)
 			return;
 		if (m_object_build_ent->has<nstile_comp>())
-			m_object_build_ent = NULL;
+			m_object_build_ent = nullptr;
 		break;
 	}
 
@@ -557,7 +562,7 @@ void nsbuild_system::set_tile_brush(nsentity * pBrush)
 
 void nsbuild_system::set_tile_build_ent(nsentity * pBuildEnt)
 {
-	if (pBuildEnt == NULL || pBuildEnt->has<nstile_comp>())
+	if (pBuildEnt == nullptr || pBuildEnt->has<nstile_comp>())
 		m_tile_build_ent = pBuildEnt;
 }
 
@@ -566,7 +571,7 @@ void nsbuild_system::set_object_build_ent(nsentity * pBuildEnt)
 	bool tog = m_enabled;
 	if (tog)
 		toggle();
-	if (pBuildEnt == NULL || !pBuildEnt->has<nstile_comp>())
+	if (pBuildEnt == nullptr || !pBuildEnt->has<nstile_comp>())
 		m_object_build_ent = pBuildEnt;
 	if (tog)
 		toggle();
@@ -607,10 +612,9 @@ int32 nsbuild_system::update_priority()
 
 void nsbuild_system::update()
 {
-	nsscene * scene = current_scene();
-	if (scene == NULL)
+	if (scene_error_check())
 		return;
-
+	
 	if (m_painting)
 	{
 		paint();
@@ -627,33 +631,38 @@ void nsbuild_system::update()
 
     if (m_enabled)
 	{
-        if (m_current_brush_type == brush_tile && m_tile_brush != NULL && m_mirror_mode)
+        if (m_current_brush_type == brush_tile && m_tile_brush != nullptr && m_mirror_mode)
 		{
 			nstform_comp * brush_tform = m_tile_brush->get<nstform_comp>();
-			for (uint32 i = 0; i < brush_tform->count(); ++i)
+			for (uint32 i = 0; i < brush_tform->instance_count(m_active_scene); ++i)
 			{
 				nstform_comp * mirror_tform = m_mirror_brush->get<nstform_comp>();
-				fvec3 wp = brush_tform->wpos(i);
+				
+				fvec3 wp = brush_tform->instance_transform(m_active_scene, i)->world_position();
 				fvec3 new_pos = m_mirror_center*2.0f - wp;
 				new_pos.z = wp.z;
-				mirror_tform->set_pos(new_pos, i);
+				mirror_tform->instance_transform(m_active_scene, i)->position = new_pos;
 			}
 		}
-        else if (m_current_brush_type == brush_object && m_object_build_ent != NULL)
+        else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
 		{
 			nstform_comp * obj_tform = m_object_brush->get<nstform_comp>();
-			fvec3 wp = obj_tform->wpos();			
+			fvec3 wp = obj_tform->instance_transform(m_active_scene, 0)->world_position();
 			nssel_comp * selComp = m_object_brush->get<nssel_comp>();
 			bool no_collision = true;
 
 			nsoccupy_comp * occComp = m_object_brush->get<nsoccupy_comp>();
-			if (occComp != NULL)
+			if (occComp != nullptr)
 			{
-				auto selIter = selComp->begin();
-				while (selIter != selComp->end())
+				auto selection = selComp->selection(m_active_scene);
+				if (selection != nullptr)
 				{
-					no_collision = no_collision && !scene->grid().occupied(occComp->spaces(), obj_tform->wpos(*selIter));
-					++selIter;
+					auto selIter = selection->begin();
+					while (selIter != selection->end())
+					{
+						no_collision = no_collision && !m_active_scene->grid().occupied(occComp->spaces(), obj_tform->instance_transform(m_active_scene, *selIter)->world_position());
+						++selIter;
+					}
 				}
 			}
 
@@ -662,17 +671,24 @@ void nsbuild_system::update()
 				nstform_comp * mirror_tform = m_mirror_brush->get<nstform_comp>();				
 				fvec3 new_pos = m_mirror_center*2.0f - wp;
 				new_pos.z = wp.z;
-				mirror_tform->set_pos(new_pos);
-				nssel_comp * selComp2 = m_mirror_brush->get<nssel_comp>();
+				auto mirror_itf = mirror_tform->instance_transform(m_active_scene, 0);
+				mirror_itf->position = new_pos;
+				mirror_itf->update = true;
+				mirror_tform->post_update(true);
 				
+				nssel_comp * selComp2 = m_mirror_brush->get<nssel_comp>();
 				nsoccupy_comp * occComp2 = m_mirror_brush->get<nsoccupy_comp>();
-				if (occComp2 != NULL)
+				if (occComp2 != nullptr)
 				{
-					auto selIter = selComp2->begin();
-					while (selIter != selComp2->end())
+					auto selection = selComp2->selection(m_active_scene);
+					if (selection != nullptr)
 					{
-						no_collision = no_collision && !scene->grid().occupied(occComp2->spaces(), mirror_tform->wpos(*selIter));
-						++selIter;
+						auto selIter = selection->begin();
+						while (selIter != selection->end())
+						{
+							no_collision = no_collision && !m_active_scene->grid().occupied(occComp2->spaces(), mirror_itf->world_position());
+							++selIter;
+						}
 					}
 				}	
 			}	
@@ -688,15 +704,15 @@ void nsbuild_system::update()
 	if (m_enabled)
 	{
 		float z = 0.0;
-		if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
-			z = m_tile_brush->get<nstform_comp>()->wpos().z;
-		else if (m_current_brush_type == brush_object && m_object_build_ent != NULL)
-			z = m_object_brush->get<nstform_comp>()->wpos().z;
+		if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
+			z = m_tile_brush->get<nstform_comp>()->instance_transform(m_active_scene, 0)->world_position().z;
+		else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
+			z = m_object_brush->get<nstform_comp>()->instance_transform(m_active_scene, 0)->world_position().z;
 		m_layer = nstile_grid::grid(fvec3(0,0,z)).z;
 
-		if (m_current_mode == erase_mode && m_tile_brush != NULL)
+		if (m_current_mode == erase_mode && m_tile_brush != nullptr)
 			set_active_brush_color(fvec4(1.0f,0.0f,0.0f,1.0f));
-		else if (m_current_brush_type == brush_tile && m_tile_brush != NULL)
+		else if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
 			set_active_brush_color(m_tile_brush->get<nssel_comp>()->default_color());
 	}
 }
@@ -711,17 +727,34 @@ bool nsbuild_system::_handle_initial_snap_brush_z(nsaction_event * evnt)
 {
 	if (m_enabled)
 	{
-		if (m_object_brush != NULL)
+		if (m_object_brush != nullptr)
 		{
 			nstform_comp * tc = m_object_brush->get<nstform_comp>();
-			if (tc != NULL)
-				tc->snap();
+			if (tc != nullptr)
+			{
+				for (uint32 i = 0; i < tc->instance_count(m_active_scene); ++i)
+				{
+					auto itf = tc->instance_transform(m_active_scene, i);
+					fvec3 wpos = itf->world_position();
+					nstile_grid::snap(wpos);
+					itf->set_world_position(wpos);
+				}
+			}
 		}
-		if (m_tile_brush != NULL)
+		if (m_tile_brush != nullptr)
 		{
 			nstform_comp * tc = m_tile_brush->get<nstform_comp>();
-			if (tc != NULL)
-				tc->snap();
+			if (tc != nullptr)
+			{
+				for (uint32 i = 0; i < tc->instance_count(m_active_scene); ++i)
+				{
+					auto itf = tc->instance_transform(m_active_scene, i);
+					fvec3 wpos = itf->world_position();
+					nstile_grid::snap(wpos);
+					itf->set_world_position(wpos);
+				}
+
+			}
 		}
 	}
 	return true;
@@ -731,21 +764,33 @@ bool nsbuild_system::_handle_snap_z(nsaction_event * evnt)
 {
 	if (m_enabled)
 	{
-		if (m_object_brush != NULL)
+		if (m_object_brush != nullptr)
 		{
 			nstform_comp * tc = m_object_brush->get<nstform_comp>();
-			if (tc != NULL)
+			if (tc != nullptr)
 			{
-				tc->snap_z();
+				for (uint32 i = 0; i < tc->instance_count(m_active_scene); ++i)
+				{
+					auto itf = tc->instance_transform(m_active_scene, i);
+					fvec3 wpos = itf->world_position();
+					nstile_grid::snap(wpos);
+					itf->set_world_position(fvec3(itf->world_position().xy(),wpos.z));
+				}
 				to_cursor();
 			}			
 		}
-		if (m_tile_brush != NULL)
+		if (m_tile_brush != nullptr)
 		{
 			nstform_comp * tc = m_tile_brush->get<nstform_comp>();
-			if (tc != NULL)
+			if (tc != nullptr)
 			{
-				tc->snap_z();
+				for (uint32 i = 0; i < tc->instance_count(m_active_scene); ++i)
+				{
+					auto itf = tc->instance_transform(m_active_scene, i);
+					fvec3 wpos = itf->world_position();
+					nstile_grid::snap(wpos);
+					itf->set_world_position(fvec3(itf->world_position().xy(),wpos.z));
+				}
 				to_cursor();
 			}
 		}

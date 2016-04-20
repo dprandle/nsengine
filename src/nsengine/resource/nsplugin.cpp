@@ -42,14 +42,6 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nstile_comp.h>
 #include <nslight_comp.h>
 
-nsscene * current_scene()
-{
-	nsplugin * act = nsep.active();
-	if (act == nullptr)
-		return nullptr;
-	return act->current_scene();
-}
-
 nsplugin::nsplugin():
     nsresource(),
 	m_notes(),

@@ -83,8 +83,6 @@ public:
 
 	const fvec2 & intensity() const;
 
-	const fmat4 & pov(uint32 index_) const;
-
 	float radius() const;
 
 	const fvec3 & scaling() const;
@@ -96,10 +94,6 @@ public:
 	const int32 & shadow_samples() const;
 
 	const fvec2 & shadow_clipping() const { return m_shadow_clip; }
-
-	const fmat4 & transform(uint32 index_);
-
-	uint32 transform_count();
 
 	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 

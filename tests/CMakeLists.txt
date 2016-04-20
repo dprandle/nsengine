@@ -33,8 +33,11 @@ link_libraries(${OPENGL_LIBRARIES})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 
-add_executable(inputtest inputtest.cpp)
-set_target_properties(inputtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+add_executable(most_basic_test most_basic_test.cpp)
+set_target_properties(most_basic_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+# add_executable(inputtest inputtest.cpp)
+# set_target_properties(inputtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
 #add_executable(buildsystemtest buildsystemtest.cpp)
 #set_target_properties(buildsystemtest PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

@@ -458,6 +458,8 @@ public:
 
 	void shutdown();
 
+	void set_active_scene(nsscene * active_scene);
+
 	void start();
 
 	template<class sys_type>

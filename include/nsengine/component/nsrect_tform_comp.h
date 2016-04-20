@@ -49,8 +49,6 @@ public:
 
 	virtual void init();
 
-	void finalize();
-
 	virtual void pup(nsfile_pupper * p);
 
 	nsrect_tform_comp & operator=(nsrect_tform_comp rhs_);

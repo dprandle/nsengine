@@ -413,7 +413,7 @@ void light_pass::render()
 		dc->shdr->set_uniform("projLightMat", dc->proj_light_mat);
 		dc->shdr->set_uniform("bgColor", dc->bg_color);
 		dc->shdr->set_uniform("light.direction", dc->direction);
-		dc->shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->wpos());
+        dc->shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->instance_transform(nse.system<nsrender_system>()->active_scene(), 0)->world_position());
 		dc->shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		dc->shdr->set_uniform("fog_color", vp->m_fog_color);
 		dc->shdr->set_uniform("lightingEnabled", vp->dir_lights);
@@ -976,15 +976,15 @@ void nsopengl_driver::create_default_render_passes()
 	final_pass->driver = this;
 
 	m_current_context->m_render_passes.push_back(gbuf_pass);
-	m_current_context->m_render_passes.push_back(oit_pass);
-	m_current_context->m_render_passes.push_back(dir_shadow_pass);
+    m_current_context->m_render_passes.push_back(oit_pass);
+    m_current_context->m_render_passes.push_back(dir_shadow_pass);
 	m_current_context->m_render_passes.push_back(dir_pass);
-	m_current_context->m_render_passes.push_back(spot_shadow_pass);
-	m_current_context->m_render_passes.push_back(spot_pass);
-	m_current_context->m_render_passes.push_back(point_shadow_pass);
-	m_current_context->m_render_passes.push_back(point_pass);
-	m_current_context->m_render_passes.push_back(sel_pass_opaque);
-	m_current_context->m_render_passes.push_back(ui_pass);
+    m_current_context->m_render_passes.push_back(spot_shadow_pass);
+    m_current_context->m_render_passes.push_back(spot_pass);
+    m_current_context->m_render_passes.push_back(point_shadow_pass);
+    m_current_context->m_render_passes.push_back(point_pass);
+    m_current_context->m_render_passes.push_back(sel_pass_opaque);
+    //m_current_context->m_render_passes.push_back(ui_pass);
 	m_current_context->m_render_passes.push_back(final_pass);
 }
 
@@ -1007,14 +1007,14 @@ void nsopengl_driver::render(nsrender::viewport * vp)
 	if (!_valid_check())
 		return;
 
-	m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
+    //m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
 	//m_render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
-	m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
+    //m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
 	//m_render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
-	m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
+    //m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
 	//m_render_passes[point_shadow]->enabled = vp->point_light_shadows;
-	m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
-	m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
+    //m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
+    //m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
 
 	for (uint32 i = 0; i < m_current_context->m_render_passes.size(); ++i)
 	{

@@ -352,6 +352,16 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
 	return f;
 }
 
+void nsengine::set_active_scene(nsscene * active_scene)
+{
+	auto sys_iter = m_systems->begin();
+	while (sys_iter != m_systems->end())
+	{
+		sys_iter->second->set_active_scene(active_scene);
+		++sys_iter;
+	}	
+}
+
 void nsengine::update()
 {
 	static double accumulator = 0.0;

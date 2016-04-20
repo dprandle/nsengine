@@ -11,8 +11,6 @@
 */
 
 #include <nsentity.h>
-#include <nsscene.h>
-#include <nsscene_manager.h>
 #include <nssel_comp.h>
 #include <nsfactory.h>
 #include <nsengine.h>
@@ -70,7 +68,6 @@ bool nsentity::add(nscomponent * pComp)
 	{
 		pComp->set_owner(this);
 		component_added(pComp);
-		update_scene();
 	}
 	return ret.second;
 }
@@ -93,7 +90,6 @@ void nsentity::clear()
 		delete iter->second;
 		iter = m_components.erase(iter);
 	}
-	update_scene();
 }
 
 nsentity::comp_set::iterator nsentity::begin()
@@ -153,7 +149,6 @@ bool nsentity::del(uint32 type_id)
 	if (cmp != NULL) // Log delete
 	{
 		delete cmp;
-		update_scene();
 		dprint("nsentity::del - Deleting \"" + nse.guid(type_id) + "\" from Entity " + m_name + "\"");
 		return true;
 	}
@@ -245,10 +240,9 @@ nscomponent * nsentity::remove(uint32 type_id)
 	{
 		comp_t = iter->second;
 		comp_t->release();
-		comp_t->set_owner(NULL);
 		m_components.erase(iter);
 		component_removed(comp_t);
-		update_scene();
+		comp_t->set_owner(NULL);
 		dprint("nsentity::remove - Removing \"" + nse.guid(type_id) + "\" from Entity " + m_name + "\"");
 	}
 	else
@@ -288,11 +282,4 @@ bool nsentity::update_posted(const nsstring & compType)
 	if (comp_t != NULL)
 		return comp_t->update_posted();
 	return false;
-}
-
-void nsentity::update_scene()
-{
-	nsscene * scene = current_scene();
-	if (scene != NULL)
-		scene->update_comp_maps(m_plugin_id, m_id);
 }

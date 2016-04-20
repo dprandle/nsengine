@@ -177,33 +177,11 @@ float nslight_comp::shadow_darkness() const
 	return m_shadow_darkness;
 }
 
-const fmat4 & nslight_comp::pov(uint32 index_) const
-{
-	return m_owner->get<nstform_comp>()->pov(index_);
-}
-
 const int32 & nslight_comp::shadow_samples() const
 {
 	return m_shadow_samples;
 }
 
-const fmat4 & nslight_comp::transform(uint32 index_)
-{
-	nstform_comp * tc = m_owner->get<nstform_comp>();
-	if (tc == NULL)
-		return m_tmp_ret.set_identity();
-	m_tmp_ret.set(rotation_mat3(tc->orientation(index_)) % m_scaling);
-	m_tmp_ret.set_column(3, tc->lpos(index_).x, tc->lpos(index_).y, tc->lpos(index_).z, 1);
-	return m_tmp_ret;
-}
-
-uint32 nslight_comp::transform_count()
-{
-	return m_owner->get<nstform_comp>()->count();
-}
-/*!
-Get the resources that the component uses. The light comp uses a bounding mesh.
-*/
 uivec3_vector nslight_comp::resources()
 {
 	// Build map
