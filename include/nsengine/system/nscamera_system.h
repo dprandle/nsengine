@@ -35,6 +35,9 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 
 #define CAMERA_INPUT_CTXT "camera_controls"
 
+#define DEFAULT_CAM_PIVOT_SENSITIVITY 70.0f
+#define DEFAULT_CAM_MOVE_SENSITIVITY 15.0f
+
 #include <nssystem.h>
 
 class nscam_comp;

@@ -51,25 +51,65 @@ int main()
 
 	nse.setup_core_plug();
 
-
     nsplugin * plg = nsep.create("most_basic_test");
     plg->bind();
 	setup_input_map(plg);
-
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
     plg->set_current_scene(new_scene, true, false);
 
-    nsentity * grass_tile = plg->create_tile("grass_tile", "diffuseGrass.png", "normalGrass.png", fvec4(1,0,0,1), 4.0, 0.4, fvec3(1,1,1), true);
+    nsentity * grass_tile = plg->create_tile("grass_tile", nse.import_dir() + "diffuseGrass.png", nse.import_dir() + "normalGrass.png", fvec4(1,0,0,1), 4.0, 0.4, fvec3(1,1,1), true);
+    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
+    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-    nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 1.0f,fvec3(1.0f),true,0.5f,2);
+    nsentity * dirl = plg->create_dir_light("dirlight", 0.0f, 1.0f,fvec3(1.0f),true,0.5f,2);
+
+
 
     new_scene->add(cam);
-    new_scene->add(dirl,nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(grass_tile);
+    new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add_gridded(grass_tile,ivec3(32,32,1));
+
+
+
+    nsentity * canvas = plg->create<nsentity>("canvas");
+    nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();
+
+    nsentity * ui_button = plg->create<nsentity>("button_new_match");
+    nsui_comp * uic = ui_button->create<nsui_comp>();
+
+    cc->add(ui_button);
+    nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
+
+    nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
+    nsmaterial * pad_mat = plg->create<nsmaterial>("btn_padding_mat");
+    pad_mat->set_color_mode(true);
+    pad_mat->set_color(fvec4(1.0f,1.0f,0.0f,0.0f));
+    nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "new-match.png", true);
+    mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.75f,1.0f,1.0f)), true);
+    mat->set_color_mode(false);
+
+    auto pic = tuic->canvas_info(cc);
+    pic->anchor_rect = fvec4(0.5f,0.5f,0.5f,0.5f);
+    pic->pixel_offset_rect = fvec4(-321/2, -308/8, 321/2, 308/8);
+    pic->pivot = fvec2(0.5f,0.5f);
+    pic->layer = 0;
+    pic->angle = 0;
+
+    uic->content_properties.mat_id = mat->full_id();
+    uic->outer_properties.border_color = fvec4(0.0f,0.0f,0.0f,1.0f);
+    uic->outer_properties.border = fvec4(3,3,3,3);
+
+    uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+    uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
+    uic->show = true;
+
 
     nsrender::viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
+    vp.ui_canvases.push_back(canvas);
     nse.system<nsrender_system>()->insert_viewport("main_view",vp);
 
     nse.set_active_scene(new_scene);
@@ -78,8 +118,8 @@ int main()
     while (glfw_window_open())
     {
         nse.update();
-//		nse.system<nsui_system>()->set_active_viewport(nse.system<nsrender_system>()->viewport("main_view"));
-//		nse.system<nsui_system>()->push_draw_calls();
+        nse.system<nsui_system>()->set_active_viewport(&vp);
+        nse.system<nsui_system>()->push_draw_calls();
 		nse.system<nsrender_system>()->render();
         glfw_update();
     }
@@ -230,7 +270,14 @@ void setup_input_map(nsplugin * plg)
         nsinput_map::t_pressed);
     selectmove.add_mouse_mod(nsinput_map::left_button);
     im->add_mouse_trigger("Main", nsinput_map::movement,selectmove);
-	
+
+    nsinput_map::trigger select_rotate(
+        "rotate_selection",
+        nsinput_map::t_pressed);
+    select_rotate.add_key_mod(nsinput_map::key_any);
+    im->add_key_trigger("Main", nsinput_map::key_r,select_rotate);
+
+
 	nsinput_map::trigger selectmovexy(
 		NSSEL_MOVE_XY,
 		nsinput_map::t_pressed);

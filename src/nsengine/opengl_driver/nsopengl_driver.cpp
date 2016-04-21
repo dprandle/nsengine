@@ -191,8 +191,9 @@ void gbuffer_render_pass::render()
 		dc->shdr->set_uniform("opacityMap", OPACITY_TEX_UNIT);
 		dc->shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
 		dc->shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
+        fmat4 proj_cam = vp->camera->get<nscam_comp>()->proj_cam();
 		if (vp->camera != nullptr)
-			dc->shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());	
+            dc->shdr->set_uniform("projCamMat", proj_cam);
 
 		dc->shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
 		dc->shdr->set_uniform("hasDiffuseMap", dc->mat->contains(nsmaterial::diffuse));
@@ -984,7 +985,7 @@ void nsopengl_driver::create_default_render_passes()
     m_current_context->m_render_passes.push_back(point_shadow_pass);
     m_current_context->m_render_passes.push_back(point_pass);
     m_current_context->m_render_passes.push_back(sel_pass_opaque);
-    //m_current_context->m_render_passes.push_back(ui_pass);
+    m_current_context->m_render_passes.push_back(ui_pass);
 	m_current_context->m_render_passes.push_back(final_pass);
 }
 
@@ -1007,14 +1008,14 @@ void nsopengl_driver::render(nsrender::viewport * vp)
 	if (!_valid_check())
 		return;
 
-    //m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
-	//m_render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
-    //m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
-	//m_render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
-    //m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
-	//m_render_passes[point_shadow]->enabled = vp->point_light_shadows;
-    //m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
-    //m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
+    m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
+    //m_current_context->m_render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
+    m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
+    //m_current_context->m_render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
+    m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
+    //m_current_context->m_render_passes[point_shadow]->enabled = vp->point_light_shadows;
+    m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
+    m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
 
 	for (uint32 i = 0; i < m_current_context->m_render_passes.size(); ++i)
 	{

@@ -79,11 +79,11 @@
 ** DONE Get tile brushes working again
 ** DONE Get object brushes working again
 ** DONE Rework build system events
-* TODO Testing [83%]
+* TODO Testing [33%]
 ** DONE Test Animation System again
 ** DONE Test lighting parameters stuff
 ** TODO Test particle system make sure works
-** DONE Test loading and saving of each resource type
+** TODO Test loading and saving of each resource type
 *** TODO Map
 *** TODO Mesh
 *** TODO Material
@@ -93,9 +93,9 @@
 *** TODO Shader
 *** TODO Entity
 *** DONE InputMap
-** DONE Test skybox
-** DONE Test fog
-* TODO Create UI System
+** TODO Test skybox
+** TODO Test fog
+* DONE Create UI System
 * TODO Create audio system
 * TODO Create thread mechanism full multiplatform
 * TODO Get basic text rendering working
@@ -122,7 +122,8 @@
 ** DONE nstform_comp
 ** DONE nstile_brush_comp
 ** nstile_comp
-* TODO Moving driver over to specialized class
-** TODO Add events for resource creation and deletion
-** TODO Move the gl_context stuff over to gl driver - no need for multiple plugin managers anymore
+* DONE Moving driver over to specialized class
+** DONE Add events for resource creation and deletion
+** DONE Move the gl_context stuff over to gl driver - no need for multiple plugin managers anymore
 ** TODO Create necessary management code for creating all the gl stuff outside of the resources themselves
+   

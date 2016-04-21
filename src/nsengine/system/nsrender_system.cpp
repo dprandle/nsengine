@@ -32,7 +32,6 @@
 #include <nsrender_comp.h>
 #include <nslight_comp.h>
 
-
 nsrender_system::nsrender_system() :
 	nssystem(),
 	m_default_mat(nullptr),
@@ -77,14 +76,11 @@ void nsrender_system::update()
 	while (ent_iter != scene_ents->end())
 	{
 		nstform_comp *tfc = (*ent_iter)->get<nstform_comp>();
-		if (tfc->update_posted())
+		for (uint32 i = 0; i < tfc->instance_count(m_active_scene); ++i)
 		{
-			for (uint32 i = 0; i < tfc->instance_count(m_active_scene); ++i)
-			{
-				auto itf = tfc->instance_transform(m_active_scene, i);
-				if (itf->parent() == nullptr)
-					itf->recursive_compute();
-			}
+			auto itf = tfc->instance_transform(m_active_scene, i);
+			if (itf->parent() == nullptr)
+				itf->recursive_compute();
 		}
 		++ent_iter;
 	}
@@ -127,22 +123,22 @@ int32 nsrender_system::update_priority()
 	return RENDER_SYS_UPDATE_PR;
 }
 
-bool nsrender_system::insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before)
+nsrender::viewport * nsrender_system::insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before)
 {
 	if (viewport(vp_name) != nullptr)
 	{
 		dprint("nsrender_system::insert_viewport Cannot insert two viewpots with the same name - " + vp_name);
-		return false;
+		return nullptr;
 	}
 	
 	if (insert_before.empty())
 	{
 		if (vp_name.empty())
-			return false;
+			return nullptr;
 		
 		m_current_vp = new nsrender::viewport(vp);
 		vp_list.push_back(vp_node(vp_name, m_current_vp));
-		return true;
+		return m_current_vp;
 	}
 	else
 	{
@@ -153,11 +149,11 @@ bool nsrender_system::insert_viewport(const nsstring & vp_name, const nsrender::
 			{
 				m_current_vp = new nsrender::viewport(vp);
 				vp_list.insert(liter, vp_node(vp_name, m_current_vp));
-				return true;
+				return m_current_vp;
 			}
 			++liter;
 		}
-		return false;
+		return nullptr;
 	}
 }
 
@@ -587,7 +583,7 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 				dc->height_minmax = terh;
 				dc->entity_id = (*iter)->id();
 				dc->plugin_id = (*iter)->plugin_id();
-				dc->transform_count = tComp->instance_count(scene);
+				dc->transform_count = tComp->m_scenes_info.find(m_active_scene)->second->m_visible_count;
 				dc->casts_shadows = rComp->cast_shadow();
 				dc->transparent_picking = false;
 				dc->mat_index = mat_id;
@@ -639,14 +635,16 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
 	while (ent_iter != ents->end())
 	{
 		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-        //if (tForm->update_posted())
+        if (tForm->update_posted())
 		{
 			nstform_comp::per_scene_info * psi = tForm->m_scenes_info.find(scene)->second; 
 			nsbuffer_object * tFormBuf = psi->m_tform_buffer;
 			nsbuffer_object * tFormIDBuf = psi->m_tform_id_buffer;
 
+			bool did_resize = false;
 			if (psi->m_buffer_resized)
 			{
+				did_resize = true;
 				tFormBuf->bind();
 				tFormBuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, psi->m_tforms.size());
 				tFormIDBuf->bind();
@@ -671,23 +669,6 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
 			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 			{
 				instance_tform * itf = &psi->m_tforms[i];				
-				// if (tForm->transform_update(i))
-				// {
-				// 	uivec3 parentID = tForm->parent_id(i);
-				// 	if (parentID != 0)
-				// 	{
-				// 		nsentity * ent = scene->get_entity(parentID.x, parentID.y);
-				// 		if (ent != nullptr)
-				// 		{
-				// 			nstform_comp * tComp2 = ent->get<nstform_comp>();
-				// 			if (parentID.z < tComp2->count())
-				// 				tForm->set_parent(tComp2->transform(parentID.z));
-				// 		}
-				// 	}
-
-				// 	tForm->compute_transform(i);
-				// 	tForm->set_instance_update(false, i);
-				// }
 				int32 state = itf->hidden_state;
 				bool layerBit = (state & nstform_comp::hide_layer) == nstform_comp::hide_layer;
 				bool objectBit = (state & nstform_comp::hide_object) == nstform_comp::hide_object;
@@ -696,8 +677,12 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
 
                 if (!hideBit && (!layerBit && (showBit || !objectBit)))
                 {
-					mappedT[psi->m_visible_count] = itf->world_tf();
-					mappedI[psi->m_visible_count] = i;
+					if (itf->m_render_update || did_resize)
+					{
+						mappedT[psi->m_visible_count] = itf->world_tf();
+						mappedI[psi->m_visible_count] = i;
+						itf->m_render_update = false;
+					}
 					++psi->m_visible_count;
                 }
 			}

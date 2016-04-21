@@ -99,7 +99,7 @@ instance_tform * nstform_comp::instance_transform(const nsscene * scn, uint32 tf
 {
 	auto fiter = m_scenes_info.find(scn);
 	if (fiter == m_scenes_info.end())
-		return 0;
+		return nullptr;
 	return &fiter->second->m_tforms[tform_id];
 }
 
@@ -196,8 +196,8 @@ nsscene * instance_tform::scene()
 
 void instance_tform::recursive_compute()
 {
-//	if (update)
-//	{
+	if (update)
+	{
 		m_local_tform.set(rotation_mat3(orient) % scaling);
 		m_local_tform.set_column(3, position.x, position.y, position.z, 1);
 
@@ -205,16 +205,21 @@ void instance_tform::recursive_compute()
 		m_local_inv_tform.rotation_from(orient).transpose();
 		m_local_inv_tform.set_column(3, m_local_inv_tform[0] * col3, m_local_inv_tform[1] * col3, m_local_inv_tform[2] * col3, 1.0f);
 
-		if (m_parent != nullptr)
-		{
-			m_world_tform = m_parent->m_world_tform * m_local_tform;
-			m_world_inv_tform = inverse(m_world_tform);
-			// would like to try - eventually - m_world_tform = m_local_inv_tform * m_parent->m_world_inv_tform
-		}
-//		update = false;
-//	}
+		m_world_tform = m_local_tform;
+		m_world_inv_tform = m_local_inv_tform;
+		m_owner->post_update(true);
+		m_render_update = true;
+	}
+	if ((m_parent != nullptr) && (update || m_parent->update))
+	{
+		m_world_tform = m_parent->m_world_tform * m_local_tform;
+		m_world_inv_tform = inverse(m_world_tform);//m_world_inv_tform * m_parent->m_world_inv_tform;
+		m_owner->post_update(true);
+		m_render_update = true;
+	}
 	for (uint32 i = 0; i < m_children.size(); ++i)
 		m_children[i]->recursive_compute();
+	update = false;
 }
 
 nstform_comp * instance_tform::owner()
@@ -255,6 +260,7 @@ void instance_tform::set_world_position(const fvec3 & pos)
 		position = (m_parent->world_inv_tf() * pos).xyz();
 	else
 		position = pos;
+    update = true;
 }
 
 instance_tform * instance_tform::child(uint32 index)

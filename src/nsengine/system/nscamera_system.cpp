@@ -22,11 +22,12 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <nstimer.h>
 #include <nsscene.h>
 
+
 nscamera_system::nscamera_system() :
 	nssystem(),
 	m_zoom_factor(DEFAULT_CAM_ZOOM_FACTOR),
-	m_turn_sensitivity(DEFAULT_CAM_SENSITIVITY),
-	m_strafe_sensitivity(DEFAULT_CAM_SENSITIVITY),
+	m_turn_sensitivity(DEFAULT_CAM_PIVOT_SENSITIVITY),
+	m_strafe_sensitivity(DEFAULT_CAM_MOVE_SENSITIVITY),
 	m_anim_time(0.35f),
 	m_anim_elapsed(0.0f),
 	m_anim_view(false),
@@ -283,7 +284,7 @@ void nscamera_system::_on_cam_move(nscam_comp * pCam, nstform_comp * tComp, cons
 	auto tfi = tComp->instance_transform(m_active_scene, 0);
 
 	fvec2 factor(pDelta.u*m_strafe_sensitivity * m_free_mode_inverted.x,
-				 pDelta.u*m_strafe_sensitivity * m_free_mode_inverted.y);
+				 pDelta.v*m_strafe_sensitivity * m_free_mode_inverted.y);
 	
 	tfi->position += tfi->orient.right() * factor.x;
 	tfi->position += tfi->orient.up() * factor.y;
@@ -302,12 +303,9 @@ void nscamera_system::_on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, cons
 	if (m_cam_mode == mode_free)
 	{
 		float tFac = 1.0f;
-		if (tfi->orient.up().z < 0.0f)
-			tFac = -1.0f;
-
-		tFac *= pDelta.u * m_turn_sensitivity * m_free_mode_inverted.x;
-		tfi->orient = ::orientation(fvec4(tfi->orient.right(),tFac)) * tfi->orient;
-		tfi->orient = ::orientation(fvec4(0,0,1,tFac)) * tfi->orient;
+		tFac *= m_turn_sensitivity * m_free_mode_inverted.x;
+		tfi->orient = ::orientation(fvec4(tfi->orient.right(),pDelta.v * tFac)) * tfi->orient;
+		tfi->orient = ::orientation(fvec4(0,0,1,pDelta.u * tFac)) * tfi->orient;
 		tfi->update = true;
 		tComp->post_update(true);
 	}
@@ -378,24 +376,34 @@ void nscamera_system::update()
 		nstform_comp * camTComp = (*iter)->get<nstform_comp>();
 		auto tfi = camTComp->instance_transform(m_active_scene, 0);
 		
-		if (camComp->update_posted())
-		{
+        if (camComp->update_posted())
+        {
 			// generate a camera changed event
 			if ((*iter) == cam && !m_anim_view)
 				nse.event_dispatch()->push<nscam_change_event>();
 			
 			if (camComp->strafe().animating)
-				tfi->position += tfi->orient.right() * camComp->strafe().direction * camComp->speed() * nse.timer()->fixed();
+			{
+				tfi->position += tfi->orient.right() *
+					camComp->strafe().direction *
+					camComp->speed() *
+					nse.timer()->fixed();
+			}
 			if (camComp->elevate().animating)
+			{
 				tfi->position += tfi->orient.up() * camComp->elevate().direction * camComp->speed() * nse.timer()->fixed();
+			}
 			if (camComp->fly().animating)
+			{
 				tfi->position += tfi->orient.target() * camComp->fly().direction * camComp->speed() * nse.timer()->fixed();
+			}
 
-			// if (m_cam_mode == mode_focus)
-			// 	camTComp->set_parent(camComp->focus_transform());
-			// else
-			// 	camTComp->set_parent(fmat4());
+//             if (m_cam_mode == mode_focus)
+//                camTComp->set_parent(camComp->focus_transform());
+//             else
+//                camTComp->set_parent(fmat4());
 
+			tfi->update = true;
 			tfi->recursive_compute();
 			camComp->m_proj_cam = camComp->proj() * tfi->world_inv_tf();
 			camComp->m_inv_proj_cam = tfi->world_tf() * camComp->inv_proj();
@@ -405,7 +413,7 @@ void nscamera_system::update()
 				 camComp->elevate().animating ||
 				 camComp->fly().animating) ||
 				m_anim_view);
-		}
+        }
 
 		if ((*iter) == cam)
 		{

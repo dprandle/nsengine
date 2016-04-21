@@ -98,7 +98,12 @@ bool nsselection_system::add_to_selection(nsentity * ent, uint32 tformid)
 	
 	m_selected_ents.insert(ent);
 	selComp->set_selected(m_active_scene, true);
-	return selComp->selection(m_active_scene)->emplace(tformid).second;
+	if (selComp->selection(m_active_scene)->emplace(tformid).second)
+	{
+		selComp->post_update(true);
+		return true;
+	}
+	return false;
 }
 
 bool nsselection_system::add_selection_to_grid(nsscene * scn)
@@ -457,6 +462,7 @@ void nsselection_system::init()
 	register_action_handler(nsselection_system::_handle_move_selection_y, NSSEL_MOVE_Y);
 	register_action_handler(nsselection_system::_handle_move_selection_z, NSSEL_MOVE_Z);
 	register_action_handler(nsselection_system::_handle_move_selection_toggle, NSSEL_MOVE_TOGGLE);
+	register_action_handler(nsselection_system::_handle_rotate_selection, "rotate_selection");
 }
 
 int32 nsselection_system::update_priority()
@@ -618,6 +624,35 @@ void nsselection_system::translate_selection(const fvec3 & amount)
 			instance_tform * itf = tcomp->instance_transform(m_active_scene, *selIter);
 			fvec3 translated_amount = itf->world_position() + amount;
 			itf->set_world_position(translated_amount);
+            tcomp->post_update(true);
+			++selIter;
+		}
+		++iter;
+	}
+}
+
+void nsselection_system::rotate_selection(const fquat & rotation)
+{
+	if (m_active_scene == nullptr)
+		return;
+	
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
+	{
+		nssel_comp * scomp = (*iter)->get<nssel_comp>();
+		nstform_comp * tcomp = (*iter)->get<nstform_comp>();
+
+		auto selection = scomp->selection(m_active_scene);
+		if (selection == nullptr)
+			return;
+		
+		auto selIter = selection->begin();
+		while (selIter != selection->end())
+		{
+			instance_tform * itf = tcomp->instance_transform(m_active_scene, *selIter);
+			itf->orient = rotation * itf->orient;
+			itf->update = true;
+            tcomp->post_update(true);
 			++selIter;
 		}
 		++iter;
@@ -696,7 +731,7 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 
 	nssel_comp * sc = ent->get<nssel_comp>();
 	nstform_comp * camTForm = cam->get<nstform_comp>();
-	instance_tform * cam_itf = camTForm->instance_transform(m_active_scene, m_focus_ent.z);
+	instance_tform * cam_itf = camTForm->instance_transform(m_active_scene, 0);
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tComp = ent->get<nstform_comp>();
 	instance_tform * itf = tComp->instance_transform(m_active_scene, m_focus_ent.z);
@@ -810,7 +845,6 @@ void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const u
 						m_focus_ent.z = *selComp->selection(m_active_scene)->begin();
 					}
 				}
-				//nse.events()->send(new NSSelFocusChangeEvent("FocusEvent", mFocusEnt));
 			}
 		}
 	}
@@ -858,7 +892,7 @@ void nsselection_system::remove_from_selection(nsentity * ent, uint32 pTFormID)
 		return;
 
 	selection->erase(pTFormID);
-
+	selcomp->post_update(true);
 	if (selection->empty())
 	{
 		auto iter = m_selected_ents.find(ent);
@@ -1101,7 +1135,6 @@ void nsselection_system::update()
 		m_total_frame_translation = 0.0f;
 	}
 	prepare_selection_for_rendering();
-
 }
 
 void nsselection_system::snap_selection_to_grid()
@@ -1128,6 +1161,7 @@ void nsselection_system::snap_selection_to_grid()
 				fvec3 snapped_pos = itf->world_position();
 				nstile_grid::snap(snapped_pos);
 				itf->set_world_position(snapped_pos);
+                tcomp->post_update(true);
 			}
 			++selIter;
 		}
@@ -1153,14 +1187,13 @@ void nsselection_system::prepare_selection_for_rendering()
 			continue;
 		}
 		
+        tbuf->bind();
 		if (sc->update_posted())
 		{
-			tbuf->bind();
 			tbuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, selection->size());
 			sc->post_update(false);
 		}
 
-		tbuf->bind();
 		fmat4 * mapped = tbuf->map<fmat4>(
 			0,
 			selection->size(),
@@ -1175,6 +1208,7 @@ void nsselection_system::prepare_selection_for_rendering()
 			++count;
 		}
 		tbuf->unmap();
+        tbuf->unbind();
 		++iter;
 	}	
 }
@@ -1285,5 +1319,11 @@ bool nsselection_system::_handle_move_selection_toggle(nsaction_event * evnt)
 {
 	m_toggle_move = true;
 	m_moving = evnt->cur_state;
+	return true;
+}
+
+bool nsselection_system::_handle_rotate_selection(nsaction_event * evnt)
+{
+	rotate_selection(::orientation(fvec4(0,0,1,30)));
 	return true;
 }

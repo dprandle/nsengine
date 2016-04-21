@@ -78,23 +78,6 @@ const nsstring & nsplugin_manager::res_dir()
 	return m_owned_plugins_res_dir;
 }
 
-nsplugin * nsplugin_manager::active()
-{
-	return get(m_active_plugin_id);
-}
-
-void nsplugin_manager::set_active(nsplugin * plg)
-{
-	if (plg != NULL)
-	{
-		if (!plg->bound())
-			plg->bind();
-		m_active_plugin_id = plg->id();
-	}
-	else
-		m_active_plugin_id = 0;
-}
-
 bool nsplugin_manager::unbind(nsplugin * plg)
 {
 	return plg->unbind();

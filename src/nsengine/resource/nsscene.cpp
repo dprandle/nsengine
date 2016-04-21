@@ -116,9 +116,14 @@ uint32 nsscene::add(
 	nstform_comp * tComp = ent->get<nstform_comp>();
 	nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
 
+	bool make_tform = false;
+	
 	// If there is no tranform component, then make one
 	if (tComp == nullptr)
+	{
 		tComp = ent->create<nstform_comp>();
+		make_tform = true;
+	}
 
 	auto fiter = tComp->m_scenes_info.emplace(
 		this,
@@ -167,9 +172,13 @@ uint32 nsscene::add(
 		}
 	}
 
-	sig_connect(ent->component_added, nsscene::_on_comp_add);
-	sig_connect(ent->component_removed, nsscene::_on_comp_remove);
-	_add_all_comp_entries(ent);
+	if (make_tform)
+	{
+		_add_all_comp_entries(ent);
+		sig_connect(ent->component_added, nsscene::_on_comp_add);
+		sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+	}
+	
 	tComp->post_update(true);
 	pse.m_buffer_resized = true;
 	return tfid;
@@ -200,8 +209,12 @@ void nsscene::add_gridded(
 	)
 {
 	nstform_comp * tComp = ent->get<nstform_comp>();
+    bool added_tform = false;
 	if (tComp == nullptr)
+    {
 		tComp = ent->create<nstform_comp>();
+        added_tform = true;
+    }
 
 	auto fiter = tComp->m_scenes_info.emplace(
 		this,
@@ -238,6 +251,13 @@ void nsscene::add_gridded(
 			}
 		}
 	}
+
+    if (added_tform)
+    {
+        _add_all_comp_entries(ent);
+        sig_connect(ent->component_added, nsscene::_on_comp_add);
+        sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+    }
 }
 
 void nsscene::change_max_players(int32 pAmount)

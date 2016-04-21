@@ -50,6 +50,7 @@ int32 nsparticle_system::update_priority()
 
 void nsparticle_system::update()
 {
+    return;
 	if (scene_error_check())
 		return;
 	
@@ -64,13 +65,12 @@ void nsparticle_system::update()
 	nscam_comp * compc = cam->get<nscam_comp>();
 	nstform_comp * camTComp = cam->get<nstform_comp>();
 
-	glEnable(GL_RASTERIZER_DISCARD);
 	static uint32 count = 1;
-
 	auto ents = m_active_scene->entities_with_comp<nsparticle_comp>();
 	if (ents == nullptr)
 		return;
 	
+    glEnable(GL_RASTERIZER_DISCARD);
 	auto entIter = ents->begin();
 	while (entIter != ents->end())
 	{
@@ -176,6 +176,5 @@ void nsparticle_system::update()
 		++entIter;
 		++count;
 	}
-
 	glDisable(GL_RASTERIZER_DISCARD);	
 }

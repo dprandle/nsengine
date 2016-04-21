@@ -106,6 +106,8 @@ public:
 
 	void translate_selection(const fvec3 & amount);
 
+	void rotate_selection(const fquat & rotation);
+
 	void snap_selection_to_grid();
 
 	const fvec4 & mirror_tile_color();
@@ -144,6 +146,7 @@ protected:
 	bool _handle_move_selection_y(nsaction_event * evnt);
 	bool _handle_move_selection_z(nsaction_event * evnt);
 	bool _handle_move_selection_toggle(nsaction_event * evnt);
+	bool _handle_rotate_selection(nsaction_event * evnt);
 	
 	void _reset_focus(const uivec3 & pickid);
 

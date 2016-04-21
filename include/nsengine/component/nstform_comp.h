@@ -29,6 +29,7 @@ class nstform_comp;
 struct instance_tform
 {
 	friend class nsscene;
+	friend class nsrender_system;
 	
 	instance_tform() :
 		hidden_state(0),
@@ -56,6 +57,7 @@ struct instance_tform
 		snap_to_grid(copy.snap_to_grid),
 		m_owner(nullptr),
 		m_scene(nullptr),
+		m_render_update(true),
 		m_parent(nullptr),
 		m_children(),
 		m_world_tform(),
@@ -112,6 +114,7 @@ struct instance_tform
 	nstform_comp * m_owner;
 	instance_tform * m_parent;
 	nsscene * m_scene;
+	bool m_render_update;
 	
 	std::vector<instance_tform*> m_children;
 	fmat4 m_world_tform;

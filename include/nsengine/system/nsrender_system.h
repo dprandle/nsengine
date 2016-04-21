@@ -305,7 +305,7 @@ class nsrender_system : public nssystem
 
 	drawcall_queue * remove_queue(const nsstring & name);
 
-	bool insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before="");
+	nsrender::viewport * insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before="");
 
 	bool remove_viewport(const nsstring & vp_name);
 
