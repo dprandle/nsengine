@@ -423,7 +423,7 @@ void nsrender_system::_add_lights_from_scene(nsscene * scene)
 			
 			ldc->submesh = nullptr;
 			ldc->bg_color = scene->bg_color();
-			ldc->direction = itf->orient.target();
+			ldc->direction = itf->m_orient.target();
 			ldc->diffuse_intensity = lcomp->intensity().x;
 			ldc->ambient_intensity = lcomp->intensity().y;
 			ldc->cast_shadows = lcomp->cast_shadows();
@@ -669,7 +669,7 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
 			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 			{
 				instance_tform * itf = &psi->m_tforms[i];				
-				int32 state = itf->hidden_state;
+				int32 state = itf->m_hidden_state;
 				bool layerBit = (state & nstform_comp::hide_layer) == nstform_comp::hide_layer;
 				bool objectBit = (state & nstform_comp::hide_object) == nstform_comp::hide_object;
 				bool showBit = (state & nstform_comp::hide_none) == nstform_comp::hide_none;

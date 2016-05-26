@@ -37,7 +37,7 @@ public:
 
 	nsscene * active_scene();
 
-	void set_active_scene(nsscene * active_scene);
+	virtual void set_active_scene(nsscene * active_scene);
 
 	virtual int32 update_priority() = 0;
 

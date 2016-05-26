@@ -21,6 +21,8 @@ class nsui_canvas_comp : public nscomponent
 {
 	struct rect_info;
 public:
+
+	friend class nsui_system;
 	
 	template <class PUPer>
 	friend void pup(PUPer & p, nsui_canvas_comp & tc);
@@ -72,6 +74,7 @@ public:
 	nsrouter * m_router;
 	std::vector<uivec2> m_unloaded_ents;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
+	std::vector<nsentity *> m_ordered_ents;
 	
 	struct rect_info
 	{

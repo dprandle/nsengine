@@ -367,3 +367,114 @@ bool nsinput_map::trigger::operator==(const trigger & pRhs)
 		);
 }
 
+uint8 input_key_to_ascii(nsinput_map::key_val key, bool shift_pressed)
+{
+	if (key <= nsinput_map::key_z)
+	{
+		if (shift_pressed)
+			return key + 'A';
+		return key + 'a';
+	}
+	else if (key <= nsinput_map::key_0)
+	{
+		if (shift_pressed)
+			return (key - nsinput_map::key_0) + '0';
+		else
+		{
+			switch (key)
+			{
+			  case(nsinput_map::key_0):
+				  return ')';
+			  case(nsinput_map::key_1):
+				  return '!';
+			  case(nsinput_map::key_2):
+				  return '@';
+			  case(nsinput_map::key_3):
+				  return '#';
+			  case(nsinput_map::key_4):
+				  return '$';
+			  case(nsinput_map::key_5):
+				  return '%';
+			  case(nsinput_map::key_6):
+				  return '^';
+			  case(nsinput_map::key_7):
+				  return '&';
+			  case(nsinput_map::key_8):
+				  return '*';
+			  case(nsinput_map::key_9):
+				  return '(';
+			  default:
+				  return -1;
+			}
+		}
+	}
+	else if (key <= nsinput_map::key_keypad_9 && key >= nsinput_map::key_keypad_0)
+	{
+		if (shift_pressed)
+			return -1;
+		return (key - nsinput_map::key_keypad_0) + '0';
+	}
+
+	switch (key)
+	{
+	  case(nsinput_map::key_grave_accent):
+		  if (shift_pressed)
+			  return '~';
+		  return '`';
+	  case(nsinput_map::key_equal):
+		  if (shift_pressed)
+			  return '+';
+		  return '=';
+	  case(nsinput_map::key_minus):
+		  if (shift_pressed)
+			  return '_';
+		  return '-';
+	  case(nsinput_map::key_lbracket):
+		  if (shift_pressed)
+			  return '{';
+		  return '[';
+	  case(nsinput_map::key_rbracket):
+		  if (shift_pressed)
+			  return '}';
+		  return ']';
+	  case(nsinput_map::key_backslash):
+		  if (shift_pressed)
+			  return '|';
+		  return '\\';
+	  case(nsinput_map::key_semicolon):
+		  if (shift_pressed)
+			  return ':';
+		  return ';';
+	  case(nsinput_map::key_apostrophe):
+		  if (shift_pressed)
+			  return '\"';
+		  return '\'';
+	  case(nsinput_map::key_comma):
+		  if (shift_pressed)
+			  return '<';
+		  return ',';		  
+	  case(nsinput_map::key_period):
+		  if (shift_pressed)
+			  return '>';
+		  return '.';		  
+	  case(nsinput_map::key_forwardslash):
+		  if (shift_pressed)
+			  return '?';
+		  return '/';		  
+	  case(nsinput_map::key_keypad_divide):
+		  return '/';
+	  case(nsinput_map::key_keypad_multiply):
+		  return '*';
+	  case(nsinput_map::key_keypad_subtract):
+		  return '-';
+	  case(nsinput_map::key_keypad_add):
+		  return '+';
+	  case(nsinput_map::key_keypad_decimal):
+		  return '.';
+	  case(nsinput_map::key_keypad_equal):
+		  return '=';
+	  default:
+		  return -1;
+	}
+}
+

@@ -67,17 +67,9 @@ public:
 
 	void change_speed(float amount_);
 
-	void compute_focus_transform();
-
 	const movement_t & elevate() const;
 
 	const movement_t & fly() const;
-
-	const fvec3 & focus_point();
-
-	fmat4 focus_transform();
-
-	const fquat & focus_orientation();
 
 	float speed() const;
 
@@ -119,10 +111,6 @@ public:
 
 	void set_fov(float angle_deg_);
 
-	void set_focus_point(const fvec3 & foc_point_);
-
-	void set_focus_orientation(const fquat & foc_orient_);
-
 	const fmat4 & proj();
 
 	const fmat4 & proj_cam();
@@ -150,8 +138,6 @@ private:
 	movement_t m_strafing;
 	movement_t m_elevating;
 	float m_speed;
-	fvec3 m_focus_point;
-	fquat m_focus_orientation;
 	float m_fov_angle;
 	fvec2 m_persp_nf_clip;
 	ivec2 m_screen_size;
@@ -163,7 +149,6 @@ private:
 	fmat4 m_inv_proj_mat;
 	fmat4 m_proj_cam;
 	fmat4 m_inv_proj_cam;
-	fmat4 m_focus_transform;
 };
 
 template <class PUPer>
@@ -173,9 +158,6 @@ void pup(PUPer & p, nscam_comp & cc)
 	pup(p, cc.m_strafing, "strafing");
 	pup(p, cc.m_elevating, "elevating");
 	pup(p, cc.m_speed, "speed");
-	pup(p, cc.m_focus_point, "focus_point");
-	pup(p, cc.m_focus_orientation, "focus_orientation");
-	pup(p, cc.m_focus_transform, "focus_transform");
 
 	pup(p, cc.m_fov_angle, "fov_angle");
 	pup(p, cc.m_persp_nf_clip, "persp_nf_clip");

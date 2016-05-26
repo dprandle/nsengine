@@ -10,6 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
+#include <nsfont.h>
 #include <nsanim_comp.h>
 #include <nsterrain_comp.h>
 #include <nssel_comp.h>
@@ -85,6 +86,11 @@ void render_pass::setup_pass()
 	driver->set_gl_state(gl_state);
 }
 
+struct font_layout
+{
+	uint32 line;
+	uint32 xpos;
+};
 void ui_render_pass::render()
 {
 	ren_target->bind();
@@ -98,23 +104,24 @@ void ui_render_pass::render()
 		if (uidc->border_color.a >= 0.03f && uidc->border_shader != nullptr)
 		{
 			uidc->border_shader->bind();
-			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z-viewp.x,viewp.w-viewp.y));
+			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 			uidc->border_shader->set_uniform("border_pix", uidc->border_pix);
 			uidc->border_shader->set_uniform("content_wscale", uidc->content_wscale);
 			uidc->border_shader->set_uniform("content_tform", uidc->content_tform);
 			uidc->border_shader->set_uniform("frag_color_out", uidc->border_color);
-			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);			
+			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);
 			driver->render_ui_dc(uidc);
 		}
 
 		uidc->shdr->bind();
 		uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 		uidc->shdr->set_uniform("entity_id", uidc->entity_id);
-		uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z-viewp.x,viewp.w-viewp.y));
+		uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 		uidc->shdr->set_uniform("wscale", uidc->content_wscale);
         uidc->shdr->set_uniform("content_tform", uidc->content_tform);
 		uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
-
+		uidc->shdr->set_uniform("color_mult", uidc->color_multiplier);
+		
 		if (uidc->mat != nullptr)
 		{
 			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
@@ -129,6 +136,53 @@ void ui_render_pass::render()
 			uidc->shdr->set_uniform("color_mode", true);
 		}
 		driver->render_ui_dc(uidc);
+
+		if (uidc->fnt != nullptr)
+		{
+			font_info & fi = uidc->fnt->get_font_info();
+
+			uidc->text_shader->bind();			
+			uidc->text_shader->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
+			uidc->text_shader->set_uniform("entity_id", uidc->entity_id);
+			uidc->text_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
+			uidc->text_shader->set_uniform("content_tform", uidc->content_tform);
+			uidc->text_shader->set_uniform("frag_color_out", uidc->fnt->render_color);
+			uidc->text_shader->set_uniform("color_mult", uidc->color_multiplier);
+			
+
+            fvec2 cursor_pos(0,0);
+			for (uint32 i = 0; i < uidc->text.size(); ++i)
+			{
+                if (uidc->text[i] == '\n')
+                {
+                    cursor_pos.y -= fi.line_height;
+                    cursor_pos.x = 0;
+                    continue;
+                }
+
+				char_info & ci = uidc->fnt->get_char_info(uidc->text[i]);
+				nstex2d * tex = get_resource<nstex2d>(uidc->fnt->texture_id(ci.page_index));
+				if (tex == nullptr)
+					continue;
+
+				driver->set_active_texture_unit(nsmaterial::diffuse);
+				tex->bind();
+
+				ivec2 tsz = tex->size();
+				fvec2 tex_size(tsz.x,tsz.y);
+
+                fvec4 rect(ci.rect.x / tex_size.x,
+                           ((tex_size.y - ci.rect.y) - ci.rect.w) / tex_size.y,
+                           (ci.rect.x + ci.rect.z) / tex_size.x,
+                           (tex_size.y - ci.rect.y) / tex_size.y);
+
+				uidc->text_shader->set_uniform("pixel_wh", fvec2(ci.rect.z,ci.rect.w));
+                uidc->text_shader->set_uniform("offset_xy", fvec2(cursor_pos.x + ci.offset.x, cursor_pos.y + fi.line_height - ci.offset.y - ci.rect.w));
+				uidc->text_shader->set_uniform("tex_coord_rect", rect);
+				cursor_pos.x += ci.xadvance;
+				driver->render_ui_dc(uidc);
+			}
+		}
 	}
 }
 

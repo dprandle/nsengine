@@ -10,6 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <nsselection_system.h>
 #include <nstile_brush_comp.h>
 #include <nsscene.h>
 #include <nsscene_manager.h>
@@ -136,7 +137,7 @@ uint32 nsscene::add(
 	tf = tf_info;
 	tf.m_scene = this;
 	tf.m_owner = tComp;
-	tf.set_parent(parent);
+	tf.set_parent(parent, true);
 
 	// If there is an occupy component, attemp at inserting it in to the map. It will fail if the space
 	// is already occupied therefore we need to remove the tranform component and set the entities scene
@@ -148,7 +149,7 @@ uint32 nsscene::add(
 		uint32 pID = tComp->instance_count(this);
 		if (!m_tile_grid->add(uivec3(ent->full_id(), pID), occComp->spaces(), tf_info.world_position()))
 		{
-			tf.set_parent(nullptr);
+			tf.set_parent(nullptr, true);
 			pse.m_tforms.resize(tfid);
 
 			if (pse.m_tforms.empty())
@@ -194,9 +195,9 @@ uint32 nsscene::add(
 {
 	instance_tform tf;
 	tf.snap_to_grid = snap_to_grid;
-	tf.position = pPos;
-	tf.orient = orient_;
-	tf.scaling = scaling_;
+	tf.m_position = pPos;
+	tf.m_orient = orient_;
+	tf.m_scaling = scaling_;
 	return add(ent, parent, tf, false);
 }
 
@@ -240,9 +241,9 @@ void nsscene::add_gridded(
 				fvec3 pos(xP, yP, zP);
 				pos += starting_pos;
 
-				itf.position = pos;
-				itf.orient = orient_;
-				itf.scaling = scaling_;
+				itf.m_position = pos;
+				itf.m_orient = orient_;
+				itf.m_scaling = scaling_;
 				itf.snap_to_grid = true;
 				if (add(ent, nullptr, itf, false) == -1)
 				{
@@ -423,9 +424,9 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 					nstform_comp * tc = ent->get<nstform_comp>();
 					instance_tform * itf = tc->instance_transform(this, id.z);
 					if (pHide)
-						itf->hidden_state |= nstform_comp::hide_layer;
+						itf->m_hidden_state |= nstform_comp::hide_layer;
 					else
-						itf->hidden_state &= ~nstform_comp::hide_layer;
+						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 				}
 			}
 		}
@@ -452,9 +453,9 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 						nstform_comp * tc = ent->get<nstform_comp>();
 						instance_tform * itf = tc->instance_transform(this, id.z);
 						if (pHide)
-							itf->hidden_state |= nstform_comp::hide_layer;
+							itf->m_hidden_state |= nstform_comp::hide_layer;
 						else
-							itf->hidden_state &= ~nstform_comp::hide_layer;
+							itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -475,7 +476,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
 						instance_tform * itf = tc->instance_transform(this, id.z);
-						itf->hidden_state &= ~nstform_comp::hide_layer;
+						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -503,9 +504,9 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 						nstform_comp * tc = ent->get<nstform_comp>();
 						instance_tform * itf = tc->instance_transform(this, id.z);
 						if (pHide)
-							itf->hidden_state |= nstform_comp::hide_layer;
+							itf->m_hidden_state |= nstform_comp::hide_layer;
 						else
-							itf->hidden_state &= ~nstform_comp::hide_layer;
+							itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -526,7 +527,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
 						instance_tform * itf = tc->instance_transform(this, id.z);
-						itf->hidden_state &= ~nstform_comp::hide_layer;
+						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -565,9 +566,9 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 	
 	// reassign all itform's children's parent to itform's parent
 	while (itform->child_count() != 0)
-		itform->child(0)->set_parent(itform->parent());
+		itform->child(0)->set_parent(itform->parent(), true);
 
-	itform->set_parent(nullptr); // remove itform from parent
+	itform->set_parent(nullptr, true); // remove itform from parent
 
 	fvec3 pos = itform->world_position();	
 	
@@ -582,7 +583,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		itform->owner()->post_update(true);
 	}
 
-	uint32 tformid = (itform - &pse->m_tforms[0]) / sizeof(instance_tform);	
+    uint32 tformid = (itform - &pse->m_tforms[0]);
 	nssel_comp * sel_cmp = entity->get<nssel_comp>();
 	if (sel_cmp != nullptr)
 	{
@@ -629,6 +630,8 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 bool nsscene::remove(nsentity * entity, uint32 tformid, bool remove_children)
 {
 	nstform_comp * tComp = entity->get<nstform_comp>();
+	if (tComp == nullptr)
+		return false;
 	return remove(tComp->instance_transform(this, tformid), remove_children);
 }
 
@@ -645,7 +648,7 @@ bool nsscene::remove(nsentity * ent, bool remove_children)
 {
 	bool ret = true;
 	while (ret)
-		ret = remove(ent, uint32(0));
+		ret = remove(ent, 0, remove_children);
 	return ret;
 }
 
@@ -730,6 +733,7 @@ void nsscene::_on_comp_remove(nscomponent * comp_t)
 			auto emp_iter = sc->m_scene_selection.find(this);
 			delete emp_iter->second;
 			sc->m_scene_selection.erase(emp_iter);
+			nse.system<nsselection_system>()->refresh_selection(this);
 		}
 	}
 	else

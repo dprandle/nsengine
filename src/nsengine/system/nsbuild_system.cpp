@@ -110,14 +110,14 @@ void nsbuild_system::enable(const bool & pEnable)
 					uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, true, mirrorPos);
 					nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
 					auto tfi = m_mirror_brush->get<nstform_comp>()->instance_transform(m_active_scene, mirror_tform_id);
-					tfi->hidden_state = nstform_comp::hide_all;
+					tfi->set_hidden_state(nstform_comp::hide_all);
 				}
 
 				if (*brushIter == ivec2())
 					m_tile_brush_center_tform_id = tFormID;
 				
 				auto tfi = m_tile_brush->get<nstform_comp>()->instance_transform(m_active_scene, tFormID);
-				tfi->hidden_state = nstform_comp::hide_all;
+				tfi->set_hidden_state(nstform_comp::hide_all);
 				++brushIter;
 			}
 
@@ -158,7 +158,7 @@ void nsbuild_system::enable(const bool & pEnable)
 				);
 
 			auto tfi = m_object_brush->get<nstform_comp>()->instance_transform(m_active_scene, tFormID);
-			tfi->hidden_state = nstform_comp::hide_all;
+			tfi->set_hidden_state(nstform_comp::hide_all);
 			
 			bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();				
 			nse.system<nsselection_system>()->enable_mirror_selection(false);				
@@ -170,7 +170,7 @@ void nsbuild_system::enable(const bool & pEnable)
 				uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, false, mirrorPos);
 				nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
 				auto tfi = m_mirror_brush->get<nstform_comp>()->instance_transform(m_active_scene, mirror_tform_id);
-				tfi->hidden_state = nstform_comp::hide_all;
+				tfi->set_hidden_state(nstform_comp::hide_all);
 			}
 
 			m_object_brush->del<nsoccupy_comp>();
@@ -641,7 +641,7 @@ void nsbuild_system::update()
 				fvec3 wp = brush_tform->instance_transform(m_active_scene, i)->world_position();
 				fvec3 new_pos = m_mirror_center*2.0f - wp;
 				new_pos.z = wp.z;
-				mirror_tform->instance_transform(m_active_scene, i)->position = new_pos;
+				mirror_tform->instance_transform(m_active_scene, i)->set_world_position(new_pos);
 			}
 		}
         else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
@@ -672,10 +672,7 @@ void nsbuild_system::update()
 				fvec3 new_pos = m_mirror_center*2.0f - wp;
 				new_pos.z = wp.z;
 				auto mirror_itf = mirror_tform->instance_transform(m_active_scene, 0);
-				mirror_itf->position = new_pos;
-				mirror_itf->update = true;
-				mirror_tform->post_update(true);
-				
+				mirror_itf->set_world_position(new_pos);				
 				nssel_comp * selComp2 = m_mirror_brush->get<nssel_comp>();
 				nsoccupy_comp * occComp2 = m_mirror_brush->get<nsoccupy_comp>();
 				if (occComp2 != nullptr)

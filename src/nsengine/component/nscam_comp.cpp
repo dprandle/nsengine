@@ -21,14 +21,11 @@ nscam_comp::nscam_comp():
 	m_flying(),
 	m_strafing(),
 	m_elevating(),
-	m_focus_point(),
-	m_focus_orientation(),
 	m_speed(DEFAULT_CAM_SPEED),
 	m_fov_angle(0.0f),
 	m_persp_nf_clip(),
 	m_proj_mode(proj_persp),
-	m_screen_size(),
-	m_focus_transform()
+    m_screen_size()
 {}
 
 nscam_comp::nscam_comp(const nscam_comp & copy):
@@ -37,8 +34,6 @@ nscam_comp::nscam_comp(const nscam_comp & copy):
 	m_strafing(),
 	m_elevating(),
 	m_speed(copy.m_speed),
-	m_focus_point(copy.m_focus_point),
-	m_focus_orientation(copy.m_focus_orientation),
 	m_fov_angle(copy.m_fov_angle),
 	m_persp_nf_clip(copy.m_persp_nf_clip),
 	m_screen_size(copy.m_screen_size),
@@ -49,8 +44,7 @@ nscam_comp::nscam_comp(const nscam_comp & copy):
 	m_proj_mat(copy.m_proj_mat),
 	m_inv_proj_mat(copy.m_inv_proj_mat),
 	m_proj_cam(copy.m_proj_cam),
-	m_inv_proj_cam(copy.m_inv_proj_cam),
-	m_focus_transform(copy.m_focus_transform)
+    m_inv_proj_cam(copy.m_inv_proj_cam)
 {}
 
 nscam_comp::~nscam_comp()
@@ -143,33 +137,12 @@ void nscam_comp::set_proj_mode(projection_mode mode)
 	_update_proj();
 }
 
-const fquat & nscam_comp::focus_orientation()
-{
-	return m_focus_orientation;
-}
-
-const fvec3 & nscam_comp::focus_point()
-{
-	return m_focus_point;
-}
-
 void nscam_comp::toggle_projection_mode()
 {
 	if (m_proj_mode == proj_persp)
 		set_proj_mode(proj_ortho);
 	else
 		set_proj_mode(proj_persp);
-}
-
-void nscam_comp::set_focus_orientation(const fquat & pFocRot)
-{
-	m_focus_orientation = pFocRot;
-	compute_focus_transform();
-}
-
-fmat4 nscam_comp::focus_transform()
-{
-	return m_focus_transform;
 }
 
 void nscam_comp::resize_screen(int32 w, int32 h)
@@ -182,13 +155,6 @@ void nscam_comp::resize_screen(const ivec2 & dim)
 {
 	m_screen_size = dim;
 	_update_proj();
-}
-
-void nscam_comp::compute_focus_transform()
-{
-	m_focus_transform.set(rotation_mat3(m_focus_orientation));
-	m_focus_transform.set_column(3, m_focus_point.x, m_focus_point.y, m_focus_point.z, 1);
-	m_focus_transform[3].x = 0; m_focus_transform[3].y = 0; m_focus_transform[3].z = 0;
 }
 
 const ivec2 & nscam_comp::screen_size()
@@ -271,13 +237,6 @@ void nscam_comp::set_fly(dir_t pDir, bool pAnimate)
 	post_update(true);
 }
 
-void nscam_comp::set_focus_point(const fvec3 & pFocPoint)
-{
-	m_focus_point = pFocPoint;
-	compute_focus_transform();
-	post_update(true);
-}
-
 void nscam_comp::set_speed(float pUnitsPerSecond)
 {
 	m_speed = pUnitsPerSecond;
@@ -306,8 +265,6 @@ nscam_comp & nscam_comp::operator=(nscam_comp rhs_)
 	std::swap(m_elevating,rhs_.m_elevating);
 	std::swap(m_strafing,rhs_.m_strafing);
 	std::swap(m_speed,rhs_.m_speed);
-	std::swap(m_focus_point,rhs_.m_focus_point);
-	std::swap(m_focus_orientation,rhs_.m_focus_orientation);
 	std::swap(m_fov_angle, rhs_.m_fov_angle);
 	std::swap(m_persp_nf_clip, rhs_.m_persp_nf_clip);
 	std::swap(m_screen_size, rhs_.m_screen_size);
@@ -318,7 +275,6 @@ nscam_comp & nscam_comp::operator=(nscam_comp rhs_)
 	std::swap(m_inv_proj_mat, rhs_.m_inv_proj_mat);
 	std::swap(m_proj_cam, rhs_.m_proj_cam);
 	std::swap(m_inv_proj_cam, rhs_.m_inv_proj_cam);
-	std::swap(m_focus_transform, rhs_.m_focus_transform);
 	post_update(true);
 	return (*this);
 }

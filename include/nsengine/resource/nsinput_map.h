@@ -232,6 +232,8 @@ class nsinput_map : public nsresource
 	key_modifier_set m_allowed_mods;
 };
 
+uint8 input_key_to_ascii(nsinput_map::key_val key, bool shift_pressed);
+
 
 template <class PUPer>
 void pup(PUPer & p, nsinput_map & input)

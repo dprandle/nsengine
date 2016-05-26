@@ -25,9 +25,10 @@ struct vert_info
 };
 
 uniform mat3 content_tform;
+uniform vec2 pixel_wh;
+uniform vec2 offset_xy;
 uniform vec4 tex_coord_rect;
 uniform vec4 viewport;
-uniform vec2 wscale;
 
 out vec2 tex_coord;
 
@@ -35,11 +36,10 @@ vert_info verts[4];
 
 void main()
 {
-	vec2 outer_pos = viewport.zw * wscale;
-	verts[0].pos = vec2(0,0);
-	verts[1].pos = vec2(0, outer_pos.y);
-	verts[2].pos = vec2(outer_pos.x, 0);
-	verts[3].pos = outer_pos;
+	verts[0].pos = offset_xy;
+	verts[1].pos = vec2(offset_xy.x, offset_xy.y + pixel_wh.y);
+	verts[2].pos = vec2(offset_xy.x + pixel_wh.x, offset_xy.y);
+	verts[3].pos = offset_xy + pixel_wh;
 	verts[0].tex_coord = tex_coord_rect.xy;
 	verts[1].tex_coord = tex_coord_rect.xw;
 	verts[2].tex_coord = tex_coord_rect.zy;
@@ -65,18 +65,17 @@ layout (location = 0) out vec4 final_frag_color;
 layout (location = 1) out uvec3 final_picking;
 
 in vec2 tex_coord;
+float alpha;
 uniform sampler2D uitexture;
 uniform vec4 frag_color_out;
 uniform uvec3 entity_id;
-uniform bool color_mode;
 uniform vec4 color_mult;
 
 void main()
 {
-	final_frag_color = frag_color_out;
-	if (!color_mode)
-		final_frag_color = texture(uitexture, tex_coord);
-	final_frag_color *= color_mult;
+	alpha = texture(uitexture, tex_coord).a;
+	final_frag_color = frag_color_out * color_mult;
+	final_frag_color.a *= alpha;
 	final_picking = entity_id;
 }
 </nsstring>

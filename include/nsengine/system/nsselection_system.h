@@ -88,9 +88,13 @@ public:
 
 	bool valid_tile_swap();
 
+	bool selection_being_dragged();
+
 	void remove_from_selection(nsentity * ent, uint32 pTFormID);
 
 	void remove_from_grid();
+
+	void refresh_selection(nsscene * scene_to_refresh);
 
 	void reset_color();
 
@@ -201,6 +205,7 @@ protected:
 	bool m_toggle_move;
 	bool m_send_foc_event;
 	bool m_mirror_selection;
+    bool m_started_drag_over_ui;
 	
 	fvec2 m_pick_pos;
 	fvec3 m_cached_point;
@@ -209,6 +214,52 @@ protected:
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
 	fmat4 m_trans;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 };
 
 #endif

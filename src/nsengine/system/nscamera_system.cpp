@@ -127,49 +127,32 @@ void nscamera_system::set_sensitivity(float pSensitivity, const sensitivity_t & 
 		m_strafe_sensitivity = pSensitivity;
 }
 
-/*!
-Set the camera view so that it locks and does not allow movement about the right vector axis. That is, it does
-not allow the pitch to be changed, only the yaw. There are three different angles.. front, isometric (45 degrees)
-and top down. No matter what the camera mode is in or what angle it is at, setting the camera to any of these
-modes will result in the angle about the horizontal axis to be 0, 45, or deg_0 degrees depending on which view is
-selected.
-*/
 void nscamera_system::set_view(camera_view_t view_)
 {	
 	if (m_active_scene == nullptr)
 		return;
-
 	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
 	if (vp == nullptr)
 		return;
-
 	nsentity * cam = vp->camera;
 	if (cam == NULL)
 		return;
 
-	nscam_comp * camComp = cam->get<nscam_comp>();
 	nstform_comp * camTComp = cam->get<nstform_comp>();
+	nscam_comp * camComp = cam->get<nscam_comp>();
 
-	fvec3 focus_pos;
-	nsentity * ent = m_active_scene->find_entity(m_focus_ent.xy());
-	nstform_comp * tC = NULL;
-	if (ent != NULL)
+	nstform_comp * manip_tc = m_cam_focus_manipulator->get<nstform_comp>();
+	if (manip_tc == nullptr)
 	{
-		tC = ent->get<nstform_comp>();
-		focus_pos = tC->instance_transform(m_active_scene, m_focus_ent.z)->world_position();
+		m_active_scene->add(m_cam_focus_manipulator);
+		manip_tc = m_cam_focus_manipulator->get<nstform_comp>();
+		manip_tc->save_with_scene = false;
 	}
-
 	
 	m_anim_view = true;
-
 	float deg_0 = 0.0f;
 	float deg_120 = 120.0f;
-	float deg_240 = -120.0f;
-
-	//90
-	//210
-	//deg_240
-	
+	float deg_240 = -120.0f;	
 	switch (view_)
 	{
 	  case (view_top_0) :
@@ -208,19 +191,11 @@ void nscamera_system::set_view(camera_view_t view_)
 	}
 
 	auto itf = camTComp->instance_transform(m_active_scene, 0);
-	m_final_pos = fvec3(0.0f, 0.0f, DEFAULT_CAM_VIEW_Z);
-		
-	m_start_pos = itf->position;
-	if (m_cam_mode == mode_focus)
-	{
-		m_start_orient = camComp->focus_orientation();
-		m_start_local_orient = itf->orient;
-	}
-	else
-	{
-		m_start_orient = itf->orient;		
-		m_final_pos = focus_pos + rotation_mat3(m_final_orient) * m_final_pos;
-	}
+	auto manip_itf = manip_tc->instance_transform(m_active_scene, 0);
+	
+	m_start_pos = itf->world_position();
+    m_start_orient = itf->world_orientation();
+    m_final_pos = manip_itf->world_position() + rotation_mat3(m_final_orient) * fvec3(0.0f, 0.0f, DEFAULT_CAM_VIEW_Z);
 
 	camComp->post_update(true);
 }
@@ -233,42 +208,6 @@ void nscamera_system::set_zoom(float pZFactor)
 void nscamera_system::set_mode(camera_mode pMode)
 {
 	m_cam_mode = pMode;
-
-	if (m_active_scene == nullptr)
-		return;
-
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
-	if (vp == nullptr)
-		return;
-
-	nsentity * cam = vp->camera;
-	if (cam == NULL)
-		return;
-
-	nscam_comp * camComp = cam->get<nscam_comp>();
-	nstform_comp * camTComp = cam->get<nstform_comp>();
-	nsentity * ent = m_active_scene->find_entity(m_focus_ent.xy());
-	nstform_comp * tC = NULL;
-	if (ent != NULL)
-		tC = ent->get<nstform_comp>();
-
-	auto itf = camTComp->instance_transform(m_active_scene, 0);
-	itf->orient = camComp->focus_orientation() * itf->orient;
-	itf->update = true;
-	camComp->set_focus_orientation(fquat());
-
-	if (pMode == mode_free || tC == NULL)
-	{
-		camComp->set_focus_point(fvec3());
-		itf->position = itf->world_position();
-	}
-	else
-	{
-		camComp->set_focus_point(tC->instance_transform(m_active_scene, m_focus_ent.z)->world_position());
-		itf->position = itf->world_position() - camComp->focus_point();
-	}
-	camComp->compute_focus_transform();
-	camTComp->instance_transform(m_active_scene, 0)->recursive_compute();
 }
 
 void nscamera_system::toggle_mode()
@@ -285,11 +224,10 @@ void nscamera_system::_on_cam_move(nscam_comp * pCam, nstform_comp * tComp, cons
 
 	fvec2 factor(pDelta.u*m_strafe_sensitivity * m_free_mode_inverted.x,
 				 pDelta.v*m_strafe_sensitivity * m_free_mode_inverted.y);
-	
-	tfi->position += tfi->orient.right() * factor.x;
-	tfi->position += tfi->orient.up() * factor.y;
-	tfi->update = true;
-	tComp->post_update(true);
+
+    tfi->translate_world_space(tfi->world_orientation().right() * factor.x);
+    tfi->translate_world_space(tfi->world_orientation().up() * factor.y);
+
 	pCam->post_update(true);
 }
 
@@ -299,32 +237,21 @@ void nscamera_system::_on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, cons
 	// wants rotation by default to be opposite of the normal for focus mode
 
 	auto tfi = tComp->instance_transform(m_active_scene, 0);
-	
+
 	if (m_cam_mode == mode_free)
 	{
-		float tFac = 1.0f;
-		tFac *= m_turn_sensitivity * m_free_mode_inverted.x;
-		tfi->orient = ::orientation(fvec4(tfi->orient.right(),pDelta.v * tFac)) * tfi->orient;
-		tfi->orient = ::orientation(fvec4(0,0,1,pDelta.u * tFac)) * tfi->orient;
-		tfi->update = true;
-		tComp->post_update(true);
+        tfi->rotate(::orientation(fvec4(tfi->world_orientation().right(),pDelta.v * m_turn_sensitivity * m_free_mode_inverted.x)));
+        tfi->rotate(::orientation(fvec4(0,0,1,pDelta.u * m_turn_sensitivity * m_free_mode_inverted.y)));
 	}
 	else
 	{
-		// float tFac = 1.0f;
-		// fvec3 tVec = tComp->dvec(nstform_comp::dir_up);
-		// if (tVec.z < 0.0f)
-		// 	tFac = -1.0f;
-		
-		// fquat first_rot = orientation(fvec4(0,0,1,pDelta.u * m_turn_sensitivity * tFac * m_focus_mode_inverted.x));
-		// fquat final_rot = first_rot * pCam->focus_orientation();
+		nstform_comp * tc = m_cam_focus_manipulator->get<nstform_comp>();
+		if (tc == nullptr)
+			return;
+		auto tfi_manip = tc->instance_transform(m_active_scene, 0);
 
-		// fvec3 rvec = (final_rot * tComp->orientation()).right();
-		// fquat second_rot = orientation(fvec4(rvec,pDelta.v * m_turn_sensitivity * m_focus_mode_inverted.y));
-		
-		// final_rot = second_rot * final_rot;
-		
-		// pCam->set_focus_orientation(final_rot);
+        tfi_manip->rotate(::orientation(fvec4(tfi->world_orientation().right(),pDelta.v * m_turn_sensitivity * m_focus_mode_inverted.x)));
+        tfi_manip->rotate(::orientation(fvec4(0,0,1,pDelta.u * m_turn_sensitivity * m_focus_mode_inverted.y)));
 	}
 	pCam->post_update(true);
 }
@@ -338,7 +265,7 @@ void nscamera_system::_on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, floa
 	if (pCam->proj_mode() == nscam_comp::proj_persp)
 	{
 		auto tfi = tComp->instance_transform(m_active_scene, 0);
-		tfi->position += tfi->orient.target() * float(dir) * m_zoom_factor;
+        tfi->translate_world_space(tfi->world_orientation().target() * float(dir) * m_zoom_factor);
 	}
 	else
 	{
@@ -365,93 +292,101 @@ void nscamera_system::update()
 	if (cam == NULL)
 		return;
 
-	auto ents = m_active_scene->entities_with_comp<nscam_comp>();
-	if (ents == nullptr)
-		return;
-	
-	auto iter = ents->begin();
-	while (iter != ents->end())
+    nscam_comp * camComp = cam->get<nscam_comp>();
+    nstform_comp * camTComp = cam->get<nstform_comp>();
+    auto tfi = camTComp->instance_transform(m_active_scene, 0);
+
+	nstform_comp * tc = m_cam_focus_manipulator->get<nstform_comp>();
+	if (tc == nullptr)
 	{
-		nscam_comp * camComp = (*iter)->get<nscam_comp>();
-		nstform_comp * camTComp = (*iter)->get<nstform_comp>();
-		auto tfi = camTComp->instance_transform(m_active_scene, 0);
+		m_active_scene->add(m_cam_focus_manipulator);
+		tc = m_cam_focus_manipulator->get<nstform_comp>();
+		tc->save_with_scene = false;
+	}
+
+    auto tfi_manip = tc->instance_transform(m_active_scene, 0);
+    if (m_cam_mode == mode_focus && tfi->parent() == nullptr)
+        tfi->set_parent(tfi_manip, true);
+    else if (m_cam_mode == mode_free && tfi->parent() != nullptr)
+    {
+        tfi->set_parent(nullptr, true);
+        tfi_manip->set_local_orientation(fquat());
+        tfi_manip->set_local_position(fvec3());
+    }
+
 		
-        if (camComp->update_posted())
+    if (camComp->update_posted())
+    {
+        // generate a camera changed event
+        if (!m_anim_view)
+            nse.event_dispatch()->push<nscam_change_event>();
+
+        if (camComp->strafe().animating)
         {
-			// generate a camera changed event
-			if ((*iter) == cam && !m_anim_view)
-				nse.event_dispatch()->push<nscam_change_event>();
-			
-			if (camComp->strafe().animating)
-			{
-				tfi->position += tfi->orient.right() *
-					camComp->strafe().direction *
-					camComp->speed() *
-					nse.timer()->fixed();
-			}
-			if (camComp->elevate().animating)
-			{
-				tfi->position += tfi->orient.up() * camComp->elevate().direction * camComp->speed() * nse.timer()->fixed();
-			}
-			if (camComp->fly().animating)
-			{
-				tfi->position += tfi->orient.target() * camComp->fly().direction * camComp->speed() * nse.timer()->fixed();
-			}
-
-//             if (m_cam_mode == mode_focus)
-//                camTComp->set_parent(camComp->focus_transform());
-//             else
-//                camTComp->set_parent(fmat4());
-
-			tfi->update = true;
-			tfi->recursive_compute();
-			camComp->m_proj_cam = camComp->proj() * tfi->world_inv_tf();
-			camComp->m_inv_proj_cam = tfi->world_tf() * camComp->inv_proj();
-
-			camComp->post_update(
-				(camComp->strafe().animating ||
-				 camComp->elevate().animating ||
-				 camComp->fly().animating) ||
-				m_anim_view);
+            tfi->translate_world_space(tfi->world_orientation().right() *
+                           camComp->strafe().direction *
+                           camComp->speed() *
+                           nse.timer()->fixed());
+        }
+        if (camComp->elevate().animating)
+        {
+            tfi->translate_world_space(tfi->world_orientation().up() *
+                           camComp->elevate().direction *
+                           camComp->speed() *
+                           nse.timer()->fixed());
+        }
+        if (camComp->fly().animating)
+        {
+            tfi->translate_world_space(tfi->world_orientation().target() *
+                           camComp->fly().direction *
+                           camComp->speed() *
+                           nse.timer()->fixed());
         }
 
-		if ((*iter) == cam)
-		{
-			if (m_anim_view)
-			{
-				float frac_time = m_anim_elapsed/m_anim_time;
-				fvec3 toset = lerp(m_start_pos, m_final_pos, frac_time);
-				fquat tosetrot = slerp(m_start_orient, m_final_orient, frac_time);
-				
-				tfi->position = toset;
-				
-				if (m_cam_mode == mode_focus)
-				{
-					camComp->set_focus_orientation(tosetrot);
-					tfi->orient = slerp(m_start_local_orient,fquat(), frac_time);
-				}
-				else
-					tfi->orient = tosetrot;
-				
-				m_anim_elapsed += nse.timer()->fixed();
-		
-				if (m_anim_elapsed >= m_anim_time)
-				{
-					m_anim_view = false;
-					m_anim_elapsed = 0.0f;
-				}
-			}
-		}
+        if (tfi_manip != nullptr)
+            tfi_manip->recursive_compute();
+
+        tfi->update = true;
+        tfi->recursive_compute();
+        camComp->m_proj_cam = camComp->proj() * tfi->world_inv_tf();
+        camComp->m_inv_proj_cam = tfi->world_tf() * camComp->inv_proj();
+
+        camComp->post_update(
+                    (camComp->strafe().animating ||
+                     camComp->elevate().animating ||
+                     camComp->fly().animating) ||
+                    m_anim_view);
+
+        if (m_anim_view)
+        {
+            float frac_time = m_anim_elapsed/m_anim_time;
+            fvec3 toset = lerp(m_start_pos, m_final_pos, frac_time);
+            fquat tosetrot = slerp(m_start_orient, m_final_orient, frac_time);
+
+            tfi->set_world_position(toset);
+            tfi->set_world_orientation(tosetrot);
+
+            m_anim_elapsed += nse.timer()->fixed();
+            if (m_anim_elapsed >= m_anim_time)
+            {
+                m_anim_view = false;
+                m_anim_elapsed = 0.0f;
+            }
+        }
 
 		// Update the skybox with the current camera's position
 		nsentity * skyDome = m_active_scene->skydome();
 		if (skyDome != NULL)
 		{
 			nstform_comp * tComp = skyDome->get<nstform_comp>();
-			tComp->instance_transform(m_active_scene, 0)->position = tfi->world_position();
+			tComp->instance_transform(m_active_scene, 0)->set_world_position(tfi->world_position());
 		}
-		++iter;
 	}
+}
+
+void nscamera_system::set_camera_focus_manipulator(nsentity * cam_manip)
+{
+	m_cam_focus_manipulator = cam_manip;
 }
 
 bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
@@ -469,7 +404,9 @@ bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tcomp = cam->get<nstform_comp>();
-	_on_cam_turn(camc, tcomp, evnt->norm_delta);
+
+	fvec2 delta(evnt->norm_delta * 2.0f / (vp->normalized_bounds.zw() - vp->normalized_bounds.xy()));
+	_on_cam_turn(camc, tcomp, delta);
 	return true;
 }
 
@@ -488,7 +425,9 @@ bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tcomp = cam->get<nstform_comp>();
-	_on_cam_move(camc, tcomp, evnt->norm_delta);
+	
+	fvec2 delta(evnt->norm_delta * 2.0f / (vp->normalized_bounds.zw() - vp->normalized_bounds.xy()));
+	_on_cam_move(camc, tcomp, delta);
 	return true;
 }
 
@@ -637,49 +576,44 @@ bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 	return true;
 }
 
-void nscamera_system::_on_cam_rotate_horizontal(nscam_comp * pCam, nstform_comp * tComp, bool left)
+void nscamera_system::set_active_scene(nsscene * active_scene)
 {
-	fquat rotation = orientation(fvec4(0,0,1,30.0f*int(left)));
-	if (m_cam_mode == mode_free)
-	{
-	}
-	else
-	{
-		pCam->set_focus_orientation(rotation);
-	}
-	pCam->post_update(true);	
-}
-
-void nscamera_system::_on_cam_rotate_vertical(nscam_comp * pCam, nstform_comp * tComp, bool up)
-{
-	fvec3 rvec = (pCam->focus_orientation() * tComp->instance_transform(m_active_scene, 0)->orient).right();
-	fquat rot = orientation(fvec4(rvec,90.0f * int(up)));
-	if (m_cam_mode == mode_free)
-	{
-	}
-	else
-	{
-		pCam->set_focus_orientation(rot);
-	}
-	pCam->post_update(true);	
+	if (m_active_scene != nullptr)
+		m_active_scene->remove(m_cam_focus_manipulator, false);
+	nssystem::set_active_scene(active_scene);
 }
 
 bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 {
-	m_focus_ent = evnt->focus_id;
-
-	if (m_cam_mode == mode_free)
+	nsentity * ent = m_active_scene->find_entity(evnt->focus_id.xy());
+	if (ent == nullptr)
 		return true;
 	
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
-	if (vp == nullptr)
+	nstform_comp * tC = ent->get<nstform_comp>();
+	if (tC == nullptr)
 		return true;
 
-	nsentity * cam = vp->camera;
-	if (cam == NULL)
-		return true;
+	nstform_comp * tc = m_cam_focus_manipulator->get<nstform_comp>();
+	if (tc == nullptr)
+	{
+		m_active_scene->add(m_cam_focus_manipulator);
+		tc = m_cam_focus_manipulator->get<nstform_comp>();
+		tc->save_with_scene = false;
+	}
 
-	set_mode(mode_focus);
+	auto itf = tC->instance_transform(m_active_scene, evnt->focus_id.z);
+	auto itf_manip = tc->instance_transform(m_active_scene, 0);
+    auto child_itf = itf_manip->child(0);
+
+    fvec3 wpos;
+    if (child_itf != nullptr)
+        wpos = child_itf->world_position();
+
+    itf_manip->set_world_position(itf->world_position());
+    itf_manip->recursive_compute();
+
+    if (child_itf != nullptr)
+        child_itf->set_world_position(wpos);
 	return true;
 }
 

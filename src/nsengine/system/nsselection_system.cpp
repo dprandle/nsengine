@@ -10,6 +10,8 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsui_system.h>
+#include <nsrect_tform_comp.h>
 #include <nsvideo_driver.h>
 #include <iostream>
 #include <nsvector.h>
@@ -51,7 +53,8 @@ nsselection_system::nsselection_system() :
 	m_trans(),
 	m_toggle_move(false),
 	m_send_foc_event(false),
-	m_mirror_tile_color(fvec4(1.0f, 0.0f, 1.0f, 0.7f))
+	m_mirror_tile_color(fvec4(1.0f, 0.0f, 1.0f, 0.7f)),
+	m_started_drag_over_ui(false)
 {}
 
 nsselection_system::~nsselection_system()
@@ -158,6 +161,11 @@ bool nsselection_system::selection_contains(const uivec3 & itemid)
 	return false;
 }
 
+bool nsselection_system::selection_being_dragged()
+{
+	return m_moving;
+}
+
 void nsselection_system::set_focus_entity(const uivec3 & focus_ent)
 {
 	m_focus_ent = focus_ent;
@@ -200,6 +208,24 @@ bool nsselection_system::selection_collides_with_tilegrid()
 		++iter;
 	}
 	return has_collision;
+}
+
+void nsselection_system::refresh_selection(nsscene * scene_to_refresh)
+{
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
+	{
+		auto selection = (*iter)->get<nssel_comp>()->selection(scene_to_refresh);
+		if (selection == nullptr)
+		{
+			iter = m_selected_ents.erase(iter);
+		}
+		else
+		{
+			(*iter)->get<nssel_comp>()->selection(m_active_scene)->clear();
+			++iter;
+		}
+	}	
 }
 
 void nsselection_system::clear_selection()
@@ -429,19 +455,25 @@ void nsselection_system::delete_selection()
 	if (m_active_scene == nullptr)
 		return;
 
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
+    // we have to make a copy because if all instances of a selected entity
+    // are removed from the scene the entity will be removed from m_selected_ents
+    entity_ptr_set copy(m_selected_ents);
+   // std::copy(m_selected_ents.begin(), m_selected_ents.end(), copy.begin());
+
+    auto iter = copy.begin();
+    while (iter != copy.end())
 	{
 		nssel_comp * selC = (*iter)->get<nssel_comp>();
 		auto selection = selC->selection(m_active_scene);
 		if (selection != nullptr)
 		{
 			while (selection->begin() != selection->end())
-				m_active_scene->remove(*iter,*selection->begin());
+				m_active_scene->remove(*iter,*selection->begin(), false);
 		}
-		++iter;
+        ++iter;
 	}
-	clear_selection();
+
+    //clear_selection();
 }
 
 bool nsselection_system::empty()
@@ -650,9 +682,7 @@ void nsselection_system::rotate_selection(const fquat & rotation)
 		while (selIter != selection->end())
 		{
 			instance_tform * itf = tcomp->instance_transform(m_active_scene, *selIter);
-			itf->orient = rotation * itf->orient;
-			itf->update = true;
-            tcomp->post_update(true);
+			itf->rotate(rotation);
 			++selIter;
 		}
 		++iter;
@@ -729,13 +759,22 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	if (ent == nullptr)
 		return;
 
-	nssel_comp * sc = ent->get<nssel_comp>();
 	nstform_comp * camTForm = cam->get<nstform_comp>();
 	instance_tform * cam_itf = camTForm->instance_transform(m_active_scene, 0);
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tComp = ent->get<nstform_comp>();
+    if (tComp == nullptr)
+    {
+        dprint("nsselection_system::_on_draw_object Entity " + ent->name() + " not in scene");
+        return;
+    }
 	instance_tform * itf = tComp->instance_transform(m_active_scene, m_focus_ent.z);
-	
+    if (itf == nullptr)
+    {
+        dprint("nsselection_system::_on_draw_object Entity " + ent->name() + " not in scene");
+        return;
+    }
+
 	fvec2 delta(pDelta * 2.0f / (norm_vp.zw() - norm_vp.xy()));
 	fvec3 originalPos = itf->world_position();
 	fvec4 screenSpace = camc->proj_cam() * fvec4(originalPos, 1.0f);
@@ -752,7 +791,7 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	float depth = 0.0f;
 	fvec3 normal;
 
-	fvec3 targetVec = (camc->focus_orientation() * cam_itf->orient).target();
+    fvec3 targetVec = cam_itf->world_orientation().target();
 	fvec3 projVec = project_plane(targetVec, fvec3(0.0f,0.0f,-1.0f));
 	fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
 	
@@ -1077,7 +1116,7 @@ void nsselection_system::update()
 		m_send_foc_event = false;
 	}
 
-	if (m_toggle_move)
+    if (m_toggle_move)
 	{
 		m_toggle_move = false;
 		nsentity * ent = m_active_scene->find_entity(m_focus_ent.xy());
@@ -1121,7 +1160,7 @@ void nsselection_system::update()
 	}
 
 	// Move the selection the correct amount for this frame
-	if (m_moving)
+	if (m_moving && !m_started_drag_over_ui)
 	{
 		if (!nse.system<nsbuild_system>()->enabled())
 		{
@@ -1193,21 +1232,23 @@ void nsselection_system::prepare_selection_for_rendering()
 			tbuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, selection->size());
 			sc->post_update(false);
 		}
+        if (!selection->empty())
+        {
+            fmat4 * mapped = tbuf->map<fmat4>(
+                        0,
+                        selection->size(),
+                        nsbuffer_object::access_map_range(nsbuffer_object::map_write));
 
-		fmat4 * mapped = tbuf->map<fmat4>(
-			0,
-			selection->size(),
-			nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-		
-		uint32 count = 0;
-		auto sel_iter = selection->begin();
-		while (sel_iter != selection->end())
-		{
-			mapped[count] = tc->instance_transform(m_active_scene, *sel_iter)->world_tf();
-			++sel_iter;
-			++count;
-		}
-		tbuf->unmap();
+            uint32 count = 0;
+            auto sel_iter = selection->begin();
+            while (sel_iter != selection->end())
+            {
+                mapped[count] = tc->instance_transform(m_active_scene, *sel_iter)->world_tf();
+                ++sel_iter;
+                ++count;
+            }
+            tbuf->unmap();
+        }
         tbuf->unbind();
 		++iter;
 	}	
@@ -1216,9 +1257,11 @@ void nsselection_system::prepare_selection_for_rendering()
 bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 {		
 	uivec3 pickid = pick(evnt->norm_mpos);
-	if (!selection_contains(pickid))
-		clear_selection();		
 	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
+		return true;
+	if (!selection_contains(pickid))
+		clear_selection();
 	add_to_selection(selectedEnt, pickid.z);
 	_reset_focus(pickid);
 	return true;
@@ -1227,7 +1270,11 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 bool nsselection_system::_handle_multi_select(nsaction_event * evnt)
 {		
 	uivec3 pickid = pick(evnt->norm_mpos);
-	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());		
+	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+
+	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
+		return true;
+
 	if (selection_contains(pickid))
 		remove_from_selection(selectedEnt,pickid.z);
 	else
@@ -1240,6 +1287,10 @@ bool nsselection_system::_handle_shift_select(nsaction_event * evnt)
 {
 	uivec3 pickid = pick(evnt->norm_mpos);
 	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+
+	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
+		return true;
+
 	add_to_selection(selectedEnt, pickid.z);
 	_reset_focus(pickid);
 	return true;
@@ -1247,6 +1298,9 @@ bool nsselection_system::_handle_shift_select(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_select(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
+
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;
@@ -1257,9 +1311,11 @@ bool nsselection_system::_handle_move_select(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_xy(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
-		return true;		
+        return true;
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
 	return true;
@@ -1267,6 +1323,8 @@ bool nsselection_system::_handle_move_selection_xy(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_zy(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
@@ -1277,6 +1335,8 @@ bool nsselection_system::_handle_move_selection_zy(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_zx(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
@@ -1287,6 +1347,8 @@ bool nsselection_system::_handle_move_selection_zx(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_x(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
@@ -1297,6 +1359,8 @@ bool nsselection_system::_handle_move_selection_x(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_y(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
@@ -1307,6 +1371,8 @@ bool nsselection_system::_handle_move_selection_y(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
 {
+    if (m_started_drag_over_ui)
+        return true;
 	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
@@ -1317,6 +1383,19 @@ bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_toggle(nsaction_event * evnt)
 {
+	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	if (vp == nullptr)
+		return true;		
+    if (nse.system<nsui_system>()->mpos_over_element(evnt->norm_mpos, vp) && evnt->cur_state == nsaction_event::begin)
+    {
+        m_started_drag_over_ui = true;
+		return true;
+    }
+    if (m_started_drag_over_ui)
+	{
+		m_started_drag_over_ui = false;
+        return true;
+	}
 	m_toggle_move = true;
 	m_moving = evnt->cur_state;
 	return true;

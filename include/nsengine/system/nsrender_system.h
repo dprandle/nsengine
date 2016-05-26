@@ -45,6 +45,7 @@
 #define SKYBOX_SHADER "skybox"
 #define UI_SHADER "render_ui"
 #define UI_BORDER_SHADER "ui_render_border"
+#define UI_TEXT_SHADER "ui_render_text"
 
 // Light bounds, skydome, and tile meshes
 #define MESH_FULL_TILE "fulltile"
@@ -191,6 +192,7 @@ struct light_draw_call : public draw_call
 
 class nsui_shader;
 class nsui_border_shader;
+class nsfont;
 
 struct ui_draw_call : public draw_call
 {
@@ -201,6 +203,7 @@ struct ui_draw_call : public draw_call
 	~ui_draw_call() {}
 	
 	nsshader * border_shader;
+	nsshader * text_shader;
 
 	uivec3 entity_id;
 	
@@ -210,6 +213,10 @@ struct ui_draw_call : public draw_call
 
 	fvec4 content_tex_coord_rect;
 	fvec4 border_color;
+	fvec4 color_multiplier;
+
+	nsstring text;
+	nsfont * fnt;
 };
 
 typedef std::set<nsmaterial*> pmatset;

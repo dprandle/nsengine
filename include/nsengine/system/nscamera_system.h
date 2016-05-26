@@ -40,6 +40,7 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 
 #include <nssystem.h>
 
+class nsentity;
 class nscam_comp;
 class nstform_comp;
 class nsaction_event;
@@ -96,6 +97,8 @@ class nscamera_system : public nssystem
 
 	void set_view(camera_view_t view_);
 
+	void set_active_scene(nsscene * active_scene);
+
 	bool x_inverted(const camera_mode & mode_ = mode_free);
 
 	bool y_inverted(const camera_mode & mode_ = mode_free);
@@ -107,6 +110,8 @@ class nscamera_system : public nssystem
 	void set_zoom(float zfactor_);
 
 	void toggle_mode();
+
+	void set_camera_focus_manipulator(nsentity * cam_manip);
 
 	virtual int32 update_priority();
 
@@ -132,9 +137,6 @@ class nscamera_system : public nssystem
 		camera_front_view_240,
 		camera_toggle_mode
 	};
-
-	void _on_cam_rotate_horizontal(nscam_comp * pCam, nstform_comp * tComp, bool left);
-	void _on_cam_rotate_vertical(nscam_comp * pCam, nstform_comp * tComp, bool up);
 	
     void _on_cam_turn(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
 	void _on_cam_move(nscam_comp * pCam, nstform_comp * tComp, const fvec2 & pDelta);
@@ -169,11 +171,10 @@ class nscamera_system : public nssystem
 	fvec3 m_start_pos, m_final_pos;
 	bool m_anim_view, m_switch_back;
 
-
 	ivec2 m_free_mode_inverted;
 	ivec2 m_focus_mode_inverted;
-	uivec3 m_focus_ent;
 	camera_mode m_cam_mode;
+	nsentity * m_cam_focus_manipulator;
 };
 
 #endif

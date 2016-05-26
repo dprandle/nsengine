@@ -22,6 +22,8 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 
 nsinput_system::nsinput_system() :
 	nssystem(),
+	m_caps_locked(false),
+	m_num_locked(false),
 	m_scroll_delta(0.0f)
 {
 
@@ -38,20 +40,32 @@ const fvec2 & nsinput_system::cursor_pos()
 }
 
 bool nsinput_system::key_event(nskey_event * evnt)
-{
+{	
 	if (evnt->pressed)
+	{
+		if (evnt->key == nsinput_map::key_capslock)
+			m_caps_locked = !m_caps_locked;
+		else if (evnt->key == nsinput_map::key_numlock)
+			m_num_locked = !m_num_locked;
 		_key_press(evnt->key);
+	}
 	else
+	{
 		_key_release(evnt->key);
+	}
 	return true;
 }
 
 bool nsinput_system::mouse_button_event(nsmouse_button_event * evnt)
 {
 	if (evnt->pressed)
+    {
 		_mouse_press(evnt->mb, evnt->normalized_mpos);
+    }
 	else
+    {
 		_mouse_release(evnt->mb, evnt->normalized_mpos);
+    }
 	return true;
 }
 
@@ -69,7 +83,6 @@ bool nsinput_system::mouse_scroll_event(nsmouse_scroll_event * evnt)
 
 void nsinput_system::_key_press(nsinput_map::key_val pKey)
 {
-	// Add the key to the modifier set (if not already there)..
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
 	if (inmap == NULL)
 		return;
@@ -101,6 +114,7 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 			++rIter;
 	}
 
+	// Add the key to the modifier set (if not already there)..
 	if (inmap->allowed_mod(pKey))
 		m_key_modifiers.insert(pKey);
 }
@@ -402,3 +416,14 @@ void nsinput_system::clear_contexts()
 {
 	m_ctxt_stack.clear();
 }
+
+bool nsinput_system::caps_locked()
+{
+	return m_caps_locked;		
+}
+
+bool nsinput_system::num_locked()
+{
+	return m_num_locked;
+}
+

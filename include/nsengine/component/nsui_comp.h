@@ -24,20 +24,6 @@ class nsui_comp;
 class nsui_comp : public nscomponent
 {
 public:
-
-	struct widget_content
-	{		
-		uivec2 mat_id;
-		uivec2 font_id;
-		nsstring text;
-	};
-
-	struct widget_outer
-	{
-		fvec4 border; // pixels
-		fvec4 border_color;
-	};
-
 	template <class PUPer>
 	friend void pup(PUPer & p, nsui_comp & tc);
 
@@ -54,21 +40,17 @@ public:
 
 	nsui_comp & operator=(nsui_comp rhs_);
 
-	widget_content content_properties;
-	widget_outer outer_properties;
-	
 	uivec2 content_shader_id;
 	uivec2 border_shader_id;
-
+	uivec2 text_shader_id;
+	uivec2 mat_id;
+	uivec2 font_id;
+	fvec4 border;
+	fvec4 border_color;
+	nsstring text;
 	bool show;
-
-	ns::signal<> clicked;
-	ns::signal<> pressed;
-	ns::signal<> released;
-	
-	bool is_pressed;
-	bool is_hover;
-	
+	bool focused;
+	bool text_editable;
 };
 
 template <class PUPer>

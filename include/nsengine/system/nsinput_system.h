@@ -55,6 +55,10 @@ public:
 	void push_context(const nsstring & pName);
 
 	void set_cursor_pos(const fvec2 & cursorPos);
+
+	bool caps_locked();
+
+	bool num_locked();
 	
 private:
 
@@ -86,6 +90,8 @@ private:
 	fvec2 m_last_pos;
 	float m_scroll_delta;
 	uivec2 m_input_map_id;
+	bool m_caps_locked;
+	bool m_num_locked;
 };
 
 

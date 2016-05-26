@@ -32,10 +32,10 @@ struct instance_tform
 	friend class nsrender_system;
 	
 	instance_tform() :
-		hidden_state(0),
-		orient(),
-		position(),
-		scaling(1.0f, 1.0f, 1.0f),
+		m_hidden_state(0),
+		m_orient(),
+		m_position(),
+		m_scaling(1.0f, 1.0f, 1.0f),
 		update(true),
 		snap_to_grid(true),
 		m_owner(nullptr),
@@ -49,10 +49,10 @@ struct instance_tform
 	{}
 
 	instance_tform(const instance_tform & copy):
-		hidden_state(0),
-		orient(copy.orient),
-		position(copy.position),
-		scaling(copy.scaling),
+		m_hidden_state(0),
+		m_orient(copy.m_orient),
+		m_position(copy.m_position),
+		m_scaling(copy.m_scaling),
 		update(true),
 		snap_to_grid(copy.snap_to_grid),
 		m_owner(nullptr),
@@ -70,22 +70,18 @@ struct instance_tform
 
 	void recursive_compute();
 
-	int32 hidden_state;
-	fquat orient;
-	fvec3 position;
-	fvec3 scaling;
 	bool update;
 	bool snap_to_grid;
 
-	void add_child(instance_tform * child);
+    void add_child(instance_tform * child, bool keep_world_transform);
 	
-	void remove_child(instance_tform * child);
+    void remove_child(instance_tform * child, bool keep_world_transform);
 
-	void remove_children();
+    void remove_children(bool keep_world_transform);
 	
 	bool has_child(instance_tform * child);
 	
-	void set_parent(instance_tform * parent);
+    void set_parent(instance_tform * parent, bool keep_world_transform);
 	
 	instance_tform * parent();
 
@@ -93,13 +89,41 @@ struct instance_tform
 
 	uint32 child_count();
 
+    int32 hidden_state() const;
+
+    void set_hidden_state(int32 state);
+
 	nstform_comp * owner();
 
 	nsscene * scene();
 
+    void translate(const fvec3 & amount);
+
+    void translate_world_space(const fvec3 & amount);
+
+    void scale(const fvec3 & amount);
+
+    void rotate(const fquat & rotation);
+
 	void set_world_position(const fvec3 & pos);
 
+    void set_world_orientation(const fquat & orient_);
+
+    void set_local_position(const fvec3 & pos);
+
+    void set_local_orientation(const fquat & orient_);
+
+    void set_scaling(const fvec3 & scale_);
+
+    const fvec3 & local_position() const;
+
+    const fquat & local_orientation() const;
+
 	fvec3 world_position() const;
+
+    fquat world_orientation() const;
+
+    const fvec3 & scaling() const;
 
 	const fmat4 & world_tf() const;
 	
@@ -115,6 +139,11 @@ struct instance_tform
 	instance_tform * m_parent;
 	nsscene * m_scene;
 	bool m_render_update;
+	int32 m_hidden_state;
+	fquat m_orient;
+	fvec3 m_position;
+	fvec3 m_scaling;
+
 	
 	std::vector<instance_tform*> m_children;
 	fmat4 m_world_tform;
@@ -161,6 +190,8 @@ class nstform_comp : public nscomponent
 
 	nstform_comp & operator=(nstform_comp rhs_);
 
+	bool save_with_scene;
+	
   private:
 
 	struct per_scene_info
