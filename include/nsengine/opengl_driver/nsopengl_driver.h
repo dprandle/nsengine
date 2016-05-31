@@ -86,7 +86,7 @@ struct render_pass
 		use_vp_size(true),
 		vp(nullptr)
 	{}
-	
+
 	virtual ~render_pass() {}
 
 	virtual void setup_pass();

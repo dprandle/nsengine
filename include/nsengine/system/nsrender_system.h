@@ -45,6 +45,7 @@
 #define SKYBOX_SHADER "skybox"
 #define UI_SHADER "render_ui"
 #define UI_BORDER_SHADER "ui_render_border"
+#define UI_TEXT_SHADER "ui_render_text"
 
 // Light bounds, skydome, and tile meshes
 #define MESH_FULL_TILE "fulltile"
@@ -191,6 +192,7 @@ struct light_draw_call : public draw_call
 
 class nsui_shader;
 class nsui_border_shader;
+class nsfont;
 
 struct ui_draw_call : public draw_call
 {
@@ -201,6 +203,7 @@ struct ui_draw_call : public draw_call
 	~ui_draw_call() {}
 	
 	nsshader * border_shader;
+	nsshader * text_shader;
 
 	uivec3 entity_id;
 	
@@ -210,6 +213,18 @@ struct ui_draw_call : public draw_call
 
 	fvec4 content_tex_coord_rect;
 	fvec4 border_color;
+	fvec4 color_multiplier;
+
+	nsstring text;
+	nsfont * fnt;
+	bool text_editable;
+
+	uint32 cursor_pixel_width;
+	fvec4 cursor_color;
+	uivec2 cursor_offset;
+	std::vector<uint32> text_line_sizes;
+	uivec4 margins;
+	uint8 alignment;
 };
 
 typedef std::set<nsmaterial*> pmatset;
@@ -305,7 +320,7 @@ class nsrender_system : public nssystem
 
 	drawcall_queue * remove_queue(const nsstring & name);
 
-	bool insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before="");
+	nsrender::viewport * insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before="");
 
 	bool remove_viewport(const nsstring & vp_name);
 

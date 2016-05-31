@@ -14,15 +14,27 @@ This file contains all of the neccessary definitions for the nsui_canvas_comp cl
 #include <nsentity.h>
 
 nsui_canvas_comp::nsui_canvas_comp() :
-	nscomponent()
+	nscomponent(),
+	m_router(new nsrouter()),
+	m_unloaded_ents(),
+	m_ents_by_comp(),
+	m_pupped_rects()
 {}
 
 nsui_canvas_comp::nsui_canvas_comp(const nsui_canvas_comp & copy):
-	nscomponent(copy)
-{}
+	nscomponent(copy),
+	m_router(new nsrouter()),
+	m_unloaded_ents(),
+	m_ents_by_comp(),
+	m_pupped_rects()
+{
+//	auto ents = copy.entities_in_canvas();
+}
 
 nsui_canvas_comp::~nsui_canvas_comp()
-{}
+{
+	delete m_router;
+}
 
 nsui_canvas_comp* nsui_canvas_comp::copy(const nscomponent * to_copy)
 {
@@ -184,6 +196,10 @@ void nsui_canvas_comp::_add_all_comp_entries(nsentity * ent)
 nsui_canvas_comp & nsui_canvas_comp::operator=(nsui_canvas_comp rhs_)
 {
 	nscomponent::operator=(rhs_);
+	std::swap(m_router, rhs_.m_router);
+	std::swap(m_unloaded_ents, rhs_.m_unloaded_ents);
+	std::swap(m_ents_by_comp, rhs_.m_ents_by_comp);
+	std::swap(m_pupped_rects, rhs_.m_pupped_rects);
 	post_update(true);
 	return (*this);
 }
@@ -230,6 +246,7 @@ void nsui_canvas_comp::_on_comp_add(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
 	fiter.first->second.emplace(comp_t->owner());
+	dprint("nsui_canvas_comp::_on_comp_add Added component " + hash_to_guid(comp_t->type()) + " to entity " + comp_t->owner()->name() + " in canvas " + m_owner->name());
 }
 
 void nsui_canvas_comp::_on_comp_remove(nscomponent * comp_t)
@@ -238,6 +255,7 @@ void nsui_canvas_comp::_on_comp_remove(nscomponent * comp_t)
 	if (fiter != m_ents_by_comp.end())
 	{
 		fiter->second.erase(comp_t->owner());
+		dprint("nsui_canvas_comp::_on_comp_remove Removed component " + hash_to_guid(comp_t->type()) + " from entity " + comp_t->owner()->name() + " in canvas " + m_owner->name());
 	}
 	else
 	{

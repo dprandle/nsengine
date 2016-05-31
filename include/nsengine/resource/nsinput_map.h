@@ -138,8 +138,8 @@ class nsinput_map : public nsresource
 	};
 
 	
-    typedef std::unordered_set<key_val, EnumHash> key_modifier_set;
-    typedef std::unordered_set<mouse_button_val, EnumHash> mouse_modifier_set;
+    typedef std::unordered_set<key_val, EnumHash> key_val_set;
+    typedef std::unordered_set<mouse_button_val, EnumHash> mbutton_val_set;
 
 	struct trigger
 	{
@@ -161,8 +161,8 @@ class nsinput_map : public nsresource
 		nsstring name;
         uint32 hash_name;
 		t_state trigger_state;
-		key_modifier_set key_modifiers;
-		mouse_modifier_set mouse_modifiers;
+		key_val_set key_modifiers;
+		mbutton_val_set mouse_modifiers;
 		bool overwrite_lower_contexts;
 	};
 
@@ -229,8 +229,10 @@ class nsinput_map : public nsresource
 	
   private:	
 	context_collection m_contexts;
-	key_modifier_set m_allowed_mods;
+	key_val_set m_allowed_mods;
 };
+
+uint8 input_key_to_ascii(nsinput_map::key_val key, bool shift_pressed);
 
 
 template <class PUPer>

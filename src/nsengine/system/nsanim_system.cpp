@@ -38,18 +38,20 @@ void nsanim_system::init()
 
 void nsanim_system::update()
 {
-	nsscene * scene = current_scene();
-	nstimer * timer = nse.timer();
-	if (scene == NULL)
+	if (scene_error_check())
 		return;
 	
-	entity_ptr_set ents = scene->entities<nsanim_comp>();
-	auto entIter = ents.begin();
-	while (entIter != ents.end())
+	auto ents = m_active_scene->entities_with_comp<nsanim_comp>();
+
+	if (ents == nullptr)
+		return;
+	
+	auto entIter = ents->begin();
+	while (entIter != ents->end())
 	{
 		nsanim_comp * animComp = (*entIter)->get<nsanim_comp>();
 		nsrender_comp * renderComp = (*entIter)->get<nsrender_comp>();
-		if (renderComp == NULL)
+		if (renderComp == nullptr)
 		{
 			dprint("nsanim_system::update Entity has animation comp but no render comp - Cannot update");
 			++entIter;
@@ -69,7 +71,7 @@ void nsanim_system::update()
 			}
 
 			nsmesh * msh = get_resource<nsmesh>(meshID);
-			if (msh == NULL)
+			if (msh == nullptr)
 			{
 				dprint("nsanim_system::update mesh with id " + meshID.to_string() + " is null in anim ent " + (*entIter)->name());
 				++entIter;
@@ -77,7 +79,7 @@ void nsanim_system::update()
 			}
 
 			nsmesh::node_tree * nTree = msh->tree();
-			if (nTree == NULL)
+			if (nTree == nullptr)
 			{
 				dprint("nsanim_system::update msh node tree is null in anim ent " + (*entIter)->name());
 				++entIter;
@@ -88,14 +90,14 @@ void nsanim_system::update()
 			finalTF->resize(nTree->m_name_joint_map.size());
 
 			nsanim_set * animset = get_resource<nsanim_set>(animsetID);
-			if (animset == NULL)
+			if (animset == nullptr)
 			{
 				++entIter;
 				continue;
 			}
 
 			animation_data * currAnim = animset->anim_data(mCurrentAnim);
-			if (currAnim == NULL)
+			if (currAnim == nullptr)
 			{
 				dprint("nsanim_system::update anim set not found " + (*entIter)->name());
 				++entIter;
@@ -104,7 +106,7 @@ void nsanim_system::update()
 
 			if (animComp->animating())
 			{
-				animComp->elapsed() += timer->fixed();
+				animComp->elapsed() += nse.timer()->fixed();
 				if (animComp->looping())
 				{
 					if (animComp->elapsed() >= currAnim->duration)

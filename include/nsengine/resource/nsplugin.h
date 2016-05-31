@@ -23,8 +23,6 @@ class nsmaterial;
 class nsanim_set;
 class nsmesh;
 
-nsscene * current_scene();
-
 class nsplugin : public nsresource
 {
 public:

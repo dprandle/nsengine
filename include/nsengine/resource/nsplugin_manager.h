@@ -72,8 +72,6 @@ public:
 	{
 		return remove<nsplugin>(res_name);
 	}
-
-	nsplugin * active();
 	
 	template<class T>
 	bool bind(const T & name)
@@ -100,18 +98,8 @@ public:
 	}
 
 	bool unbind(nsplugin * plg);
-
-	template<class T>
-	void set_active(const T & name)
-	{
-		nsplugin * plg = get(name);
-		set_active(plg);
-	}
-
-	void set_active(nsplugin * plg);
 	
 private:
-	uint32 m_active_plugin_id;
 	nsstring m_owned_plugins_res_dir;
 };
 

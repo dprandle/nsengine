@@ -36,11 +36,12 @@ void draw_trap()
 }
 
 void main()
-{	
-	inner_rect[0] = viewport.xy * content_wscale;
-	inner_rect[1] = viewport.xw * content_wscale;
-	inner_rect[2] = viewport.zy * content_wscale;
-	inner_rect[3] = viewport.zw * content_wscale;
+{
+	vec2 outer_pos = viewport.zw * content_wscale;
+	inner_rect[0] = vec2(0,0);
+	inner_rect[1] = vec2(0, outer_pos.y);
+	inner_rect[2] = vec2(outer_pos.x, 0);
+	inner_rect[3] = outer_pos;
 	outer_rect[0] = inner_rect[0] - border_pix.xy;
 	outer_rect[1] = inner_rect[1] + vec2(-border_pix.x, border_pix.w);
 	outer_rect[2] = inner_rect[2] + vec2( border_pix.z,-border_pix.y);

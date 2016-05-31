@@ -50,23 +50,23 @@ public:
 
 	~nsselection_system();
 
-	bool add(nsentity * ent, uint32 tformid);
+	bool add_to_selection(nsentity * ent, uint32 tformid);
 
-	bool add_to_grid();
+	bool add_selection_to_grid(nsscene * scn);
 
 	void change_layer(int32 pChange);
 
-	bool collision();
+	bool selection_collides_with_tilegrid();
 
-	void del();
+	void delete_selection();
 
-	void clear();
+	void clear_selection();
 
-	bool contains(const uivec3 & itemid);
+	bool selection_contains(const uivec3 & itemid);
 
 	bool empty();
 
-	const uivec3 & center();
+	const uivec3 & selection_center_entity_id();
 
 	void enable_mirror_selection(bool enable_);
 
@@ -74,7 +74,7 @@ public:
 
 	bool draw_occupied_grid();
 
-	bool mirror_selection();
+	bool mirror_selection_enabled();
 
 	virtual int32 update_priority();
 
@@ -84,91 +84,41 @@ public:
 
 	virtual void init();
 
-	bool valid_brush();
+//	bool valid_brush();
 
 	bool valid_tile_swap();
 
-	void remove(nsentity * ent, uint32 pTFormID);
+	bool selection_being_dragged();
+
+	void remove_from_selection(nsentity * ent, uint32 pTFormID);
 
 	void remove_from_grid();
 
+	void refresh_selection(nsscene * scene_to_refresh);
+
 	void reset_color();
 
-	void rotate(nsentity * ent, const fvec4 & axisangle);
+	bool set_selection(nsentity * ent, uint32 tformid);
 
-	void rotate(const fvec4 & axisangle);
+	void set_selection_color(const fvec4 & pColor);
 
-	void rotate(nsentity * ent, nstform_comp::dir_vec axis, float angle);
-
-	void rotate(nstform_comp::dir_vec axis, float angle);
-
-	void rotate(nsentity * ent, nstform_comp::world_axis axis, float angle);
-
-	void rotate(nstform_comp::world_axis axis, float angle);
-
-	void rotate(nsentity * ent, const fvec3 & euler);
-
-	void rotate(const fvec3 & euler);
-
-	void rotate(nsentity * ent, const fquat & orientation);
-
-	void rotate(const fquat & orientation);
-
-	void scale(nsentity * ent, const fvec3 & amount_);
-
-	void scale(const fvec3 & amount_);
-
-	void scale(nsentity * ent, float x, float y, float z);
-
-	void scale(float x, float y, float z);
-
-	bool set(nsentity * ent, uint32 tformid);
-
-	void set_color(const fvec4 & pColor);
+	void setup_input_map(nsinput_map * imap, const nsstring & global_ctxt_name);
 
 	void set_focus_entity(const uivec3 & focus_ent);
 
-	void set_hidden_state(nstform_comp::h_state pState, bool pSet);
-
 	void set_occupied_spaces(bool show);
 
-	void snap(nsentity * ent);
-
-	void snap();
-
-	void snap_x(nsentity * ent);
-
-	void snap_x();
-
-	void snap_y(nsentity * ent);
-
-	void snap_y();
-
-	void snap_z(nsentity * ent);
-
-	void snap_z();
-
 	void set_mirror_tile_color(const fvec4 & color);
+
+	void translate_selection(const fvec3 & amount);
+
+	void rotate_selection(const fquat & rotation);
+
+	void snap_selection_to_grid();
 
 	const fvec4 & mirror_tile_color();
 
 	void tile_swap(nsentity * newtile);
-
-	void translate(nsentity * ent, const fvec3 & amount_);
-
-	void translate(const fvec3 & amount_);
-
-	void translate(float x, float y, float z);
-
-	void translate(nsentity * ent, float x, float y, float z);
-
-	void translate(nsentity * ent, nstform_comp::dir_vec pDir, float amount_);
-
-	void translate(nstform_comp::dir_vec pDir, float amount_);
-
-	void translate(nsentity * ent, nstform_comp::world_axis pDir, float amount_);
-
-	void translate(nstform_comp::world_axis pDir, float amount_);
 
 	virtual void update();
 
@@ -202,23 +152,24 @@ protected:
 	bool _handle_move_selection_y(nsaction_event * evnt);
 	bool _handle_move_selection_z(nsaction_event * evnt);
 	bool _handle_move_selection_toggle(nsaction_event * evnt);
+	bool _handle_rotate_selection(nsaction_event * evnt);
 	
 	void _reset_focus(const uivec3 & pickid);
 
-	virtual void _on_rotate_x(
-		nsentity * ent,
-		bool pPressed
-		);
+	// virtual void _on_rotate_x(
+	// 	nsentity * ent,
+	// 	bool pPressed
+	// 	);
 
-	virtual void _on_rotate_y(
-		nsentity * ent,
-		bool pPressed
-		);
+	// virtual void _on_rotate_y(
+	// 	nsentity * ent,
+	// 	bool pPressed
+	// 	);
 
-	virtual void _on_rotate_z(
-		nsentity * ent,
-		bool pPressed
-		);
+	// virtual void _on_rotate_z(
+	// 	nsentity * ent,
+	// 	bool pPressed
+	// 	);
 
 	virtual void _on_select(
 		nsentity * ent,
@@ -256,6 +207,7 @@ protected:
 	bool m_toggle_move;
 	bool m_send_foc_event;
 	bool m_mirror_selection;
+    bool m_started_drag_over_ui;
 	
 	fvec2 m_pick_pos;
 	fvec3 m_cached_point;
@@ -264,6 +216,52 @@ protected:
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
 	fmat4 m_trans;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 };
 
 #endif

@@ -13,11 +13,39 @@ This file contains all of the neccessary definitions for the nssystem class.
 #include <nssystem.h>
 
 nssystem::nssystem():
+	m_active_scene(nullptr),
 	m_hashed_type(0)
 {}
 
 nssystem::~nssystem()
 {}
+
+nsscene * nssystem::active_scene()
+{
+	return m_active_scene;
+}
+
+bool nssystem::scene_error_check()
+{
+	if (m_active_scene == nullptr)
+	{
+		if (!m_scene_null_error)
+		{
+			dprint(hash_to_guid(m_hashed_type) + "::scene_valid_check - Active scene is null - must assign active scene");
+			m_scene_null_error = true;
+		}
+	}
+	else
+	{
+		m_scene_null_error = false;
+	}
+	return m_scene_null_error;
+}
+
+void nssystem::set_active_scene(nsscene * active_scene)
+{
+	m_active_scene = active_scene;
+}
 
 uint32 nssystem::type()
 {

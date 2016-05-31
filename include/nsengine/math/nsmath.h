@@ -30,6 +30,16 @@ float random_float(float high_ = 1.0f, float low_ = 0.0f);
 
 #include "nsmat4.h"
 
+template<class T>
+bool point_in_rect(const nsvec2<T> & point, nsvec2<T> rect[4])
+{
+    nsvec2<T> v = point - rect[0];
+    nsvec2<T> v1 = rect[1] - rect[0];
+    nsvec2<T> v2 = rect[2] - rect[0];
+    T f1 = v * v1, f2 = v1 * v1, f3 = v * v2, f4 = v2 * v2;
+    return (0 <= f1 && f1 <= f2) && (0 <= f3 && f3 <= f4);	
+}
+
 // Math typedefs
 typedef nsvec2<char> cvec2;
 typedef nsvec2<char16> c16vec2;

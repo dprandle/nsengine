@@ -10,6 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
+#include <nsfont.h>
 #include <nsanim_comp.h>
 #include <nsterrain_comp.h>
 #include <nssel_comp.h>
@@ -85,6 +86,11 @@ void render_pass::setup_pass()
 	driver->set_gl_state(gl_state);
 }
 
+struct font_layout
+{
+	uint32 line;
+	uint32 xpos;
+};
 void ui_render_pass::render()
 {
 	ren_target->bind();
@@ -94,27 +100,30 @@ void ui_render_pass::render()
 	for (uint32 i = 0; i < draw_calls->size(); ++i)
 	{
 		ui_draw_call * uidc = (ui_draw_call*)(*draw_calls)[i];		
-		
+
+		// render the border
 		if (uidc->border_color.a >= 0.03f && uidc->border_shader != nullptr)
 		{
 			uidc->border_shader->bind();
-			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z-viewp.x,viewp.w-viewp.y));
+			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 			uidc->border_shader->set_uniform("border_pix", uidc->border_pix);
 			uidc->border_shader->set_uniform("content_wscale", uidc->content_wscale);
 			uidc->border_shader->set_uniform("content_tform", uidc->content_tform);
 			uidc->border_shader->set_uniform("frag_color_out", uidc->border_color);
-			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);			
+			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);
 			driver->render_ui_dc(uidc);
 		}
 
+		// render the material part of the ui-element
 		uidc->shdr->bind();
 		uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 		uidc->shdr->set_uniform("entity_id", uidc->entity_id);
-		uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z-viewp.x,viewp.w-viewp.y));
+		uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 		uidc->shdr->set_uniform("wscale", uidc->content_wscale);
         uidc->shdr->set_uniform("content_tform", uidc->content_tform);
 		uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
-
+		uidc->shdr->set_uniform("color_mult", uidc->color_multiplier);
+		
 		if (uidc->mat != nullptr)
 		{
 			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
@@ -129,6 +138,138 @@ void ui_render_pass::render()
 			uidc->shdr->set_uniform("color_mode", true);
 		}
 		driver->render_ui_dc(uidc);
+
+		// render the text part of the ui-element
+		if (uidc->fnt != nullptr && !uidc->text.empty())
+		{
+			font_info & fi = uidc->fnt->get_font_info();
+
+			uidc->text_shader->bind();			
+			uidc->text_shader->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
+			uidc->text_shader->set_uniform("entity_id", uidc->entity_id);
+			uidc->text_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
+			uidc->text_shader->set_uniform("content_tform", uidc->content_tform);
+			uidc->text_shader->set_uniform("frag_color_out", uidc->fnt->render_color);
+			uidc->text_shader->set_uniform("color_mult", uidc->color_multiplier);
+
+			fvec2 rect_wh = fvec2(viewp.z, viewp.w) % uidc->content_wscale;
+            fvec2 cursor_pos(0,0);
+			int32 cur_line = 0;
+			int32 line_index = 0;
+			std::vector<float> x_offsets;
+
+			// figure out the vertical starting cursor pos
+			if (uidc->alignment < 3) // top alignment
+			{
+				cursor_pos.y = rect_wh.h - fi.line_height - uidc->margins.w;
+			}
+			else if (uidc->alignment < 6) // middle alignment
+			{
+				cursor_pos.y = (rect_wh.h - uidc->margins.y - uidc->margins.w - fi.line_height) / 2.0f;
+				float v_offset_factor = float(uidc->text_line_sizes.size()-1) / 2.0f;
+				cursor_pos.y += v_offset_factor * float(fi.line_height);
+			}
+			else // bottom alignment
+			{
+				cursor_pos.y = uidc->margins.y + (uidc->text_line_sizes.size() -1) * fi.line_height;
+			}
+
+			// figure out the first line's horizontal pos
+			if (uidc->alignment % 3 == 0) // left
+			{
+				x_offsets.resize(uidc->text_line_sizes.size(), uidc->margins.x);
+			}
+			else if (uidc->alignment % 3 == 1) // center
+			{
+				x_offsets.resize(uidc->text_line_sizes.size(), 0);
+				uint32 ti = 0;
+				for (uint32 i = 0; i < x_offsets.size(); ++i)
+				{
+					float xoff = 0.0f;
+					for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
+					{
+						char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
+						xoff += ci.xadvance;
+						++ti;
+					}
+					++ti; // newline char
+					x_offsets[i] = (rect_wh.w - uidc->margins.x - uidc->margins.z - xoff) / 2.0f;
+				}
+			}
+			else // right
+			{
+				x_offsets.resize(uidc->text_line_sizes.size(), 0);
+				uint32 ti = 0;
+				for (uint32 i = 0; i < x_offsets.size(); ++i)
+				{
+					float xoff = 0.0f;
+					for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
+					{
+						char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
+						xoff += ci.xadvance;
+						++ti;
+					}
+					++ti;
+					x_offsets[i] = (rect_wh.w - uidc->margins.z - xoff);
+				}
+			}
+			cursor_pos.x = x_offsets[0];
+			fvec2 cursor_xy(x_offsets[uidc->cursor_offset.y],cursor_pos.y);
+			for (uint32 i = 0; i < uidc->text.size(); ++i)
+			{
+                if (uidc->text[i] == '\n')
+                {
+                    cursor_pos.y -= fi.line_height;
+					line_index = 0;
+					++cur_line;
+                    cursor_pos.x = x_offsets[cur_line];
+					if (cur_line == uidc->cursor_offset.y)
+						cursor_xy.y = cursor_pos.y;
+                    continue;
+                }
+
+				char_info & ci = uidc->fnt->get_char_info(uidc->text[i]);
+				nstex2d * tex = get_resource<nstex2d>(uidc->fnt->texture_id(ci.page_index));
+				if (tex == nullptr)
+					continue;
+
+				driver->set_active_texture_unit(nsmaterial::diffuse);
+				tex->bind();
+
+				ivec2 tsz = tex->size();
+				fvec2 tex_size(tsz.x,tsz.y);
+
+                fvec4 rect(ci.rect.x / tex_size.x,
+                           ((tex_size.y - ci.rect.y) - ci.rect.w) / tex_size.y,
+                           (ci.rect.x + ci.rect.z) / tex_size.x,
+                           (tex_size.y - ci.rect.y) / tex_size.y);
+
+				uidc->text_shader->set_uniform("pixel_wh", fvec2(ci.rect.z,ci.rect.w));
+				uidc->text_shader->set_uniform("drawing_cursor", false);
+                uidc->text_shader->set_uniform("offset_xy", fvec2(cursor_pos.x + ci.offset.x, cursor_pos.y + fi.line_height - ci.offset.y - ci.rect.w));
+				uidc->text_shader->set_uniform("tex_coord_rect", rect);
+				uidc->text_shader->set_uniform("rect_bounds", rect_wh);
+				uidc->text_shader->set_uniform("margins", uidc->margins);
+
+				cursor_pos.x += ci.xadvance;
+				++line_index;
+
+				if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
+					cursor_xy.x = cursor_pos.x;				
+
+				driver->render_ui_dc(uidc);
+			}
+
+			// lets draw the cursor
+			if (uidc->text_editable)
+			{
+				uidc->text_shader->set_uniform("drawing_cursor", true);
+				uidc->text_shader->set_uniform("frag_color_out", uidc->cursor_color);
+				uidc->text_shader->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width,fi.line_height));
+				uidc->text_shader->set_uniform("offset_xy",cursor_xy);
+				driver->render_ui_dc(uidc);
+			}
+		}
 	}
 }
 
@@ -191,8 +332,9 @@ void gbuffer_render_pass::render()
 		dc->shdr->set_uniform("opacityMap", OPACITY_TEX_UNIT);
 		dc->shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
 		dc->shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
+        fmat4 proj_cam = vp->camera->get<nscam_comp>()->proj_cam();
 		if (vp->camera != nullptr)
-			dc->shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());	
+            dc->shdr->set_uniform("projCamMat", proj_cam);
 
 		dc->shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
 		dc->shdr->set_uniform("hasDiffuseMap", dc->mat->contains(nsmaterial::diffuse));
@@ -413,7 +555,7 @@ void light_pass::render()
 		dc->shdr->set_uniform("projLightMat", dc->proj_light_mat);
 		dc->shdr->set_uniform("bgColor", dc->bg_color);
 		dc->shdr->set_uniform("light.direction", dc->direction);
-		dc->shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->wpos());
+        dc->shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->instance_transform(nse.system<nsrender_system>()->active_scene(), 0)->world_position());
 		dc->shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		dc->shdr->set_uniform("fog_color", vp->m_fog_color);
 		dc->shdr->set_uniform("lightingEnabled", vp->dir_lights);
@@ -976,15 +1118,15 @@ void nsopengl_driver::create_default_render_passes()
 	final_pass->driver = this;
 
 	m_current_context->m_render_passes.push_back(gbuf_pass);
-	m_current_context->m_render_passes.push_back(oit_pass);
-	m_current_context->m_render_passes.push_back(dir_shadow_pass);
+    m_current_context->m_render_passes.push_back(oit_pass);
+    m_current_context->m_render_passes.push_back(dir_shadow_pass);
 	m_current_context->m_render_passes.push_back(dir_pass);
-	m_current_context->m_render_passes.push_back(spot_shadow_pass);
-	m_current_context->m_render_passes.push_back(spot_pass);
-	m_current_context->m_render_passes.push_back(point_shadow_pass);
-	m_current_context->m_render_passes.push_back(point_pass);
-	m_current_context->m_render_passes.push_back(sel_pass_opaque);
-	m_current_context->m_render_passes.push_back(ui_pass);
+    m_current_context->m_render_passes.push_back(spot_shadow_pass);
+    m_current_context->m_render_passes.push_back(spot_pass);
+    m_current_context->m_render_passes.push_back(point_shadow_pass);
+    m_current_context->m_render_passes.push_back(point_pass);
+    m_current_context->m_render_passes.push_back(sel_pass_opaque);
+    m_current_context->m_render_passes.push_back(ui_pass);
 	m_current_context->m_render_passes.push_back(final_pass);
 }
 
@@ -1007,14 +1149,14 @@ void nsopengl_driver::render(nsrender::viewport * vp)
 	if (!_valid_check())
 		return;
 
-	m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
-	//m_render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
-	m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
-	//m_render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
-	m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
-	//m_render_passes[point_shadow]->enabled = vp->point_light_shadows;
-	m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
-	m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
+    m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
+    //m_current_context->m_render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
+    m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
+    //m_current_context->m_render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
+    m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
+    //m_current_context->m_render_passes[point_shadow]->enabled = vp->point_light_shadows;
+    m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
+    m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
 
 	for (uint32 i = 0; i < m_current_context->m_render_passes.size(); ++i)
 	{

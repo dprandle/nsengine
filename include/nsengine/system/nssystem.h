@@ -35,9 +35,21 @@ public:
 
 	virtual void update() = 0;
 
+	nsscene * active_scene();
+
+	virtual void set_active_scene(nsscene * active_scene);
+
 	virtual int32 update_priority() = 0;
 
+	bool scene_error_check();
+
 	uint32 type();
+
+  protected:
+
+	bool m_scene_null_error;
+
+	nsscene * m_active_scene;
 
   private:
 

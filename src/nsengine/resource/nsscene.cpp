@@ -10,6 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <nsselection_system.h>
 #include <nstile_brush_comp.h>
 #include <nsscene.h>
 #include <nsscene_manager.h>
@@ -30,14 +31,15 @@
 
 nsscene::nsscene():
 	nsresource(),
-	m_skydome_id(),
+	m_skydome(nullptr),
 	m_max_players(0),
 	m_bg_color(),
-	m_ents_by_comp_type(),
 	m_notes(),
+	m_router(new nsrouter()),
 	m_creator(),
-	m_show_bit(false),
-	m_tile_grid(new nstile_grid())
+	m_tile_grid(new nstile_grid()),
+	m_ents_by_comp(),
+	m_unloaded()
 {
 	set_ext(DEFAULT_SCENE_EXTENSION);
 }
@@ -45,150 +47,191 @@ nsscene::nsscene():
 
 nsscene::nsscene(const nsscene & copy_):
 	nsresource(copy_),
-	m_skydome_id(copy_.m_skydome_id),
+	m_skydome(copy_.m_skydome),
 	m_max_players(copy_.m_max_players),
 	m_bg_color(copy_.m_bg_color),
-	m_ents_by_comp_type(copy_.m_ents_by_comp_type),
 	m_notes(copy_.m_notes),
+	m_router(new nsrouter()),
 	m_creator(copy_.m_creator),
-	m_show_bit(copy_.m_show_bit),
-	m_tile_grid(new nstile_grid(*copy_.m_tile_grid))
-{}
+	m_tile_grid(new nstile_grid()),
+	m_ents_by_comp(),
+	m_unloaded()
+{
+	auto ents = copy_.entities_in_scene();
+	if (ents != nullptr)
+	{
+		auto iter = ents->begin();
+		while (iter != ents->end())
+		{
+			nstform_comp * tfc = (*iter)->get<nstform_comp>();
+			for (uint32 i = 0; i < tfc->instance_count(&copy_); ++i)
+			{
+				instance_tform & itf = *tfc->instance_transform(&copy_, i);
+				if (itf.parent() == nullptr) // if root scene node
+					add(*iter, nullptr, *tfc->instance_transform(&copy_, i), true); // add children too
+			}
+			++iter;
+		}
+	}
+}
 
 nsscene::~nsscene()
 {
 	delete m_tile_grid;
+	delete m_router;
 }
 
 nsscene & nsscene::operator=(nsscene rhs)
 {
 	nsresource::operator=(rhs);
-	std::swap(m_skydome_id,rhs.m_skydome_id);
+	std::swap(m_skydome,rhs.m_skydome);
 	std::swap(m_max_players,rhs.m_max_players);
 	std::swap(m_bg_color,rhs.m_bg_color);
-	std::swap(m_ents_by_comp_type,rhs.m_ents_by_comp_type);
 	std::swap(m_notes,rhs.m_notes);
+	std::swap(m_router, rhs.m_router);
 	std::swap(m_creator,rhs.m_creator);
-	std::swap(m_show_bit,rhs.m_show_bit);
 	std::swap(m_tile_grid, rhs.m_tile_grid);
+	std::swap(m_ents_by_comp,rhs.m_ents_by_comp);
 	return *this;
 }
 
 void nsscene::clear()
 {
-	entity_ptr_set ents = entities();
-	auto eiter = ents.begin();
-	while (eiter != ents.end())
-	{
-		remove(*eiter);
-		++eiter;
-	}
+	auto ents = entities_in_scene();
+	if (ents == nullptr)
+		return;
 
+	while (ents->begin() != ents->end())
+		remove(*(ents->begin()), true);
+	
 	m_unloaded.clear();
 }
 
-/*!
-Add single instance of an entity at position given by pPos, rotation given by pRot, and scaling factor given by pScale.
-If the entity contains an occupy comp, then only insert in to the scene if the space given by pPos along with the entire
-occupy component tile set can be inserted in to the tile grid. If adding to the scene fails, this will return -1 and if it
-succeeds it will return the transform ID of the newly inserted entity instance.
-*/
-uint32 nsscene::add(nsentity * pEnt, const fvec3 & pPos, const fquat & pRot, const fvec3 & pScale)
+
+uint32 nsscene::add(
+	nsentity * ent,
+	instance_tform * parent,
+	const instance_tform & tf_info,
+	bool add_children)
 {
-	if (pEnt == NULL)
-		return -1;
+	nstform_comp * tComp = ent->get<nstform_comp>();
+	nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
 
-	nstform_comp * tComp = pEnt->get<nstform_comp>();
-	nsoccupy_comp * occComp = pEnt->get<nsoccupy_comp>();
-
-	bool addTComp = false;
-
-	// If there is no tranform component, then make one! This will automatically
-	// call the updateCompMaps function so only need to call that if no new component is created
-	if (tComp == NULL)
+	bool make_tform = false;
+	
+	// If there is no tranform component, then make one
+	if (tComp == nullptr)
 	{
-		// First we must set the scene ID correctly so that 
-		// when all components are added the scene comp maps are updated correctly
-		tComp = pEnt->create<nstform_comp>();
-		addTComp = true;
+		tComp = ent->create<nstform_comp>();
+		make_tform = true;
 	}
 
-	// Set up the first tranform
-	nstform_comp::instance_tform t;
-	t.posistion = pPos;
-	t.scaling = pScale;
-	t.orient = pRot;
+	auto fiter = tComp->m_scenes_info.emplace(
+		this,
+		new nstform_comp::per_scene_info).first;
+	nstform_comp::per_scene_info & pse = *fiter->second;
+	
+	uint32 tfid = pse.m_tforms.size();
+	pse.m_tforms.resize(tfid + 1);
+	instance_tform & tf = pse.m_tforms[tfid];
+	tf = tf_info;
+	tf.m_scene = this;
+	tf.m_owner = tComp;
+	tf.set_parent(parent, true);
 
 	// If there is an occupy component, attemp at inserting it in to the map. It will fail if the space
 	// is already occupied therefore we need to remove the tranform component and set the entities scene
 	// ID to 0 again if the add fails, since that means no other instances of the entity are in the scene
-	if (occComp != NULL)
+	if (occComp != nullptr)
 	{
 		// Get the transform ID that would result if we inserted it in to the scene
 		// We don't want to insert it yet because we first want to check if the space is open
-		uint32 pID = tComp->count();
-
-		if (!m_tile_grid->add(uivec3(pEnt->plugin_id(), pEnt->id(), pID), occComp->spaces(), pPos))
+		uint32 pID = tComp->instance_count(this);
+		if (!m_tile_grid->add(uivec3(ent->full_id(), pID), occComp->spaces(), tf_info.world_position()))
 		{
-			// This is the part that we check if we just added the transform component or not
-			if (addTComp)
-			{
-				// Set the scene ID to zero and remove the transform component..
-				// this will also update all of the
-				// entity by component lists in the scene (when removeComponent is called)
-				pEnt->del<nstform_comp>();
-			}
+			tf.set_parent(nullptr, true);
+			pse.m_tforms.resize(tfid);
+
+			if (pse.m_tforms.empty())
+				tComp->m_scenes_info.erase(fiter);
+
+			if (tComp->m_scenes_info.empty())
+				ent->del<nstform_comp>();
+			
 			return -1;
 		}
 	}
-	
-	// Adding transform will never fail unless out of memory
 
-	uint32 index = tComp->add(t);
-	tComp->set_hidden_state(nstform_comp::hide_none, m_show_bit, index);
-	return index;
+	if (add_children)
+	{
+		for (uint32 i = 0; i < tf_info.m_children.size(); ++i)
+		{
+			if (add(tf_info.m_children[i]->owner()->owner(), &tf, *tf_info.m_children[i], add_children) == -1)
+			{
+				dprint("nsscene::add Could not add child of " + ent->name() + " tformid " + std::to_string(tfid) + " because occupy_comp did not allow it");
+			}
+		}
+	}
+
+	if (make_tform)
+	{
+		_add_all_comp_entries(ent);
+		sig_connect(ent->component_added, nsscene::_on_comp_add);
+		sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+	}
+	
+	tComp->post_update(true);
+	pse.m_buffer_resized = true;
+	return tfid;
 }
 
-/*!
-Add gridded tiles to the scene in a fashion that agrees with the current grid settings.
-The grid settings are located in the global variables X_GRID, Y_GRID, and Z_GRID
-The tile grid also uses these grid variables, so changing them should change the overall
-behavior of grid snap and tile occupation etc.
-*/
-uint32 nsscene::add_gridded(
-	nsentity * pEnt,
-	const ivec3 & pBounds,
-	const fvec3 & pStartingPos,
-	const fquat & pRot,
-	const fvec3 & pScale
+uint32 nsscene::add(
+	nsentity * ent,
+	instance_tform * parent,
+	bool snap_to_grid,
+	const fvec3 & pPos,
+	const fquat & orient_,
+	const fvec3 & scaling_)
+{
+	instance_tform tf;
+	tf.snap_to_grid = snap_to_grid;
+	tf.m_position = pPos;
+	tf.m_orient = orient_;
+	tf.m_scaling = scaling_;
+	return add(ent, parent, tf, false);
+}
+
+void nsscene::add_gridded(
+	nsentity * ent,
+	const ivec3 & bounds,
+	const fvec3 & starting_pos,
+	const fquat & orient_,
+	const fvec3 & scaling_
 	)
 {
-	if (pEnt == NULL)
-		return -1;
+	nstform_comp * tComp = ent->get<nstform_comp>();
+    bool added_tform = false;
+	if (tComp == nullptr)
+    {
+		tComp = ent->create<nstform_comp>();
+        added_tform = true;
+    }
 
-	// Get the transform and occupy components.. if no transform component then make one
-	// We have to update the comp maps if create component is not called
-	nsoccupy_comp * occComp = pEnt->get<nsoccupy_comp>();
-	nstform_comp * tComp = pEnt->get<nstform_comp>();
-	if (tComp == NULL)
-	{
-		// First we must set the scene ID correctly so that 
-		// when all components are added the scene comp maps are updated correctly
-		tComp = pEnt->create<nstform_comp>();
-	}
+	auto fiter = tComp->m_scenes_info.emplace(
+		this,
+		new nstform_comp::per_scene_info).first;
+	nstform_comp::per_scene_info & pse = *fiter->second;
 
 	// Figure out the total number of transforms needed and allocate that 
 	// much memory (addTransforms does this)
-	uint32 addSize = pBounds.x * pBounds.y * pBounds.z;
-	tComp->add(addSize);
-	
-	// Now get the size and go through and attempt to add each transform
-	uint32 count = tComp->count() - addSize;
-	for (int32 z = 0; z < pBounds.z; ++z)
+	uint32 addSize = bounds.x * bounds.y * bounds.z;
+	pse.m_tforms.reserve(pse.m_tforms.size() + addSize);
+	instance_tform itf;
+	for (int32 z = 0; z < bounds.z; ++z)
 	{
-		for (int32 y = 0; y < pBounds.y; ++y)
+		for (int32 y = 0; y < bounds.y; ++y)
 		{
-			for (int32 x = 0; x < pBounds.x; ++x)
+			for (int32 x = 0; x < bounds.x; ++x)
 			{
 				float xP = X_GRID * x * 2.0f;
 				float yP = Y_GRID * y;
@@ -196,41 +239,28 @@ uint32 nsscene::add_gridded(
 				if (y % 2 != 0)
 					xP += X_GRID;
 				fvec3 pos(xP, yP, zP);
-				pos += pStartingPos;
+				pos += starting_pos;
 
-				if (occComp != NULL)
+				itf.m_position = pos;
+				itf.m_orient = orient_;
+				itf.m_scaling = scaling_;
+				itf.snap_to_grid = true;
+				if (add(ent, nullptr, itf, false) == -1)
 				{
-					// If there is an occupy comp then make sure that it can be inserted in to the tile grid
-					// If not, remove the transform and continue without incrementing the count
-					if (!m_tile_grid->add(uivec3(pEnt->plugin_id(),pEnt->id(), count), occComp->spaces(), pos))
-					{
-						tComp->remove(count);
-						continue;
-					}
+					dprint("nsscene::add_gridded Could not add grid position " + ivec3(x,y,z).to_string() + " to entity " + ent->name() + " because occupy component would not allow it");
 				}
-
-				tComp->set_pos(pos, count);
-				tComp->rotate(pRot, count);
-				tComp->scale(pScale, count);
-				tComp->set_hidden_state(nstform_comp::hide_none, m_show_bit, count);
-				++count;
 			}
 		}
 	}
 
-	// If there are no transforms at all, then set the scene ID to 0 and remove the component
-	// and return false to indicate that no transforms were added
-	if (tComp->count() == 0)
-	{
-		pEnt->del<nstform_comp>();
-		return false;
-	}
-	return true;
+    if (added_tform)
+    {
+        _add_all_comp_entries(ent);
+        sig_connect(ent->component_added, nsscene::_on_comp_add);
+        sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+    }
 }
 
-/*!
-Change the aximum number of players allowable on this scene - pAmount can be positive or negative
-*/
 void nsscene::change_max_players(int32 pAmount)
 {
 	if ((m_max_players + pAmount) > SCENE_MAX_PLAYERS || (m_max_players + pAmount) < 2)
@@ -242,36 +272,37 @@ void nsscene::change_max_players(int32 pAmount)
 	m_max_players += pAmount;
 }
 
-void nsscene::enable_show_bit(bool pEnable)
+nsentity * nsscene::find_entity(const uivec2 & id) const
 {
-	m_show_bit = pEnable;
-}
-
-nsentity * nsscene::get_entity(const uivec2 & id) const
-{
-	return get_entity(id.x, id.y);
-}
-
-nsentity * nsscene::get_entity(uint32 plug_id, uint32 res_id) const
-{
-	nsplugin * plug = nsep.get(plug_id);
-	if (plug == nullptr)
+	auto ents = entities_in_scene();
+	if (ents == nullptr)
 		return nullptr;
-	
-	nsentity * ent = plug->get<nsentity>(res_id);
-	if (ent != nullptr && !ent->has<nstform_comp>())
-		ent = nullptr;
-	return ent;
+	auto iter = ents->begin();
+	while (iter != ents->end())
+	{
+		if ((*iter)->full_id() == id)
+			return *iter;
+		++iter;
+	}
+	return nullptr;
+}
+
+nsentity * nsscene::find_entity(uint32 plug_id, uint32 res_id) const
+{
+	return find_entity(uivec2(plug_id,res_id));
 }
 
 bool nsscene::has_dir_light() const
 {
-	auto iter = entities().begin();
-	while (iter != entities().end())
+	auto ents = entities_in_scene();
+	if (ents == nullptr)
+		return false;
+	
+	auto iter = ents->begin();
+	while (iter != ents->end())
 	{
-		nsentity * ent = *iter;
-		nslight_comp * lc = ent->get<nslight_comp>();
-		if (lc != NULL)
+		nslight_comp * lc = (*iter)->get<nslight_comp>();
+		if (lc != nullptr)
 		{
 			if (lc->get_light_type() == nslight_comp::l_dir)
 				return true;
@@ -315,29 +346,9 @@ uivec3 nsscene::ref_id(const fvec3 & pWorldPos) const
 	return m_tile_grid->get(pWorldPos);
 }
 
-uint32 nsscene::ref_count() const
-{
-	uint32 count = 0;
-
-	auto iter = entities().begin();
-	while (iter != entities().end())
-	{
-		nstform_comp * tComp = (*iter)->get<nstform_comp>();
-		if (!(*iter)->has<nstile_brush_comp>())
-			count += tComp->count();
-		++iter;
-	}
-	return count;
-}
-
 nsentity * nsscene::skydome() const
 {
-	return get_entity(m_skydome_id.x, m_skydome_id.y);
-}
-
-const entity_ptr_set & nsscene::entities() const
-{
-	return entities<nstform_comp>();
+	return m_skydome;
 }
 
 /*!
@@ -345,12 +356,17 @@ Get the other resources that this Scene uses. This is given by all the Entities 
 */
 uivec3_vector nsscene::resources()
 {
+	auto ents = entities_in_scene();
 	uivec3_vector ret;
-	auto iter = entities().begin();
-	while (iter != entities().end())
+
+	if (ents == nullptr)
+		ret;
+
+	auto iter = ents->begin();
+	while (iter != ents->end())
 	{
 		uivec3_vector tmp = (*iter)->resources();
-		ret.insert(ret.end(), tmp.begin(), tmp.end() );
+		ret.insert(ret.end(), tmp.begin(), tmp.end());
 		++iter;
 	}
 	return ret;
@@ -366,6 +382,32 @@ nstile_grid & nsscene::grid()
 	return *m_tile_grid;
 }
 
+const entity_set * nsscene::entities_with_comp(uint32 comp_type_id) const
+{
+	auto fiter = m_ents_by_comp.find(comp_type_id);
+	if (fiter != m_ents_by_comp.end())
+		return &fiter->second;
+	return nullptr;
+}
+
+entity_set * nsscene::entities_with_comp(uint32 comp_type_id)
+{
+	auto fiter = m_ents_by_comp.find(comp_type_id);
+	if (fiter != m_ents_by_comp.end())
+		return &fiter->second;
+	return nullptr;		
+}
+
+const entity_set * nsscene::entities_in_scene() const
+{
+	return entities_with_comp<nstform_comp>();
+}
+
+entity_set * nsscene::entities_in_scene()
+{
+	return entities_with_comp<nstform_comp>();		
+}
+
 void nsscene::hide_layer(int32 pLayer, bool pHide)
 {
 	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
@@ -376,10 +418,15 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 			uivec3 id = m_tile_grid->get(ivec3(x, y, -pLayer));
 			if (id != uivec3())
 			{
-				nsentity * ent = get_entity(id.x, id.y);
-				if (ent != NULL)
+				nsentity * ent = find_entity(id.x, id.y);
+				if (ent != nullptr)
 				{
-					ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, pHide, id.z);
+					nstform_comp * tc = ent->get<nstform_comp>();
+					instance_tform * itf = tc->instance_transform(this, id.z);
+					if (pHide)
+						itf->m_hidden_state |= nstform_comp::hide_layer;
+					else
+						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 				}
 			}
 		}
@@ -400,10 +447,15 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 				uivec3 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec3())
 				{
-					nsentity * ent = get_entity(id.x, id.y);
-					if (ent != NULL)
+					nsentity * ent = find_entity(id.x, id.y);
+					if (ent != nullptr)
 					{
-						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, pHide, id.z);
+						nstform_comp * tc = ent->get<nstform_comp>();
+						instance_tform * itf = tc->instance_transform(this, id.z);
+						if (pHide)
+							itf->m_hidden_state |= nstform_comp::hide_layer;
+						else
+							itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -419,10 +471,12 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 				uivec3 id = m_tile_grid->get(ivec3(x, y, pBaseLayer));
 				if (id != uivec3())
 				{
-					nsentity * ent = get_entity(id.x, id.y);
-					if (ent != NULL)
+					nsentity * ent = find_entity(id.x, id.y);
+					if (ent != nullptr)
 					{
-						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, !pHide, id.z);
+						nstform_comp * tc = ent->get<nstform_comp>();
+						instance_tform * itf = tc->instance_transform(this, id.z);
+						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -444,10 +498,15 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 				uivec3 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec3())
 				{
-					nsentity * ent = get_entity(id.x, id.y);
-					if (ent != NULL)
+					nsentity * ent = find_entity(id.x, id.y);
+					if (ent != nullptr)
 					{
-						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, pHide, id.z);
+						nstform_comp * tc = ent->get<nstform_comp>();
+						instance_tform * itf = tc->instance_transform(this, id.z);
+						if (pHide)
+							itf->m_hidden_state |= nstform_comp::hide_layer;
+						else
+							itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -463,10 +522,12 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 				uivec3 id = m_tile_grid->get(ivec3(x, y, pTopLayer));
 				if (id != uivec3())
 				{
-					nsentity * ent = get_entity(id.x, id.y);
-					if (ent != NULL)
+					nsentity * ent = find_entity(id.x, id.y);
+					if (ent != nullptr)
 					{
-						ent->get<nstform_comp>()->set_hidden_state(nstform_comp::hide_layer, !pHide, id.z);
+						nstform_comp * tc = ent->get<nstform_comp>();
+						instance_tform * itf = tc->instance_transform(this, id.z);
+						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
 			}
@@ -478,152 +539,116 @@ void nsscene::init()
 {
 }
 
-bool nsscene::show_bit() const
-{
-	return m_show_bit;
-}
-
-/*!
-This should be called if there was a name change to a resource
-*/
 void nsscene::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	if (m_skydome_id.x == oldid.x)
-	{
-		m_skydome_id.x = newid.x;
-		if (m_skydome_id.y == oldid.y)
-			m_skydome_id.y = newid.y;
-	}
-
 	m_tile_grid->name_change(oldid, newid);
 }
 
-uint32 nsscene::replace(nsentity * oldent, uint32 tformID, nsentity * newent)
+bool nsscene::remove(instance_tform * itform, bool remove_children)
 {
-	if (oldent == NULL || newent == NULL)
-		return false;
-
-	nstform_comp * tComp = oldent->get<nstform_comp>();
-	if (tComp == NULL)
-		return false;
-
-	fvec3 pos = tComp->wpos(tformID);
-
-	remove(oldent, tformID);
-	return add(newent, pos);
-}
-
-bool nsscene::replace(nsentity * oldent, nsentity * newent)
-{
-	if (oldent == NULL || newent == NULL)
-		return false;
-
-	nstform_comp * tComp = oldent->get<nstform_comp>();
-	if (tComp == NULL)
-		return false;
-
-	bool ret = true;
-	for (uint32 i = 0; i < tComp->count(); ++i)
-		ret = replace(oldent, i, newent) && ret;
-
-	return ret;
-}
-
-/*!
-Removes the entity from the scene - if the entity is not part of the scene then will do nothing
-This is true for all overloaded functions as well
-*/
-bool nsscene::remove(nsentity * entity, uint32 tformid)
-{
-	if (entity == NULL)
-		return false;
-
-	nstform_comp * tComp = entity->get<nstform_comp>();
-	if (tComp == NULL)
-		return false;
-
-	nssel_comp * sel_cmp = entity->get<nssel_comp>();
-
-	uint32 size = tComp->count();
-	fvec3 pos = tComp->wpos(tformid);
-	nsoccupy_comp * occComp = entity->get<nsoccupy_comp>();
-
+	nstform_comp * tComp = itform->owner();
+	nsentity * entity = tComp->owner();
 	
-	uint32 newSize = tComp->remove(tformid);
-	bool ret = (newSize == (size - 1));
-
-	if (sel_cmp != NULL && ret)
+	auto fiter = tComp->m_scenes_info.find(this);
+	if (fiter == tComp->m_scenes_info.end())
 	{
-		// remove the index of the tform we are removing from selection
-    	sel_cmp->remove(tformid);
+		dprint("nsscene::remove entity " + entity->name() + " not found in scene");
+		return false;
+	}
 
+	if (remove_children)
+	{
+		for (uint32 i = 0; i < itform->child_count(); ++i)
+			remove(itform->child(i), remove_children);
+	}
+
+	nstform_comp::per_scene_info * pse = fiter->second; // easier to use pse
+	
+	// reassign all itform's children's parent to itform's parent
+	while (itform->child_count() != 0)
+		itform->child(0)->set_parent(itform->parent(), true);
+
+	itform->set_parent(nullptr, true); // remove itform from parent
+
+	fvec3 pos = itform->world_position();	
+	
+	if (pse->m_tforms.size() == 1)
+		pse->m_tforms.pop_back();
+	else
+	{
+		*itform = pse->m_tforms.back();
+		pse->m_tforms.pop_back();
+		itform->update = true;
+		pse->m_buffer_resized = true;
+		itform->owner()->post_update(true);
+	}
+
+    uint32 tformid = (itform - &pse->m_tforms[0]);
+	nssel_comp * sel_cmp = entity->get<nssel_comp>();
+	if (sel_cmp != nullptr)
+	{
+		auto selection = sel_cmp->selection(this);
+		
 		// Since remove replaces the tform at tformid with a copy of the last tform and then pops
 		// the back, we need to replace the index appropriately in the selection component
-		if (sel_cmp->contains(newSize))
-		{
-			sel_cmp->remove(newSize);
-			sel_cmp->add(tformid);
-		}
+		if (selection->erase(pse->m_tforms.size()) != 1)
+			selection->erase(tformid);
 	}
 	
-	if (occComp != NULL)
+	nsoccupy_comp * occComp = entity->get<nsoccupy_comp>();
+	if (occComp != nullptr)
 	{
 		m_tile_grid->remove(occComp->spaces(), pos);
 
 		// This should take care of updating the reference ID for the space that got switched..
-		// When removing transforms from the tForm comp internally it moves the last tForm to the position
-		// being erased and pops of the last tForm.. this means that if the last tfrom is occupying some space
-		// we need to update that space with the correct new tFormID
-		if (newSize != 0 && newSize != tformid)
+		if (pse->m_tforms.size() != 0)
 		{
-			fvec3 newPos = tComp->wpos(tformid);
+			fvec3 newPos = pse->m_tforms[tformid].world_position();
 			m_tile_grid->remove(occComp->spaces(), newPos);
-			m_tile_grid->add(uivec3(entity->plugin_id(), entity->id(), tformid), occComp->spaces(), newPos);
+			m_tile_grid->add(uivec3(entity->full_id(), tformid), occComp->spaces(), newPos);
 		}
 	}
 
-	if (newSize == 0)
+	if (pse->m_tforms.size() == 0)
 	{
-		ret = entity->del<nstform_comp>();
+		sig_disconnect(tComp->owner()->component_added);
+		sig_disconnect(tComp->owner()->component_removed);
+		_remove_all_comp_entries(tComp->owner());
 
-		// If the entity being removed from the scene is the current
-		// camera or current skybox then make sure to set these to 0
-		if (m_skydome_id == uivec2(entity->plugin_id(), entity->id()))
-			m_skydome_id = 0;
+		delete pse;
+		tComp->m_scenes_info.erase(fiter);		
+		if (tComp->m_scenes_info.empty())
+			entity->del<nstform_comp>();
+		
+		if (m_skydome == entity)
+			m_skydome = nullptr;
 	}
 	
-	return ret;
+	return true;
 }
 
-/*!
-This overload is special in that it will remove whatever entity + refID is at the position given by pWorldPos.
-If there is nothing in that position then returns false.
-Note that in order for this function to work the entity that is being removed must have an occupy component or else
-it will not be included in the tile grid.
-*/
-bool nsscene::remove(fvec3 & pWorldPos)
+bool nsscene::remove(nsentity * entity, uint32 tformid, bool remove_children)
+{
+	nstform_comp * tComp = entity->get<nstform_comp>();
+	if (tComp == nullptr)
+		return false;
+	return remove(tComp->instance_transform(this, tformid), remove_children);
+}
+
+bool nsscene::remove(fvec3 & pWorldPos, bool remove_children)
 {
 	uivec3 refid = m_tile_grid->get(pWorldPos);
-	if (refid == 0)
+	if (refid == uivec3(0))
 		return false;
 
-	return remove(get_entity(refid.x, refid.y), refid.z);
+	return remove(get_resource<nsentity>(refid.xy()), refid.z, remove_children);
 }
 
-/*!
-Remove all instances of the entity with name pEntName from the scene
-Does so by entering a while loop that will become false once the entity
-runs out of transforms
-*/
-bool nsscene::remove(nsentity * ent)
+bool nsscene::remove(nsentity * ent, bool remove_children)
 {
-	if (ent == NULL)
-		return false;
-
 	bool ret = true;
 	while (ret)
-		ret = remove(ent, uint32(0)) && ret;
-
+		ret = remove(ent, 0, remove_children);
 	return ret;
 }
 
@@ -654,25 +679,22 @@ void nsscene::set_notes(const nsstring & pNotes)
 
 void nsscene::set_skydome(nsentity * skydome, bool addToSceneIfNeeded)
 {
-	if (skydome == NULL)
+	if (skydome == nullptr)
 		return;
 
 	nstform_comp * skytf = skydome->get<nstform_comp>();
 
-	if (skytf != NULL)
+	if (skytf != nullptr)
 	{
-		m_skydome_id = uivec2(skydome->plugin_id(), skydome->id());
-		dprint("nsscene::setSkydome - Map \"" + m_name + "\"'s skydome set to \"" + skydome->name() + "\"");
+		m_skydome = skydome;
+		dprint("nsscene::set_skydome - Map \"" + m_name + "\"'s skydome set to \"" + skydome->name() + "\"");
 	}
 	else
 	{
 		if (addToSceneIfNeeded)
 		{
 			if (add(skydome) != -1) // -1 indicates failure
-			{
 				set_skydome(skydome);
-				dprint("nsscene::setSkydome - Map \"" + m_name + "\"'s skydome set to \"" + skydome->name() + "\"");
-			}
 		}
 	}
 }
@@ -682,36 +704,60 @@ uivec2_vector & nsscene::unloaded()
 	return m_unloaded;
 }
 
-/*!
-Go through all entities and add only entities here that are part of the scene
-*/
-void nsscene::update_comp_maps(uint32 plugid, uint32 entid)
+void nsscene::_on_comp_add(nscomponent * comp_t)
 {
-	nsentity * ent = get_entity(uivec2(plugid, entid));
-	if (ent == NULL)
-		return;
-
-	if (ent->has<nstform_comp>()) // if the entity is in the scene
+	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
+	fiter.first->second.emplace(comp_t->owner());
+	dprint("nsscene::_on_comp_add Added component " + hash_to_guid(comp_t->type()) + " to entity " + comp_t->owner()->name() + " in scene " + m_name);
+	if (hash_to_guid(comp_t->type()) == "nssel_comp")
 	{
-		// Insert the entity to each component type set - its okay if its already there insertion will just fail
-		auto compiter = ent->begin();
-		while (compiter != ent->end())
+		dprint("nsscene::_on_comp_add Adding scene to selection component");
+		nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
+		auto emp_iter = sc->m_scene_selection.emplace(this, new nssel_comp::per_scene_info);
+		if (!emp_iter.second)
+			dprint("nsscene::_on_comp_add Something in adding the comp went seriously wrong");
+	}
+}
+
+void nsscene::_on_comp_remove(nscomponent * comp_t)
+{
+	auto fiter = m_ents_by_comp.find(comp_t->type());
+	if (fiter != m_ents_by_comp.end())
+	{
+		fiter->second.erase(comp_t->owner());
+		dprint("nsscene::_on_comp_remove Removed component " + hash_to_guid(comp_t->type()) + " from entity " + comp_t->owner()->name() + " in scene " + m_name);
+		if (hash_to_guid(comp_t->type()) == "nssel_comp")
 		{
-			m_ents_by_comp_type[compiter->first].emplace(ent);
-			++compiter;
+			dprint("nsscene::_on_comp_remove Remocing scene from selection component");
+			nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
+			auto emp_iter = sc->m_scene_selection.find(this);
+			delete emp_iter->second;
+			sc->m_scene_selection.erase(emp_iter);
+			nse.system<nsselection_system>()->refresh_selection(this);
 		}
 	}
 	else
 	{
-		auto ctiter = m_ents_by_comp_type.begin();
-		while (ctiter != m_ents_by_comp_type.end())
-		{
-			ctiter->second.erase(ent);
-			if (ctiter->second.empty())
-				ctiter = m_ents_by_comp_type.erase(ctiter);
-			else
-				++ctiter;
-		}
+		dprint("nsscene::_on_comp_remove - Trying to remove comp that has not been added apparently");
 	}
+}
 
+void nsscene::_remove_all_comp_entries(nsentity * ent)
+{
+	auto citer = ent->begin();
+	while (citer != ent->end())
+	{
+		_on_comp_remove(citer->second);
+		++citer;
+	}
+}
+
+void nsscene::_add_all_comp_entries(nsentity * ent)
+{
+	auto citer = ent->begin();
+	while (citer != ent->end())
+	{
+		_on_comp_add(citer->second);
+		++citer;
+	}	
 }

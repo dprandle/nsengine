@@ -18,6 +18,8 @@
 #include <nsengine.h>
 #include <nssignal.h>
 
+typedef std::unordered_set<nsentity*> entity_set;
+
 class nscomponent;
 class nsentity : public nsresource
 {
@@ -126,8 +128,6 @@ public:
 	void post_update(const nsstring & compType, bool update);
 
 	virtual void pup(nsfile_pupper * p);
-
-	void update_scene();
 
 	template<class comp_type>
 	bool update_posted()

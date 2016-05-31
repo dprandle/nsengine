@@ -81,6 +81,8 @@ class nsfont : public nsresource
 	void pop_page();
 
 	font_info & get_font_info();
+
+	fvec4 render_color;
 	
   private:
 

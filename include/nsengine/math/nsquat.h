@@ -165,8 +165,6 @@ struct nsquat
 
 	nsquat<T> & from(const nsmat3<T> & rotation_mat3_)
 	{
-		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
-
 		T tr = rotation_mat3_[0][0] + rotation_mat3_[1][1] + rotation_mat3_[2][2], s;
 
 		if (tr > 0)

@@ -124,10 +124,6 @@ void nsrect_tform_comp::add_child(nsrect_tform_comp * child)
 	}	
 }
 
-void nsrect_tform_comp::finalize()
-{
-}
-
 void nsrect_tform_comp::remove_child(nsrect_tform_comp * child)
 {
 	auto iter = m_canvas_settings.begin();
@@ -176,3 +172,4 @@ per_canvas_info * nsrect_tform_comp::canvas_info(nsui_canvas_comp * canvas)
 		return nullptr;
 	return &fiter->second.pci;
 }
+

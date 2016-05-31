@@ -15,8 +15,8 @@
 
 #include <nssignal.h>
 
-#define sig_connect(signal, slot) m_router.connect(this, &slot, signal)
-#define sig_disconnect(signal) m_router.disconnect(signal)
+#define sig_connect(signal, slot) m_router->connect(this, &slot, signal)
+#define sig_disconnect(signal) m_router->disconnect(signal)
 
 
 class nsrouter

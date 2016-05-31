@@ -10,6 +10,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <nsui_button_comp.h>
 #include <nsui_canvas_comp.h>
 #include <nsrect_tform_comp.h>
 #include <nsui_system.h>
@@ -352,6 +353,16 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
 	return f;
 }
 
+void nsengine::set_active_scene(nsscene * active_scene)
+{
+	auto sys_iter = m_systems->begin();
+	while (sys_iter != m_systems->end())
+	{
+		sys_iter->second->set_active_scene(active_scene);
+		++sys_iter;
+	}	
+}
+
 void nsengine::update()
 {
 	static double accumulator = 0.0;
@@ -452,7 +463,9 @@ void nsengine::_init_factories()
 	register_component<nstile_comp>("nstile_comp");
 	register_component<nsterrain_comp>("nsterrain_comp");
 	register_component<nsui_comp>("nsui_comp");
+	register_component<nsui_text_comp>("nsui_text_comp");
 	register_component<nsui_canvas_comp>("nsui_canvas_comp");
+	register_component<nsui_button_comp>("nsui_button_comp");
 	
 	register_system<nsanim_system>("nsanim_system");
 	register_system<nsbuild_system>("nsbuild_system");
@@ -520,6 +533,8 @@ void nsengine::setup_core_plug()
 	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(UI_BORDER_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
+	
 	nsshader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true);
 	std::vector<nsstring> outLocs2;
 	outLocs2.push_back("gPosOut");
@@ -537,6 +552,10 @@ void nsengine::setup_core_plug()
 	sc->enable_draw(true);
 	sc->enable_move(true);
 	nse.system<nsbuild_system>()->set_object_brush(object_brush);
+
+	// create camera system entity
+	nsentity * cam_manip_ent = cplg->create<nsentity>("camera_focus_manipulator");
+	nse.system<nscamera_system>()->set_camera_focus_manipulator(cam_manip_ent);
 
     // init gl all the shaders
 	cplg->manager<nsshader_manager>()->compile_all();
