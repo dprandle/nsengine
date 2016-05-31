@@ -24,7 +24,11 @@ nsinput_system::nsinput_system() :
 	nssystem(),
 	m_caps_locked(false),
 	m_num_locked(false),
-	m_scroll_delta(0.0f)
+	m_scroll_delta(0.0f),
+	key_dispatch_enabled(true),
+	mbutton_dispatch_enabled(true),
+	mmovement_dispatch_enabled(true),
+	mscroll_dispatch_enabled(true)
 {
 
 }
@@ -46,7 +50,7 @@ bool nsinput_system::key_event(nskey_event * evnt)
 		if (evnt->key == nsinput_map::key_capslock)
 			m_caps_locked = !m_caps_locked;
 		else if (evnt->key == nsinput_map::key_numlock)
-			m_num_locked = !m_num_locked;
+			m_num_locked = !m_num_locked;			
 		_key_press(evnt->key);
 	}
 	else
@@ -81,10 +85,22 @@ bool nsinput_system::mouse_scroll_event(nsmouse_scroll_event * evnt)
 	return true;
 }
 
+bool nsinput_system::is_key_pressed(const nsinput_map::key_val & key)
+{
+	return m_current_keys_pressed.find(key) != m_current_keys_pressed.end();
+}
+
+bool nsinput_system::is_mbutton_pressed(const nsinput_map::mouse_button_val & mbutton)
+{
+	return m_current_mbuttons_pressed.find(mbutton) != m_current_mbuttons_pressed.end();
+}
+
 void nsinput_system::_key_press(nsinput_map::key_val pKey)
 {
+	m_current_keys_pressed.insert(pKey);
+	
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
-	if (inmap == NULL)
+	if (inmap == NULL || !key_dispatch_enabled)
 		return;
 
 	// Search context at top of stack for trigger with key -
@@ -92,7 +108,7 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
 	bool foundInContext = false;
 	while (rIter != m_ctxt_stack.rend())
-	{
+    {
 		auto keyIter = (*rIter)->key_map.equal_range(pKey);
 		while (keyIter.first != keyIter.second)
 		{
@@ -100,14 +116,14 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 			if (_check_trigger_modifiers(keyIter.first->second))
 			{
 				if (keyIter.first->second.trigger_state == nsinput_map::t_both)
-					_create_action_state_event(keyIter.first->second, true);
+					_create_action_state_event(keyIter.first->second, true, pKey);
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_released)
-					_create_action_event(keyIter.first->second);
+					_create_action_event(keyIter.first->second, pKey);
 				
 				foundInContext = keyIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++keyIter.first;
-		}
+        }
 		if (foundInContext) // If found a match for this key/modifier then search no further
 			rIter = m_ctxt_stack.rend();
 		else
@@ -119,26 +135,28 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 		m_key_modifiers.insert(pKey);
 }
 
-void nsinput_system::_create_action_event(nsinput_map::trigger & trigger)
+void nsinput_system::_create_action_event(nsinput_map::trigger & trigger,int32 key_code)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
 	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(trigger.hash_name, nsaction_event::none);
-	_set_event_from_trigger(evnt, trigger);
+	_set_event_from_trigger(evnt, trigger,key_code);
 }
 
-void nsinput_system::_create_action_state_event(nsinput_map::trigger & trigger, bool toggle)
+void nsinput_system::_create_action_state_event(nsinput_map::trigger & trigger, bool toggle,int32 key_code)
 {
 	// If the trigger is set to toggle then create a state event - otherwise create an action event
 	nsaction_event * evnt = nse.event_dispatch()->push<nsaction_event>(
 		trigger.hash_name,
 		nsaction_event::state_t(toggle));
-	_set_event_from_trigger(evnt, trigger);
+	_set_event_from_trigger(evnt, trigger,key_code);
 }
 
 void nsinput_system::_key_release(nsinput_map::key_val pKey)
 {
+	m_current_keys_pressed.erase(pKey);
+	
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
-	if (inmap == NULL)
+	if (inmap == NULL || !key_dispatch_enabled)
 		return;
 
 	// Remove the key from the modifier set..
@@ -157,9 +175,9 @@ void nsinput_system::_key_release(nsinput_map::key_val pKey)
 			if (_check_trigger_modifiers(keyIter.first->second))
 			{
 				if (keyIter.first->second.trigger_state == nsinput_map::t_both)
-					_create_action_state_event(keyIter.first->second, false);
+					_create_action_state_event(keyIter.first->second, false, pKey);
 				else if (keyIter.first->second.trigger_state != nsinput_map::t_pressed)
-					_create_action_event(keyIter.first->second);
+					_create_action_event(keyIter.first->second, pKey);
 				
 				foundInContext = keyIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
@@ -177,7 +195,7 @@ void nsinput_system::set_cursor_pos(const fvec2 & cursorPos)
 	m_current_pos = cursorPos;
 }
 
-void nsinput_system::_set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t)
+void nsinput_system::_set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t,int32 key_code)
 {
 	evnt->norm_mpos = m_current_pos;
 	evnt->norm_delta = m_current_pos - m_last_pos;
@@ -189,7 +207,7 @@ void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 	set_cursor_pos(cursorPos);
 
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
-	if (inmap == NULL)
+	if (inmap == NULL || !mmovement_dispatch_enabled)
 		return;
 
 	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
@@ -202,7 +220,7 @@ void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
-				_create_action_event(mouseIter.first->second);
+				_create_action_event(mouseIter.first->second, nsinput_map::movement);
 				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++mouseIter.first;
@@ -215,10 +233,11 @@ void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 
 void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos)
 {
+	m_current_mbuttons_pressed.insert(pButton);
 	set_cursor_pos(mousePos);
 
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
-	if (inmap == NULL)
+	if (inmap == NULL || !mbutton_dispatch_enabled)
 		return;
 
 	// Go check each context for the key starting from the last context on the stack
@@ -234,9 +253,9 @@ void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const f
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
 				if (mouseIter.first->second.trigger_state == nsinput_map::t_both)
-					_create_action_state_event(mouseIter.first->second, true);
+					_create_action_state_event(mouseIter.first->second, true, pButton);
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_released)
-					_create_action_event(mouseIter.first->second);
+					_create_action_event(mouseIter.first->second, pButton);
 
 				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
@@ -253,10 +272,11 @@ void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const f
 
 void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const fvec2 & mousePos)
 {
+	m_current_mbuttons_pressed.erase(pButton);
 	set_cursor_pos(mousePos);
 	
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
-	if (inmap == NULL)
+	if (inmap == NULL || !mbutton_dispatch_enabled)
 		return;
 
 	m_mouse_modifiers.erase(pButton);
@@ -272,9 +292,9 @@ void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
 				if (mouseIter.first->second.trigger_state == nsinput_map::t_both)
-					_create_action_state_event(mouseIter.first->second, false);
+					_create_action_state_event(mouseIter.first->second, false, pButton);
 				else if (mouseIter.first->second.trigger_state != nsinput_map::t_pressed)
-					_create_action_event(mouseIter.first->second);
+					_create_action_event(mouseIter.first->second, pButton);
 
 				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
@@ -292,7 +312,7 @@ void nsinput_system::_mouse_scroll(float pDelta, const fvec2 & mousePos)
 	m_scroll_delta = pDelta;
 
 	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
-	if (inmap == NULL)
+	if (inmap == NULL || !mscroll_dispatch_enabled)
 		return;
 
 	context_stack::reverse_iterator rIter = m_ctxt_stack.rbegin();
@@ -305,7 +325,7 @@ void nsinput_system::_mouse_scroll(float pDelta, const fvec2 & mousePos)
 			// Send input event to event system if modifiers match the trigger modifiers
 			if (_check_trigger_modifiers(mouseIter.first->second))
 			{
-				_create_action_event(mouseIter.first->second);
+				_create_action_event(mouseIter.first->second,0);
 				foundInContext = mouseIter.first->second.overwrite_lower_contexts || foundInContext;
 			}
 			++mouseIter.first;
@@ -410,6 +430,20 @@ bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 	}
 
 	return true;
+}
+
+void nsinput_system::remove_context_from_stack(const nsstring & pName)
+{
+	auto iter = m_ctxt_stack.begin();
+	while (iter != m_ctxt_stack.end())
+	{
+		if ((*iter)->name == pName)
+		{
+			iter = m_ctxt_stack.erase(iter);
+			return;
+		}
+		++iter;
+	}
 }
 
 void nsinput_system::clear_contexts()

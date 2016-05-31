@@ -103,6 +103,7 @@ struct nsaction_event : public nsevent
 	fvec2 norm_delta;
 	float scroll;
 	state_t cur_state;
+	int key_code;
 };
 
 struct nssel_focus_event : public nsevent

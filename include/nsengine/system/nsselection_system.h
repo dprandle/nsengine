@@ -102,6 +102,8 @@ public:
 
 	void set_selection_color(const fvec4 & pColor);
 
+	void setup_input_map(nsinput_map * imap, const nsstring & global_ctxt_name);
+
 	void set_focus_entity(const uivec3 & focus_ent);
 
 	void set_occupied_spaces(bool show);

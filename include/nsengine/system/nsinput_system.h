@@ -52,13 +52,24 @@ public:
 
 	void pop_context();
 
+	void remove_context_from_stack(const nsstring & pName);
+
 	void push_context(const nsstring & pName);
 
 	void set_cursor_pos(const fvec2 & cursorPos);
 
+	bool is_key_pressed(const nsinput_map::key_val & key);
+
+	bool is_mbutton_pressed(const nsinput_map::mouse_button_val & mbutton);
+
 	bool caps_locked();
 
 	bool num_locked();
+
+	bool key_dispatch_enabled;
+	bool mbutton_dispatch_enabled;
+	bool mmovement_dispatch_enabled;
+	bool mscroll_dispatch_enabled;
 	
 private:
 
@@ -76,15 +87,19 @@ private:
 
 	bool _check_trigger_modifiers(const nsinput_map::trigger & t);
 
-	void _create_action_event(nsinput_map::trigger & trigger);
+	void _create_action_event(nsinput_map::trigger & trigger,int32 key_code);
 
-	void _create_action_state_event(nsinput_map::trigger & trigger, bool toggle);
+	void _create_action_state_event(nsinput_map::trigger & trigger, bool toggle,int32 key_code);
 
-	void _set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t);
+	void _set_event_from_trigger(nsaction_event * evnt, const nsinput_map::trigger & t, int32 key_code);
 	
 	context_stack m_ctxt_stack;
-	nsinput_map::key_modifier_set m_key_modifiers;
-	nsinput_map::mouse_modifier_set m_mouse_modifiers;
+	nsinput_map::key_val_set m_key_modifiers;
+	nsinput_map::mbutton_val_set m_mouse_modifiers;
+
+	nsinput_map::key_val_set m_current_keys_pressed;
+	nsinput_map::mbutton_val_set m_current_mbuttons_pressed;
+
 
 	fvec2 m_current_pos;
 	fvec2 m_last_pos;

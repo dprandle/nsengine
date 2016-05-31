@@ -100,7 +100,8 @@ void ui_render_pass::render()
 	for (uint32 i = 0; i < draw_calls->size(); ++i)
 	{
 		ui_draw_call * uidc = (ui_draw_call*)(*draw_calls)[i];		
-		
+
+		// render the border
 		if (uidc->border_color.a >= 0.03f && uidc->border_shader != nullptr)
 		{
 			uidc->border_shader->bind();
@@ -113,6 +114,7 @@ void ui_render_pass::render()
 			driver->render_ui_dc(uidc);
 		}
 
+		// render the material part of the ui-element
 		uidc->shdr->bind();
 		uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 		uidc->shdr->set_uniform("entity_id", uidc->entity_id);
@@ -137,7 +139,8 @@ void ui_render_pass::render()
 		}
 		driver->render_ui_dc(uidc);
 
-		if (uidc->fnt != nullptr)
+		// render the text part of the ui-element
+		if (uidc->fnt != nullptr && !uidc->text.empty())
 		{
 			font_info & fi = uidc->fnt->get_font_info();
 
@@ -148,15 +151,80 @@ void ui_render_pass::render()
 			uidc->text_shader->set_uniform("content_tform", uidc->content_tform);
 			uidc->text_shader->set_uniform("frag_color_out", uidc->fnt->render_color);
 			uidc->text_shader->set_uniform("color_mult", uidc->color_multiplier);
-			
 
+			fvec2 rect_wh = fvec2(viewp.z, viewp.w) % uidc->content_wscale;
             fvec2 cursor_pos(0,0);
+			int32 cur_line = 0;
+			int32 line_index = 0;
+			std::vector<float> x_offsets;
+
+			// figure out the vertical starting cursor pos
+			if (uidc->alignment < 3) // top alignment
+			{
+				cursor_pos.y = rect_wh.h - fi.line_height - uidc->margins.w;
+			}
+			else if (uidc->alignment < 6) // middle alignment
+			{
+				cursor_pos.y = (rect_wh.h - uidc->margins.y - uidc->margins.w - fi.line_height) / 2.0f;
+				float v_offset_factor = float(uidc->text_line_sizes.size()-1) / 2.0f;
+				cursor_pos.y += v_offset_factor * float(fi.line_height);
+			}
+			else // bottom alignment
+			{
+				cursor_pos.y = uidc->margins.y + (uidc->text_line_sizes.size() -1) * fi.line_height;
+			}
+
+			// figure out the first line's horizontal pos
+			if (uidc->alignment % 3 == 0) // left
+			{
+				x_offsets.resize(uidc->text_line_sizes.size(), uidc->margins.x);
+			}
+			else if (uidc->alignment % 3 == 1) // center
+			{
+				x_offsets.resize(uidc->text_line_sizes.size(), 0);
+				uint32 ti = 0;
+				for (uint32 i = 0; i < x_offsets.size(); ++i)
+				{
+					float xoff = 0.0f;
+					for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
+					{
+						char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
+						xoff += ci.xadvance;
+						++ti;
+					}
+					++ti; // newline char
+					x_offsets[i] = (rect_wh.w - uidc->margins.x - uidc->margins.z - xoff) / 2.0f;
+				}
+			}
+			else // right
+			{
+				x_offsets.resize(uidc->text_line_sizes.size(), 0);
+				uint32 ti = 0;
+				for (uint32 i = 0; i < x_offsets.size(); ++i)
+				{
+					float xoff = 0.0f;
+					for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
+					{
+						char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
+						xoff += ci.xadvance;
+						++ti;
+					}
+					++ti;
+					x_offsets[i] = (rect_wh.w - uidc->margins.z - xoff);
+				}
+			}
+			cursor_pos.x = x_offsets[0];
+			fvec2 cursor_xy(x_offsets[uidc->cursor_offset.y],cursor_pos.y);
 			for (uint32 i = 0; i < uidc->text.size(); ++i)
 			{
                 if (uidc->text[i] == '\n')
                 {
                     cursor_pos.y -= fi.line_height;
-                    cursor_pos.x = 0;
+					line_index = 0;
+					++cur_line;
+                    cursor_pos.x = x_offsets[cur_line];
+					if (cur_line == uidc->cursor_offset.y)
+						cursor_xy.y = cursor_pos.y;
                     continue;
                 }
 
@@ -177,9 +245,28 @@ void ui_render_pass::render()
                            (tex_size.y - ci.rect.y) / tex_size.y);
 
 				uidc->text_shader->set_uniform("pixel_wh", fvec2(ci.rect.z,ci.rect.w));
+				uidc->text_shader->set_uniform("drawing_cursor", false);
                 uidc->text_shader->set_uniform("offset_xy", fvec2(cursor_pos.x + ci.offset.x, cursor_pos.y + fi.line_height - ci.offset.y - ci.rect.w));
 				uidc->text_shader->set_uniform("tex_coord_rect", rect);
+				uidc->text_shader->set_uniform("rect_bounds", rect_wh);
+				uidc->text_shader->set_uniform("margins", uidc->margins);
+
 				cursor_pos.x += ci.xadvance;
+				++line_index;
+
+				if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
+					cursor_xy.x = cursor_pos.x;				
+
+				driver->render_ui_dc(uidc);
+			}
+
+			// lets draw the cursor
+			if (uidc->text_editable)
+			{
+				uidc->text_shader->set_uniform("drawing_cursor", true);
+				uidc->text_shader->set_uniform("frag_color_out", uidc->cursor_color);
+				uidc->text_shader->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width,fi.line_height));
+				uidc->text_shader->set_uniform("offset_xy",cursor_xy);
 				driver->render_ui_dc(uidc);
 			}
 		}

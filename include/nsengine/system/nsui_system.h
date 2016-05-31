@@ -17,9 +17,6 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #define START_MAX_ENTS 1024
 #define UI_MOUSE_PRESS "ui_mouse_press"
 #define UI_MOUSE_RELEASE "ui_mouse_release"
-#define UI_KEY_PRESS "ui_key_press"
-#define UI_SHIFTED_KEY_PRESS "ui_shifted_key_press"
-#define UI_IMAP_TEXT_EDIT_CTXT "ui_input_context"
 
 #include <nssystem.h>
 #include <nsrender_system.h>
@@ -67,8 +64,7 @@ class nsui_system : public nssystem
 	bool _handle_mouse_event(nsmouse_move_event * evnt);
 	bool _handle_mouse_press(nsaction_event * evnt);
 	bool _handle_mouse_release(nsaction_event * evnt);	
-	bool _handle_key_press(nsaction_event * evnt);
-	bool _handle_shifted_key_press(nsaction_event * evnt);
+	bool _handle_key_press(nskey_event * evnt);
 	
 	void _recursive_update(nsrect_tform_comp * child);
 

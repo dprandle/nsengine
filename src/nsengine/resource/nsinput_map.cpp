@@ -375,6 +375,14 @@ uint8 input_key_to_ascii(nsinput_map::key_val key, bool shift_pressed)
 			return key + 'A';
 		return key + 'a';
 	}
+	else if (key == nsinput_map::key_space)
+	{
+		return ' ';
+	}
+	else if (key == nsinput_map::key_enter)
+	{
+		return '\n';
+	}
 	else if (key <= nsinput_map::key_0)
 	{
 		if (shift_pressed)

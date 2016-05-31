@@ -205,6 +205,118 @@ void nscamera_system::set_zoom(float pZFactor)
 	m_zoom_factor = pZFactor;
 }
 
+void nscamera_system::setup_input_map(nsinput_map *imap, const nsstring & global_imap_name)
+{
+	nsinput_map::trigger camforward(
+		NSCAM_FORWARD,
+		nsinput_map::t_both
+		);
+	camforward.add_mouse_mod(nsinput_map::any_button);
+	imap->add_key_trigger(global_imap_name, nsinput_map::key_w, camforward);
+
+	nsinput_map::trigger cambackward(
+		NSCAM_BACKWARD,
+		nsinput_map::t_both
+		);
+	cambackward.add_mouse_mod(nsinput_map::any_button);
+	imap->add_key_trigger(global_imap_name, nsinput_map::key_s, cambackward);
+
+	nsinput_map::trigger camleft(
+		NSCAM_LEFT,
+		nsinput_map::t_both
+		);
+	camleft.add_mouse_mod(nsinput_map::any_button);
+	imap->add_key_trigger(global_imap_name, nsinput_map::key_a, camleft);
+
+	nsinput_map::trigger camright(
+		NSCAM_RIGHT,
+		nsinput_map::t_both
+		);
+	camright.add_mouse_mod(nsinput_map::any_button);
+	imap->add_key_trigger(global_imap_name, nsinput_map::key_d, camright);
+
+	nsinput_map::trigger camtilt(
+		NSCAM_TILTPAN,
+		nsinput_map::t_pressed);
+    camtilt.add_key_mod(nsinput_map::key_any);
+    camtilt.add_mouse_mod(nsinput_map::right_button);
+	imap->add_mouse_trigger(global_imap_name, nsinput_map::movement, camtilt);
+
+	nsinput_map::trigger cammove(
+		NSCAM_MOVE,
+		nsinput_map::t_pressed);
+	cammove.add_key_mod(nsinput_map::key_any);
+    cammove.add_mouse_mod(nsinput_map::left_button);
+    cammove.add_mouse_mod(nsinput_map::right_button);
+    imap->add_mouse_trigger(global_imap_name, nsinput_map::movement,cammove);
+
+	nsinput_map::trigger camzoom(
+		NSCAM_ZOOM,
+		nsinput_map::t_pressed);
+	camzoom.add_key_mod(nsinput_map::key_any);
+    imap->add_mouse_trigger(global_imap_name, nsinput_map::scrolling, camzoom);
+
+	nsinput_map::trigger camtopview_0(
+        NSCAM_TOPVIEW_0,
+        nsinput_map::t_pressed);
+    camtopview_0.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_8, camtopview_0);
+
+    nsinput_map::trigger cameraiso_0(
+        NSCAM_ISOVIEW_0,
+        nsinput_map::t_pressed);
+    cameraiso_0.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_5, cameraiso_0);
+
+    nsinput_map::trigger camfrontview_0(
+        NSCAM_FRONTVIEW_0,
+        nsinput_map::t_pressed);
+    camfrontview_0.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_2, camfrontview_0);
+
+	nsinput_map::trigger camtopview_120(
+		NSCAM_TOPVIEW_120,
+        nsinput_map::t_pressed);
+	camtopview_120.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_7, camtopview_120);
+
+    nsinput_map::trigger cameraiso_120(
+        NSCAM_ISOVIEW_120,
+        nsinput_map::t_pressed);
+    cameraiso_120.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_4, cameraiso_120);
+
+    nsinput_map::trigger camfrontview_120(
+        NSCAM_FRONTVIEW_120,
+        nsinput_map::t_pressed);
+    camfrontview_120.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_1, camfrontview_120);
+
+	nsinput_map::trigger camtopview_240(
+        NSCAM_TOPVIEW_240,
+        nsinput_map::t_pressed);
+    camtopview_240.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_9, camtopview_240);
+
+    nsinput_map::trigger cameraiso_240(
+        NSCAM_ISOVIEW_240,
+        nsinput_map::t_pressed);
+    cameraiso_240.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_6, cameraiso_240);
+
+    nsinput_map::trigger camfrontview_240(
+        NSCAM_FRONTVIEW_240,
+        nsinput_map::t_pressed);
+    camfrontview_240.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_keypad_3, camfrontview_240);
+	
+	nsinput_map::trigger camtogglemode(
+        NSCAM_TOGGLEMODE,
+        nsinput_map::t_pressed);
+    camtogglemode.add_mouse_mod(nsinput_map::any_button);
+    imap->add_key_trigger(global_imap_name, nsinput_map::key_f, camtogglemode);
+}
+
 void nscamera_system::set_mode(camera_mode pMode)
 {
 	m_cam_mode = pMode;

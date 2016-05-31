@@ -463,6 +463,7 @@ void nsengine::_init_factories()
 	register_component<nstile_comp>("nstile_comp");
 	register_component<nsterrain_comp>("nsterrain_comp");
 	register_component<nsui_comp>("nsui_comp");
+	register_component<nsui_text_comp>("nsui_text_comp");
 	register_component<nsui_canvas_comp>("nsui_canvas_comp");
 	register_component<nsui_button_comp>("nsui_button_comp");
 	

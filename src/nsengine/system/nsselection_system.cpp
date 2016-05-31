@@ -999,6 +999,92 @@ void nsselection_system::set_selection_color(const fvec4 & pColor)
 	}
 }
 
+void nsselection_system::setup_input_map(nsinput_map * imap, const nsstring & global_ctxt_name)
+{
+	
+	nsinput_map::trigger selectentity(
+		NSSEL_SELECT,
+		nsinput_map::t_pressed);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::left_button,selectentity);
+
+	nsinput_map::trigger shiftselect(
+		NSSEL_SHIFTSELECT,
+		nsinput_map::t_pressed);
+	shiftselect.add_key_mod(nsinput_map::key_lshift);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,shiftselect);
+	nsinput_map::trigger multiselect(
+		NSSEL_MULTISELECT,
+		nsinput_map::t_pressed);
+	multiselect.add_key_mod(nsinput_map::key_lctrl);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::left_button,multiselect);
+
+    nsinput_map::trigger selectmove(
+        NSSEL_MOVE,
+        nsinput_map::t_pressed);
+    selectmove.add_mouse_mod(nsinput_map::left_button);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmove);
+
+    nsinput_map::trigger select_rotate(
+        "rotate_selection",
+        nsinput_map::t_pressed);
+    select_rotate.add_key_mod(nsinput_map::key_any);
+    imap->add_key_trigger(global_ctxt_name, nsinput_map::key_r,select_rotate);
+
+
+	nsinput_map::trigger selectmovexy(
+		NSSEL_MOVE_XY,
+		nsinput_map::t_pressed);
+    selectmovexy.add_key_mod(nsinput_map::key_x);
+    selectmovexy.add_key_mod(nsinput_map::key_y);
+	selectmovexy.add_mouse_mod(nsinput_map::left_button);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmovexy);
+
+	nsinput_map::trigger selectmovezy(
+		NSSEL_MOVE_ZY,
+		nsinput_map::t_pressed);
+	selectmovezy.add_key_mod(nsinput_map::key_z);
+	selectmovezy.add_key_mod(nsinput_map::key_y);
+	selectmovezy.add_mouse_mod(nsinput_map::left_button);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmovezy);
+
+	nsinput_map::trigger selectmovezx(
+        NSSEL_MOVE_ZX,
+		nsinput_map::t_pressed);
+	selectmovezx.add_key_mod(nsinput_map::key_z);
+	selectmovezx.add_key_mod(nsinput_map::key_x);
+    selectmovezx.add_mouse_mod(nsinput_map::left_button);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmovezx);
+
+	nsinput_map::trigger selectmovex(
+		NSSEL_MOVE_X,
+		nsinput_map::t_pressed);
+	selectmovex.add_mouse_mod(nsinput_map::left_button);
+	selectmovex.add_key_mod(nsinput_map::key_x);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmovex);
+
+	nsinput_map::trigger selectmovey(
+		NSSEL_MOVE_Y,
+		nsinput_map::t_pressed);
+	selectmovey.add_key_mod(nsinput_map::key_y);
+	selectmovey.add_mouse_mod(nsinput_map::left_button);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmovey);
+
+	nsinput_map::trigger selectmovez(
+        NSSEL_MOVE_Z,
+		nsinput_map::t_pressed);
+	selectmovez.add_key_mod(nsinput_map::key_z);
+    selectmovez.add_mouse_mod(nsinput_map::left_button);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::movement,selectmovez);
+
+	nsinput_map::trigger selectmovetoggle(
+        NSSEL_MOVE_TOGGLE,
+        nsinput_map::t_both
+		);
+	selectmovetoggle.add_key_mod(nsinput_map::key_any);
+    imap->add_mouse_trigger(global_ctxt_name, nsinput_map::left_button,selectmovetoggle);
+
+}
+
 void nsselection_system::tile_swap(nsentity * pNewTile)
 {
 	if (m_active_scene == nullptr)

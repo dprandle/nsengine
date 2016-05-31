@@ -217,6 +217,14 @@ struct ui_draw_call : public draw_call
 
 	nsstring text;
 	nsfont * fnt;
+	bool text_editable;
+
+	uint32 cursor_pixel_width;
+	fvec4 cursor_color;
+	uivec2 cursor_offset;
+	std::vector<uint32> text_line_sizes;
+	uivec4 margins;
+	uint8 alignment;
 };
 
 typedef std::set<nsmaterial*> pmatset;
