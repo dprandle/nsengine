@@ -84,9 +84,8 @@ int main()
     nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
-
-    nsfont * fnt = plg->load<nsfont>("./import/cosn.fnt",true);
-    fnt->render_color = fvec4(1,1,1,1);
+    nsentity * canvas = plg->create<nsentity>("canvas");
+    nsentity * ui_button = plg->create<nsentity>("button_new_match");
 
     new_scene->add(cam);
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
@@ -94,22 +93,19 @@ int main()
     new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add_gridded(grass_tile,ivec3(32,32,1));
 
-
-    nsentity * canvas = plg->create<nsentity>("canvas");
-    nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();
-
-    nsentity * ui_button = plg->create<nsentity>("button_new_match");
-    nsui_comp * uic = ui_button->create<nsui_comp>();
 	nsui_text_comp * uitxt = ui_button->create<nsui_text_comp>();
+    nsfont * fnt = plg->load<nsfont>("./import/cosn.fnt",true);
+    fnt->render_color = fvec4(1,1,1,1);
     uitxt->font_id = fnt->full_id();
     uitxt->text = ">>> ";
     uitxt->text_shader_id = nse.core()->get<nsshader>(UI_TEXT_SHADER)->full_id();
-	uitxt->text_editable = true;
-    uitxt->cursor_color = fvec4(1,1,1,0.8);
     uitxt->text_alignment = nsui_text_comp::bottom_left;
-    uitxt->cursor_pixel_width = 2;
-	uitxt->cursor_blink_rate_ms = 430.0f;
     uitxt->margins = uivec4(80,15,20,25);
+
+	nsui_text_input_comp * uitxt_input = ui_button->create<nsui_text_input_comp>();
+	uitxt_input->cursor_color = fvec4(1,1,1,0.8);
+	uitxt_input->cursor_pixel_width = 2;
+	uitxt_input->cursor_blink_rate_ms = 430.0f;
 	
 //    nsui_button_comp * uibtn = ui_button->create<nsui_button_comp>();
 //    bf.m_router->connect(&bf,&button_funcs::on_new_game,uibtn->pressed);
@@ -119,29 +115,30 @@ int main()
 //    uibtn->tex_coord_rects[0] = fvec4(0,0.5,1,0.75);
 //    uibtn->tex_coord_rects[1] = fvec4(0,0.25,1,0.5);
 
+
+     nsui_material_comp * uic = ui_button->create<nsui_material_comp>();
+     nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
+     nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
+     mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
+     mat->set_color_mode(false);
+     mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
+     uic->mat_id = mat->full_id();
+     uic->border_color = fvec4(0.0f,0.0f,0.0f,1.0f);
+     uic->border = fvec4(1,1,1,1);
+     uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+     uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
+
+    nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();
     cc->add(ui_button);
+
     nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
-
-    nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
-    nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "new-match.png", true);
-    mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.75f,1.0f,1.0f)), true);
-    mat->set_color_mode(true);
-    mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
-
     auto pic = tuic->canvas_info(cc);
     pic->anchor_rect = fvec4(0.0f,0.0f,0.0f,0.0f);
-    pic->pixel_offset_rect = fvec4(0, 0, 800, 200);
+    pic->pixel_offset_rect = fvec4(0, 0, 138*3, 245*3);
     pic->pivot = fvec2(0.5f,0.5f);
     pic->layer = 0;
     pic->angle = 0.0f;
 
-    uic->mat_id = mat->full_id();
-    uic->border_color = fvec4(0.0f,0.0f,0.0f,1.0f);
-    uic->border = fvec4(1,1,1,1);
-
-    uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
-    uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
-    uic->show = true;
 
     nsrender::viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
     vp.ui_canvases.push_back(canvas);

@@ -159,7 +159,7 @@ void create_button(
     const fvec4 & tex_coords)
 {
     nsentity * ui_button = plg->create<nsentity>("button_" + tex_name);
-    nsui_comp * uic = ui_button->create<nsui_comp>();
+    nsui_material_comp * uic = ui_button->create<nsui_material_comp>();
     nsui_canvas_comp * uicc = canvas->get<nsui_canvas_comp>();
 	
     uicc->add(ui_button);

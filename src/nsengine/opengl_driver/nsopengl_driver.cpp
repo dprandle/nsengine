@@ -115,36 +115,39 @@ void ui_render_pass::render()
 		}
 
 		// render the material part of the ui-element
-		uidc->shdr->bind();
-		uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
-		uidc->shdr->set_uniform("entity_id", uidc->entity_id);
-		uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
-		uidc->shdr->set_uniform("wscale", uidc->content_wscale);
-        uidc->shdr->set_uniform("content_tform", uidc->content_tform);
-		uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
-		uidc->shdr->set_uniform("color_mult", uidc->color_multiplier);
+		if (uidc->shdr != nullptr)
+		{
+			uidc->shdr->bind();
+			uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
+			uidc->shdr->set_uniform("entity_id", uidc->entity_id);
+			uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
+			uidc->shdr->set_uniform("wscale", uidc->content_wscale);
+			uidc->shdr->set_uniform("content_tform", uidc->content_tform);
+			uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
+			uidc->shdr->set_uniform("color_mult", uidc->color_multiplier);
 		
-		if (uidc->mat != nullptr)
-		{
-			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
-			uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
-			driver->enable_culling(uidc->mat->culling());
-			driver->set_cull_face(uidc->mat->cull_mode());
-			driver->bind_textures(uidc->mat);
+			if (uidc->mat != nullptr)
+			{
+				uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
+				uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
+				driver->enable_culling(uidc->mat->culling());
+				driver->set_cull_face(uidc->mat->cull_mode());
+				driver->bind_textures(uidc->mat);
+			}
+			else
+			{
+				uidc->shdr->set_uniform("frag_color_out", fvec4(1,0,0,1));
+				uidc->shdr->set_uniform("color_mode", true);
+			}
+			driver->render_ui_dc(uidc);
 		}
-		else
-		{
-			uidc->shdr->set_uniform("frag_color_out", fvec4(1,0,0,1));
-			uidc->shdr->set_uniform("color_mode", true);
-		}
-		driver->render_ui_dc(uidc);
-
+		
 		// render the text part of the ui-element
-		if (uidc->fnt != nullptr && !uidc->text.empty())
+		if (uidc->fnt != nullptr)
 		{
 			font_info & fi = uidc->fnt->get_font_info();
 
-			uidc->text_shader->bind();			
+			uidc->text_shader->bind();
 			uidc->text_shader->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 			uidc->text_shader->set_uniform("entity_id", uidc->entity_id);
 			uidc->text_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
@@ -260,7 +263,7 @@ void ui_render_pass::render()
 				driver->render_ui_dc(uidc);
 			}
 
-			// lets draw the cursor
+			// lets draw the cursor if the text is editable - ie has a text input component
 			if (uidc->text_editable)
 			{
 				uidc->text_shader->set_uniform("drawing_cursor", true);

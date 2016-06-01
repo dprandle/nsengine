@@ -106,8 +106,9 @@ struct draw_call
 {
 	draw_call():
 		shdr(nullptr),
-		mat(nullptr)
-	{}	
+		mat(nullptr),
+		mat_index(0)
+	{}
 	virtual ~draw_call() {}
 	
 	nsshader * shdr;
@@ -197,7 +198,25 @@ class nsfont;
 struct ui_draw_call : public draw_call
 {
 	ui_draw_call():
-		draw_call()
+		draw_call(),
+		border_shader(nullptr),
+		text_shader(nullptr),
+		entity_id(),
+		content_tform(),
+		content_wscale(1.0f),
+		border_pix(0.0f),
+		content_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
+		border_color(0.0f),
+		color_multiplier(1.0f),
+		text(),
+		fnt(nullptr),
+		text_editable(false),
+		cursor_pixel_width(0),
+		cursor_color(1.0f,0.0f,0.0f,1.0f),
+		cursor_offset(),
+		text_line_sizes(),
+		margins(),
+		alignment(0)
 	{}
 
 	~ui_draw_call() {}

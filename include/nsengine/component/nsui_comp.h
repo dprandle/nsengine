@@ -19,45 +19,43 @@ This file contains all of the neccessary declarations for the nsui_comp class.
 
 class nsmaterial;
 class nsfont;
-class nsui_comp;
+class nsui_material_comp;
 
-class nsui_comp : public nscomponent
+class nsui_material_comp : public nscomponent
 {
 public:
 	template <class PUPer>
-	friend void pup(PUPer & p, nsui_comp & tc);
+	friend void pup(PUPer & p, nsui_material_comp & tc);
 
-	nsui_comp();
-	nsui_comp(const nsui_comp & rhs);
+	nsui_material_comp();
+	nsui_material_comp(const nsui_material_comp & rhs);
 
-	virtual ~nsui_comp();
+	virtual ~nsui_material_comp();
 
-	virtual nsui_comp * copy(const nscomponent * comp_);
+	virtual nsui_material_comp * copy(const nscomponent * comp_);
 
 	virtual void init();
 
 	virtual void pup(nsfile_pupper * p);
 
-	nsui_comp & operator=(nsui_comp rhs_);
+	nsui_material_comp & operator=(nsui_material_comp rhs_);
 
 	uivec2 content_shader_id;
 	uivec2 border_shader_id;
 	uivec2 mat_id;
 	fvec4 border;
 	fvec4 border_color;
-	bool show;
 	bool focused;
 };
 
 template <class PUPer>
-void pup(PUPer & p, nsui_comp & tc)
+void pup(PUPer & p, nsui_material_comp & tc)
 {
 	pup(p, tc.content_shader_id, "content_shader_id");
 	pup(p, tc.border_shader_id, "border_shader_id");
 	pup(p, tc.mat_id, "mat_id");
 	pup(p, tc.border, "border");
 	pup(p, tc.border_color, "border_color");
-	pup(p, tc.show, "show");
 	pup(p, tc.focused, "focused");
 }
 
@@ -97,11 +95,6 @@ public:
 	uivec2 font_id;
 	uivec4 margins;	
 	nsstring text;
-	bool text_editable;
-	float cursor_blink_rate_ms;
-	uint32 cursor_pixel_width;
-	fvec4 cursor_color;
-	uivec2 cursor_offset;
 	t_alignment text_alignment;	
 	std::vector<uint32> text_line_sizes;
 };
@@ -121,13 +114,42 @@ void pup(PUPer & p, nsui_text_comp & tc)
 	pup(p, tc.font_id, "font_id");
 	pup(p, tc.margins, "margins;");
 	pup(p, tc.text, "text");
-	pup(p, tc.text_editable, "text_editable");
+	pup(p, tc.text_alignment, "text_alignment;");
+	pup(p, tc.text_line_sizes, "text_line_sizes");
+}
+
+class nsui_text_input_comp : public nscomponent
+{
+public:		
+	template <class PUPer>
+	friend void pup(PUPer & p, nsui_text_input_comp & tc);
+
+	nsui_text_input_comp();
+	nsui_text_input_comp(const nsui_text_input_comp & rhs);
+
+	virtual ~nsui_text_input_comp();
+
+	virtual nsui_text_input_comp * copy(const nscomponent * comp_);
+
+	virtual void init();
+
+	virtual void pup(nsfile_pupper * p);
+
+	nsui_text_input_comp & operator=(nsui_text_input_comp rhs_);
+
+	float cursor_blink_rate_ms;
+	uint32 cursor_pixel_width;
+	fvec4 cursor_color;
+	uivec2 cursor_offset;
+};
+
+template <class PUPer>
+void pup(PUPer & p, nsui_text_input_comp & tc)
+{
 	pup(p, tc.cursor_blink_rate_ms, "cursor_blink_rate_ms");
 	pup(p, tc.cursor_pixel_width, "cursor_pixel_width");
 	pup(p, tc.cursor_color, "cursor_color");
 	pup(p, tc.cursor_offset, "cursor_offset");
-	pup(p, tc.text_alignment, "text_alignment;");
-	pup(p, tc.text_line_sizes, "text_line_sizes");
 }
 
 #endif

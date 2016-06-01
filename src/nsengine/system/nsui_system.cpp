@@ -85,24 +85,33 @@ void nsui_system::push_draw_calls()
 		for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
 		{
 			nsentity * cur_ent = uicc->m_ordered_ents[i];
-			nsui_comp * uic = cur_ent->get<nsui_comp>();
+
+			nsui_material_comp * uimat = cur_ent->get<nsui_material_comp>();
 			nsrect_tform_comp * tuic = cur_ent->get<nsrect_tform_comp>();
 			nsui_button_comp * uib = cur_ent->get<nsui_button_comp>();
 			nsui_text_comp * uitxt = cur_ent->get<nsui_text_comp>();
+			nsui_text_input_comp * uitxt_input = cur_ent->get<nsui_text_input_comp>();
 			
 			m_ui_draw_calls.resize(m_ui_draw_calls.size()+1);
 			ui_draw_call * uidc = &m_ui_draw_calls[m_ui_draw_calls.size()-1];
 
-			uidc->mat = get_resource<nsmaterial>(uic->mat_id);
-			uidc->shdr = get_resource<nsshader>(uic->content_shader_id);
-			uidc->border_shader = get_resource<nsshader>(uic->border_shader_id);
 			uidc->entity_id = uivec3(cur_ent->full_id(),0);
 			uidc->content_wscale = tuic->content_world_scale(uicc);
-			uidc->border_pix = uic->border;
 			uidc->content_tform = tuic->content_transform(uicc);
-			uidc->border_color = uic->border_color;
-			uidc->content_tex_coord_rect = uidc->mat->map_tex_coord_rect(nsmaterial::diffuse);
-			uidc->color_multiplier = fvec4(1.0f);
+
+			if (uimat != nullptr)
+			{
+				uidc->mat = get_resource<nsmaterial>(uimat->mat_id);
+				if (uidc->mat == nullptr)
+					uidc->mat = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
+				uidc->shdr = get_resource<nsshader>(uimat->content_shader_id);
+				if (uidc->shdr == nullptr)
+					uidc->shdr = nse.core()->get<nsshader>(UI_SHADER);
+				uidc->border_shader = get_resource<nsshader>(uimat->border_shader_id);
+				uidc->border_pix = uimat->border;
+				uidc->border_color = uimat->border_color;
+				uidc->content_tex_coord_rect = uidc->mat->map_tex_coord_rect(nsmaterial::diffuse);
+			}
 
 			// If there is a ui text component copy that stuff over
 			if (uitxt != nullptr)
@@ -110,14 +119,18 @@ void nsui_system::push_draw_calls()
 				uidc->text_shader = get_resource<nsshader>(uitxt->text_shader_id);
 				uidc->text = uitxt->text;
 				uidc->fnt = get_resource<nsfont>(uitxt->font_id);
-				int mod_ = int(nse.timer()->elapsed()*1000.0f / uitxt->cursor_blink_rate_ms);
-				uidc->text_editable = uitxt->text_editable && (mod_ % 2 == 0) && (uitxt->owner() == m_focused_ui_ent);
-				uidc->cursor_color = uitxt->cursor_color;
-				uidc->cursor_pixel_width = uitxt->cursor_pixel_width;
-				uidc->cursor_offset = uitxt->cursor_offset;
 				uidc->text_line_sizes = uitxt->text_line_sizes;
 				uidc->margins = uitxt->margins;
 				uidc->alignment = uitxt->text_alignment;
+			}
+
+			if (uitxt_input != nullptr)
+			{
+				int mod_ = int(nse.timer()->elapsed()*1000.0f / uitxt_input->cursor_blink_rate_ms);
+				uidc->text_editable = (mod_ % 2 == 0) && (uitxt->owner() == m_focused_ui_ent);
+				uidc->cursor_color = uitxt_input->cursor_color;
+				uidc->cursor_pixel_width = uitxt_input->cursor_pixel_width;
+				uidc->cursor_offset = uitxt_input->cursor_offset;
 			}
 
 			// If there is a ui button component using color multipliers handle that here
@@ -143,21 +156,17 @@ void nsui_system::push_draw_calls()
 void nsui_system::update()
 {
 	// turn off input event dispatching if text is being edited
-	if (m_focused_ui_ent != nullptr)
-	{
-		nsui_text_comp * focus = m_focused_ui_ent->get<nsui_text_comp>();
-		if (focus != nullptr && focus->text_editable)
-			nse.system<nsinput_system>()->key_dispatch_enabled = false;
-		else
-			nse.system<nsinput_system>()->key_dispatch_enabled = true;
-	}
-	
+
+    if (m_focused_ui_ent != nullptr && m_focused_ui_ent->has<nsui_text_input_comp>())
+        nse.system<nsinput_system>()->key_dispatch_enabled = false;
+    else
+        nse.system<nsinput_system>()->key_dispatch_enabled = true;
+
 	// update each canvas' transform information
 	auto vp_list = nse.system<nsrender_system>()->viewports();
 	auto vp_iter = vp_list->begin();
 	while (vp_iter != vp_list->end())
 	{
-		// sort all the entities in each canvas
 		for (uint32 i = 0; i < vp_iter->vp->ui_canvases.size(); ++i)
 		{
 			nsui_canvas_comp * uicc = vp_iter->vp->ui_canvases[i]->get<nsui_canvas_comp>();
@@ -165,16 +174,86 @@ void nsui_system::update()
 			auto ents = uicc->entities_in_canvas();
 			if (ents == nullptr)
 				continue;
+
+			// Do the update stuff and then sort
+			const ivec2 & sz = nse.video_driver<nsopengl_driver>()->default_target()->size();
+			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
+			fvec2 fsz(sz.x,sz.y);
+			nsentity * canvas = vp_iter->vp->ui_canvases[i];
+			uicc->update_rects(vp_size % fsz);
+			_sort_ents(uicc);
 	
 			auto ui_iter = ents->begin();
 			while (ui_iter != ents->end())
 			{
-				nsui_comp * uic = (*ui_iter)->get<nsui_comp>();
+				nsui_material_comp * uimat = (*ui_iter)->get<nsui_material_comp>();
 				nsrect_tform_comp * tuic = (*ui_iter)->get<nsrect_tform_comp>();
 				nsui_text_comp * uitxt = (*ui_iter)->get<nsui_text_comp>();
-				
-				if (uic != nullptr && uic->show)
-					uicc->m_ordered_ents.push_back(*ui_iter);
+				nsui_text_input_comp * uitxt_input = (*ui_iter)->get<nsui_text_input_comp>();
+				nsui_button_comp * uib = (*ui_iter)->get<nsui_button_comp>();
+				uicc->m_ordered_ents.push_back(*ui_iter);					
+
+				if (uimat != nullptr)
+				{
+					if (uib != nullptr)
+					{
+						nsmaterial * mat = get_resource<nsmaterial>(uimat->mat_id);
+						if (uib->is_hover)
+						{
+							uint32 index = 0;
+							if (uib->is_pressed)
+								index = 1;
+							
+							switch (uib->change_button_using)
+							{
+							  case(tex_coord_rect):
+								  if (mat != nullptr)
+								  {
+									  if (uib->m_mat_norm_tex_rect == fvec4(-1.0f))
+									  {
+										  uib->m_mat_norm_tex_rect =
+											  mat->map_tex_coord_rect(nsmaterial::diffuse);
+									  }
+									  mat->set_map_tex_coord_rect(nsmaterial::diffuse,
+																  uib->tex_coord_rects[index]);
+								  }
+								  break;
+							  case(change_color):
+								  if (uib->m_mat_norm_color == fvec4(-1.0f))
+								  {
+									  uib->m_mat_norm_color = mat->color();
+									  uib->m_mat_color_mode = mat->color_mode();
+									  if (mat != nullptr)
+										  mat->set_color_mode(true);
+								  }
+								  if (mat != nullptr)
+									  mat->set_color(uib->colors[index]);
+								  break;
+							  case(color_multiplier):
+								  break;
+							}
+						}
+						else
+						{
+							if (uib->m_mat_norm_color != fvec4(-1.0f))
+							{
+								if (mat != nullptr)
+								{
+									mat->set_color(uib->m_mat_norm_color);
+									mat->set_color_mode(uib->m_mat_color_mode);
+								}
+								uib->m_mat_color_mode = false;
+								uib->m_mat_norm_color = fvec4(-1.0f);
+							}
+							if(uib->m_mat_norm_tex_rect != fvec4(-1.0f))
+							{
+								if (mat != nullptr)
+									mat->set_map_tex_coord_rect(nsmaterial::diffuse, uib->m_mat_norm_tex_rect);
+								uib->m_mat_norm_tex_rect = fvec4(-1.0f);
+							}
+						}
+					}
+				}
 
 				// determine the size of each line of text (also how many lines there are)
 				if (uitxt != nullptr)
@@ -192,88 +271,16 @@ void nsui_system::update()
 						else
 							++uitxt->text_line_sizes[cur_line];
 					}
-					if (uitxt->cursor_offset.y > cur_line)
-                        uitxt->cursor_offset.y = cur_line;
-					if (uitxt->cursor_offset.x > uitxt->text_line_sizes[uitxt->cursor_offset.y])
-						uitxt->cursor_offset.x = uitxt->text_line_sizes[uitxt->cursor_offset.y];
+
+					if (uitxt_input != nullptr)
+					{
+						if (uitxt_input->cursor_offset.y > cur_line)
+							uitxt_input->cursor_offset.y = cur_line;
+						if (uitxt_input->cursor_offset.x > uitxt->text_line_sizes[uitxt_input->cursor_offset.y])
+							uitxt_input->cursor_offset.x = uitxt->text_line_sizes[uitxt_input->cursor_offset.y];
+					}
 				}
 				++ui_iter;
-			}
-			_sort_ents(uicc);
-		}
-
-		for (uint32 i = 0; i < vp_iter->vp->ui_canvases.size(); ++i)
-		{
-			const ivec2 & sz = nse.video_driver<nsopengl_driver>()->default_target()->size();
-			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
-			fvec2 fsz(sz.x,sz.y);
-			nsentity * canvas = vp_iter->vp->ui_canvases[i];
-			nsui_canvas_comp * uicc = canvas->get<nsui_canvas_comp>();
-			uicc->update_rects(vp_size % fsz);
-
-			auto rect_comps = uicc->entities_in_canvas();
-			if (rect_comps != nullptr)
-			{
-				auto iter = rect_comps->begin();
-				while (iter != rect_comps->end())
-				{
-					nsui_button_comp * uib = (*iter)->get<nsui_button_comp>();
-					nsui_comp * uic = (*iter)->get<nsui_comp>();
-					if (uib != nullptr && uic != nullptr)
-					{
-						nsmaterial * mat = get_resource<nsmaterial>(uic->mat_id);
-						if (mat == nullptr)
-						{
-							++iter;
-							continue;
-						}
-						
-						if (uib->is_hover)
-						{
-							uint32 index = 0;
-							if (uib->is_pressed)
-								index = 1;
-							
-							switch (uib->change_button_using)
-							{
-							  case(tex_coord_rect):								  
-								  if (uib->m_mat_norm_tex_rect == fvec4(-1.0f))
-								  {
-									  uib->m_mat_norm_tex_rect = mat->map_tex_coord_rect(nsmaterial::diffuse);
-								  }
-								  mat->set_map_tex_coord_rect(nsmaterial::diffuse, uib->tex_coord_rects[index]);
-								  break;
-							  case(change_color):
-								  if (uib->m_mat_norm_color == fvec4(-1.0f))
-								  {
-									  uib->m_mat_norm_color = mat->color();
-									  uib->m_mat_color_mode = mat->color_mode();
-									  mat->set_color_mode(true);
-								  }
-								  mat->set_color(uib->colors[index]);
-								  break;
-							  case(color_multiplier):
-								  break;
-							}
-						}
-						else
-						{
-							if (uib->m_mat_norm_color != fvec4(-1.0f))
-							{
-								mat->set_color(uib->m_mat_norm_color);
-								mat->set_color_mode(uib->m_mat_color_mode);
-								uib->m_mat_color_mode = false;
-								uib->m_mat_norm_color = fvec4(-1.0f);
-							}
-							if(uib->m_mat_norm_tex_rect != fvec4(-1.0f))
-							{
-								mat->set_map_tex_coord_rect(nsmaterial::diffuse, uib->m_mat_norm_tex_rect);
-								uib->m_mat_norm_tex_rect = fvec4(-1.0f);
-							}
-						}
-					}
-					++iter;
-				}
 			}
 		}
 		++vp_iter;
@@ -289,9 +296,9 @@ void nsui_system::_sort_ents(nsui_canvas_comp * uicc)
 	{
 		for (uint32 d = 0 ; d < uicc->m_ordered_ents.size() - c - 1; d++)
 		{
-			auto * uic = uicc->m_ordered_ents[d]->get<nsrect_tform_comp>()->canvas_info(uicc);
+			auto * uic1 = uicc->m_ordered_ents[d]->get<nsrect_tform_comp>()->canvas_info(uicc);
 			auto * uic2 = uicc->m_ordered_ents[d+1]->get<nsrect_tform_comp>()->canvas_info(uicc);
-			if (uic->layer > uic2->layer) /* For decreasing order use < */
+			if (uic1->layer > uic2->layer) /* For decreasing order use < */
 			{
 				nsentity * tmp = uicc->m_ordered_ents[d];
 				uicc->m_ordered_ents[d]   = uicc->m_ordered_ents[d+1];
@@ -518,8 +525,9 @@ bool nsui_system::_handle_key_press(nskey_event * evnt)
 	if (m_focused_ui_ent == nullptr)
 		return true;
 	
-	nsui_text_comp * uitcomp = m_focused_ui_ent->get<nsui_text_comp>();
-	if (uitcomp == nullptr)
+	nsui_text_input_comp * uitcomp = m_focused_ui_ent->get<nsui_text_input_comp>();
+	nsui_text_comp * uitxt = m_focused_ui_ent->get<nsui_text_comp>();
+	if (uitcomp == nullptr || uitxt == nullptr)
 		return true;
 
 	if (!evnt->pressed)
@@ -545,15 +553,15 @@ bool nsui_system::_handle_key_press(nskey_event * evnt)
 	{
 		int32 index = 0;
 		for (uint32 i = 0; i < uitcomp->cursor_offset.y; ++i)
-			index += uitcomp->text_line_sizes[i] + 1; // newline char
+			index += uitxt->text_line_sizes[i] + 1; // newline char
 		index += uitcomp->cursor_offset.x - 1;
 		if (index < 0)
 			return true;
-		uitcomp->text.erase(uitcomp->text.begin() + index);
+		uitxt->text.erase(uitxt->text.begin() + index);
 		if (uitcomp->cursor_offset.x == 0)
 		{
 			uitcomp->cursor_offset.y -= 1;
-			uitcomp->cursor_offset.x = uitcomp->text_line_sizes[uitcomp->cursor_offset.y]+1;
+			uitcomp->cursor_offset.x = uitxt->text_line_sizes[uitcomp->cursor_offset.y]+1;
 		}
 		uitcomp->cursor_offset.x -= 1;
 	}
@@ -567,9 +575,9 @@ bool nsui_system::_handle_key_press(nskey_event * evnt)
 		{
 			uint32 index = 0;
 			for (uint32 i = 0; i < uitcomp->cursor_offset.y; ++i)
-				index += uitcomp->text_line_sizes[i] + 1; // newline char
+				index += uitxt->text_line_sizes[i] + 1; // newline char
 			index += uitcomp->cursor_offset.x;
-			uitcomp->text.insert(uitcomp->text.begin()+index, letter);
+			uitxt->text.insert(uitxt->text.begin()+index, letter);
 			if (letter == '\n')
 			{
 				uitcomp->cursor_offset.y += 1;
