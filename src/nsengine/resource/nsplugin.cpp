@@ -422,9 +422,9 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 		tnorm = load<nstex2d>(normtex, true);
 	
 	if (tdiff != NULL)
-		mat->add_tex_map(nsmaterial::diffuse, tdiff->full_id(), true);
+		mat->add_tex_map(nsmaterial::diffuse, tdiff->full_id());
 	if (tnorm != NULL)
-		mat->add_tex_map(nsmaterial::normal, tnorm->full_id(), true);
+		mat->add_tex_map(nsmaterial::normal, tnorm->full_id());
 	if (tdiff == NULL && tnorm == NULL)
 	{
 		mat->set_color_mode(true);

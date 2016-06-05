@@ -19,12 +19,21 @@
 
 struct tex_map_info
 {
-	tex_map_info(const uivec2 & tex_id_=uivec2(), const fvec4 coord_rect_=fvec4(0.0f,0.0f,1.0f,1.0f)):
+	tex_map_info(
+		const uivec2 & tex_id_=uivec2(),
+		const fvec4 & coord_rect_=fvec4(0.0f,0.0f,1.0f,1.0f),
+		const fvec4 & color_mult_ = fvec4(1.0f),
+		const fvec4 & color_add_ = fvec4(0.0f)):
 		tex_id(tex_id_),
-		coord_rect(coord_rect_)
+		coord_rect(coord_rect_),
+		color_mult(color_mult_),
+		color_add(color_add_)
 	{}
+	
 	uivec2 tex_id;
 	fvec4 coord_rect;
+	fvec4 color_add;
+	fvec4 color_mult;
 };
 
 class nsmaterial : public nsresource
@@ -98,9 +107,13 @@ public:
 
 	tex_map_info mat_tex_info(map_type mt);
 	
-	uivec2 map_tex_id(map_type pMapType);
+	uivec2 map_tex_id(map_type map_type_);
 
 	fvec4 map_tex_coord_rect(map_type mt);
+
+	fvec4 map_color_mult(map_type mt);
+
+	fvec4 map_color_add(map_type mt);
 
 	const uivec2 & shader_id();
 
@@ -136,7 +149,7 @@ public:
 	*/
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
-	bool remove_tex_map(map_type pMapType);
+	bool remove_tex_map(map_type map_type_);
 
 	void set_alpha_blend(bool pBlend);
 
@@ -152,15 +165,24 @@ public:
 
 	bool add_tex_map(map_type mt, const tex_map_info & ti, bool overwrite_existing);
 
-	bool add_tex_map(map_type mt, const uivec2 & tex_id, const fvec4 & coord_rect, bool overwrite_existing);
+	bool add_tex_map(map_type mt,
+					 const uivec2 & tex_id,
+					 const fvec4 & coord_rect=fvec4(0.0f,0.0f,1.0f,1.0f),
+					 const fvec4 & color_mult=fvec4(1.0f),
+					 const fvec4 & color_add=fvec4(0.0f),
+					 bool overwrite_existing=true);
 
-	bool set_map_tex_info(map_type pMapType, tex_map_info ti);
+	bool set_map_tex_info(map_type map_type_, tex_map_info ti);
 
-	bool set_map_tex_coord_rect(map_type pMapType, fvec4 tex_coord_rect);
+	bool set_map_tex_coord_rect(map_type map_type_, fvec4 tex_coord_rect);
 
-	bool set_map_tex_id(map_type pMapType, const uivec2 & resID);
+	bool set_map_tex_id(map_type map_type_, const uivec2 & res_id_);
 
-	void set_shader_id(const uivec2 & resID);
+	bool set_map_tex_color_add(map_type map_type_, const fvec4 & color_add_);
+	
+	bool set_map_tex_color_mult(map_type map_type_, const fvec4 & color_mult_);
+
+	void set_shader_id(const uivec2 & res_id_);
 
 	void set_specular(const specular_comp & pSpecComp);
 
@@ -213,6 +235,8 @@ void pup(PUPer & p, tex_map_info & ti, const nsstring & val_name)
 {
 	pup(p, ti.tex_id, val_name + ".tex_id");
 	pup(p, ti.coord_rect, val_name + ".coord_rect");
+	pup(p, ti.color_add, val_name + ".color_add");
+	pup(p, ti.color_mult, val_name + ".color_mult");
 }
 
 template<class PUPer>

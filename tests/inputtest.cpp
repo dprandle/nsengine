@@ -184,7 +184,7 @@ void create_button(
     uic->outer_properties.border_color = fvec4(0.0f,0.0f,0.0f,1.0f);
     uic->outer_properties.border = fvec4(3,3,3,3);
 
-    uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+    uic->mat_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
     uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
     uic->show = true;
 

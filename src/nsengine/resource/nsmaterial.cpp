@@ -198,6 +198,22 @@ fvec4 nsmaterial::map_tex_coord_rect(map_type mt)
 	return fvec4();
 }
 
+fvec4 nsmaterial::map_color_mult(map_type mt)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+		return iter->second.color_mult;
+	return fvec4();	
+}
+
+fvec4 nsmaterial::map_color_add(map_type mt)
+{
+	texmap_map::iterator iter = m_tex_maps.find(mt);
+	if (iter != m_tex_maps.end())
+		return iter->second.color_add;
+	return fvec4();	
+}
+
 const uivec2 & nsmaterial::shader_id()
 {
 	return m_shader_id;
@@ -394,9 +410,13 @@ bool nsmaterial::add_tex_map(
 	map_type mt,
 	const uivec2 & tex_id,
 	const fvec4 & coord_rect,
+	const fvec4 & color_mult,
+	const fvec4 & color_add,
 	bool overwrite_existing)
 {
-	return add_tex_map(mt, tex_map_info(tex_id,coord_rect),overwrite_existing);
+	return add_tex_map(mt,
+					   tex_map_info(tex_id,coord_rect,color_mult,color_add),
+					   overwrite_existing);
 }
 
 bool nsmaterial::set_map_tex_info(map_type mt, tex_map_info ti)
@@ -430,4 +450,26 @@ bool nsmaterial::set_map_tex_id(map_type mt, const uivec2 & pID)
 		return true;
 	}
 	return false;
+}
+
+bool nsmaterial::set_map_tex_color_add(map_type map_type_, const fvec4 & color_add_)
+{
+	texmap_map::iterator iter = m_tex_maps.find(map_type_);
+	if (iter != m_tex_maps.end())
+	{
+		iter->second.color_add = color_add_;
+		return true;
+	}
+	return false;	
+}
+	
+bool nsmaterial::set_map_tex_color_mult(map_type map_type_, const fvec4 & color_mult_)
+{
+	texmap_map::iterator iter = m_tex_maps.find(map_type_);
+	if (iter != m_tex_maps.end())
+	{
+		iter->second.color_mult = color_mult_;
+		return true;
+	}
+	return false;	
 }

@@ -52,7 +52,9 @@ bool char_info::valid()
 		);
 }
 
-nsfont::nsfont()
+nsfont::nsfont():
+	material_id(0),
+	m_fi()
 {
 	m_pages.reserve(256); // max page index
 	m_chars.resize(256); // should initialize to "invalid" char_info
@@ -60,6 +62,7 @@ nsfont::nsfont()
 }
 
 nsfont::nsfont(const nsfont & copy):
+	material_id(copy.material_id),
 	m_fi(copy.m_fi),
 	m_chars(copy.m_chars),
 	m_pages(copy.m_pages)
@@ -147,6 +150,7 @@ void nsfont::pup(nsfile_pupper * p)
 nsfont & nsfont::operator=(nsfont rhs)
 {
 	nsresource::operator=(rhs);
+	std::swap(material_id, rhs.material_id);
 	std::swap(m_fi,rhs.m_fi);
 	std::swap(m_chars,rhs.m_chars);
 	std::swap(m_pages,rhs.m_pages);

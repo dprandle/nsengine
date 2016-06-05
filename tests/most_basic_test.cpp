@@ -124,8 +124,8 @@ int main()
      mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
      uic->mat_id = mat->full_id();
      uic->border_color = fvec4(0.0f,0.0f,0.0f,1.0f);
-     uic->border = fvec4(1,1,1,1);
-     uic->content_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+     uic->border_size = fvec4(1,1,1,1);
+     uic->mat_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
      uic->border_shader_id = nse.core()->get<nsshader>(UI_BORDER_SHADER)->full_id();
 
     nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();

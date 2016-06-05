@@ -86,7 +86,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::diffuse, uivec2(tex->plugin_id(), tex->id()), true);
+					mat->add_tex_map(nsmaterial::diffuse, uivec2(tex->plugin_id(), tex->id()));
 					ret = true;
 				}
 			}
@@ -111,7 +111,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::spec, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::spec, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -136,7 +136,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::ambient, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::ambient, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -161,7 +161,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::emmisive, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::emmisive, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -186,7 +186,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::height, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::height, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -211,7 +211,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::normal, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::normal, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -236,7 +236,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::shininess, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::shininess, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -261,7 +261,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::opacity, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::opacity, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -286,7 +286,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::displacement, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::displacement, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -311,7 +311,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::light, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::light, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}
@@ -336,7 +336,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 
 				if (tex != NULL)
 				{
-					mat->add_tex_map(nsmaterial::reflection, uivec2(tex->plugin_id(),tex->id()), true);
+					mat->add_tex_map(nsmaterial::reflection, uivec2(tex->plugin_id(),tex->id()));
 					ret = true;
 				}
 			}

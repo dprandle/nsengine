@@ -17,17 +17,28 @@ nsui_button_comp::nsui_button_comp() :
 	nscomponent(),
 	is_pressed(false),
 	is_hover(false),
-	m_mat_norm_color(fvec4(-1.0f)),
-	m_mat_color_mode(false),
-	m_mat_norm_tex_rect(fvec4(-1.0f))
+	is_toggled(false),
+	is_enabled(true),
+	toggle_enabled(false),
+	button_states(),
+	toggled_button_states(),
+	m_mat_color_mode(false)
 {}
 
 nsui_button_comp::nsui_button_comp(const nsui_button_comp & copy):
 	nscomponent(copy),
-	m_mat_norm_color(fvec4(-1.0f)),
-	m_mat_color_mode(false),
-	m_mat_norm_tex_rect(fvec4(-1.0f))
-{		
+	is_pressed(false),
+	is_hover(false),
+	is_toggled(copy.is_toggled),
+	is_enabled(copy.is_enabled),
+	toggle_enabled(copy.toggle_enabled),
+	m_mat_color_mode(false)
+{
+	for (uint8 i =0; i < 4; ++i)
+	{
+		button_states[i] = copy.button_states[i];
+		toggled_button_states[i] = copy.toggled_button_states[i];
+	}
 }
 
 nsui_button_comp::~nsui_button_comp()

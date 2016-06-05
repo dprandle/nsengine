@@ -102,15 +102,22 @@ void ui_render_pass::render()
 		ui_draw_call * uidc = (ui_draw_call*)(*draw_calls)[i];		
 
 		// render the border
-		if (uidc->border_color.a >= 0.03f && uidc->border_shader != nullptr)
+		if (uidc->border_shader != nullptr)
 		{
 			uidc->border_shader->bind();
 			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 			uidc->border_shader->set_uniform("border_pix", uidc->border_pix);
 			uidc->border_shader->set_uniform("content_wscale", uidc->content_wscale);
 			uidc->border_shader->set_uniform("content_tform", uidc->content_tform);
-			uidc->border_shader->set_uniform("frag_color_out", uidc->border_color);
+
+			tex_map_info ti = uidc->border_mat->mat_tex_info(nsmaterial::diffuse);
+			uidc->border_shader->set_uniform("frag_color_out", uidc->border_mat->color());
+			uidc->border_shader->set_uniform("color_mult", ti.color_mult);
+			uidc->border_shader->set_uniform("color_add", ti.color_add);
+			uidc->border_shader->set_uniform("color_mode", uidc->border_mat->color_mode());
 			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);
+			driver->enable_culling(uidc->border_mat->culling());
+			driver->set_cull_face(uidc->border_mat->cull_mode());
 			driver->render_ui_dc(uidc);
 		}
 
@@ -123,22 +130,16 @@ void ui_render_pass::render()
 			uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 			uidc->shdr->set_uniform("wscale", uidc->content_wscale);
 			uidc->shdr->set_uniform("content_tform", uidc->content_tform);
-			uidc->shdr->set_uniform("tex_coord_rect", uidc->content_tex_coord_rect);
-			uidc->shdr->set_uniform("color_mult", uidc->color_multiplier);
-		
-			if (uidc->mat != nullptr)
-			{
-				uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
-				uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
-				driver->enable_culling(uidc->mat->culling());
-				driver->set_cull_face(uidc->mat->cull_mode());
-				driver->bind_textures(uidc->mat);
-			}
-			else
-			{
-				uidc->shdr->set_uniform("frag_color_out", fvec4(1,0,0,1));
-				uidc->shdr->set_uniform("color_mode", true);
-			}
+
+			tex_map_info ti = uidc->mat->mat_tex_info(nsmaterial::diffuse);
+			uidc->shdr->set_uniform("tex_coord_rect", ti.coord_rect);
+			uidc->shdr->set_uniform("color_mult", ti.color_mult);
+			uidc->shdr->set_uniform("color_add", ti.color_add);		
+			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
+			uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
+			driver->enable_culling(uidc->mat->culling());
+			driver->set_cull_face(uidc->mat->cull_mode());
+			driver->bind_textures(uidc->mat);
 			driver->render_ui_dc(uidc);
 		}
 		
@@ -164,23 +165,23 @@ void ui_render_pass::render()
 			// figure out the vertical starting cursor pos
 			if (uidc->alignment < 3) // top alignment
 			{
-				cursor_pos.y = rect_wh.h - fi.line_height - uidc->margins.w;
+				cursor_pos.y = rect_wh.h - fi.line_height - uidc->text_margins.w;
 			}
 			else if (uidc->alignment < 6) // middle alignment
 			{
-				cursor_pos.y = (rect_wh.h - uidc->margins.y - uidc->margins.w - fi.line_height) / 2.0f;
+				cursor_pos.y = (rect_wh.h - uidc->text_margins.y - uidc->text_margins.w - fi.line_height) / 2.0f;
 				float v_offset_factor = float(uidc->text_line_sizes.size()-1) / 2.0f;
 				cursor_pos.y += v_offset_factor * float(fi.line_height);
 			}
 			else // bottom alignment
 			{
-				cursor_pos.y = uidc->margins.y + (uidc->text_line_sizes.size() -1) * fi.line_height;
+				cursor_pos.y = uidc->text_margins.y + (uidc->text_line_sizes.size() -1) * fi.line_height;
 			}
 
 			// figure out the first line's horizontal pos
 			if (uidc->alignment % 3 == 0) // left
 			{
-				x_offsets.resize(uidc->text_line_sizes.size(), uidc->margins.x);
+				x_offsets.resize(uidc->text_line_sizes.size(), uidc->text_margins.x);
 			}
 			else if (uidc->alignment % 3 == 1) // center
 			{
@@ -196,7 +197,7 @@ void ui_render_pass::render()
 						++ti;
 					}
 					++ti; // newline char
-					x_offsets[i] = (rect_wh.w - uidc->margins.x - uidc->margins.z - xoff) / 2.0f;
+					x_offsets[i] = (rect_wh.w - uidc->text_margins.x - uidc->text_margins.z - xoff) / 2.0f;
 				}
 			}
 			else // right
@@ -213,7 +214,7 @@ void ui_render_pass::render()
 						++ti;
 					}
 					++ti;
-					x_offsets[i] = (rect_wh.w - uidc->margins.z - xoff);
+					x_offsets[i] = (rect_wh.w - uidc->text_margins.z - xoff);
 				}
 			}
 			cursor_pos.x = x_offsets[0];
@@ -252,7 +253,7 @@ void ui_render_pass::render()
                 uidc->text_shader->set_uniform("offset_xy", fvec2(cursor_pos.x + ci.offset.x, cursor_pos.y + fi.line_height - ci.offset.y - ci.rect.w));
 				uidc->text_shader->set_uniform("tex_coord_rect", rect);
 				uidc->text_shader->set_uniform("rect_bounds", rect_wh);
-				uidc->text_shader->set_uniform("margins", uidc->margins);
+				uidc->text_shader->set_uniform("margins", uidc->text_margins);
 
 				cursor_pos.x += ci.xadvance;
 				++line_index;

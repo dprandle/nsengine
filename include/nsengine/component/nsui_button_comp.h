@@ -19,11 +19,13 @@ This file contains all of the neccessary declarations for the nsui_button_comp c
 
 class nsui_button_comp;
 
-enum button_change
+enum button_change_t
 {
-	tex_coord_rect,
-	change_color,
-	color_multiplier
+	button_none,
+	button_tex_coord,
+	button_color,
+	button_color_mult,
+	button_color_add
 };
 
 class nsui_button_comp : public nscomponent
@@ -51,18 +53,44 @@ public:
 	ns::signal<> pressed;
 	ns::signal<> released;
 
-	fvec4 colors[3];
-	fvec4 tex_coord_rects[3];
-	
+	struct button_state
+	{
+		button_state():
+			mat_color(1.0f),
+			mat_color_mult(1.0f),
+			mat_color_add(0.0f),
+			mat_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
+			border_color(1.0f),
+			border_color_mult(1.0f),
+			border_color_add(0.0f),
+			border_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
+			border_size(1.0f)
+		{}
+		
+		fvec4 mat_color;
+		fvec4 mat_color_mult;
+		fvec4 mat_color_add;
+		fvec4 mat_tex_coord_rect;
+
+		fvec4 border_color;
+		fvec4 border_color_add;
+		fvec4 border_color_mult;
+		fvec4 border_tex_coord_rect;
+		fvec4 border_size;
+	};
+		
 	bool is_pressed;
 	bool is_hover;
+	bool is_toggled;
+	bool is_enabled;
+	
+	bool toggle_enabled;
 
-	button_change change_button_using;
+	button_state button_states[4];
+	button_state toggled_button_states[4];
 
   private:
-	fvec4 m_mat_norm_color;
 	bool m_mat_color_mode;
-	fvec4 m_mat_norm_tex_rect;
 };
 
 template <class PUPer>

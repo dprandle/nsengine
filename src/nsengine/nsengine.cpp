@@ -513,7 +513,7 @@ void nsengine::setup_core_plug()
 	nsmaterial * def_mat;
 	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
 	def_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
-	def_mat->add_tex_map(nsmaterial::diffuse, tex->full_id(), true);
+	def_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
 	def_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
 
 	render_shaders rh;

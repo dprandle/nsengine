@@ -82,7 +82,7 @@ class nsfont : public nsresource
 
 	font_info & get_font_info();
 
-	fvec4 render_color;
+	uivec2 material_id;
 	
   private:
 

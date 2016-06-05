@@ -40,23 +40,20 @@ public:
 
 	nsui_material_comp & operator=(nsui_material_comp rhs_);
 
-	uivec2 content_shader_id;
+	uivec2 mat_shader_id;
 	uivec2 border_shader_id;
 	uivec2 mat_id;
-	fvec4 border;
-	fvec4 border_color;
-	bool focused;
+	uivec2 border_mat_id;
+	fvec4 border_size;
 };
 
 template <class PUPer>
 void pup(PUPer & p, nsui_material_comp & tc)
 {
-	pup(p, tc.content_shader_id, "content_shader_id");
+	pup(p, tc.mat_shader_id, "content_shader_id");
 	pup(p, tc.border_shader_id, "border_shader_id");
 	pup(p, tc.mat_id, "mat_id");
-	pup(p, tc.border, "border");
-	pup(p, tc.border_color, "border_color");
-	pup(p, tc.focused, "focused");
+	pup(p, tc.border_size, "border");
 }
 
 class nsui_text_comp : public nscomponent

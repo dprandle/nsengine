@@ -87,10 +87,13 @@ layout (location = 1) out uvec3 final_picking;
 
 uniform vec4 frag_color_out;
 uniform uvec3 entity_id;
+uniform bool color_mode;
+uniform vec4 color_mult;
+uniform vec4 color_add;
 
 void main()
 {
-	final_frag_color = frag_color_out;
+	final_frag_color = frag_color_out * color_mult + color_add;
 	final_picking = entity_id;
 }
 </nsstring>

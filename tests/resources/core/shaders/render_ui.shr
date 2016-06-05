@@ -70,13 +70,14 @@ uniform vec4 frag_color_out;
 uniform uvec3 entity_id;
 uniform bool color_mode;
 uniform vec4 color_mult;
+uniform vec4 color_add;
 
 void main()
 {
 	final_frag_color = frag_color_out;
 	if (!color_mode)
 		final_frag_color = texture(uitexture, tex_coord);
-	final_frag_color *= color_mult;
+	final_frag_color = final_frag_color * color_mult + color_add;
 	final_picking = entity_id;
 }
 </nsstring>

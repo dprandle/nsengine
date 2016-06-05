@@ -15,22 +15,18 @@ This file contains all of the neccessary definitions for the nsui_comp class.
 
 nsui_material_comp::nsui_material_comp() :
 	nscomponent(),
-	content_shader_id(0),
+	mat_shader_id(0),
 	border_shader_id(0),
 	mat_id(0),
-	border(0.0f),
-	border_color(0.0f),
-	focused(false)
+	border_size(0.0f)
 {}
 
 nsui_material_comp::nsui_material_comp(const nsui_material_comp & copy):
 	nscomponent(copy),
-	content_shader_id(copy.content_shader_id),
+	mat_shader_id(copy.mat_shader_id),
 	border_shader_id(copy.border_shader_id),
 	mat_id(copy.mat_id),
-	border(copy.border),
-	border_color(copy.border_color),
-	focused(false)
+	border_size(copy.border_size)
 {}
 
 nsui_material_comp::~nsui_material_comp()
@@ -64,12 +60,10 @@ void nsui_material_comp::pup(nsfile_pupper * p)
 nsui_material_comp & nsui_material_comp::operator=(nsui_material_comp rhs_)
 {
 	nscomponent::operator=(rhs_);
-	std::swap(content_shader_id,rhs_.content_shader_id);
+	std::swap(mat_shader_id,rhs_.mat_shader_id);
 	std::swap(border_shader_id,rhs_.border_shader_id);
 	std::swap(mat_id,rhs_.mat_id);
-	std::swap(border,rhs_.border);
-	std::swap(border_color,rhs_.border_color);
-	std::swap(focused,rhs_.focused);
+	std::swap(border_size,rhs_.border_size);
 	post_update(true);
 	return (*this);
 }

@@ -205,9 +205,6 @@ struct ui_draw_call : public draw_call
 		content_tform(),
 		content_wscale(1.0f),
 		border_pix(0.0f),
-		content_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
-		border_color(0.0f),
-		color_multiplier(1.0f),
 		text(),
 		fnt(nullptr),
 		text_editable(false),
@@ -215,35 +212,35 @@ struct ui_draw_call : public draw_call
 		cursor_color(1.0f,0.0f,0.0f,1.0f),
 		cursor_offset(),
 		text_line_sizes(),
-		margins(),
+		text_margins(),
 		alignment(0)
 	{}
 
 	~ui_draw_call() {}
-	
-	nsshader * border_shader;
-	nsshader * text_shader;
 
-	uivec3 entity_id;
-	
+	// ui_rect_tform info
+	uivec3 entity_id;	
 	fmat3 content_tform;
 	fvec2 content_wscale;
+
+	// ui_material_comp along with shdr and mat
+	nsshader * border_shader;
+	nsmaterial * border_mat;
 	fvec4 border_pix;
 
-	fvec4 content_tex_coord_rect;
-	fvec4 border_color;
-	fvec4 color_multiplier;
-
+	// ui_text_comp info
+	nsshader * text_shader;
 	nsstring text;
 	nsfont * fnt;
-	bool text_editable;
+	std::vector<uint32> text_line_sizes;
+	uivec4 text_margins;
+	uint8 alignment;
 
+	// ui_text_input_comp info
+	bool text_editable;
 	uint32 cursor_pixel_width;
 	fvec4 cursor_color;
 	uivec2 cursor_offset;
-	std::vector<uint32> text_line_sizes;
-	uivec4 margins;
-	uint8 alignment;
 };
 
 typedef std::set<nsmaterial*> pmatset;

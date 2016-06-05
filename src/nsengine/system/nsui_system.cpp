@@ -104,13 +104,12 @@ void nsui_system::push_draw_calls()
 				uidc->mat = get_resource<nsmaterial>(uimat->mat_id);
 				if (uidc->mat == nullptr)
 					uidc->mat = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
-				uidc->shdr = get_resource<nsshader>(uimat->content_shader_id);
+				uidc->shdr = get_resource<nsshader>(uimat->mat_shader_id);
 				if (uidc->shdr == nullptr)
 					uidc->shdr = nse.core()->get<nsshader>(UI_SHADER);
 				uidc->border_shader = get_resource<nsshader>(uimat->border_shader_id);
-				uidc->border_pix = uimat->border;
-				uidc->border_color = uimat->border_color;
-				uidc->content_tex_coord_rect = uidc->mat->map_tex_coord_rect(nsmaterial::diffuse);
+				uidc->border_pix = uimat->border_size;
+				uidc->border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
 			}
 
 			// If there is a ui text component copy that stuff over
@@ -120,7 +119,7 @@ void nsui_system::push_draw_calls()
 				uidc->text = uitxt->text;
 				uidc->fnt = get_resource<nsfont>(uitxt->font_id);
 				uidc->text_line_sizes = uitxt->text_line_sizes;
-				uidc->margins = uitxt->margins;
+				uidc->text_margins = uitxt->margins;
 				uidc->alignment = uitxt->text_alignment;
 			}
 
@@ -134,20 +133,33 @@ void nsui_system::push_draw_calls()
 			}
 
 			// If there is a ui button component using color multipliers handle that here
-			if (uib != nullptr && uib->change_button_using == color_multiplier)
+			if (uib != nullptr)
 			{
-				if (uib->is_hover)
+				if (uib->toggle_enabled && uib->is_toggled)
 				{
-					if (uib->is_pressed)
+					if (!uib->is_enabled)
+					{
+						uidc->color_multiplier = uib->toggled_button_states[3].color;
+					}
+					else if (uib->is_pressed)
+					{
+						uidc->color_multiplier = uib->colors[1];
+					}
+					else if (uib->is_hover)
 					{
 						uidc->color_multiplier = uib->colors[1];
 					}
 					else
 					{
-						uidc->color_multiplier = uib->colors[0];
+					
 					}
 				}
+				else
+				{
+					
+				}
 			}
+			
 			dc_dq->push_back(uidc);
 		}
 	}
@@ -174,14 +186,6 @@ void nsui_system::update()
 			auto ents = uicc->entities_in_canvas();
 			if (ents == nullptr)
 				continue;
-
-			// Do the update stuff and then sort
-			const ivec2 & sz = nse.video_driver<nsopengl_driver>()->default_target()->size();
-			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
-			fvec2 fsz(sz.x,sz.y);
-			nsentity * canvas = vp_iter->vp->ui_canvases[i];
-			uicc->update_rects(vp_size % fsz);
-			_sort_ents(uicc);
 	
 			auto ui_iter = ents->begin();
 			while (ui_iter != ents->end())
@@ -206,7 +210,7 @@ void nsui_system::update()
 							
 							switch (uib->change_button_using)
 							{
-							  case(tex_coord_rect):
+							  case(button_tex_coord):
 								  if (mat != nullptr)
 								  {
 									  if (uib->m_mat_norm_tex_rect == fvec4(-1.0f))
@@ -218,7 +222,7 @@ void nsui_system::update()
 																  uib->tex_coord_rects[index]);
 								  }
 								  break;
-							  case(change_color):
+							  case(button_color):
 								  if (uib->m_mat_norm_color == fvec4(-1.0f))
 								  {
 									  uib->m_mat_norm_color = mat->color();
@@ -229,7 +233,7 @@ void nsui_system::update()
 								  if (mat != nullptr)
 									  mat->set_color(uib->colors[index]);
 								  break;
-							  case(color_multiplier):
+							  case(button_color_mult):
 								  break;
 							}
 						}
@@ -282,6 +286,15 @@ void nsui_system::update()
 				}
 				++ui_iter;
 			}
+
+			// Do the update stuff and then sort
+			const ivec2 & sz = nse.video_driver<nsopengl_driver>()->default_target()->size();
+			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
+			fvec2 fsz(sz.x,sz.y);
+			nsentity * canvas = vp_iter->vp->ui_canvases[i];
+			uicc->update_rects(vp_size % fsz);
+			_sort_ents(uicc);
+
 		}
 		++vp_iter;
 	}
