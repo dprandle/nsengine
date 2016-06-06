@@ -102,26 +102,6 @@ void ui_render_pass::render()
 		ui_draw_call * uidc = (ui_draw_call*)(*draw_calls)[i];		
 
 		// render the border
-		if (uidc->border_shader != nullptr)
-		{
-			uidc->border_shader->bind();
-			uidc->border_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
-			uidc->border_shader->set_uniform("border_pix", uidc->border_pix);
-			uidc->border_shader->set_uniform("content_wscale", uidc->content_wscale);
-			uidc->border_shader->set_uniform("content_tform", uidc->content_tform);
-
-			tex_map_info ti = uidc->border_mat->mat_tex_info(nsmaterial::diffuse);
-			uidc->border_shader->set_uniform("frag_color_out", uidc->border_mat->color());
-			uidc->border_shader->set_uniform("color_mult", ti.color_mult);
-			uidc->border_shader->set_uniform("color_add", ti.color_add);
-			uidc->border_shader->set_uniform("color_mode", uidc->border_mat->color_mode());
-			uidc->border_shader->set_uniform("entity_id", uidc->entity_id);
-			driver->enable_culling(uidc->border_mat->culling());
-			driver->set_cull_face(uidc->border_mat->cull_mode());
-			driver->render_ui_dc(uidc);
-		}
-
-		// render the material part of the ui-element
 		if (uidc->shdr != nullptr)
 		{
 			uidc->shdr->bind();
@@ -130,17 +110,59 @@ void ui_render_pass::render()
 			uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 			uidc->shdr->set_uniform("wscale", uidc->content_wscale);
 			uidc->shdr->set_uniform("content_tform", uidc->content_tform);
+			uidc->shdr->set_uniform("pixel_blend", 2.0f);
 
+			driver->enable_stencil_test(true);
+			driver->set_stencil_func(GL_ALWAYS, 1, 0xFF);
+			driver->set_stencil_op(GL_KEEP, GL_KEEP, GL_REPLACE);			
+			
+			uidc->shdr->set_uniform("border_rad_top", uidc->top_border_radius);
+			uidc->shdr->set_uniform("border_rad_bottom", uidc->bottom_border_radius);
+			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
+			uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
+			uidc->shdr->set_uniform("border_pix", fvec4(0.0f));
 			tex_map_info ti = uidc->mat->mat_tex_info(nsmaterial::diffuse);
 			uidc->shdr->set_uniform("tex_coord_rect", ti.coord_rect);
 			uidc->shdr->set_uniform("color_mult", ti.color_mult);
-			uidc->shdr->set_uniform("color_add", ti.color_add);		
-			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
-			uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
+			uidc->shdr->set_uniform("color_add", ti.color_add);
 			driver->enable_culling(uidc->mat->culling());
 			driver->set_cull_face(uidc->mat->cull_mode());
 			driver->bind_textures(uidc->mat);
 			driver->render_ui_dc(uidc);
+
+			driver->set_stencil_func(GL_NOTEQUAL, 1, 0xFF);
+
+			if (uidc->top_border_radius != fvec4(0.0f))
+			{
+				uidc->shdr->set_uniform("border_rad_top", uidc->top_border_radius +
+										fvec4(uidc->border_pix.xw(),uidc->border_pix.zw()));
+			}
+			else
+			{
+				uidc->shdr->set_uniform("border_rad_top", fvec4(0.0f));
+			}
+
+			if (uidc->bottom_border_radius != fvec4(0.0f))
+			{
+				uidc->shdr->set_uniform("border_rad_bottom", uidc->bottom_border_radius +
+										fvec4(uidc->border_pix.xy(),uidc->border_pix.zy()));
+			}
+			else
+			{
+				uidc->shdr->set_uniform("border_rad_bottom", fvec4(0.0f));
+			}
+			
+			uidc->shdr->set_uniform("border_pix", uidc->border_pix);
+			uidc->shdr->set_uniform("color_mode", uidc->border_mat->color_mode());
+			uidc->shdr->set_uniform("frag_color_out", uidc->border_mat->color());
+			ti = uidc->border_mat->mat_tex_info(nsmaterial::diffuse);
+			uidc->shdr->set_uniform("tex_coord_rect", ti.coord_rect);
+			uidc->shdr->set_uniform("color_mult", ti.color_mult);
+			uidc->shdr->set_uniform("color_add", ti.color_add);
+			driver->enable_culling(uidc->border_mat->culling());
+			driver->set_cull_face(uidc->border_mat->cull_mode());
+			driver->render_ui_dc(uidc);
+			driver->enable_stencil_test(false);
 		}
 		
 		// render the text part of the ui-element
@@ -153,8 +175,11 @@ void ui_render_pass::render()
 			uidc->text_shader->set_uniform("entity_id", uidc->entity_id);
 			uidc->text_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
 			uidc->text_shader->set_uniform("content_tform", uidc->content_tform);
-			uidc->text_shader->set_uniform("frag_color_out", uidc->fnt->render_color);
-			uidc->text_shader->set_uniform("color_mult", uidc->color_multiplier);
+			uidc->text_shader->set_uniform("frag_color_out", uidc->fnt_material->color());
+
+			tex_map_info ti = uidc->fnt_material->mat_tex_info(nsmaterial::diffuse);
+			uidc->text_shader->set_uniform("color_mult", ti.color_mult);
+			uidc->text_shader->set_uniform("color_add", ti.color_add);
 
 			fvec2 rect_wh = fvec2(viewp.z, viewp.w) % uidc->content_wscale;
             fvec2 cursor_pos(0,0);

@@ -44,7 +44,6 @@
 #define SELECTION_SHADER "selectionsolid"
 #define SKYBOX_SHADER "skybox"
 #define UI_SHADER "render_ui"
-#define UI_BORDER_SHADER "ui_render_border"
 #define UI_TEXT_SHADER "ui_render_text"
 
 // Light bounds, skydome, and tile meshes
@@ -199,7 +198,6 @@ struct ui_draw_call : public draw_call
 {
 	ui_draw_call():
 		draw_call(),
-		border_shader(nullptr),
 		text_shader(nullptr),
 		entity_id(),
 		content_tform(),
@@ -224,14 +222,16 @@ struct ui_draw_call : public draw_call
 	fvec2 content_wscale;
 
 	// ui_material_comp along with shdr and mat
-	nsshader * border_shader;
 	nsmaterial * border_mat;
 	fvec4 border_pix;
+	fvec4 top_border_radius;
+	fvec4 bottom_border_radius;
 
 	// ui_text_comp info
 	nsshader * text_shader;
 	nsstring text;
 	nsfont * fnt;
+	nsmaterial * fnt_material;
 	std::vector<uint32> text_line_sizes;
 	uivec4 text_margins;
 	uint8 alignment;

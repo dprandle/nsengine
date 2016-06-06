@@ -19,15 +19,6 @@ This file contains all of the neccessary declarations for the nsui_button_comp c
 
 class nsui_button_comp;
 
-enum button_change_t
-{
-	button_none,
-	button_tex_coord,
-	button_color,
-	button_color_mult,
-	button_color_add
-};
-
 class nsui_button_comp : public nscomponent
 {
 public:
@@ -52,6 +43,7 @@ public:
 	ns::signal<> clicked;
 	ns::signal<> pressed;
 	ns::signal<> released;
+	ns::signal<bool> toggled;
 
 	struct button_state
 	{
@@ -63,8 +55,14 @@ public:
 			border_color(1.0f),
 			border_color_mult(1.0f),
 			border_color_add(0.0f),
+			top_border_radius(0.0f),
+			bottom_border_radius(0.0f),
 			border_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
-			border_size(1.0f)
+			border_size(1.0f),
+			text_color(1.0f),
+			text_color_mult(1.0f),
+			text_color_add(0.0f),
+			text_tex_coord_rect(0.0f,0.0f,1.0f,1.0f)
 		{}
 		
 		fvec4 mat_color;
@@ -77,6 +75,14 @@ public:
 		fvec4 border_color_mult;
 		fvec4 border_tex_coord_rect;
 		fvec4 border_size;
+		fvec4 top_border_radius;
+		fvec4 bottom_border_radius;
+
+
+		fvec4 text_color;
+		fvec4 text_color_add;
+		fvec4 text_color_mult;
+		fvec4 text_tex_coord_rect;
 	};
 		
 	bool is_pressed;

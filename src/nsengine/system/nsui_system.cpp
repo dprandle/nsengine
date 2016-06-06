@@ -107,17 +107,21 @@ void nsui_system::push_draw_calls()
 				uidc->shdr = get_resource<nsshader>(uimat->mat_shader_id);
 				if (uidc->shdr == nullptr)
 					uidc->shdr = nse.core()->get<nsshader>(UI_SHADER);
-				uidc->border_shader = get_resource<nsshader>(uimat->border_shader_id);
+				uidc->top_border_radius = uimat->top_border_radius;
+				uidc->bottom_border_radius = uimat->bottom_border_radius;
 				uidc->border_pix = uimat->border_size;
 				uidc->border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
 			}
-
+			
 			// If there is a ui text component copy that stuff over
 			if (uitxt != nullptr)
 			{
 				uidc->text_shader = get_resource<nsshader>(uitxt->text_shader_id);
 				uidc->text = uitxt->text;
 				uidc->fnt = get_resource<nsfont>(uitxt->font_id);
+				uidc->fnt_material = get_resource<nsmaterial>(uidc->fnt->material_id);
+				if (uidc->fnt_material == nullptr)
+					uidc->fnt_material = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
 				uidc->text_line_sizes = uitxt->text_line_sizes;
 				uidc->text_margins = uitxt->margins;
 				uidc->alignment = uitxt->text_alignment;
@@ -130,34 +134,6 @@ void nsui_system::push_draw_calls()
 				uidc->cursor_color = uitxt_input->cursor_color;
 				uidc->cursor_pixel_width = uitxt_input->cursor_pixel_width;
 				uidc->cursor_offset = uitxt_input->cursor_offset;
-			}
-
-			// If there is a ui button component using color multipliers handle that here
-			if (uib != nullptr)
-			{
-				if (uib->toggle_enabled && uib->is_toggled)
-				{
-					if (!uib->is_enabled)
-					{
-						uidc->color_multiplier = uib->toggled_button_states[3].color;
-					}
-					else if (uib->is_pressed)
-					{
-						uidc->color_multiplier = uib->colors[1];
-					}
-					else if (uib->is_hover)
-					{
-						uidc->color_multiplier = uib->colors[1];
-					}
-					else
-					{
-					
-					}
-				}
-				else
-				{
-					
-				}
 			}
 			
 			dc_dq->push_back(uidc);
@@ -195,65 +171,78 @@ void nsui_system::update()
 				nsui_text_comp * uitxt = (*ui_iter)->get<nsui_text_comp>();
 				nsui_text_input_comp * uitxt_input = (*ui_iter)->get<nsui_text_input_comp>();
 				nsui_button_comp * uib = (*ui_iter)->get<nsui_button_comp>();
-				uicc->m_ordered_ents.push_back(*ui_iter);					
-
-				if (uimat != nullptr)
+				uicc->m_ordered_ents.push_back(*ui_iter);
+				
+				// Switch the button material based on the state of the button
+				if (uib != nullptr)
 				{
-					if (uib != nullptr)
+					tex_map_info ti_mat, ti_border, ti_text;
+					uint32 index;
+					if (!uib->is_enabled)
+						index = 3;
+					else if (uib->is_pressed)
+						index = 2;
+					else if (uib->is_hover)
+						index = 1;
+					else
+						index = 0;
+
+					nsui_button_comp::button_state * bs;
+					if (uib->toggle_enabled && uib->is_toggled)
+						bs = &uib->toggled_button_states[index];
+					else
+						bs = &uib->button_states[index];
+					
+					ti_mat.color_add = bs->mat_color_add;
+					ti_mat.color_mult = bs->mat_color_mult;
+					ti_mat.coord_rect = bs->mat_tex_coord_rect;
+
+					ti_border.color_add = bs->border_color_add;
+					ti_border.color_mult = bs->border_color_mult;
+					ti_border.coord_rect = bs->border_tex_coord_rect;
+
+					ti_text.color_add = bs->text_color_add;
+					ti_text.color_mult = bs->text_color_mult;
+					ti_text.coord_rect = bs->text_tex_coord_rect;
+					if (uimat != nullptr)
 					{
-						nsmaterial * mat = get_resource<nsmaterial>(uimat->mat_id);
-						if (uib->is_hover)
+						nsmaterial * mmat = get_resource<nsmaterial>(uimat->mat_id);
+						nsmaterial * border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
+
+						uimat->border_size = bs->border_size[index];
+						uimat->top_border_radius = bs->top_border_radius;
+						uimat->bottom_border_radius = bs->bottom_border_radius;
+						
+						if (mmat != nullptr)
 						{
-							uint32 index = 0;
-							if (uib->is_pressed)
-								index = 1;
-							
-							switch (uib->change_button_using)
-							{
-							  case(button_tex_coord):
-								  if (mat != nullptr)
-								  {
-									  if (uib->m_mat_norm_tex_rect == fvec4(-1.0f))
-									  {
-										  uib->m_mat_norm_tex_rect =
-											  mat->map_tex_coord_rect(nsmaterial::diffuse);
-									  }
-									  mat->set_map_tex_coord_rect(nsmaterial::diffuse,
-																  uib->tex_coord_rects[index]);
-								  }
-								  break;
-							  case(button_color):
-								  if (uib->m_mat_norm_color == fvec4(-1.0f))
-								  {
-									  uib->m_mat_norm_color = mat->color();
-									  uib->m_mat_color_mode = mat->color_mode();
-									  if (mat != nullptr)
-										  mat->set_color_mode(true);
-								  }
-								  if (mat != nullptr)
-									  mat->set_color(uib->colors[index]);
-								  break;
-							  case(button_color_mult):
-								  break;
-							}
+							ti_mat.tex_id = mmat->map_tex_id(nsmaterial::diffuse);
+							if (mmat->set_map_tex_info(nsmaterial::diffuse, ti_mat))
+								mmat->set_color(bs->mat_color);
+							else
+								mmat->set_color(bs->mat_color % bs->mat_color_mult + bs->mat_color_add);
 						}
-						else
+						if (border_mat != nullptr)
 						{
-							if (uib->m_mat_norm_color != fvec4(-1.0f))
+							ti_border.tex_id = border_mat->map_tex_id(nsmaterial::diffuse);
+							if (border_mat->set_map_tex_info(nsmaterial::diffuse, ti_border))
+								border_mat->set_color(bs->border_color);
+							else
+								border_mat->set_color(bs->border_color % bs->border_color_mult + bs->border_color_add);
+						}
+					}
+					if (uitxt != nullptr)
+					{
+						nsfont * fnt = get_resource<nsfont>(uitxt->font_id);
+						if (fnt != nullptr)
+						{
+							nsmaterial * fnt_mat = get_resource<nsmaterial>(fnt->material_id);
+							if (fnt_mat != nullptr)
 							{
-								if (mat != nullptr)
-								{
-									mat->set_color(uib->m_mat_norm_color);
-									mat->set_color_mode(uib->m_mat_color_mode);
-								}
-								uib->m_mat_color_mode = false;
-								uib->m_mat_norm_color = fvec4(-1.0f);
-							}
-							if(uib->m_mat_norm_tex_rect != fvec4(-1.0f))
-							{
-								if (mat != nullptr)
-									mat->set_map_tex_coord_rect(nsmaterial::diffuse, uib->m_mat_norm_tex_rect);
-								uib->m_mat_norm_tex_rect = fvec4(-1.0f);
+								ti_border.tex_id = fnt_mat->map_tex_id(nsmaterial::diffuse);
+								if (fnt_mat->set_map_tex_info(nsmaterial::diffuse, ti_text))
+									fnt_mat->set_color(bs->text_color);
+								else
+									fnt_mat->set_color(bs->text_color % bs->text_color_mult + bs->text_color_add);
 							}
 						}
 					}
@@ -353,7 +342,7 @@ bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 			nsrect_tform_comp * rtc = uicc->m_ordered_ents[i]->get<nsrect_tform_comp>();
 			nsui_button_comp * uibtn = rtc->owner()->get<nsui_button_comp>();
 
-			if (uibtn == nullptr)
+			if (uibtn == nullptr || !uibtn->is_enabled)
 				continue;
 
             fvec2 scale = rtc->content_world_scale(uicc);
@@ -417,7 +406,7 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
             if (point_in_rect(mpos, pos))
             {
 				m_focused_ui_ent = uicc->m_ordered_ents[i];
-				if (uibtn != nullptr)
+				if (uibtn != nullptr && uibtn->is_enabled)
 				{
 					uibtn->is_pressed = true;
 					uibtn->clicked();
@@ -453,7 +442,7 @@ bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 			nsrect_tform_comp * rtc = uicc->m_ordered_ents[i]->get<nsrect_tform_comp>();
 			nsui_button_comp * uibtn = rtc->owner()->get<nsui_button_comp>();
 
-			if (uibtn == nullptr)
+			if (uibtn == nullptr || !uibtn->is_enabled)
 				continue;
 
             fvec2 scale = rtc->content_world_scale(uicc);
@@ -469,6 +458,11 @@ bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
             if (point_in_rect(mpos, pos) && m_pressed_button == uibtn)
             {
 				uibtn->pressed();
+				if (uibtn->toggle_enabled)
+				{
+					uibtn->is_toggled = !uibtn->is_toggled;
+					uibtn->toggled(uibtn->is_toggled);
+				}
             }
 			uibtn->is_pressed = false;
 		}

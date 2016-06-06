@@ -41,17 +41,17 @@ public:
 	nsui_material_comp & operator=(nsui_material_comp rhs_);
 
 	uivec2 mat_shader_id;
-	uivec2 border_shader_id;
 	uivec2 mat_id;
 	uivec2 border_mat_id;
 	fvec4 border_size;
+	fvec4 top_border_radius;
+	fvec4 bottom_border_radius;
 };
 
 template <class PUPer>
 void pup(PUPer & p, nsui_material_comp & tc)
 {
 	pup(p, tc.mat_shader_id, "content_shader_id");
-	pup(p, tc.border_shader_id, "border_shader_id");
 	pup(p, tc.mat_id, "mat_id");
 	pup(p, tc.border_size, "border");
 }

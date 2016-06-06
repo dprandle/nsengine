@@ -533,7 +533,6 @@ void nsengine::setup_core_plug()
 
 	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(UI_BORDER_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
 	
 	nsshader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true);

@@ -511,7 +511,7 @@ nsentity * nsplugin::create_skydome(const nsstring & name,
 	sky_box->set_subdir(tex_subdir);
 	
 	nsmaterial * sb_mat = create<nsmaterial>(name);
-	sb_mat->add_tex_map(nsmaterial::diffuse, sky_box->full_id(), true);
+	sb_mat->add_tex_map(nsmaterial::diffuse, sky_box->full_id());
 	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
 	sb_mat->set_cull_mode(GL_FRONT);
 	
@@ -604,11 +604,11 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 		}
 	}
 
-	termat->add_tex_map(nsmaterial::height, hm->full_id(), true);
+	termat->add_tex_map(nsmaterial::height, hm->full_id());
 	if (dm != NULL)
-		termat->add_tex_map(nsmaterial::diffuse, dm->full_id(), true);
+		termat->add_tex_map(nsmaterial::diffuse, dm->full_id());
 	if (nm != NULL)
-		termat->add_tex_map(nsmaterial::normal, nm->full_id(), true);
+		termat->add_tex_map(nsmaterial::normal, nm->full_id());
 
 	
 	return terr;

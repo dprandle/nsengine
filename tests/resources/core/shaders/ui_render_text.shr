@@ -76,6 +76,7 @@ uniform uvec4 margins;
 uniform vec4 frag_color_out;
 uniform uvec3 entity_id;
 uniform vec4 color_mult;
+uniform vec4 color_add;
 uniform bool drawing_cursor;
 
 void main()
@@ -86,7 +87,7 @@ void main()
 	if (!drawing_cursor)
 	{
 		alpha = texture(uitexture, tex_coord).a;
-		final_frag_color = frag_color_out * color_mult;
+		final_frag_color = frag_color_out;
 		final_frag_color.a *= alpha;
 	}
 	else

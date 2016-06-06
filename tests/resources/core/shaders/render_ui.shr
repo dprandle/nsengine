@@ -24,6 +24,7 @@ struct vert_info
 	vec2 tex_coord;
 };
 
+uniform vec4 border_pix;
 uniform mat3 content_tform;
 uniform vec4 tex_coord_rect;
 uniform vec4 viewport;
@@ -36,10 +37,10 @@ vert_info verts[4];
 void main()
 {
 	vec2 outer_pos = viewport.zw * wscale;
-	verts[0].pos = vec2(0,0);
-	verts[1].pos = vec2(0, outer_pos.y);
-	verts[2].pos = vec2(outer_pos.x, 0);
-	verts[3].pos = outer_pos;
+	verts[0].pos = vec2(0,0) - border_pix.xy;
+	verts[1].pos = vec2(0, outer_pos.y) + vec2(-border_pix.x, border_pix.w);
+	verts[2].pos = vec2(outer_pos.x, 0) + vec2( border_pix.z,-border_pix.y);
+	verts[3].pos = outer_pos + border_pix.zw;
 	verts[0].tex_coord = tex_coord_rect.xy;
 	verts[1].tex_coord = tex_coord_rect.xw;
 	verts[2].tex_coord = tex_coord_rect.zy;
@@ -65,19 +66,58 @@ layout (location = 0) out vec4 final_frag_color;
 layout (location = 1) out uvec3 final_picking;
 
 in vec2 tex_coord;
+
+uniform vec2 wscale;
+uniform vec4 border_rad_top;
+uniform vec4 border_rad_bottom;
+
 uniform sampler2D uitexture;
 uniform vec4 frag_color_out;
 uniform uvec3 entity_id;
 uniform bool color_mode;
 uniform vec4 color_mult;
 uniform vec4 color_add;
+uniform vec4 viewport;
+uniform float pixel_blend;
+
+float alpha_factor;
+
+float ellipse_eval(float a, float b, float var)
+{
+	return a * sqrt(1 - var*var / (b*b));
+}
+
+float get_alpha_factor(vec2 current_pixel, vec2 rad_point)
+{
+	if (current_pixel.x <= rad_point.x && current_pixel.y <= rad_point.y)
+	{
+		vec2 try_vec = rad_point.xy - current_pixel;
+		float xval = ellipse_eval(rad_point.x, rad_point.y, try_vec.y);
+		float should_be_len = length(vec2(xval,try_vec.y));
+		float actual_len = length(try_vec);
+		return clamp(1 - (actual_len - should_be_len) / pixel_blend, 0, 1);
+	}
+	return 1.0;
+}
 
 void main()
 {
+	alpha_factor = 1.0;
+	vec2 adj_vp = wscale * viewport.zw;
+	vec2 cp = adj_vp * tex_coord;
+	
+	float alpha_factor = get_alpha_factor(cp, border_rad_bottom.xy) *
+		get_alpha_factor(vec2(cp.x, adj_vp.y - cp.y), border_rad_top.xy) *
+		get_alpha_factor(vec2(adj_vp.x - cp.x, cp.y), border_rad_bottom.zw) *
+		get_alpha_factor(adj_vp - cp, border_rad_top.zw);
+
+	if (alpha_factor < 1.0)
+		discard;
+	
 	final_frag_color = frag_color_out;
 	if (!color_mode)
-		final_frag_color = texture(uitexture, tex_coord);
-	final_frag_color = final_frag_color * color_mult + color_add;
+		final_frag_color = texture(uitexture, tex_coord) * color_mult + color_add;
+	final_frag_color.a *= alpha_factor;
 	final_picking = entity_id;
 }
 </nsstring>
