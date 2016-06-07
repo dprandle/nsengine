@@ -61,6 +61,11 @@ struct nsvid_obj
 	virtual void video_release()=0;	
 };
 
+struct nsvid_buffer : public nsvid_obj
+{
+	virtual void allocate(void * data, uint32 data_size);
+};
+
 struct nsvid_texture : public nsvid_obj
 {
 	nsvid_texture():nsvid_obj() {}
