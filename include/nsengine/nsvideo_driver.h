@@ -63,7 +63,26 @@ struct nsvid_obj
 
 struct nsvid_buffer : public nsvid_obj
 {
-	virtual void allocate(void * data, uint32 data_size);
+	virtual void bind() const =0;
+
+	virtual void unbind() const =0;
+	
+	template<class T_>
+	void allocate(const std::vector<T_> & data_vec)
+	{
+		return allocate(data_vec.size() * sizeof(T_), data_vec.data());
+	}
+
+	virtual void allocate(uint32 data_byte_size, void * data)=0;
+
+
+	template<class T_>
+	void upload(uint32 offset, const std::vector<T_> & data_vec)
+	{
+		return upload(offset, data_vec.size() * sizeof(T_), data_vec.data());
+	}
+	
+	virtual void upload(uint32 offset, uint32 data_size, void * data)=0;
 };
 
 struct nsvid_texture : public nsvid_obj
