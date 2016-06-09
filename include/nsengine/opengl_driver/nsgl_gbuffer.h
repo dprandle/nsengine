@@ -1,11 +1,10 @@
-#ifndef NSGBUF_OBJECT_H
-#define NSGBUF_OBJECT_H
+#ifndef NSGL_GBUFFER_H
+#define NSGL_GBUFFER_H
 
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 
-class nsgbuf_object : public nsgl_framebuffer
+struct nsgl_gbuffer : public nsgl_framebuffer
 {
-public:
 	enum color_attachment_t {
 		col_diffuse,
 		col_picking,
@@ -13,8 +12,8 @@ public:
 		col_normal,
 		attrib_count };
 
-	nsgbuf_object();
-	~nsgbuf_object();
+	nsgl_gbuffer();
+	~nsgl_gbuffer();
 
 	void debug_blit(const ivec2 & scrn);
 
@@ -24,10 +23,7 @@ public:
 
 	void init();
 
-private:
-
-	bool _create_texture_attachments();
-	uint32 m_multisample_level;
+	bool create_texture_attachments();
 };
 
 #endif

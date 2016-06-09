@@ -12,9 +12,9 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 
 
 #include <nsparticle_comp.h>
-#include <nsxfb_object.h>
-#include <nsvertex_array_object.h>
-#include <nsbuffer_object.h>
+#include <nsgl_xfb.h>
+#include <nsgl_vao.h>
+#include <nsgl_buffer.h>
 #include <nstex_manager.h>
 #include <nsshader_manager.h>
 #include <nsentity.h>
@@ -23,8 +23,8 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 
 nsparticle_comp::nsparticle_comp() :
 	nscomponent(),
-	front_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
-	back_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	front_buffer(new nsgl_buffer()),
+	back_buffer(new nsgl_buffer()),
 	m_buffer_index(0),
 	m_simulating(false),
 	m_first(true),
@@ -50,10 +50,12 @@ nsparticle_comp::nsparticle_comp() :
 	m_emitter_shape(shape_cube),
 	m_emitter_size(1.0f, 1.0f, 1.0f)
 {
-	m_xfb_bufs[0] = new nsxfb_object();
-	m_xfb_bufs[1] = new nsxfb_object();
-	m_vaos[0] = new nsvertex_array_object();
-	m_vaos[1] = new nsvertex_array_object();
+	front_buffer->target = nsgl_buffer::array;
+	back_buffer->target = nsgl_buffer::array;
+	m_xfb_bufs[0] = new nsgl_xfb();
+	m_xfb_bufs[1] = new nsgl_xfb();
+	m_vaos[0] = new nsgl_vao();
+	m_vaos[1] = new nsgl_vao();
 	m_motion_keys[0] = fvec3();
 	m_motion_keys[m_max_motion_keys] = fvec3();
 	m_visual_keys[0] = fvec3(1.0f,1.0f,1.0f);
@@ -62,8 +64,8 @@ nsparticle_comp::nsparticle_comp() :
 
 nsparticle_comp::nsparticle_comp(const nsparticle_comp & copy):
 	nscomponent(copy),
-	front_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
-	back_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	front_buffer(new nsgl_buffer()),
+	back_buffer(new nsgl_buffer()),
 	m_motion_keys(copy.m_motion_keys),
 	m_visual_keys(copy.m_visual_keys),
 	m_mat_id(copy.m_mat_id),
@@ -91,10 +93,12 @@ nsparticle_comp::nsparticle_comp(const nsparticle_comp & copy):
 	m_first(copy.m_first),
 	m_buffer_index(0)
 {
-	m_xfb_bufs[0] = new nsxfb_object();
-	m_xfb_bufs[1] = new nsxfb_object();
-	m_vaos[0] = new nsvertex_array_object();
-	m_vaos[1] = new nsvertex_array_object();	
+	front_buffer->target = nsgl_buffer::array;
+	back_buffer->target = nsgl_buffer::array;
+	m_xfb_bufs[0] = new nsgl_xfb();
+	m_xfb_bufs[1] = new nsgl_xfb();
+	m_vaos[0] = new nsgl_vao();
+	m_vaos[1] = new nsgl_vao();	
 }
 
 nsparticle_comp::~nsparticle_comp()
@@ -288,7 +292,7 @@ void nsparticle_comp::init()
 	m_vaos[0]->bind();
 	back_buffer->bind();
 	back_buffer->allocate(m_particles,
-					   nsbuffer_object::mutable_dynamic_draw,
+					   nsgl_buffer::mutable_dynamic_draw,
 					   static_cast<uint32>(m_particles.size()));
 	m_vaos[0]->enable(0);
 	m_vaos[0]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(particle), 0);
@@ -303,7 +307,7 @@ void nsparticle_comp::init()
 	m_vaos[1]->bind();
 	front_buffer->bind();
 	front_buffer->allocate(m_particles,
-						nsbuffer_object::mutable_dynamic_draw,
+						nsgl_buffer::mutable_dynamic_draw,
 						static_cast<uint32>(m_particles.size()));
 	m_vaos[1]->enable(0);
 	m_vaos[1]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(particle), 0);
@@ -315,10 +319,10 @@ void nsparticle_comp::init()
 	m_vaos[1]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 3);
 	m_vaos[1]->unbind();
 
-	front_buffer->set_target(nsbuffer_object::transform_feedback);
-	back_buffer->set_target(nsbuffer_object::transform_feedback);
-	m_xfb_bufs[0]->set_primitive(nsxfb_object::gl_points);
-	m_xfb_bufs[1]->set_primitive(nsxfb_object::gl_points);
+	front_buffer->set_target(nsgl_buffer::transform_feedback);
+	back_buffer->set_target(nsgl_buffer::transform_feedback);
+	m_xfb_bufs[0]->set_primitive(nsgl_xfb::gl_points);
+	m_xfb_bufs[1]->set_primitive(nsgl_xfb::gl_points);
 
 	m_xfb_bufs[0]->bind();
 	front_buffer->bind();
@@ -587,16 +591,16 @@ void nsparticle_comp::allocate_buffers()
 	m_particles.resize(m_max_particle_count);
 	m_particles[0].age_type_reserved.y = 1.0f;
 
-	front_buffer->set_target(nsbuffer_object::array);
-	back_buffer->set_target(nsbuffer_object::array);
+	front_buffer->set_target(nsgl_buffer::array);
+	back_buffer->set_target(nsgl_buffer::array);
 
 	back_buffer->bind();
 	back_buffer->allocate(m_particles,
-					   nsbuffer_object::mutable_dynamic_draw,
+					   nsgl_buffer::mutable_dynamic_draw,
 					   static_cast<uint32>(m_particles.size()));
 	front_buffer->bind();
 	back_buffer->allocate(m_particles,
-					   nsbuffer_object::mutable_dynamic_draw,
+					   nsgl_buffer::mutable_dynamic_draw,
 					   static_cast<uint32>(m_particles.size()));
 	front_buffer->unbind();
 }
@@ -648,15 +652,15 @@ const uivec2 & nsparticle_comp::rand_tex_id()
 
 uint32 nsparticle_comp::xfb_id()
 {
-	return m_xfb_bufs[1 - m_buffer_index]->gl_id();
+	return m_xfb_bufs[1 - m_buffer_index]->gl_id;
 }
 
-nsxfb_object * nsparticle_comp::xfb_obj()
+nsgl_xfb * nsparticle_comp::xfb_obj()
 {
 	return m_xfb_bufs[m_buffer_index];
 }
 
-nsvertex_array_object * nsparticle_comp::va_obj()
+nsgl_vao * nsparticle_comp::va_obj()
 {
 	return m_vaos[m_buffer_index];
 }

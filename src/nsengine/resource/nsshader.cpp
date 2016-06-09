@@ -20,7 +20,7 @@ Description:
 #include <exception>
 #include <string.h>
 #include <nsrender_system.h>
-#include <nsopengl_driver.h>
+#include <nsgl_driver.h>
 
 nsshader::nsshader():
 	nsresource(),
@@ -150,13 +150,13 @@ void nsshader::video_init()
 
 uint32 nsshader::gl_id(shader_type type)
 {
-	nsopengl_driver * gl_driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	nsgl_driver * gl_driver = static_cast<nsgl_driver*>(nse.video_driver());
 	return _stage(type).m_stage_id[gl_driver->current_context()->context_id];
 }
 
 void nsshader::set_gl_id(uint32 id, shader_type type)
 {
-	nsopengl_driver * gl_driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	nsgl_driver * gl_driver = static_cast<nsgl_driver*>(nse.video_driver());
 	_stage(type).m_stage_id[gl_driver->current_context()->context_id] = id;	
 }
 

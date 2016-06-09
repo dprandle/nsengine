@@ -15,11 +15,11 @@
 #include <nsentity.h>
 #include <nstile_grid.h>
 #include <nsengine.h>
-#include <nsxfb_object.h>
-#include <nsvertex_array_object.h>
+#include <nsgl_xfb.h>
+#include <nsgl_vao.h>
 #include <nsshader.h>
 #include <nsmesh.h>
-#include <nsbuffer_object.h>
+#include <nsgl_buffer.h>
 
 nstform_comp::nstform_comp():
 	nscomponent(),
@@ -68,7 +68,7 @@ void nstform_comp::init()
 {
 }
 
-nsbuffer_object * nstform_comp::transform_buffer(const nsscene * scn)
+nsgl_buffer * nstform_comp::transform_buffer(const nsscene * scn)
 {
 	auto fiter = m_scenes_info.find(scn);
 	if (fiter == m_scenes_info.end())
@@ -76,7 +76,7 @@ nsbuffer_object * nstform_comp::transform_buffer(const nsscene * scn)
 	return fiter->second->m_tform_buffer;
 }
 
-nsbuffer_object * nstform_comp::transform_id_buffer(const nsscene * scn)
+nsgl_buffer * nstform_comp::transform_id_buffer(const nsscene * scn)
 {
 	auto fiter = m_scenes_info.find(scn);
 	if (fiter == m_scenes_info.end())

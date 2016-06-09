@@ -36,7 +36,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsplugin_manager.h>
 #include <nsevent.h>
 #include <nsmath.h>
-#include <nsgbuf_object.h>
+#include <nsgl_gbuffer.h>
 #include <nsanim_comp.h>
 #include <nsrender_comp.h>
 
@@ -1304,7 +1304,7 @@ void nsselection_system::prepare_selection_for_rendering()
 	{
 		nssel_comp * sc = (*iter)->get<nssel_comp>();
 		nstform_comp *tc = (*iter)->get<nstform_comp>();
-		nsbuffer_object * tbuf = sc->transform_buffer(m_active_scene);
+		nsgl_buffer * tbuf = sc->transform_buffer(m_active_scene);
 		auto selection = sc->selection(m_active_scene);
 		if (selection == nullptr)
 		{

@@ -20,8 +20,8 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #include <nsshader.h>
 #include <nsmaterial.h>
 #include <nsentity_manager.h>
-#include <nsopengl_driver.h>
-#include <nsfb_object.h>
+#include <nsgl_driver.h>
+#include <nsgl_framebuffer.h>
 #include <nstimer.h>
 #include <nsrect_tform_comp.h>
 #include <nsui_canvas_comp.h>

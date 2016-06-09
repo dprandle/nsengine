@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the nssel_comp class.
 #include <nsentity.h>
 #include <nssel_comp.h>
 #include <nstimer.h>
-#include <nsbuffer_object.h>
+#include <nsgl_buffer.h>
 
 nssel_comp::nssel_comp() :
 	nscomponent(),
@@ -156,7 +156,7 @@ bool nssel_comp::transparent_picking_enabled() const
 	return m_transparent_picking_enabled;
 }
 
-nsbuffer_object * nssel_comp::transform_buffer(nsscene * scn)
+nsgl_buffer * nssel_comp::transform_buffer(nsscene * scn)
 {
 	auto fiter = m_scene_selection.find(scn);
 	if (fiter != m_scene_selection.end())
@@ -178,7 +178,7 @@ nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 }
 
 nssel_comp::per_scene_info::per_scene_info():
-	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
+	m_tform_buffer(new nsgl_buffer(nsgl_buffer::array, nsgl_buffer::storage_mutable)),
 	m_selection(),
 	m_selected(false)
 {

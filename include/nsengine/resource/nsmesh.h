@@ -1,12 +1,12 @@
+
 #ifndef NSMESH_H
 #define NSMESH_H
 
 #define JOINTS_PER_VERTEX 4
 
 #include <nsresource.h>
-#include <nsbuffer_object.h>
-#include <nsvertex_array_object.h>
-
+#include <nsgl_buffer.h>
+#include <nsgl_vao.h>
 
 class nsmesh : public nsresource
 {
@@ -81,14 +81,13 @@ public:
 		void resize(uint32 pNewSize);
 		void update_vao();
 
-
-		nsbuffer_object m_vert_buf;
-		nsbuffer_object m_tex_buf;
-		nsbuffer_object m_norm_buf;
-		nsbuffer_object m_tang_buf;
-		nsbuffer_object m_indice_buf;
-		nsbuffer_object m_joint_buf;
-		nsvertex_array_object m_vao;
+		nsgl_buffer m_vert_buf;
+		nsgl_buffer m_tex_buf;
+		nsgl_buffer m_norm_buf;
+		nsgl_buffer m_tang_buf;
+		nsgl_buffer m_indice_buf;
+		nsgl_buffer m_joint_buf;
+		nsgl_vao m_vao;
 
 		fvec3_vector m_verts;
 		fvec2_vector m_tex_coords;
@@ -98,7 +97,7 @@ public:
 		uivec3_vector m_triangles;
 		uivec2_vector m_lines;
 		std::vector<connected_joints> m_joints;
-
+		
 		GLenum m_prim_type;
 		node * m_node;
 		nsstring m_name;

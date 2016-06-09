@@ -18,9 +18,9 @@
 
 #include <nscomponent.h>
 
-class nsbuffer_object;
-class nsvertex_array_object;
-class nsxfb_object;
+class nsgl_buffer;
+class nsgl_vao;
+class nsgl_xfb;
 class nstimer;
 class nsscene;
 
@@ -174,9 +174,9 @@ class nstform_comp : public nscomponent
 
 	~nstform_comp();
 
-	nsbuffer_object * transform_buffer(const nsscene * scn);
+	nsgl_buffer * transform_buffer(const nsscene * scn);
 
-	nsbuffer_object * transform_id_buffer(const nsscene * scn);
+	nsgl_buffer * transform_id_buffer(const nsscene * scn);
 
 	void init();
 
@@ -200,8 +200,8 @@ class nstform_comp : public nscomponent
 		~per_scene_info();
 		
 		instance_vec m_tforms;
-		nsbuffer_object * m_tform_buffer;
-		nsbuffer_object * m_tform_id_buffer;
+		nsgl_buffer * m_tform_buffer;
+		nsgl_buffer * m_tform_id_buffer;
 		bool m_buffer_resized;
 		uint32 m_visible_count;
 	};

@@ -3,11 +3,11 @@
 
 #include <nsmath.h>
 #include <nstexture.h>
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 
-class nsgl_framebuffer;
+struct nsgl_framebuffer;
 
-class nsshadow_tex2d_target : public nsgl_framebuffer
+struct nsshadow_tex2d_target : public nsgl_framebuffer
 {
   public:
 	nsshadow_tex2d_target();
@@ -16,7 +16,7 @@ class nsshadow_tex2d_target : public nsgl_framebuffer
 	void init(const nsstring & tex_name);
 };
 
-class nsshadow_tex_cubemap_target : public nsgl_framebuffer
+struct nsshadow_tex_cubemap_target : public nsgl_framebuffer
 {
   public:
 	nsshadow_tex_cubemap_target();

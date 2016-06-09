@@ -76,7 +76,7 @@
 
 class nsentity;
 class nsmaterial;
-class nsbuffer_object;
+class nsgl_buffer;
 class nsshader;
 
 class nsshader;
@@ -152,8 +152,8 @@ struct instanced_draw_call : public draw_call
 	~instanced_draw_call() {}
 
 	nsmesh::submesh * submesh;
-	nsbuffer_object * transform_buffer;
-	nsbuffer_object * transform_id_buffer;
+	nsgl_buffer * transform_buffer;
+	nsgl_buffer * transform_id_buffer;
 	fmat4_vector * anim_transforms;
 	fvec2 height_minmax;
 	uint32 entity_id;
@@ -298,11 +298,6 @@ struct viewport
 	std::vector<nsentity*> ui_canvases;
 };
 
-}
-
-namespace nsrender
-{
-struct viewport;
 }
 
 struct vp_node

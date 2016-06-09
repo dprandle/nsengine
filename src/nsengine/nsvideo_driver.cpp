@@ -11,7 +11,7 @@
 */
 
 #include <nsvideo_driver.h>
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 #include <nsengine.h>
 #include <nsshader.h>
 

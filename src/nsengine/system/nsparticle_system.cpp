@@ -10,15 +10,15 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsopengl_driver.h>
-#include <nsvertex_array_object.h>
+#include <nsgl_driver.h>
+#include <nsgl_vao.h>
 #include <nsvideo_driver.h>
 #include <nsevent_dispatcher.h>
 #include <nsparticle_system.h>
 #include <nsparticle_comp.h>
 #include <nsscene.h>
 #include <nsengine.h>
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 #include <nsrender_system.h>
 #include <nsshader.h>
 #include <nsshader_manager.h>
@@ -28,7 +28,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 #include <nstexture.h>
 #include <nsplugin.h>
 #include <nstex_manager.h>
-#include <nsxfb_object.h>
+#include <nsgl_xfb.h>
 #include <nscam_comp.h>
 #include <nsplugin_manager.h>
 
@@ -104,7 +104,7 @@ void nsparticle_system::update()
 		nstexture * texRand = get_resource<nstexture>(comp->rand_tex_id());
 		if (texRand != NULL)
 		{
-			nse.video_driver<nsopengl_driver>()->set_active_texture_unit(RAND_TEX_UNIT);
+			nse.video_driver<nsgl_driver>()->set_active_texture_unit(RAND_TEX_UNIT);
 			texRand->bind();
 		}
 		

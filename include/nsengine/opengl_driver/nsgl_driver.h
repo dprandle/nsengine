@@ -1,5 +1,5 @@
 /*!
-  \file nsopengl_driver.h
+  \file nsgl_driver.h
 
   \brief Definition file for nsopengl_driver class
 
@@ -75,7 +75,7 @@ struct opengl_state
 	ivec4 current_viewport;
 };
 
-class nsopengl_driver;
+class nsgl_driver;
 
 struct render_pass
 {
@@ -98,7 +98,7 @@ struct render_pass
 	drawcall_queue * draw_calls;
 	nsgl_framebuffer * ren_target;
 	nsrender::viewport * vp;
-	nsopengl_driver * driver;
+	nsgl_driver * driver;
 	opengl_state gl_state;
 };
 
@@ -125,9 +125,9 @@ struct translucent_buffers
 	void unbind_buffers();
 	void reset_atomic_counter();
 	
-	nsbuffer_object * atomic_counter;
-	nsbuffer_object * header;
-	nsbuffer_object * fragments;
+	nsgl_buffer * atomic_counter;
+	nsgl_buffer * header;
+	nsgl_buffer * fragments;
 	ui_vector header_clr_data;
 };
 
@@ -187,7 +187,7 @@ class nstex_cubemap;
 struct vid_obj_rel
 {
 	nsvid_obj * vo;
-	nsgl_object * gl_obj;
+	nsgl_obj * gl_obj;
 };
 
 typedef std::vector<vid_obj_rel> vid_obj_array;
@@ -205,7 +205,7 @@ struct gl_ctxt
 	GLEWContext * glew_context; // created in ctor
 	translucent_buffers * m_tbuffers; // created in init
 	nsgl_framebuffer * m_default_target; // created in init
-	nsbuffer_object * m_single_point;
+	nsgl_buffer * m_single_point;
 	
 	rt_map m_render_targets; // created and removed by driver
 	render_pass_vector m_render_passes; // created and removed by driver
@@ -216,7 +216,7 @@ struct gl_ctxt
 
 typedef std::map<uint32, gl_ctxt*> gl_context_map;
 
-class nsopengl_driver : public nsvideo_driver
+class nsgl_driver : public nsvideo_driver
 {
   public:
 	enum render_pass_t
@@ -233,8 +233,8 @@ class nsopengl_driver : public nsvideo_driver
 		final
 	};
 		
-	nsopengl_driver();
-	~nsopengl_driver();
+	nsgl_driver();
+	~nsgl_driver();
 	
 	uint32 active_tex_unit();
 	

@@ -1,65 +1,68 @@
-#include <nsgbuf_object.h>
+#include <nsgl_gbuffer.h>
 #include <nsshader.h>
 #include <nsengine.h>
 
-nsgbuf_object::nsgbuf_object() :
-m_multisample_level(0)
+nsgl_gbuffer::nsgl_gbuffer():
+	nsgl_framebuffer()
 {}
 
-nsgbuf_object::~nsgbuf_object()
+nsgl_gbuffer::~nsgl_gbuffer()
 {}
 
-void nsgbuf_object::debug_blit(const ivec2 & scrn)
+void nsgl_gbuffer::debug_blit(const ivec2 & scrn)
 {
 	ivec2 hlf = scrn / 2;
 
-	set_target(nsgl_framebuffer::fb_read);
+	target = nsgl_framebuffer::fb_read;
 	bind();
 
-	gl_err_check("pre nsfb_object::debug_blit");
 	set_read_buffer(nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_diffuse));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, 0, 0, hlf.w, hlf.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
+	gl_err_check("nsgl_gbuffer::debug_blit 1");
+	
 	set_read_buffer(nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_position));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, 0, hlf.h, hlf.w, scrn.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
+	gl_err_check("nsgl_gbuffer::debug_blit 2");
+	
 	set_read_buffer(nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_normal));
 	glBlitFramebuffer(0, 0, scrn.w, scrn.h, hlf.w, hlf.h, scrn.w, scrn.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	gl_err_check("post nsfb_object::debug_blit");
+	gl_err_check("nsgl_gbuffer::debug_blit 3");
 
 	set_read_buffer(nsgl_framebuffer::att_none);
 	unbind();
 }
 
-nsgl_framebuffer::attachment * nsgbuf_object::color(uint32 att_type)
+nsgl_framebuffer::attachment * nsgl_gbuffer::color(uint32 att_type)
 {
     // If this check fails it probably means the GBuffer was not initialized
 	if (att_type >= attrib_count)
 	{
-		dprint("nsgbuf_object::color Parameter att_type is larger than the color attachments vector");
+		dprint("nsgl_gbuffer::color Parameter att_type is larger than the color attachments vector");
 		return NULL;
 	}
 	return att(nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + att_type));
 }
 
-nsgl_framebuffer::attachment * nsgbuf_object::depth()
+nsgl_framebuffer::attachment * nsgl_gbuffer::depth()
 {
 	return att(nsgl_framebuffer::att_depth_stencil);
 }
 
-void nsgbuf_object::init()
+void nsgl_gbuffer::init()
 {
-	if (size().x == 0 || size().y == 0)
+	if (size.x == 0 || size.y == 0)
 		return;
 
+	nsgl_framebuffer::init();
+
 	// Bind the resource - only in this subclass will we bind in an init function
-	if (!_create_texture_attachments())
+	if (!create_texture_attachments())
 	{
-		dprint("NSGFrameBuffer::init - Error in adding a color attachment - see previous error message - not updating draw buffers");
+		dprint("nsgl_gbuffer::init - Error in adding a color attachment - see previous error message - not updating draw buffers");
 	}
 }
 
-bool nsgbuf_object::_create_texture_attachments()
+bool nsgl_gbuffer::create_texture_attachments()
 {
 	// Attach the different textures for the Gbuffer - doing it explicitly using the enum because
 	// its a lot less confusing later than if you use a for loop to attach the colors.. to add more
@@ -79,7 +82,7 @@ bool nsgbuf_object::_create_texture_attachments()
 	// The order these are added here determines the layout in the shader
 	// Diffuse color data texture: layout = 0
 	att = create_texture_attachment<nstex2d>(
-		"GBufferDiffuse",
+		"gbuffer_diffuse",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_diffuse),
 		G_DIFFUSE_TEX_UNIT,
 		tex_rgb,
@@ -91,7 +94,7 @@ bool nsgbuf_object::_create_texture_attachments()
 	lin.mag_filter = tmag_nearest;
 
 	att = create_texture_attachment<nstex2d>(
-		"GBufferPicking",
+		"gbuffer_picking",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_picking),
 		G_PICKING_TEX_UNIT,
 		tex_irgba,
@@ -99,7 +102,7 @@ bool nsgbuf_object::_create_texture_attachments()
 		lin);	
 
 	att = create_texture_attachment<nstex2d>(
-		"GBufferPosition",
+		"gbuffer_wpos",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_position),
 		G_WORLD_POS_TEX_UNIT,
 		tex_rgba,
@@ -107,7 +110,7 @@ bool nsgbuf_object::_create_texture_attachments()
 		lin);
 
 	att = create_texture_attachment<nstex2d>(
-		"GBufferNormal",
+		"gbuffer_normal",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_normal),
 		G_NORMAL_TEX_UNIT,
 		tex_rgb,

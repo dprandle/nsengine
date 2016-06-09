@@ -16,10 +16,10 @@
 #include <nssel_comp.h>
 #include <nsplugin.h>
 #include <nsrender_system.h>
-#include <nsopengl_driver.h>
+#include <nsgl_driver.h>
 #include <nsshader.h>
-#include <nsshadowbuf_object.h>
-#include <nsgbuf_object.h>
+#include <nsgl_shadow_framebuffer.h>
+#include <nsgl_gbuffer.h>
 #include <nsmaterial.h>
 #include <nsscene.h>
 #include <nscam_comp.h>
@@ -719,7 +719,7 @@ void final_render_pass::render()
 
 GLEWContext * glewGetContext()
 {
-	nsopengl_driver * driver = static_cast<nsopengl_driver*>(nse.video_driver());
+	nsgl_driver * driver = static_cast<nsgl_driver*>(nse.video_driver());
 	return driver->current_context()->glew_context;
 }
 
@@ -801,7 +801,7 @@ void gl_ctxt::release()
 }
 
 
-nsopengl_driver::nsopengl_driver() :
+nsgl_driver::nsgl_driver() :
 	nsvideo_driver(),
 	m_current_context(nullptr),
 	m_auto_cleanup(true)
@@ -810,7 +810,7 @@ nsopengl_driver::nsopengl_driver() :
 		m_contexts[i] = nullptr;
 }
 
-nsopengl_driver::~nsopengl_driver()
+nsgl_driver::~nsgl_driver()
 {
 	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
 	{
@@ -819,7 +819,7 @@ nsopengl_driver::~nsopengl_driver()
 	}
 }
 
-uint8 nsopengl_driver::create_context()
+uint8 nsgl_driver::create_context()
 {
 	static uint8 id = 0; // forever increasing id
 	m_contexts[id] = new gl_ctxt(id);
@@ -827,7 +827,7 @@ uint8 nsopengl_driver::create_context()
 	return id++;
 }
 
-bool nsopengl_driver::destroy_context(uint8 c_id)
+bool nsgl_driver::destroy_context(uint8 c_id)
 {
 	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
@@ -837,7 +837,7 @@ bool nsopengl_driver::destroy_context(uint8 c_id)
 	return true;
 }
 
-bool nsopengl_driver::make_context_current(uint8 c_id)
+bool nsgl_driver::make_context_current(uint8 c_id)
 {
 	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
@@ -847,16 +847,16 @@ bool nsopengl_driver::make_context_current(uint8 c_id)
 	return true;
 }
 
-gl_ctxt * nsopengl_driver::current_context()
+gl_ctxt * nsgl_driver::current_context()
 {
 	return m_current_context;
 }
 
-void nsopengl_driver::create_default_render_targets()
+void nsgl_driver::create_default_render_targets()
 {
 	// Create all of the framebuffers
-	nsgbuf_object * gbuffer = new nsgbuf_object;
-	gbuffer->video_init();
+	nsgl_gbuffer * gbuffer = new nsgl_gbuffer;
+	gbuffer->init();
 	gbuffer->resize(DEFAULT_GBUFFER_RES_X, DEFAULT_GBUFFER_RES_Y);
 	gbuffer->init();
 	add_render_target(GBUFFER_TARGET, gbuffer);
@@ -867,7 +867,7 @@ void nsopengl_driver::create_default_render_targets()
 	
 	// Accumulation buffer
 	nsgl_framebuffer * accum_buffer = new nsgl_framebuffer;
-	accum_buffer->video_init();
+	accum_buffer->init();
 	accum_buffer->resize(DEFAULT_ACCUM_BUFFER_RES_X, DEFAULT_ACCUM_BUFFER_RES_Y);
 	accum_buffer->init();
 	accum_buffer->set_target(nsgl_framebuffer::fb_draw);
@@ -887,7 +887,7 @@ void nsopengl_driver::create_default_render_targets()
 
 	accum_buffer->create_texture_attachment<nstex2d>(
 		"final_picking",
-		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + nsgbuf_object::col_picking),
+		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + nsgl_gbuffer::col_picking),
 		G_PICKING_TEX_UNIT,
 		tex_irgb,
 		tex_u32,
@@ -898,25 +898,25 @@ void nsopengl_driver::create_default_render_targets()
 
 	// 2d shadow map targets
 	nsshadow_tex2d_target * dir_shadow_target = new nsshadow_tex2d_target;
-	dir_shadow_target->video_init();
+	dir_shadow_target->init();
 	dir_shadow_target->resize(DEFAULT_DIR_LIGHT_SHADOW_W, DEFAULT_DIR_LIGHT_SHADOW_H);
 	dir_shadow_target->init("direction_light_shadow");
 	add_render_target(DIR_SHADOW2D_TARGET, dir_shadow_target);
 	
 	nsshadow_tex2d_target * spot_shadow_target = new nsshadow_tex2d_target;
-	spot_shadow_target->video_init();
+	spot_shadow_target->init();
 	spot_shadow_target->resize(DEFAULT_SPOT_LIGHT_SHADOW_W, DEFAULT_SPOT_LIGHT_SHADOW_H);
 	spot_shadow_target->init("spot_light_shadow");
 	add_render_target(SPOT_SHADOW2D_TARGET, spot_shadow_target);
 	
 	nsshadow_tex_cubemap_target * point_shadow_target = new nsshadow_tex_cubemap_target;
-	point_shadow_target->video_init();
+	point_shadow_target->init();
 	point_shadow_target->resize(DEFAULT_POINT_LIGHT_SHADOW_W, DEFAULT_POINT_LIGHT_SHADOW_H);
 	point_shadow_target->init("point_light_shadow");
 	add_render_target(POINT_SHADOW_TARGET, point_shadow_target);	
 }
 
-void nsopengl_driver::setup_default_rendering()
+void nsgl_driver::setup_default_rendering()
 {
 	if (m_current_context == nullptr)
 	{
@@ -927,14 +927,14 @@ void nsopengl_driver::setup_default_rendering()
 	create_default_render_passes();
 }
 
-void nsopengl_driver::clear_render_targets()
+void nsgl_driver::clear_render_targets()
 {
 	while (m_current_context->m_render_targets.begin() != m_current_context->m_render_targets.end())
 		destroy_render_target(m_current_context->m_render_targets.begin()->first);
 	m_current_context->m_render_targets.clear();
 }
 
-void nsopengl_driver::clear_render_passes()
+void nsgl_driver::clear_render_passes()
 {
 	while (m_current_context->m_render_passes.begin() != m_current_context->m_render_passes.end())
 	{
@@ -943,22 +943,22 @@ void nsopengl_driver::clear_render_passes()
 	}	
 }
 
-render_pass_vector * nsopengl_driver::render_passes()
+render_pass_vector * nsgl_driver::render_passes()
 {
 	return &m_current_context->m_render_passes;
 }
 
-bool nsopengl_driver::add_render_target(const nsstring & name, nsgl_framebuffer * rt)
+bool nsgl_driver::add_render_target(const nsstring & name, nsgl_framebuffer * rt)
 {
 	return m_current_context->m_render_targets.emplace(name, rt).second;
 }
 
-nsgl_framebuffer * nsopengl_driver::default_target()
+nsgl_framebuffer * nsgl_driver::default_target()
 {
 	return m_current_context->m_default_target;
 }
 
-nsgl_framebuffer * nsopengl_driver::remove_render_target(const nsstring & name)
+nsgl_framebuffer * nsgl_driver::remove_render_target(const nsstring & name)
 {
 	nsgl_framebuffer * fb = nullptr;
 	auto iter = m_current_context->m_render_targets.find(name);
@@ -970,7 +970,7 @@ nsgl_framebuffer * nsopengl_driver::remove_render_target(const nsstring & name)
 	return fb;
 }
 
-nsgl_framebuffer * nsopengl_driver::render_target(const nsstring & name)
+nsgl_framebuffer * nsgl_driver::render_target(const nsstring & name)
 {
 	auto iter = m_current_context->m_render_targets.find(name);
 	if (iter != m_current_context->m_render_targets.end())
@@ -978,14 +978,14 @@ nsgl_framebuffer * nsopengl_driver::render_target(const nsstring & name)
 	return nullptr;
 }
 
-void nsopengl_driver::destroy_render_target(const nsstring & name)
+void nsgl_driver::destroy_render_target(const nsstring & name)
 {
 	nsgl_framebuffer * rt = remove_render_target(name);
-	rt->video_release();
+	rt->release();
 	delete rt;
 }
 
-void nsopengl_driver::create_default_render_passes()
+void nsgl_driver::create_default_render_passes()
 {
 	// setup gbuffer geometry stage
 	gbuffer_render_pass * gbuf_pass = new gbuffer_render_pass;
@@ -1159,12 +1159,12 @@ void nsopengl_driver::create_default_render_passes()
 	m_current_context->m_render_passes.push_back(final_pass);
 }
 
-void nsopengl_driver::resize_screen(const ivec2 & new_size)
+void nsgl_driver::resize_screen(const ivec2 & new_size)
 {
 	m_current_context->m_default_target->resize(new_size);
 }
 
-void nsopengl_driver::release()
+void nsgl_driver::release()
 {
 	clear_render_targets();
 	clear_render_passes();
@@ -1173,7 +1173,7 @@ void nsopengl_driver::release()
 	nsvideo_driver::release();
 }
 
-void nsopengl_driver::render(nsrender::viewport * vp)
+void nsgl_driver::render(nsrender::viewport * vp)
 {
 	if (!_valid_check())
 		return;
@@ -1205,7 +1205,7 @@ void nsopengl_driver::render(nsrender::viewport * vp)
 	m_current_context->m_tbuffers->reset_atomic_counter();
 }
 
-void nsopengl_driver::set_gl_state(const opengl_state & state)
+void nsgl_driver::set_gl_state(const opengl_state & state)
 {
 	set_viewport(state.current_viewport);
 	enable_depth_test(state.depth_test);
@@ -1234,7 +1234,7 @@ void nsopengl_driver::set_gl_state(const opengl_state & state)
 		clear_framebuffer(state.clear_mask);
 }
 
-void nsopengl_driver::set_blend_eqn(int32 eqn)
+void nsgl_driver::set_blend_eqn(int32 eqn)
 {
 	if (eqn == 0)
 		return;
@@ -1244,7 +1244,7 @@ void nsopengl_driver::set_blend_eqn(int32 eqn)
 	gl_err_check("nsopengl_driver::set_blend_eqn");	
 }
 
-bool nsopengl_driver::_valid_check()
+bool nsgl_driver::_valid_check()
 {
 	static bool shadererr = false;
 	static bool shadernull = false;
@@ -1273,14 +1273,14 @@ bool nsopengl_driver::_valid_check()
 	return true;
 }
 
-void nsopengl_driver::enable_depth_write(bool enable)
+void nsgl_driver::enable_depth_write(bool enable)
 {
 	glDepthMask(enable);
 	m_current_context->m_gl_state.depth_write = enable;
 	gl_err_check("nsopengl_driver::enable_depth_write");
 }
 
-void nsopengl_driver::enable_depth_test(bool enable)
+void nsgl_driver::enable_depth_test(bool enable)
 {
 	if (enable)
 	{
@@ -1295,7 +1295,7 @@ void nsopengl_driver::enable_depth_test(bool enable)
 	m_current_context->m_gl_state.depth_test = enable;
 }
 
-void nsopengl_driver::enable_stencil_test(bool enable)
+void nsgl_driver::enable_stencil_test(bool enable)
 {
 	if (enable)
 		glEnable(GL_STENCIL_TEST);
@@ -1305,7 +1305,7 @@ void nsopengl_driver::enable_stencil_test(bool enable)
 	m_current_context->m_gl_state.stencil_test = enable;
 }
 
-void nsopengl_driver::enable_blending(bool enable)
+void nsgl_driver::enable_blending(bool enable)
 {
 	if (enable)
 		glEnable(GL_BLEND);
@@ -1315,7 +1315,7 @@ void nsopengl_driver::enable_blending(bool enable)
 	gl_err_check("nsopengl_driver::enable_blending");
 }
 
-void nsopengl_driver::enable_culling(bool enable)
+void nsgl_driver::enable_culling(bool enable)
 {
 	if (enable)
 		glEnable(GL_CULL_FACE);
@@ -1325,7 +1325,7 @@ void nsopengl_driver::enable_culling(bool enable)
 	gl_err_check("nsopengl_driver::enable_culling");
 }
 
-void nsopengl_driver::set_cull_face(int32 cull_face)
+void nsgl_driver::set_cull_face(int32 cull_face)
 {
 	if (cull_face != m_current_context->m_gl_state.cull_face)
 	{
@@ -1335,41 +1335,41 @@ void nsopengl_driver::set_cull_face(int32 cull_face)
 	}	
 }
 
-opengl_state nsopengl_driver::current_gl_state()
+opengl_state nsgl_driver::current_gl_state()
 {
 	return m_current_context->m_gl_state;
 }
 
-void nsopengl_driver::set_blend_func(int32 sfactor, int32 dfactor)
+void nsgl_driver::set_blend_func(int32 sfactor, int32 dfactor)
 {
 	set_blend_func(ivec2(sfactor,dfactor));
 }
 
-void nsopengl_driver::set_blend_func(const ivec2 & blend_func)
+void nsgl_driver::set_blend_func(const ivec2 & blend_func)
 {
 	glBlendFunc(blend_func.x, blend_func.y);
 	m_current_context->m_gl_state.blend_func = blend_func;
 	gl_err_check("nsopengl_driver::set_blend_func");
 }
 
-void nsopengl_driver::set_stencil_func(int32 func, int32 ref, int32 mask)
+void nsgl_driver::set_stencil_func(int32 func, int32 ref, int32 mask)
 {
 	set_stencil_func(ivec3(func,ref,mask));
 }
 
-void nsopengl_driver::set_stencil_func(const ivec3 & stencil_func)
+void nsgl_driver::set_stencil_func(const ivec3 & stencil_func)
 {
 	glStencilFunc(stencil_func.x, stencil_func.y, stencil_func.z);
 	m_current_context->m_gl_state.stencil_func = stencil_func;
 	gl_err_check("nsopengl_driver::set_stencil_func");
 }
 
-void nsopengl_driver::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
+void nsgl_driver::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
 {
 	set_stencil_op(ivec3( sfail, dpfail, dppass));
 }
 
-void nsopengl_driver::set_stencil_op(const ivec3 & stencil_op)
+void nsgl_driver::set_stencil_op(const ivec3 & stencil_op)
 {
 	glStencilOp(stencil_op.x, stencil_op.y, stencil_op.z);
 	m_current_context->m_gl_state.stencil_op_back = stencil_op;
@@ -1377,45 +1377,45 @@ void nsopengl_driver::set_stencil_op(const ivec3 & stencil_op)
 	gl_err_check("nsopengl_driver::set_stencil_op");
 }
 
-void nsopengl_driver::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass)
+void nsgl_driver::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass)
 {
 	set_stencil_op_back(ivec3(sfail, dpfail, dppass));	
 }
 	
-void nsopengl_driver::set_stencil_op_back(const ivec3 & stencil_op)
+void nsgl_driver::set_stencil_op_back(const ivec3 & stencil_op)
 {
 	glStencilOpSeparate(GL_BACK, stencil_op.x, stencil_op.y, stencil_op.z);
 	m_current_context->m_gl_state.stencil_op_back = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op_back");
 }
 
-void nsopengl_driver::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass)
+void nsgl_driver::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass)
 {
 	set_stencil_op_front(ivec3(sfail, dpfail, dppass));		
 }
 	
-void nsopengl_driver::set_stencil_op_front(const ivec3 & stencil_op)
+void nsgl_driver::set_stencil_op_front(const ivec3 & stencil_op)
 {
 	glStencilOpSeparate(GL_FRONT, stencil_op.x, stencil_op.y, stencil_op.z);
 	m_current_context->m_gl_state.stencil_op_front = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op_front");
 }
 
-uint32 nsopengl_driver::bound_fbo()
+uint32 nsgl_driver::bound_fbo()
 {
 	GLint params;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &params);
 	return params;
 }
 
-uint32 nsopengl_driver::active_tex_unit()
+uint32 nsgl_driver::active_tex_unit()
 {
 	GLint act_un;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &act_un);
 	return act_un - BASE_TEX_UNIT;
 }
 
-void nsopengl_driver::init(bool setup_default_rend)
+void nsgl_driver::init(bool setup_default_rend)
 {
 	if (m_current_context == nullptr)
 	{
@@ -1426,13 +1426,13 @@ void nsopengl_driver::init(bool setup_default_rend)
 	nsvideo_driver::init(setup_default_rend);
 }
 
-void nsopengl_driver::set_active_texture_unit(uint32 tex_unit)
+void nsgl_driver::set_active_texture_unit(uint32 tex_unit)
 {
 	glActiveTexture(BASE_TEX_UNIT + tex_unit);
 	gl_err_check("nsopengl_driver::set_active_texture_unit");
 }
 
-void nsopengl_driver::set_viewport(const ivec4 & val)
+void nsgl_driver::set_viewport(const ivec4 & val)
 {
 	if (m_current_context->m_gl_state.current_viewport != val)
 	{
@@ -1442,13 +1442,13 @@ void nsopengl_driver::set_viewport(const ivec4 & val)
 	}
 }
 
-void nsopengl_driver::clear_framebuffer(uint32 clear_mask)
+void nsgl_driver::clear_framebuffer(uint32 clear_mask)
 {
 	glClear(clear_mask);
 	gl_err_check("nsopengl_driver::clear_framebuffer");
 }
 
-void nsopengl_driver::bind_textures(nsmaterial * material)
+void nsgl_driver::bind_textures(nsmaterial * material)
 {
 	nsmaterial::texmap_map_const_iter cIter = material->begin();
 	while (cIter != material->end())
@@ -1463,7 +1463,7 @@ void nsopengl_driver::bind_textures(nsmaterial * material)
 	}	
 }
 
-uivec3 nsopengl_driver::pick(const fvec2 & mouse_pos)
+uivec3 nsgl_driver::pick(const fvec2 & mouse_pos)
 {
 	nsgl_framebuffer * pck = (nsgl_framebuffer*)render_target(ACCUM_TARGET);
 	if (pck == NULL)
@@ -1476,14 +1476,14 @@ uivec3 nsopengl_driver::pick(const fvec2 & mouse_pos)
 	return index;
 }
 
-void nsopengl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
+void nsgl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 {
-	nsgbuf_object * obj = dynamic_cast<nsgbuf_object*>(fb);
+	nsgl_gbuffer * obj = dynamic_cast<nsgl_gbuffer*>(fb);
 
 	if (obj == nullptr)
 		return;
 
-	for (uint32 i = 0; i < nsgbuf_object::attrib_count; ++i)
+	for (uint32 i = 0; i < nsgl_gbuffer::attrib_count; ++i)
 	{
 		nsgl_framebuffer::attachment * att = obj->color(i);
 		set_active_texture_unit(att->m_tex_unit);
@@ -1491,7 +1491,7 @@ void nsopengl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	}
 }
 
-void nsopengl_driver::init_texture(nstexture * tex)
+void nsgl_driver::init_texture(nstexture * tex)
 {
 	if (tex->video_texture() != nullptr)
 	{
@@ -1499,24 +1499,24 @@ void nsopengl_driver::init_texture(nstexture * tex)
 		return;
 	}
 	nsgl_texture * gltex = new nsgl_texture;
-	gltex->video_init();
+	gltex->init();
 	if (tex->type() == type_to_hash(nstex1d))
 	{
-		gltex->m_target = nsgl_texture::tex_1d;
+		gltex->target = nsgl_texture::tex_1d;
 	}
 	else if (tex->type() == type_to_hash(nstex2d))
 	{
-		gltex->m_target = nsgl_texture::tex_2d;
+		gltex->target = nsgl_texture::tex_2d;
 		gltex->set_parameter_i(nsgl_texture::mag_filter, GL_LINEAR);
 		gltex->set_parameter_i(nsgl_texture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
 	}
 	else if (tex->type() == type_to_hash(nstex3d))
 	{
-		gltex->m_target = nsgl_texture::tex_3d;
+		gltex->target = nsgl_texture::tex_3d;
 	}
 	else if (tex->type() == type_to_hash(nstex_cubemap))
 	{
-		gltex->m_target = nsgl_texture::tex_cubemap;
+		gltex->target = nsgl_texture::tex_cubemap;
 	}
 	else
 	{
@@ -1525,14 +1525,14 @@ void nsopengl_driver::init_texture(nstexture * tex)
 	tex->set_video_texture(gltex);
 }
 
-gl_ctxt * nsopengl_driver::context(uint8 id)
+gl_ctxt * nsgl_driver::context(uint8 id)
 {
 	if (id >= MAX_CONTEXT_COUNT)
 		return nullptr;
 	return m_contexts[id];
 }
 
-void nsopengl_driver::release_texture(nstexture * tex)
+void nsgl_driver::release_texture(nstexture * tex)
 {
 	nsgl_texture * gltex = tex->video_texture<nsgl_texture>();
 	if (gltex == nullptr)
@@ -1540,7 +1540,7 @@ void nsopengl_driver::release_texture(nstexture * tex)
 		dprint("nsopengl_driver::release_texture Trying to release uninitialized gl_texture");
 		return;
 	}
-	gltex->video_release();
+	gltex->release();
 	if (gltex->gl_obj.all_ids_released())
 	{
 		delete gltex;
@@ -1548,7 +1548,7 @@ void nsopengl_driver::release_texture(nstexture * tex)
 	}
 	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
 	{
-		if (gltex->gl_obj.m_gl_name[i] != 0)
+		if (gltex->gl_obj.gl_id[i] != 0)
 		{
 			vid_obj_rel vobj;
 			vobj.vo = gltex;
@@ -1565,28 +1565,28 @@ void nsopengl_driver::release_texture(nstexture * tex)
 	tex->set_video_texture(nullptr);
 }
 
-void nsopengl_driver::cleanup_vid_objs()
+void nsgl_driver::cleanup_vid_objs()
 {
 	for (uint32 i = 0; i < current_context()->need_release.size(); ++i)
 	{
-		current_context()->need_release[i].vo->video_release();
+		current_context()->need_release[i].vo->release();
 		if (current_context()->need_release[i].gl_obj->all_ids_released())
 			delete current_context()->need_release[i].vo;
 	}
 	current_context()->need_release.clear();
 }
 
-void nsopengl_driver::enable_auto_cleanup(bool enable)
+void nsgl_driver::enable_auto_cleanup(bool enable)
 {
 	m_auto_cleanup = enable;
 }
 
-bool nsopengl_driver::auto_cleanup()
+bool nsgl_driver::auto_cleanup()
 {
 	return m_auto_cleanup;
 }
 
-void nsopengl_driver::render_instanced_dc(instanced_draw_call * idc)
+void nsgl_driver::render_instanced_dc(instanced_draw_call * idc)
 {
 	idc->submesh->m_vao.bind();
 
@@ -1631,7 +1631,7 @@ void nsopengl_driver::render_instanced_dc(instanced_draw_call * idc)
 	idc->submesh->m_vao.unbind();
 }
 
-void nsopengl_driver::render_light_dc(light_draw_call * idc)
+void nsgl_driver::render_light_dc(light_draw_call * idc)
 {
 	gl_err_check("pre dir_light_pass::render");
 	if (idc->submesh == nullptr)
@@ -1652,7 +1652,7 @@ void nsopengl_driver::render_light_dc(light_draw_call * idc)
 	gl_err_check("post dir_light_pass::render");	
 }
 
-void nsopengl_driver::render_ui_dc(ui_draw_call * idc)
+void nsgl_driver::render_ui_dc(ui_draw_call * idc)
 {
 	gl_err_check("pre ui_draw_call::render");
 	if (m_current_context->m_single_point != nullptr)

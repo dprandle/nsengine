@@ -10,7 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
-#include <nsopengl_driver.h>
+#include <nsgl_driver.h>
 #include <nsengine.h>
 #include <nsplugin_manager.h>
 #include <nsshader_manager.h>
@@ -23,7 +23,7 @@
 #include <nstexture.h>
 #include <nsmaterial.h>
 #include <nsshader.h>
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 #include <nsui_system.h>
 
 #include <nsanim_comp.h>
@@ -638,8 +638,8 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
         if (tForm->update_posted())
 		{
 			nstform_comp::per_scene_info * psi = tForm->m_scenes_info.find(scene)->second; 
-			nsbuffer_object * tFormBuf = psi->m_tform_buffer;
-			nsbuffer_object * tFormIDBuf = psi->m_tform_id_buffer;
+			nsgl_buffer * tFormBuf = psi->m_tform_buffer;
+			nsgl_buffer * tFormIDBuf = psi->m_tform_id_buffer;
 
 			bool did_resize = false;
 			if (psi->m_buffer_resized)

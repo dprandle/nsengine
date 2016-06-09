@@ -23,9 +23,9 @@ This file contains all of the neccessary declarations for the nsparticle_comp cl
 #include <nsmap.h>
 
 class nsentity;
-class nsxfb_object;
-class nsvertex_array_object;
-class nsbuffer_object;
+class nsgl_xfb;
+class nsgl_vao;
+class nsgl_buffer;
 class nsevent;
 
 class nsparticle_comp : public nscomponent
@@ -183,9 +183,9 @@ public:
 
 	virtual void pup(nsfile_pupper * p);
 
-	nsxfb_object * xfb_obj();
+	nsgl_xfb * xfb_obj();
 
-	nsvertex_array_object * va_obj();
+	nsgl_vao * va_obj();
 
 	uint32 xfb_id();
 
@@ -243,8 +243,8 @@ public:
 
 	void swap();
 
-	nsbuffer_object * front_buffer;
-	nsbuffer_object * back_buffer;
+	nsgl_buffer * front_buffer;
+	nsgl_buffer * back_buffer;
 private:
 	ui_fvec3_map m_motion_keys;
 	ui_fvec3_map m_visual_keys;
@@ -276,8 +276,8 @@ private:
 	bool m_first; // Is it the first time running the simulation since being reset (need to render using glDrawElements rather than feedback draw)
 
 
-	nsxfb_object * m_xfb_bufs[2]; // 2 transform feedback buffers (draw from last to first then swap)
-	nsvertex_array_object * m_vaos[2]; // for rendering whats in the TF FB buffers
+	nsgl_xfb * m_xfb_bufs[2]; // 2 transform feedback buffers (draw from last to first then swap)
+	nsgl_vao * m_vaos[2]; // for rendering whats in the TF FB buffers
 	uint32 m_buffer_index; //!< Current buffer index
 	particle_array m_particles; //!< Sort of dummy array used to allocate VBOs
 };

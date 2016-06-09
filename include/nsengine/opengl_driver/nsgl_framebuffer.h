@@ -1,5 +1,5 @@
 /*! 
-	\file nsfb_object.h
+	\file nsgl_framebuffer.h
 	
 	\brief Header file for nsfb_object class
 
@@ -20,10 +20,8 @@
 
 class nsgl_renderbuffer;
 
-class nsgl_framebuffer : public nsgl_object
+struct nsgl_framebuffer : public nsgl_obj
 {
-public:
-
 	enum attach_point {  
 		att_none = GL_NONE,
 		att_color = GL_COLOR_ATTACHMENT0,
@@ -58,7 +56,7 @@ public:
 	// On attachment the frame buffer is responsible for destroying the texture
 	bool add(attachment * att_, bool overwrite_=false);
 
-	void bind() const;
+	void bind();
 
 	uivec3 pick(float norm_mouse_x, float norm_mouse_y, uint32 att_index);
 
@@ -84,7 +82,7 @@ public:
 		tex->set_parameters(pms);
 		tex->enable_mipmap_autogen(mipmaps);
 		tex->set_component_data_type(pixel_type_);
-		tex->resize(m_size, false);
+		tex->resize(size, false);
 
 		gl_err_check("here");
 		tex->bind();
@@ -94,7 +92,7 @@ public:
 		attachment * att = new attachment();
 		att->m_att_point = att_point_;
 		att->m_texture = tex;
-		att->m_owning_fb = gl_id();
+		att->m_owning_fb = gl_id;
 		att->m_tex_unit = tex_unit_;
 		if (!add(att, true))
 		{
@@ -104,25 +102,17 @@ public:
 		return att;	
 	}
 
-    // Will return attachment with NULL as renderbuffer pointer and texture pointer if
-    // there is no attachment at the attachment point
 	attachment * att(attach_point att_point_);
-
-	fb_target target();
 
 	bool has(attach_point att_point_);
 
-	virtual void video_init();
-
 	virtual void init();
 
-	virtual void video_release();
+	virtual void release();
 
 	virtual void resize(int32 w, int32 h=0, uint32 layers_=0);
 
 	void resize(const ivec2 & size_, uint32 layers_=0);
-
-	const ivec2 & size();
 
 	bool set_cube_face(attach_point att_point_, uint8 face_);
 
@@ -131,19 +121,15 @@ public:
 	void set_draw_buffers(attachment_point_array * att_array_);
 
 	void set_read_buffer(uint32 att_point);
-
-	void set_target(fb_target target_);
 	
-	void unbind() const;
+	void unbind();
 
 	void update_draw_buffers();
 
-protected:
-	ivec2 m_size;
-	fb_target m_target;
-
-	attachment * m_depth_stencil_att;
-	attachment_array m_color_atts;
+	ivec2 size;
+	fb_target target;
+	attachment * depth_stencil_att;
+	attachment_array color_atts;
 };
 
 #endif

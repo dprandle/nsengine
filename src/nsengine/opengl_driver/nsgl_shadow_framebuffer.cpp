@@ -1,6 +1,5 @@
-#include <nsshadowbuf_object.h>
+#include <nsgl_shadow_framebuffer.h>
 #include <nsshader.h>
-#include <nsfb_object.h>
 #include <nsgl_texture.h>
 
 nsshadow_tex2d_target::nsshadow_tex2d_target()
@@ -11,7 +10,8 @@ nsshadow_tex2d_target::~nsshadow_tex2d_target()
 
 void nsshadow_tex2d_target::init(const nsstring & tex_name)
 {
-	set_target(nsgl_framebuffer::fb_draw);
+	nsgl_framebuffer::init();
+	target = nsgl_framebuffer::fb_draw;
 	bind();
 	set_draw_buffer(nsgl_framebuffer::att_none);
 
@@ -40,7 +40,8 @@ nsshadow_tex_cubemap_target::~nsshadow_tex_cubemap_target()
 
 void nsshadow_tex_cubemap_target::init(const nsstring & tex_name)
 {
-	set_target(nsgl_framebuffer::fb_draw);
+	nsgl_framebuffer::init();
+	target = nsgl_framebuffer::fb_draw;
 	bind();
 
 	tex_params tp;

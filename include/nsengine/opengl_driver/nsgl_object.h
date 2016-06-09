@@ -20,20 +20,17 @@
 
 bool gl_err_check(nsstring errorMessage);
 
-struct nsgl_object
+struct nsgl_obj
 {
-public:
-	nsgl_object();
-	virtual ~nsgl_object();
-//	virtual void bind() const = 0;
-//	virtual void video_init()=0;
-//	virtual void video_release()=0;
-//	virtual void unbind() const = 0;
+	nsgl_obj();
+	virtual ~nsgl_obj();
 
-	bool all_ids_released();
-	uint32 gl_id() const;
-	void set_gl_id(uint32 id);
-	uint32 m_gl_name[MAX_CONTEXT_COUNT];
+	virtual void bind()=0;
+	virtual void init()=0;
+	virtual void release()=0;
+	virtual void unbind()=0;
+	
+	uint32 gl_id;
 };
 
 #endif

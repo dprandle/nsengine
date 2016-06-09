@@ -25,7 +25,7 @@
 #include <nsgl_object.h>
 #include <nsvideo_driver.h>
 
-struct nsgl_texture : public nsvid_texture
+struct nsgl_texture : public nsgl_obj
 {
 	enum tex_target {
 		tex_1d = GL_TEXTURE_1D,
@@ -81,7 +81,7 @@ struct nsgl_texture : public nsvid_texture
 	nsgl_texture();
 	~nsgl_texture();
 
-	void video_init();
+	void init();
 
 	void bind() const;
 
@@ -155,7 +155,7 @@ struct nsgl_texture : public nsvid_texture
 
 	void generate_mipmaps();
 
-	void video_release();
+	void release();
 
 	void set_parameter_f(tex_parameter param, float pValue);
 
@@ -179,8 +179,7 @@ struct nsgl_texture : public nsvid_texture
 
 	void unbind() const;
 
-	int32 m_target;
-	nsgl_object gl_obj;
+	int32 target;
 	uint32 depth_func;
 	uint32 depth_mode;
 };

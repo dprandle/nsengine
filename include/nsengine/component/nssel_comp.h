@@ -24,7 +24,7 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 
 class nsshader;
 class nstimer;
-class nsbuffer_object;
+class nsgl_buffer;
 class nsscene;
 
 class nssel_comp : public nscomponent
@@ -68,7 +68,7 @@ public:
 
 	bool transparent_picking_enabled() const;
 
-	nsbuffer_object * transform_buffer(nsscene * scn);
+	nsgl_buffer * transform_buffer(nsscene * scn);
 
 	ui_uset * selection(nsscene * scn);
 
@@ -91,7 +91,7 @@ private:
 		per_scene_info();
 		~per_scene_info();
 		
-		nsbuffer_object * m_tform_buffer;
+		nsgl_buffer * m_tform_buffer;
 		ui_uset m_selection;
 		bool m_selected;
 	};

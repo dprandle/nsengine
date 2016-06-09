@@ -11,11 +11,11 @@
 */
 
 #include <nsgl_texture.h>
-#include <nsopengl_driver.h>
+#include <nsgl_driver.h>
 #include <nsengine.h>
 
 nsgl_texture::nsgl_texture():
-	m_target(0),
+	target(0),
 	depth_func(0),
 	depth_mode(0)
 {}
@@ -23,19 +23,20 @@ nsgl_texture::nsgl_texture():
 nsgl_texture::~nsgl_texture()
 {}
 
-void nsgl_texture::video_init()
+void nsgl_texture::init()
 {
-	if (gl_obj.gl_id() != 0)
+	if (gl_id != 0)
+	{
+		dprint("nsgl_texture::init Error trying to initialize already initialized texture");
 		return;
-	uint32 glid;
-	glGenTextures(1, &glid);
-	gl_obj.set_gl_id(glid);
-	gl_err_check("nsgl_texture::init_gl");
+	}
+	glGenTextures(1, &gl_id);
+	gl_err_check("nsgl_texture::init");
 }
 
 void nsgl_texture::bind() const
 {
-	glBindTexture(m_target, gl_obj.gl_id());
+	glBindTexture(target, gl_id);
 	gl_err_check("nsgl_texture::bind");
 }
 
@@ -51,7 +52,7 @@ bool nsgl_texture::allocate_1d(
 	if (compressed_size > 0)
 	{
 		glCompressedTexImage1D(
-			m_target,
+			target,
 			layer,
 			map_tex_internal_format(format, pt, true), 
 			width,
@@ -62,7 +63,7 @@ bool nsgl_texture::allocate_1d(
 	else
 	{
 		glTexImage1D(
-			m_target,
+			target,
 			layer,
 			map_tex_internal_format(format, pt, compress), 
 			width,
@@ -83,8 +84,8 @@ bool nsgl_texture::allocate_2d(
 	uint32 compressed_size,
 	uint32 layer)
 {
-	uint32 tget = m_target;
-	if (m_target == tex_cubemap)
+	uint32 tget = target;
+	if (target == tex_cubemap)
 	{
 		tget = BASE_CUBEMAP_FACE + layer;
 		layer = 0;
@@ -130,7 +131,7 @@ bool nsgl_texture::allocate_3d(
 	if (compressed_size > 0)
 	{
 		glCompressedTexImage3D(
-			m_target,
+			target,
 			layer,
 			map_tex_internal_format(format, pt, true), 
 			size.x,
@@ -143,7 +144,7 @@ bool nsgl_texture::allocate_3d(
 	else
 	{
 		glTexImage3D(
-			m_target,
+			target,
 			layer,
 			map_tex_internal_format(format, pt, compress), 
 			size.x,
@@ -171,7 +172,7 @@ bool nsgl_texture::upload_1d(
 	if (compressed_size > 0)
 	{
 		glCompressedTexSubImage1D(
-			m_target,
+			target,
 			0,
 			offset,
 			size,
@@ -182,7 +183,7 @@ bool nsgl_texture::upload_1d(
 	else
 	{
 		glTexSubImage1D(
-			m_target,
+			target,
 			0,
 			offset,
 			size,
@@ -207,7 +208,7 @@ bool nsgl_texture::upload_2d(
 	if (compressed_size > 0)
 	{
 		glCompressedTexSubImage2D(
-			m_target,
+			target,
 			0,
 			offset.x,
 			offset.y,
@@ -220,7 +221,7 @@ bool nsgl_texture::upload_2d(
 	else
 	{
 		glTexSubImage2D(
-			m_target,
+			target,
 			0,
 			offset.x,
 			offset.y,
@@ -247,7 +248,7 @@ bool nsgl_texture::upload_3d(
 	if (compressed_size > 0)
 	{
 		glCompressedTexSubImage3D(
-			m_target,
+			target,
 			0,
 			offset.x,
 			offset.y,
@@ -262,7 +263,7 @@ bool nsgl_texture::upload_3d(
 	else
 	{
 		glTexSubImage3D(
-			m_target,
+			target,
 			0,
 			offset.x,
 			offset.y,
@@ -279,14 +280,14 @@ bool nsgl_texture::upload_3d(
 	
 void nsgl_texture::download_data(uint8 * array_, tex_format format, pixel_component_type type, uint16 level)
 {
-	uint target = m_target;
-	if (m_target == tex_cubemap)
+	uint target = target;
+	if (target == tex_cubemap)
 	{
 		target = BASE_CUBEMAP_FACE + level;
 		level = 0;
 	}
 	glGetTexImage(
-		m_target,
+		target,
 		level,
 		map_tex_format(format),
 		map_tex_pixel_data_type(type),
@@ -297,7 +298,7 @@ void nsgl_texture::download_data(uint8 * array_, tex_format format, pixel_compon
 uint32 nsgl_texture::download_data_compressed(uint8 * array_, uint16 level)
 {
 	glGetCompressedTexImage(
-		m_target,
+		target,
 		0,
 		array_);
 	gl_err_check("nsgl_texture::download_data");	
@@ -307,7 +308,7 @@ uint32 nsgl_texture::download_data_compressed(uint8 * array_, uint16 level)
 float nsgl_texture::parameter_f(get_tex_param p)
 {
 	GLfloat f;
-	glGetTexParameterfv(m_target, p, &f);
+	glGetTexParameterfv(target, p, &f);
 	gl_err_check("nsgl_texture::parameter_f");
 	return f;
 
@@ -316,57 +317,57 @@ float nsgl_texture::parameter_f(get_tex_param p)
 int32 nsgl_texture::parameter_i(get_tex_param p)
 {
 	GLint i;
-	glGetTexParameteriv(m_target, p, &i);
+	glGetTexParameteriv(target, p, &i);
 	gl_err_check("nsgl_texture::parameter_i");
 	return i;	
 }
 
 void nsgl_texture::generate_mipmaps()
 {
-	glGenerateMipmap(m_target);
+	glGenerateMipmap(target);
 	gl_err_check("nsgl_texture::generate_mipmaps");
 }
 
-void nsgl_texture::video_release()
+void nsgl_texture::release()
 {
-	uint32 glid = gl_obj.gl_id();
-	glDeleteTextures(1,&glid);
-	gl_obj.set_gl_id(0);
+	glDeleteTextures(1,&gl_id);
+	gl_id = 0;
+	gl_err_check("nsgl_texture::release");	
 }
 
 void nsgl_texture::set_parameter_f(tex_parameter pParam, float pValue)
 {
-	glTexParameterf(m_target, pParam, pValue);
+	glTexParameterf(target, pParam, pValue);
 	gl_err_check("nsgl_texture::set_parameter_f");
 }
 
 void nsgl_texture::set_parameter_i(tex_parameter pParam, int32 pValue)
 {
-	glTexParameteri(m_target, pParam, pValue);
+	glTexParameteri(target, pParam, pValue);
 	gl_err_check("nsgl_texture::set_parameter_i");
 }
 
 void nsgl_texture::set_parameter_fv(tex_parameter param, const fvec4 & val)
 {
-	glTexParameterfv(m_target, param, &val[0]);
+	glTexParameterfv(target, param, &val[0]);
 	gl_err_check("nsgl_texture::set_parameter_fv");
 }
 
 void nsgl_texture::set_parameter_iv(tex_parameter param, const ivec4 & val)
 {
-	glTexParameteriv(m_target, param, &val[0]);
+	glTexParameteriv(target, param, &val[0]);
 	gl_err_check("nsgl_texture::set_parameter_iv");
 }
 
 void nsgl_texture::set_parameter_Iiv(tex_parameter param, const ivec4 & val)
 {
-	glTexParameterIiv(m_target, param, &val[0]);
+	glTexParameterIiv(target, param, &val[0]);
 	gl_err_check("nsgl_texture::set_parameter_Iiv");
 }
 
 void nsgl_texture::set_parameter_Iuiv(tex_parameter param, const uivec4 & val)
 {
-	glTexParameterIuiv(m_target, param, &val[0]);
+	glTexParameterIuiv(target, param, &val[0]);
 	gl_err_check("nsgl_texture::set_parameter_Iiuv");
 }
 
@@ -476,8 +477,8 @@ void nsgl_texture::set_parameters(tex_params texp)
 
 void nsgl_texture::unbind() const
 {
-	glBindTexture(m_target, 0);
-	gl_err_check("unbind");
+	glBindTexture(target, 0);
+	gl_err_check("nsgl_texture::unbind");
 }
 
 uint32 nsgl_texture::map_tex_format(tex_format fmt)

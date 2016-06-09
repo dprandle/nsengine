@@ -1,9 +1,9 @@
 /*! 
 	\file nsframebuffer.cpp
 	
-	\brief Definition file for nsfb_object class
+	\brief Definition file for nsgl_framebuffer class
 
-	This file contains all of the neccessary definitions for the nsfb_object class.
+	This file contains all of the neccessary definitions for the nsgl_framebuffer class.
 
 	\author Daniel Randle
 	\date November 2 2013
@@ -12,16 +12,16 @@
 
 
 #include <nsrenderbuf_object.h>
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 #include <nsres_manager.h>
 #include <nsengine.h>
 #include <nsgl_texture.h>
 
 nsgl_framebuffer::nsgl_framebuffer() :
-	m_target(fb_read_draw),
-	m_depth_stencil_att(NULL),
-	m_color_atts(),
-	nsgl_object()
+	target(fb_read_draw),
+	depth_stencil_att(NULL),
+	color_atts(),
+	nsgl_obj()
 {}
 
 nsgl_framebuffer::~nsgl_framebuffer()
@@ -38,50 +38,49 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 	if (has(pAttachment->m_att_point) && att(pAttachment->m_att_point)->m_texture == pAttachment->m_texture)
 		return false;
 
-	gl_err_check("pre nsfb_object::add");
 	if (pAttachment->m_renderbuf != NULL)
 	{
 		glFramebufferRenderbuffer(
-			m_target,
+			target,
 			pAttachment->m_att_point,
 			GL_RENDERBUFFER,
-			pAttachment->m_renderbuf->gl_id());
+			pAttachment->m_renderbuf->gl_id);
 	}
 	else
 	{
 		if (pAttachment->m_texture->type() == type_to_hash(nstex_cubemap))
 		{
 			glFramebufferTexture(
-				m_target,
+				target,
 				pAttachment->m_att_point,
-				pAttachment->m_texture->video_texture<nsgl_texture>()->gl_obj.gl_id(),
+				pAttachment->m_texture->video_texture<nsgl_texture>()->gl_id,
 				0);
 		}
 		else
 		{
 			glFramebufferTexture2D(
-				m_target,
+				target,
 				pAttachment->m_att_point,
-				pAttachment->m_texture->video_texture<nsgl_texture>()->m_target,
-				pAttachment->m_texture->video_texture<nsgl_texture>()->gl_obj.gl_id(),
+				pAttachment->m_texture->video_texture<nsgl_texture>()->target,
+				pAttachment->m_texture->video_texture<nsgl_texture>()->gl_id,
 				0);
 		}
 	}
 
-	gl_err_check("post nsfb_object::add");
+	gl_err_check("nsgl_framebuffer::add");
 
 	if (pAttachment->m_att_point == att_depth ||
 		pAttachment->m_att_point == att_stencil ||
 		pAttachment->m_att_point == att_depth_stencil)
-		m_depth_stencil_att = pAttachment;
+		depth_stencil_att = pAttachment;
 	else
-		m_color_atts.push_back(pAttachment);
+		color_atts.push_back(pAttachment);
 
 #ifdef NSDEBUG_RT
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		dprint("nsfb_object::add Error in adding attachment - Error Code: " + std::to_string(status));
+		dprint("nsgl_framebuffer::add Error in adding attachment - Error Code: " + std::to_string(status));
 		return false;
 	}
 #endif
@@ -90,14 +89,13 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 
 uivec3 nsgl_framebuffer::pick(float mouse_x, float mouse_y, uint32 att_index)
 {
-	ivec2 tex_dim(mouse_x*m_size.x,mouse_y*m_size.y);
+	ivec2 tex_dim(mouse_x*size.x,mouse_y*size.y);
 	set_target(nsgl_framebuffer::fb_read);
 	bind();
 	set_read_buffer(nsgl_framebuffer::att_color+att_index);
 	uivec3 index;
-	gl_err_check("pre nsfb_object::pick");
 	glReadPixels(tex_dim.x, tex_dim.y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
-	gl_err_check("post nsfb_object::pick");
+	gl_err_check("nsgl_framebuffer::pick");
 	set_read_buffer(nsgl_framebuffer::att_none);
 	return index;
 }
@@ -106,13 +104,9 @@ uivec3 nsgl_framebuffer::pick(float mouse_x, float mouse_y, uint32 att_index)
 void nsgl_framebuffer::bind() const
 {
 	// use mTarget - easily set with setTarget
-	gl_err_check("pre nsfb_object::bind");
-	glBindFramebuffer(m_target, gl_id());
-	gl_err_check("post nsfb_object::bind");
+	glBindFramebuffer(target, gl_id);
+	gl_err_check("nsgl_framebuffer::bind");
 }
-
-void nsgl_framebuffer::init()
-{}
 
 nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
 	attach_point pAttPoint,
@@ -126,7 +120,7 @@ nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
 	rBuf->video_init();
 	rBuf->set_internal_format(pInternalFormat);
 	rBuf->set_multisample(pSampleNumber);
-	rBuf->resize(m_size.w, m_size.h);
+	rBuf->resize(size.w, size.h);
 	rBuf->bind();
 	// Allocate the necessary space for the render buffer
 	rBuf->allocate();
@@ -135,11 +129,11 @@ nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
 	attachment * att = new attachment();
 	att->m_att_point = pAttPoint;
 	att->m_renderbuf = rBuf;
-	att->m_owning_fb = gl_id();
+	att->m_owning_fb = gl_id;
 
 	if (!add(att, overwrite))
 	{
-		dprint("nsfb_object::Attachment unable to add attachment at " + std::to_string(att->m_att_point));
+		dprint("nsgl_framebuffer::Attachment unable to add attachment at " + std::to_string(att->m_att_point));
 		delete att;
 		att = NULL;
 	}
@@ -150,21 +144,16 @@ nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
 nsgl_framebuffer::attachment * nsgl_framebuffer::att(attach_point pAttPoint)
 {
 	if (pAttPoint == att_depth || pAttPoint == att_stencil || pAttPoint == att_depth_stencil)
-		return m_depth_stencil_att;
+		return depth_stencil_att;
 
-	for (uint32 i = 0; i < m_color_atts.size(); ++i)
+	for (uint32 i = 0; i < color_atts.size(); ++i)
 	{
-		if (m_color_atts[i]->m_att_point == pAttPoint)
-			return m_color_atts[i];
+		if (color_atts[i]->m_att_point == pAttPoint)
+			return color_atts[i];
 	}
 
     // Return NULL attachment if nothing was found
 	return NULL;
-}
-
-nsgl_framebuffer::fb_target nsgl_framebuffer::target()
-{
-	return m_target;
 }
 
 bool nsgl_framebuffer::has(attach_point pAttPoint)
@@ -174,36 +163,38 @@ bool nsgl_framebuffer::has(attach_point pAttPoint)
 	return (attmt != NULL);
 }
 
-void nsgl_framebuffer::video_init()
+void nsgl_framebuffer::init()
 {
-	uint32 glid;
-	glGenFramebuffers(1, &glid);
-	set_gl_id(glid);
-	gl_err_check("post nsfb_object::init_gl");
+	if (gl_id != 0)
+	{
+		dprint("nsfb_framebuffer::init Error initializing framebuffer which is already initialized");
+		return;
+	}
+	glGenFramebuffers(1, &gl_id);
+	gl_err_check("nsgl_framebuffer::init");
 }
 
-void nsgl_framebuffer::video_release()
+void nsgl_framebuffer::release()
 {
-	while (m_color_atts.begin() != m_color_atts.end())
+	while (color_atts.begin() != color_atts.end())
 	{
-		if (m_color_atts.back()->m_owning_fb == gl_id())
+		if (color_atts.back()->m_owning_fb == gl_id)
 		{
-			delete m_color_atts.back();
-			m_color_atts.pop_back();
+			delete color_atts.back();
+			color_atts.pop_back();
 		}
 	}
-	if (m_depth_stencil_att != NULL && m_depth_stencil_att->m_owning_fb == gl_id())
+	if (depth_stencil_att != NULL && depth_stencil_att->m_owning_fb == gl_id)
 	{
-		delete m_depth_stencil_att;
-		m_depth_stencil_att = NULL;
+		delete depth_stencil_att;
+		depth_stencil_att = NULL;
 	}
 
 	// Attachment destructor deletes the render buffer and texture - which in turn release their
 	// open gl resources
-	uint32 glid = gl_id();
-	glDeleteFramebuffers(1, &glid);
-	set_gl_id(0);
-	gl_err_check("post nsfb_object::release");
+	glDeleteFramebuffers(1, &gl_id);
+	gl_id = 0;
+	gl_err_check("nsgl_framebuffer::release");
 }
 
 void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
@@ -211,17 +202,17 @@ void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
 	// Resize the frame buffer by resizing all associated textures
 	// This is relatively expensive operation and should only
 	// be done when neccessary
-	m_size.set(w, h);
+	size.set(w, h);
 
-	attachment_array::iterator iter = m_color_atts.begin();
+	attachment_array::iterator iter = color_atts.begin();
 	uint32 m = 0;
-	while (iter != m_color_atts.end())
+	while (iter != color_atts.end())
 	{
 		if ((*iter)->m_renderbuf != NULL)
 			(*iter)->m_renderbuf->resize(w, h);
 		if ((*iter)->m_texture != NULL)
 		{
-			uint32 tt = (*iter)->m_texture->video_texture<nsgl_texture>()->m_target;
+			uint32 tt = (*iter)->m_texture->video_texture<nsgl_texture>()->target;
 			if (tt == nsgl_texture::tex_1d)
 				((nstex1d*)(*iter)->m_texture)->resize(w);
 			else if (tt == nsgl_texture ::tex_2d || tt == nsgl_texture::tex_1d_array)
@@ -237,23 +228,23 @@ void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
 		++m;
 	}
 
-	if (m_depth_stencil_att != NULL)
+	if (depth_stencil_att != NULL)
 	{
-		if (m_depth_stencil_att->m_renderbuf != NULL)
-			m_depth_stencil_att->m_renderbuf->resize(w, h);
-		if (m_depth_stencil_att->m_texture != NULL)
+		if (depth_stencil_att->m_renderbuf != NULL)
+			depth_stencil_att->m_renderbuf->resize(w, h);
+		if (depth_stencil_att->m_texture != NULL)
 		{
-			uint32 tt = m_depth_stencil_att->m_texture->video_texture<nsgl_texture>()->m_target;
+			uint32 tt = depth_stencil_att->m_texture->video_texture<nsgl_texture>()->target;
 			if (tt == nsgl_texture::tex_1d)
-				((nstex1d*)m_depth_stencil_att->m_texture)->resize(w);
+				((nstex1d*)depth_stencil_att->m_texture)->resize(w);
 			else if (tt == nsgl_texture::tex_2d || tt == nsgl_texture::tex_1d_array)
-				((nstex2d*)m_depth_stencil_att->m_texture)->resize(ivec2(w, h));
+				((nstex2d*)depth_stencil_att->m_texture)->resize(ivec2(w, h));
 			else if (tt == nsgl_texture::tex_cubemap)
-				((nstex_cubemap*)m_depth_stencil_att->m_texture)->resize(ivec2(w, h));
+				((nstex_cubemap*)depth_stencil_att->m_texture)->resize(ivec2(w, h));
 			else if (tt == nsgl_texture::tex_3d || tt == nsgl_texture::tex_2d_array)
-				((nstex3d*)m_depth_stencil_att->m_texture)->resize(ivec3(w, h, layers));
-			m_depth_stencil_att->m_texture->bind();
-			m_depth_stencil_att->m_texture->video_allocate();
+				((nstex3d*)depth_stencil_att->m_texture)->resize(ivec3(w, h, layers));
+			depth_stencil_att->m_texture->bind();
+			depth_stencil_att->m_texture->video_allocate();
 		}
 	}
 }
@@ -263,11 +254,6 @@ void nsgl_framebuffer::resize(const ivec2 & size_, uint32 layers_)
 	return resize(size_.x,size_.y,layers_);
 }
 
-const ivec2 & nsgl_framebuffer::size()
-{
-	return m_size;
-}
-
 bool nsgl_framebuffer::set_cube_face(attach_point pAttPoint, uint8 pFace)
 {
 	attachment * attmt = att(pAttPoint);
@@ -275,20 +261,20 @@ bool nsgl_framebuffer::set_cube_face(attach_point pAttPoint, uint8 pFace)
 		return false;
 
 	glFramebufferTexture2D(
-		m_target,
+		target,
 		pAttPoint,
 		BASE_CUBEMAP_FACE + pFace,
-		attmt->m_texture->video_texture<nsgl_texture>()->gl_obj.gl_id(),
+		attmt->m_texture->video_texture<nsgl_texture>()->gl_id,
 		0);
 	
-	gl_err_check("post nsfb_object::set_cube_face");
+	gl_err_check("nsgl_framebuffer::set_cube_face");
 
 #ifdef NSDEBUG_RT
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
 		nsstringstream ss;
-		ss << "nsfb_object::setCubeAttachmentFace Error in adding attachment - Error Code: " << status;
+		ss << "nsgl_framebuffer::set_cube_face Error in adding attachment - Error Code: " << status;
 		dprint(ss.str());
 		return false;
 	}
@@ -299,50 +285,45 @@ bool nsgl_framebuffer::set_cube_face(attach_point pAttPoint, uint8 pFace)
 void nsgl_framebuffer::set_draw_buffer(attach_point pAttPoint)
 {
 	glDrawBuffer(pAttPoint);
-	gl_err_check("post nsfb_object::set_draw_buffer");
+	gl_err_check("nsgl_framebuffer::set_draw_buffer");
 }
 
 void nsgl_framebuffer::set_draw_buffers(attachment_point_array * pAttArray)
 {
 	if (pAttArray == NULL)
 	{
-		dprint("nsfb_object::set_draw_buffers - Error passed NULL attachment point array");
+		dprint("nsgl_framebuffer::set_draw_buffers - Error passed NULL attachment point array");
 		return;
 	}
 
 	if (pAttArray->empty())
 	{
-		dprint("nsfb_object::set_draw_buffers - Error empty attachment point array");
+		dprint("nsgl_framebuffer::set_draw_buffers - Error empty attachment point array");
 		return;
 	}
 	glDrawBuffers(static_cast<GLsizei>(pAttArray->size()), &(*pAttArray)[0]);
-	gl_err_check("post nsfb_object::set_draw_buffers");
+	gl_err_check("nsgl_framebuffer::set_draw_buffers");
 }
 
 void nsgl_framebuffer::set_read_buffer(uint32 att_point)
 {
 	glReadBuffer(att_point);
-	gl_err_check("post nsfb_object::setReadBuffer");
-}
-
-void nsgl_framebuffer::set_target(fb_target pTarget)
-{
-	m_target = pTarget;
+	gl_err_check("nsgl_framebuffer::set_read_buffer");
 }
 
 void nsgl_framebuffer::unbind() const
 {
 	// By unbind I just mean bind the main frame buffer back
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	gl_err_check("post nsfb_object::unbind");
+	gl_err_check("post nsgl_framebuffer::unbind");
 }
 
 void nsgl_framebuffer::update_draw_buffers()
 {
 	attachment_point_array bufferAttachments;
 
-	attachment_array::iterator iter = m_color_atts.begin();
-	while (iter != m_color_atts.end())
+	attachment_array::iterator iter = color_atts.begin();
+	while (iter != color_atts.end())
 	{
 		bufferAttachments.push_back( GLenum((*iter)->m_att_point) );
 		++iter;

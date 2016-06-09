@@ -53,7 +53,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nsfactory.h>
 #include <nssystem.h>
 #include <nsrender_system.h>
-#include <nsfb_object.h>
+#include <nsgl_framebuffer.h>
 #include <nsanim_comp.h>
 #include <nslight_comp.h>
 #include <nscam_comp.h>

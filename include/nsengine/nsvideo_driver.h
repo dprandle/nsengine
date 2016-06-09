@@ -10,8 +10,8 @@
   \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSVIDEO_DRIVER
-#define NSVIDEO_DRIVER
+#ifndef NSVIDEO_DRIVER_H
+#define NSVIDEO_DRIVER_H
 
 #include <nsrender_system.h>
 #include <nsstring.h>
@@ -56,33 +56,35 @@ struct nsvid_obj
 	nsvid_obj() {}
 	virtual ~nsvid_obj() {}
 	
-	virtual void video_init() =0;
+	virtual void init() =0;
 
-	virtual void video_release()=0;	
+	virtual void release()=0;	
 };
 
-struct nsvid_buffer : public nsvid_obj
+enum vid_buffer_map_access
 {
-	virtual void bind() const =0;
+	read_only,
+	write_only,
+	read_write
+};
 
-	virtual void unbind() const =0;
-	
-	template<class T_>
-	void allocate(const std::vector<T_> & data_vec)
-	{
-		return allocate(data_vec.size() * sizeof(T_), data_vec.data());
-	}
+enum vid_buffer_storage
+{
+	mutable_storage,
+	immutable_storage
+};
 
-	virtual void allocate(uint32 data_byte_size, void * data)=0;
-
-
-	template<class T_>
-	void upload(uint32 offset, const std::vector<T_> & data_vec)
-	{
-		return upload(offset, data_vec.size() * sizeof(T_), data_vec.data());
-	}
-	
-	virtual void upload(uint32 offset, uint32 data_size, void * data)=0;
+enum vid_buffer_usage
+{
+	static_read,
+	static_write,
+	static_copy,
+	dynamic_read,
+	dynamic_write,
+	dynamic_copy,
+	stream_read,
+	stream_write,
+	stream_copy
 };
 
 struct nsvid_texture : public nsvid_obj

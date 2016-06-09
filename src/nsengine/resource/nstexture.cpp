@@ -82,7 +82,7 @@ bool nstexture::compress_on_upload()
 
 void nstexture::video_init()
 {
-	m_vid_tex->video_init();
+	m_vid_tex->init();
 }
 
 void nstexture::bind() const
@@ -134,7 +134,7 @@ uint8 nstexture::bytes_per_pixel() const
 
 void nstexture::video_release()
 {
-	m_vid_tex->video_release();
+	m_vid_tex->release();
 }
 
 void nstexture::copy_data(uint8 * to_copy, uint32 write_offset_in_bytes)
