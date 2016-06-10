@@ -9,6 +9,7 @@ Description:
 	This file contains the definition for the nsshader class and any associated functions that help
 	the ol' girl out
 *-----------------------------------------------------------------------------------------------------*/
+
 #include <nsmath.h>
 #include <nsshader.h>
 #include <nsmaterial.h>

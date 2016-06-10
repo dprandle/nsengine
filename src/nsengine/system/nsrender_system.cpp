@@ -604,7 +604,7 @@ void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
 					m_all_draw_calls.resize(m_all_draw_calls.size()+1);
 					instanced_draw_call * sel_dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
 					sel_dc->submesh = mSMesh;
-					sel_dc->transform_buffer = sc->transform_buffer(scene);
+					sel_dc->transform_buffer = sc->video_object(scene);
 					sel_dc->transform_id_buffer = nullptr;
 					sel_dc->anim_transforms = fTForms;
 					sel_dc->height_minmax = terh;

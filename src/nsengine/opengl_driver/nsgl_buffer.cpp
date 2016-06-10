@@ -75,15 +75,23 @@ void nsgl_buffer::release()
 	gl_err_check("nsgl_buffer::release");	
 }
 
-void nsgl_buffer::allocate(uint32 data_byte_size, void * data, mutable_usage_flag usage)
+void nsgl_buffer::allocate(
+	uint32 data_size,
+	uint32 data_type_byte_size,
+	void * data,
+	mutable_usage_flag usage)
 {
-	glBufferData(target, data_byte_size, data, usage);
+	glBufferData(target, data_size * data_type_byte_size, data, usage);
 	gl_err_check("nsgl_buffer::allocate");
 }
 
-void nsgl_buffer::allocate(uint32 data_byte_size, void * data, immutable_usage_flag usage)
+void nsgl_buffer::allocate(
+	uint32 data_size,
+	uint32 data_type_byte_size,
+	void * data,
+	immutable_usage_flag usage)
 {
-	glBufferStorage(target, data_byte_size, data, usage);
+	glBufferStorage(target, data_size * data_type_byte_size, data, usage);
 	gl_err_check("nsgl_buffer::allocate");	
 }
 
@@ -93,15 +101,15 @@ void nsgl_buffer::clear(int32 internal_format, int32 format, int32 type, const v
 	gl_err_check("nsgl_buffer::clear");
 }
 
-void nsgl_buffer::download(uint32 offset_byte_size, uint32 data_byte_size, void * data)
+void nsgl_buffer::download(uint32 offset_size, uint32 data_size, uint32 data_type_byte_size, void * data)
 {
-	glGetBufferSubData(target, offset_byte_size, data_byte_size, data);
+	glGetBufferSubData(target, offset_size * data_type_byte_size, data_size * data_type_byte_size, data);
 	gl_err_check("nsbuffer_object::download");
 }
 
-void nsgl_buffer::upload(uint32 offset_byte_size, uint32 data_byte_size, void * data)
+void nsgl_buffer::upload(uint32 offset, uint32 data_size, uint32 data_type_byte_size, void * data)
 {
-	glBufferSubData(target, offset_byte_size, data_byte_size, data);
+	glBufferSubData(target, offset * data_type_byte_size, data_size * data_type_byte_size, data);
 	gl_err_check("nsgl_buffer::upload");
 }
 	

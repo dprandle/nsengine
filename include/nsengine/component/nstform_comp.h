@@ -154,6 +154,18 @@ struct instance_tform
 
 typedef std::vector<instance_tform> instance_vec;
 
+struct tform_per_scene_info
+{
+	tform_per_scene_info();
+	~tform_per_scene_info();
+		
+	instance_vec m_tforms;
+	nsgl_buffer * m_tform_buffer;
+	nsgl_buffer * m_tform_id_buffer;
+	bool m_buffer_resized;
+	uint32 m_visible_count;
+};
+
 class nstform_comp : public nscomponent
 {
   public:
@@ -193,20 +205,8 @@ class nstform_comp : public nscomponent
 	bool save_with_scene;
 	
   private:
-
-	struct per_scene_info
-	{
-		per_scene_info();
-		~per_scene_info();
-		
-		instance_vec m_tforms;
-		nsgl_buffer * m_tform_buffer;
-		nsgl_buffer * m_tform_id_buffer;
-		bool m_buffer_resized;
-		uint32 m_visible_count;
-	};
-
-	std::unordered_map<const nsscene *, per_scene_info *> m_scenes_info;
+	
+	std::unordered_map<const nsscene *, tform_per_scene_info *> m_scenes_info;
 };
 
 

@@ -29,21 +29,27 @@
 #include <nsgl_texture.h>
 
 translucent_buffers::translucent_buffers():
-	atomic_counter(new nsbuffer_object(nsbuffer_object::atomic_counter, nsbuffer_object::storage_mutable)),
-	header(new nsbuffer_object(nsbuffer_object::shader_storage, nsbuffer_object::storage_mutable)),
-	fragments(new nsbuffer_object(nsbuffer_object::shader_storage, nsbuffer_object::storage_mutable)),
+	atomic_counter(new nsgl_buffer()),
+	header(new nsgl_buffer()),
+	fragments(new nsgl_buffer()),
 	header_clr_data(DEFAULT_ACCUM_BUFFER_RES_X*DEFAULT_ACCUM_BUFFER_RES_Y, -1)
 {
-	atomic_counter->video_init();
-	header->video_init();
-	fragments->video_init();
+	atomic_counter->target = nsgl_buffer::atomic_counter;
+	atomic_counter->target_index = 0;
+	atomic_counter->init();
+	header->target = nsgl_buffer::shader_storage;
+	header->target_index = 0;
+	header->init();
+	fragments->target = nsgl_buffer::shader_storage;
+	fragments->target_index = 1;
+	fragments->init();
 }
 
 translucent_buffers::~translucent_buffers()
 {
-	atomic_counter->video_release();
-	header->video_release();
-	fragments->video_release();
+	atomic_counter->release();
+	header->release();
+	fragments->release();
 	delete atomic_counter;
 	delete header;
 	delete fragments;
@@ -51,9 +57,9 @@ translucent_buffers::~translucent_buffers()
 
 void translucent_buffers::bind_buffers()
 {
-	atomic_counter->bind(0);
-	header->bind(0);
-	fragments->bind(1);
+	atomic_counter->bind();
+	header->bind();
+	fragments->bind();
 }
 
 void translucent_buffers::unbind_buffers()
@@ -66,7 +72,7 @@ void translucent_buffers::reset_atomic_counter()
 {
 	uint32 data = 0;
 	atomic_counter->bind();
-	uint32 * ptr = atomic_counter->map<uint32>(0, 1, nsbuffer_object::access_map_range(nsbuffer_object::map_write));
+	uint32 * ptr = atomic_counter->map_range<uint32>(0, 1, nsgl_buffer::map_write);
 	ptr[0] = 0;
 	atomic_counter->unmap();
 	atomic_counter->unbind();
@@ -74,14 +80,14 @@ void translucent_buffers::reset_atomic_counter()
 
 void render_pass::setup_pass()
 {
-	nsgl_framebuffer * tgt = (nsgl_framebuffer*)ren_target;
-	tgt->set_target(nsgl_framebuffer::fb_draw);
+	nsgl_framebuffer * tgt = ren_target;
+	tgt->target = nsgl_framebuffer::fb_draw;
 	tgt->bind();
 
 	if (use_vp_size && vp != nullptr)
 		gl_state.current_viewport = ivec4(vp->bounds.xy(), vp->bounds.zw() - vp->bounds.xy());
 	else
-		gl_state.current_viewport = ivec4(0,0,tgt->size());
+		gl_state.current_viewport = ivec4(0, 0, tgt->size);
 	
 	driver->set_gl_state(gl_state);
 }
@@ -91,6 +97,7 @@ struct font_layout
 	uint32 line;
 	uint32 xpos;
 };
+
 void ui_render_pass::render()
 {
 	ren_target->bind();
@@ -566,7 +573,7 @@ void light_pass::render()
 		dc->shdr->set_uniform("light.color", dc->light_color);
 		dc->shdr->set_uniform("shadowSamples", dc->shadow_samples);
 		dc->shdr->set_uniform("light.shadowDarkness", dc->shadow_darkness);
-		const ivec2 & ss = driver->render_target(DIR_SHADOW2D_TARGET)->size();
+		const ivec2 & ss = driver->render_target(DIR_SHADOW2D_TARGET)->size;
 		dc->shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 		
 		nsstring id;
@@ -679,13 +686,13 @@ void culled_light_pass::render()
 			dc->shdr->set_uniform("projLightMat", dc->proj_light_mat);
 			dc->shdr->set_uniform("light.direction", dc->direction);
 			dc->shdr->set_uniform("light.cutoff", dc->cutoff);
-			const ivec2 & ss = driver->render_target(SPOT_SHADOW2D_TARGET)->size();
+			const ivec2 & ss = driver->render_target(SPOT_SHADOW2D_TARGET)->size;
 			dc->shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 
 		}
 		else
 		{
-			const ivec2 & ss = driver->render_target(POINT_SHADOW_TARGET)->size();
+			const ivec2 & ss = driver->render_target(POINT_SHADOW_TARGET)->size;
 			dc->shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 		}
 
@@ -697,7 +704,7 @@ void culled_light_pass::render()
 
 void final_render_pass::render()
 {
-	read_buffer->set_target(nsgl_framebuffer::fb_read);
+	read_buffer->target = nsgl_framebuffer::fb_read;
 	read_buffer->bind();
 	read_buffer->set_read_buffer(nsgl_framebuffer::att_color);
 
@@ -764,35 +771,38 @@ void gl_ctxt::init()
 
 	// Create the default framebuffer
 	m_default_target = new nsgl_framebuffer;
-	m_default_target->set_gl_id(0);
+	m_default_target->gl_id = 0;
 
 	// Get single point from render system and initialize it
-	m_single_point = new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable);
-	m_single_point->video_init();
+	m_single_point = new nsgl_buffer();
+	m_single_point->target = nsgl_buffer::array;
+	m_single_point->init();
 
 	
 	uint32 data_ = 0;
 	uint32 sz = DEFAULT_ACCUM_BUFFER_RES_X*DEFAULT_ACCUM_BUFFER_RES_Y;
 	i_vector header_data(sz, -1);
+
 	m_tbuffers = new translucent_buffers;
 	m_tbuffers->atomic_counter->bind();
-	m_tbuffers->atomic_counter->allocate(data_, nsbuffer_object::mutable_dynamic_draw);
+	m_tbuffers->atomic_counter->allocate(1, &data_, nsgl_buffer::mutable_dynamic_draw);
 	m_tbuffers->atomic_counter->unbind();
 	m_tbuffers->header->bind();
-	m_tbuffers->header->allocate(header_data, nsbuffer_object::mutable_dynamic_draw, header_data.size());
+	m_tbuffers->header->allocate(header_data, nsgl_buffer::mutable_dynamic_draw);
 	m_tbuffers->fragments->bind();
-	m_tbuffers->fragments->allocate<packed_fragment_data>(nsbuffer_object::mutable_dynamic_draw, sz * 2);
+	m_tbuffers->fragments->allocate(
+		sz*2, sizeof(packed_fragment_data), nullptr, nsgl_buffer::mutable_dynamic_draw);
 	m_tbuffers->fragments->unbind();
 
-	m_single_point->bind();
 	fvec3 point;
-	m_single_point->allocate(point, nsbuffer_object::mutable_dynamic_draw);
+	m_single_point->bind();
+	m_single_point->allocate(1, &point, nsgl_buffer::mutable_dynamic_draw);
 	m_single_point->unbind();
 }
 
 void gl_ctxt::release()
 {
-	m_single_point->video_release();
+	m_single_point->release();
 	delete m_single_point;
 	delete m_default_target;
 	delete m_tbuffers;
@@ -870,7 +880,7 @@ void nsgl_driver::create_default_render_targets()
 	accum_buffer->init();
 	accum_buffer->resize(DEFAULT_ACCUM_BUFFER_RES_X, DEFAULT_ACCUM_BUFFER_RES_Y);
 	accum_buffer->init();
-	accum_buffer->set_target(nsgl_framebuffer::fb_draw);
+	accum_buffer->target = nsgl_framebuffer::fb_draw;
 
 	accum_buffer->bind();
 	accum_buffer->create_texture_attachment<nstex2d>(
@@ -898,19 +908,16 @@ void nsgl_driver::create_default_render_targets()
 
 	// 2d shadow map targets
 	nsshadow_tex2d_target * dir_shadow_target = new nsshadow_tex2d_target;
-	dir_shadow_target->init();
 	dir_shadow_target->resize(DEFAULT_DIR_LIGHT_SHADOW_W, DEFAULT_DIR_LIGHT_SHADOW_H);
 	dir_shadow_target->init("direction_light_shadow");
 	add_render_target(DIR_SHADOW2D_TARGET, dir_shadow_target);
 	
 	nsshadow_tex2d_target * spot_shadow_target = new nsshadow_tex2d_target;
-	spot_shadow_target->init();
 	spot_shadow_target->resize(DEFAULT_SPOT_LIGHT_SHADOW_W, DEFAULT_SPOT_LIGHT_SHADOW_H);
 	spot_shadow_target->init("spot_light_shadow");
 	add_render_target(SPOT_SHADOW2D_TARGET, spot_shadow_target);
 	
 	nsshadow_tex_cubemap_target * point_shadow_target = new nsshadow_tex_cubemap_target;
-	point_shadow_target->init();
 	point_shadow_target->resize(DEFAULT_POINT_LIGHT_SHADOW_W, DEFAULT_POINT_LIGHT_SHADOW_H);
 	point_shadow_target->init("point_light_shadow");
 	add_render_target(POINT_SHADOW_TARGET, point_shadow_target);	
@@ -1469,8 +1476,8 @@ uivec3 nsgl_driver::pick(const fvec2 & mouse_pos)
 	if (pck == NULL)
 		return uivec3();
 
-	fvec2 screen_size = fvec2(m_current_context->m_default_target->size().x, m_current_context->m_default_target->size().y);
-	fvec2 accum_size = fvec2(pck->size().x,pck->size().y);
+	fvec2 screen_size = fvec2(m_current_context->m_default_target->size.x, m_current_context->m_default_target->size.y);
+	fvec2 accum_size = fvec2(pck->size.x,pck->size.y);
 	fvec2 rmpos = mouse_pos % (screen_size / accum_size);
 	uivec3 index = pck->pick(rmpos.x, rmpos.y, 1);
 	return index;
@@ -1491,78 +1498,11 @@ void nsgl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	}
 }
 
-void nsgl_driver::init_texture(nstexture * tex)
-{
-	if (tex->video_texture() != nullptr)
-	{
-		dprint("nsopengl_driver::init_texture Trying to initialize already initialized gl_texture");
-		return;
-	}
-	nsgl_texture * gltex = new nsgl_texture;
-	gltex->init();
-	if (tex->type() == type_to_hash(nstex1d))
-	{
-		gltex->target = nsgl_texture::tex_1d;
-	}
-	else if (tex->type() == type_to_hash(nstex2d))
-	{
-		gltex->target = nsgl_texture::tex_2d;
-		gltex->set_parameter_i(nsgl_texture::mag_filter, GL_LINEAR);
-		gltex->set_parameter_i(nsgl_texture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
-	}
-	else if (tex->type() == type_to_hash(nstex3d))
-	{
-		gltex->target = nsgl_texture::tex_3d;
-	}
-	else if (tex->type() == type_to_hash(nstex_cubemap))
-	{
-		gltex->target = nsgl_texture::tex_cubemap;
-	}
-	else
-	{
-		dprint("nsopengl_driver::init_texture - Unrecognized texture type");
-	}
-	tex->set_video_texture(gltex);
-}
-
 gl_ctxt * nsgl_driver::context(uint8 id)
 {
 	if (id >= MAX_CONTEXT_COUNT)
 		return nullptr;
 	return m_contexts[id];
-}
-
-void nsgl_driver::release_texture(nstexture * tex)
-{
-	nsgl_texture * gltex = tex->video_texture<nsgl_texture>();
-	if (gltex == nullptr)
-	{
-		dprint("nsopengl_driver::release_texture Trying to release uninitialized gl_texture");
-		return;
-	}
-	gltex->release();
-	if (gltex->gl_obj.all_ids_released())
-	{
-		delete gltex;
-		return;
-	}
-	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
-	{
-		if (gltex->gl_obj.gl_id[i] != 0)
-		{
-			vid_obj_rel vobj;
-			vobj.vo = gltex;
-			vobj.gl_obj = &gltex->gl_obj;
-			
-			gl_ctxt * ctx = m_contexts[i];
-			if (ctx == nullptr)
-			{
-				dprint("nsopengl_texture::release_texture Crash: non zero gl id when context is null");
-			}
-			ctx->need_release.push_back(vobj);
-		}
-	}
-	tex->set_video_texture(nullptr);
 }
 
 void nsgl_driver::cleanup_vid_objs()
@@ -1662,4 +1602,121 @@ void nsgl_driver::render_ui_dc(ui_draw_call * idc)
 		m_current_context->m_single_point->unbind();
 	}
     gl_err_check("post ui_draw_call::render");	
+}
+
+void nsgl_driver::register_texture(nstexture * tex)
+{
+	if (tex->video_texture() != nullptr)
+	{
+		dprint("nsopengl_driver::init_texture Trying to initialize already initialized gl_texture");
+		return;
+	}
+	nsgl_texture * gltex = new nsgl_texture;
+	gltex->init();
+	if (tex->type() == type_to_hash(nstex1d))
+	{
+		gltex->target = nsgl_texture::tex_1d;
+	}
+	else if (tex->type() == type_to_hash(nstex2d))
+	{
+		gltex->target = nsgl_texture::tex_2d;
+		gltex->set_parameter_i(nsgl_texture::mag_filter, GL_LINEAR);
+		gltex->set_parameter_i(nsgl_texture::min_filter, GL_LINEAR_MIPMAP_LINEAR);
+	}
+	else if (tex->type() == type_to_hash(nstex3d))
+	{
+		gltex->target = nsgl_texture::tex_3d;
+	}
+	else if (tex->type() == type_to_hash(nstex_cubemap))
+	{
+		gltex->target = nsgl_texture::tex_cubemap;
+	}
+	else
+	{
+		dprint("nsopengl_driver::init_texture - Unrecognized texture type");
+	}
+	tex->set_video_texture(gltex);
+}
+
+void nsgl_driver::deregister_texture(nstexture * tex)
+{
+	nsgl_texture * gltex = tex->video_texture<nsgl_texture>();
+	if (gltex == nullptr)
+	{
+		dprint("nsopengl_driver::release_texture Trying to release uninitialized gl_texture");
+		return;
+	}
+	gltex->release();
+	if (gltex->gl_obj.all_ids_released())
+	{
+		delete gltex;
+		return;
+	}
+	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+	{
+		if (gltex->gl_obj.gl_id[i] != 0)
+		{
+			vid_obj_rel vobj;
+			vobj.vo = gltex;
+			vobj.gl_obj = &gltex->gl_obj;
+			
+			gl_ctxt * ctx = m_contexts[i];
+			if (ctx == nullptr)
+			{
+				dprint("nsopengl_texture::release_texture Crash: non zero gl id when context is null");
+			}
+			ctx->need_release.push_back(vobj);
+		}
+	}
+	tex->set_video_texture(nullptr);
+}
+
+void register_shader(nsshader * shader)
+{
+	
+}
+
+void nsgl_driver::deregister_shader(nsshader * shader)
+{
+	
+}
+
+void nsgl_driver::register_submesh(nsmesh::submesh * submesh)
+{
+	
+}
+
+void nsgl_driver::deregister_submesh(nsmesh::submesh * submesh)
+{
+	
+}
+
+void nsgl_driver::register_tform_per_scene_info(tform_per_scene_info * tf)
+{
+	
+}
+
+void nsgl_driver::deregister_tform_per_scene_info(tform_per_scene_info * tf)
+{
+	
+}
+
+void nsgl_driver::register_sel_per_scene_info(sel_per_scene_info * si)
+{
+	
+}
+
+void nsgl_driver::deregister_sel_per_scene_info(sel_per_scene_info * si)
+{
+	
+}
+
+void nsgl_driver::register_particle_comp(nsparticle_comp * pcomp)
+{
+	
+}
+
+void nsgl_driver::deregister_particle_comp(nsparticle_comp * pcomp)
+{
+	
 }

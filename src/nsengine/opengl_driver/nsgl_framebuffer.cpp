@@ -1,17 +1,17 @@
 /*! 
-	\file nsframebuffer.cpp
+  \file nsframebuffer.cpp
 	
-	\brief Definition file for nsgl_framebuffer class
+  \brief Definition file for nsgl_framebuffer class
 
-	This file contains all of the neccessary definitions for the nsgl_framebuffer class.
+  This file contains all of the neccessary definitions for the nsgl_framebuffer class.
 
-	\author Daniel Randle
-	\date November 2 2013
-	\copywrite Earth Banana Games 2013
+  \author Daniel Randle
+  \date November 2 2013
+  \copywrite Earth Banana Games 2013
 */
 
 
-#include <nsrenderbuf_object.h>
+#include <nsgl_renderbuffer.h>
 #include <nsgl_framebuffer.h>
 #include <nsres_manager.h>
 #include <nsengine.h>
@@ -90,7 +90,7 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 uivec3 nsgl_framebuffer::pick(float mouse_x, float mouse_y, uint32 att_index)
 {
 	ivec2 tex_dim(mouse_x*size.x,mouse_y*size.y);
-	set_target(nsgl_framebuffer::fb_read);
+	target = nsgl_framebuffer::fb_read;
 	bind();
 	set_read_buffer(nsgl_framebuffer::att_color+att_index);
 	uivec3 index;
@@ -101,7 +101,7 @@ uivec3 nsgl_framebuffer::pick(float mouse_x, float mouse_y, uint32 att_index)
 }
 
 
-void nsgl_framebuffer::bind() const
+void nsgl_framebuffer::bind()
 {
 	// use mTarget - easily set with setTarget
 	glBindFramebuffer(target, gl_id);
@@ -109,17 +109,15 @@ void nsgl_framebuffer::bind() const
 }
 
 nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
-	attach_point pAttPoint,
-	uint32 pSampleNumber,
-	int32 pInternalFormat,
+	attach_point att_point_,
+	int32 internal_format_,
 	bool overwrite)
 {
 	nsgl_renderbuffer * rBuf = new nsgl_renderbuffer();
 
 	// Set up render buffer
-	rBuf->video_init();
-	rBuf->set_internal_format(pInternalFormat);
-	rBuf->set_multisample(pSampleNumber);
+	rBuf->init();
+	rBuf->internal_format = internal_format_;
 	rBuf->resize(size.w, size.h);
 	rBuf->bind();
 	// Allocate the necessary space for the render buffer
@@ -127,7 +125,7 @@ nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
 
 	// Texture is left as NULL to indicate that we are using a texture at this attachment location on not a render buffer
 	attachment * att = new attachment();
-	att->m_att_point = pAttPoint;
+	att->m_att_point = att_point_;
 	att->m_renderbuf = rBuf;
 	att->m_owning_fb = gl_id;
 
@@ -141,14 +139,14 @@ nsgl_framebuffer::attachment * nsgl_framebuffer::create_renderbuffer_attachment(
 	return att;
 }
 
-nsgl_framebuffer::attachment * nsgl_framebuffer::att(attach_point pAttPoint)
+nsgl_framebuffer::attachment * nsgl_framebuffer::att(attach_point att_point_)
 {
-	if (pAttPoint == att_depth || pAttPoint == att_stencil || pAttPoint == att_depth_stencil)
+	if (att_point_ == att_depth || att_point_ == att_stencil || att_point_ == att_depth_stencil)
 		return depth_stencil_att;
 
 	for (uint32 i = 0; i < color_atts.size(); ++i)
 	{
-		if (color_atts[i]->m_att_point == pAttPoint)
+		if (color_atts[i]->m_att_point == att_point_)
 			return color_atts[i];
 	}
 
@@ -156,10 +154,10 @@ nsgl_framebuffer::attachment * nsgl_framebuffer::att(attach_point pAttPoint)
 	return NULL;
 }
 
-bool nsgl_framebuffer::has(attach_point pAttPoint)
+bool nsgl_framebuffer::has(attach_point att_point_)
 {
     // Should return invalid attachment if there is no attachment found
-	attachment * attmt = att(pAttPoint);
+	attachment * attmt = att(att_point_);
 	return (attmt != NULL);
 }
 
@@ -254,15 +252,15 @@ void nsgl_framebuffer::resize(const ivec2 & size_, uint32 layers_)
 	return resize(size_.x,size_.y,layers_);
 }
 
-bool nsgl_framebuffer::set_cube_face(attach_point pAttPoint, uint8 pFace)
+bool nsgl_framebuffer::set_cube_face(attach_point att_point_, uint8 pFace)
 {
-	attachment * attmt = att(pAttPoint);
+	attachment * attmt = att(att_point_);
 	if (attmt == NULL || attmt->m_texture == NULL || attmt->m_texture->type() != type_to_hash(nstex_cubemap))
 		return false;
 
 	glFramebufferTexture2D(
 		target,
-		pAttPoint,
+		att_point_,
 		BASE_CUBEMAP_FACE + pFace,
 		attmt->m_texture->video_texture<nsgl_texture>()->gl_id,
 		0);
@@ -282,9 +280,9 @@ bool nsgl_framebuffer::set_cube_face(attach_point pAttPoint, uint8 pFace)
 	return true;
 }
 
-void nsgl_framebuffer::set_draw_buffer(attach_point pAttPoint)
+void nsgl_framebuffer::set_draw_buffer(attach_point att_point_)
 {
-	glDrawBuffer(pAttPoint);
+	glDrawBuffer(att_point_);
 	gl_err_check("nsgl_framebuffer::set_draw_buffer");
 }
 
@@ -311,7 +309,7 @@ void nsgl_framebuffer::set_read_buffer(uint32 att_point)
 	gl_err_check("nsgl_framebuffer::set_read_buffer");
 }
 
-void nsgl_framebuffer::unbind() const
+void nsgl_framebuffer::unbind()
 {
 	// By unbind I just mean bind the main frame buffer back
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -331,17 +329,18 @@ void nsgl_framebuffer::update_draw_buffers()
 	set_draw_buffers(&bufferAttachments);
 }
 
-nsgl_framebuffer::attachment::attachment(): m_texture(NULL),
-m_renderbuf(NULL),
-m_att_point(att_none),
-m_owning_fb(0),
-m_tex_unit(0)
+nsgl_framebuffer::attachment::attachment():
+	m_texture(NULL),
+	m_renderbuf(NULL),
+	m_att_point(att_none),
+	m_owning_fb(0),
+	m_tex_unit(0)
 {}
 
 nsgl_framebuffer::attachment::~attachment()
 {
 	if (m_renderbuf != NULL)
-		m_renderbuf->video_release();
+		m_renderbuf->release();
 	delete m_renderbuf;
 }
 

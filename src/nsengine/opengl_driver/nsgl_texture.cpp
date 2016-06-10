@@ -34,7 +34,7 @@ void nsgl_texture::init()
 	gl_err_check("nsgl_texture::init");
 }
 
-void nsgl_texture::bind() const
+void nsgl_texture::bind()
 {
 	glBindTexture(target, gl_id);
 	gl_err_check("nsgl_texture::bind");
@@ -475,7 +475,7 @@ void nsgl_texture::set_parameters(tex_params texp)
 	}
 }
 
-void nsgl_texture::unbind() const
+void nsgl_texture::unbind()
 {
 	glBindTexture(target, 0);
 	gl_err_check("nsgl_texture::unbind");

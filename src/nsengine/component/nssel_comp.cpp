@@ -156,11 +156,11 @@ bool nssel_comp::transparent_picking_enabled() const
 	return m_transparent_picking_enabled;
 }
 
-nsgl_buffer * nssel_comp::transform_buffer(nsscene * scn)
+nsvid_obj * nssel_comp::video_object(nsscene * scn)
 {
 	auto fiter = m_scene_selection.find(scn);
 	if (fiter != m_scene_selection.end())
-		return fiter->second->m_tform_buffer;
+		return &fiter->second->video_obj;
 	return nullptr;
 }
 
@@ -177,17 +177,15 @@ nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 	return (*this);
 }
 
-nssel_comp::per_scene_info::per_scene_info():
-	m_tform_buffer(new nsgl_buffer(nsgl_buffer::array, nsgl_buffer::storage_mutable)),
+sel_per_scene_info::sel_per_scene_info():
 	m_selection(),
 	m_selected(false)
 {
-	m_tform_buffer->video_init();
+	nse.video_driver()->register_sel_per_scene_info(this);
 }
 
-nssel_comp::per_scene_info::~per_scene_info()
+sel_per_scene_info::~sel_per_scene_info()
 {
-	m_tform_buffer->video_release();
-	delete m_tform_buffer;
+	nse.video_driver()->deregister_sel_per_scene_info(this);
 	m_selection.clear();
 }

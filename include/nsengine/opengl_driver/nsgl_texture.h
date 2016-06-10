@@ -83,7 +83,7 @@ struct nsgl_texture : public nsgl_obj
 
 	void init();
 
-	void bind() const;
+	void bind();
 
 	bool allocate_1d(
 		const void * data,
@@ -177,7 +177,7 @@ struct nsgl_texture : public nsgl_obj
 
 	uint32 map_tex_internal_format(tex_format fmt, pixel_component_type pt, bool compress);
 
-	void unbind() const;
+	void unbind();
 
 	int32 target;
 	uint32 depth_func;

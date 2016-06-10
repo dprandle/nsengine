@@ -67,12 +67,12 @@ void nstexture::enable_compress_on_upload(bool enable)
 
 void nstexture::init()
 {
-	nse.video_driver()->init_texture(this);
+	nse.video_driver()->register_texture(this);
 }
 
 void nstexture::release()
 {
-	nse.video_driver()->release_texture(this);
+	nse.video_driver()->deregister_texture(this);
 }
 
 bool nstexture::compress_on_upload()

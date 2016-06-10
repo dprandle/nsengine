@@ -37,6 +37,7 @@
 
 #include <nsvideo_driver.h>
 #include <nsmesh.h>
+#include <nsrender_system.h>
 
 class nsmaterial;
 class nsgl_framebuffer;
@@ -332,10 +333,6 @@ class nsgl_driver : public nsvideo_driver
 
 	void bind_gbuffer_textures(nsgl_framebuffer * fb);
 	
-	void init_texture(nstexture * tex);
-
-	void release_texture(nstexture * tex);
-
 	void enable_auto_cleanup(bool enable);
 
 	bool auto_cleanup();
@@ -345,6 +342,30 @@ class nsgl_driver : public nsvideo_driver
 	void render_light_dc(light_draw_call * idc);
 
 	void render_ui_dc(ui_draw_call * idc);
+
+	void register_texture(nstexture * tex);
+
+	void deregister_texture(nstexture * tex);
+
+	void register_shader(nsshader * shader);
+
+	void deregister_shader(nsshader * shader);
+
+	void register_submesh(nsmesh::submesh * submesh);
+
+	void deregister_submesh(nsmesh::submesh * submesh);
+
+	void register_tform_per_scene_info(tform_per_scene_info * tf);
+
+	void deregister_tform_per_scene_info(tform_per_scene_info * tf);
+
+	void register_sel_per_scene_info(sel_per_scene_info * si);
+
+	void deregister_sel_per_scene_info(sel_per_scene_info * si);
+
+	void register_particle_comp(nsparticle_comp * pcomp);
+
+	void deregister_particle_comp(nsparticle_comp * pcomp);
 	
   private:
 	bool _handle_window_resize(window_resize_event * evt);	

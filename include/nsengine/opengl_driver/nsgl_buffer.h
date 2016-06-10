@@ -98,36 +98,60 @@ struct nsgl_buffer : public nsgl_obj
 	template<class T_>
 	void allocate(const std::vector<T_> & data_vec, mutable_usage_flag usage)
 	{
-		return allocate(data_vec.size() * sizeof(T_), data_vec.data(), usage);
+		return allocate(data_vec.size(), sizeof(T_), data_vec.data(), usage);
+	}
+	
+	template<class T_>
+	void allocate(uint32 data_size, T_ * data, mutable_usage_flag usage)
+	{
+		return allocate(data_size, sizeof(T_), data, usage);
 	}
 
-	void allocate(uint32 data_byte_size, void * data, mutable_usage_flag usage);
+	void allocate(uint32 data_size, uint32 data_type_byte_size, void * data, mutable_usage_flag usage);
 
 	template<class T_>
 	void allocate(const std::vector<T_> & data_vec, immutable_usage_flag usage)
 	{
-		return allocate(data_vec.size() * sizeof(T_), data_vec.data(), usage);
+		return allocate(data_vec.size(), sizeof(T_), data_vec.data(), usage);
 	}
 
-	void allocate(uint32 data_byte_size, void * data, immutable_usage_flag usage);
+	template<class T_>
+	void allocate(uint32 data_size, T_ * data, immutable_usage_flag usage)
+	{
+		return allocate(data_size, sizeof(T_), data, usage);
+	}
+
+	void allocate(uint32 data_size, uint32 data_type_byte_size, void * data, immutable_usage_flag usage);
 
 	template<class T_>
 	void download(uint32 offset, const std::vector<T_> & data_vec)
 	{
-		return download(offset * sizeof(T_), data_vec.size() * sizeof(T_), data_vec.data());
+		return download(offset, data_vec.size(), sizeof(T_), data_vec.data());
 	}
 
-	void download(uint32 offset_byte_size, uint32 data_byte_size, void * data);
+	template<class T_>
+	void download(uint32 offset, uint32 data_size, T_ * data)
+	{
+		return download(offset, data_size, sizeof(T_), data);
+	}
+
+	void download(uint32 offset_size, uint32 data_size, uint32 data_type_byte_size, void * data);
 	
 	void clear(int32 internal_format, int32 format, int32 type, const void * data);
 	
 	template<class T_>
 	void upload(uint32 offset, const std::vector<T_> & data_vec)
 	{
-		return upload(offset * sizeof(T_), data_vec.size() * sizeof(T_), data_vec.data());
+		return upload(offset, data_vec.size(), sizeof(T_), data_vec.data());
 	}
 
-	void upload(uint32 offset_byte_size, uint32 data_byte_size, void * data);
+	template<class T_>
+	void upload(uint32 offset, uint32 data_size, T_ * data)
+	{
+		return upload(offset, data_size, sizeof(T_), data);
+	}
+
+	void upload(uint32 offset, uint32 data_size, uint32 data_type_byte_size, void * data);
 
 	template<class T_>
 	T_ * map(access_map access)
@@ -138,9 +162,9 @@ struct nsgl_buffer : public nsgl_obj
 	void * map(access_map access);
 
 	template<class T_>
-	T_ * map_range(uint32 byte_offset, uint32 length, access_map_range access)
+	T_ * map_range(uint32 offset, uint32 length, access_map_range access)
 	{
-		return static_cast<T_*>(map_range(byte_offset, length, access));
+		return static_cast<T_*>(map_range(offset * sizeof(T_), length * sizeof(T_), access));
 	}
 	
 	void * map_range(uint32 byte_offset, uint32 byte_length, access_map_range access);

@@ -1304,7 +1304,7 @@ void nsselection_system::prepare_selection_for_rendering()
 	{
 		nssel_comp * sc = (*iter)->get<nssel_comp>();
 		nstform_comp *tc = (*iter)->get<nstform_comp>();
-		nsgl_buffer * tbuf = sc->transform_buffer(m_active_scene);
+		nsgl_buffer * tbuf = sc->video_object(m_active_scene);
 		auto selection = sc->selection(m_active_scene);
 		if (selection == nullptr)
 		{

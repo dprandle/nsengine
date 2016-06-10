@@ -18,7 +18,7 @@
 #include <nstexture.h>
 #include <nsplugin_manager.h>
 
-class nsgl_renderbuffer;
+struct nsgl_renderbuffer;
 
 struct nsgl_framebuffer : public nsgl_obj
 {
@@ -62,7 +62,6 @@ struct nsgl_framebuffer : public nsgl_obj
 
 	attachment * create_renderbuffer_attachment(
 		attach_point att_point_,
-		uint32 sampler_num_,
 		int32 internal_format_,
 		bool overwrite_ = true);
 

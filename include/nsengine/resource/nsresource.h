@@ -61,20 +61,12 @@ public:
 
 	const nsstring & subdir() const;
 
-	/*!
-	Get the other resources that this resource uses. If no other resources are used then leave this unimplemented - will return an empty map.
-	\return Map of resource ID to resource type containing all other used resources (doesn't include this resource)
-	*/
 	virtual uivec3_vector resources();
 
 	const nsstring & icon_path() const;
 
 	const uivec2 & icon_tex_id() const;
 
-	/*!
-	This should be called if there was a name change to a resource - will check if the resource is used by this component and if is
-	is then it will update the handle
-	*/
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	void enable_group_save(bool enable);

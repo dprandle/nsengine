@@ -21,11 +21,23 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 
 #include <nscomponent.h>
 #include <nsunordered_set.h>
+#include <nsvideo_driver.h>
 
 class nsshader;
 class nstimer;
 class nsgl_buffer;
 class nsscene;
+
+struct sel_per_scene_info
+{
+	sel_per_scene_info();
+	~sel_per_scene_info();
+		
+	//nsgl_buffer * m_tform_buffer;
+	nsvid_obj video_obj;
+	ui_uset m_selection;
+	bool m_selected;
+};
 
 class nssel_comp : public nscomponent
 {
@@ -68,7 +80,7 @@ public:
 
 	bool transparent_picking_enabled() const;
 
-	nsgl_buffer * transform_buffer(nsscene * scn);
+	nsvid_obj * video_object(nsscene * scn);
 
 	ui_uset * selection(nsscene * scn);
 
@@ -86,17 +98,7 @@ public:
 
 private:
 
-	struct per_scene_info
-	{
-		per_scene_info();
-		~per_scene_info();
-		
-		nsgl_buffer * m_tform_buffer;
-		ui_uset m_selection;
-		bool m_selected;
-	};
-
-	std::unordered_map<nsscene*, per_scene_info*> m_scene_selection;
+	std::unordered_map<nsscene*, sel_per_scene_info*> m_scene_selection;
 
 	fvec4 m_default_sel_color;
 	fvec4 m_sel_color;

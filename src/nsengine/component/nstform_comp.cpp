@@ -36,29 +36,6 @@ nstform_comp::~nstform_comp()
 {
 }
 
-// uint32 nstform_comp::add()
-// {
-// 	return add(instance_tform());
-// }
-
-// uint32 nstform_comp::add(const instance_tform & trans)
-// {
-// 	m_tforms.push_back(trans);
-// 	post_update(true);
-// 	m_buffer_resized = true;
-// 	return static_cast<uint32>(m_tforms.size()) - 1;
-// }
-
-// uint32 nstform_comp::add(uint32 cnt_)
-// {
-// 	// Get the transformID of the last transform before adding cnt_ and return it
-// 	uint32 ret = static_cast<uint32>(m_tforms.size()) - 1;
-// 	m_tforms.resize(m_tforms.size() + cnt_);
-// 	post_update(true);
-// 	m_buffer_resized = true;
-// 	return ret;
-// }
-
 void nstform_comp::pup(nsfile_pupper * p)
 {
 	return; // not puppable
@@ -403,7 +380,7 @@ uint32 instance_tform::child_count()
 	return m_children.size();
 }
 
-nstform_comp::per_scene_info::per_scene_info():
+tform_per_scene_info::tform_per_scene_info():
 	m_tforms(),
 	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
 	m_tform_id_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
@@ -414,7 +391,7 @@ nstform_comp::per_scene_info::per_scene_info():
 	m_tform_id_buffer->video_init();
 }
 
-nstform_comp::per_scene_info::~per_scene_info()
+tform_per_scene_info::~tform_per_scene_info()
 {
 	m_tform_buffer->video_release();
 	m_tform_id_buffer->video_release();

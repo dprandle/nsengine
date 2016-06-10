@@ -38,6 +38,7 @@
 
 #include <nsgl_object.h>
 #include <nsunordered_map.h>
+#include <nssignal.h>
 
 struct nsgl_shader : public nsgl_obj
 {
@@ -85,39 +86,23 @@ struct nsgl_shader : public nsgl_obj
 
 	~nsgl_shader();
 
-	bool compile();
-
 	bool compile(shader_stage stage, const nsstring & source);
 
-	void unbind() const;
+	void unbind();
 
-	void bind() const;
+	void bind();
 
 	void init();
-
-	virtual void init_uniforms() {}
 
 	uint32 attrib_loc(const nsstring & var_name) const;
 
 	uint32 init_uniform_loc(const nsstring & pVariable);
 
-	bool compiled(shader_stage stage);
-
-	bool linked();
-
 	bool link();
 
 	void release();
 
-	void reset_error();
-
-	const nsstring & source(shader_stage stage);
-
-	void set_gl_id(uint32 id, shader_stage stage);
-
 	void set_name(shader_stage stage, const nsstring & name);
-
-	void set_source(shader_stage stage, const nsstring & source);
 
 	void set_uniform(const nsstring & var_name, const fmat4 & data);
 
@@ -155,7 +140,10 @@ struct nsgl_shader : public nsgl_obj
 
 	shader_stage_info * stage_info(shader_stage stage);
 
-
+	ns::signal<nsstring &,shader_stage> compile_error_msg;
+	ns::signal<nsstring &> link_error_msg;
+	ns::signal<nsstring &> validation_error_msg;
+	
 	void _setup_xfb();
 	bool _validate();
 
