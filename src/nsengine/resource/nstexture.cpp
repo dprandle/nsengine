@@ -18,26 +18,26 @@ Description:
 
 nstexture::nstexture() :
 	nsresource(),
+	nsvideo_object(),
 	compress(false),
 	m_auto_gen_mipmaps(true),
 	m_raw_data(nullptr),
 	m_format(tex_rgba),
 	m_data_type(tex_u8),
-	m_compressed_size(0),
-	m_vid_tex(nullptr)
+	m_compressed_size(0)
 {
 	set_ext(DEFAULT_TEX_EXTENSION);
 }
 
 nstexture::nstexture(const nstexture & copy_):
 	nsresource(copy_),
+	nsvideo_object(),
 	compress(copy_.compress),
 	m_auto_gen_mipmaps(copy_.m_auto_gen_mipmaps),
 	m_raw_data(new uint8[copy_.pixel_count()]),
 	m_format(copy_.m_format),
 	m_data_type(copy_.m_data_type),
-	m_compressed_size(copy_.m_compressed_size),
-	m_vid_tex(nullptr)
+	m_compressed_size(copy_.m_compressed_size)
 {
 	for (uint32 i = 0; i < copy_.pixel_count(); ++i)
 		m_raw_data[i] = copy_.m_raw_data[i];
@@ -76,11 +76,16 @@ bool nstexture::compress_on_upload()
 	return compress;
 }
 
+uint32 nstexture::compressed_size()
+{
+	return m_compressed_size;
+}
+
 void nstexture::video_context_init()
 {
    	video_context_release();
 	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create();
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create(this);
 }
 
 void nstexture::enable_mipmap_autogen(bool enable)

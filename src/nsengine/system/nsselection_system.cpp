@@ -1303,39 +1303,8 @@ void nsselection_system::prepare_selection_for_rendering()
 	while (iter != m_selected_ents.end())
 	{
 		nssel_comp * sc = (*iter)->get<nssel_comp>();
-		nstform_comp *tc = (*iter)->get<nstform_comp>();
-		nsgl_buffer * tbuf = sc->video_object(m_active_scene);
-		auto selection = sc->selection(m_active_scene);
-		if (selection == nullptr)
-		{
-			++iter;
-			continue;
-		}
-		
-        tbuf->bind();
-		if (sc->update_posted())
-		{
-			tbuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, selection->size());
-			sc->post_update(false);
-		}
-        if (!selection->empty())
-        {
-            fmat4 * mapped = tbuf->map<fmat4>(
-                        0,
-                        selection->size(),
-                        nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-
-            uint32 count = 0;
-            auto sel_iter = selection->begin();
-            while (sel_iter != selection->end())
-            {
-                mapped[count] = tc->instance_transform(m_active_scene, *sel_iter)->world_tf();
-                ++sel_iter;
-                ++count;
-            }
-            tbuf->unmap();
-        }
-        tbuf->unbind();
+		sel_per_scene_info * psi = sc->scene_info(m_active_scene);
+		psi->video_update();
 		++iter;
 	}	
 }

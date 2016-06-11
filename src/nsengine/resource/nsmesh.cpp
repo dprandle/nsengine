@@ -691,7 +691,7 @@ void nsmesh::submesh::video_context_init()
 {
 	video_context_release();
 	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create();
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create(this);
 }
 
 nsmesh::node::node(const nsstring & pName, node * pParentNode):m_name(pName),

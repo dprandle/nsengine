@@ -400,60 +400,8 @@ void nsrender_system::_prepare_tforms(nsscene * scene)
 		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
         if (tForm->update_posted())
 		{
-			nstform_comp::per_scene_info * psi = tForm->m_scenes_info.find(scene)->second; 
-			nsgl_buffer * tFormBuf = psi->m_tform_buffer;
-			nsgl_buffer * tFormIDBuf = psi->m_tform_id_buffer;
-
-			bool did_resize = false;
-			if (psi->m_buffer_resized)
-			{
-				did_resize = true;
-				tFormBuf->bind();
-				tFormBuf->allocate<fmat4>(nsbuffer_object::mutable_dynamic_draw, psi->m_tforms.size());
-				tFormIDBuf->bind();
-				tFormIDBuf->allocate<uint32>(nsbuffer_object::mutable_dynamic_draw, psi->m_tforms.size());
-				psi->m_buffer_resized = false;
-			}
-
-			tFormBuf->bind();
-			fmat4 * mappedT = tFormBuf->map<fmat4>(
-				0,
-				psi->m_tforms.size(),
-				nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-			
-			tFormIDBuf->bind();
-			uint32 * mappedI = tFormIDBuf->map<uint32>(
-				0,
-				psi->m_tforms.size(),
-				nsbuffer_object::access_map_range(nsbuffer_object::map_write));
-			tFormIDBuf->unbind();
-
-			psi->m_visible_count = 0;
-			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
-			{
-				instance_tform * itf = &psi->m_tforms[i];				
-				int32 state = itf->m_hidden_state;
-				bool layerBit = (state & nstform_comp::hide_layer) == nstform_comp::hide_layer;
-				bool objectBit = (state & nstform_comp::hide_object) == nstform_comp::hide_object;
-				bool showBit = (state & nstform_comp::hide_none) == nstform_comp::hide_none;
-				bool hideBit = (state & nstform_comp::hide_all) == nstform_comp::hide_all;
-
-                if (!hideBit && (!layerBit && (showBit || !objectBit)))
-                {
-					if (itf->m_render_update || did_resize)
-					{
-						mappedT[psi->m_visible_count] = itf->world_tf();
-						mappedI[psi->m_visible_count] = i;
-						itf->m_render_update = false;
-					}
-					++psi->m_visible_count;
-                }
-			}
-			tFormBuf->bind();
-			tFormBuf->unmap();
-			tFormIDBuf->bind();
-			tFormIDBuf->unmap();
-			tFormIDBuf->unbind();
+			nstform_per_scene_info * psi = tForm->m_scenes_info.find(scene)->second;
+			psi->video_update();
 			tForm->post_update(false);
 		}
 		++ent_iter;

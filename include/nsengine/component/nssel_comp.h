@@ -27,14 +27,17 @@ class nsshader;
 class nstimer;
 class nsgl_buffer;
 class nsscene;
+class nssel_comp;
 
-struct sel_per_scene_info
+struct sel_per_scene_info : public nsvideo_object
 {
-	sel_per_scene_info();
+	sel_per_scene_info(nssel_comp * owner_, nsscene * scn);
 	~sel_per_scene_info();
-		
-	//nsgl_buffer * m_tform_buffer;
-	nsvid_obj video_obj;
+
+	void video_context_init();
+
+	nssel_comp * owner;
+	nsscene * scene;
 	ui_uset m_selection;
 	bool m_selected;
 };
@@ -80,11 +83,11 @@ public:
 
 	bool transparent_picking_enabled() const;
 
-	nsvid_obj * video_object(nsscene * scn);
-
 	ui_uset * selection(nsscene * scn);
 
 	virtual void pup(nsfile_pupper * p);
+
+	sel_per_scene_info * scene_info(nsscene * scn);
 
 	void set_default_sel_color(const fvec4 & col_);
 

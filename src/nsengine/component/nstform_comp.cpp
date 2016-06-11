@@ -380,21 +380,35 @@ uint32 instance_tform::child_count()
 	return m_children.size();
 }
 
-tform_per_scene_info::tform_per_scene_info():
+void instance_tform::set_render_update(bool val)
+{
+	m_render_update = val;
+}
+
+bool instance_tform::render_update() const
+{
+	return m_render_update;
+}
+
+tform_per_scene_info::tform_per_scene_info(nstform_comp * owner_, nsscene * scn):
+	nsvideo_object(),
+	owner(owner_),
+	scene(scn),
 	m_tforms(),
-	m_tform_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
-	m_tform_id_buffer(new nsbuffer_object(nsbuffer_object::array, nsbuffer_object::storage_mutable)),
 	m_buffer_resized(false),
 	m_visible_count(0)
 {
-	m_tform_buffer->video_init();
-	m_tform_id_buffer->video_init();
+	video_context_init();
+}
+
+void tform_per_scene_info::video_context_init()
+{
+	video_context_release();
+	uint8 context_id = nse.video_driver()->current_context()->context_id;
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(TFORM_VID_OBJ_GUID)->create(this);
 }
 
 tform_per_scene_info::~tform_per_scene_info()
 {
-	m_tform_buffer->video_release();
-	m_tform_id_buffer->video_release();
-	delete m_tform_buffer;
-	delete m_tform_id_buffer;
+	video_context_release();
 }

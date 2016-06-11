@@ -17,6 +17,7 @@
 #define MAX_TF_BUFFER_COUNT 32 // about 100 mb
 
 #include <nscomponent.h>
+#include <nsvideo_driver.h>
 
 class nsgl_buffer;
 class nsgl_vao;
@@ -123,6 +124,10 @@ struct instance_tform
 
     fquat world_orientation() const;
 
+	void set_render_update(bool val);
+
+	bool render_update() const;
+
     const fvec3 & scaling() const;
 
 	const fmat4 & world_tf() const;
@@ -154,14 +159,15 @@ struct instance_tform
 
 typedef std::vector<instance_tform> instance_vec;
 
-struct tform_per_scene_info
+struct tform_per_scene_info : public nsvideo_object
 {
-	tform_per_scene_info();
+	tform_per_scene_info(nstform_comp * owner_, nsscene * scn);
 	~tform_per_scene_info();
-		
+	
+	void video_context_init();
+	nstform_comp * owner;
+	nsscene * scene;
 	instance_vec m_tforms;
-	nsgl_buffer * m_tform_buffer;
-	nsgl_buffer * m_tform_id_buffer;
 	bool m_buffer_resized;
 	uint32 m_visible_count;
 };

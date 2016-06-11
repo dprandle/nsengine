@@ -10,6 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
+#include <nsentity.h>
 #include <nsgl_vid_objs.h>
 #include <nsgl_shader.h>
 #include <nsgl_buffer.h>
@@ -100,7 +101,64 @@ nsgl_texture_obj::~nsgl_texture_obj()
 void nsgl_texture_obj::update()
 {
 	nstexture * tex = (nstexture*)parent;
-	
+	if (tex->type() == type_to_hash(nstex1d))
+	{
+		nstex1d * tex1d = (nstex1d*)tex;
+		gl_tex->allocate_1d(
+			tex1d->data(),
+			tex1d->format(),
+			tex1d->component_data_type(),
+			tex1d->size(),
+			tex1d->compress_on_upload(),
+			tex1d->compressed_size());
+	}
+	else if (tex->type() == type_to_hash(nstex2d))
+	{
+		nstex2d * tex2d = (nstex2d*)tex;
+		gl_tex->allocate_2d(
+			tex2d->data(),
+			tex2d->format(),
+			tex2d->component_data_type(),
+			tex2d->size(),
+			tex2d->compress_on_upload(),
+			tex2d->compressed_size());
+	}
+	else if (tex->type() == type_to_hash(nstex3d))
+	{
+		nstex3d * tex3d = (nstex3d*)tex;
+		gl_tex->allocate_3d(
+			tex3d->data(),
+			tex3d->format(),
+			tex3d->component_data_type(),
+			tex3d->size(),
+			tex3d->compress_on_upload(),
+			tex3d->compressed_size());
+	}
+	else if (tex->type() == type_to_hash(nstex_cubemap))
+	{
+		nstex_cubemap * texcube = (nstex_cubemap*)tex;
+		for (uint8 i = 0; i < 6; ++i)
+		{
+			uint8 * data_ptr = texcube->data();
+			if (data_ptr != nullptr)
+				data_ptr += texcube->size().x*texcube->size().y*i;
+
+			gl_tex->allocate_2d(
+				data_ptr,
+				texcube->format(),
+				texcube->component_data_type(),
+				texcube->size(),
+				texcube->compress_on_upload(),
+				texcube->compressed_size(),
+				i);	
+		}
+	}
+	else
+	{
+		dprint("nsgl_texture_obj::nsgl_texture_obj - Unrecognized texture type");
+	}
+	if (tex->mipmap_autogen())
+		gl_tex->generate_mipmaps();
 }
 
 nsgl_submesh_obj::nsgl_submesh_obj(nsvideo_object * parent_):
@@ -213,34 +271,116 @@ void nsgl_submesh_obj::update()
 }
 
 nsgl_tform_comp_obj::nsgl_tform_comp_obj(nsvideo_object * parent_):
-	nsvid_obj(parent_)
+	nsvid_obj(parent_),
+	gl_tform_buffer(new nsgl_buffer()),
+	gl_tform_id_buffer(new nsgl_buffer())
 {
-	
+	gl_tform_buffer->target = nsgl_buffer::array;
+	gl_tform_id_buffer->target = nsgl_buffer::array;
+	gl_tform_buffer->init();
+	gl_tform_id_buffer->init();
 }
 
 nsgl_tform_comp_obj::~nsgl_tform_comp_obj()
 {
-	
+	gl_tform_buffer->release();
+	gl_tform_id_buffer->release();
+	delete gl_tform_buffer;
+	delete gl_tform_id_buffer;
 }
 
 void nsgl_tform_comp_obj::update()
 {
+	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
 	
+	bool did_resize = false;
+	if (psi->m_buffer_resized)
+	{
+		did_resize = true;
+		gl_tform_buffer->bind();
+		gl_tform_buffer->allocate<fmat4>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
+		gl_tform_id_buffer->bind();
+		gl_tform_id_buffer->allocate<uint32>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
+		psi->m_buffer_resized = false;
+	}
+
+	gl_tform_buffer->bind();
+	fmat4 * mappedT = gl_tform_buffer->map_range<fmat4>(0, psi->m_tforms.size(), nsgl_buffer::map_write);
+
+	gl_tform_id_buffer->bind();
+	uint32 * mappedI = gl_tform_id_buffer->map_range<uint32>(0, psi->m_tforms.size(), nsgl_buffer::map_write);
+	gl_tform_id_buffer->unbind();
+
+	psi->m_visible_count = 0;
+	for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
+	{
+		instance_tform * itf = &psi->m_tforms[i];				
+		int32 state = itf->hidden_state();
+		bool layerBit = (state & nstform_comp::hide_layer) == nstform_comp::hide_layer;
+		bool objectBit = (state & nstform_comp::hide_object) == nstform_comp::hide_object;
+		bool showBit = (state & nstform_comp::hide_none) == nstform_comp::hide_none;
+		bool hideBit = (state & nstform_comp::hide_all) == nstform_comp::hide_all;
+
+		if (!hideBit && (!layerBit && (showBit || !objectBit)))
+		{
+			if (itf->render_update() || did_resize)
+			{
+				mappedT[psi->m_visible_count] = itf->world_tf();
+				mappedI[psi->m_visible_count] = i;
+				itf->set_render_update(false);
+			}
+			++psi->m_visible_count;
+		}
+	}
+	gl_tform_buffer->bind();
+	gl_tform_buffer->unmap();
+	gl_tform_id_buffer->bind();
+	gl_tform_id_buffer->unmap();
+	gl_tform_id_buffer->unbind();
+
 }
 
 nsgl_sel_comp_obj::nsgl_sel_comp_obj(nsvideo_object * parent_):
-	nsvid_obj(parent_)
+	nsvid_obj(parent_),
+	gl_tform_buffer(new nsgl_buffer)
 {
-	
+	gl_tform_buffer->target = nsgl_buffer::array;
+	gl_tform_buffer->init();
 }
 
 nsgl_sel_comp_obj::~nsgl_sel_comp_obj()
 {
-	
+	gl_tform_buffer->release();
+	delete gl_tform_buffer;
 }
 
 void nsgl_sel_comp_obj::update()
 {
+	sel_per_scene_info * psi = (sel_per_scene_info*)parent;
+	nstform_comp * tc = psi->owner->owner()->get<nstform_comp>();
+	
+	gl_tform_buffer->bind();
+	if (psi->owner->update_posted())
+	{
+		gl_tform_buffer->allocate<fmat4>(psi->m_selection.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
+		psi->owner->post_update(false);
+	}
+	
+	if (!psi->m_selection.empty())
+	{
+		fmat4 * mapped = gl_tform_buffer->map_range<fmat4>(0, psi->m_selection.size(), nsgl_buffer::map_write);
+
+		uint32 count = 0;
+		auto sel_iter = psi->m_selection.begin();
+		while (sel_iter != psi->m_selection.end())
+		{
+			mapped[count] = tc->instance_transform(psi->scene, *sel_iter)->world_tf();
+			++sel_iter;
+			++count;
+		}
+		gl_tform_buffer->unmap();
+	}
+	gl_tform_buffer->unbind();
 	
 }
 

@@ -130,6 +130,8 @@ class nstexture : public nsresource, public nsvideo_object
 
 	bool compress_on_upload();
 
+	uint32 compressed_size();
+
 	void set_data(uint8 * image_data);
 
 	void copy_data(uint8 * to_copy, uint32 write_offset_in_bytes=0);

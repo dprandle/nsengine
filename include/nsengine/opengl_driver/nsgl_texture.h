@@ -92,7 +92,7 @@ struct nsgl_texture : public nsgl_obj
 		int32 width,
 		bool compress,
 		uint32 compressed_size,
-		uint32 layer);
+		uint32 layer=0);
 
 	bool allocate_2d(
 		const void * data,
@@ -101,7 +101,7 @@ struct nsgl_texture : public nsgl_obj
 		const ivec2 & size,
 		bool compress,
 		uint32 compressed_size,
-		uint32 layer);
+		uint32 layer=0);
 
 	bool allocate_3d(
 		const void * data,
@@ -110,7 +110,7 @@ struct nsgl_texture : public nsgl_obj
 		const ivec3 & size,
 		bool compress,
 		uint32 compressed_size,
-		uint32 layer);
+		uint32 layer=0);
 
 	bool upload_1d(
 		const void * data,
@@ -120,7 +120,7 @@ struct nsgl_texture : public nsgl_obj
 		int32 size,
 		bool compress,
 		uint32 compressed_size,
-		uint32 layer);
+		uint32 layer=0);
 	
 	bool upload_2d(
 		const void * data,
@@ -130,7 +130,7 @@ struct nsgl_texture : public nsgl_obj
 		const ivec2 & size,
 		bool compress,
 		uint32 compressed_size,
-		uint32 layer);
+		uint32 layer=0);
 
 	bool upload_3d(
 		const void * data,
@@ -140,7 +140,7 @@ struct nsgl_texture : public nsgl_obj
 		const ivec3 & size,
 		bool compress,
 		uint32 compressed_size,
-		uint32 layer);
+		uint32 layer=0);
 	
 	
 	void download_data(uint8 * array_, tex_format format, pixel_component_type type, uint16 level);

@@ -128,7 +128,6 @@ void nssel_comp::set_default_sel_color(const fvec4 & pColor)
 	m_sel_color = pColor;
 }
 
-
 void nssel_comp::set_mask_alpha(const float & pAlpha)
 {
 	m_mask_alpha = pAlpha;
@@ -156,14 +155,6 @@ bool nssel_comp::transparent_picking_enabled() const
 	return m_transparent_picking_enabled;
 }
 
-nsvid_obj * nssel_comp::video_object(nsscene * scn)
-{
-	auto fiter = m_scene_selection.find(scn);
-	if (fiter != m_scene_selection.end())
-		return &fiter->second->video_obj;
-	return nullptr;
-}
-
 nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 {
 	nscomponent::operator=(rhs_);
@@ -177,15 +168,33 @@ nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 	return (*this);
 }
 
-sel_per_scene_info::sel_per_scene_info():
+sel_per_scene_info::sel_per_scene_info(nssel_comp * owner_, nsscene * scn):
+	nsvideo_object(),
+	owner(owner_),
+	scene(scn),
 	m_selection(),
 	m_selected(false)
 {
-	nse.video_driver()->register_sel_per_scene_info(this);
+	video_context_init();
+}
+
+sel_per_scene_info * nssel_comp::scene_info(nsscene * scn)
+{
+	auto fiter = m_scene_selection.find(scn);
+	if (fiter != m_scene_selection.end())
+		return fiter->second;
+	return nullptr;
+}
+
+void sel_per_scene_info::video_context_init()
+{
+	video_context_release();
+	uint8 context_id = nse.video_driver()->current_context()->context_id;
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(SEL_VID_OBJ_GUID)->create(this);
 }
 
 sel_per_scene_info::~sel_per_scene_info()
 {
-	nse.video_driver()->deregister_sel_per_scene_info(this);
 	m_selection.clear();
+	video_context_release();
 }

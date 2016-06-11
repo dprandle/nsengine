@@ -50,7 +50,7 @@ void nsshader::video_context_init()
 {
 	video_context_release();
 	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(SHADER_VID_OBJ_GUID)->create();
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(SHADER_VID_OBJ_GUID)->create(this);
 }
 
 void nsshader::pup(nsfile_pupper * p)
