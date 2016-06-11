@@ -4,9 +4,20 @@
 
 #define JOINTS_PER_VERTEX 4
 
+#include <nsvideo_driver.h>
 #include <nsresource.h>
-#include <nsgl_buffer.h>
-#include <nsgl_vao.h>
+
+enum mesh_primitive_type
+{
+	prim_points,
+	prim_lines,
+	prim_line_strip,
+	prim_line_loop,
+	prim_triangles,
+	prim_triangle_strip,
+	prim_triangle_fan,
+	prim_patch
+};
 
 class nsmesh : public nsresource
 {
@@ -57,7 +68,7 @@ public:
 		std::map<nsstring,nsmesh::joint> m_name_joint_map;
 	};
 
-	struct submesh
+	struct submesh : public nsvideo_object
 	{
 		struct connected_joints
 		{
@@ -74,20 +85,12 @@ public:
 		submesh(const submesh & copy_);
 
 		~submesh();
-		
+
+		void video_context_init();
 		void allocate_buffers();
 		void calc_aabb();
-		void init_gl();
 		void resize(uint32 pNewSize);
 		void update_vao();
-
-		nsgl_buffer m_vert_buf;
-		nsgl_buffer m_tex_buf;
-		nsgl_buffer m_norm_buf;
-		nsgl_buffer m_tang_buf;
-		nsgl_buffer m_indice_buf;
-		nsgl_buffer m_joint_buf;
-		nsgl_vao m_vao;
 
 		fvec3_vector m_verts;
 		fvec2_vector m_tex_coords;
@@ -98,7 +101,7 @@ public:
 		uivec2_vector m_lines;
 		std::vector<connected_joints> m_joints;
 		
-		GLenum m_prim_type;
+		mesh_primitive_type m_prim_type;
 		node * m_node;
 		nsstring m_name;
 		nsmesh * m_parent_mesh;

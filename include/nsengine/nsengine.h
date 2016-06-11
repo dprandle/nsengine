@@ -288,7 +288,7 @@ public:
 		}
 
 		auto rf = _create_factory<nscomp_factory_type<comp_type>,comp_type>();
-		if (rf == NULL)
+		if (rf == nullptr)
 			return false;
 		
 		rf->type_id = hashed;
@@ -317,7 +317,7 @@ public:
 		}
 
 		auto rf = _create_factory<nssys_factory_type<sys_type>,sys_type>();
-		if (rf == NULL)
+		if (rf == nullptr)
 			return false;
 		
 		rf->type_id = hashed;
@@ -356,7 +356,7 @@ public:
 
 
 		nsres_factory_type<res_type> * rf = _create_factory<nsres_factory_type<res_type>, res_type>();
-		if (rf == NULL)
+		if (rf == nullptr)
 			return false;
 		
 		rf->type_id = hashed;
@@ -398,6 +398,33 @@ public:
 		return true;
 	}
 
+	template<class vid_obj_type>
+	bool register_vid_obj_type(const nsstring & guid_)
+	{
+		uint32 hashed = hash_id(guid_);
+		auto ret = m_obj_type_names.emplace(hashed, guid_);
+	
+		if (!ret.second)
+		{
+			dprint(nsstring("register_vid_obj_type - Could not generate unique hash from ") + guid_);
+			return false;
+		}
+
+		std::type_index ti(typeid(vid_obj_type));
+		auto check = m_obj_type_hashes.emplace(ti, hashed);
+
+		if (!check.second)
+		{
+			dprint(nsstring("register_vid_obj_type- Could not generate unique type_index from ") + ti.name());
+			return false;
+		}
+
+		auto rf = _create_factory<nsvid_obj_factory_type<vid_obj_type>, vid_obj_type>();
+		if (rf == nullptr)
+			return false;
+		return true;
+	}
+
 	template<class manager_type>
 	bool register_manager(const nsstring & guid_)
 	{
@@ -420,7 +447,7 @@ public:
 		}
 
 		auto rf = _create_factory<nsmanager_factory_type<manager_type>,manager_type>();
-		if (rf == NULL)
+		if (rf == nullptr)
 			return false;
 		
 		rf->type_id = hashed;
@@ -497,7 +524,7 @@ private:
 	template<class obj_type>
 	bool _add_factory(nsfactory * fac)
 	{
-		if (fac == NULL)
+		if (fac == nullptr)
 			return false;
 
 		std::type_index ti = std::type_index(typeid(obj_type));
@@ -517,7 +544,7 @@ private:
 		if (!_add_factory<obj_type>(fac))
 		{
 			delete fac;
-			return NULL;
+			return nullptr;
 		}
 		return fac;
 	}

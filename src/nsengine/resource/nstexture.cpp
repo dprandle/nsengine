@@ -66,29 +66,21 @@ void nstexture::enable_compress_on_upload(bool enable)
 }
 
 void nstexture::init()
-{
-	nse.video_driver()->register_texture(this);
-}
+{}
 
 void nstexture::release()
-{
-	nse.video_driver()->deregister_texture(this);
-}
+{}
 
 bool nstexture::compress_on_upload()
 {
 	return compress;
 }
 
-void nstexture::video_init()
+void nstexture::video_context_init()
 {
-	m_vid_tex->init();
-}
-
-void nstexture::bind() const
-{
-	m_vid_tex->bind();
-	m_vid_tex->set_parameters(m_params);
+   	video_context_release();
+	uint8 context_id = nse.video_driver()->current_context()->context_id;
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create();
 }
 
 void nstexture::enable_mipmap_autogen(bool enable)
@@ -132,11 +124,6 @@ uint8 nstexture::bytes_per_pixel() const
 	return channels() * bytes_per_channel();
 }
 
-void nstexture::video_release()
-{
-	m_vid_tex->release();
-}
-
 void nstexture::copy_data(uint8 * to_copy, uint32 write_offset_in_bytes)
 {
 	for (uint32 i = write_offset_in_bytes; i < pixel_count()*bytes_per_pixel(); ++i)
@@ -162,14 +149,6 @@ void nstexture::set_parameters(tex_params texp)
 tex_params nstexture::parameters()
 {
 	return m_params;
-}
-
-void nstexture::video_download()
-{
-	if (m_compressed_size > 0)
-		m_vid_tex->download_data_compressed(m_raw_data, 0);
-	else
-		m_vid_tex->download_data(m_raw_data, m_format, m_data_type, 0);	
 }
 
 uint8 * nstexture::data()
@@ -200,19 +179,9 @@ tex_format nstexture::format()
 	return m_format;
 }
 
-void nstexture::set_video_texture(nsvid_texture * tex)
-{
-	m_vid_tex = tex;
-}
-
 pixel_component_type nstexture::component_data_type()
 {
 	return m_data_type;
-}
-
-void nstexture::unbind() const
-{
-	m_vid_tex->unbind();
 }
 
 nstex1d::nstex1d():
@@ -237,20 +206,6 @@ nstex1d & nstex1d::operator=(nstex1d rhs)
 	std::swap(m_width, rhs.m_width);
 	std::swap(m_offset, rhs.m_offset);
 	return *this;
-}
-
-void nstex1d::video_allocate()
-{
-	m_vid_tex->allocate_1d(m_raw_data, m_format, m_data_type, m_width, compress, m_compressed_size);
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();
-}
-
-void nstex1d::video_upload()
-{
-	m_vid_tex->upload_1d(m_raw_data, m_format, m_data_type, m_offset, m_width, compress, m_compressed_size);
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();
 }
 
 int32 nstex1d::pixel_count() const
@@ -337,20 +292,6 @@ nstex2d & nstex2d::operator=(nstex2d rhs)
 	return *this;
 }
 
-void nstex2d::video_allocate()
-{
-	m_vid_tex->allocate_2d(m_raw_data, m_format, m_data_type, m_size, compress, m_compressed_size);
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();	
-}
-
-void nstex2d::video_upload()
-{
-	m_vid_tex->upload_2d(m_raw_data, m_format, m_data_type, m_offset, m_size, compress, m_compressed_size);
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();	
-}
-
 int32 nstex2d::pixel_count() const
 {
 	return m_size.w * m_size.h;
@@ -365,7 +306,6 @@ const ivec2 & nstex2d::offset() const
 {
 	return m_offset;
 }
-
 
 const ivec2 & nstex2d::size() const
 {
@@ -483,21 +423,6 @@ void nstex3d::resize(const ivec3 & size, bool resize_data)
 	}
 }
 
-
-void nstex3d::video_allocate()
-{
-	m_vid_tex->allocate_3d(m_raw_data, m_format, m_data_type, m_size, compress, m_compressed_size);
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();	
-}
-
-void nstex3d::video_upload()
-{
-	m_vid_tex->upload_3d(m_raw_data, m_format, m_data_type, m_offset, m_size, compress, m_compressed_size);
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();	
-}
-
 int32 nstex3d::pixel_count() const
 {
 	return m_size.x * m_size.y * m_size.z;
@@ -583,23 +508,6 @@ uint8 * nstex_cubemap::data(uint8 cube_face)
 	return m_raw_data + cube_face * m_size.x * m_size.y * bytes_per_pixel();
 }
 
-void nstex_cubemap::video_download(uint8 cube_face)
-{
-	if (cube_face > 5)
-		return;
-
-	if (m_compressed_size > 0)
-		m_vid_tex->download_data_compressed(
-			m_raw_data + m_size.x*m_size.y*cube_face*bytes_per_pixel(),
-			cube_face);
-	else
-		m_vid_tex->download_data(
-			m_raw_data + m_size.x*m_size.y*cube_face*bytes_per_pixel(),
-			m_format,
-			m_data_type,
-			cube_face);
-}
-
 void nstex_cubemap::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
@@ -612,66 +520,6 @@ void nstex_cubemap::pup(nsfile_pupper * p)
 		nstext_file_pupper * tf = static_cast<nstext_file_pupper *>(p);
 		::pup(*tf, *this);
 	}
-}
-
-
-void nstex_cubemap::video_allocate()
-{
-	for (uint8 i = 0; i < 6; ++i)
-		video_allocate(i);
-}
-
-void nstex_cubemap::video_upload()
-{
-	for (uint8 i = 0; i < 6; ++i)
-		video_upload(i);
-}
-
-void nstex_cubemap::video_allocate(uint8 cube_face)
-{
-	if (cube_face > 5)
-		return;
-
-	uint8 * data_ptr = m_raw_data;
-	if (data_ptr != nullptr)
-		data_ptr += m_size.x*m_size.y*cube_face;
-
-	m_vid_tex->allocate_2d(
-		data_ptr,
-		m_format,
-		m_data_type,
-		m_size,
-		compress,
-		m_compressed_size,
-		cube_face);
-	
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();	
-}
-	
-void nstex_cubemap::video_upload(uint8 cube_face)
-{
-	if (cube_face > 5)
-		return;
-
-	m_vid_tex->upload_2d(
-		m_raw_data + m_size.x*m_size.y*cube_face,
-		m_format,
-		m_data_type,
-		m_offset,
-		m_size,
-		compress,
-		m_compressed_size,
-		cube_face);
-	
-	if (m_auto_gen_mipmaps)
-		m_vid_tex->generate_mipmaps();		
-}
-
-void nstex_cubemap::video_download()
-{
-	for (uint8 i = 0; i < 6; ++i)
-		video_download(i);
 }
 
 int32 nstex_cubemap::pixel_count() const

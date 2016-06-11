@@ -8,6 +8,7 @@ class nscomponent;
 class nssystem;
 class nsres_manager;
 class nsresource;
+struct nsvid_obj;
 
 class nsfactory
 {
@@ -18,7 +19,8 @@ public:
 		f_component,
 		f_system,
 		f_resource,
-		f_res_manager
+		f_res_manager,
+		f_vid_obj
 	};
 
 	nsfactory(factory_t fac_type_) : m_fac_type(fac_type_) {}
@@ -147,6 +149,31 @@ public:
 		nssystem * sys_ = new obj_type();
 		set_id(sys_);
 		return sys_;
+	}
+};
+
+class nsvideo_object;
+class nsvid_obj_factory : public nsfactory
+{
+  public:
+	nsvid_obj_factory():
+		nsfactory(f_vid_obj)
+	{}
+
+	virtual nsvid_obj * create(nsvideo_object * parent) = 0;
+};
+
+template<class vid_obj_type>
+class nsvid_obj_factory_type : public nsvid_obj_factory
+{
+  public:
+	nsvid_obj_factory_type() :
+		nsvid_obj_factory()
+	{}
+	
+	vid_obj_type * create(nsvideo_object * parent)
+	{
+		return new vid_obj_type(parent);
 	}
 };
 

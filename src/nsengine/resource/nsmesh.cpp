@@ -671,17 +671,6 @@ void nsmesh::submesh::allocate_buffers()
 	update_vao();
 }
 
-void nsmesh::submesh::init_gl()
-{
-	m_vert_buf.video_init();
-	m_tex_buf.video_init();
-	m_norm_buf.video_init();
-	m_tang_buf.video_init();
-	m_joint_buf.video_init();
-	m_indice_buf.video_init();
-	m_vao.video_init();
-}
-
 void nsmesh::submesh::calc_aabb()
 {
 	if (m_node == NULL)
@@ -698,35 +687,11 @@ void nsmesh::submesh::resize(uint32 pNewSize)
 	m_indices.resize(pNewSize);
 }
 
-void nsmesh::submesh::update_vao()
+void nsmesh::submesh::video_context_init()
 {
-	m_vao.bind();
-
-	m_vert_buf.bind();
-	m_vao.add(&m_vert_buf, nsshader::loc_position);
-	m_vao.vertex_attrib_ptr(nsshader::loc_position, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-	m_tex_buf.bind();
-	m_vao.add(&m_tex_buf, nsshader::loc_tex_coords);
-	m_vao.vertex_attrib_ptr(nsshader::loc_tex_coords, 2, GL_FLOAT, GL_FALSE, sizeof(fvec2), 0);
-
-	m_norm_buf.bind();
-	m_vao.add(&m_norm_buf, nsshader::loc_normal);
-	m_vao.vertex_attrib_ptr(nsshader::loc_normal, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-	m_tang_buf.bind();
-	m_vao.add(&m_tang_buf, nsshader::loc_tangent);
-	m_vao.vertex_attrib_ptr(nsshader::loc_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(fvec3), 0);
-
-	m_joint_buf.bind();
-	m_vao.add(&m_joint_buf, nsshader::loc_bone_id);
-	m_vao.add(&m_joint_buf, nsshader::loc_joint);
-	m_vao.vertex_attrib_I_ptr(nsshader::loc_bone_id, 4, GL_INT, sizeof(nsmesh::submesh::connected_joints), 0);
-	m_vao.vertex_attrib_ptr(nsshader::loc_joint, 4, GL_FLOAT, GL_FALSE, sizeof(nsmesh::submesh::connected_joints), 4 * sizeof(uint32));
-
-	m_indice_buf.bind();
-
-	m_vao.unbind();
+	video_context_release();
+	uint8 context_id = nse.video_driver()->current_context()->context_id;
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create();
 }
 
 nsmesh::node::node(const nsstring & pName, node * pParentNode):m_name(pName),

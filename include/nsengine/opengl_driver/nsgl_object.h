@@ -13,8 +13,6 @@
 #ifndef NSGL_OBJECT_H
 #define NSGL_OBJECT_H
 
-#define MAX_CONTEXT_COUNT 16
-
 #include <myGL/glew.h>
 #include <nsvector.h>
 

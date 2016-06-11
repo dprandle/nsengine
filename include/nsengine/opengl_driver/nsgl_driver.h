@@ -10,8 +10,8 @@
   \copywrite Earth Banana Games 2013
 */
 
-#ifndef NSOPENGL_DRIVER
-#define NSOPENGL_DRIVER
+#ifndef NSGL_DRIVER_H
+#define NSGL_DRIVER_H
 
 // Default render targets
 #define GBUFFER_TARGET "gbuffer_target"
@@ -19,6 +19,15 @@
 #define DIR_SHADOW2D_TARGET "dir_shadow2d_target"
 #define SPOT_SHADOW2D_TARGET "spot_shadow2d_target"
 #define POINT_SHADOW_TARGET "point_shadow_target"
+
+// Default drawcall queues
+#define SCENE_OPAQUE_QUEUE "scene_opaque_queue"
+#define SCENE_SELECTION_QUEUE "scene_selection_queue"
+#define SCENE_TRANSLUCENT_QUEUE "scene_translucent_queue"
+#define DIR_LIGHT_QUEUE "dir_light_queue"
+#define SPOT_LIGHT_QUEUE "spot_light_queue"
+#define POINT_LIGHT_QUEUE "point_light_queue"
+#define UI_RENDER_QUEUE "ui_render_queue"
 
 // Default checkered material
 #define DEFAULT_MATERIAL "default"
@@ -78,33 +87,29 @@ struct opengl_state
 
 class nsgl_driver;
 
-struct render_pass
+struct gl_render_pass : public render_pass
 {
-	render_pass():
-		enabled(true),
-		draw_calls(nullptr),
+	gl_render_pass():
+		render_pass(),
 		ren_target(nullptr),
-		use_vp_size(true),
-		vp(nullptr)
+		use_vp_size(true)
 	{}
 
-	virtual ~render_pass() {}
+	virtual ~gl_render_pass() {}
 
-	virtual void setup_pass();
+	virtual void setup();
 
 	virtual void render() = 0;
 
-	bool enabled;
+	virtual void finish() {}
+
 	bool use_vp_size;
-	drawcall_queue * draw_calls;
 	nsgl_framebuffer * ren_target;
-	nsrender::viewport * vp;
 	nsgl_driver * driver;
 	opengl_state gl_state;
 };
 
 typedef std::unordered_map<nsstring, nsgl_framebuffer*> rt_map;
-typedef std::vector<render_pass*> render_pass_vector;
 
 struct packed_fragment_data // 32 bytes total
 {
@@ -132,24 +137,24 @@ struct translucent_buffers
 	ui_vector header_clr_data;
 };
 
-struct gbuffer_render_pass : public render_pass
+struct gbuffer_render_pass : public gl_render_pass
 {
 	virtual void render();
 };
 
-struct oit_render_pass : public render_pass
+struct oit_render_pass : public gl_render_pass
 {
 	virtual void render();
 	translucent_buffers * tbuffers;
 };
 
-struct light_shadow_pass : public render_pass
+struct light_shadow_pass : public gl_render_pass
 {
 	virtual void render();
 	light_draw_call * ldc;
 };
 
-struct light_pass : public render_pass
+struct light_pass : public gl_render_pass
 {
 	virtual void render();
 	light_shadow_pass * rpass;
@@ -161,18 +166,18 @@ struct culled_light_pass : public light_pass
 	virtual void render();
 };
 
-struct final_render_pass : public render_pass
+struct final_render_pass : public gl_render_pass
 {
 	virtual void render();
 	nsgl_framebuffer * read_buffer;
 };
 
-struct selection_render_pass : public render_pass
+struct selection_render_pass : public gl_render_pass
 {
 	virtual void render();
 };
 
-struct ui_render_pass : public render_pass
+struct ui_render_pass : public gl_render_pass
 {
 	virtual void render();
 };
@@ -185,23 +190,13 @@ class nstex2d;
 class nstex3d;
 class nstex_cubemap;
 
-struct vid_obj_rel
-{
-	nsvid_obj * vo;
-	nsgl_obj * gl_obj;
-};
-
-typedef std::vector<vid_obj_rel> vid_obj_array;
-struct gl_ctxt
+struct gl_ctxt : public vid_ctxt
 {
 	gl_ctxt(uint32 id);
 	~gl_ctxt();
 	
-	virtual void init();
-	virtual void release();
-
-	uint32 context_id;
-	bool initialized;
+	void init();
+	void release();
 	
 	GLEWContext * glew_context; // created in ctor
 	translucent_buffers * m_tbuffers; // created in init
@@ -209,13 +204,8 @@ struct gl_ctxt
 	nsgl_buffer * m_single_point;
 	
 	rt_map m_render_targets; // created and removed by driver
-	render_pass_vector m_render_passes; // created and removed by driver
 	opengl_state m_gl_state;
-
-	vid_obj_array need_release;
 };
-
-typedef std::map<uint32, gl_ctxt*> gl_context_map;
 
 class nsgl_driver : public nsvideo_driver
 {
@@ -245,29 +235,21 @@ class nsgl_driver : public nsvideo_driver
 
 	nsgl_framebuffer * remove_render_target(const nsstring & name);
 
-	virtual nsgl_framebuffer * default_target();
+	nsgl_framebuffer * default_target();
 
 	void destroy_render_target(const nsstring & name);
 
 	void clear_render_targets();
 
-	void clear_render_passes();
-
-	render_pass_vector * render_passes();
-
-	void cleanup_vid_objs();
-	
 	void setup_default_rendering();
 
 	void create_default_render_targets();
 
+	void create_default_render_queues();
+
 	void create_default_render_passes();
 
 	uint8 create_context();
-
-	bool destroy_context(uint8 c_id);
-
-	bool make_context_current(uint8 c_id);
 
 	gl_ctxt * current_context();
 
@@ -333,48 +315,16 @@ class nsgl_driver : public nsvideo_driver
 
 	void bind_gbuffer_textures(nsgl_framebuffer * fb);
 	
-	void enable_auto_cleanup(bool enable);
-
-	bool auto_cleanup();
-
 	void render_instanced_dc(instanced_draw_call * idc);
 
 	void render_light_dc(light_draw_call * idc);
 
 	void render_ui_dc(ui_draw_call * idc);
-
-	void register_texture(nstexture * tex);
-
-	void deregister_texture(nstexture * tex);
-
-	void register_shader(nsshader * shader);
-
-	void deregister_shader(nsshader * shader);
-
-	void register_submesh(nsmesh::submesh * submesh);
-
-	void deregister_submesh(nsmesh::submesh * submesh);
-
-	void register_tform_per_scene_info(tform_per_scene_info * tf);
-
-	void deregister_tform_per_scene_info(tform_per_scene_info * tf);
-
-	void register_sel_per_scene_info(sel_per_scene_info * si);
-
-	void deregister_sel_per_scene_info(sel_per_scene_info * si);
-
-	void register_particle_comp(nsparticle_comp * pcomp);
-
-	void deregister_particle_comp(nsparticle_comp * pcomp);
 	
   private:
-	bool _handle_window_resize(window_resize_event * evt);	
-	bool _valid_check();
-	
-	gl_ctxt * m_contexts[MAX_CONTEXT_COUNT];
-	gl_ctxt * m_current_context;
 
-	bool m_auto_cleanup;
+	bool _handle_window_resize(window_resize_event * evt);	
+	bool _valid_check();	
 };
 
 #endif

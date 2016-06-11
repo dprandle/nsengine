@@ -18,14 +18,6 @@
 // Default checkered material
 #define DEFAULT_MATERIAL "default"
 
-// Default drawcall queues
-#define SCENE_OPAQUE_QUEUE "scene_opaque_queue"
-#define SCENE_SELECTION_QUEUE "scene_selection_queue"
-#define SCENE_TRANSLUCENT_QUEUE "scene_translucent_queue"
-#define DIR_LIGHT_QUEUE "dir_light_queue"
-#define SPOT_LIGHT_QUEUE "spot_light_queue"
-#define POINT_LIGHT_QUEUE "point_light_queue"
-#define UI_RENDER_QUEUE "ui_render_queue"
 
 // Default shaders
 #define GBUFFER_SHADER "gbufferdefault"
@@ -247,112 +239,13 @@ typedef std::set<nsmaterial*> pmatset;
 typedef std::map<nsmaterial*, drawcall_queue> mat_drawcall_map;
 typedef std::map<nsshader*, pmatset> shader_mat_map;
 
-namespace nsrender
-{
-
-struct viewport
-{
-	viewport(
-		const fvec4 & norm_bounds = fvec4(),
-		nsentity * cam=nullptr,
-		uint32 window_tag_=0,
-		const ivec4 & bounds_=ivec4(),
-		const fvec4 & fog_color=fvec4(1,1,1,1),
-		const uivec2 & fog_near_far=uivec2(200,300),
-		bool lighting=true,
-		bool shadows=true,
-		bool oit=true,
-		bool selection=true,
-		bool debug_draw=false):
-		normalized_bounds(norm_bounds),
-		camera(cam),
-		window_tag(window_tag_),
-		bounds(bounds_),
-		m_fog_nf(fog_near_far),
-		m_fog_color(fog_color),
-		spot_lights(lighting),
-		spot_light_shadows(shadows),
-		point_lights(lighting),
-		point_light_shadows(shadows),
-		dir_lights(true),
-		dir_light_shadows(shadows),
-		order_independent_transparency(oit),
-		picking_enabled(selection)
-	{}
-
-	fvec4 normalized_bounds;
-	uint32 window_tag;
-	ivec4 bounds;
-	bool spot_lights;
-	bool spot_light_shadows;
-	bool point_lights;
-	bool point_light_shadows;
-	bool dir_lights;
-	bool dir_light_shadows;
-	bool order_independent_transparency;
-	bool picking_enabled;
-	bool debug_draw;
-	uivec2 m_fog_nf;
-	fvec4 m_fog_color;
-	nsentity * camera;
-	std::vector<nsentity*> ui_canvases;
-};
-
-}
-
-struct vp_node
-{
-	vp_node(const nsstring & vp_name_, nsrender::viewport * vp_);
-	~vp_node();
-	nsstring vp_name;
-	nsrender::viewport * vp;
-};
-
 class nsrender_system : public nssystem
 {
-	friend struct nsrender::viewport;
-	
   public:
 	
 	nsrender_system();
 	~nsrender_system();
 
-	bool add_queue(const nsstring & name, drawcall_queue * rt);
-
-	void clear_render_queues();
-
-	void create_default_render_queues();
-	
-	drawcall_queue * create_queue(const nsstring & name);
-
-	void destroy_queue(const nsstring & name);
-
-	drawcall_queue * queue(const nsstring & name);
-
-	drawcall_queue * remove_queue(const nsstring & name);
-
-	nsrender::viewport * insert_viewport(const nsstring & vp_name, const nsrender::viewport & vp, const nsstring & insert_before="");
-
-	bool remove_viewport(const nsstring & vp_name);
-
-	nsrender::viewport * viewport(const nsstring & vp_name);
-
-	void move_viewport_back(const nsstring & vp_name);
-
-	void move_viewport_forward(const nsstring & vp_name);
-
-	void move_viewport_to_back(const nsstring & vp_name);
-
-	void move_viewport_to_front(const nsstring & vp_name);
-
-	uivec3 pick(const fvec2 & screen_pos);
-
-	void push_scene(nsscene * scn);
-
-	nsrender::viewport * current_viewport();
-
-	nsrender::viewport * front_viewport(const fvec2 & screen_pos);
-	
 	nsmaterial * default_mat();
 
 	virtual void init();
@@ -364,8 +257,6 @@ class nsrender_system : public nssystem
 	void update();
 
 	void render();
-
-	std::list<vp_node> * viewports();
 
 	virtual int32 update_priority();
 
@@ -382,8 +273,6 @@ class nsrender_system : public nssystem
 	bool _handle_viewport_change(nsaction_event * evt);
 
 	nsmaterial * m_default_mat;
-	nsrender::viewport * m_current_vp;
-	std::list<vp_node> vp_list;
 
 	std::vector<instanced_draw_call> m_all_draw_calls;
 	std::vector<light_draw_call> m_light_draw_calls;

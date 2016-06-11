@@ -23,15 +23,11 @@
 
 #include <nsresource.h>
 #include <nsvector.h>
-#include <nsgl_object.h>
+#include <nsvideo_driver.h>
 #include <nssignal.h>
 
 class nstexture_inst;
-struct nsvid_texture;
-// Choosing non integer format means that image data will be floating point internally..
-// So if the data type is floating point, then no conversion - if data type is integer it will
-// be converted to -1 to 1, and if data type is unsigned integer will be converted from 0 to 1
-// This is true with usigned/signed bytes and shorts too
+
 enum tex_format
 {
 	tex_red,
@@ -100,7 +96,7 @@ struct tex_params
 	float anistropic_filtering;
 };
 
-class nstexture : public nsresource
+class nstexture : public nsresource, public nsvideo_object
 {
   public:
 	template <class PUPer>
@@ -114,17 +110,9 @@ class nstexture : public nsresource
 
 	nstexture & operator=(nstexture_inst rhs);
 	
-	void video_init();
-
-	void video_release();
-
-	virtual void video_allocate() = 0;
-
-	virtual void video_upload() = 0;
+	void video_context_init();
 
 	virtual void video_download();
-
-	void bind() const;
 
 	uint8 bytes_per_pixel() const;
 
@@ -162,14 +150,6 @@ class nstexture : public nsresource
 
 	pixel_component_type component_data_type();
 
-	template<class ret_type=nsvid_texture>
-	ret_type * video_texture()
-	{
-		return static_cast<ret_type*>(m_vid_tex);
-	}
-
-	void set_video_texture(nsvid_texture * tex);
-
 	void unbind() const;
 
 	virtual void init();
@@ -183,7 +163,6 @@ class nstexture : public nsresource
 	tex_format m_format;
 	pixel_component_type m_data_type;
 	uint32 m_compressed_size;
-	nsvid_texture * m_vid_tex;
 	tex_params m_params;
 };
 
@@ -192,9 +171,7 @@ class nstexture_inst : public nstexture
 	nstexture_inst(const nstexture & rhs):nstexture(rhs) {}
 	void init() {std::terminate();}
  	void pup(nsfile_pupper *) {std::terminate();}
-	void video_allocate() {std::terminate();}
 	int32 pixel_count() const {std::terminate();}
-	void video_upload() {std::terminate();}
 };
 
 template<class PUPer>
@@ -277,10 +254,6 @@ class nstex1d : public nstexture
 
 	nstex1d & operator=(nstex1d rhs);
 
-	void video_allocate();
-
-	void video_upload();
-
 	int32 pixel_count() const;
 
 	void pup(nsfile_pupper * p);
@@ -321,10 +294,6 @@ class nstex2d : public nstexture
 
 	int32 pixel_count() const;
 	
-	void video_allocate();
-	
-	void video_upload();
-
 	virtual void pup(nsfile_pupper * p);
 
 	void resize(const ivec2 & sz, bool resize_data=true);
@@ -363,10 +332,6 @@ class nstex3d : public nstexture
 
 	int32 pixel_count() const;
 	
-	void video_allocate();
-	
-	void video_upload();
-
 	virtual void pup(nsfile_pupper * p);
 
 	void resize(const ivec3 & size, bool resize_data=true);
@@ -406,18 +371,6 @@ class nstex_cubemap : public nstexture
 	nstex_cubemap & operator=(nstex_cubemap rhs);
 
 	int32 pixel_count() const;
-	
-	void video_allocate();
-	
-	void video_upload();
-
-	void video_allocate(uint8 cube_face);
-	
-	void video_upload(uint8 cube_face);
-
-	void video_download();
-
-	void video_download(uint8 cube_face);
 	
 	void pup(nsfile_pupper * p);
 

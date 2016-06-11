@@ -16,18 +16,134 @@
 #include <nsstring.h>
 #include <nsmath.h>
 #include <nsunordered_map.h>
-#include <nsmesh.h>
-
-namespace nsrender
-{
-struct viewport;
-}
+//#include <nsmesh.h>
+#include <list>
 
 class nsparticle_comp;
 struct tform_per_scene_info;
 struct sel_per_scene_info;
 class nstexture;
 class nsshader;
+class nsentity;
+class nsscene;
+
+#define SHADER_VID_OBJ_GUID "nsshader_vid_obj"
+#define TEXTURE_VID_OBJ_GUID "nstexture_vid_obj"
+#define MESH_VID_OBJ_GUID "nssubmesh_vid_obj"
+#define TFORM_VID_OBJ_GUID "nstform_per_scene_info_vid_obj"
+#define SEL_VID_OBJ_GUID "nssel_per_scene_info_vid_obj"
+#define PARTICLE_VID_OBJ_GUID "nsparticle_comp_vid_obj"
+#define MAX_CONTEXT_COUNT 16
+
+struct viewport
+{
+	viewport( const fvec4 & norm_bounds = fvec4(),
+			  nsentity * cam=nullptr,
+			  uint32 window_tag_=0,
+			  const ivec4 & bounds_=ivec4(),
+			  const fvec4 & fog_color=fvec4(1,1,1,1),
+			  const uivec2 & fog_near_far=uivec2(200,300),
+			  bool lighting=true,
+			  bool shadows=true,
+			  bool oit=true,
+			  bool selection=true,
+			  bool debug_draw=false):
+		normalized_bounds(norm_bounds),
+		camera(cam),
+		window_tag(window_tag_),
+		bounds(bounds_),
+		m_fog_nf(fog_near_far),
+		m_fog_color(fog_color),
+		spot_lights(lighting),
+		spot_light_shadows(shadows),
+		point_lights(lighting),
+		point_light_shadows(shadows),
+		dir_lights(true),
+		dir_light_shadows(shadows),
+		order_independent_transparency(oit),
+		picking_enabled(selection)
+	{}
+
+	fvec4 normalized_bounds;
+	uint32 window_tag;
+	ivec4 bounds;
+	bool spot_lights;
+	bool spot_light_shadows;
+	bool point_lights;
+	bool point_light_shadows;
+	bool dir_lights;
+	bool dir_light_shadows;
+	bool order_independent_transparency;
+	bool picking_enabled;
+	bool debug_draw;
+	uivec2 m_fog_nf;
+	fvec4 m_fog_color;
+	nsentity * camera;
+	std::vector<nsentity*> ui_canvases;
+};
+
+struct vp_node
+{
+	vp_node(const nsstring & vp_name_, viewport * vp_);
+	~vp_node();
+	nsstring vp_name;
+	viewport * vp;
+};
+
+struct draw_call
+{
+	virtual ~draw_call() {}
+};
+
+typedef std::vector<draw_call*> render_queue;
+typedef std::unordered_map<nsstring, render_queue*> queue_map;
+
+struct render_pass
+{
+	render_pass():
+		queue(nullptr),
+		vp(nullptr),
+		enabled(true)
+	{}
+	
+	virtual ~render_pass() {};
+	
+	virtual void setup() = 0;
+	virtual void render() = 0;
+	virtual void finish() = 0;
+
+	render_queue * queue;
+	viewport * vp;
+	bool enabled;
+};
+
+struct nsvid_obj;
+
+typedef std::vector<render_pass*> render_pass_vector;
+typedef std::vector<nsvid_obj*> vid_obj_vector;
+
+struct vid_ctxt
+{
+	vid_ctxt(uint32 cntxt_id):
+		context_id(cntxt_id),
+		initialized(false),
+		render_queues(),
+		render_passes(),
+		need_release(),
+		focused_vp(nullptr),
+		vp_list()
+	{}
+	
+	virtual ~vid_ctxt() {}
+
+	uint32 context_id;
+	bool initialized;
+	queue_map render_queues;
+	render_pass_vector render_passes;
+	vid_obj_vector need_release;
+	viewport * focused_vp;
+	std::list<vp_node> vp_list;
+};
 
 class nsvideo_driver
 {
@@ -37,61 +153,116 @@ class nsvideo_driver
 	
 	virtual ~nsvideo_driver();
 
-	virtual void setup_default_rendering() = 0;
+	virtual void push_scene(nsscene * scn) = 0;
+
+	virtual void push_entity(nsentity * ent) = 0;
+
+	void cleanup_vid_objs();
+
+	void enable_auto_cleanup(bool enable);
+
+	bool auto_cleanup();
+
+	void clear_render_queues();
+
+	bool add_queue(const nsstring & name, render_queue * rt);
+	
+	render_queue * create_queue(const nsstring & name);
+
+	void destroy_queue(const nsstring & name);
+
+	render_queue * queue(const nsstring & name);
+
+	render_queue * remove_queue(const nsstring & name);
+
+	void clear_render_passes();
+
+	render_pass_vector * render_passes();
+
+	viewport * insert_viewport(
+		const nsstring & vp_name,
+		const viewport & vp,
+		const nsstring & insert_before="");
+
+	bool remove_viewport(const nsstring & vp_name);
+
+	viewport * find_viewport(const nsstring & vp_name);
+
+	void move_viewport_back(const nsstring & vp_name);
+
+	void move_viewport_forward(const nsstring & vp_name);
+
+	void move_viewport_to_back(const nsstring & vp_name);
+
+	void move_viewport_to_front(const nsstring & vp_name);
+
+	viewport * focused_viewport();
+
+	void set_focused_viewport(viewport * vp);
+
+	viewport * front_viewport(const fvec2 & screen_pos);
+	
+	std::list<vp_node> * viewports();
+
+	virtual uint8 create_context() = 0;
+
+	virtual bool destroy_context(uint8 c_id);
+
+	virtual bool make_context_current(uint8 c_id);
+
+	virtual vid_ctxt * current_context();
+
+	virtual vid_ctxt * context(uint8 id);
 
 	virtual uivec3 pick(const fvec2 & mouse_pos) = 0;
 	
-	virtual void init(bool setup_default_rend);
-
 	bool initialized();
 
-	virtual void release();
+	virtual void window_resized(uint32 window_tag, const ivec2 & new_size) = 0;
 
-	virtual void resize_screen(const ivec2 & new_size) = 0;
-
-	virtual void render(nsrender::viewport * vp) = 0;
-
-	virtual void register_texture(nstexture * tex) = 0;
-
-	virtual void deregister_texture(nstexture * tex) = 0;
-
-	virtual void register_shader(nsshader * shader) = 0;
-
-	virtual void deregister_shader(nsshader * shader) = 0;
-
-	virtual void register_submesh(nsmesh::submesh * submesh) = 0;
-
-	virtual void deregister_submesh(nsmesh::submesh * submesh) = 0;
-
-	virtual void register_tform_per_scene_info(tform_per_scene_info * tf) = 0;
-
-	virtual void deregister_tform_per_scene_info(tform_per_scene_info * tf) = 0;
-
-	virtual void register_sel_per_scene_info(sel_per_scene_info * si) = 0;
-
-	virtual void deregister_sel_per_scene_info(sel_per_scene_info * si) = 0;
-
-	virtual void register_particle_comp(nsparticle_comp * pcomp) = 0;
-
-	virtual void deregister_particle_comp(nsparticle_comp * pcomp) = 0;
+	virtual void render(viewport * vp) = 0;
 
   protected:
-	
-	bool m_initialized;
+
+	bool m_auto_cleanup;
+	vid_ctxt * m_current_context;
+	vid_ctxt * m_contexts[MAX_CONTEXT_COUNT];
 };
 
-struct nsvid_ctxt_obj
-{	
-	virtual ~nsvid_ctxt_obj();
-};
+class nsvideo_object;
 
 struct nsvid_obj
 {
-	nsvid_obj():
-		ctxt_objs()
+	nsvid_obj(nsvideo_object * parent_):
+		parent(parent_)
 	{}
 	
-	nsvid_ctxt_obj * ctxt_objs[16];
+	virtual ~nsvid_obj() {}
+
+	virtual void update() = 0;
+
+	nsvideo_object * parent;
 };
+
+class nsvideo_object
+{
+  public:
+	nsvideo_object();
+
+	virtual ~nsvideo_object();
+
+	virtual bool initialized();
+
+	virtual void video_context_init() = 0;
+	
+	virtual void video_context_release();
+	
+	virtual void video_update();
+
+  protected:
+	
+	nsvid_obj * ctxt_objs[16];
+};
+
 
 #endif
