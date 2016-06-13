@@ -41,24 +41,16 @@ void nstform_comp::pup(nsfile_pupper * p)
 	return; // not puppable
 }
 
+tform_per_scene_info * nstform_comp::per_scene_info(nsscene * scn)
+{
+	auto fiter = m_scenes_info.find(scn);
+	if (fiter == m_scenes_info.end())
+		return nullptr;
+	return fiter->second;	
+}
+
 void nstform_comp::init()
 {
-}
-
-nsgl_buffer * nstform_comp::transform_buffer(const nsscene * scn)
-{
-	auto fiter = m_scenes_info.find(scn);
-	if (fiter == m_scenes_info.end())
-		return nullptr;
-	return fiter->second->m_tform_buffer;
-}
-
-nsgl_buffer * nstform_comp::transform_id_buffer(const nsscene * scn)
-{
-	auto fiter = m_scenes_info.find(scn);
-	if (fiter == m_scenes_info.end())
-		return nullptr;
-	return fiter->second->m_tform_id_buffer;
 }
 
 void nstform_comp::release()
@@ -409,6 +401,4 @@ void tform_per_scene_info::video_context_init()
 }
 
 tform_per_scene_info::~tform_per_scene_info()
-{
-	video_context_release();
-}
+{}

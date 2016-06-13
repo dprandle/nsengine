@@ -29,8 +29,6 @@ nsmesh::nsmesh(const nsmesh & copy_):
 	for (uint32 i = 0; i < m_submeshes.size(); ++i)
 	{
 		m_submeshes[i] = new submesh(*copy_.m_submeshes[i]);
-		m_submeshes[i]->init_gl();
-		m_submeshes[i]->allocate_buffers();
 	}
 }
 
@@ -54,17 +52,6 @@ nsmesh & nsmesh::operator=(nsmesh rhs)
 	return *this;
 }
 
-void nsmesh::allocate()
-{
-	for (uint32 i = 0; i < count(); ++i)
-		allocate(i);
-}
-
-void nsmesh::allocate(uint32 subindex)
-{
-	sub(subindex)->allocate_buffers();
-}
-
 void nsmesh::bake_rotation(uint32 subindex, const fquat & pRot)
 {
 	submesh * sb = sub(subindex);
@@ -78,7 +65,6 @@ void nsmesh::bake_rotation(uint32 subindex, const fquat & pRot)
 		if (sb->m_tangents.size() == sb->m_verts.size())
 			sb->m_tangents[i] = rotation_mat3(pRot) * sb->m_tangents[i];
 	}
-	sb->allocate_buffers();
 	calc_aabb();
 }
 
@@ -95,7 +81,6 @@ void nsmesh::bake_scaling(uint32 subindex, const fvec3 & pScaling)
 		if (sb->m_tangents.size() == sb->m_verts.size())
 			sb->m_tangents[i] %= pScaling;
 	}
-	sb->allocate_buffers();
 	calc_aabb();
 }
 
@@ -112,7 +97,6 @@ void nsmesh::bake_translation(uint32 subindex, const fvec3 & pTrans)
 		if (sb->m_tangents.size() == sb->m_verts.size())
 			sb->m_tangents[i] += pTrans;
 	}
-	sb->allocate_buffers();
 	calc_aabb();
 }
 
@@ -132,7 +116,6 @@ void nsmesh::bake()
 				sb->m_tangents[i] = (sb->m_node->m_world_tform * sb->m_tangents[i]).xyz();
 		}
 		sb->m_node = NULL;
-		sb->allocate_buffers();
 	}
 }
 
@@ -151,7 +134,6 @@ void nsmesh::bake_rotation(const fquat & pRot)
 			if (sb->m_tangents.size() == sb->m_verts.size())
 				sb->m_tangents[i] = rotation_mat3(pRot) * sb->m_tangents[i];
 		}
-		sb->allocate_buffers();
 	}
 	calc_aabb();
 }
@@ -171,7 +153,6 @@ void nsmesh::bake_scaling(const fvec3 & pScaling)
 			if (sb->m_tangents.size() == sb->m_verts.size())
 				sb->m_tangents[i] %= pScaling;
 		}
-		sb->allocate_buffers();
 	}
 	calc_aabb();
 }
@@ -191,7 +172,6 @@ void nsmesh::bake_translation(const fvec3 & pTrans)
 			if (sb->m_tangents.size() == sb->m_verts.size())
 				sb->m_tangents[i] += pTrans;
 		}
-		sb->allocate_buffers();
 	}
 	calc_aabb();
 }
@@ -245,12 +225,6 @@ void nsmesh::flip_uv(uint32 pSubIndex)
 	submesh * sb = sub(pSubIndex);
 	for (uint32 i = 0; i < sb->m_tex_coords.size(); ++i)
 		sb->m_tex_coords[i].v = 1 - sb->m_tex_coords[i].v;
-
-	sb->m_tex_buf.bind();
-	sb->m_tex_buf.set_data(sb->m_tex_coords,
-						 0,
-						 static_cast<uint32>(sb->m_tex_coords.size()));
-	sb->m_tex_buf.unbind();
 }
 
 void nsmesh::pup(nsfile_pupper * p)
@@ -312,7 +286,6 @@ bool nsmesh::add(submesh * submesh)
 nsmesh::submesh * nsmesh::create()
 {
 	submesh * subMesh = new submesh(this);
-	subMesh->init_gl();
 	if (!add(subMesh))
 	{
 		delete subMesh;
@@ -341,27 +314,6 @@ void nsmesh::flip_normals(uint32 pSubIndex)
 		sb->m_normals[i] *= -1.0f;
 		sb->m_tangents[i] *= -1.0f;
 	}
-
-	sb->m_norm_buf.bind();
-	sb->m_norm_buf.set_data(sb->m_normals,
-						  0,
-						  static_cast<uint32>(sb->m_normals.size()));
-	sb->m_tang_buf.bind();
-	sb->m_tang_buf.set_data(sb->m_tangents,
-						  0,
-						  static_cast<uint32>(sb->m_tangents.size()));
-	sb->m_norm_buf.unbind();
-}
-
-void nsmesh::init_gl()
-{
-	for (uint32 i = 0; i < count(); ++i)
-		init_gl(i);
-}
-
-void nsmesh::init_gl(uint32 subindex)
-{
-	sub(subindex)->init_gl();
 }
 
 const nsbounding_box & nsmesh::aabb()
@@ -390,8 +342,7 @@ nsmesh::submesh * nsmesh::sub(uint32 pIndex)
 }
 
 void nsmesh::init()
-{
-}
+{}
 
 float nsmesh::volume()
 {
@@ -562,13 +513,6 @@ void nsmesh::submesh::connected_joints::add_joint(uint32 pBoneID, float pWeight)
 }
 
 nsmesh::submesh::submesh(nsmesh * pParentMesh): 
-	m_vert_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_tex_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_norm_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_tang_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_indice_buf(nsbuffer_object::element_array,nsbuffer_object::storage_mutable),
-	m_joint_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_vao(),
 	m_verts(),
 	m_tex_coords(),
 	m_normals(),
@@ -577,22 +521,17 @@ nsmesh::submesh::submesh(nsmesh * pParentMesh):
 	m_triangles(),
 	m_lines(),
 	m_joints(),
-	m_prim_type(0),
+	m_prim_type(prim_triangles),
 	m_node(NULL),
 	m_name(),
 	m_parent_mesh(pParentMesh),
 	m_bounding_box(),
 	m_has_tex_coords(false)
-{}
+{
+	video_context_init();
+}
 
 nsmesh::submesh::submesh(const submesh & copy_):
-	m_vert_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_tex_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_norm_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_tang_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_indice_buf(nsbuffer_object::element_array,nsbuffer_object::storage_mutable),
-	m_joint_buf(nsbuffer_object::array,nsbuffer_object::storage_mutable),
-	m_vao(),
 	m_verts(copy_.m_verts),
 	m_tex_coords(copy_.m_tex_coords),
 	m_normals(copy_.m_normals),
@@ -608,6 +547,7 @@ nsmesh::submesh::submesh(const submesh & copy_):
 	m_bounding_box(copy_.m_bounding_box),
 	m_has_tex_coords(copy_.m_has_tex_coords)
 {
+	video_context_init();
 	if (copy_.m_node != nullptr)
 		m_node = m_parent_mesh->tree()->find_node(copy_.m_node->m_node_id);
 }
@@ -632,44 +572,7 @@ nsmesh::submesh & nsmesh::submesh::operator=(submesh rhs_)
 }
 
 nsmesh::submesh::~submesh()
-{
-	m_vert_buf.video_release();
-	m_tex_buf.video_release();
-	m_norm_buf.video_release();
-	m_tang_buf.video_release();
-	m_joint_buf.video_release();
-	m_indice_buf.video_release();
-	m_vao.video_release();
-}
-
-void nsmesh::submesh::allocate_buffers()
-{
-	m_vert_buf.bind();
-	m_vert_buf.allocate(m_verts,
-					 nsbuffer_object::mutable_static_draw,
-					 static_cast<uint32>(m_verts.size()));
-	m_tex_buf.bind();
-	m_tex_buf.allocate(m_tex_coords,
-					 nsbuffer_object::mutable_static_draw,
-					 static_cast<uint32>(m_tex_coords.size()));
-	m_norm_buf.bind();
-	m_norm_buf.allocate(m_normals,
-					  nsbuffer_object::mutable_static_draw,
-					  static_cast<uint32>(m_normals.size()));
-	m_tang_buf.bind();
-	m_tang_buf.allocate(m_tangents,
-					  nsbuffer_object::mutable_static_draw,
-					  static_cast<uint32>(m_tangents.size()));
-	m_joint_buf.bind();
-	m_joint_buf.allocate(m_joints,
-					  nsbuffer_object::mutable_static_draw,
-					  static_cast<uint32>(m_joints.size()));
-	m_indice_buf.bind();
-	m_indice_buf.allocate(m_indices,
-						nsbuffer_object::mutable_static_draw,
-						static_cast<uint32>(m_indices.size()));
-	update_vao();
-}
+{}
 
 void nsmesh::submesh::calc_aabb()
 {
@@ -833,8 +736,7 @@ nsmesh_plane::~nsmesh_plane()
 void nsmesh_plane::init()
 {
 	submesh * smsh = create();
-	smsh->m_prim_type = GL_TRIANGLE_STRIP;
-	smsh->init_gl();
+	smsh->m_prim_type = prim_triangles;
 	
 	smsh->m_verts.push_back(fvec3(-1,-1,0));
 	smsh->m_verts.push_back(fvec3(-1,1,0));
@@ -863,8 +765,6 @@ void nsmesh_plane::init()
 
 	smsh->m_joints.resize(4);
 	smsh->m_has_tex_coords = true;
-
-	smsh->allocate_buffers();
 }
 
 void nsmesh::regenerate_node_ids()
@@ -895,7 +795,6 @@ void nsmesh_plane::set_dim(const fvec2 & dim_)
 	smsh->m_verts[1] = fvec3(-hdim.x,hdim.y,0);
 	smsh->m_verts[2] = fvec3(hdim.x,-hdim.y,0);
 	smsh->m_verts[3] = fvec3(hdim.x,hdim.y,0);
-	smsh->allocate_buffers();
 }
 
 uint32 nsmesh::node_count()

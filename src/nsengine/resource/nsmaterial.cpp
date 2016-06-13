@@ -18,6 +18,8 @@ Description:
 #include <nsshader_manager.h>
 #include <nstex_manager.h>
 
+#include <myGL/glew.h>
+
 nsmaterial::nsmaterial():
 	nsresource(),
 	m_alpha_blend(false),

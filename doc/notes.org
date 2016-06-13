@@ -1,13 +1,5 @@
 * Notes
 
-I am moving the opengl specific code in to nsopengl_driver.
+I am now updating the push_scene, push_entity, and _push_light_draw_calls, and rendering calls within the gl_driver to work correctly.
 
-This will register resources and will assign the needed opengl resources so that those resources can be rendered later. This will be accomplished with add/remove/create/destroy resource events. Most likely they should be on create and destroy events - or possibly even in the resource's constructor/destructor to make sure that gl resources are assigned.
-
-A pointer to the resource can be used as the resource's identifier - this can get the resource's type and owning plugin id. Something like that.
-
-In the event of a name change - the driver doesn't care because its using the resource's memory address to store the needed gpu memory. If the resource is deleted, a resource deleted event needs to be propagated to the render system.
-
-Just finished moving render queues, render passes, and render targets in to a base video driver class. Now we need to go through and figure out how we want to push draw calls to the different queues, and also how to get the camera transform effectively to the shaders.
-
-Finally we will need to make the opengl_driver responsible for initializing and keeping track of all opengl resources.
+After that I will need to go through the render() function for each pass and transfer them to use any changed draw calls.

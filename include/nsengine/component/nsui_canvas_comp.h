@@ -63,6 +63,8 @@ public:
 
 	nsui_canvas_comp & operator=(nsui_canvas_comp rhs_);
 
+	std::vector<nsentity*> m_ordered_ents;
+	
   private:	
 	void _populate_pup_vec();
 	void _remove_all_comp_entries(nsentity * ent);
@@ -74,7 +76,6 @@ public:
 	nsrouter * m_router;
 	std::vector<uivec2> m_unloaded_ents;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
-	std::vector<nsentity *> m_ordered_ents;
 	
 	struct rect_info
 	{

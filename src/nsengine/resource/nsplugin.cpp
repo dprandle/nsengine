@@ -42,6 +42,10 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nstile_comp.h>
 #include <nslight_comp.h>
 
+
+// SHOULD GO AWAY WHEN DOING MAT THING
+#include <nsgl_driver.h>
+
 nsplugin::nsplugin():
     nsresource(),
 	m_notes(),

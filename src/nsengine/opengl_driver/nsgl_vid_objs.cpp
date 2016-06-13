@@ -10,6 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
+#include <nstimer.h>
 #include <nsentity.h>
 #include <nsgl_vid_objs.h>
 #include <nsgl_shader.h>
@@ -23,6 +24,7 @@
 #include <nsparticle_comp.h>
 #include <nssel_comp.h>
 #include <nsengine.h>
+#include <nsgl_driver.h>
 
 nsgl_shader_obj::nsgl_shader_obj(nsvideo_object * parent_):
 	nsvid_obj(parent_),
@@ -101,6 +103,7 @@ nsgl_texture_obj::~nsgl_texture_obj()
 void nsgl_texture_obj::update()
 {
 	nstexture * tex = (nstexture*)parent;
+	gl_tex->bind();
 	if (tex->type() == type_to_hash(nstex1d))
 	{
 		nstex1d * tex1d = (nstex1d*)tex;
@@ -159,6 +162,7 @@ void nsgl_texture_obj::update()
 	}
 	if (tex->mipmap_autogen())
 		gl_tex->generate_mipmaps();
+	gl_tex->unbind();
 }
 
 nsgl_submesh_obj::nsgl_submesh_obj(nsvideo_object * parent_):
@@ -385,17 +389,198 @@ void nsgl_sel_comp_obj::update()
 }
 
 nsgl_particle_comp_obj::nsgl_particle_comp_obj(nsvideo_object * parent_):
-	nsvid_obj(parent_)
+	nsvid_obj(parent_),
+	gl_front_buffer(new nsgl_buffer()),
+	gl_back_buffer(new nsgl_buffer()),
+	last_size(0),
+	buffer_index(0)
 {
+	nsparticle_comp * pcomp = (nsparticle_comp*)parent;
 	
+	gl_xfbs[0] = new nsgl_xfb();
+	gl_xfbs[1] = new nsgl_xfb();
+	gl_xfbs[0]->init();
+	gl_xfbs[1]->init();
+
+	gl_vaos[0] = new nsgl_vao();
+	gl_vaos[1] = new nsgl_vao();
+	gl_vaos[0]->init();
+	gl_vaos[1]->init();
+	
+	gl_front_buffer->init();
+	gl_back_buffer->init();
+
+	last_size = pcomp->max_particles();
+	// Create an array of particles to allocate the buffers
+	std::vector<particle> particles;
+	particles.resize(pcomp->max_particles());
+	particles[0].age_type_reserved.y = 1.0f;
+
+	gl_vaos[0]->bind();
+
+	gl_back_buffer->target = nsgl_buffer::array;
+	gl_back_buffer->bind();
+	gl_back_buffer->allocate(particles,nsgl_buffer::mutable_dynamic_draw);
+	
+	gl_vaos[0]->enable(0);
+	gl_vaos[0]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(particle), 0);
+	gl_vaos[0]->enable(1);
+	gl_vaos[0]->vertex_attrib_ptr(1, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4));
+	gl_vaos[0]->enable(2);
+	gl_vaos[0]->vertex_attrib_ptr(2, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 2);
+	gl_vaos[0]->enable(3);
+	gl_vaos[0]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 3);
+	gl_vaos[0]->unbind();
+
+	gl_vaos[1]->bind();
+	gl_front_buffer->target = nsgl_buffer::array;
+	gl_front_buffer->bind();
+	gl_front_buffer->allocate(particles,nsgl_buffer::mutable_dynamic_draw);
+
+	gl_vaos[1]->enable(0);
+	gl_vaos[1]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(particle), 0);
+	gl_vaos[1]->enable(1);
+	gl_vaos[1]->vertex_attrib_ptr(1, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4));
+	gl_vaos[1]->enable(2);
+	gl_vaos[1]->vertex_attrib_ptr(2, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 2);
+	gl_vaos[1]->enable(3);
+	gl_vaos[1]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 3);
+	gl_vaos[1]->unbind();
+
+	gl_front_buffer->target = nsgl_buffer::transform_feedback;
+	gl_front_buffer->target_index = 0;
+	gl_back_buffer->target = nsgl_buffer::transform_feedback;
+	gl_back_buffer->target_index = 0;
+
+	gl_xfbs[0]->prim_mode = nsgl_xfb::gl_points;
+	gl_xfbs[1]->prim_mode = nsgl_xfb::gl_points;
+
+	gl_xfbs[0]->bind();
+	gl_front_buffer->bind();
+	gl_xfbs[0]->unbind();
+
+	gl_xfbs[1]->bind();
+	gl_back_buffer->bind();
+	gl_xfbs[1]->unbind();	
 }
 
 nsgl_particle_comp_obj::~nsgl_particle_comp_obj()
 {
-	
+	gl_front_buffer->release();
+	gl_back_buffer->release();
+	delete gl_front_buffer;
+	delete gl_back_buffer;
+	for (uint8 i = 0; i < 2; ++i)
+	{
+		gl_xfbs[i]->release();
+		delete gl_xfbs[i];
+		gl_vaos[i]->release();
+		delete gl_vaos[i];
+	}
 }
 
 void nsgl_particle_comp_obj::update()
 {
+	nsparticle_comp * comp = (nsparticle_comp *)parent;
+	if (comp->simulating())
+		comp->elapsed() += nse.timer()->fixed();
+
+	if (comp->elapsed() * 1000 >= comp->lifetime())
+	{
+		comp->reset();
+		comp->enable_simulation(comp->looping());
+	}
+
+	nsshader * pshader = get_resource<nsshader>(comp->shader_id());
+	if (pshader == nullptr)
+	{
+		dprint("nsgl_particle_comp_obj::update No processing shader set in component - skipping");
+		return;
+	}
+	nsgl_shader * pshdr = pshader->video_obj<nsgl_shader_obj>()->gl_shdr;
 	
+	if (pshdr->error_state != nsgl_shader::error_none)
+	{
+		dprint("nsgl_particle_comp_obj::update Comp shader error set to " + std::to_string(pshdr->error_state) + " in entity \"" + comp->owner()->name() + "\"");
+		return;
+	}
+
+	pshdr->bind();
+	nstexture * texRand = get_resource<nstexture>(comp->rand_tex_id());
+	if (texRand != nullptr)
+	{
+		nsgl_texture * gltex = texRand->video_obj<nsgl_texture_obj>()->gl_tex;
+		nse.video_driver<nsgl_driver>()->set_active_texture_unit(RAND_TEX_UNIT);
+		gltex->bind();
+	}
+		
+	pshdr->set_uniform("randomTex", RAND_TEX_UNIT);
+	pshdr->set_uniform("dt", float(nse.timer()->fixed()));
+	pshdr->set_uniform("timeElapsed", comp->elapsed());
+	pshdr->set_uniform("lifetime", comp->lifetime());
+	pshdr->set_uniform("launchFrequency", float(comp->emission_rate()));
+	pshdr->set_uniform("angVelocity", comp->angular_vel());
+	pshdr->set_uniform("motionGlobal", comp->motion_global_time());
+	pshdr->set_uniform("visualGlobal", comp->visual_global_time());
+	pshdr->set_uniform("interpolateMotion", comp->motion_key_interpolation());
+	pshdr->set_uniform("interpolateVisual", comp->visual_key_interpolation());
+	pshdr->set_uniform("startingSize", comp->starting_size());
+	pshdr->set_uniform("emitterSize", comp->emitter_size());
+	pshdr->set_uniform("emitterShape", comp->emitter_shape());
+	pshdr->set_uniform("initVelocityMult", comp->init_vel_mult());
+	pshdr->set_uniform("motionKeyType", uint32(comp->motion_key_type()));
+
+	uint32 index = 0;
+	ui_fvec3_map::const_iterator keyIter = comp->motion_keys().begin();
+	while (keyIter != comp->motion_keys().end())
+	{
+		pshdr->set_uniform(
+			"forceKeys[" + std::to_string(index) + "].time",
+			float(keyIter->first) / float(comp->max_motion_keys() * 1000) * float(comp->lifetime()));
+		pshdr->set_uniform(
+			"forceKeys[" + std::to_string(index) + "].force",
+			keyIter->second);
+		++index;
+		++keyIter;
+	}
+
+	index = 0;
+	keyIter = comp->visual_keys().begin();
+	while (keyIter != comp->visual_keys().end())
+	{
+		pshdr->set_uniform(
+			"sizeKeys[" + std::to_string(index) + "].time",
+			float(keyIter->first) / float(comp->max_visual_keys() * 1000) * float(comp->lifetime()));
+		pshdr->set_uniform(
+			"sizeKeys[" + std::to_string(index) + "].sizeVel",
+			fvec2(keyIter->second.x, keyIter->second.y));
+		pshdr->set_uniform(
+			"sizeKeys[" + std::to_string(index) + "].alpha",
+			keyIter->second.z);
+		++index;
+		++keyIter;
+	}
+		
+	gl_xfbs[buffer_index]->bind();
+	gl_vaos[buffer_index]->bind();
+	gl_xfbs[buffer_index]->begin();
+	
+    glEnable(GL_RASTERIZER_DISCARD);
+	if (comp->first())
+	{
+		glDrawArrays(GL_POINTS, 0, 1);
+		gl_err_check("nsparticle_system::update in glDrawArrays");
+		comp->set_first(false);
+	}
+	else
+	{
+		glDrawTransformFeedback(GL_POINTS, gl_xfbs[1-buffer_index]->gl_id);
+		gl_err_check("nsparticle_system::update in glDrawTransformFeedback");
+	}
+	glDisable(GL_RASTERIZER_DISCARD);
+	
+	gl_xfbs[buffer_index]->end();
+	gl_vaos[buffer_index]->unbind();
+	gl_xfbs[buffer_index]->unbind();
+	buffer_index = 1 - buffer_index;
 }

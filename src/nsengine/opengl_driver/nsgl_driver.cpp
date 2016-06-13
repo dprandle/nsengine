@@ -10,29 +10,93 @@
   \copywrite Earth Banana Games 2013
 */
 
+#include <nsgl_vid_objs.h>
+#include <nsgl_render_passes.h>
+#include <nsgl_draw_calls.h>
+#include <nsgl_driver.h>
+#include <nsgl_driver.h>
+#include <nsgl_shadow_framebuffer.h>
+#include <nsgl_gbuffer.h>
+#include <nsgl_texture.h>
+#include <nsgl_buffer.h>
+#include <nsgl_shader.h>
+#include <nsgl_vao.h>
+
+#include <nsmaterial.h>
+#include <nsshader.h>
+#include <nsui_button_comp.h>
+#include <nsui_canvas_comp.h>
+#include <nsui_comp.h>
 #include <nsfont.h>
+#include <nsscene.h>
+#include <nscam_comp.h>
+#include <nslight_comp.h>
+#include <nsrender_comp.h>
 #include <nsanim_comp.h>
 #include <nsterrain_comp.h>
 #include <nssel_comp.h>
 #include <nsplugin.h>
-#include <nsrender_system.h>
-#include <nsgl_driver.h>
-#include <nsshader.h>
-#include <nsgl_shadow_framebuffer.h>
-#include <nsgl_gbuffer.h>
-#include <nsmaterial.h>
-#include <nsscene.h>
-#include <nscam_comp.h>
-#include <nsshader_manager.h>
-#include <nslight_comp.h>
-#include <nsrender_comp.h>
-#include <nsgl_texture.h>
+#include <nsengine.h>
+#include <nsui_system.h>
+#include <nstimer.h>
+
+render_shaders::render_shaders() :
+	deflt(nullptr),
+	deflt_wireframe(nullptr),
+	deflt_translucent(nullptr),
+	dir_light(nullptr),
+	point_light(nullptr),
+	spot_light(nullptr),
+	light_stencil(nullptr),
+	shadow_cube(nullptr),
+	shadow_2d(nullptr),
+	frag_sort(nullptr),
+	deflt_particle(nullptr),
+	sel_shader(nullptr)
+{}
+
+bool render_shaders::error() const
+{
+	return (
+		deflt->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		deflt_wireframe->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		deflt_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		dir_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		point_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		spot_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		light_stencil->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		frag_sort->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		deflt_particle->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		sel_shader->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none);
+}
+
+bool render_shaders::valid() const
+{
+	return (
+		deflt != nullptr &&
+		deflt_wireframe != nullptr &&
+		deflt_translucent != nullptr &&
+		dir_light != nullptr &&
+		point_light != nullptr &&
+		spot_light != nullptr &&
+		light_stencil != nullptr &&
+		shadow_cube != nullptr &&
+		shadow_2d != nullptr &&
+		frag_sort != nullptr &&
+		deflt_particle != nullptr &&
+		sel_shader != nullptr);
+}
 
 translucent_buffers::translucent_buffers():
 	atomic_counter(new nsgl_buffer()),
 	header(new nsgl_buffer()),
 	fragments(new nsgl_buffer()),
 	header_clr_data(DEFAULT_ACCUM_BUFFER_RES_X*DEFAULT_ACCUM_BUFFER_RES_Y, -1)
+{}
+
+void translucent_buffers::init()
 {
 	atomic_counter->target = nsgl_buffer::atomic_counter;
 	atomic_counter->target_index = 0;
@@ -42,14 +106,18 @@ translucent_buffers::translucent_buffers():
 	header->init();
 	fragments->target = nsgl_buffer::shader_storage;
 	fragments->target_index = 1;
-	fragments->init();
+	fragments->init();	
+}
+
+void translucent_buffers::release()
+{
+	atomic_counter->release();
+	header->release();
+	fragments->release();	
 }
 
 translucent_buffers::~translucent_buffers()
 {
-	atomic_counter->release();
-	header->release();
-	fragments->release();
 	delete atomic_counter;
 	delete header;
 	delete fragments;
@@ -78,652 +146,6 @@ void translucent_buffers::reset_atomic_counter()
 	atomic_counter->unbind();
 }
 
-void gl_render_pass::setup_pass()
-{
-	nsgl_framebuffer * tgt = ren_target;
-	tgt->target = nsgl_framebuffer::fb_draw;
-	tgt->bind();
-
-	if (use_vp_size && vp != nullptr)
-		gl_state.current_viewport = ivec4(vp->bounds.xy(), vp->bounds.zw() - vp->bounds.xy());
-	else
-		gl_state.current_viewport = ivec4(0, 0, tgt->size);
-	
-	driver->set_gl_state(gl_state);
-}
-
-struct font_layout
-{
-	uint32 line;
-	uint32 xpos;
-};
-
-void ui_render_pass::render()
-{
-	ren_target->bind();
-	ren_target->update_draw_buffers();
-	const ivec4 & viewp = gl_state.current_viewport;
-	
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		ui_draw_call * uidc = (ui_draw_call*)(*draw_calls)[i];		
-
-		// render the border
-		if (uidc->shdr != nullptr)
-		{
-			uidc->shdr->bind();
-			uidc->shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
-			uidc->shdr->set_uniform("entity_id", uidc->entity_id);
-			uidc->shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
-			uidc->shdr->set_uniform("wscale", uidc->content_wscale);
-			uidc->shdr->set_uniform("content_tform", uidc->content_tform);
-			uidc->shdr->set_uniform("pixel_blend", 2.0f);
-
-			driver->enable_stencil_test(true);
-			driver->set_stencil_func(GL_ALWAYS, 1, 0xFF);
-			driver->set_stencil_op(GL_KEEP, GL_KEEP, GL_REPLACE);			
-			
-			uidc->shdr->set_uniform("border_rad_top", uidc->top_border_radius);
-			uidc->shdr->set_uniform("border_rad_bottom", uidc->bottom_border_radius);
-			uidc->shdr->set_uniform("frag_color_out", uidc->mat->color());
-			uidc->shdr->set_uniform("color_mode", uidc->mat->color_mode());
-			uidc->shdr->set_uniform("border_pix", fvec4(0.0f));
-			tex_map_info ti = uidc->mat->mat_tex_info(nsmaterial::diffuse);
-			uidc->shdr->set_uniform("tex_coord_rect", ti.coord_rect);
-			uidc->shdr->set_uniform("color_mult", ti.color_mult);
-			uidc->shdr->set_uniform("color_add", ti.color_add);
-			driver->enable_culling(uidc->mat->culling());
-			driver->set_cull_face(uidc->mat->cull_mode());
-			driver->bind_textures(uidc->mat);
-			driver->render_ui_dc(uidc);
-
-			driver->set_stencil_func(GL_NOTEQUAL, 1, 0xFF);
-
-			if (uidc->top_border_radius != fvec4(0.0f))
-			{
-				uidc->shdr->set_uniform("border_rad_top", uidc->top_border_radius +
-										fvec4(uidc->border_pix.xw(),uidc->border_pix.zw()));
-			}
-			else
-			{
-				uidc->shdr->set_uniform("border_rad_top", fvec4(0.0f));
-			}
-
-			if (uidc->bottom_border_radius != fvec4(0.0f))
-			{
-				uidc->shdr->set_uniform("border_rad_bottom", uidc->bottom_border_radius +
-										fvec4(uidc->border_pix.xy(),uidc->border_pix.zy()));
-			}
-			else
-			{
-				uidc->shdr->set_uniform("border_rad_bottom", fvec4(0.0f));
-			}
-			
-			uidc->shdr->set_uniform("border_pix", uidc->border_pix);
-			uidc->shdr->set_uniform("color_mode", uidc->border_mat->color_mode());
-			uidc->shdr->set_uniform("frag_color_out", uidc->border_mat->color());
-			ti = uidc->border_mat->mat_tex_info(nsmaterial::diffuse);
-			uidc->shdr->set_uniform("tex_coord_rect", ti.coord_rect);
-			uidc->shdr->set_uniform("color_mult", ti.color_mult);
-			uidc->shdr->set_uniform("color_add", ti.color_add);
-			driver->enable_culling(uidc->border_mat->culling());
-			driver->set_cull_face(uidc->border_mat->cull_mode());
-			driver->render_ui_dc(uidc);
-			driver->enable_stencil_test(false);
-		}
-		
-		// render the text part of the ui-element
-		if (uidc->fnt != nullptr)
-		{
-			font_info & fi = uidc->fnt->get_font_info();
-
-			uidc->text_shader->bind();
-			uidc->text_shader->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
-			uidc->text_shader->set_uniform("entity_id", uidc->entity_id);
-			uidc->text_shader->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
-			uidc->text_shader->set_uniform("content_tform", uidc->content_tform);
-			uidc->text_shader->set_uniform("frag_color_out", uidc->fnt_material->color());
-
-			tex_map_info ti = uidc->fnt_material->mat_tex_info(nsmaterial::diffuse);
-			uidc->text_shader->set_uniform("color_mult", ti.color_mult);
-			uidc->text_shader->set_uniform("color_add", ti.color_add);
-
-			fvec2 rect_wh = fvec2(viewp.z, viewp.w) % uidc->content_wscale;
-            fvec2 cursor_pos(0,0);
-			int32 cur_line = 0;
-			int32 line_index = 0;
-			std::vector<float> x_offsets;
-
-			// figure out the vertical starting cursor pos
-			if (uidc->alignment < 3) // top alignment
-			{
-				cursor_pos.y = rect_wh.h - fi.line_height - uidc->text_margins.w;
-			}
-			else if (uidc->alignment < 6) // middle alignment
-			{
-				cursor_pos.y = (rect_wh.h - uidc->text_margins.y - uidc->text_margins.w - fi.line_height) / 2.0f;
-				float v_offset_factor = float(uidc->text_line_sizes.size()-1) / 2.0f;
-				cursor_pos.y += v_offset_factor * float(fi.line_height);
-			}
-			else // bottom alignment
-			{
-				cursor_pos.y = uidc->text_margins.y + (uidc->text_line_sizes.size() -1) * fi.line_height;
-			}
-
-			// figure out the first line's horizontal pos
-			if (uidc->alignment % 3 == 0) // left
-			{
-				x_offsets.resize(uidc->text_line_sizes.size(), uidc->text_margins.x);
-			}
-			else if (uidc->alignment % 3 == 1) // center
-			{
-				x_offsets.resize(uidc->text_line_sizes.size(), 0);
-				uint32 ti = 0;
-				for (uint32 i = 0; i < x_offsets.size(); ++i)
-				{
-					float xoff = 0.0f;
-					for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
-					{
-						char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
-						xoff += ci.xadvance;
-						++ti;
-					}
-					++ti; // newline char
-					x_offsets[i] = (rect_wh.w - uidc->text_margins.x - uidc->text_margins.z - xoff) / 2.0f;
-				}
-			}
-			else // right
-			{
-				x_offsets.resize(uidc->text_line_sizes.size(), 0);
-				uint32 ti = 0;
-				for (uint32 i = 0; i < x_offsets.size(); ++i)
-				{
-					float xoff = 0.0f;
-					for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
-					{
-						char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
-						xoff += ci.xadvance;
-						++ti;
-					}
-					++ti;
-					x_offsets[i] = (rect_wh.w - uidc->text_margins.z - xoff);
-				}
-			}
-			cursor_pos.x = x_offsets[0];
-			fvec2 cursor_xy(x_offsets[uidc->cursor_offset.y],cursor_pos.y);
-			for (uint32 i = 0; i < uidc->text.size(); ++i)
-			{
-                if (uidc->text[i] == '\n')
-                {
-                    cursor_pos.y -= fi.line_height;
-					line_index = 0;
-					++cur_line;
-                    cursor_pos.x = x_offsets[cur_line];
-					if (cur_line == uidc->cursor_offset.y)
-						cursor_xy.y = cursor_pos.y;
-                    continue;
-                }
-
-				char_info & ci = uidc->fnt->get_char_info(uidc->text[i]);
-				nstex2d * tex = get_resource<nstex2d>(uidc->fnt->texture_id(ci.page_index));
-				if (tex == nullptr)
-					continue;
-
-				driver->set_active_texture_unit(nsmaterial::diffuse);
-				tex->bind();
-
-				ivec2 tsz = tex->size();
-				fvec2 tex_size(tsz.x,tsz.y);
-
-                fvec4 rect(ci.rect.x / tex_size.x,
-                           ((tex_size.y - ci.rect.y) - ci.rect.w) / tex_size.y,
-                           (ci.rect.x + ci.rect.z) / tex_size.x,
-                           (tex_size.y - ci.rect.y) / tex_size.y);
-
-				uidc->text_shader->set_uniform("pixel_wh", fvec2(ci.rect.z,ci.rect.w));
-				uidc->text_shader->set_uniform("drawing_cursor", false);
-                uidc->text_shader->set_uniform("offset_xy", fvec2(cursor_pos.x + ci.offset.x, cursor_pos.y + fi.line_height - ci.offset.y - ci.rect.w));
-				uidc->text_shader->set_uniform("tex_coord_rect", rect);
-				uidc->text_shader->set_uniform("rect_bounds", rect_wh);
-				uidc->text_shader->set_uniform("margins", uidc->text_margins);
-
-				cursor_pos.x += ci.xadvance;
-				++line_index;
-
-				if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
-					cursor_xy.x = cursor_pos.x;				
-
-				driver->render_ui_dc(uidc);
-			}
-
-			// lets draw the cursor if the text is editable - ie has a text input component
-			if (uidc->text_editable)
-			{
-				uidc->text_shader->set_uniform("drawing_cursor", true);
-				uidc->text_shader->set_uniform("frag_color_out", uidc->cursor_color);
-				uidc->text_shader->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width,fi.line_height));
-				uidc->text_shader->set_uniform("offset_xy",cursor_xy);
-				driver->render_ui_dc(uidc);
-			}
-		}
-	}
-}
-
-void selection_render_pass::render()
-{
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		instanced_draw_call * dc = (instanced_draw_call*)(*draw_calls)[i];
-		ren_target->set_draw_buffer(nsgl_framebuffer::att_none);		
-		dc->shdr->bind();
-		dc->shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
-		if (vp->camera != nullptr)
-			dc->shdr->set_uniform("projCamMat",vp->camera->get<nscam_comp>()->proj_cam());
-		
-		if (dc->submesh->m_node != nullptr)
-			dc->shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
-		else
-			dc->shdr->set_uniform("nodeTransform", fmat4());
-
-		if (dc->anim_transforms != nullptr)
-		{
-			for (uint32 i = 0; i < dc->anim_transforms->size(); ++i)
-				dc->shdr->set_uniform("boneTransforms[" + std::to_string(i) + "]", (*dc->anim_transforms)[i]);
-			dc->shdr->set_uniform("hasBones", true);
-		}
-		else
-		{
-			dc->shdr->set_uniform("hasBones", false);
-		}
-		dc->shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
-		dc->shdr->set_uniform("hminmax", dc->height_minmax);
-		driver->render_instanced_dc(dc);
-		
-		glPolygonMode(GL_FRONT, GL_LINE);
-		glLineWidth(4.0f);
-		driver->set_stencil_func(GL_NOTEQUAL, 1, -1);
-		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
-		dc->shdr->set_uniform("fragColOut", fvec4(dc->sel_color.rgb(),1.0f));	
-		driver->render_instanced_dc(dc);
-		
-		glLineWidth(1.0f);
-		glPolygonMode(GL_FRONT, GL_FILL);
-		driver->enable_depth_test(false);
-		driver->set_stencil_func(GL_EQUAL, 1, 0);
-		dc->shdr->set_uniform("fragColOut", dc->sel_color);
-		driver->render_instanced_dc(dc);
-	}	
-}
-
-void gbuffer_render_pass::render()
-{
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		instanced_draw_call * dc = (instanced_draw_call*)(*draw_calls)[i];
-		ivec4 & viewp = gl_state.current_viewport;
-		dc->shdr->bind();
-
-		dc->shdr->set_uniform("diffuseMap", DIFFUSE_TEX_UNIT);
-		dc->shdr->set_uniform("normalMap", NORMAL_TEX_UNIT);
-		dc->shdr->set_uniform("opacityMap", OPACITY_TEX_UNIT);
-		dc->shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
-		dc->shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-        fmat4 proj_cam = vp->camera->get<nscam_comp>()->proj_cam();
-		if (vp->camera != nullptr)
-            dc->shdr->set_uniform("projCamMat", proj_cam);
-
-		dc->shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
-		dc->shdr->set_uniform("hasDiffuseMap", dc->mat->contains(nsmaterial::diffuse));
-		dc->shdr->set_uniform("hasOpacityMap", dc->mat->contains(nsmaterial::opacity));
-		dc->shdr->set_uniform("hasNormalMap", dc->mat->contains(nsmaterial::normal));
-		dc->shdr->set_uniform("colorMode", dc->mat->color_mode());
-		dc->shdr->set_uniform("fragColOut", dc->mat->color());
-		dc->shdr->set_uniform("force_alpha", dc->mat->using_alpha_from_color());
-		dc->shdr->set_uniform("material_id",  dc->mat_index);
-
-		uint32 ent_id = dc->entity_id;
-		if (dc->transparent_picking)
-			ent_id = 0;
-
-		dc->shdr->set_uniform("hminmax", dc->height_minmax);
-		dc->shdr->set_uniform("entityID", ent_id);
-		dc->shdr->set_uniform("pluginID", dc->plugin_id);
-
-		if (dc->submesh->m_node != NULL)
-			dc->shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
-		else
-			dc->shdr->set_uniform("nodeTransform", fmat4());
-
-		if (!dc->submesh->m_has_tex_coords)
-			dc->shdr->set_uniform("colorMode", true);
-
-		if (dc->anim_transforms != NULL)
-		{
-			dc->shdr->set_uniform("hasBones", true);
-			for (uint32 i = 0; i < dc->anim_transforms->size(); ++i)
-				dc->shdr->set_uniform("boneTransforms[" + std::to_string(i) + "]", (*dc->anim_transforms)[i]);
-		}
-		else
-			dc->shdr->set_uniform("hasBones", false);
-
-		driver->enable_culling(dc->mat->culling());
-		driver->set_cull_face(dc->mat->cull_mode());
-		driver->bind_textures(dc->mat);
-		driver->render_instanced_dc(dc);
-	}
-	driver->bind_gbuffer_textures((nsgl_framebuffer*)ren_target);
-}
-
-void oit_render_pass::render()
-{
-	ivec4 viewp = gl_state.current_viewport;
-	ren_target->set_draw_buffer(nsgl_framebuffer::att_none);
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		instanced_draw_call * dc = (instanced_draw_call*)(*draw_calls)[i];
-
-		dc->shdr->bind();
-		dc->shdr->set_uniform("diffuseMap", DIFFUSE_TEX_UNIT);
-		dc->shdr->set_uniform("normalMap", NORMAL_TEX_UNIT);
-		dc->shdr->set_uniform("opacityMap", OPACITY_TEX_UNIT);
-		dc->shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
-		dc->shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-		if (vp->camera != nullptr)
-			dc->shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());	
-
-		dc->shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
-		dc->shdr->set_uniform("hasDiffuseMap", dc->mat->contains(nsmaterial::diffuse));
-		dc->shdr->set_uniform("hasOpacityMap", dc->mat->contains(nsmaterial::opacity));
-		dc->shdr->set_uniform("hasNormalMap", dc->mat->contains(nsmaterial::normal));
-		dc->shdr->set_uniform("colorMode", dc->mat->color_mode());
-		dc->shdr->set_uniform("fragColOut", dc->mat->color());
-		dc->shdr->set_uniform("force_alpha", dc->mat->using_alpha_from_color());
-		dc->shdr->set_uniform("material_id",  dc->mat_index);
-
-		uint32 ent_id = dc->entity_id;
-		if (dc->transparent_picking)
-			ent_id = 0;
-
-		dc->shdr->set_uniform("hminmax", dc->height_minmax);
-		dc->shdr->set_uniform("entityID", ent_id);
-		dc->shdr->set_uniform("pluginID", dc->plugin_id);
-
-		if (dc->submesh->m_node != NULL)
-			dc->shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
-		else
-			dc->shdr->set_uniform("nodeTransform", fmat4());
-
-		if (!dc->submesh->m_has_tex_coords)
-			dc->shdr->set_uniform("colorMode", true);
-
-		if (dc->anim_transforms != NULL)
-		{
-			dc->shdr->set_uniform("hasBones", true);
-			for (uint32 i = 0; i < dc->anim_transforms->size(); ++i)
-				dc->shdr->set_uniform("boneTransforms[" + std::to_string(i) + "]", (*dc->anim_transforms)[i]);
-		}
-		else
-			dc->shdr->set_uniform("hasBones", false);
-
-		if (dc->mat != nullptr)
-		{
-			driver->enable_culling(dc->mat->culling());
-			driver->set_cull_face(dc->mat->cull_mode());
-			driver->bind_textures(dc->mat);
-		}
-		tbuffers->bind_buffers();
-		driver->render_instanced_dc(dc);
-	}
-	ren_target->update_draw_buffers();
-	driver->enable_depth_test(false);
-	driver->enable_culling(true);
-	driver->set_cull_face(GL_BACK);
-	nsshader * fsort = nse.system<nsrender_system>()->get_render_shaders().frag_sort;
-	
-	fsort->bind();
-	fsort->set_uniform("gMatMap", int32(G_PICKING_TEX_UNIT));
-	fsort->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-	driver->current_context()->m_single_point->bind();
-	tbuffers->bind_buffers();
-	glDrawArrays(GL_POINTS, 0, 1);	
-	tbuffers->unbind_buffers();
-}
-
-void light_shadow_pass::render()
-{
-	nsshader * cur_shdr = nullptr;
-	ivec4 & viewp = gl_state.current_viewport;
-	if (ldc->light_type == nslight_comp::l_point)
-	{
-		cur_shdr = nse.system<nsrender_system>()->get_render_shaders().shadow_cube;
-		cur_shdr->bind();
-		cur_shdr->set_uniform("lightPos", ldc->light_pos);
-		cur_shdr->set_uniform("maxDepth", ldc->max_depth);
-	}
-	else
-	{
-		cur_shdr = nse.system<nsrender_system>()->get_render_shaders().shadow_2d;
-		cur_shdr->bind();
-	}
-	cur_shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
-	cur_shdr->set_uniform("projMat", ldc->proj_light_mat);
-	cur_shdr->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
-	
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		instanced_draw_call * idc = (instanced_draw_call*)(*draw_calls)[i];
-		if (idc->casts_shadows)
-		{
-			if (idc->submesh->m_node != nullptr)
-				cur_shdr->set_uniform("nodeTransform", idc->submesh->m_node->m_world_tform);
-			else
-				cur_shdr->set_uniform("nodeTransform", fmat4());
-
-			if (idc->anim_transforms != nullptr)
-			{
-				for (uint32 i = 0; i < idc->anim_transforms->size(); ++i)
-					cur_shdr->set_uniform(
-						"boneTransforms[" + std::to_string(i) + "]", (*idc->anim_transforms)[i]);
-				cur_shdr->set_uniform("hasBones", true);
-			}
-			else
-			{
-				cur_shdr->set_uniform("hasBones", false);
-			}
-			cur_shdr->set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
-			cur_shdr->set_uniform("hminmax", idc->height_minmax);
-
-			driver->enable_culling(idc->mat->culling());
-			driver->set_cull_face(idc->mat->cull_mode());
-			driver->render_instanced_dc(idc);
-		}
-	}
-}
-
-void light_pass::render()
-{
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		light_draw_call * dc = (light_draw_call*)(*draw_calls)[i];
-		ivec4 & viewp = gl_state.current_viewport;
-		if (dc->cast_shadows && vp->dir_light_shadows)
-		{
-			rpass->ldc = dc;
-			rpass->setup_pass();
-			rpass->render();
-			nsgl_framebuffer::attachment * attch = rpass->ren_target->att(nsgl_framebuffer::att_depth);
-			driver->set_active_texture_unit(attch->m_tex_unit);
-			attch->m_texture->bind();
-			gl_render_pass::setup_pass();
-		}
-
-		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
-		dc->shdr->bind();
-		dc->shdr->set_uniform("shadowMap", SHADOW_TEX_UNIT);
-		dc->shdr->set_uniform("gDiffuseMap", G_DIFFUSE_TEX_UNIT);
-		dc->shdr->set_uniform("gNormalMap", G_NORMAL_TEX_UNIT);
-		dc->shdr->set_uniform("gWorldPosMap", G_WORLD_POS_TEX_UNIT);
-		dc->shdr->set_uniform("gMatMap", G_PICKING_TEX_UNIT);
-		dc->shdr->set_uniform("epsilon", DEFAULT_SHADOW_EPSILON);
-		dc->shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());
-		dc->shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-		dc->shdr->set_uniform("light.diffuseIntensity", dc->diffuse_intensity);
-		dc->shdr->set_uniform("light.ambientIntensity", dc->ambient_intensity);
-		dc->shdr->set_uniform("castShadows", dc->cast_shadows);
-		dc->shdr->set_uniform("light.color", dc->light_color);
-		dc->shdr->set_uniform("shadowSamples", dc->shadow_samples);
-		dc->shdr->set_uniform("light.shadowDarkness", dc->shadow_darkness);
-		const ivec2 & ss = driver->render_target(DIR_SHADOW2D_TARGET)->size;
-		dc->shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
-		
-		nsstring id;
-		id.reserve(64);
-		auto iter = dc->material_ids->begin();
-		while (iter != dc->material_ids->end())
-		{
-			id = "materials[" + std::to_string(iter->second) + "].spec_";
-			dc->shdr->set_uniform(id+"color",iter->first->specular_color());
-			dc->shdr->set_uniform(id+"power",iter->first->specular_power());
-			dc->shdr->set_uniform(id+"intensity",iter->first->specular_intensity());
-			++iter;
-		}
-
-		dc->shdr->set_uniform("projLightMat", dc->proj_light_mat);
-		dc->shdr->set_uniform("bgColor", dc->bg_color);
-		dc->shdr->set_uniform("light.direction", dc->direction);
-        dc->shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->instance_transform(nse.system<nsrender_system>()->active_scene(), 0)->world_position());
-		dc->shdr->set_uniform("fog_factor", vp->m_fog_nf);
-		dc->shdr->set_uniform("fog_color", vp->m_fog_color);
-		dc->shdr->set_uniform("lightingEnabled", vp->dir_lights);
-		
-		tbuffers->bind_buffers();
-		driver->render_light_dc(dc);
-		tbuffers->unbind_buffers();
-	}
-}
-
-void culled_light_pass::render()
-{
-	for (uint32 i = 0; i < draw_calls->size(); ++i)
-	{
-		light_draw_call * dc = (light_draw_call*)(*draw_calls)[i];
-		if (dc->cast_shadows && vp->dir_light_shadows)
-		{
-			rpass->ldc = dc;
-			rpass->setup_pass();
-			rpass->render();
-			nsgl_framebuffer::attachment * attch = rpass->ren_target->att(nsgl_framebuffer::att_depth);
-			driver->set_active_texture_unit(attch->m_tex_unit);
-			attch->m_texture->bind();
-			gl_render_pass::setup_pass();
-		}
-		ren_target->set_draw_buffer(nsgl_framebuffer::att_none);
-		nsshader * st_shdr = nse.system<nsrender_system>()->get_render_shaders().light_stencil;
-		ivec4 & viewp = gl_state.current_viewport;
-		st_shdr->bind();
-		st_shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());
-		st_shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-
-		if (dc->submesh->m_node != nullptr)
-			st_shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
-		else
-			st_shdr->set_uniform("nodeTransform", fmat4());
-		st_shdr->set_uniform("transform", dc->light_transform);
-
-		driver->render_light_dc(dc);
-		
-		driver->enable_depth_test(false);
-		driver->enable_culling(true);
-		driver->set_cull_face(GL_FRONT);
-		driver->set_stencil_func(GL_NOTEQUAL, 0, 0xFF);
-		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
-
-		dc->shdr->bind();
-
-		dc->shdr->bind();
-		dc->shdr->set_uniform("shadowMap", SHADOW_TEX_UNIT);
-		dc->shdr->set_uniform("gDiffuseMap", G_DIFFUSE_TEX_UNIT);
-		dc->shdr->set_uniform("gNormalMap", G_NORMAL_TEX_UNIT);
-		dc->shdr->set_uniform("gWorldPosMap", G_WORLD_POS_TEX_UNIT);
-		dc->shdr->set_uniform("gMatMap", G_PICKING_TEX_UNIT);
-		dc->shdr->set_uniform("epsilon", DEFAULT_SHADOW_EPSILON);
-		dc->shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());
-		dc->shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-		dc->shdr->set_uniform("light.diffuseIntensity", dc->diffuse_intensity);
-		dc->shdr->set_uniform("light.ambientIntensity", dc->ambient_intensity);
-		dc->shdr->set_uniform("castShadows", dc->cast_shadows);
-		dc->shdr->set_uniform("light.color", dc->light_color);
-		dc->shdr->set_uniform("shadowSamples", dc->shadow_samples);
-		dc->shdr->set_uniform("light.shadowDarkness", dc->shadow_darkness);
-		dc->shdr->set_uniform("fog_factor", vp->m_fog_nf);
-		dc->shdr->set_uniform("fog_color", vp->m_fog_color);		
-		
-		nsstring id;
-		id.reserve(64);
-		auto iter = dc->material_ids->begin();
-		while (iter != dc->material_ids->end())
-		{
-			id = "materials[" + std::to_string(iter->second) + "].spec_";
-			dc->shdr->set_uniform(id+"color",iter->first->specular_color());
-			dc->shdr->set_uniform(id+"power",iter->first->specular_power());
-			dc->shdr->set_uniform(id+"intensity",iter->first->specular_intensity());
-			++iter;
-		}
-
-		dc->shdr->set_uniform("light.attConstant", dc->spot_atten.x);
-		dc->shdr->set_uniform("light.attLinear", dc->spot_atten.y);
-		dc->shdr->set_uniform("light.attExp", dc->spot_atten.z);
-		dc->shdr->set_uniform("light.position", dc->light_pos);
-		dc->shdr->set_uniform("maxDepth", dc->max_depth);
-		dc->shdr->set_uniform("transform", dc->light_transform);
-		if (dc->submesh->m_node != nullptr)
-			dc->shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
-		else
-			dc->shdr->set_uniform("nodeTransform", fmat4());
-			
-		if (dc->light_type == nslight_comp::l_spot)
-		{
-			dc->shdr->set_uniform("projLightMat", dc->proj_light_mat);
-			dc->shdr->set_uniform("light.direction", dc->direction);
-			dc->shdr->set_uniform("light.cutoff", dc->cutoff);
-			const ivec2 & ss = driver->render_target(SPOT_SHADOW2D_TARGET)->size;
-			dc->shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
-
-		}
-		else
-		{
-			const ivec2 & ss = driver->render_target(POINT_SHADOW_TARGET)->size;
-			dc->shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
-		}
-
-		tbuffers->bind_buffers();
-		driver->render_light_dc(dc);
-		tbuffers->unbind_buffers();
-	}
-}
-
-void final_render_pass::render()
-{
-	read_buffer->target = nsgl_framebuffer::fb_read;
-	read_buffer->bind();
-	read_buffer->set_read_buffer(nsgl_framebuffer::att_color);
-
-	glBlitFramebuffer(
-		vp->bounds.x,
-		vp->bounds.y,
-		vp->bounds.z,
-		vp->bounds.w,
-		vp->bounds.x,
-		vp->bounds.y,
-		vp->bounds.z,
-		vp->bounds.w,
-		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST);
-
-	read_buffer->set_read_buffer(nsgl_framebuffer::att_none);
-	read_buffer->unbind();	
-}
-
 GLEWContext * glewGetContext()
 {
 	nsgl_driver * driver = static_cast<nsgl_driver*>(nse.video_driver());
@@ -736,6 +158,9 @@ gl_ctxt::gl_ctxt(uint32 id) :
 	m_tbuffers(new translucent_buffers()),
 	m_default_target(new nsgl_framebuffer()),
 	m_single_point(new nsgl_buffer())
+{}
+
+void gl_ctxt::init()
 {
 	glewExperimental = true;
 
@@ -748,6 +173,8 @@ gl_ctxt::gl_ctxt(uint32 id) :
 		return;
 	}
 	initialized = true;
+
+	m_tbuffers->init();
 
 	// GL default setup
 	glFrontFace(GL_CW);
@@ -786,55 +213,123 @@ gl_ctxt::gl_ctxt(uint32 id) :
 	m_single_point->bind();
 	m_single_point->allocate(1, &point, nsgl_buffer::mutable_dynamic_draw);
 	m_single_point->unbind();
-}
 
-gl_ctxt::~gl_ctxt()
-{
-	initialized = false;
-	m_single_point->release();
-	delete m_single_point;
-	delete m_default_target;
-	m_default_target = nullptr;
-	delete m_tbuffers;
-	delete glew_context;
-}
-
-void gl_ctxt::init()
-{
+	all_instanced_draw_calls.reserve(MAX_INSTANCED_DRAW_CALLS);
+	all_light_draw_calls.reserve(MAX_LIGHTS_IN_SCENE);
+	all_ui_draw_calls.reserve(MAX_UI_DRAW_CALLS);	
 }
 
 void gl_ctxt::release()
 {
+	auto iter = render_targets.begin();
+	while (iter != render_targets.end())
+	{
+		iter->second->release();
+		++iter;
+	}
+	m_single_point->release();
+	m_default_target->release();
+	m_tbuffers->release();
 }
 
+gl_ctxt::~gl_ctxt()
+{
+	while (render_targets.begin() != render_targets.end())
+	{
+		delete render_targets.begin()->second;
+		render_targets.erase(render_targets.begin());
+	}
+	delete m_single_point;	
+	delete m_default_target;
+	delete m_tbuffers;
+	delete glew_context;
+}
 
 nsgl_driver::nsgl_driver() :
 	nsvideo_driver(),
-	m_current_context(nullptr),
-	m_auto_cleanup(true)
-{
-	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
-		m_contexts[i] = nullptr;
-}
+	m_default_mat(nullptr)
+{}
 
 nsgl_driver::~nsgl_driver()
+{}
+
+void nsgl_driver::init()
 {
-	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+    nse.register_vid_obj_type<nsgl_shader_obj>(SHADER_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_texture_obj>(TEXTURE_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_submesh_obj>(MESH_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_tform_comp_obj>(TFORM_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_sel_comp_obj>(SEL_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_particle_comp_obj>(PARTICLE_VID_OBJ_GUID);
+
+	if (m_current_context == nullptr)
+		create_context();
+	
+	nsplugin * cplg = nse.core();
+	if (cplg == nullptr)
 	{
-		delete m_contexts[i];
-		m_contexts[i] = nullptr;
+		dprint("nsgl_driver::nsgl_driver You must call nse.start() before creating the video driver");
+		return;
 	}
+	
+	// Default material
+	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
+	m_default_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
+    m_default_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
+    m_default_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
+
+	// Rendering shaders
+	
+    nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
+	cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
+
+	// particle transform feedback shader
+	nsgl_shader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true)->video_obj<nsgl_shader_obj>()->gl_shdr;
+	std::vector<nsstring> outLocs2;
+	outLocs2.push_back("gPosOut");
+	outLocs2.push_back("gVelOut");
+	outLocs2.push_back("gScaleAndAngleOut");
+	outLocs2.push_back("gAgeOut");
+	ps->xfb = nsgl_shader::xfb_interleaved;
+	ps->xfb_locs = outLocs2;
+
+	// Light bounds, skydome, and tile meshes
+    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);	
 }
+
+void nsgl_driver::release()
+{}
 
 uint8 nsgl_driver::create_context()
 {
-	uint8 id = 0;
+
 	for (uint8 id = 0; id < MAX_CONTEXT_COUNT; ++id)
 	{
 		if (m_contexts[id] == nullptr)
 		{
 			m_contexts[id] = new gl_ctxt(id);
 			m_current_context = m_contexts[id];
+			m_current_context->init();
 			return id;
 		}
 	}
@@ -844,22 +339,21 @@ uint8 nsgl_driver::create_context()
 
 gl_ctxt * nsgl_driver::current_context()
 {
-	return static_cast<nsgl_ctxt*>(m_current_context);
+    return static_cast<gl_ctxt*>(m_current_context);
 }
 
 gl_ctxt * nsgl_driver::context(uint8 id)
 {
 	if (id > MAX_CONTEXT_COUNT)
 		return nullptr;
-	return static_cast<nsgl_ctxt*>(m_contexts[id]);		
+	return static_cast<gl_ctxt*>(m_contexts[id]);		
 }
 
 void nsgl_driver::create_default_render_targets()
 {
 	// Create all of the framebuffers
 	nsgl_gbuffer * gbuffer = new nsgl_gbuffer;
-	gbuffer->init();
-	gbuffer->resize(DEFAULT_GBUFFER_RES_X, DEFAULT_GBUFFER_RES_Y);
+    gbuffer->resize(DEFAULT_GBUFFER_RES_X, DEFAULT_GBUFFER_RES_Y);
 	gbuffer->init();
 	add_render_target(GBUFFER_TARGET, gbuffer);
 
@@ -928,7 +422,7 @@ void nsgl_driver::create_default_render_queues()
 
 void nsgl_driver::setup_default_rendering()
 {
-	if (m_current_context == nullptr)
+	if (current_context() == nullptr)
 	{
 		dprint("nsopengl_driver::setup_default_rendering You need to create a context before setting up rendering");
 		return;
@@ -938,39 +432,39 @@ void nsgl_driver::setup_default_rendering()
 	create_default_render_passes();
 }
 
-void nsgl_driver::clear_render_targets()
+void nsgl_driver::destroy_all_render_targets()
 {
-	while (m_current_context->m_render_targets.begin() != m_current_context->m_render_targets.end())
-		destroy_render_target(m_current_context->m_render_targets.begin()->first);
-	m_current_context->m_render_targets.clear();
+	while (current_context()->render_targets.begin() != current_context()->render_targets.end())
+		destroy_render_target(current_context()->render_targets.begin()->first);
+	current_context()->render_targets.clear();
 }
 
 bool nsgl_driver::add_render_target(const nsstring & name, nsgl_framebuffer * rt)
 {
-	return m_current_context->m_render_targets.emplace(name, rt).second;
+	return current_context()->render_targets.emplace(name, rt).second;
 }
 
 nsgl_framebuffer * nsgl_driver::default_target()
 {
-	return m_current_context->m_default_target;
+	return current_context()->m_default_target;
 }
 
 nsgl_framebuffer * nsgl_driver::remove_render_target(const nsstring & name)
 {
 	nsgl_framebuffer * fb = nullptr;
-	auto iter = m_current_context->m_render_targets.find(name);
-	if (iter != m_current_context->m_render_targets.end())
+	auto iter = current_context()->render_targets.find(name);
+	if (iter != current_context()->render_targets.end())
 	{
 		fb = iter->second;
-		m_current_context->m_render_targets.erase(iter);
+		current_context()->render_targets.erase(iter);
 	}
 	return fb;
 }
 
 nsgl_framebuffer * nsgl_driver::render_target(const nsstring & name)
 {
-	auto iter = m_current_context->m_render_targets.find(name);
-	if (iter != m_current_context->m_render_targets.end())
+	auto iter = current_context()->render_targets.find(name);
+	if (iter != current_context()->render_targets.end())
 		return iter->second;
 	return nullptr;
 }
@@ -986,7 +480,7 @@ void nsgl_driver::create_default_render_passes()
 {
 	// setup gbuffer geometry stage
 	gbuffer_render_pass * gbuf_pass = new gbuffer_render_pass;
-	gbuf_pass->draw_calls = nse.system<nsrender_system>()->queue(SCENE_OPAQUE_QUEUE);
+	gbuf_pass->rq = queue(SCENE_OPAQUE_QUEUE);
 	gbuf_pass->ren_target = render_target(GBUFFER_TARGET);
 	gbuf_pass->gl_state.depth_test = true;
 	gbuf_pass->gl_state.depth_write = true;
@@ -999,8 +493,8 @@ void nsgl_driver::create_default_render_passes()
 	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
 	oit_render_pass * oit_pass = new oit_render_pass;
-	oit_pass->tbuffers = m_current_context->m_tbuffers;
-	oit_pass->draw_calls = nse.system<nsrender_system>()->queue(SCENE_TRANSLUCENT_QUEUE);
+	oit_pass->tbuffers = current_context()->m_tbuffers;
+	oit_pass->rq = queue(SCENE_TRANSLUCENT_QUEUE);
 	oit_pass->ren_target = render_target(ACCUM_TARGET);
 	oit_pass->gl_state.depth_test = true;
 	oit_pass->gl_state.depth_write = false;
@@ -1012,7 +506,7 @@ void nsgl_driver::create_default_render_passes()
 
 	// setup dir light shadow stage
 	light_shadow_pass * dir_shadow_pass = new light_shadow_pass;
-	dir_shadow_pass->draw_calls = nse.system<nsrender_system>()->queue(SCENE_OPAQUE_QUEUE);
+	dir_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
 	dir_shadow_pass->ren_target = render_target(DIR_SHADOW2D_TARGET);
 	dir_shadow_pass->gl_state.depth_test = true;
 	dir_shadow_pass->gl_state.depth_write = true;
@@ -1026,7 +520,7 @@ void nsgl_driver::create_default_render_passes()
 
 	// setup dir light stage
 	light_pass * dir_pass = new light_pass;
-	dir_pass->draw_calls = nse.system<nsrender_system>()->queue(DIR_LIGHT_QUEUE);
+	dir_pass->rq = queue(DIR_LIGHT_QUEUE);
 	dir_pass->ren_target = render_target(ACCUM_TARGET);
 	dir_pass->gl_state.depth_test = false;
 	dir_pass->gl_state.depth_write = false;
@@ -1034,12 +528,12 @@ void nsgl_driver::create_default_render_passes()
 	dir_pass->gl_state.cull_face = GL_BACK;
 	dir_pass->gl_state.blending = false;
 	dir_pass->gl_state.stencil_test = false;
-	dir_pass->tbuffers = m_current_context->m_tbuffers;
+	dir_pass->tbuffers = current_context()->m_tbuffers;
 	dir_pass->rpass = dir_shadow_pass;
 	dir_pass->driver = this;
 	
 	light_shadow_pass * spot_shadow_pass = new light_shadow_pass;
-	spot_shadow_pass->draw_calls = nse.system<nsrender_system>()->queue(SCENE_OPAQUE_QUEUE);
+	spot_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
 	spot_shadow_pass->ren_target = render_target(SPOT_SHADOW2D_TARGET);
 	spot_shadow_pass->enabled = false;
 	spot_shadow_pass->gl_state.depth_test = true;
@@ -1052,9 +546,9 @@ void nsgl_driver::create_default_render_passes()
 	spot_shadow_pass->driver = this;
 
 	culled_light_pass * spot_pass = new culled_light_pass;
-	spot_pass->draw_calls = nse.system<nsrender_system>()->queue(SPOT_LIGHT_QUEUE);
+	spot_pass->rq = queue(SPOT_LIGHT_QUEUE);
 	spot_pass->ren_target = render_target(ACCUM_TARGET);
-	spot_pass->tbuffers = m_current_context->m_tbuffers;
+	spot_pass->tbuffers = current_context()->m_tbuffers;
 	spot_pass->rpass = spot_shadow_pass;
 	spot_pass->gl_state.depth_test = true;
 	spot_pass->gl_state.depth_write = false;
@@ -1070,7 +564,7 @@ void nsgl_driver::create_default_render_passes()
 	spot_pass->driver = this;
 
 	light_shadow_pass * point_shadow_pass = new light_shadow_pass;
-	point_shadow_pass->draw_calls = nse.system<nsrender_system>()->queue(SCENE_OPAQUE_QUEUE);
+	point_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
 	point_shadow_pass->ren_target = render_target(POINT_SHADOW_TARGET);
 	point_shadow_pass->gl_state.depth_test = true;
 	point_shadow_pass->gl_state.depth_write = true;
@@ -1083,9 +577,9 @@ void nsgl_driver::create_default_render_passes()
 	point_shadow_pass->driver = this;
 
 	culled_light_pass * point_pass = new culled_light_pass;
-	point_pass->draw_calls = nse.system<nsrender_system>()->queue(POINT_LIGHT_QUEUE);
+	point_pass->rq = queue(POINT_LIGHT_QUEUE);
 	point_pass->ren_target = render_target(ACCUM_TARGET);
-	point_pass->tbuffers = m_current_context->m_tbuffers;
+	point_pass->tbuffers = current_context()->m_tbuffers;
 	point_pass->rpass = point_shadow_pass;
 	point_pass->gl_state.depth_test = true;
 	point_pass->gl_state.depth_write = false;
@@ -1101,7 +595,7 @@ void nsgl_driver::create_default_render_passes()
 	point_pass->driver = this;
 
 	selection_render_pass * sel_pass_opaque = new selection_render_pass;
-	sel_pass_opaque->draw_calls = nse.system<nsrender_system>()->queue(SCENE_SELECTION_QUEUE);
+	sel_pass_opaque->rq = queue(SCENE_SELECTION_QUEUE);
 	sel_pass_opaque->ren_target = render_target(ACCUM_TARGET);
 	sel_pass_opaque->gl_state.blending = true;
 	sel_pass_opaque->gl_state.blend_func = ivec2(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1118,7 +612,7 @@ void nsgl_driver::create_default_render_passes()
 	sel_pass_opaque->driver = this;
 
 	ui_render_pass * ui_pass = new ui_render_pass;
-	ui_pass->draw_calls = nse.system<nsrender_system>()->queue(UI_RENDER_QUEUE);
+	ui_pass->rq = queue(UI_RENDER_QUEUE);
 	ui_pass->ren_target = render_target(ACCUM_TARGET);
 	ui_pass->gl_state.blending = true;
 	ui_pass->gl_state.blend_func = ivec2(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1132,7 +626,7 @@ void nsgl_driver::create_default_render_passes()
 	ui_pass->driver = this;
 
 	final_render_pass * final_pass = new final_render_pass;
-	final_pass->ren_target = m_current_context->m_default_target;
+	final_pass->ren_target = current_context()->m_default_target;
 	final_pass->read_buffer = render_target(ACCUM_TARGET);
 	final_pass->gl_state.depth_test = false;
 	final_pass->gl_state.depth_write = false;
@@ -1143,50 +637,135 @@ void nsgl_driver::create_default_render_passes()
 	final_pass->use_vp_size = true;
 	final_pass->driver = this;
 
-	m_current_context->m_render_passes.push_back(gbuf_pass);
-    m_current_context->m_render_passes.push_back(oit_pass);
-    m_current_context->m_render_passes.push_back(dir_shadow_pass);
-	m_current_context->m_render_passes.push_back(dir_pass);
-    m_current_context->m_render_passes.push_back(spot_shadow_pass);
-    m_current_context->m_render_passes.push_back(spot_pass);
-    m_current_context->m_render_passes.push_back(point_shadow_pass);
-    m_current_context->m_render_passes.push_back(point_pass);
-    m_current_context->m_render_passes.push_back(sel_pass_opaque);
-    m_current_context->m_render_passes.push_back(ui_pass);
-	m_current_context->m_render_passes.push_back(final_pass);
+	current_context()->render_passes.push_back(gbuf_pass);
+    current_context()->render_passes.push_back(oit_pass);
+    current_context()->render_passes.push_back(dir_shadow_pass);
+	current_context()->render_passes.push_back(dir_pass);
+    current_context()->render_passes.push_back(spot_shadow_pass);
+    current_context()->render_passes.push_back(spot_pass);
+    current_context()->render_passes.push_back(point_shadow_pass);
+    current_context()->render_passes.push_back(point_pass);
+    current_context()->render_passes.push_back(sel_pass_opaque);
+    current_context()->render_passes.push_back(ui_pass);
+	current_context()->render_passes.push_back(final_pass);
 }
 
-void nsgl_driver::resize_screen(const ivec2 & new_size)
+void nsgl_driver::window_resized(const ivec2 & new_size)
 {
-	m_current_context->m_default_target->resize(new_size);
+	current_context()->m_default_target->resize(new_size);
+	nsvideo_driver::window_resized(new_size);
 }
 
-void nsgl_driver::release()
+const ivec2 & nsgl_driver::window_size()
 {
-	clear_render_targets();
-	clear_render_passes();
-	m_current_context->release();
-	destroy_context(m_current_context->context_id);
-	nsvideo_driver::release();
+	return current_context()->m_default_target->size;
 }
 
-void nsgl_driver::render(nsrender::viewport * vp)
+void nsgl_driver::push_scene(nsscene * scn)
 {
+	_add_draw_calls_from_scene(scn);
+	_add_lights_from_scene(scn);
+}
+
+void nsgl_driver::push_viewport_ui(viewport * vp)
+{
+	render_queue * dc_dq = queue(UI_RENDER_QUEUE);
+	for (uint32 i = 0; i < vp->ui_canvases.size(); ++i)
+	{
+		nsui_canvas_comp * uicc = vp->ui_canvases[i]->get<nsui_canvas_comp>();
+		for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
+		{
+			nsentity * cur_ent = uicc->m_ordered_ents[i];
+
+			nsui_material_comp * uimat = cur_ent->get<nsui_material_comp>();
+			nsrect_tform_comp * tuic = cur_ent->get<nsrect_tform_comp>();
+			nsui_button_comp * uib = cur_ent->get<nsui_button_comp>();
+			nsui_text_comp * uitxt = cur_ent->get<nsui_text_comp>();
+			nsui_text_input_comp * uitxt_input = cur_ent->get<nsui_text_input_comp>();
+			
+			current_context()->all_ui_draw_calls.resize(current_context()->all_ui_draw_calls.size()+1);
+			ui_draw_call * uidc = &current_context()->all_ui_draw_calls[current_context()->all_ui_draw_calls.size()-1];
+
+			uidc->entity_id = uivec3(cur_ent->full_id(),0);
+			uidc->content_wscale = tuic->content_world_scale(uicc);
+			uidc->content_tform = tuic->content_transform(uicc);
+
+			if (uimat != nullptr)
+			{
+				uidc->mat = get_resource<nsmaterial>(uimat->mat_id);
+				if (uidc->mat == nullptr)
+					uidc->mat = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
+				uidc->shdr = get_resource<nsshader>(uimat->mat_shader_id);
+				if (uidc->shdr == nullptr)
+					uidc->shdr = nse.core()->get<nsshader>(UI_SHADER);
+				uidc->top_border_radius = uimat->top_border_radius;
+				uidc->bottom_border_radius = uimat->bottom_border_radius;
+				uidc->border_pix = uimat->border_size;
+				uidc->border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
+			}
+			
+			// If there is a ui text component copy that stuff over
+			if (uitxt != nullptr)
+			{
+				uidc->text_shader = get_resource<nsshader>(uitxt->text_shader_id);
+				uidc->text = uitxt->text;
+				uidc->fnt = get_resource<nsfont>(uitxt->font_id);
+				uidc->fnt_material = get_resource<nsmaterial>(uidc->fnt->material_id);
+				if (uidc->fnt_material == nullptr)
+					uidc->fnt_material = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
+				uidc->text_line_sizes = uitxt->text_line_sizes;
+				uidc->text_margins = uitxt->margins;
+				uidc->alignment = uitxt->text_alignment;
+			}
+
+			if (uitxt_input != nullptr)
+			{
+				int mod_ = int(nse.timer()->elapsed()*1000.0f / uitxt_input->cursor_blink_rate_ms);
+				uidc->text_editable = (mod_ % 2 == 0)
+					&& (uitxt->owner() == nse.system<nsui_system>()->focused_ui_element());
+				uidc->cursor_color = uitxt_input->cursor_color;
+				uidc->cursor_pixel_width = uitxt_input->cursor_pixel_width;
+				uidc->cursor_offset = uitxt_input->cursor_offset;
+			}
+			
+			dc_dq->push_back(uidc);
+		}
+	}	
+}
+
+void nsgl_driver::push_entity(nsentity * ent)
+{
+}
+
+void nsgl_driver::clear_render_queues()
+{
+	nsvideo_driver::clear_render_queues();
+	current_context()->mat_shader_ids.clear();	
+	current_context()->all_instanced_draw_calls.resize(0);
+	current_context()->all_light_draw_calls.resize(0);
+	current_context()->all_ui_draw_calls.resize(0);
+}
+	
+void nsgl_driver::render_to_viewport(viewport * vp)
+{
+	if (current_context() == nullptr)
+		return;
+
 	if (!_valid_check())
 		return;
 
-    m_current_context->m_render_passes[oit]->enabled = vp->order_independent_transparency;
-    //m_current_context->m_render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
-    m_current_context->m_render_passes[dir_light]->enabled = vp->dir_lights;
-    //m_current_context->m_render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
-    m_current_context->m_render_passes[spot_light]->enabled = vp->spot_lights;
-    //m_current_context->m_render_passes[point_shadow]->enabled = vp->point_light_shadows;
-    m_current_context->m_render_passes[point_light]->enabled = vp->point_lights;
-    m_current_context->m_render_passes[selection]->enabled = vp->picking_enabled;
+    current_context()->render_passes[oit]->enabled = vp->order_independent_transparency;
+    //current_context()->render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
+    current_context()->render_passes[dir_light]->enabled = vp->dir_lights;
+    //current_context()->render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
+    current_context()->render_passes[spot_light]->enabled = vp->spot_lights;
+    //current_context()->render_passes[point_shadow]->enabled = vp->point_light_shadows;
+    current_context()->render_passes[point_light]->enabled = vp->point_lights;
+    current_context()->render_passes[selection]->enabled = vp->picking_enabled;
 
-	for (uint32 i = 0; i < m_current_context->m_render_passes.size(); ++i)
+	for (uint32 i = 0; i < current_context()->render_passes.size(); ++i)
 	{
-		gl_render_pass * rp = m_current_context->m_render_passes[i];
+		gl_render_pass * rp = (gl_render_pass *)current_context()->render_passes[i];
 		if (rp == nullptr || rp->ren_target == nullptr)
 		{
 			dprint("nsvideo_driver::_render_pass - pass " + std::to_string(i) + " is not correctly setup");
@@ -1194,12 +773,48 @@ void nsgl_driver::render(nsrender::viewport * vp)
 		else if (rp->enabled)
 		{
 			rp->vp = vp;
-			rp->setup_pass();
+			rp->setup();
 			rp->render();
+			rp->finish();
 		}
 	}
+	current_context()->m_tbuffers->reset_atomic_counter();	
+}
 
-	m_current_context->m_tbuffers->reset_atomic_counter();
+void nsgl_driver::render_to_all_viewports()
+{
+	if (current_context() == nullptr)
+		return;
+
+	static bool vperr = false;
+    if (current_context()->vp_list.empty())
+	{
+        if (!vperr)
+            dprint("nsrender_system::render Warning - no viewports - will render nothing");
+		vperr = true;
+        return;
+	}
+    vperr = false;
+	
+	auto iter = current_context()->vp_list.begin();
+	while (iter != current_context()->vp_list.end())
+	{
+		current_context()->all_ui_draw_calls.resize(0);
+		queue(UI_RENDER_QUEUE)->resize(0);
+		push_viewport_ui(iter->vp);
+		render_to_viewport(iter->vp);
+		++iter;
+	}	
+}
+
+nsmaterial * nsgl_driver::default_mat()
+{
+	return m_default_mat;
+}
+
+void nsgl_driver::set_default_mat(nsmaterial * mat)
+{
+	m_default_mat = mat;
 }
 
 void nsgl_driver::set_gl_state(const opengl_state & state)
@@ -1237,7 +852,7 @@ void nsgl_driver::set_blend_eqn(int32 eqn)
 		return;
 	
 	glBlendEquation(eqn);
-	m_current_context->m_gl_state.blend_eqn = eqn;
+	current_context()->m_gl_state.blend_eqn = eqn;
 	gl_err_check("nsopengl_driver::set_blend_eqn");	
 }
 
@@ -1246,7 +861,7 @@ bool nsgl_driver::_valid_check()
 	static bool shadererr = false;
 	static bool shadernull = false;
 
-	if (!nse.system<nsrender_system>()->get_render_shaders().valid())
+	if (!rshaders.valid())
 	{
 		if (!shadernull)
 		{
@@ -1257,7 +872,7 @@ bool nsgl_driver::_valid_check()
 	}
 	shadernull = false;
 
-	if (nse.system<nsrender_system>()->get_render_shaders().error())
+	if (rshaders.error())
 	{
 		if (!shadererr)
 		{
@@ -1273,7 +888,7 @@ bool nsgl_driver::_valid_check()
 void nsgl_driver::enable_depth_write(bool enable)
 {
 	glDepthMask(enable);
-	m_current_context->m_gl_state.depth_write = enable;
+	current_context()->m_gl_state.depth_write = enable;
 	gl_err_check("nsopengl_driver::enable_depth_write");
 }
 
@@ -1286,10 +901,10 @@ void nsgl_driver::enable_depth_test(bool enable)
 	else
 	{
 		glDisable(GL_DEPTH_TEST);
-		m_current_context->m_gl_state.depth_write = enable;
+		current_context()->m_gl_state.depth_write = enable;
 	}
 	gl_err_check("nsopengl_driver::enable_depth_test");
-	m_current_context->m_gl_state.depth_test = enable;
+	current_context()->m_gl_state.depth_test = enable;
 }
 
 void nsgl_driver::enable_stencil_test(bool enable)
@@ -1299,7 +914,7 @@ void nsgl_driver::enable_stencil_test(bool enable)
 	else
 		glDisable(GL_STENCIL_TEST);
 	gl_err_check("nsopengl_driver::enable_stencil_test");
-	m_current_context->m_gl_state.stencil_test = enable;
+	current_context()->m_gl_state.stencil_test = enable;
 }
 
 void nsgl_driver::enable_blending(bool enable)
@@ -1308,7 +923,7 @@ void nsgl_driver::enable_blending(bool enable)
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);
-	m_current_context->m_gl_state.blending = enable;
+	current_context()->m_gl_state.blending = enable;
 	gl_err_check("nsopengl_driver::enable_blending");
 }
 
@@ -1318,23 +933,23 @@ void nsgl_driver::enable_culling(bool enable)
 		glEnable(GL_CULL_FACE);
 	else
 		glDisable(GL_CULL_FACE);
-	m_current_context->m_gl_state.culling = enable;
+	current_context()->m_gl_state.culling = enable;
 	gl_err_check("nsopengl_driver::enable_culling");
 }
 
 void nsgl_driver::set_cull_face(int32 cull_face)
 {
-	if (cull_face != m_current_context->m_gl_state.cull_face)
+	if (cull_face != current_context()->m_gl_state.cull_face)
 	{
 		glCullFace(cull_face);
-		m_current_context->m_gl_state.cull_face = cull_face;
+		current_context()->m_gl_state.cull_face = cull_face;
 		gl_err_check("nsopengl_driver::set_cull_face");
 	}	
 }
 
 opengl_state nsgl_driver::current_gl_state()
 {
-	return m_current_context->m_gl_state;
+	return current_context()->m_gl_state;
 }
 
 void nsgl_driver::set_blend_func(int32 sfactor, int32 dfactor)
@@ -1345,7 +960,7 @@ void nsgl_driver::set_blend_func(int32 sfactor, int32 dfactor)
 void nsgl_driver::set_blend_func(const ivec2 & blend_func)
 {
 	glBlendFunc(blend_func.x, blend_func.y);
-	m_current_context->m_gl_state.blend_func = blend_func;
+	current_context()->m_gl_state.blend_func = blend_func;
 	gl_err_check("nsopengl_driver::set_blend_func");
 }
 
@@ -1357,7 +972,7 @@ void nsgl_driver::set_stencil_func(int32 func, int32 ref, int32 mask)
 void nsgl_driver::set_stencil_func(const ivec3 & stencil_func)
 {
 	glStencilFunc(stencil_func.x, stencil_func.y, stencil_func.z);
-	m_current_context->m_gl_state.stencil_func = stencil_func;
+	current_context()->m_gl_state.stencil_func = stencil_func;
 	gl_err_check("nsopengl_driver::set_stencil_func");
 }
 
@@ -1369,8 +984,8 @@ void nsgl_driver::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
 void nsgl_driver::set_stencil_op(const ivec3 & stencil_op)
 {
 	glStencilOp(stencil_op.x, stencil_op.y, stencil_op.z);
-	m_current_context->m_gl_state.stencil_op_back = stencil_op;
-	m_current_context->m_gl_state.stencil_op_front = stencil_op;
+	current_context()->m_gl_state.stencil_op_back = stencil_op;
+	current_context()->m_gl_state.stencil_op_front = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op");
 }
 
@@ -1382,7 +997,7 @@ void nsgl_driver::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass)
 void nsgl_driver::set_stencil_op_back(const ivec3 & stencil_op)
 {
 	glStencilOpSeparate(GL_BACK, stencil_op.x, stencil_op.y, stencil_op.z);
-	m_current_context->m_gl_state.stencil_op_back = stencil_op;
+	current_context()->m_gl_state.stencil_op_back = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op_back");
 }
 
@@ -1394,7 +1009,7 @@ void nsgl_driver::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass)
 void nsgl_driver::set_stencil_op_front(const ivec3 & stencil_op)
 {
 	glStencilOpSeparate(GL_FRONT, stencil_op.x, stencil_op.y, stencil_op.z);
-	m_current_context->m_gl_state.stencil_op_front = stencil_op;
+	current_context()->m_gl_state.stencil_op_front = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op_front");
 }
 
@@ -1412,17 +1027,6 @@ uint32 nsgl_driver::active_tex_unit()
 	return act_un - BASE_TEX_UNIT;
 }
 
-void nsgl_driver::init(bool setup_default_rend)
-{
-	if (m_current_context == nullptr)
-	{
-		dprint("nsopengl_driver::init You must first create a context before initializing");
-		return;
-	}
-	m_current_context->init();
-	nsvideo_driver::init(setup_default_rend);
-}
-
 void nsgl_driver::set_active_texture_unit(uint32 tex_unit)
 {
 	glActiveTexture(BASE_TEX_UNIT + tex_unit);
@@ -1431,10 +1035,10 @@ void nsgl_driver::set_active_texture_unit(uint32 tex_unit)
 
 void nsgl_driver::set_viewport(const ivec4 & val)
 {
-	if (m_current_context->m_gl_state.current_viewport != val)
+	if (current_context()->m_gl_state.current_viewport != val)
 	{
 		glViewport(val.x, val.y, val.z, val.w);
-		m_current_context->m_gl_state.current_viewport = val;
+		current_context()->m_gl_state.current_viewport = val;
 		gl_err_check("nsopengl_driver::set_viewport");
 	}
 }
@@ -1454,7 +1058,7 @@ void nsgl_driver::bind_textures(nsmaterial * material)
 		if (t != nullptr)
 		{
 			set_active_texture_unit(cIter->first);
-			t->bind();
+			t->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 		}
 		++cIter;
 	}	
@@ -1466,7 +1070,7 @@ uivec3 nsgl_driver::pick(const fvec2 & mouse_pos)
 	if (pck == NULL)
 		return uivec3();
 
-	fvec2 screen_size = fvec2(m_current_context->m_default_target->size.x, m_current_context->m_default_target->size.y);
+	fvec2 screen_size = fvec2(current_context()->m_default_target->size.x, current_context()->m_default_target->size.y);
 	fvec2 accum_size = fvec2(pck->size.x,pck->size.y);
 	fvec2 rmpos = mouse_pos % (screen_size / accum_size);
 	uivec3 index = pck->pick(rmpos.x, rmpos.y, 1);
@@ -1484,53 +1088,54 @@ void nsgl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	{
 		nsgl_framebuffer::attachment * att = obj->color(i);
 		set_active_texture_unit(att->m_tex_unit);
-		att->m_texture->bind();
+		att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 	}
 }
 
 void nsgl_driver::render_instanced_dc(instanced_draw_call * idc)
 {
-	idc->submesh->m_vao.bind();
-
-	if (idc->transform_buffer != nullptr)
+	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
+	so->gl_vao->bind();
+	
+	if (idc->tform_buffer != nullptr)
 	{
-		idc->transform_buffer->bind();
+		idc->tform_buffer->bind();
 		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 		{
-			idc->submesh->m_vao.add(idc->transform_buffer, nsshader::loc_instance_tform + tfInd);
-			idc->submesh->m_vao.vertex_attrib_ptr(nsshader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-			idc->submesh->m_vao.vertex_attrib_div(nsshader::loc_instance_tform + tfInd, 1);
+			so->gl_vao->add(idc->tform_buffer, nsgl_shader::loc_instance_tform + tfInd);
+			so->gl_vao->vertex_attrib_ptr(nsgl_shader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+			so->gl_vao->vertex_attrib_div(nsgl_shader::loc_instance_tform + tfInd, 1);
 		}
 	}
 
-	if (idc->transform_id_buffer != nullptr)
+	if (idc->tform_id_buffer != nullptr)
 	{
-		idc->transform_id_buffer->bind();
-		idc->submesh->m_vao.add(idc->transform_id_buffer, nsshader::loc_ref_id);
-		idc->submesh->m_vao.vertex_attrib_I_ptr(nsshader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
-		idc->submesh->m_vao.vertex_attrib_div(nsshader::loc_ref_id, 1);	
+		idc->tform_id_buffer->bind();
+		so->gl_vao->add(idc->tform_id_buffer, nsgl_shader::loc_ref_id);
+		so->gl_vao->vertex_attrib_I_ptr(nsgl_shader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
+		so->gl_vao->vertex_attrib_div(nsgl_shader::loc_ref_id, 1);	
 	}
 	
 	gl_err_check("instanced_geometry_draw_call::render pre");
-	glDrawElementsInstanced(idc->submesh->m_prim_type,
+	glDrawElementsInstanced(get_gl_prim_type(idc->submesh->m_prim_type),
 							static_cast<GLsizei>(idc->submesh->m_indices.size()),
 							GL_UNSIGNED_INT,
 							0,
 							idc->transform_count);
 	gl_err_check("instanced_geometry_draw_call::render post");	
 
-	if (idc->transform_buffer != nullptr)
+	if (idc->tform_buffer != nullptr)
 	{
-		idc->transform_buffer->bind();
-		idc->submesh->m_vao.remove(idc->transform_buffer);
+		idc->tform_buffer->bind();
+		so->gl_vao->remove(idc->tform_buffer);
 	}
 
-	if (idc->transform_id_buffer != nullptr)
+	if (idc->tform_id_buffer != nullptr)
 	{
-		idc->transform_id_buffer->bind();
-		idc->submesh->m_vao.remove(idc->transform_id_buffer);
+		idc->tform_id_buffer->bind();
+		so->gl_vao->remove(idc->tform_id_buffer);
 	}
-	idc->submesh->m_vao.unbind();
+	so->gl_vao->unbind();
 }
 
 void nsgl_driver::render_light_dc(light_draw_call * idc)
@@ -1538,18 +1143,19 @@ void nsgl_driver::render_light_dc(light_draw_call * idc)
 	gl_err_check("pre dir_light_pass::render");
 	if (idc->submesh == nullptr)
 	{
-		m_current_context->m_single_point->bind();
+		current_context()->m_single_point->bind();
 		glDrawArrays(GL_POINTS, 0, 1);
-		m_current_context->m_single_point->unbind();
+		current_context()->m_single_point->unbind();
 	}
 	else
 	{
-		idc->submesh->m_vao.bind();
-		glDrawElements(idc->submesh->m_prim_type,
+		nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
+		so->gl_vao->bind();
+		glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
 					   static_cast<GLsizei>(idc->submesh->m_indices.size()),
 					   GL_UNSIGNED_INT,
 					   0);
-		idc->submesh->m_vao.unbind();
+		so->gl_vao->unbind();
 	}
 	gl_err_check("post dir_light_pass::render");	
 }
@@ -1557,11 +1163,282 @@ void nsgl_driver::render_light_dc(light_draw_call * idc)
 void nsgl_driver::render_ui_dc(ui_draw_call * idc)
 {
 	gl_err_check("pre ui_draw_call::render");
-	if (m_current_context->m_single_point != nullptr)
+	if (current_context()->m_single_point != nullptr)
 	{
-		m_current_context->m_single_point->bind();
+		current_context()->m_single_point->bind();
 		glDrawArrays(GL_POINTS, 0, 1);
-		m_current_context->m_single_point->unbind();
+		current_context()->m_single_point->unbind();
 	}
     gl_err_check("post ui_draw_call::render");	
+}
+
+void nsgl_driver::_add_lights_from_scene(nsscene * scene)
+{
+	auto ents = scene->entities_with_comp<nslight_comp>();
+	if (ents == nullptr)
+		return;
+	
+	render_queue * dc_dq = queue(DIR_LIGHT_QUEUE);
+	render_queue * dc_sq = queue(SPOT_LIGHT_QUEUE);
+	render_queue * dc_pq = queue(POINT_LIGHT_QUEUE);
+
+	auto l_iter = ents->begin();
+	while (l_iter != ents->end())
+	{
+		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
+		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
+		nsmesh * boundingMesh = get_resource<nsmesh>(lcomp->mesh_id());
+		
+		current_context()->all_light_draw_calls.resize(current_context()->all_light_draw_calls.size()+1);
+
+		fmat4 proj;
+		if (lcomp->get_light_type() == nslight_comp::l_spot)
+			proj = perspective(2*lcomp->angle(), 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else if(lcomp->get_light_type() == nslight_comp::l_point)
+			proj = perspective(90.0f, 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
+		else
+			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
+
+		for (uint32 i = 0; i < tcomp->instance_count(scene); ++i)
+		{
+			light_draw_call * ldc = &current_context()->all_light_draw_calls[current_context()->all_light_draw_calls.size()-1];
+			auto itf = tcomp->instance_transform(scene, i);
+			
+			ldc->submesh = nullptr;
+			ldc->bg_color = scene->bg_color();
+			ldc->direction = itf->world_orientation().target();
+			ldc->diffuse_intensity = lcomp->intensity().x;
+			ldc->ambient_intensity = lcomp->intensity().y;
+			ldc->cast_shadows = lcomp->cast_shadows();
+			ldc->light_color = lcomp->color();
+			ldc->scn = scene;
+			ldc->light_type = lcomp->get_light_type();
+			ldc->shadow_samples = lcomp->shadow_samples();
+			ldc->shadow_darkness = lcomp->shadow_darkness();
+			ldc->material_ids = &current_context()->mat_shader_ids;
+			ldc->spot_atten = lcomp->atten();
+			ldc->light_pos = itf->world_position();
+			ldc->light_transform = itf->world_tf() % lcomp->scaling();
+			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
+			if (lcomp->get_light_type() == nslight_comp::l_dir)
+			{
+				ldc->proj_light_mat = proj * itf->world_inv_tf();
+				ldc->shdr = nse.core()->get<nsshader>(DIR_LIGHT_SHADER);
+				dc_dq->push_back(ldc);
+			}
+			else if (lcomp->get_light_type() == nslight_comp::l_spot)
+			{
+				ldc->shdr = nse.core()->get<nsshader>(SPOT_LIGHT_SHADER);
+				ldc->proj_light_mat = proj * itf->world_inv_tf();
+				if (boundingMesh != nullptr)
+				{
+					for (uint32 i = 0; i < boundingMesh->count(); ++i)
+					{
+						ldc->submesh = boundingMesh->sub(i);
+						dc_sq->push_back(ldc);
+					}
+				}
+			}
+			else
+			{
+				ldc->shdr = nse.core()->get<nsshader>(POINT_LIGHT_SHADER);
+				ldc->proj_light_mat = proj;
+				if (boundingMesh != nullptr)
+				{
+					for (uint32 i = 0; i < boundingMesh->count(); ++i)
+					{
+						ldc->submesh = boundingMesh->sub(i);
+						dc_pq->push_back(ldc);
+					}
+				}
+			}
+		}
+		++l_iter;
+	}
+}
+
+void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
+{
+	viewport * vp = focused_viewport();
+	if (vp == nullptr)
+		return;
+
+	nsentity * camera = vp->camera;
+	if (camera == NULL)
+		return;
+
+	auto ents = scene->entities_with_comp<nsrender_comp>();
+	if (ents == nullptr)
+		return;
+
+	// update render components and the draw call list
+	render_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
+	render_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
+	render_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
+
+	nscam_comp * cc = camera->get<nscam_comp>();	
+	fvec2 terh;
+	nsrender_comp * rComp = nullptr;
+	nstform_comp * tComp = nullptr;
+	nsanim_comp * animComp = nullptr;
+	nsterrain_comp * terComp = nullptr;
+	nsmesh * currentMesh = nullptr;
+	nslight_comp * lc = nullptr;
+	nssel_comp * sc = nullptr;
+	bool transparent_picking = false;
+	uint32 mat_id = 0;
+
+	auto iter = ents->begin();
+	while (iter != ents->end())
+	{
+		terh.set(0.0f, 1.0f);
+		rComp = (*iter)->get<nsrender_comp>();
+		tComp = (*iter)->get<nstform_comp>();
+		lc = (*iter)->get<nslight_comp>();
+		sc = (*iter)->get<nssel_comp>();
+		animComp = (*iter)->get<nsanim_comp>();
+		terComp = (*iter)->get<nsterrain_comp>();
+		currentMesh = get_resource<nsmesh>(rComp->mesh_id());
+		
+		if (lc != nullptr)
+		{
+			if (lc->update_posted())
+				lc->post_update(false);
+		}
+
+		if (rComp->update_posted())
+			rComp->post_update(false);
+
+		if (currentMesh == nullptr)
+		{
+			++iter;
+			continue;
+		}
+
+		if (sc != nullptr)
+		{
+			transparent_picking = sc->transparent_picking_enabled();
+		}
+		
+		nsmesh::submesh * mSMesh = nullptr;
+		nsmaterial * mat = nullptr;
+		fmat4_vector * fTForms = nullptr;
+		nsshader * shader = nullptr;
+		for (uint32 i = 0; i < currentMesh->count(); ++i)
+		{
+			mSMesh = currentMesh->sub(i);
+			mat = get_resource<nsmaterial>(rComp->material_id(i));
+
+			if (mat == nullptr)
+				mat = m_default_mat;
+
+			shader = get_resource<nsshader>(mat->shader_id());
+			fTForms = nullptr;
+
+			if (shader == nullptr)
+			{
+				if (mat->wireframe())
+					shader = nse.core()->get<nsshader>(GBUFFER_WF_SHADER);
+				else if (mat->alpha_blend())
+					shader = nse.core()->get<nsshader>(GBUFFER_TRANS_SHADER);
+				else
+					shader = nse.core()->get<nsshader>(GBUFFER_SHADER);
+			}
+
+			if (animComp != nullptr)
+				fTForms = animComp->final_transforms();
+
+			if (terComp != nullptr)
+				terh = terComp->height_bounds();
+
+			
+			if (tComp != nullptr)
+			{			  current_context()->all_instanced_draw_calls.resize(current_context()->all_instanced_draw_calls.size()+1);
+				instanced_draw_call * dc = &current_context()->all_instanced_draw_calls[current_context()->all_instanced_draw_calls.size()-1];
+				dc->submesh = mSMesh;
+				dc->tform_buffer =
+					tComp->per_scene_info(scene)->video_obj<nsgl_tform_comp_obj>()->gl_tform_buffer;
+				dc->tform_id_buffer =
+					tComp->per_scene_info(scene)->video_obj<nsgl_tform_comp_obj>()->gl_tform_id_buffer;
+				dc->anim_transforms = fTForms;
+				dc->height_minmax = terh;
+				dc->entity_id = (*iter)->id();
+				dc->plugin_id = (*iter)->plugin_id();
+				dc->transform_count = tComp->per_scene_info(scene)->m_visible_count;
+				dc->scn = scene;
+				dc->casts_shadows = rComp->cast_shadow();
+				dc->transparent_picking = false;
+				dc->mat_index = mat_id;
+				dc->mat = mat;
+				dc->shdr = shader;
+				if (mat->alpha_blend())
+				{
+					dc->transparent_picking = transparent_picking;
+					scene_tdcq->push_back(dc);
+				}
+				else
+				{
+					scene_dcq->push_back(dc);
+				}
+
+				if (sc != nullptr && sc->selected(scene))
+				{
+					current_context()->all_instanced_draw_calls.resize(
+						current_context()->all_instanced_draw_calls.size()+1);
+					instanced_draw_call * sel_dc = &current_context()->all_instanced_draw_calls[current_context()->all_instanced_draw_calls.size()-1];
+					sel_dc->submesh = mSMesh;
+					
+					sel_dc->tform_buffer =
+						sc->scene_info(sel_dc->scn)->video_obj<nsgl_sel_comp_obj>()->gl_tform_buffer;
+					sel_dc->tform_id_buffer = nullptr;
+					sel_dc->anim_transforms = fTForms;
+					sel_dc->height_minmax = terh;
+					sel_dc->transform_count = sc->selection(scene)->size();
+					sel_dc->shdr = nse.core()->get<nsshader>(SELECTION_SHADER);
+					sel_dc->mat = mat;
+					sel_dc->sel_color = sc->color();
+					scene_sel->push_back(sel_dc);
+				}
+
+				auto inserted = current_context()->mat_shader_ids.emplace(mat, mat_id);
+				if (inserted.second)
+					++mat_id;
+			}
+ 		}
+		
+		++iter;
+	}
+}
+
+int32 get_gl_prim_type(mesh_primitive_type pt)
+{
+	switch (pt)
+	{
+	  case(prim_points):
+		  return GL_POINTS;
+		  break;
+	  case(prim_lines):
+		  return GL_LINES;
+		  break;
+	  case(prim_line_strip):
+		  return GL_LINE_STRIP;
+		  break;
+	  case(prim_line_loop):
+		  return GL_LINE_LOOP;
+		  break;
+	  case(prim_triangles):
+		  return GL_TRIANGLES;
+		  break;
+	  case(prim_triangle_strip):
+		  return GL_TRIANGLE_STRIP;
+		  break;
+	  case(prim_triangle_fan):
+		  return GL_TRIANGLE_FAN;
+		  break;
+	  case(prim_patch):
+		  return GL_PATCHES;
+		  break;
+	  default:
+		  return -1;
+	}
 }

@@ -87,10 +87,9 @@ public:
 		~submesh();
 
 		void video_context_init();
-		void allocate_buffers();
+
 		void calc_aabb();
 		void resize(uint32 pNewSize);
-		void update_vao();
 
 		fvec3_vector m_verts;
 		fvec2_vector m_tex_coords;
@@ -124,10 +123,6 @@ public:
 	const nsbounding_box & aabb();
 
 	bool add(submesh * submesh);
-
-	void allocate();
-
-	void allocate(uint32 subindex);
 
 	void bake();
 
@@ -180,10 +175,6 @@ public:
 	void flip_uv();
 
 	void flip_uv(uint32 pSubIndex);
-
-	void init_gl();
-
-	void init_gl(uint32 subindex);
 
 	submesh * sub(const nsstring & pName);
 
@@ -246,6 +237,14 @@ void pup(PUPer & p, nsmesh::submesh::connected_joints & bwid, const nsstring & v
 		pup(p, bwid.m_joint_ids[i], var_name + ".joint_ids[" + std::to_string(i) + "]");
 		pup(p, bwid.m_weights[i], var_name + ".weights[" + std::to_string(i) + "]");
 	}
+}
+
+template<class PUPer>
+void pup(PUPer & p, mesh_primitive_type & en, const nsstring & var_name_)
+{
+	uint32 in = static_cast<uint32>(en);
+	pup(p, in, var_name_);
+	en = static_cast<mesh_primitive_type>(in);
 }
 
 // This simply pups the submesh data - not much to say here - most of these attributes are std::vectors of vec3 or vec2 or uint32s
@@ -337,8 +336,6 @@ void pup(PUPer & p, nsmesh & mesh)
 		mesh.m_submeshes[i]->m_parent_mesh = &mesh;
 	}
 	mesh.calc_aabb();
-	mesh.init_gl();
-	mesh.allocate();
 }
 
 

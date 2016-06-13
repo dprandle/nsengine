@@ -24,11 +24,8 @@ This file contains all of the neccessary declarations for the nsui_system class.
 class nsui_canvas_comp;
 class nsrect_tform_comp;
 class nsui_button_comp;
-
-namespace nsrender
-{
-class viewport;
-}
+class nsentity;
+struct viewport;
 
 class nsui_system : public nssystem
 {
@@ -44,19 +41,13 @@ class nsui_system : public nssystem
 
 	virtual void release();
 
+	nsentity * focused_ui_element();
+
 	virtual void update();
-
-	void push_draw_calls();
-
-	void set_active_viewport(nsrender::viewport * vp);
-
-	nsrender::viewport * active_viewport();
 
 	int32 update_priority();
 
-	void set_ui_shader(nsui_shader * shdr);
-
-	bool mpos_over_element(const fvec2 & norm_mpos, nsrender::viewport * vp);
+	bool mpos_over_element(const fvec2 & norm_mpos, viewport * vp);
 
   private:
 	void _sort_ents(nsui_canvas_comp * uicc);
@@ -68,8 +59,6 @@ class nsui_system : public nssystem
 	
 	void _recursive_update(nsrect_tform_comp * child);
 
-	std::vector<ui_draw_call> m_ui_draw_calls;
-	nsrender::viewport * m_active_vp;
 	nsui_button_comp * m_pressed_button;
 	nsentity * m_focused_ui_ent;
 	uivec2 imap_id;

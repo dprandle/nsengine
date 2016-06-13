@@ -1,5 +1,5 @@
 #include <nsgl_gbuffer.h>
-#include <nsshader.h>
+#include <nsgl_shader.h>
 #include <nsengine.h>
 
 nsgl_gbuffer::nsgl_gbuffer():

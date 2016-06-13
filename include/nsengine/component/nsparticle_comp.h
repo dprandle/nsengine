@@ -21,6 +21,7 @@ This file contains all of the neccessary declarations for the nsparticle_comp cl
 
 #include <nscomponent.h>
 #include <nsmap.h>
+#include <nsvideo_driver.h>
 
 class nsentity;
 class nsgl_xfb;
@@ -28,7 +29,15 @@ class nsgl_vao;
 class nsgl_buffer;
 class nsevent;
 
-class nsparticle_comp : public nscomponent
+struct particle
+{
+	fvec4 pos;
+	fvec4 vel;
+	fvec4 scale_and_angle;
+	fvec4 age_type_reserved;
+};
+
+class nsparticle_comp : public nscomponent, public nsvideo_object
 {
 public:
 
@@ -48,14 +57,6 @@ public:
 	{
 		b_mix,
 		b_add
-	};
-
-	struct particle
-	{
-		fvec4 pos;
-		fvec4 vel;
-		fvec4 scale_and_angle;
-		fvec4 age_type_reserved;
 	};
 
 	typedef std::vector<particle> particle_array;
@@ -84,6 +85,8 @@ public:
 	bool looping();
 
 	bool simulating();
+
+	void video_context_init();
 
 	bool motion_key_interpolation();
 
@@ -115,10 +118,6 @@ public:
 
 	virtual void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
-	/*!
-	Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
-	/return Map of resource ID to resource type containing all used resources
-	*/
 	virtual uivec3_vector resources();
 
 	void set_motion_key_type(const motion_key_t & type_);
@@ -183,12 +182,6 @@ public:
 
 	virtual void pup(nsfile_pupper * p);
 
-	nsgl_xfb * xfb_obj();
-
-	nsgl_vao * va_obj();
-
-	uint32 xfb_id();
-
 	void reset();
 
 	const fvec3 & init_vel_mult();
@@ -241,10 +234,6 @@ public:
 
 	int32 angular_vel();
 
-	void swap();
-
-	nsgl_buffer * front_buffer;
-	nsgl_buffer * back_buffer;
 private:
 	ui_fvec3_map m_motion_keys;
 	ui_fvec3_map m_visual_keys;
@@ -274,12 +263,6 @@ private:
 	/* This stuff does not need to be saved*/
 	bool m_simulating; // Are we simulating?
 	bool m_first; // Is it the first time running the simulation since being reset (need to render using glDrawElements rather than feedback draw)
-
-
-	nsgl_xfb * m_xfb_bufs[2]; // 2 transform feedback buffers (draw from last to first then swap)
-	nsgl_vao * m_vaos[2]; // for rendering whats in the TF FB buffers
-	uint32 m_buffer_index; //!< Current buffer index
-	particle_array m_particles; //!< Sort of dummy array used to allocate VBOs
 };
 
 template<class PUPer>

@@ -248,7 +248,7 @@ uivec3 nsselection_system::pick(const fvec2 & mpos)
 
 uivec3 nsselection_system::pick(float mousex, float mousey)
 {
-	return nse.system<nsrender_system>()->pick(fvec2(mousex,mousey));
+	return nse.video_driver()->pick(fvec2(mousex,mousey));
 }
 
 void nsselection_system::set_mirror_tile_color(const fvec4 & color)
@@ -536,7 +536,7 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 	if (m_active_scene == nullptr)
 		return;
 	
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return;
 
@@ -748,7 +748,7 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 
 void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_, const fvec4 & norm_vp)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return;
 
@@ -1356,7 +1356,7 @@ bool nsselection_system::_handle_move_select(nsaction_event * evnt)
     if (m_started_drag_over_ui)
         return true;
 
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1368,7 +1368,7 @@ bool nsselection_system::_handle_move_selection_xy(nsaction_event * evnt)
 {
     if (m_started_drag_over_ui)
         return true;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
         return true;
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1380,7 +1380,7 @@ bool nsselection_system::_handle_move_selection_zy(nsaction_event * evnt)
 {
     if (m_started_drag_over_ui)
         return true;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1392,7 +1392,7 @@ bool nsselection_system::_handle_move_selection_zx(nsaction_event * evnt)
 {
     if (m_started_drag_over_ui)
         return true;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1404,7 +1404,7 @@ bool nsselection_system::_handle_move_selection_x(nsaction_event * evnt)
 {
     if (m_started_drag_over_ui)
         return true;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1416,7 +1416,7 @@ bool nsselection_system::_handle_move_selection_y(nsaction_event * evnt)
 {
     if (m_started_drag_over_ui)
         return true;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1428,7 +1428,7 @@ bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
 {
     if (m_started_drag_over_ui)
         return true;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
 	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
@@ -1438,7 +1438,7 @@ bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
 
 bool nsselection_system::_handle_move_selection_toggle(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->front_viewport(evnt->norm_mpos);
+	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
     if (nse.system<nsui_system>()->mpos_over_element(evnt->norm_mpos, vp) && evnt->cur_state == nsaction_event::begin)

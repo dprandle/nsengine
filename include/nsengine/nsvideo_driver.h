@@ -23,7 +23,7 @@ class nsparticle_comp;
 struct tform_per_scene_info;
 struct sel_per_scene_info;
 class nstexture;
-class nsshader;
+//class nsshader;
 class nsentity;
 class nsscene;
 
@@ -34,6 +34,15 @@ class nsscene;
 #define SEL_VID_OBJ_GUID "nssel_per_scene_info_vid_obj"
 #define PARTICLE_VID_OBJ_GUID "nsparticle_comp_vid_obj"
 #define MAX_CONTEXT_COUNT 16
+
+// Light bounds, skydome, and tile meshes
+#define MESH_FULL_TILE "fulltile"
+#define MESH_HALF_TILE "halftile"
+#define MESH_DIRLIGHT_BOUNDS "dirlightbounds"
+#define MESH_SPOTLIGHT_BOUNDS "spotlightbounds"
+#define MESH_POINTLIGHT_BOUNDS "pointlightbounds"
+#define MESH_TERRAIN "terrain"
+#define MESH_SKYDOME "skydome"
 
 struct viewport
 {
@@ -101,7 +110,7 @@ typedef std::unordered_map<nsstring, render_queue*> queue_map;
 struct render_pass
 {
 	render_pass():
-		queue(nullptr),
+		rq(nullptr),
 		vp(nullptr),
 		enabled(true)
 	{}
@@ -112,7 +121,7 @@ struct render_pass
 	virtual void render() = 0;
 	virtual void finish() = 0;
 
-	render_queue * queue;
+	render_queue * rq;
 	viewport * vp;
 	bool enabled;
 };
@@ -134,7 +143,10 @@ struct vid_ctxt
 		vp_list()
 	{}
 	
-	virtual ~vid_ctxt() {}
+	virtual ~vid_ctxt();
+
+	virtual void init() = 0;
+	virtual void release() = 0;
 
 	uint32 context_id;
 	bool initialized;
@@ -157,13 +169,25 @@ class nsvideo_driver
 
 	virtual void push_entity(nsentity * ent) = 0;
 
+	virtual void push_viewport_ui(viewport * vp) = 0;
+
+	virtual void render_to_viewport(viewport * vp) = 0;
+
+	virtual void render_to_all_viewports() = 0;
+
+	virtual void init()=0;
+
+	virtual void release()=0;
+
 	void cleanup_vid_objs();
 
 	void enable_auto_cleanup(bool enable);
 
 	bool auto_cleanup();
 
-	void clear_render_queues();
+	void destroy_all_render_queues();
+
+	virtual void clear_render_queues();
 
 	bool add_queue(const nsstring & name, render_queue * rt);
 	
@@ -175,7 +199,7 @@ class nsvideo_driver
 
 	render_queue * remove_queue(const nsstring & name);
 
-	void clear_render_passes();
+	void destroy_all_render_passes();
 
 	render_pass_vector * render_passes();
 
@@ -218,9 +242,9 @@ class nsvideo_driver
 	
 	bool initialized();
 
-	virtual void window_resized(uint32 window_tag, const ivec2 & new_size) = 0;
+	virtual void window_resized(const ivec2 & new_size);
 
-	virtual void render(viewport * vp) = 0;
+	virtual const ivec2 & window_size() = 0;
 
   protected:
 
@@ -251,6 +275,10 @@ class nsvideo_object
 
 	virtual ~nsvideo_object();
 
+	bool context_sharing();
+
+	void enable_context_sharing(bool enable);
+	
 	virtual bool initialized();
 
 	virtual void video_context_init() = 0;
@@ -259,8 +287,16 @@ class nsvideo_object
 	
 	virtual void video_update();
 
+	template<class obj_type>
+	obj_type * video_obj()
+	{
+		return static_cast<obj_type*>(video_obj());
+	}
+
+	nsvid_obj * video_obj();
+
   protected:
-	
+	bool share_between_contexts;
 	nsvid_obj * ctxt_objs[16];
 };
 

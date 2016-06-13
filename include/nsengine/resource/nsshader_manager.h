@@ -21,20 +21,21 @@ nsshader * get_shader(const uivec2 & id);
 
 class nsshader_manager : public nsres_manager
 {
-public:
+	
+  public:
 
 	nsshader_manager();
 	~nsshader_manager();
 
 	template <class res_type>
-	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
+	res_type * create(const nsstring & res_name, nsresource * to_copy)
 	{
 		return nsres_manager::create<res_type>(res_name, to_copy);
 	}
 
-	virtual nsshader * create(const nsstring & res_name, nsresource * to_copy=nullptr)
+	virtual nsshader * create(const nsstring & res_name, nsresource * to_copy)
 	{
-		return create<nsshader>(res_name, to_copy); // Create 2d texture by default
+		return create<nsshader>(res_name, to_copy);
 	}
 
 	template <class res_type, class T>
@@ -71,61 +72,6 @@ public:
 	{
 		return remove<nsshader>(res_name);
 	}
-
-	bool compile_all();
-
-	template<class T>
-	bool compile(const T & shader)
-	{
-		nsshader * sh = get(shader);
-		return compile(sh);
-	}
-
-	bool compile(nsshader * sh);
-
-	void init_uniforms_all();
-
-	template<class T>
-	void init_uniforms(const T & shader)
-	{
-		nsshader * sh = get(shader);
-		init_uniforms(sh);
-	}
-
-	void init_uniforms(nsshader * sh);
-
-	bool link_all();
-
-	template<class T>
-	bool link(const T & shader)
-	{
-		nsshader * sh = get(shader);
-		return link(sh);
-	}
-
-	bool link(nsshader * sh);
-	
-	template<class T>
-	bool load_stage(const T & shader, const nsstring & filename, nsshader::shader_type stagetype)
-	{
-		nsshader * sh = get(shader);
-        return load_stage(shader, filename, stagetype);
-	}
-
-	bool load_stage(nsshader * shader, const nsstring & fname, nsshader::shader_type stagetype);
-
-	template<class T>
-	bool save_stage(const T & shader, const nsstring & filename, nsshader::shader_type stagetype)
-	{
-		nsshader * sh = get(shader);
-        return save_stage(sh, filename, stagetype);
-	}
-
-	bool save_stage(nsshader * sh, const nsstring & filename, nsshader::shader_type stagetype);
-
-	void video_init_all();
-
-	void video_release_all();
 };
 
 #endif

@@ -192,10 +192,6 @@ class nstform_comp : public nscomponent
 
 	~nstform_comp();
 
-	nsgl_buffer * transform_buffer(const nsscene * scn);
-
-	nsgl_buffer * transform_id_buffer(const nsscene * scn);
-
 	void init();
 
 	virtual void pup(nsfile_pupper * p);
@@ -205,6 +201,8 @@ class nstform_comp : public nscomponent
 	instance_tform * instance_transform(const nsscene * scn, uint32 tform_id);
 
 	uint32 instance_count(const nsscene * scn) const;
+
+	tform_per_scene_info * per_scene_info(nsscene * scn);
 
 	nstform_comp & operator=(nstform_comp rhs_);
 

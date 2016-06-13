@@ -147,11 +147,8 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	dim.h = ilGetInteger(IL_IMAGE_HEIGHT);
 	tex->resize(dim);
 	tex->copy_data(ilGetData());
-	tex->enable_mipmap_autogen(true);
-	
-	tex->bind();
-	tex->video_allocate();
-	tex->unbind();
+	tex->enable_mipmap_autogen(true);	
+	tex->video_update();
 	ilDeleteImages(1, &imageID);
 	dprint("nstex_manager::load_image Successfully loaded nstex2d from file " + fName);
 	return tex;
@@ -247,10 +244,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
 		ilDeleteImages(1, &imageID);
 	}
-
-	tex->bind();
-	tex->video_allocate();
-	tex->unbind();
+	tex->video_update();
 	dprint("nstex_manager::load_cubemap Successfully loaded nstex_cubemap with name " + tex->name());
 	return tex;
 }
@@ -554,26 +548,5 @@ uint32 nstex_manager::_translate_pixel_type_il(pixel_component_type pt)
 	  default:
 		  dprint("nstex_manager::_translate_pixel_type_il Cannot translate data type for saving with il");
 		  return 0;
-	}
-}
-
-
-void nstex_manager::video_init_all()
-{
-	auto iter = begin();
-	while (iter != end())
-	{
-		static_cast<nstexture*>(iter->second)->video_init();
-		++iter;
-	}
-}
-
-void nstex_manager::video_release_all()
-{
-	auto iter = begin();
-	while (iter != end())
-	{
-		static_cast<nstexture*>(iter->second)->video_release();
-		++iter;
 	}
 }

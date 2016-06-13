@@ -25,16 +25,27 @@ Description:
 
 nsshader::nsshader():
 	nsresource(),
-	nsvideo_object()
+	nsvideo_object(),
+	shader_stages(),
+	m_vertex(vertex_shader),
+	m_geometry(geometry_shader),
+	m_fragment(fragment_shader)
 {
+	video_context_init();
 	set_ext(DEFAULT_SHADER_EXTENSION);
 }
 
 nsshader::nsshader(const nsshader & copy_):
 	nsresource(copy_),
 	nsvideo_object(),
-	shader_stages(copy_.shader_stages)
-{}
+	shader_stages(copy_.shader_stages),
+	m_vertex(vertex_shader),
+	m_geometry(geometry_shader),
+	m_fragment(fragment_shader)
+
+{
+	video_context_init();
+}
 
 nsshader::~nsshader()
 {}

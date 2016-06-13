@@ -112,8 +112,6 @@ class nstexture : public nsresource, public nsvideo_object
 	
 	void video_context_init();
 
-	virtual void video_download();
-
 	uint8 bytes_per_pixel() const;
 
 	uint8 bytes_per_channel() const;

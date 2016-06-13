@@ -42,7 +42,14 @@
 
 struct nsgl_shader : public nsgl_obj
 {
-	enum error_state { error_none, error_program, error_compile, error_link, error_validation };
+	enum error_state_type
+	{
+		error_none,
+		error_program,
+		error_compile,
+		error_link,
+		error_validation
+	};
 
 	enum shader_stage 
 	{
@@ -66,12 +73,14 @@ struct nsgl_shader : public nsgl_obj
 		shader_stage stage;
 	};
 
-	enum xfb_mode {
+	enum xfb_mode
+	{
 		xfb_interleaved = GL_INTERLEAVED_ATTRIBS,
 		xfb_separate = GL_SEPARATE_ATTRIBS
 	};
 
-	enum attrib_loc {
+	enum attrib_loc
+	{
 		loc_position = POS_ATT,
 		loc_tex_coords = TEX_ATT,
 		loc_normal = NORM_ATT,
@@ -147,7 +156,7 @@ struct nsgl_shader : public nsgl_obj
 	void _setup_xfb();
 	bool _validate();
 
-	error_state error_sate;
+	error_state_type error_state;
 	xfb_mode xfb;
 	shader_stage_info stages[6];
 	nsstring_vector xfb_locs;

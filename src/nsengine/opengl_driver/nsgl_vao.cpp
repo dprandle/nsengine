@@ -13,6 +13,7 @@ This file contains all of the neccessary definitions for the nsgl_vao class.
 
 #include <nsgl_vao.h>
 #include <nsgl_buffer.h>
+#include <nsengine.h>
 
 nsgl_vao::nsgl_vao() :
 nsgl_obj()

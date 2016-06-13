@@ -13,6 +13,27 @@
 #ifndef NSGL_DRIVER_H
 #define NSGL_DRIVER_H
 
+#define OPENGL
+
+// Default shaders
+#define GBUFFER_SHADER "gbufferdefault"
+#define GBUFFER_WF_SHADER "gbufferdefault_wireframe"
+#define GBUFFER_TRANS_SHADER "gbufferdefault_translucent"
+#define RENDER_PARTICLE_SHADER "renderparticle"
+#define PARTICLE_PROCESS_SHADER "xfbparticle"
+#define LIGHTSTENCIL_SHADER "lightstencil"
+#define SPOT_LIGHT_SHADER "spotlight"
+#define DIR_LIGHT_SHADER "directionlight"
+#define FRAGMENT_SORT_SHADER "fragment_sort"
+#define POINT_LIGHT_SHADER "pointlight"
+#define POINT_SHADOWMAP_SHADER "pointshadowmap"
+#define SPOT_SHADOWMAP_SHADER "spotshadowmap"
+#define DIR_SHADOWMAP_SHADER "dirshadowmap"
+#define SELECTION_SHADER "selectionsolid"
+#define SKYBOX_SHADER "skybox"
+#define UI_SHADER "render_ui"
+#define UI_TEXT_SHADER "ui_render_text"
+
 // Default render targets
 #define GBUFFER_TARGET "gbuffer_target"
 #define ACCUM_TARGET "accum_target"
@@ -44,72 +65,50 @@
 #define DEFAULT_ACCUM_BUFFER_RES_X 1920
 #define DEFAULT_ACCUM_BUFFER_RES_Y 1080
 
+// Some default fog settings
+#define DEFAULT_FOG_FACTOR_NEAR 40
+#define DEFAULT_FOG_FACTOR_FAR 80
+
+// Max draw_calls
+#define MAX_INSTANCED_DRAW_CALLS 4096
+#define MAX_LIGHTS_IN_SCENE 4096
+#define MAX_GBUFFER_DRAWS 2048
+#define MAX_UI_DRAW_CALLS 1024
+
 #include <nsvideo_driver.h>
-#include <nsmesh.h>
-#include <nsrender_system.h>
+#include <myGL/glew.h>
+#include <nsgl_draw_calls.h>
+#include <nsgl_render_passes.h>
 
 class nsmaterial;
-class nsgl_framebuffer;
-struct window_resize_event;
 class nsscene;
 
-struct opengl_state
-{
-	opengl_state():
-		depth_write(false),
-		depth_test(false),
-		stencil_test(false),
-		blending(false),
-		culling(false),
-		cull_face(0),
-		clear_mask(0),
-		blend_func(),
-		blend_eqn(0),
-		stencil_func(),
-		stencil_op_back(),
-		stencil_op_front()
-	{}
-	
-	bool depth_write; // material
-	bool depth_test; // material
-	bool stencil_test; // material
-	bool blending; // renderer
-	bool culling; // material
-	int32 cull_face; // material
-	int32 clear_mask;
-	ivec2 blend_func; // renderer
-	int32 blend_eqn;
-	ivec3 stencil_func; // submesh
-	ivec3 stencil_op_back; // submesh
-	ivec3 stencil_op_front;
-	ivec4 current_viewport;
-};
-
-class nsgl_driver;
-
-struct gl_render_pass : public render_pass
-{
-	gl_render_pass():
-		render_pass(),
-		ren_target(nullptr),
-		use_vp_size(true)
-	{}
-
-	virtual ~gl_render_pass() {}
-
-	virtual void setup();
-
-	virtual void render() = 0;
-
-	virtual void finish() {}
-
-	bool use_vp_size;
-	nsgl_framebuffer * ren_target;
-	nsgl_driver * driver;
-	opengl_state gl_state;
-};
+struct nsgl_framebuffer;
+struct nsgl_buffer;
+struct nsgl_shader;
 
 typedef std::unordered_map<nsstring, nsgl_framebuffer*> rt_map;
+typedef std::map<nsmaterial*, uint32> mat_id_map;
+
+struct render_shaders
+{
+	render_shaders();
+	bool error() const;
+	bool valid() const;
+	
+	nsshader * deflt;
+	nsshader * deflt_wireframe;
+	nsshader * deflt_translucent;
+	nsshader * dir_light;
+	nsshader * point_light;
+	nsshader * spot_light;
+	nsshader * light_stencil;
+	nsshader * shadow_cube;
+	nsshader * shadow_2d;
+	nsshader * frag_sort;
+	nsshader * deflt_particle;
+	nsshader * sel_shader;
+};
 
 struct packed_fragment_data // 32 bytes total
 {
@@ -127,6 +126,10 @@ struct translucent_buffers
 	translucent_buffers();
 	~translucent_buffers();
 
+	void init();
+	void release();
+	
+
 	void bind_buffers();
 	void unbind_buffers();
 	void reset_atomic_counter();
@@ -137,74 +140,29 @@ struct translucent_buffers
 	ui_vector header_clr_data;
 };
 
-struct gbuffer_render_pass : public gl_render_pass
-{
-	virtual void render();
-};
-
-struct oit_render_pass : public gl_render_pass
-{
-	virtual void render();
-	translucent_buffers * tbuffers;
-};
-
-struct light_shadow_pass : public gl_render_pass
-{
-	virtual void render();
-	light_draw_call * ldc;
-};
-
-struct light_pass : public gl_render_pass
-{
-	virtual void render();
-	light_shadow_pass * rpass;
-	translucent_buffers * tbuffers;
-};
-
-struct culled_light_pass : public light_pass
-{
-	virtual void render();
-};
-
-struct final_render_pass : public gl_render_pass
-{
-	virtual void render();
-	nsgl_framebuffer * read_buffer;
-};
-
-struct selection_render_pass : public gl_render_pass
-{
-	virtual void render();
-};
-
-struct ui_render_pass : public gl_render_pass
-{
-	virtual void render();
-};
 
 GLEWContext * glewGetContext();
-
-class nstexture;
-class nstex1d;
-class nstex2d;
-class nstex3d;
-class nstex_cubemap;
 
 struct gl_ctxt : public vid_ctxt
 {
 	gl_ctxt(uint32 id);
 	~gl_ctxt();
-	
-	void init();
-	void release();
-	
+
+	virtual void init();
+	virtual void release();
+
 	GLEWContext * glew_context; // created in ctor
 	translucent_buffers * m_tbuffers; // created in init
 	nsgl_framebuffer * m_default_target; // created in init
 	nsgl_buffer * m_single_point;
-	
-	rt_map m_render_targets; // created and removed by driver
+
+	rt_map render_targets; // created and removed by driver
 	opengl_state m_gl_state;
+	mat_id_map mat_shader_ids;
+	
+	std::vector<instanced_draw_call> all_instanced_draw_calls;
+	std::vector<light_draw_call> all_light_draw_calls;
+	std::vector<ui_draw_call> all_ui_draw_calls;
 };
 
 class nsgl_driver : public nsvideo_driver
@@ -227,8 +185,6 @@ class nsgl_driver : public nsvideo_driver
 	nsgl_driver();
 	~nsgl_driver();
 	
-	uint32 active_tex_unit();
-	
 	bool add_render_target(const nsstring & name, nsgl_framebuffer * rt);
 
 	nsgl_framebuffer * render_target(const nsstring & name);
@@ -239,9 +195,11 @@ class nsgl_driver : public nsvideo_driver
 
 	void destroy_render_target(const nsstring & name);
 
-	void clear_render_targets();
+	void destroy_all_render_targets();
 
 	void setup_default_rendering();
+
+	void clear_render_queues();
 
 	void create_default_render_targets();
 
@@ -259,18 +217,34 @@ class nsgl_driver : public nsvideo_driver
 
 	uivec3 pick(const fvec2 & mouse_pos);
 
-	virtual void init(bool setup_default_rend=true);
+	nsmaterial * default_mat();
+
+	void set_default_mat(nsmaterial * pDefMaterial);
+
+	virtual void window_resized(const ivec2 & new_size);
+
+	virtual const ivec2 & window_size();
+
+	virtual void push_scene(nsscene * scn);
+
+	virtual void push_entity(nsentity * ent);
+
+	virtual void push_viewport_ui(viewport * vp);
+	
+	virtual void render_to_viewport(viewport * vp);
+
+	virtual void render_to_all_viewports();
+
+	virtual void init();
 
 	virtual void release();
 
-	virtual void resize_screen(const ivec2 & new_size);
-
-	virtual void render(nsrender::viewport * vp);
+	uint32 active_tex_unit();
 
 	void set_active_texture_unit(uint32 tex_unit);
 	
 	uint32 bound_fbo();
-
+	
 	void clear_framebuffer(uint32 clear_mask);
 	
 	void enable_depth_write(bool enable);
@@ -320,11 +294,18 @@ class nsgl_driver : public nsvideo_driver
 	void render_light_dc(light_draw_call * idc);
 
 	void render_ui_dc(ui_draw_call * idc);
+
+	render_shaders rshaders;
 	
   private:
 
-	bool _handle_window_resize(window_resize_event * evt);	
-	bool _valid_check();	
+	void _add_draw_calls_from_scene(nsscene * scene);
+	void _add_lights_from_scene(nsscene * scene);
+	
+	bool _valid_check();
+	nsmaterial * m_default_mat;
 };
+
+int32 get_gl_prim_type(mesh_primitive_type pt);
 
 #endif

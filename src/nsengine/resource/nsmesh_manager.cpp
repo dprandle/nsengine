@@ -70,9 +70,6 @@ void nsmesh_manager::_assimp_load_node(nsmesh* pMesh, nsmesh::node * pMeshNode, 
 			id.m_joint_ids[0] = subMesh->m_node->m_node_id;
 			id.m_weights[0] = 1.0f;
 			subMesh->m_joints.assign(subMesh->m_verts.size(), id);
-			subMesh->m_joint_buf.allocate(subMesh->m_joints,
-										nsbuffer_object::mutable_static_draw,
-									   static_cast<uint32>(subMesh->m_joints.size()));
 		}
 	}
 
@@ -111,11 +108,11 @@ void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pSce
 
 			// Make sure the primitive type is correct
 			if (currentSubMesh->mPrimitiveTypes == aiPrimitiveType_TRIANGLE)
-				subMesh->m_prim_type = GL_TRIANGLES;
+				subMesh->m_prim_type = prim_triangles;
 			else if (currentSubMesh->mPrimitiveTypes == aiPrimitiveType_POINT)
-				subMesh->m_prim_type = GL_POINTS;
+				subMesh->m_prim_type = prim_points;
 			else if (currentSubMesh->mPrimitiveTypes == aiPrimitiveType_LINE)
-				subMesh->m_prim_type = GL_LINES;
+				subMesh->m_prim_type = prim_lines;
 			else
 				throw std::exception();
 
@@ -206,7 +203,7 @@ void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pSce
 
 			// Go through the submesh depending on which type of primitive, storing the indexes
 			// This will allow to draw other types of primitives besides triangles (well, allows lines and points)
-			if (subMesh->m_prim_type == GL_TRIANGLES)
+			if (subMesh->m_prim_type == prim_triangles)
 			{
 				subMesh->m_indices.resize(currentSubMesh->mNumFaces * 3);
 				subMesh->m_triangles.resize(currentSubMesh->mNumFaces);
@@ -258,7 +255,7 @@ void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pSce
 					}
 				}
 			}
-			else if (subMesh->m_prim_type == GL_LINES)
+			else if (subMesh->m_prim_type == prim_lines)
 			{
 				subMesh->m_indices.resize(currentSubMesh->mNumFaces * 2);
 				subMesh->m_lines.resize(currentSubMesh->mNumFaces);
@@ -274,7 +271,7 @@ void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pSce
 					subMesh->m_indices[offset + 1] = currentFace->mIndices[1];
 				}
 			}
-			else if (subMesh->m_prim_type == GL_POINTS)
+			else if (subMesh->m_prim_type == prim_points)
 			{
 				subMesh->m_indices.resize(currentSubMesh->mNumFaces);
 				for (uint32 m = 0; m < currentSubMesh->mNumFaces; ++m)
@@ -286,7 +283,7 @@ void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pSce
 			else
 				throw std::exception();
 
-			subMesh->allocate_buffers();
+			subMesh->video_update();
 		}
 	}
 }

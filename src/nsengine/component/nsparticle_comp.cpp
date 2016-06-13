@@ -23,9 +23,6 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 
 nsparticle_comp::nsparticle_comp() :
 	nscomponent(),
-	front_buffer(new nsgl_buffer()),
-	back_buffer(new nsgl_buffer()),
-	m_buffer_index(0),
 	m_simulating(false),
 	m_first(true),
 	m_mat_id(0),
@@ -50,22 +47,15 @@ nsparticle_comp::nsparticle_comp() :
 	m_emitter_shape(shape_cube),
 	m_emitter_size(1.0f, 1.0f, 1.0f)
 {
-	front_buffer->target = nsgl_buffer::array;
-	back_buffer->target = nsgl_buffer::array;
-	m_xfb_bufs[0] = new nsgl_xfb();
-	m_xfb_bufs[1] = new nsgl_xfb();
-	m_vaos[0] = new nsgl_vao();
-	m_vaos[1] = new nsgl_vao();
 	m_motion_keys[0] = fvec3();
 	m_motion_keys[m_max_motion_keys] = fvec3();
 	m_visual_keys[0] = fvec3(1.0f,1.0f,1.0f);
 	m_visual_keys[m_max_visual_keys] = fvec3(1.0f, 1.0f, 1.0f);
+	video_context_init();
 }
 
 nsparticle_comp::nsparticle_comp(const nsparticle_comp & copy):
 	nscomponent(copy),
-	front_buffer(new nsgl_buffer()),
-	back_buffer(new nsgl_buffer()),
 	m_motion_keys(copy.m_motion_keys),
 	m_visual_keys(copy.m_visual_keys),
 	m_mat_id(copy.m_mat_id),
@@ -90,27 +80,13 @@ nsparticle_comp::nsparticle_comp(const nsparticle_comp & copy):
 	m_max_motion_keys(copy.m_max_motion_keys),
 	m_max_visual_keys(copy.m_max_visual_keys),
 	m_simulating(copy.m_simulating),
-	m_first(copy.m_first),
-	m_buffer_index(0)
+	m_first(copy.m_first)
 {
-	front_buffer->target = nsgl_buffer::array;
-	back_buffer->target = nsgl_buffer::array;
-	m_xfb_bufs[0] = new nsgl_xfb();
-	m_xfb_bufs[1] = new nsgl_xfb();
-	m_vaos[0] = new nsgl_vao();
-	m_vaos[1] = new nsgl_vao();	
+	video_context_init();
 }
 
 nsparticle_comp::~nsparticle_comp()
-{
-	release();
-	delete front_buffer;
-	delete back_buffer;
-	delete m_xfb_bufs[0];
-	delete m_xfb_bufs[1];
-	delete m_vaos[0];
-	delete m_vaos[1];
-}
+{}
 
 void nsparticle_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 {
@@ -136,10 +112,6 @@ void nsparticle_comp::name_change(const uivec2 & oldid, const uivec2 newid)
 	}
 }
 
-/*!
-Get the resources that the component uses. If no resources are used then leave this unimplemented - will return an empty map.
-/return Map of resource ID to resource type containing all used resources
-*/
 uivec3_vector nsparticle_comp::resources()
 {
 	uivec3_vector ret;
@@ -278,62 +250,7 @@ fvec3 nsparticle_comp::visual_key_at(float pTime)
 }
 
 void nsparticle_comp::init()
-{
-	m_xfb_bufs[0]->video_init();
-	m_xfb_bufs[1]->video_init();
-	m_vaos[0]->video_init();
-	m_vaos[1]->video_init();
-	front_buffer->video_init();
-	back_buffer->video_init();
-
-	m_particles.resize(m_max_particle_count);
-	m_particles[0].age_type_reserved.y = 1.0f;
-
-	m_vaos[0]->bind();
-	back_buffer->bind();
-	back_buffer->allocate(m_particles,
-					   nsgl_buffer::mutable_dynamic_draw,
-					   static_cast<uint32>(m_particles.size()));
-	m_vaos[0]->enable(0);
-	m_vaos[0]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(particle), 0);
-	m_vaos[0]->enable(1);
-	m_vaos[0]->vertex_attrib_ptr(1, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4));
-	m_vaos[0]->enable(2);
-	m_vaos[0]->vertex_attrib_ptr(2, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 2);
-	m_vaos[0]->enable(3);
-	m_vaos[0]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 3);
-	m_vaos[0]->unbind();
-
-	m_vaos[1]->bind();
-	front_buffer->bind();
-	front_buffer->allocate(m_particles,
-						nsgl_buffer::mutable_dynamic_draw,
-						static_cast<uint32>(m_particles.size()));
-	m_vaos[1]->enable(0);
-	m_vaos[1]->vertex_attrib_ptr(0, 4, GL_FLOAT, GL_FALSE, sizeof(particle), 0);
-	m_vaos[1]->enable(1);
-	m_vaos[1]->vertex_attrib_ptr(1, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4));
-	m_vaos[1]->enable(2);
-	m_vaos[1]->vertex_attrib_ptr(2, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 2);
-	m_vaos[1]->enable(3);
-	m_vaos[1]->vertex_attrib_ptr(3, 4, GL_FLOAT, GL_FALSE, sizeof(particle), sizeof(fvec4) * 3);
-	m_vaos[1]->unbind();
-
-	front_buffer->set_target(nsgl_buffer::transform_feedback);
-	back_buffer->set_target(nsgl_buffer::transform_feedback);
-	m_xfb_bufs[0]->set_primitive(nsgl_xfb::gl_points);
-	m_xfb_bufs[1]->set_primitive(nsgl_xfb::gl_points);
-
-	m_xfb_bufs[0]->bind();
-	front_buffer->bind();
-	front_buffer->bind(0);
-	m_xfb_bufs[0]->unbind();
-
-	m_xfb_bufs[1]->bind();
-	back_buffer->bind();
-	back_buffer->bind(0);
-	m_xfb_bufs[1]->unbind();
-}
+{}
 
 void nsparticle_comp::remove_motion_key(float pTime)
 {
@@ -401,9 +318,6 @@ uint32 nsparticle_comp::max_visual_keys()
 
 void nsparticle_comp::set_max_motion_keys(uint32 pMax)
 {
-	if (pMax > PARTICLE_MAX_MOTION_KEYS)
-		return;
-
 	ui_fvec3_map tmpMap;
 	ui_fvec3_map::iterator mapIter = m_motion_keys.begin();
 	while (mapIter != m_motion_keys.end())
@@ -427,9 +341,6 @@ const ui_fvec3_map & nsparticle_comp::visual_keys()
 
 void nsparticle_comp::set_max_visual_keys(uint32 pMax)
 {
-	if (pMax > PARTICLE_MAX_VISUAL_KEYS)
-		return;
-
 	ui_fvec3_map tmpMap;
 	ui_fvec3_map::iterator mapIter = m_visual_keys.begin();
 	while (mapIter != m_visual_keys.end())
@@ -587,23 +498,7 @@ void nsparticle_comp::set_lifetime(uint32 pLifetime)
 }
 
 void nsparticle_comp::allocate_buffers()
-{
-	m_particles.resize(m_max_particle_count);
-	m_particles[0].age_type_reserved.y = 1.0f;
-
-	front_buffer->set_target(nsgl_buffer::array);
-	back_buffer->set_target(nsgl_buffer::array);
-
-	back_buffer->bind();
-	back_buffer->allocate(m_particles,
-					   nsgl_buffer::mutable_dynamic_draw,
-					   static_cast<uint32>(m_particles.size()));
-	front_buffer->bind();
-	back_buffer->allocate(m_particles,
-					   nsgl_buffer::mutable_dynamic_draw,
-					   static_cast<uint32>(m_particles.size()));
-	front_buffer->unbind();
-}
+{}
 
 void nsparticle_comp::set_max_particles(uint32 pMaxParticles)
 {
@@ -630,15 +525,15 @@ bool nsparticle_comp::looping()
 	return m_looping;
 }
 
-void nsparticle_comp::release()
+void nsparticle_comp::video_context_init()
 {
-	m_xfb_bufs[0]->video_release();
-	m_xfb_bufs[1]->video_release();
-	m_vaos[0]->video_release();
-	m_vaos[1]->video_release();
-	front_buffer->video_release();
-	back_buffer->video_release();
+	video_context_release();
+	uint8 context_id = nse.video_driver()->current_context()->context_id;
+	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(PARTICLE_VID_OBJ_GUID)->create(this);
 }
+
+void nsparticle_comp::release()
+{}
 
 void nsparticle_comp::set_rand_tex_id(const uivec2 & pID)
 {
@@ -648,26 +543,6 @@ void nsparticle_comp::set_rand_tex_id(const uivec2 & pID)
 const uivec2 & nsparticle_comp::rand_tex_id()
 {
 	return m_rand_tex_id;
-}
-
-uint32 nsparticle_comp::xfb_id()
-{
-	return m_xfb_bufs[1 - m_buffer_index]->gl_id;
-}
-
-nsgl_xfb * nsparticle_comp::xfb_obj()
-{
-	return m_xfb_bufs[m_buffer_index];
-}
-
-nsgl_vao * nsparticle_comp::va_obj()
-{
-	return m_vaos[m_buffer_index];
-}
-
-void nsparticle_comp::swap()
-{
-	m_buffer_index = 1 - m_buffer_index;
 }
 
 void nsparticle_comp::pup(nsfile_pupper * p)
@@ -702,8 +577,6 @@ void nsparticle_comp::set_first(bool pSet)
 nsparticle_comp & nsparticle_comp::operator=(nsparticle_comp rhs)
 {
 	nscomponent::operator=(rhs);
-	std::swap(front_buffer, rhs.front_buffer);
-	std::swap(back_buffer, rhs.back_buffer);
 	std::swap(m_motion_keys, rhs.m_motion_keys);
 	std::swap(m_visual_keys, rhs.m_visual_keys);
 	std::swap(m_mat_id, rhs.m_mat_id);
@@ -729,9 +602,6 @@ nsparticle_comp & nsparticle_comp::operator=(nsparticle_comp rhs)
 	std::swap(m_max_visual_keys, rhs.m_max_visual_keys);
 	std::swap(m_simulating, rhs.m_simulating);
 	std::swap(m_first, rhs.m_first);
-	std::swap(m_xfb_bufs, rhs.m_xfb_bufs);
-	std::swap(m_vaos, rhs.m_vaos);
-	std::swap(m_buffer_index, rhs.m_buffer_index);
 	post_update(true);
 	return (*this);
 }

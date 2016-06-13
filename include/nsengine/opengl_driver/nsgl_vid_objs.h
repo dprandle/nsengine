@@ -92,9 +92,11 @@ struct nsgl_particle_comp_obj : public nsvid_obj
 	~nsgl_particle_comp_obj();
 	
 	void update();
-	
-	uint8 buf_index;
 
+	uint32 last_size;
+
+	uint32 buffer_index;
+	
 	nsgl_xfb * gl_xfbs[2];
 
 	nsgl_vao * gl_vaos[2];

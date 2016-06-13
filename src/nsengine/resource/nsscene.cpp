@@ -128,8 +128,8 @@ uint32 nsscene::add(
 
 	auto fiter = tComp->m_scenes_info.emplace(
 		this,
-		new nstform_comp::per_scene_info).first;
-	nstform_comp::per_scene_info & pse = *fiter->second;
+		new tform_per_scene_info(tComp,this)).first;
+	tform_per_scene_info & pse = *fiter->second;
 	
 	uint32 tfid = pse.m_tforms.size();
 	pse.m_tforms.resize(tfid + 1);
@@ -219,8 +219,8 @@ void nsscene::add_gridded(
 
 	auto fiter = tComp->m_scenes_info.emplace(
 		this,
-		new nstform_comp::per_scene_info).first;
-	nstform_comp::per_scene_info & pse = *fiter->second;
+		new tform_per_scene_info(tComp,this)).first;
+	tform_per_scene_info & pse = *fiter->second;
 
 	// Figure out the total number of transforms needed and allocate that 
 	// much memory (addTransforms does this)
@@ -562,7 +562,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 			remove(itform->child(i), remove_children);
 	}
 
-	nstform_comp::per_scene_info * pse = fiter->second; // easier to use pse
+	tform_per_scene_info * pse = fiter->second; // easier to use pse
 	
 	// reassign all itform's children's parent to itform's parent
 	while (itform->child_count() != 0)
@@ -713,7 +713,7 @@ void nsscene::_on_comp_add(nscomponent * comp_t)
 	{
 		dprint("nsscene::_on_comp_add Adding scene to selection component");
 		nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
-		auto emp_iter = sc->m_scene_selection.emplace(this, new nssel_comp::per_scene_info);
+		auto emp_iter = sc->m_scene_selection.emplace(this, new sel_per_scene_info(sc,this));
 		if (!emp_iter.second)
 			dprint("nsscene::_on_comp_add Something in adding the comp went seriously wrong");
 	}

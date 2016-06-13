@@ -30,18 +30,12 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #include <nsinput_system.h>
 
 nsui_system::nsui_system():
-	m_ui_draw_calls(),
-	m_active_vp(nullptr),
 	m_pressed_button(nullptr),
 	m_focused_ui_ent(nullptr)
-{
-	m_ui_draw_calls.reserve(MAX_UI_DRAW_CALLS);
-}
+{}
 
 nsui_system::~nsui_system()
-{
-	
-}
+{}
 
 void nsui_system::init()
 {
@@ -54,92 +48,7 @@ void nsui_system::init()
 }
 
 void nsui_system::release()
-{
-	
-}
-
-void nsui_system::set_active_viewport(nsrender::viewport * vp)
-{
-	m_active_vp = vp;
-}
-
-nsrender::viewport * nsui_system::active_viewport()
-{
-	return m_active_vp;
-}
-
-void nsui_system::push_draw_calls()
-{
-	if (m_active_vp == nullptr)
-	{
-		dprint("nsui_system::push_draw_calls No active viewport set");
-		return;
-	}
-	
-	m_ui_draw_calls.resize(0);
-	drawcall_queue * dc_dq = nse.system<nsrender_system>()->queue(UI_RENDER_QUEUE);
-	dc_dq->resize(0);
-	for (uint32 i = 0; i < m_active_vp->ui_canvases.size(); ++i)
-	{
-		nsui_canvas_comp * uicc = m_active_vp->ui_canvases[i]->get<nsui_canvas_comp>();
-		for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
-		{
-			nsentity * cur_ent = uicc->m_ordered_ents[i];
-
-			nsui_material_comp * uimat = cur_ent->get<nsui_material_comp>();
-			nsrect_tform_comp * tuic = cur_ent->get<nsrect_tform_comp>();
-			nsui_button_comp * uib = cur_ent->get<nsui_button_comp>();
-			nsui_text_comp * uitxt = cur_ent->get<nsui_text_comp>();
-			nsui_text_input_comp * uitxt_input = cur_ent->get<nsui_text_input_comp>();
-			
-			m_ui_draw_calls.resize(m_ui_draw_calls.size()+1);
-			ui_draw_call * uidc = &m_ui_draw_calls[m_ui_draw_calls.size()-1];
-
-			uidc->entity_id = uivec3(cur_ent->full_id(),0);
-			uidc->content_wscale = tuic->content_world_scale(uicc);
-			uidc->content_tform = tuic->content_transform(uicc);
-
-			if (uimat != nullptr)
-			{
-				uidc->mat = get_resource<nsmaterial>(uimat->mat_id);
-				if (uidc->mat == nullptr)
-					uidc->mat = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
-				uidc->shdr = get_resource<nsshader>(uimat->mat_shader_id);
-				if (uidc->shdr == nullptr)
-					uidc->shdr = nse.core()->get<nsshader>(UI_SHADER);
-				uidc->top_border_radius = uimat->top_border_radius;
-				uidc->bottom_border_radius = uimat->bottom_border_radius;
-				uidc->border_pix = uimat->border_size;
-				uidc->border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
-			}
-			
-			// If there is a ui text component copy that stuff over
-			if (uitxt != nullptr)
-			{
-				uidc->text_shader = get_resource<nsshader>(uitxt->text_shader_id);
-				uidc->text = uitxt->text;
-				uidc->fnt = get_resource<nsfont>(uitxt->font_id);
-				uidc->fnt_material = get_resource<nsmaterial>(uidc->fnt->material_id);
-				if (uidc->fnt_material == nullptr)
-					uidc->fnt_material = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
-				uidc->text_line_sizes = uitxt->text_line_sizes;
-				uidc->text_margins = uitxt->margins;
-				uidc->alignment = uitxt->text_alignment;
-			}
-
-			if (uitxt_input != nullptr)
-			{
-				int mod_ = int(nse.timer()->elapsed()*1000.0f / uitxt_input->cursor_blink_rate_ms);
-				uidc->text_editable = (mod_ % 2 == 0) && (uitxt->owner() == m_focused_ui_ent);
-				uidc->cursor_color = uitxt_input->cursor_color;
-				uidc->cursor_pixel_width = uitxt_input->cursor_pixel_width;
-				uidc->cursor_offset = uitxt_input->cursor_offset;
-			}
-			
-			dc_dq->push_back(uidc);
-		}
-	}
-}
+{}
 
 void nsui_system::update()
 {
@@ -151,7 +60,7 @@ void nsui_system::update()
         nse.system<nsinput_system>()->key_dispatch_enabled = true;
 
 	// update each canvas' transform information
-	auto vp_list = nse.system<nsrender_system>()->viewports();
+	auto vp_list = nse.video_driver()->viewports();
 	auto vp_iter = vp_list->begin();
 	while (vp_iter != vp_list->end())
 	{
@@ -277,7 +186,7 @@ void nsui_system::update()
 			}
 
 			// Do the update stuff and then sort
-			const ivec2 & sz = nse.video_driver<nsopengl_driver>()->default_target()->size();
+			const ivec2 & sz = nse.video_driver()->window_size();
 			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
 			fvec2 fsz(sz.x,sz.y);
 			nsentity * canvas = vp_iter->vp->ui_canvases[i];
@@ -315,12 +224,17 @@ int32 nsui_system::update_priority()
 	return UI_SYS_UPDATE_PR;
 }
 
+nsentity * nsui_system::focused_ui_element()
+{
+	return m_focused_ui_ent;
+}
+
 bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 {
 	if (nse.system<nsselection_system>()->selection_being_dragged())
 		return true;
 	
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 
@@ -370,7 +284,7 @@ bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 
 bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 
@@ -420,7 +334,7 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 
 bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 
@@ -471,7 +385,7 @@ bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 	return true;
 }
 
-bool nsui_system::mpos_over_element(const fvec2 & norm_mpos, nsrender::viewport * vp)
+bool nsui_system::mpos_over_element(const fvec2 & norm_mpos, viewport * vp)
 {
 	nsentity * cam = vp->camera;
 	if (cam == NULL)

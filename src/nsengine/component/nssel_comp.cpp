@@ -196,5 +196,4 @@ void sel_per_scene_info::video_context_init()
 sel_per_scene_info::~sel_per_scene_info()
 {
 	m_selection.clear();
-	video_context_release();
 }

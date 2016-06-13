@@ -2,9 +2,10 @@
 #include <nsgl_shader.h>
 #include <nsgl_driver.h>
 #include <string.h>
+#include <nsengine.h>
 
 nsgl_shader::nsgl_shader():
-	error_sate(error_none),
+	error_state(error_none),
 	xfb(xfb_interleaved),
 	stages(),
 	xfb_locs(),
@@ -46,7 +47,7 @@ bool nsgl_shader::compile(shader_stage stage, const nsstring & source)
 		glGetShaderInfoLog(si->gl_id, sizeof(infoLog), NULL, (GLchar*)infoLog);
 		nsstring info(infoLog);
 		info = "----Error compiline shader stage " + stage_name(stage) + " ----\n" + info;
-		error_sate = error_compile;
+		error_state = error_compile;
 		compile_error_msg(info,si->stage);
 		dprint(info);
 		glDeleteShader(si->gl_id);
@@ -83,7 +84,7 @@ bool nsgl_shader::link()
 	if (gl_id == 0)
 	{
 		release();
-		error_sate = error_program;
+		error_state = error_program;
 		return false;
 	}
 
@@ -121,7 +122,7 @@ bool nsgl_shader::link()
 		info = "----Error linking shader----\n" + info;
 		link_error_msg(info);
 		dprint(info);
-		error_sate = error_link;
+		error_state = error_link;
 		glDeleteProgram(gl_id);
 		gl_err_check("nsgl_shader::link Error deleting program");
 		return false;
@@ -413,7 +414,7 @@ bool nsgl_shader::_validate()
         glGetProgramInfoLog(gl_id, sizeof(infoLog), NULL, infoLog);
 		nsstring info(infoLog);
 		info = "----Error validating shader----\n" + info;
-		error_sate = error_validation;
+		error_state = error_validation;
 		validation_error_msg(info);
 		dprint(info);
 		release();

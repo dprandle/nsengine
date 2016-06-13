@@ -1,6 +1,7 @@
 #include <nsgl_shadow_framebuffer.h>
-#include <nsshader.h>
+#include <nsgl_shader.h>
 #include <nsgl_texture.h>
+#include <nsgl_vid_objs.h>
 
 nsshadow_tex2d_target::nsshadow_tex2d_target()
 {}
@@ -27,8 +28,8 @@ void nsshadow_tex2d_target::init(const nsstring & tex_name)
 		tex_float,
 		tp);
 
-	att->m_texture->video_texture<nsgl_texture>()->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
-	att->m_texture->video_texture<nsgl_texture>()->depth_func = GL_LESS;
+	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
+	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_func = GL_LESS;
 }
 
 
@@ -57,6 +58,6 @@ void nsshadow_tex_cubemap_target::init(const nsstring & tex_name)
 		tex_float,
 		tp);
 		
-	att->m_texture->video_texture<nsgl_texture>()->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
-	att->m_texture->video_texture<nsgl_texture>()->depth_func = GL_LESS;
+	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
+	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_func = GL_LESS;
 }

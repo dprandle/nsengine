@@ -33,34 +33,16 @@
 #include <nslight_comp.h>
 
 nsrender_system::nsrender_system() :
-	nssystem(),
-	m_default_mat(nullptr),
-	m_current_vp(nullptr)
-{
-	m_all_draw_calls.reserve(MAX_INSTANCED_DRAW_CALLS);
-	m_light_draw_calls.reserve(MAX_LIGHTS_IN_SCENE);
-}
+	nssystem()
+{}
 
 nsrender_system::~nsrender_system()
-{
-	clear_render_queues();	
-}
-
-nsmaterial * nsrender_system::default_mat()
-{
-	return m_default_mat;
-}
+{}
 
 void nsrender_system::init()
 {
-	create_default_render_queues();
 	register_handler(nsrender_system::_handle_window_resize);
 	register_action_handler(nsrender_system::_handle_viewport_change, VIEWPORT_CHANGE);
-}
-
-void nsrender_system::set_default_mat(nsmaterial * pDefMat)
-{
-	m_default_mat = pDefMat;
 }
 
 void nsrender_system::update()
@@ -71,7 +53,8 @@ void nsrender_system::update()
 	auto scene_ents = m_active_scene->entities_in_scene();
 	if (scene_ents == nullptr)
 		return;
-	
+
+	// Go through and recursively update the scene
 	auto ent_iter = scene_ents->begin();
 	while (ent_iter != scene_ents->end())
 	{
@@ -84,31 +67,19 @@ void nsrender_system::update()
 		}
 		++ent_iter;
 	}
-	
-	_prepare_tforms(m_active_scene);
-	m_mat_shader_ids.clear();
-	m_all_draw_calls.resize(0);
-	m_light_draw_calls.resize(0);
-	push_scene(m_active_scene);
-}
 
-void nsrender_system::render()
-{
-	static bool vperr = false;
-    if (vp_list.empty())
+	// now go through second time after recursive update
+	ent_iter = scene_ents->begin();
+	while (ent_iter != scene_ents->end())
 	{
-        if (!vperr)
-            dprint("nsrender_system::render Warning - no viewports - will render nothing");
-		vperr = true;
-        return;
-	}
-    vperr = false;
-	
-	auto iter = vp_list.begin();
-	while (iter != vp_list.end())
-	{
-		nse.video_driver()->render(iter->vp);
-		++iter;
+		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
+        if (tForm->update_posted())
+		{
+			tform_per_scene_info * psi = tForm->m_scenes_info.find(m_active_scene)->second;
+			psi->video_update();
+			tForm->post_update(false);
+		}
+		++ent_iter;
 	}
 }
 
@@ -119,24 +90,7 @@ int32 nsrender_system::update_priority()
 
 bool nsrender_system::_handle_window_resize(window_resize_event * evt)
 {
-	auto iter = vp_list.begin();
-	while (iter != vp_list.end())
-	{
-		if (iter->vp->window_tag == evt->window_tag && iter->vp->normalized_bounds != fvec4(0.0f))
-		{
-			iter->vp->bounds.x = iter->vp->normalized_bounds.x * evt->new_size.x;
-			iter->vp->bounds.y = iter->vp->normalized_bounds.y * evt->new_size.y;
-            iter->vp->bounds.z = iter->vp->normalized_bounds.z * evt->new_size.x;
-			iter->vp->bounds.w = iter->vp->normalized_bounds.w * evt->new_size.y;
-			if (iter->vp->camera != nullptr)
-			{
-				nscam_comp * cc = iter->vp->camera->get<nscam_comp>();
-				cc->resize_screen(iter->vp->bounds.zw() - iter->vp->bounds.xy());
-			}
-		}
-		++iter;
-	}
-	nse.video_driver()->resize_screen(evt->new_size);
+	nse.video_driver()->window_resized(evt->new_size);
 	return true;
 }
 
@@ -146,280 +100,4 @@ bool nsrender_system::_handle_viewport_change(nsaction_event * evt)
 	if (vp != nullptr)
 		nse.video_driver()->set_focused_viewport(vp);
 	return true;
-}
-
-void nsrender_system::_add_lights_from_scene(nsscene * scene)
-{
-	auto ents = scene->entities_with_comp<nslight_comp>();
-	if (ents == nullptr)
-		return;
-	
-	drawcall_queue * dc_dq = queue(DIR_LIGHT_QUEUE);
-	drawcall_queue * dc_sq = queue(SPOT_LIGHT_QUEUE);
-	drawcall_queue * dc_pq = queue(POINT_LIGHT_QUEUE);
-
-	dc_dq->resize(0);
-	dc_sq->resize(0);
-	dc_pq->resize(0);
-
-	auto l_iter = ents->begin();
-	while (l_iter != ents->end())
-	{
-		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
-		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
-		nsmesh * boundingMesh = get_resource<nsmesh>(lcomp->mesh_id());
-		
-		m_light_draw_calls.resize(m_light_draw_calls.size()+1);
-
-		fmat4 proj;
-		if (lcomp->get_light_type() == nslight_comp::l_spot)
-			proj = perspective(2*lcomp->angle(), 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
-		else if(lcomp->get_light_type() == nslight_comp::l_point)
-			proj = perspective(90.0f, 1.0f, lcomp->shadow_clipping().x, lcomp->shadow_clipping().y);
-		else
-			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
-
-		for (uint32 i = 0; i < tcomp->instance_count(scene); ++i)
-		{
-			light_draw_call * ldc = &m_light_draw_calls[m_light_draw_calls.size()-1];
-			auto itf = tcomp->instance_transform(scene, i);
-			
-			ldc->submesh = nullptr;
-			ldc->bg_color = scene->bg_color();
-			ldc->direction = itf->m_orient.target();
-			ldc->diffuse_intensity = lcomp->intensity().x;
-			ldc->ambient_intensity = lcomp->intensity().y;
-			ldc->cast_shadows = lcomp->cast_shadows();
-			ldc->light_color = lcomp->color();
-			ldc->light_type = lcomp->get_light_type();
-			ldc->shadow_samples = lcomp->shadow_samples();
-			ldc->shadow_darkness = lcomp->shadow_darkness();
-			ldc->material_ids = &m_mat_shader_ids;
-			ldc->spot_atten = lcomp->atten();
-			ldc->light_pos = itf->world_position();
-			ldc->light_transform = itf->world_tf() % lcomp->scaling();
-			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
-			if (lcomp->get_light_type() == nslight_comp::l_dir)
-			{
-				ldc->proj_light_mat = proj * itf->world_inv_tf();
-				ldc->shdr = nse.core()->get<nsshader>(DIR_LIGHT_SHADER);
-				dc_dq->push_back(ldc);
-			}
-			else if (lcomp->get_light_type() == nslight_comp::l_spot)
-			{
-				ldc->shdr = nse.core()->get<nsshader>(SPOT_LIGHT_SHADER);
-				ldc->proj_light_mat = proj * itf->world_inv_tf();
-				if (boundingMesh != nullptr)
-				{
-					for (uint32 i = 0; i < boundingMesh->count(); ++i)
-					{
-						ldc->submesh = boundingMesh->sub(i);
-						dc_sq->push_back(ldc);
-					}
-				}
-			}
-			else
-			{
-				ldc->shdr = nse.core()->get<nsshader>(POINT_LIGHT_SHADER);
-				ldc->proj_light_mat = proj;
-				if (boundingMesh != nullptr)
-				{
-					for (uint32 i = 0; i < boundingMesh->count(); ++i)
-					{
-						ldc->submesh = boundingMesh->sub(i);
-						dc_pq->push_back(ldc);
-					}
-				}
-			}
-		}
-		++l_iter;
-	}
-}
-
-void nsrender_system::_add_draw_calls_from_scene(nsscene * scene)
-{
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
-	if (vp == nullptr)
-		return;
-
-	nsentity * camera = vp->camera;
-	if (camera == NULL)
-		return;
-
-	auto ents = scene->entities_with_comp<nsrender_comp>();
-	if (ents == nullptr)
-		return;
-
-	// update render components and the draw call list
-	drawcall_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
-	drawcall_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
-	drawcall_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
-
-	scene_dcq->resize(0);
-	scene_tdcq->resize(0);
-	scene_sel->resize(0);
-	
-	nscam_comp * cc = camera->get<nscam_comp>();	
-	fvec2 terh;
-	nsrender_comp * rComp = nullptr;
-	nstform_comp * tComp = nullptr;
-	nsanim_comp * animComp = nullptr;
-	nsterrain_comp * terComp = nullptr;
-	nsmesh * currentMesh = nullptr;
-	nslight_comp * lc = nullptr;
-	nssel_comp * sc = nullptr;
-	bool transparent_picking = false;
-	uint32 mat_id = 0;
-
-	auto iter = ents->begin();
-	while (iter != ents->end())
-	{
-		terh.set(0.0f, 1.0f);
-		rComp = (*iter)->get<nsrender_comp>();
-		tComp = (*iter)->get<nstform_comp>();
-		lc = (*iter)->get<nslight_comp>();
-		sc = (*iter)->get<nssel_comp>();
-		animComp = (*iter)->get<nsanim_comp>();
-		terComp = (*iter)->get<nsterrain_comp>();
-		currentMesh = get_resource<nsmesh>(rComp->mesh_id());
-		
-		if (lc != nullptr)
-		{
-			if (lc->update_posted())
-				lc->post_update(false);
-		}
-
-		if (rComp->update_posted())
-			rComp->post_update(false);
-
-		if (currentMesh == nullptr)
-		{
-			++iter;
-			continue;
-		}
-
-		if (sc != nullptr)
-		{
-			transparent_picking = sc->transparent_picking_enabled();
-		}
-		
-		nsmesh::submesh * mSMesh = nullptr;
-		nsmaterial * mat = nullptr;
-		fmat4_vector * fTForms = nullptr;
-		nsshader * shader = nullptr;
-		for (uint32 i = 0; i < currentMesh->count(); ++i)
-		{
-			mSMesh = currentMesh->sub(i);
-			mat = get_resource<nsmaterial>(rComp->material_id(i));
-
-			if (mat == nullptr)
-				mat = nse.system<nsrender_system>()->default_mat();
-
-			shader = get_resource<nsshader>(mat->shader_id());
-			fTForms = nullptr;
-
-			if (shader == nullptr)
-			{
-				if (mat->wireframe())
-					shader = m_shaders.deflt_wireframe;
-				else if (mat->alpha_blend())
-					shader = m_shaders.deflt_translucent;
-				else
-					shader = m_shaders.deflt;
-			}
-
-			if (animComp != nullptr)
-				fTForms = animComp->final_transforms();
-
-			if (terComp != nullptr)
-				terh = terComp->height_bounds();
-
-			
-			if (tComp != nullptr)
-			{
-				m_all_draw_calls.resize(m_all_draw_calls.size()+1);
-				instanced_draw_call * dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
-				dc->submesh = mSMesh;
-				dc->transform_buffer = tComp->transform_buffer(scene);
-				dc->transform_id_buffer = tComp->transform_id_buffer(scene);
-				dc->anim_transforms = fTForms;
-				dc->height_minmax = terh;
-				dc->entity_id = (*iter)->id();
-				dc->plugin_id = (*iter)->plugin_id();
-				dc->transform_count = tComp->m_scenes_info.find(m_active_scene)->second->m_visible_count;
-				dc->casts_shadows = rComp->cast_shadow();
-				dc->transparent_picking = false;
-				dc->mat_index = mat_id;
-				dc->mat = mat;
-				dc->shdr = shader;
-				if (mat->alpha_blend())
-				{
-					dc->transparent_picking = transparent_picking;
-					scene_tdcq->push_back(dc);
-				}
-				else
-				{
-					scene_dcq->push_back(dc);
-				}
-
-				if (sc != nullptr && sc->selected(scene))
-				{
-					m_all_draw_calls.resize(m_all_draw_calls.size()+1);
-					instanced_draw_call * sel_dc = &m_all_draw_calls[m_all_draw_calls.size()-1];
-					sel_dc->submesh = mSMesh;
-					sel_dc->transform_buffer = sc->video_object(scene);
-					sel_dc->transform_id_buffer = nullptr;
-					sel_dc->anim_transforms = fTForms;
-					sel_dc->height_minmax = terh;
-					sel_dc->transform_count = sc->selection(scene)->size();
-					sel_dc->shdr = m_shaders.sel_shader;
-					sel_dc->mat = mat;
-					sel_dc->sel_color = sc->color();
-					scene_sel->push_back(sel_dc);
-				}
-
-				auto inserted = m_mat_shader_ids.emplace(mat, mat_id);
-				if (inserted.second)
-					++mat_id;
-			}
- 		}
-		
-		++iter;
-	}
-}
-
-void nsrender_system::_prepare_tforms(nsscene * scene)
-{
-	auto ents = scene->entities_in_scene();
-	if (ents == nullptr)
-		return;
-	
-	auto ent_iter = ents->begin();
-	while (ent_iter != ents->end())
-	{
-		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-        if (tForm->update_posted())
-		{
-			nstform_per_scene_info * psi = tForm->m_scenes_info.find(scene)->second;
-			psi->video_update();
-			tForm->post_update(false);
-		}
-		++ent_iter;
-	}
-}
-
-const render_shaders & nsrender_system::get_render_shaders()
-{
-	return m_shaders;
-}
-
-void nsrender_system::set_render_shaders(const render_shaders & rs)
-{
-	m_shaders = rs;
-}
-
-
-std::list<vp_node> * nsrender_system::viewports()
-{
-	return &vp_list;
 }

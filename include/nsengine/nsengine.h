@@ -188,8 +188,6 @@ public:
 	{
 		return static_cast<T*>(m_driver);
 	}
-
-	void create_default_systems();
 	
 	template<class sys_type>
 	sys_type * create_system()
@@ -487,7 +485,7 @@ public:
 
 	void set_active_scene(nsscene * active_scene);
 
-	void start();
+	void start(bool init_default_factories=true);
 
 	template<class sys_type>
 	sys_type * system()
@@ -499,8 +497,6 @@ public:
 	nssystem * system(uint32 type_id);
 
 	nssystem * system(const nsstring & guid_);
-
-	void setup_core_plug();
 
 	nstimer * timer();
 
@@ -519,6 +515,8 @@ public:
 
 private:
 
+	void _create_factory_systems();
+	
 	void _cleanup_driver();
 	
 	template<class obj_type>

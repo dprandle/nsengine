@@ -75,7 +75,6 @@ nsengine::nsengine():
 #endif
 	m_cwd(nsfile_os::cwd())
 {
-	_init_factories();
 	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
 	m_plugins->set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
 	m_plugins->set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
@@ -100,7 +99,6 @@ nsengine::~nsengine()
 #ifdef NSDEBUG
 	delete m_deb;
 #endif
-	delete m_driver;
 }
 
 bool nsengine::add_system(nssystem * sys_to_add)
@@ -280,8 +278,17 @@ void nsengine::set_import_dir(const nsstring & dir)
 	++iter;
 }
 
-void nsengine::start()
+void nsengine::start(bool init_default_factories)
 {
+	if (m_driver == nullptr)
+	{
+		dprint("nsengine::start Cannot initialize engine without video driver created (use nse.create_video_driver<driver_type>()");
+		return;
+	}
+	
+	if (init_default_factories)
+		_init_factories();
+	
 	nsfile_os::platform_init();
 	
 	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
@@ -291,7 +298,8 @@ void nsengine::start()
 	plg->add_name_to_res_path(false);
 	plg->lock_resource_dir(true);
 	plg->enable_group_save(false);
-
+	m_driver->init();
+	_create_factory_systems();
 	m_timer->start();
 }
 
@@ -299,7 +307,6 @@ void nsengine::shutdown()
 {
 	m_plugins->destroy_all();
 	m_event_disp->clear();
-	m_driver->release();
 	auto iter = m_systems->begin();
 	while (iter != m_systems->end())
 	{
@@ -309,6 +316,7 @@ void nsengine::shutdown()
 		++iter;
 	}
 	m_systems->clear();
+	delete m_driver;
 	m_timer->pause();
 }
 
@@ -396,7 +404,7 @@ void nsengine::_remove_sys(uint32 type_id)
 	}
 }
 
-void nsengine::create_default_systems()
+void nsengine::_create_factory_systems()
 {
 	auto fiter = nse.begin_factory();
 	while (fiter != nse.end_factory())
@@ -442,7 +450,6 @@ void nsengine::_cleanup_driver()
 {
 	if (m_driver != nullptr)
 	{
-		m_driver->release();
 		delete m_driver;
 		m_driver = nullptr;
 	}
@@ -503,76 +510,6 @@ void nsengine::_init_factories()
 	register_resource<nsshader, nsshader_manager>("nsshader");
 	register_resource<nsfont, nsfont_manager>("nsfont");
 	register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
-}
-
-void nsengine::setup_core_plug()
-{
-	nsplugin * cplg = nse.core();
-		
-	// Default material
-	nsmaterial * def_mat;
-	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
-	def_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
-	def_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
-	def_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
-
-	render_shaders rh;
-    nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-	rh.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
-	rh.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
-	rh.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
-	rh.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
-	rh.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
-	rh.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
-	rh.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
-	rh.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
-	rh.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
-	rh.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
-	rh.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
-	rh.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
-
-	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
-	
-	nsshader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true);
-	std::vector<nsstring> outLocs2;
-	outLocs2.push_back("gPosOut");
-	outLocs2.push_back("gVelOut");
-	outLocs2.push_back("gScaleAndAngleOut");
-	outLocs2.push_back("gAgeOut");
-	ps->set_xfb(nsshader::xfb_interleaved, &outLocs2);
-	
-	// create build system jazz
-	nsentity * object_brush = cplg->create<nsentity>(ENT_OBJECT_BRUSH);
-	nssel_comp * sc = object_brush->create<nssel_comp>();	
-	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_mask_alpha(0.2f);
-	sc->enable_draw(true);
-	sc->enable_move(true);
-	nse.system<nsbuild_system>()->set_object_brush(object_brush);
-
-	// create camera system entity
-	nsentity * cam_manip_ent = cplg->create<nsentity>("camera_focus_manipulator");
-	nse.system<nscamera_system>()->set_camera_focus_manipulator(cam_manip_ent);
-
-    // init gl all the shaders
-	cplg->manager<nsshader_manager>()->compile_all();
-	cplg->manager<nsshader_manager>()->link_all();
-	cplg->manager<nsshader_manager>()->init_uniforms_all();
-
-	// Light bounds, skydome, and tile meshes
-    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);
-
-	nse.system<nsrender_system>()->set_render_shaders(rh);
-	nse.system<nsrender_system>()->set_default_mat(def_mat);
 }
 
 nsengine & nsengine::inst()

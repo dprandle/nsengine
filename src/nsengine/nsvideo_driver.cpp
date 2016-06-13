@@ -14,55 +14,8 @@
 #include <nsgl_framebuffer.h>
 #include <nsengine.h>
 #include <nsshader.h>
-
-render_shaders::render_shaders() :
-	deflt(nullptr),
-	deflt_wireframe(nullptr),
-	deflt_translucent(nullptr),
-	dir_light(nullptr),
-	point_light(nullptr),
-	spot_light(nullptr),
-	light_stencil(nullptr),
-	shadow_cube(nullptr),
-	shadow_2d(nullptr),
-	frag_sort(nullptr),
-	deflt_particle(nullptr),
-	sel_shader(nullptr)
-{}
-
-bool render_shaders::error() const
-{
-	return (
-		deflt->error() != nsshader::error_none ||
-		deflt_wireframe->error() != nsshader::error_none ||
-		deflt_translucent->error() != nsshader::error_none ||
-		dir_light->error() != nsshader::error_none ||
-		point_light->error() != nsshader::error_none ||
-		spot_light->error() != nsshader::error_none ||
-		light_stencil->error() != nsshader::error_none ||
-		shadow_cube->error() != nsshader::error_none ||
-		shadow_2d->error() != nsshader::error_none ||
-		frag_sort->error() != nsshader::error_none ||
-		deflt_particle->error() != nsshader::error_none ||
-		sel_shader->error() != nsshader::error_none);
-}
-
-bool render_shaders::valid() const
-{
-	return (
-		deflt != nullptr &&
-		deflt_wireframe != nullptr &&
-		deflt_translucent != nullptr &&
-		dir_light != nullptr &&
-		point_light != nullptr &&
-		spot_light != nullptr &&
-		light_stencil != nullptr &&
-		shadow_cube != nullptr &&
-		shadow_2d != nullptr &&
-		frag_sort != nullptr &&
-		deflt_particle != nullptr &&
-		sel_shader != nullptr);
-}
+#include <nsentity.h>
+#include <nscam_comp.h>
 
 vp_node::vp_node(const nsstring & vp_name_, viewport * vp_):
 	vp_name(vp_name_),
@@ -72,14 +25,46 @@ vp_node::vp_node(const nsstring & vp_name_, viewport * vp_):
 vp_node::~vp_node()
 {}
 
+
+vid_ctxt::~vid_ctxt()
+{
+	while (render_passes.begin() != render_passes.end())
+	{
+		delete render_passes.back();
+		render_passes.pop_back();
+	}
+	while (render_queues.begin() != render_queues.end())
+	{
+		delete render_queues.begin()->second;
+		render_queues.erase(render_queues.begin());
+	}
+	while (vp_list.begin() != vp_list.end())
+	{
+		delete vp_list.back().vp;
+		vp_list.pop_back();
+	}
+}
+
 nsvideo_driver::nsvideo_driver():
-	m_auto_cleanup(true)
+	m_auto_cleanup(true),
+	m_current_context(nullptr),
+	m_contexts()
 {}
 
 nsvideo_driver::~nsvideo_driver()
-{}
+{
+	if (m_current_context != nullptr)
+		destroy_context(m_current_context->context_id);
+	for (uint8 i = 0; i < MAX_CONTEXT_COUNT; ++i)
+	{
+		if (m_contexts[i] != nullptr)
+		{
+			dprint("nsvideo_driver::~nsvideo_driver() Warning - deleting video driver without having deleted all contexts first");
+		}
+	}
+}
 
-void nsvideo_driver::clear_render_passes()
+void nsvideo_driver::destroy_all_render_passes()
 {
 	if (m_current_context == nullptr)
 	{
@@ -91,6 +76,16 @@ void nsvideo_driver::clear_render_passes()
 	{
 		delete m_current_context->render_passes.back();
 		m_current_context->render_passes.pop_back();
+	}
+}
+
+void nsvideo_driver::clear_render_queues()
+{
+	auto rq_iter = m_current_context->render_queues.begin();
+	while (rq_iter != m_current_context->render_queues.end())
+	{
+		rq_iter->second->resize(0);
+		++rq_iter;
 	}
 }
 
@@ -115,7 +110,7 @@ bool nsvideo_driver::add_queue(const nsstring & name, render_queue * q)
 	return m_current_context->render_queues.emplace(name, q).second;
 }
 
-void nsvideo_driver::clear_render_queues()
+void nsvideo_driver::destroy_all_render_queues()
 {
 	if (m_current_context == nullptr)
 	{
@@ -210,18 +205,18 @@ viewport * nsvideo_driver::insert_viewport(
 			return nullptr;
 		
 		m_current_context->focused_vp = new viewport(vp);
-		vp_list.push_back(vp_node(vp_name, m_current_context->focused_vp));
+		m_current_context->vp_list.push_back(vp_node(vp_name, m_current_context->focused_vp));
 		return m_current_context->focused_vp;
 	}
 	else
 	{
-		auto liter = vp_list.begin();
-		while (liter != vp_list.end())
+		auto liter = m_current_context->vp_list.begin();
+		while (liter != m_current_context->vp_list.end())
 		{
 			if (liter->vp_name == insert_before)
 			{
 				m_current_context->focused_vp = new viewport(vp);
-				vp_list.insert(liter, vp_node(vp_name, m_current_context->focused_vp));
+				m_current_context->vp_list.insert(liter, vp_node(vp_name, m_current_context->focused_vp));
 				return m_current_context->focused_vp;
 			}
 			++liter;
@@ -238,8 +233,8 @@ bool nsvideo_driver::remove_viewport(const nsstring & vp_name)
 		return false;
 	}
 
-	auto liter = vp_list.begin();
-	while (liter != vp_list.end())
+	auto liter = m_current_context->vp_list.begin();
+	while (liter != m_current_context->vp_list.end())
 	{
 		if (liter->vp_name == vp_name)
 		{
@@ -248,10 +243,10 @@ bool nsvideo_driver::remove_viewport(const nsstring & vp_name)
 			
 			delete liter->vp;
 			liter->vp = nullptr;
-			vp_list.erase(liter);
+			m_current_context->vp_list.erase(liter);
 
-			if (m_current_context->focused_vp == nullptr && !vp_list.empty())
-				m_current_context->focused_vp = vp_list.back().vp;
+			if (m_current_context->focused_vp == nullptr && !m_current_context->vp_list.empty())
+				m_current_context->focused_vp = m_current_context->vp_list.back().vp;
 			
 			return true;
 		}
@@ -268,8 +263,8 @@ viewport * nsvideo_driver::find_viewport(const nsstring & vp_name)
 		return nullptr;
 	}
 
-	auto liter = vp_list.begin();
-	while (liter != vp_list.end())
+	auto liter = m_current_context->vp_list.begin();
+	while (liter != m_current_context->vp_list.end())
 	{
 		if (liter->vp_name == vp_name)
 			return liter->vp;
@@ -286,11 +281,11 @@ void nsvideo_driver::move_viewport_forward(const nsstring & vp_name)
 		return;
 	}
 
-	if (vp_list.back().vp_name == vp_name)
+	if (m_current_context->vp_list.back().vp_name == vp_name)
 		return;
 	
-	auto liter = vp_list.begin();
-	while (liter != vp_list.end())
+	auto liter = m_current_context->vp_list.begin();
+	while (liter != m_current_context->vp_list.end())
 	{
 		if (liter->vp_name == vp_name)
 		{
@@ -312,11 +307,11 @@ void nsvideo_driver::move_viewport_back(const nsstring & vp_name)
 		return;
 	}
 
-	if (vp_list.front().vp_name == vp_name)
+	if (m_current_context->vp_list.front().vp_name == vp_name)
 		return;
 	
-	auto liter = vp_list.begin();
-	while (liter != vp_list.end())
+	auto liter = m_current_context->vp_list.begin();
+	while (liter != m_current_context->vp_list.end())
 	{
 		if (liter->vp_name == vp_name)
 		{
@@ -338,7 +333,7 @@ void nsvideo_driver::move_viewport_to_back(const nsstring & vp_name)
 		return;
 	}
 
-	if (vp_list.front().vp_name == vp_name)
+	if (m_current_context->vp_list.front().vp_name == vp_name)
 		return;
 
 	viewport * vp = find_viewport(vp_name);
@@ -346,8 +341,23 @@ void nsvideo_driver::move_viewport_to_back(const nsstring & vp_name)
 	{
 		viewport vp_copy(*vp);
 		remove_viewport(vp_name);
-		insert_viewport(vp_name, vp_copy, vp_list.front().vp_name);
+		insert_viewport(vp_name, vp_copy, m_current_context->vp_list.front().vp_name);
 	}
+}
+
+std::list<vp_node> * nsvideo_driver::viewports()
+{
+	if (m_current_context == nullptr)
+	{
+		dprint("nsvideo_driver::viewports Cannot get viewports until a valid context has been created");
+		return nullptr;
+	}
+	return &m_current_context->vp_list;
+}
+
+vid_ctxt * nsvideo_driver::context(uint8 id)
+{
+	return m_contexts[id];
 }
 
 void nsvideo_driver::move_viewport_to_front(const nsstring & vp_name)
@@ -358,7 +368,7 @@ void nsvideo_driver::move_viewport_to_front(const nsstring & vp_name)
 		return;
 	}
 
-	if (vp_list.back().vp_name == vp_name)
+	if (m_current_context->vp_list.back().vp_name == vp_name)
 		return;
 
 	viewport * vp = find_viewport(vp_name);
@@ -393,8 +403,8 @@ void nsvideo_driver::set_focused_viewport(viewport * vp)
 
 viewport * nsvideo_driver::front_viewport(const fvec2 & screen_pos)
 {
-	auto riter = vp_list.rbegin();
-	while (riter != vp_list.rend())
+	auto riter = m_current_context->vp_list.rbegin();
+	while (riter != m_current_context->vp_list.rend())
 	{
 		if (screen_pos < riter->vp->normalized_bounds.zw() && screen_pos > riter->vp->normalized_bounds.xy())
 			return riter->vp;
@@ -407,7 +417,8 @@ bool nsvideo_driver::destroy_context(uint8 c_id)
 {
 	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
-	
+
+	m_contexts[c_id]->release();
 	delete m_contexts[c_id];
 	m_contexts[c_id] = nullptr;
 	return true;
@@ -456,9 +467,45 @@ bool nsvideo_driver::initialized()
 	return m_current_context->initialized;
 }
 
+void nsvideo_driver::window_resized(const ivec2 & new_size)
+{
+	if (m_current_context == nullptr)
+		return;
+
+	// ubdate the actual vp pixel sizes and resize the viewports' camera
+	auto iter = m_current_context->vp_list.begin();
+	while (iter != m_current_context->vp_list.end())
+	{
+		if (iter->vp->normalized_bounds != fvec4(0.0f))
+		{
+			iter->vp->bounds.x = iter->vp->normalized_bounds.x * new_size.x;
+			iter->vp->bounds.y = iter->vp->normalized_bounds.y * new_size.y;
+            iter->vp->bounds.z = iter->vp->normalized_bounds.z * new_size.x;
+			iter->vp->bounds.w = iter->vp->normalized_bounds.w * new_size.y;
+			if (iter->vp->camera != nullptr)
+			{
+				nscam_comp * cc = iter->vp->camera->get<nscam_comp>();
+				cc->resize_screen(iter->vp->bounds.zw() - iter->vp->bounds.xy());
+			}
+		}
+		++iter;
+	}
+}
+
 nsvideo_object::nsvideo_object():
-	ctxt_objs()
+	ctxt_objs(),
+	share_between_contexts(true)
 {}
+
+bool nsvideo_object::context_sharing()
+{
+	return share_between_contexts;
+}
+
+void nsvideo_object::enable_context_sharing(bool enable)
+{
+	share_between_contexts = enable;
+}
 
 bool nsvideo_object::initialized()
 {
@@ -478,6 +525,12 @@ nsvideo_object::~nsvideo_object()
 			ctxt_objs[i] = nullptr;
 		}
 	}
+}
+
+nsvid_obj * nsvideo_object::video_obj()
+{
+	uint8 context_id = nse.video_driver()->current_context()->context_id;
+	return ctxt_objs[context_id];
 }
 	
 void nsvideo_object::video_context_release()

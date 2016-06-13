@@ -42,6 +42,14 @@ nscamera_system::~nscamera_system()
 
 void nscamera_system::init()
 {
+	nsplugin * cplg = nse.core();
+	if (cplg == nullptr)
+	{
+		dprint("nscamera_system::init - You must first call nse.start before initializing");
+		return;
+	}
+	m_cam_focus_manipulator = cplg->create<nsentity>("camera_focus_manipulator");
+
 	register_handler(nscamera_system::_handle_sel_focus_event);
 	register_action_handler(nscamera_system::_handle_camera_forward, NSCAM_FORWARD);
 	register_action_handler(nscamera_system::_handle_camera_backward, NSCAM_BACKWARD);
@@ -131,7 +139,7 @@ void nscamera_system::set_view(camera_view_t view_)
 {	
 	if (m_active_scene == nullptr)
 		return;
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return;
 	nsentity * cam = vp->camera;
@@ -396,7 +404,7 @@ void nscamera_system::update()
 	if (scene_error_check())
 		return;
 	
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return;
 
@@ -503,7 +511,7 @@ void nscamera_system::set_camera_focus_manipulator(nsentity * cam_manip)
 
 bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 
@@ -524,7 +532,7 @@ bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 
@@ -545,7 +553,7 @@ bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_zoom(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 
@@ -624,7 +632,7 @@ bool nscamera_system::_handle_camera_toggle_mode(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 	nsentity * cam = vp->camera;
@@ -640,7 +648,7 @@ bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 	nsentity * cam = vp->camera;
@@ -657,7 +665,7 @@ bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 	nsentity * cam = vp->camera;
@@ -674,7 +682,7 @@ bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 {
-	nsrender::viewport * vp = nse.system<nsrender_system>()->current_viewport();
+	viewport * vp = nse.video_driver()->focused_viewport();
 	if (vp == nullptr)
 		return true;
 	nsentity * cam = vp->camera;

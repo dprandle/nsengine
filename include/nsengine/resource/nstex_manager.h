@@ -106,10 +106,6 @@ public:
 
 	virtual bool save(nstex_cubemap * cubemap, const nsstring & path);
 
-	void video_init_all();
-
-	void video_release_all();
-
   private:
 	uint32 _translate_format_il(tex_format ft);
 	uint32 _translate_pixel_type_il(pixel_component_type pt);

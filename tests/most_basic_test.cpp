@@ -22,7 +22,7 @@
 #include <nsrender_comp.h>
 #include <nsanim_comp.h>
 #include <nsfont.h>
-#include <nsopengl_driver.h>
+#include <nsgl_driver.h>
 #include <nsui_comp.h>
 #include <nsrect_tform_comp.h>
 #include <nsui_button_comp.h>
@@ -60,14 +60,9 @@ int main()
     button_funcs bf;
     bf.m_router = new nsrouter;
 	
-    nse.start();
-    nse.create_default_systems();
-
 	nsgl_driver * gl_driver = nse.create_video_driver<nsgl_driver>();
-	gl_driver->create_context();
-    gl_driver->init(true);
-
-	nse.setup_core_plug();
+    nse.start();
+	gl_driver->setup_default_rendering();
 
     nsplugin * plg = nsep.create("most_basic_test");
     plg->bind();
@@ -173,9 +168,9 @@ int main()
     pic->angle = 0.0f;
 
 
-    nsrender::viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
+    viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
     vp.ui_canvases.push_back(canvas);
-    nse.system<nsrender_system>()->insert_viewport("main_view",vp);
+    nse.video_driver()->insert_viewport("main_view",vp);
 
     nse.set_active_scene(new_scene);
 
@@ -183,11 +178,10 @@ int main()
     while (glfw_window_open())
     {
         nse.update();
-
-        nse.system<nsui_system>()->set_active_viewport(&vp);
-        nse.system<nsui_system>()->push_draw_calls();
-        nse.system<nsrender_system>()->render();
-
+		
+		nse.video_driver()->push_scene(new_scene);
+		nse.video_driver()->render_to_all_viewports();
+		nse.video_driver()->clear_render_queues();
         glfw_update();
     }
 

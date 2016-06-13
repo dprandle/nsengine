@@ -55,7 +55,7 @@ int main()
 
 
     nse.start();
-    nse.create_default_systems();
+    nse._create_factory_systems();
 
 	nsgl_driver * gl_driver = nse.create_video_driver<nsgl_driver>();
 	gl_driver->create_context();

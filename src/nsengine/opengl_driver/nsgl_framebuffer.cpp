@@ -10,7 +10,7 @@
   \copywrite Earth Banana Games 2013
 */
 
-
+#include <nsgl_vid_objs.h>
 #include <nsgl_renderbuffer.h>
 #include <nsgl_framebuffer.h>
 #include <nsres_manager.h>
@@ -53,7 +53,7 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 			glFramebufferTexture(
 				target,
 				pAttachment->m_att_point,
-				pAttachment->m_texture->video_texture<nsgl_texture>()->gl_id,
+				pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->gl_id,
 				0);
 		}
 		else
@@ -61,8 +61,8 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 			glFramebufferTexture2D(
 				target,
 				pAttachment->m_att_point,
-				pAttachment->m_texture->video_texture<nsgl_texture>()->target,
-				pAttachment->m_texture->video_texture<nsgl_texture>()->gl_id,
+				pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->target,
+				pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->gl_id,
 				0);
 		}
 	}
@@ -210,7 +210,7 @@ void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
 			(*iter)->m_renderbuf->resize(w, h);
 		if ((*iter)->m_texture != NULL)
 		{
-			uint32 tt = (*iter)->m_texture->video_texture<nsgl_texture>()->target;
+			uint32 tt = (*iter)->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->target;
 			if (tt == nsgl_texture::tex_1d)
 				((nstex1d*)(*iter)->m_texture)->resize(w);
 			else if (tt == nsgl_texture ::tex_2d || tt == nsgl_texture::tex_1d_array)
@@ -219,8 +219,7 @@ void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
 				((nstex_cubemap*)(*iter)->m_texture)->resize(ivec2(w, h));
 			else if (tt == nsgl_texture::tex_3d || tt == nsgl_texture::tex_2d_array)
 				((nstex3d*)(*iter)->m_texture)->resize(ivec3(w, h, layers));
-			(*iter)->m_texture->bind();
-			(*iter)->m_texture->video_allocate();
+			(*iter)->m_texture->video_update();
 		}
 		++iter;
 		++m;
@@ -232,7 +231,7 @@ void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
 			depth_stencil_att->m_renderbuf->resize(w, h);
 		if (depth_stencil_att->m_texture != NULL)
 		{
-			uint32 tt = depth_stencil_att->m_texture->video_texture<nsgl_texture>()->target;
+			uint32 tt = depth_stencil_att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->target;
 			if (tt == nsgl_texture::tex_1d)
 				((nstex1d*)depth_stencil_att->m_texture)->resize(w);
 			else if (tt == nsgl_texture::tex_2d || tt == nsgl_texture::tex_1d_array)
@@ -241,8 +240,7 @@ void nsgl_framebuffer::resize(int32 w, int32 h, uint32 layers)
 				((nstex_cubemap*)depth_stencil_att->m_texture)->resize(ivec2(w, h));
 			else if (tt == nsgl_texture::tex_3d || tt == nsgl_texture::tex_2d_array)
 				((nstex3d*)depth_stencil_att->m_texture)->resize(ivec3(w, h, layers));
-			depth_stencil_att->m_texture->bind();
-			depth_stencil_att->m_texture->video_allocate();
+			depth_stencil_att->m_texture->video_update();
 		}
 	}
 }
@@ -262,7 +260,7 @@ bool nsgl_framebuffer::set_cube_face(attach_point att_point_, uint8 pFace)
 		target,
 		att_point_,
 		BASE_CUBEMAP_FACE + pFace,
-		attmt->m_texture->video_texture<nsgl_texture>()->gl_id,
+		attmt->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->gl_id,
 		0);
 	
 	gl_err_check("nsgl_framebuffer::set_cube_face");
