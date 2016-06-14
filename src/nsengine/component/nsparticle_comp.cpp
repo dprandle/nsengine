@@ -22,7 +22,7 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 #include <nsengine.h>
 
 nsparticle_comp::nsparticle_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsparticle_comp)),
 	m_simulating(false),
 	m_first(true),
 	m_mat_id(0),

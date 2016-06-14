@@ -21,7 +21,7 @@ Description:
 #include <myGL/glew.h>
 
 nsmaterial::nsmaterial():
-	nsresource(),
+	nsresource(type_to_hash(nsmaterial)),
 	m_alpha_blend(false),
 	m_shader_id(0),
 	m_color(1.0f,1.0f,1.0f,1.0f),

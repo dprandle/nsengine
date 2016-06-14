@@ -19,12 +19,12 @@ This file contains all of the neccessary definitions for the nsres_manager class
 #include <hash/sha256.h>
 #include <nsresource.h>
 
-nsres_manager::nsres_manager():
+nsres_manager::nsres_manager(uint32 hashed_type):
 m_res_dir(),
 m_local_dir(),
 m_id_resmap(),
 m_plugin_id(),
-m_hashed_type(0),
+m_hashed_type(hashed_type),
 m_save_mode(binary)
 {}
 

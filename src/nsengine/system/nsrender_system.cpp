@@ -33,7 +33,7 @@
 #include <nslight_comp.h>
 
 nsrender_system::nsrender_system() :
-	nssystem()
+	nssystem(type_to_hash(nsrender_system))
 {}
 
 nsrender_system::~nsrender_system()
@@ -73,12 +73,12 @@ void nsrender_system::update()
 	while (ent_iter != scene_ents->end())
 	{
 		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-        if (tForm->update_posted())
-		{
+       // if (tForm->update_posted())
+        //{
 			tform_per_scene_info * psi = tForm->m_scenes_info.find(m_active_scene)->second;
 			psi->video_update();
-			tForm->post_update(false);
-		}
+            //tForm->post_update(false);
+        //}
 		++ent_iter;
 	}
 }

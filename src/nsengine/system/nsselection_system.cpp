@@ -41,7 +41,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <nsrender_comp.h>
 
 nsselection_system::nsselection_system() :
-    nssystem(),
+    nssystem(type_to_hash(nsselection_system)),
 	m_focus_ent(),
 	m_pick_pos(),
 	m_selected_ents(),

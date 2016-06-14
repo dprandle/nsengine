@@ -16,8 +16,9 @@
 #include <nsstring.h>
 #include <nsmath.h>
 #include <nsunordered_map.h>
-//#include <nsmesh.h>
+#include <nsset.h>
 #include <list>
+#include <nsrouter.h>
 
 class nsparticle_comp;
 struct tform_per_scene_info;
@@ -133,20 +134,14 @@ typedef std::vector<nsvid_obj*> vid_obj_vector;
 
 struct vid_ctxt
 {
-	vid_ctxt(uint32 cntxt_id):
-		context_id(cntxt_id),
-		initialized(false),
-		render_queues(),
-		render_passes(),
-		need_release(),
-		focused_vp(nullptr),
-		vp_list()
-	{}
-	
+	vid_ctxt(uint32 cntxt_id);
 	virtual ~vid_ctxt();
 
 	virtual void init() = 0;
 	virtual void release() = 0;
+
+	virtual void update_vid_objs();
+	
 
 	uint32 context_id;
 	bool initialized;
@@ -155,6 +150,7 @@ struct vid_ctxt
 	vid_obj_vector need_release;
 	viewport * focused_vp;
 	std::list<vp_node> vp_list;
+	std::set<nsvid_obj*> registered_vid_objs;
 };
 
 class nsvideo_driver
@@ -246,8 +242,10 @@ class nsvideo_driver
 
 	virtual const ivec2 & window_size() = 0;
 
-  protected:
+	ns::signal<vid_ctxt*> context_switch;
 
+  protected:
+	bool m_auto_update_vobjs;
 	bool m_auto_cleanup;
 	vid_ctxt * m_current_context;
 	vid_ctxt * m_contexts[MAX_CONTEXT_COUNT];
@@ -257,19 +255,20 @@ class nsvideo_object;
 
 struct nsvid_obj
 {
-	nsvid_obj(nsvideo_object * parent_):
-		parent(parent_)
-	{}
+	nsvid_obj(nsvideo_object * parent_);
 	
-	virtual ~nsvid_obj() {}
+	virtual ~nsvid_obj();
 
 	virtual void update() = 0;
+
+	bool needs_update;
 
 	nsvideo_object * parent;
 };
 
 class nsvideo_object
 {
+	SLOT_OBJECT
   public:
 	nsvideo_object();
 
@@ -279,7 +278,7 @@ class nsvideo_object
 
 	void enable_context_sharing(bool enable);
 	
-	virtual bool initialized();
+	virtual bool initialized(vid_ctxt * ctxt);
 
 	virtual void video_context_init() = 0;
 	
@@ -287,6 +286,8 @@ class nsvideo_object
 	
 	virtual void video_update();
 
+	virtual void on_context_switch(vid_ctxt * current_ctxt);
+	
 	template<class obj_type>
 	obj_type * video_obj()
 	{

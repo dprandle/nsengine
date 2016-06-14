@@ -14,7 +14,7 @@ This file contains all of the neccessary definitions for the nsui_button_comp cl
 #include <nsentity.h>
 
 nsui_button_comp::nsui_button_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsui_button_comp)),
 	is_pressed(false),
 	is_hover(false),
 	is_toggled(false),

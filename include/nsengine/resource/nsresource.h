@@ -38,7 +38,7 @@ public:
 	friend class nsres_manager;
 	friend class nsres_factory;
 
-	nsresource();
+	nsresource(uint32 type_hash);
 	nsresource(const nsresource & copy);
 	
 	virtual ~nsresource();

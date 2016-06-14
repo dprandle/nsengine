@@ -25,6 +25,15 @@ vp_node::vp_node(const nsstring & vp_name_, viewport * vp_):
 vp_node::~vp_node()
 {}
 
+vid_ctxt::vid_ctxt(uint32 cntxt_id):
+	context_id(cntxt_id),
+	initialized(false),
+	render_queues(),
+	render_passes(),
+	need_release(),
+	focused_vp(nullptr),
+	vp_list()
+{}
 
 vid_ctxt::~vid_ctxt()
 {
@@ -45,7 +54,19 @@ vid_ctxt::~vid_ctxt()
 	}
 }
 
+void vid_ctxt::update_vid_objs()
+{
+	auto iter = registered_vid_objs.begin();
+	while (iter != registered_vid_objs.end())
+	{
+		if ((*iter)->needs_update)
+			(*iter)->update();
+		++iter;
+	}
+}
+
 nsvideo_driver::nsvideo_driver():
+	m_auto_update_vobjs(true),
 	m_auto_cleanup(true),
 	m_current_context(nullptr),
 	m_contexts()
@@ -429,8 +450,11 @@ bool nsvideo_driver::make_context_current(uint8 c_id)
 	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
 	m_current_context = m_contexts[c_id];
+	context_switch(m_current_context);
 	if (m_auto_cleanup)
 		cleanup_vid_objs();
+	if (m_auto_update_vobjs)
+		m_current_context->update_vid_objs();
 	return true;
 }
 
@@ -492,10 +516,24 @@ void nsvideo_driver::window_resized(const ivec2 & new_size)
 	}
 }
 
+nsvid_obj::nsvid_obj(nsvideo_object * parent_):
+		needs_update(true),
+		parent(parent_)
+{
+	nse.video_driver()->current_context()->registered_vid_objs.emplace(this);
+}
+	
+nsvid_obj::~nsvid_obj()
+{
+	nse.video_driver()->current_context()->registered_vid_objs.erase(this);
+}
+
 nsvideo_object::nsvideo_object():
 	ctxt_objs(),
 	share_between_contexts(true)
-{}
+{
+	sig_connect(nse.video_driver()->context_switch, nsvideo_object::on_context_switch);
+}
 
 bool nsvideo_object::context_sharing()
 {
@@ -507,10 +545,15 @@ void nsvideo_object::enable_context_sharing(bool enable)
 	share_between_contexts = enable;
 }
 
-bool nsvideo_object::initialized()
+void nsvideo_object::on_context_switch(vid_ctxt * current_ctxt)
 {
-	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	return ctxt_objs[context_id] != nullptr;
+	if (!initialized(current_ctxt))
+		video_context_init();
+}
+
+bool nsvideo_object::initialized(vid_ctxt * ctxt)
+{
+	return ctxt_objs[ctxt->context_id] != nullptr;
 }
 
 nsvideo_object::~nsvideo_object()

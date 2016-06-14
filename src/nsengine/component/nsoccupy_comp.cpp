@@ -22,7 +22,7 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 #include <nsengine.h>
 
 nsoccupy_comp::nsoccupy_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsoccupy_comp)),
 	m_spaces(),
 	m_draw_enabled(false),
 	m_mesh_id(),

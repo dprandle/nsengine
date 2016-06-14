@@ -18,7 +18,7 @@ This file contains all of the neccessary definitions for the nssel_comp class.
 #include <nsgl_buffer.h>
 
 nssel_comp::nssel_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nssel_comp)),
 	m_default_sel_color(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A),
 	m_sel_color(m_default_sel_color),
 	m_mask_alpha(DEFAULT_SEL_MASK_A),

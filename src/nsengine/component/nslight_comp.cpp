@@ -22,7 +22,7 @@ This file contains all of the neccessary definitions for the nslight_comp class.
 #include <nscam_comp.h>
 
 nslight_comp::nslight_comp() : 
-	nscomponent(),
+	nscomponent(type_to_hash(nslight_comp)),
 	m_light_type(l_point),
 	m_att_comp(),
 	m_intensity_comp(),

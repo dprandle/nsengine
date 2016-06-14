@@ -102,7 +102,7 @@ class nstexture : public nsresource, public nsvideo_object
 	template <class PUPer>
 	friend void pup(PUPer & p, nstexture & sm);
 
-	nstexture();
+	nstexture(uint32 hashed_type);
 
 	nstexture(const nstexture & copy_);
 

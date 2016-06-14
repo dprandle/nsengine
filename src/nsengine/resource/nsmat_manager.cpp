@@ -25,7 +25,7 @@ nsmaterial * get_material(const uivec2 & id)
 }
 
 nsmat_manager::nsmat_manager():
-	nsres_manager()
+	nsres_manager(type_to_hash(nsmat_manager))
 {
 	set_local_dir(LOCAL_MATERIAL_DIR_DEFAULT);
 	set_save_mode(nsres_manager::text);

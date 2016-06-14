@@ -17,7 +17,7 @@ This file contains all of the neccessary definitions for the nscam_comp class.
 #include <algorithm>
 
 nscam_comp::nscam_comp():
-	nscomponent(),
+	nscomponent(type_to_hash(nscam_comp)),
 	m_flying(),
 	m_strafing(),
 	m_elevating(),

@@ -17,7 +17,7 @@
 #include <nsentity.h>
 
 nsanim_comp::nsanim_comp():
-	nscomponent(),
+	nscomponent(type_to_hash(nsanim_comp)),
 	m_elapsed_time(0.0f),
 	m_animation(false),
 	m_looping(false),

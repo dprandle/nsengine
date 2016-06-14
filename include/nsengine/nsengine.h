@@ -287,9 +287,7 @@ public:
 
 		auto rf = _create_factory<nscomp_factory_type<comp_type>,comp_type>();
 		if (rf == nullptr)
-			return false;
-		
-		rf->type_id = hashed;
+			return false;		
 		return true;
 	}
 
@@ -316,9 +314,7 @@ public:
 
 		auto rf = _create_factory<nssys_factory_type<sys_type>,sys_type>();
 		if (rf == nullptr)
-			return false;
-		
-		rf->type_id = hashed;
+			return false;		
 		return true;
 	}
 
@@ -357,7 +353,6 @@ public:
 		if (rf == nullptr)
 			return false;
 		
-		rf->type_id = hashed;
 		m_res_manager_map.emplace(hashed, fiter->second);
 		return true;
 	}
@@ -446,9 +441,7 @@ public:
 
 		auto rf = _create_factory<nsmanager_factory_type<manager_type>,manager_type>();
 		if (rf == nullptr)
-			return false;
-		
-		rf->type_id = hashed;
+			return false;		
 		return true;
 	}
 
@@ -485,7 +478,7 @@ public:
 
 	void set_active_scene(nsscene * active_scene);
 
-	void start(bool init_default_factories=true);
+	void start(bool create_default_systems=true);
 
 	template<class sys_type>
 	sys_type * system()

@@ -22,7 +22,7 @@
 #include <nsgl_buffer.h>
 
 nstform_comp::nstform_comp():
-	nscomponent(),
+	nscomponent(type_to_hash(nstform_comp)),
 	m_scenes_info(),
 	save_with_scene(true)
 {}

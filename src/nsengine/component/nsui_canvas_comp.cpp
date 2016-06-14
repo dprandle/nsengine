@@ -14,8 +14,7 @@ This file contains all of the neccessary definitions for the nsui_canvas_comp cl
 #include <nsentity.h>
 
 nsui_canvas_comp::nsui_canvas_comp() :
-	nscomponent(),
-	m_router(new nsrouter()),
+	nscomponent(type_to_hash(nsui_canvas_comp)),
 	m_unloaded_ents(),
 	m_ents_by_comp(),
 	m_pupped_rects()
@@ -23,7 +22,6 @@ nsui_canvas_comp::nsui_canvas_comp() :
 
 nsui_canvas_comp::nsui_canvas_comp(const nsui_canvas_comp & copy):
 	nscomponent(copy),
-	m_router(new nsrouter()),
 	m_unloaded_ents(),
 	m_ents_by_comp(),
 	m_pupped_rects()
@@ -32,9 +30,7 @@ nsui_canvas_comp::nsui_canvas_comp(const nsui_canvas_comp & copy):
 }
 
 nsui_canvas_comp::~nsui_canvas_comp()
-{
-	delete m_router;
-}
+{}
 
 nsui_canvas_comp* nsui_canvas_comp::copy(const nscomponent * to_copy)
 {

@@ -47,7 +47,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsgl_driver.h>
 
 nsplugin::nsplugin():
-    nsresource(),
+    nsresource(type_to_hash(nsplugin)),
 	m_notes(),
 	m_creator(),
 	m_creation_date(),

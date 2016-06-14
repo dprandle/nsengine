@@ -44,24 +44,28 @@ void nsgl_shader_obj::update()
 	nsshader * shdr = (nsshader*)parent;
 	for (uint32 i = 0; i < shdr->shader_stages.size(); ++i)
 	{
-		if (shdr->shader_stages[i].name == "fragment")
-			gl_shdr->compile(nsgl_shader::fragment_shader, shdr->shader_stages[i].source);
-		else if (shdr->shader_stages[i].name == "vertex")
-			gl_shdr->compile(nsgl_shader::vertex_shader, shdr->shader_stages[i].source);
-		else if (shdr->shader_stages[i].name == "geometry")
-			gl_shdr->compile(nsgl_shader::geometry_shader, shdr->shader_stages[i].source);
-		else if (shdr->shader_stages[i].name == "tess_control")
-			gl_shdr->compile(nsgl_shader::tess_control_shader, shdr->shader_stages[i].source);
-		else if (shdr->shader_stages[i].name == "tess_evaluation")
-			gl_shdr->compile(nsgl_shader::tess_evaluation_shader, shdr->shader_stages[i].source);
-		else if (shdr->shader_stages[i].name == "compute")
-			gl_shdr->compile(nsgl_shader::compute_shader, shdr->shader_stages[i].source);
-		else
-		{
-			dprint("nsgl_shader_obj::update Could not compile stage with name " + shdr->shader_stages[i].name);
-		}
+        if (!shdr->shader_stages[i].source.empty())
+        {
+            if (shdr->shader_stages[i].name == "fragment")
+                gl_shdr->compile(nsgl_shader::fragment_shader, shdr->shader_stages[i].source);
+            else if (shdr->shader_stages[i].name == "vertex")
+                gl_shdr->compile(nsgl_shader::vertex_shader, shdr->shader_stages[i].source);
+            else if (shdr->shader_stages[i].name == "geometry")
+                gl_shdr->compile(nsgl_shader::geometry_shader, shdr->shader_stages[i].source);
+            else if (shdr->shader_stages[i].name == "tess_control")
+                gl_shdr->compile(nsgl_shader::tess_control_shader, shdr->shader_stages[i].source);
+            else if (shdr->shader_stages[i].name == "tess_evaluation")
+                gl_shdr->compile(nsgl_shader::tess_evaluation_shader, shdr->shader_stages[i].source);
+            else if (shdr->shader_stages[i].name == "compute")
+                gl_shdr->compile(nsgl_shader::compute_shader, shdr->shader_stages[i].source);
+            else
+            {
+                dprint("nsgl_shader_obj::update Could not compile stage with name " + shdr->shader_stages[i].name);
+            }
+        }
 	}
 	gl_shdr->link();
+	needs_update = false;
 }
 
 nsgl_texture_obj::nsgl_texture_obj(nsvideo_object * parent_):
@@ -122,7 +126,7 @@ void nsgl_texture_obj::update()
 			tex2d->data(),
 			tex2d->format(),
 			tex2d->component_data_type(),
-			tex2d->size(),
+            tex2d->size(),
 			tex2d->compress_on_upload(),
 			tex2d->compressed_size());
 	}
@@ -163,6 +167,7 @@ void nsgl_texture_obj::update()
 	if (tex->mipmap_autogen())
 		gl_tex->generate_mipmaps();
 	gl_tex->unbind();
+	needs_update = false;
 }
 
 nsgl_submesh_obj::nsgl_submesh_obj(nsvideo_object * parent_):
@@ -190,7 +195,7 @@ nsgl_submesh_obj::nsgl_submesh_obj(nsvideo_object * parent_):
 	gl_joint_buf->target = nsgl_buffer::array;
 	gl_joint_buf->init();
 
-	gl_indice_buf->target = nsgl_buffer::array;
+    gl_indice_buf->target = nsgl_buffer::element_array;
 	gl_indice_buf->init();
 
 	gl_vao->init();
@@ -212,7 +217,6 @@ nsgl_submesh_obj::~nsgl_submesh_obj()
 	delete gl_tang_buf;
 	delete gl_joint_buf;
 	delete gl_indice_buf;
-	delete gl_vao;	
 }
 
 void nsgl_submesh_obj::update()
@@ -272,6 +276,7 @@ void nsgl_submesh_obj::update()
 		4 * sizeof(uint32));
 	gl_indice_buf->bind();
 	gl_vao->unbind();
+	needs_update = false;
 }
 
 nsgl_tform_comp_obj::nsgl_tform_comp_obj(nsvideo_object * parent_):
@@ -298,15 +303,15 @@ void nsgl_tform_comp_obj::update()
 	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
 	
 	bool did_resize = false;
-	if (psi->m_buffer_resized)
-	{
+    //if (psi->m_buffer_resized)
+    //{
 		did_resize = true;
 		gl_tform_buffer->bind();
 		gl_tform_buffer->allocate<fmat4>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
 		gl_tform_id_buffer->bind();
 		gl_tform_id_buffer->allocate<uint32>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
-		psi->m_buffer_resized = false;
-	}
+        //psi->m_buffer_resized = false;
+    //}
 
 	gl_tform_buffer->bind();
 	fmat4 * mappedT = gl_tform_buffer->map_range<fmat4>(0, psi->m_tforms.size(), nsgl_buffer::map_write);
@@ -325,23 +330,23 @@ void nsgl_tform_comp_obj::update()
 		bool showBit = (state & nstform_comp::hide_none) == nstform_comp::hide_none;
 		bool hideBit = (state & nstform_comp::hide_all) == nstform_comp::hide_all;
 
-		if (!hideBit && (!layerBit && (showBit || !objectBit)))
-		{
-			if (itf->render_update() || did_resize)
-			{
+        //if (!hideBit && (!layerBit && (showBit || !objectBit)))
+        //{
+        //	if (itf->render_update() || did_resize)
+        //	{
 				mappedT[psi->m_visible_count] = itf->world_tf();
 				mappedI[psi->m_visible_count] = i;
 				itf->set_render_update(false);
-			}
+        //	}
 			++psi->m_visible_count;
-		}
+        //}
 	}
 	gl_tform_buffer->bind();
 	gl_tform_buffer->unmap();
 	gl_tform_id_buffer->bind();
 	gl_tform_id_buffer->unmap();
 	gl_tform_id_buffer->unbind();
-
+	needs_update = false;
 }
 
 nsgl_sel_comp_obj::nsgl_sel_comp_obj(nsvideo_object * parent_):
@@ -385,7 +390,7 @@ void nsgl_sel_comp_obj::update()
 		gl_tform_buffer->unmap();
 	}
 	gl_tform_buffer->unbind();
-	
+	needs_update = false;	
 }
 
 nsgl_particle_comp_obj::nsgl_particle_comp_obj(nsvideo_object * parent_):
@@ -583,4 +588,5 @@ void nsgl_particle_comp_obj::update()
 	gl_vaos[buffer_index]->unbind();
 	gl_xfbs[buffer_index]->unbind();
 	buffer_index = 1 - buffer_index;
+	needs_update = false;
 }

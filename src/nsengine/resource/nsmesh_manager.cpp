@@ -23,13 +23,31 @@ nsmesh * get_mesh(const uivec2 & id)
 	return plg->get<nsmesh>(id.y);
 }
 
-nsmesh_manager::nsmesh_manager(): nsres_manager()
+nsmesh_manager::nsmesh_manager():
+	nsres_manager(type_to_hash(nsmesh_manager)),
+	vid_update_on_load(true)
 {
 	set_local_dir(LOCAL_MESH_DIR_DEFAULT);
 }
 
 nsmesh_manager::~nsmesh_manager()
 {}
+
+nsmesh * nsmesh_manager::load(const nsstring & fname, bool finalize_)
+{
+	return load<nsmesh>(fname, finalize_);
+}
+
+nsmesh * nsmesh_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize)
+{
+	nsmesh * msh = (nsmesh*)nsres_manager::load(res_type_id,fname,finalize);
+	if (vid_update_on_load)
+	{
+		for (uint32 i = 0; i < msh->count(); ++i)
+			msh->sub(i)->video_update();
+	}
+	return msh;
+}
 
 nsmesh* nsmesh_manager::assimp_load_mesh(const aiScene * scene, const nsstring & pMeshName)
 {
@@ -282,8 +300,8 @@ void nsmesh_manager::_assimp_load_submeshes(nsmesh * pMesh, const aiScene * pSce
 			}
 			else
 				throw std::exception();
-
-			subMesh->video_update();
+			if (vid_update_on_load)
+				subMesh->video_update();
 		}
 	}
 }

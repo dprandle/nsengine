@@ -16,8 +16,8 @@ Description:
 #include <nstex_manager.h>
 #include <nsvideo_driver.h>
 
-nstexture::nstexture() :
-	nsresource(),
+nstexture::nstexture(uint32 hashed_type) :
+	nsresource(hashed_type),
 	nsvideo_object(),
 	compress(false),
 	m_auto_gen_mipmaps(true),
@@ -192,7 +192,7 @@ pixel_component_type nstexture::component_data_type()
 }
 
 nstex1d::nstex1d():
-	nstexture(),
+	nstexture(type_to_hash(nstex1d)),
 	m_width(0),
 	m_offset(0)
 {}
@@ -276,7 +276,7 @@ void nstex1d::resize(int32 w, bool resize_data)
 }
 
 nstex2d::nstex2d() :
-	nstexture(),
+	nstexture(type_to_hash(nstex2d)),
 	m_size(),
 	m_offset()
 {}
@@ -361,7 +361,7 @@ void nstex2d::resize(const ivec2 & size, bool resize_data)
 }
 
 nstex3d::nstex3d() :
-	nstexture(),
+	nstexture(type_to_hash(nstex3d)),
 	m_size(),
 	m_offset()
 {}
@@ -446,7 +446,7 @@ const ivec3 & nstex3d::offset() const
 }
 
 nstex_cubemap::nstex_cubemap() :
-	nstexture(),
+	nstexture(type_to_hash(nstex_cubemap)),
 	m_size(),
 	m_offset()
 {}

@@ -12,10 +12,10 @@
 
 #include <nscomponent.h>
 
-nscomponent::nscomponent(): 
+nscomponent::nscomponent(uint32 hashed_type): 
 	m_owner(NULL),
 	m_update(true),
-	m_hashed_type(0)
+	m_hashed_type(hashed_type)
 {}
 
 nscomponent::nscomponent(const nscomponent & copy):

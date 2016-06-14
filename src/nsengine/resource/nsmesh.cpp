@@ -14,7 +14,7 @@
 #include <nsshader.h>
 
 nsmesh::nsmesh():
-	nsresource(),
+	nsresource(type_to_hash(nsmesh)),
 	m_node_tree(new node_tree())
 {
 	set_ext(DEFAULT_MESH_EXTENSION);

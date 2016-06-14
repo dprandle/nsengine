@@ -33,7 +33,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 #include <nsplugin_manager.h>
 
 nsparticle_system::nsparticle_system() :
-nssystem()
+	nssystem(type_to_hash(nsparticle_system))
 {}
 
 nsparticle_system::~nsparticle_system()

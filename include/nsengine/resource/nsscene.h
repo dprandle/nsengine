@@ -25,7 +25,9 @@ class nsrender_system;
 
 class nsscene : public nsresource
 {
-public:
+	SLOT_OBJECT
+	public:
+
 	template<class PUPer>
 	friend void pup(PUPer & p, nsscene & sc);
 
@@ -150,7 +152,6 @@ private:
 	uint32 m_max_players;
     fvec4 m_bg_color;
 	nsstring m_notes;
-	nsrouter * m_router;
 	nsstring m_creator;
 	nstile_grid * m_tile_grid;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;

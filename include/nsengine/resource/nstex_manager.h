@@ -60,12 +60,9 @@ public:
 		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nstexture * load(const nsstring & fname, bool finalize_)
-	{
-		return load<nstexture>(fname, finalize_);
-	}
+	nstexture * load(const nsstring & fname, bool finalize_);
 
-	virtual nstexture * load(uint32 res_type_id, const nsstring & fname, bool finalize_);
+	nstexture * load(uint32 res_type_id, const nsstring & fname, bool finalize_);
 	
 	template<class res_type, class T >
 	res_type * remove(const T & rname)
@@ -105,6 +102,10 @@ public:
 	virtual bool save(nstex2d * image, const nsstring & path);
 
 	virtual bool save(nstex_cubemap * cubemap, const nsstring & path);
+
+	bool vid_update_on_load;
+
+	bool load_with_mipmaps_enabled;
 
   private:
 	uint32 _translate_format_il(tex_format ft);

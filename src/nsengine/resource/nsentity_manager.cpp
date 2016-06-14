@@ -26,7 +26,8 @@ nsentity * get_entity(const uivec2 & id)
 	return plg->get<nsentity>(id.y);
 }
 
-nsentity_manager::nsentity_manager() : nsres_manager()
+nsentity_manager::nsentity_manager() :
+	nsres_manager(type_to_hash(nsentity_manager))
 {
 	set_local_dir(LOCAL_ENTITY_DIR_DEFAULT);
 	set_save_mode(nsres_manager::text);

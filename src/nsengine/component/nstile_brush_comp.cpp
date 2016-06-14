@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the nstile_brush_comp c
 #include <nsentity.h>
 
 nstile_brush_comp::nstile_brush_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nstile_brush_comp)),
 	m_brush(),
 	m_height(1)
 {}

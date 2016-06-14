@@ -25,7 +25,8 @@ This file contains all of the neccessary definitions for the nsanim_system class
 #include <nsres_manager.h>
 #include <nsrender_comp.h>
 
-nsanim_system::nsanim_system() :nssystem()
+nsanim_system::nsanim_system() :
+	nssystem(type_to_hash(nsanim_system))
 {
 }
 

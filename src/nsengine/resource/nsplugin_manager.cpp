@@ -26,7 +26,7 @@ nsplugin * get_plugin(uint32 id)
 }
 
 nsplugin_manager::nsplugin_manager() :
-nsres_manager()
+	nsres_manager(type_to_hash(nsplugin_manager))
 {
 	set_save_mode(text);
 }

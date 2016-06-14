@@ -34,6 +34,7 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 #include <nscamera_system.h>
 
 nsbuild_system::nsbuild_system():
+nssystem(type_to_hash(nsbuild_system)),
 m_enabled(false),
 m_tile_brush(nullptr),
 m_object_brush(nullptr),
@@ -41,15 +42,14 @@ m_tile_build_ent(nullptr),
 m_object_build_ent(nullptr),
 m_mirror_brush(nullptr),
 m_layer(0),
-m_current_mode(build_mode),
-m_current_brush_type(brush_none),
-m_tile_brush_center_tform_id(0),
-m_overwrite(false),
-m_mirror_mode(false),
+	m_current_mode(build_mode),
+	m_current_brush_type(brush_none),
+	m_tile_brush_center_tform_id(0),
+	m_overwrite(false),
+	m_mirror_mode(false),
 m_painting(false),
-m_erasing(false),
-m_stamp_mode(false),
-nssystem()
+	m_erasing(false),
+	m_stamp_mode(false)
 {
 	
 }

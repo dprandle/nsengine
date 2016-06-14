@@ -17,7 +17,7 @@
 #include <nsplugin_manager.h>
 
 nsentity::nsentity() :
-	nsresource(),
+	nsresource(type_to_hash(nsentity)),
 	m_components()
 {
 	m_components.clear();

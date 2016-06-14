@@ -14,7 +14,7 @@ This file contains all of the neccessary definitions for the nssprite_comp class
 #include <nsentity.h>
 
 nssprite_sheet_comp::nssprite_sheet_comp() :
-	nscomponent()
+	nscomponent(type_to_hash(nssprite_sheet_comp))
 {}
 
 nssprite_sheet_comp::nssprite_sheet_comp(const nssprite_sheet_comp & copy):

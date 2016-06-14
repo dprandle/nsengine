@@ -30,12 +30,11 @@
 #include <nslight_comp.h>
 
 nsscene::nsscene():
-	nsresource(),
+	nsresource(type_to_hash(nsscene)),
 	m_skydome(nullptr),
 	m_max_players(0),
 	m_bg_color(),
 	m_notes(),
-	m_router(new nsrouter()),
 	m_creator(),
 	m_tile_grid(new nstile_grid()),
 	m_ents_by_comp(),
@@ -51,7 +50,6 @@ nsscene::nsscene(const nsscene & copy_):
 	m_max_players(copy_.m_max_players),
 	m_bg_color(copy_.m_bg_color),
 	m_notes(copy_.m_notes),
-	m_router(new nsrouter()),
 	m_creator(copy_.m_creator),
 	m_tile_grid(new nstile_grid()),
 	m_ents_by_comp(),
@@ -78,7 +76,6 @@ nsscene::nsscene(const nsscene & copy_):
 nsscene::~nsscene()
 {
 	delete m_tile_grid;
-	delete m_router;
 }
 
 nsscene & nsscene::operator=(nsscene rhs)

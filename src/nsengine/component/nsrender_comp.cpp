@@ -21,7 +21,7 @@
 
 
 nsrender_comp::nsrender_comp() : 
-	nscomponent(),
+	nscomponent(type_to_hash(nsrender_comp)),
 	m_cast_shadow(true),
 	m_mesh_id(0)
 {}

@@ -16,7 +16,11 @@
 #include <nsengine.h>
 
 nsgl_buffer::nsgl_buffer():
-	nsgl_obj()
+    nsgl_obj(),
+    target(0),
+    target_index(0),
+    indexed_target_offset(0),
+    indexed_target_size(0)
 {}
 
 nsgl_buffer::~nsgl_buffer()

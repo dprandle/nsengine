@@ -14,7 +14,7 @@ This file contains all of the neccessary definitions for the nsterrain_comp clas
 #include <nsentity.h>
 
 nsterrain_comp::nsterrain_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsterrain_comp)),
 	m_minmax(0.0f,1.0f)
 {}
 

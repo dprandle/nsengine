@@ -56,10 +56,9 @@ public:
 		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nsmesh * load(const nsstring & fname, bool finalize_)
-	{
-		return load<nsmesh>(fname, finalize_);
-	}
+	nsmesh * load(const nsstring & fname, bool finalize_);
+
+	nsmesh * load(uint32 res_type_id, const nsstring & fname, bool finalize);
 	
 	template<class res_type, class T >
 	res_type * remove(const T & res_name)
@@ -74,6 +73,8 @@ public:
 	}
 
 	nsmesh * assimp_load_mesh(const aiScene * scene, const nsstring & mesh_name);
+
+	bool vid_update_on_load;
 
 private:
 

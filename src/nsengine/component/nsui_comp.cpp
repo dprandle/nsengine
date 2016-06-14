@@ -14,7 +14,7 @@ This file contains all of the neccessary definitions for the nsui_comp class.
 #include <nsentity.h>
 
 nsui_material_comp::nsui_material_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsui_material_comp)),
 	mat_shader_id(0),
 	mat_id(0),
 	border_size(0.0f),
@@ -74,7 +74,7 @@ nsui_material_comp & nsui_material_comp::operator=(nsui_material_comp rhs_)
 
 
 nsui_text_comp::nsui_text_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsui_text_comp)),
 	text_shader_id(),
 	font_id(),
 	margins(0),
@@ -137,7 +137,7 @@ nsui_text_comp & nsui_text_comp::operator=(nsui_text_comp rhs_)
 }
 
 nsui_text_input_comp::nsui_text_input_comp() :
-	nscomponent(),
+	nscomponent(type_to_hash(nsui_text_input_comp)),
 	cursor_blink_rate_ms(450.0f),
 	cursor_pixel_width(3),
 	cursor_color(fvec4(1.0f)),

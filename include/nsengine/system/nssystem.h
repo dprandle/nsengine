@@ -25,7 +25,7 @@ public:
 
 	friend class nssys_factory;
 	
-	nssystem();
+	nssystem(uint32 hashed_type);
 
 	virtual ~nssystem();
 

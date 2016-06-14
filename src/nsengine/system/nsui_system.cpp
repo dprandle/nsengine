@@ -30,6 +30,7 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #include <nsinput_system.h>
 
 nsui_system::nsui_system():
+	nssystem(type_to_hash(nsui_system)),
 	m_pressed_button(nullptr),
 	m_focused_ui_ent(nullptr)
 {}

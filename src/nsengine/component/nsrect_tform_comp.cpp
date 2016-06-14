@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the nsrect_tform_comp c
 #include <nsentity.h>
 
 nsrect_tform_comp::nsrect_tform_comp() :
-	nscomponent()
+	nscomponent(type_to_hash(nsrect_tform_comp))
 {}
 
 nsrect_tform_comp::nsrect_tform_comp(const nsrect_tform_comp & copy):

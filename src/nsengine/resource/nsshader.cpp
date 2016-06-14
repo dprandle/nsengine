@@ -24,7 +24,7 @@ Description:
 #include <nsgl_driver.h>
 
 nsshader::nsshader():
-	nsresource(),
+	nsresource(type_to_hash(nsshader)),
 	nsvideo_object(),
 	shader_stages(),
 	m_vertex(vertex_shader),

@@ -15,14 +15,14 @@
 #include <nsengine.h>
 #endif
 
-nsresource::nsresource() :
+nsresource::nsresource(uint32 type_hash) :
 	m_icon_path(),
 	m_icon_tex_id(),
 	m_name(),
 	m_subdir(),
 	m_id(0),
 	m_plugin_id(0),
-	m_hashed_type(0),
+	m_hashed_type(type_hash),
 	m_owned(false),
 	m_save_with_group(true)
 {}

@@ -26,8 +26,9 @@ nsscene * get_scene(const uivec2 & id)
 	return plg->get<nsscene>(id.y);
 }
 
-nsscene_manager::nsscene_manager() : 
-mCurrentScene(NULL)
+nsscene_manager::nsscene_manager() :
+	nsres_manager(type_to_hash(nsscene_manager)),
+	mCurrentScene(NULL)
 {
 	set_local_dir(LOCAL_SCENE_DIR_DEFAULT);
 }

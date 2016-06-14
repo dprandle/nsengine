@@ -28,13 +28,21 @@ nstexture * get_texture(const uivec2 & id)
 	return plg->get<nstexture>(id.y);
 }
 
-nstex_manager::nstex_manager(): nsres_manager()
+nstex_manager::nstex_manager():
+	nsres_manager(type_to_hash(nstex_manager)),
+	vid_update_on_load(true),
+	load_with_mipmaps_enabled(true)
 {
 	set_local_dir(LOCAL_TEXTURE_DIR_DEFAULT);
 }
 
 nstex_manager::~nstex_manager()
 {}
+
+nstexture * nstex_manager::load(const nsstring & fname, bool finalize_)
+{
+	return load<nstexture>(fname, finalize_);
+}
 
 nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize_)
 {
@@ -46,7 +54,6 @@ nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname, bool
 		ret = load_image(fname);
 		if (ret != nullptr && finalize_)
 			ret->finalize();
-		return ret;
 	}
 	else if (res_type_id == type_to_hash(nstex_cubemap))
 	{
@@ -63,10 +70,12 @@ nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname, bool
 			ret = load_cubemap(fname,".png");
 		if (ret != nullptr && finalize_)
 			ret->finalize();
-		return ret;
 	}
 	else
-		return static_cast<nstexture*>(nsres_manager::load(res_type_id, fname, finalize_));
+	{
+		ret = static_cast<nstexture*>(nsres_manager::load(res_type_id, fname, finalize_));
+	}	
+	return ret;
 }
 
 nstex2d * nstex_manager::load_image(const nsstring & fname)
@@ -147,8 +156,12 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	dim.h = ilGetInteger(IL_IMAGE_HEIGHT);
 	tex->resize(dim);
 	tex->copy_data(ilGetData());
-	tex->enable_mipmap_autogen(true);	
-	tex->video_update();
+
+	if (load_with_mipmaps_enabled)
+		tex->enable_mipmap_autogen(true);
+	if (vid_update_on_load)
+		tex->video_update();
+
 	ilDeleteImages(1, &imageID);
 	dprint("nstex_manager::load_image Successfully loaded nstex2d from file " + fName);
 	return tex;
@@ -214,7 +227,6 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	tex->set_parameters(tp);
 	tex->set_format(tex_rgba);
 	tex->set_component_data_type(tex_u8);
-	tex->enable_mipmap_autogen(true);
 
 	for (uint32 i = 0; i < fNames.size(); ++i)
 	{
@@ -244,7 +256,11 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
 		ilDeleteImages(1, &imageID);
 	}
-	tex->video_update();
+	if (load_with_mipmaps_enabled)
+		tex->enable_mipmap_autogen(true);
+	if (vid_update_on_load)
+		tex->video_update();
+
 	dprint("nstex_manager::load_cubemap Successfully loaded nstex_cubemap with name " + tex->name());
 	return tex;
 }

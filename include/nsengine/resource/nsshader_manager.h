@@ -56,10 +56,9 @@ class nsshader_manager : public nsres_manager
 		return nsres_manager::load<res_type>(fname, finalize_);
 	}
 
-	nsshader * load(const nsstring & fname, bool finalize_)
-	{
-		return load<nsshader>(fname, finalize_);
-	}
+	nsshader * load(const nsstring & fname, bool finalize_);
+
+	nsshader * load(uint32 res_type_id, const nsstring & fname, bool finalize);
 	
 	template<class res_type, class T >
 	res_type * remove(const T & res_name)
@@ -72,6 +71,8 @@ class nsshader_manager : public nsres_manager
 	{
 		return remove<nsshader>(res_name);
 	}
+
+	bool vid_update_on_load;
 };
 
 #endif

@@ -2,7 +2,7 @@
 #include <nsengine.h>
 
 nsinput_map::nsinput_map():
-	nsresource()
+	nsresource(type_to_hash(nsinput_map))
 {
 	set_ext(DEFAULT_INPUT_MAP_EXTENSION);
 }

@@ -42,8 +42,6 @@ class nsres_factory : public nsfactory
 		nsfactory(f_resource)
 	{}
 	virtual nsresource * create(nsresource * copy_=nullptr) = 0;
-	void set_id(nsresource * res_);	
-	uint32 type_id;
 };
 
 template<class obj_type>
@@ -60,16 +58,12 @@ class nsres_factory_type : public nsres_factory
 		if (copy_ == nullptr)
 		{
 			res_ = new obj_type();
-			set_id(res_);
 		}
 		else
 		{
 			obj_type * copy = dynamic_cast<obj_type*>(copy_);
 			if (copy != nullptr)
-			{
 				res_ = new obj_type(*copy);
-				set_id(res_);
-			}
 		}
 		return res_;
 	}
@@ -80,18 +74,18 @@ class nsmanager_factory : public nsfactory
 public:
 	nsmanager_factory() : nsfactory(f_res_manager) {}
 	virtual nsres_manager * create() = 0;
-	void set_id(nsres_manager * manager_);
-	uint32 type_id;
 };
 
 template<class obj_type>
 class nsmanager_factory_type : public nsmanager_factory
 {
 public:
+
 	nsmanager_factory_type() :nsmanager_factory() {}
-	nsres_manager * create() {
+
+	nsres_manager * create()
+	{
 		nsres_manager * rm = new obj_type();
-		set_id(rm);
 		return rm;
 	}
 };
@@ -101,8 +95,6 @@ class nscomp_factory : public nsfactory
 public:
 	nscomp_factory() : nsfactory(f_component) {}
 	virtual nscomponent * create(nscomponent * copy_ = nullptr) = 0;
-	void set_id(nscomponent * cmp_);
-	uint32 type_id;
 };
 
 template<class obj_type>
@@ -116,16 +108,12 @@ public:
 		if (copy_ == nullptr)
 		{
 			cmp_ = new obj_type();
-			set_id(cmp_);
 		}
 		else
 		{
 			obj_type * copy = dynamic_cast<obj_type*>(copy_);
 			if (copy != nullptr)
-			{
 				cmp_ = new obj_type(*copy);
-				set_id(cmp_);
-			}
 		}
 		return cmp_;
 	}
@@ -136,18 +124,18 @@ class nssys_factory : public nsfactory
 public:
 	nssys_factory() : nsfactory(f_system) {}
 	virtual nssystem * create() = 0;
-	void set_id(nssystem * sys_);	
-	uint32 type_id;
 };
 
 template<class obj_type>
 class nssys_factory_type : public nssys_factory
 {
 public:
+
 	nssys_factory_type() :nssys_factory() {}
-	nssystem* create() {
+
+	nssystem* create()
+	{
 		nssystem * sys_ = new obj_type();
-		set_id(sys_);
 		return sys_;
 	}
 };
@@ -156,6 +144,7 @@ class nsvideo_object;
 class nsvid_obj_factory : public nsfactory
 {
   public:
+
 	nsvid_obj_factory():
 		nsfactory(f_vid_obj)
 	{}
@@ -167,6 +156,7 @@ template<class vid_obj_type>
 class nsvid_obj_factory_type : public nsvid_obj_factory
 {
   public:
+
 	nsvid_obj_factory_type() :
 		nsvid_obj_factory()
 	{}

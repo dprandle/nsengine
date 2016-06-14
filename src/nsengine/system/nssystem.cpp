@@ -12,9 +12,9 @@ This file contains all of the neccessary definitions for the nssystem class.
 
 #include <nssystem.h>
 
-nssystem::nssystem():
+nssystem::nssystem(uint32 hashed_type):
 	m_active_scene(nullptr),
-	m_hashed_type(0)
+	m_hashed_type(hashed_type)
 {}
 
 nssystem::~nssystem()

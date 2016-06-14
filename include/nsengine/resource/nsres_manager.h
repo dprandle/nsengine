@@ -32,7 +32,7 @@ class nsres_manager
 {
 public:
 
-	nsres_manager();
+	nsres_manager(uint32 hashed_type);
 
 	virtual ~nsres_manager();
 	

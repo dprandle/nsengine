@@ -72,7 +72,7 @@ bool nsgl_gbuffer::create_texture_attachments()
 	bind();
 
     // Depth attachment
-	att = create_renderbuffer_attachment(nsgl_framebuffer::att_depth_stencil, 0, GL_DEPTH32F_STENCIL8);
+	att = create_renderbuffer_attachment(nsgl_framebuffer::att_depth_stencil, GL_DEPTH32F_STENCIL8);
 
 	tex_params lin;
 	lin.anistropic_filtering = 4.0f;

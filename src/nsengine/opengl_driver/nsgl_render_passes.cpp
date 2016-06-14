@@ -51,9 +51,10 @@ void ui_render_pass::render()
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
 		ui_draw_call * uidc = (ui_draw_call*)(*rq)[i];		
-		nsgl_shader * gl_shdr = uidc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
-		if (gl_shdr != nullptr)
+
+        if (uidc->shdr != nullptr)
 		{
+            nsgl_shader * gl_shdr = uidc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
 			gl_shdr->bind();
 			gl_shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 			gl_shdr->set_uniform("entity_id", uidc->entity_id);

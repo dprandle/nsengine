@@ -16,10 +16,12 @@ This file contains all of the neccessary declarations for the nsui_canvas_comp c
 #include <nscomponent.h>
 #include <nsrect_tform_comp.h>
 #include <nsentity.h>
+#include <nsrouter.h>
 
 class nsui_canvas_comp : public nscomponent
 {
 	struct rect_info;
+	SLOT_OBJECT
 public:
 
 	friend class nsui_system;
@@ -73,7 +75,6 @@ public:
 	// private slots
 	void _on_comp_add(nscomponent * comp_t);
 	void _on_comp_remove(nscomponent * comp_t);
-	nsrouter * m_router;
 	std::vector<uivec2> m_unloaded_ents;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
 	

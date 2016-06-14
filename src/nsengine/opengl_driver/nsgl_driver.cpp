@@ -279,20 +279,19 @@ void nsgl_driver::init()
     m_default_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
 
 	// Rendering shaders
-	
     nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-	cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
+    rshaders.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
+	rshaders.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
+	rshaders.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	rshaders.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
+	rshaders.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
+	rshaders.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
+	rshaders.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
+	rshaders.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
+	rshaders.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
+	rshaders.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
@@ -330,6 +329,7 @@ uint8 nsgl_driver::create_context()
 			m_contexts[id] = new gl_ctxt(id);
 			m_current_context = m_contexts[id];
 			m_current_context->init();
+			make_context_current(id); // i know already current - but want to call the signal and update objs
 			return id;
 		}
 	}
@@ -363,11 +363,9 @@ void nsgl_driver::create_default_render_targets()
 	
 	// Accumulation buffer
 	nsgl_framebuffer * accum_buffer = new nsgl_framebuffer;
-	accum_buffer->init();
 	accum_buffer->resize(DEFAULT_ACCUM_BUFFER_RES_X, DEFAULT_ACCUM_BUFFER_RES_Y);
-	accum_buffer->init();
 	accum_buffer->target = nsgl_framebuffer::fb_draw;
-
+    accum_buffer->init();
 	accum_buffer->bind();
 	accum_buffer->create_texture_attachment<nstex2d>(
 		"rendered_frame",
@@ -377,10 +375,8 @@ void nsgl_driver::create_default_render_targets()
 		tex_float,
 		tp);
 	accum_buffer->add(gbuffer->depth());
-	
 	tp.min_filter = tmin_nearest;
 	tp.mag_filter = tmag_nearest;
-
 	accum_buffer->create_texture_attachment<nstex2d>(
 		"final_picking",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + nsgl_gbuffer::col_picking),
@@ -388,7 +384,6 @@ void nsgl_driver::create_default_render_targets()
 		tex_irgb,
 		tex_u32,
 		tp);
-
 	accum_buffer->update_draw_buffers();
 	add_render_target(ACCUM_TARGET, accum_buffer);
 
@@ -1117,11 +1112,11 @@ void nsgl_driver::render_instanced_dc(instanced_draw_call * idc)
 	}
 	
 	gl_err_check("instanced_geometry_draw_call::render pre");
-	glDrawElementsInstanced(get_gl_prim_type(idc->submesh->m_prim_type),
+    glDrawElementsInstanced(get_gl_prim_type(idc->submesh->m_prim_type),
 							static_cast<GLsizei>(idc->submesh->m_indices.size()),
 							GL_UNSIGNED_INT,
 							0,
-							idc->transform_count);
+                            idc->transform_count);
 	gl_err_check("instanced_geometry_draw_call::render post");	
 
 	if (idc->tform_buffer != nullptr)
@@ -1151,10 +1146,12 @@ void nsgl_driver::render_light_dc(light_draw_call * idc)
 	{
 		nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
 		so->gl_vao->bind();
-		glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
-					   static_cast<GLsizei>(idc->submesh->m_indices.size()),
-					   GL_UNSIGNED_INT,
-					   0);
+        GLenum ptype = idc->submesh->m_prim_type;//get_gl_prim_type(idc->submesh->m_prim_type);
+        GLsizei sz = static_cast<GLsizei>(idc->submesh->m_indices.size());
+        glDrawElements(ptype,
+                       sz,
+                       GL_UNSIGNED_INT,
+                       0);
 		so->gl_vao->unbind();
 	}
 	gl_err_check("post dir_light_pass::render");	
@@ -1416,28 +1413,20 @@ int32 get_gl_prim_type(mesh_primitive_type pt)
 	{
 	  case(prim_points):
 		  return GL_POINTS;
-		  break;
 	  case(prim_lines):
 		  return GL_LINES;
-		  break;
 	  case(prim_line_strip):
 		  return GL_LINE_STRIP;
-		  break;
 	  case(prim_line_loop):
 		  return GL_LINE_LOOP;
-		  break;
 	  case(prim_triangles):
 		  return GL_TRIANGLES;
-		  break;
 	  case(prim_triangle_strip):
 		  return GL_TRIANGLE_STRIP;
-		  break;
 	  case(prim_triangle_fan):
 		  return GL_TRIANGLE_FAN;
-		  break;
 	  case(prim_patch):
 		  return GL_PATCHES;
-		  break;
 	  default:
 		  return -1;
 	}

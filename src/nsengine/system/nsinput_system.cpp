@@ -21,7 +21,7 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 #include <nsplugin_manager.h>
 
 nsinput_system::nsinput_system() :
-	nssystem(),
+	nssystem(type_to_hash(nsinput_system)),
 	m_caps_locked(false),
 	m_num_locked(false),
 	m_scroll_delta(0.0f),

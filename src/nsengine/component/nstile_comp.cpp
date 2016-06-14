@@ -14,7 +14,7 @@ This file contains all of the neccessary definitions for the nstile_comp class.
 #include <nsentity.h>
 
 nstile_comp::nstile_comp() :
-	nscomponent()
+	nscomponent(type_to_hash(nstile_comp))
 {}
 
 nstile_comp::nstile_comp(const nstile_comp & copy):

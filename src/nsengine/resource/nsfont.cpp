@@ -53,6 +53,7 @@ bool char_info::valid()
 }
 
 nsfont::nsfont():
+	nsresource(type_to_hash(nsfont)),
 	material_id(0),
 	m_fi()
 {
@@ -62,6 +63,7 @@ nsfont::nsfont():
 }
 
 nsfont::nsfont(const nsfont & copy):
+	nsresource(copy),
 	material_id(copy.material_id),
 	m_fi(copy.m_fi),
 	m_chars(copy.m_chars),

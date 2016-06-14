@@ -11,9 +11,10 @@
 */
 
 #include <nsanim_set.h>
+#include <nsengine.h>
 
 nsanim_set::nsanim_set():
-	nsresource(),
+	nsresource(type_to_hash(nsanim_set)),
 	m_animmap()
 {
 	set_ext(DEFAULT_ANIM_EXTENSION);

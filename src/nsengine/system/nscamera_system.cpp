@@ -24,7 +24,7 @@ This file contains all of the neccessary definitions for the NSCamController cla
 
 
 nscamera_system::nscamera_system() :
-	nssystem(),
+	nssystem(type_to_hash(nscamera_system)),
 	m_zoom_factor(DEFAULT_CAM_ZOOM_FACTOR),
 	m_turn_sensitivity(DEFAULT_CAM_PIVOT_SENSITIVITY),
 	m_strafe_sensitivity(DEFAULT_CAM_MOVE_SENSITIVITY),

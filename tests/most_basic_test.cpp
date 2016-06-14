@@ -71,6 +71,7 @@ int main()
     nsscene * new_scene = plg->create<nsscene>("new_scene");
     bf.scn = new_scene;
     bf.plg = plg;
+    nsplugin * cp = nse.core();
 
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
     plg->set_current_scene(new_scene, true, false);
@@ -79,17 +80,17 @@ int main()
 											 nse.import_dir() + "diffuseGrass.png",
 											 nse.import_dir() + "normalGrass.png",
 											 fvec4(1,0,0,1), 16.0, 0.6, fvec3(1,1,1), true);
-    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
-    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
+    //nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
+    //nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
     nsentity * ui_button = plg->create<nsentity>("button_new_match");
 
-	new_scene->add(cam);
+    new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    //new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    //new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add_gridded(grass_tile,ivec3(32,32,1));
 
 	

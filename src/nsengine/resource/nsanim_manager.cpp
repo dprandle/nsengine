@@ -27,7 +27,8 @@ nsanim_set * get_anim_set(const uivec2 & id)
 	return plg->get<nsanim_set>(id.y);
 }
 
-nsanim_manager::nsanim_manager(): nsres_manager()
+nsanim_manager::nsanim_manager():
+	nsres_manager(type_to_hash(nsanim_manager))
 {
 	set_local_dir(LOCAL_ANIMATION_DIR_DEFAULT);
 }

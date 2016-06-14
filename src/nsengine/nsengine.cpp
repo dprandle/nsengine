@@ -67,7 +67,6 @@ This file contains all of the neccessary definitions for the nsengine class.
 
 nsengine::nsengine():
 	m_systems(new system_hash_map()),
-	m_plugins(new nsplugin_manager()),
 	m_event_disp(new nsevent_dispatcher()),
 	m_timer(new nstimer()),
 #ifdef NSDEBUG
@@ -76,8 +75,6 @@ nsengine::nsengine():
 	m_cwd(nsfile_os::cwd())
 {
 	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
-	m_plugins->set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
-	m_plugins->set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
 	srand(static_cast<unsigned>(time(0)));
     ilInit();
 	ilEnable(IL_ORIGIN_SET);
@@ -278,7 +275,7 @@ void nsengine::set_import_dir(const nsstring & dir)
 	++iter;
 }
 
-void nsengine::start(bool init_default_factories)
+void nsengine::start(bool create_default_systems)
 {
 	if (m_driver == nullptr)
 	{
@@ -286,11 +283,13 @@ void nsengine::start(bool init_default_factories)
 		return;
 	}
 	
-	if (init_default_factories)
-		_init_factories();
-	
+	_init_factories();
 	nsfile_os::platform_init();
-	
+
+	m_plugins = new nsplugin_manager();
+	m_plugins->set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
+	m_plugins->set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
+
 	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
 	plg->init();
 	plg->bind();
@@ -299,13 +298,17 @@ void nsengine::start(bool init_default_factories)
 	plg->lock_resource_dir(true);
 	plg->enable_group_save(false);
 	m_driver->init();
-	_create_factory_systems();
+	if (create_default_systems)
+		_create_factory_systems();
 	m_timer->start();
 }
 
 void nsengine::shutdown()
 {
 	m_plugins->destroy_all();
+	delete m_plugins;
+	m_plugins = nullptr;
+	
 	m_event_disp->clear();
 	auto iter = m_systems->begin();
 	while (iter != m_systems->end())
@@ -317,6 +320,7 @@ void nsengine::shutdown()
 	}
 	m_systems->clear();
 	delete m_driver;
+	m_driver = nullptr;
 	m_timer->pause();
 }
 
