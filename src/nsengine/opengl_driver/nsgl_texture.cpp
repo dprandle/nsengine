@@ -15,9 +15,7 @@
 #include <nsengine.h>
 
 nsgl_texture::nsgl_texture():
-	target(0),
-	depth_func(0),
-	depth_mode(0)
+	target(0)
 {}
 
 nsgl_texture::~nsgl_texture()
@@ -468,10 +466,40 @@ void nsgl_texture::set_parameters(tex_params texp)
 	if (texp.anistropic_filtering > 0.01f)
 		set_parameter_f(anistropic_filter, texp.anistropic_filtering);
 
-	if (depth_mode != 0)
+	if (texp.depth_mode == tex_dm_compare)
 	{
-		set_parameter_i(compare_mode, depth_mode);
-		set_parameter_i(compare_func, depth_func);
+		set_parameter_i(compare_mode, GL_COMPARE_REF_TO_TEXTURE);
+		GLint comp_mode;
+		switch (texp.depth_func)
+		{
+		  case(tex_dc_lequal):
+			  comp_mode = GL_LEQUAL;
+			  break;
+		  case(tex_dc_gequal):
+			  comp_mode = GL_GEQUAL;
+			  break;
+		  case(tex_dc_less):
+			  comp_mode = GL_LESS;
+			  break;
+		  case(tex_dc_greater):
+			  comp_mode = GL_GREATER;
+			  break;
+		  case(tex_dc_equal):
+			  comp_mode = GL_EQUAL;
+			  break;
+		  case(tex_dc_not_equal):
+			  comp_mode = GL_NOTEQUAL;
+			  break;
+		  case(tex_dc_always):
+			  comp_mode = GL_ALWAYS;
+			  break;
+		  case(tex_dc_never):
+			  comp_mode = GL_NEVER;
+			  break;
+		  default:
+			  dprint("nsgl_texture::set_parameters Invalid depth compare mode for texture");			  
+		}
+		set_parameter_i(compare_func, comp_mode);
 	}
 }
 

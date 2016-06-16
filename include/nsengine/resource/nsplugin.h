@@ -17,6 +17,8 @@ This file contains all of the neccessary declarations for the nsplugin class.
 #include <nsresource.h>
 #include <nsset.h>
 
+#define DEFAULT_ADD_NAME_TO_RES_DIR true
+
 class nsentity;
 class nsscene;
 class nsmaterial;
@@ -63,10 +65,6 @@ public:
 
 	bool add(nsresource * res);
 
-	void add_name_to_res_path(bool add_);
-
-	bool adding_names_to_res_path();
-
 	bool add_manager(nsres_manager * pManager);
 
 	bool contains(nsresource * res);
@@ -101,8 +99,7 @@ public:
 		float hmax, 
 		const nsstring & hmfile, 
 		const nsstring & dmfile = "", 
-		const nsstring & nmfile = "",
-		bool importdir=true);
+		const nsstring & nmfile = "");
 
 	nsentity * create_dir_light(const nsstring & name,
 		float diffuse,
@@ -167,8 +164,7 @@ public:
 	nsentity * create_skydome(const nsstring & name,
 							  nsstring cubemap_relative_fname,
 							  const nsstring & image_ext,
-							  const nsstring & tex_subdir="",
-							  bool prefix_import_dir_=true);
+							  const nsstring & tex_subdir="");
 
 
 	template<class ManagerType>
@@ -261,34 +257,29 @@ public:
 
 	nsentity * load_model(const nsstring & entname,
 						 nsstring fname,
-						 bool prefixWithImportDir,
 						 const nsstring & meshname = "",
 						 bool occupy_comp = true, 
 						 bool pFlipUVs = false);
 
 	bool load_model_resources(nsstring fname,
-							bool prefixWithImportDir,
 							const nsstring & meshname = "",
 							bool flipuv = false);
 
 	nsmesh * load_model_mesh(nsstring fname,
-							bool prefixWithImportDir,
 							const nsstring & meshname = "",
 							bool flipuv = false);
 
 	bool load_model_mats(nsstring fname,
-						 bool prefixWithImportDir,
 						 const nsstring & meshname = "",
 						 bool flipuv = false);
 
 	nsanim_set * load_model_anim(nsstring fname,
-						 bool prefixWithImportDir,
 						 const nsstring & meshname = "",
 						 bool flipuv = false);
 
-	bool bind();
+	void enable(bool enable_);
 
-	bool bound();
+	bool is_enabled();
 
 	const nsstring & edit_date();
 
@@ -311,17 +302,11 @@ public:
 
 	uint32 resource_count();
 
-	const nsstring & res_dir();
-
-	const nsstring & import_dir() { return m_import_dir; }
-
-	/*!
-	This should be called if there was a name change to a get - will check if the get is used by this component and if is
-	is then it will update the handle
-	*/
 	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
 
-	bool parents_loaded();
+	bool parents_enabled();
+
+	void save_all_in_plugin(const nsstring & path="", nssave_resouces_callback * scallback = NULL);
 
 	template<class ResType, class T>
 	bool save(const T & name, const nsstring & path="")
@@ -337,8 +322,6 @@ public:
 		uint32 hashed_type = type_to_hash(ResType);
 		return save_all(hashed_type, path, scallback);
 	}
-
-	void save_all(const nsstring & path="", nssave_resouces_callback * scallback = NULL);
 
 	void save_all(uint32 res_typeid, const nsstring & path, nssave_resouces_callback * scallback);
 	
@@ -361,9 +344,7 @@ public:
 
 	void set_creation_date(const nsstring & pCreationDate);
 
-	void set_res_dir(const nsstring & dir);
-
-	void set_import_dir(const nsstring & dir) { m_import_dir = dir; }
+	void set_managers_res_dir(const nsstring & dir);
 
 	template<class ResType, class T>
 	ResType * remove(const T & resName)
@@ -381,12 +362,6 @@ public:
 	}
 
 	bool destroy(nsresource * res);
-
-	bool unbind();
-
-	void lock_resource_dir(bool lock);
-
-	bool resource_dir_locked();
 	
 private:
 	
@@ -394,20 +369,17 @@ private:
 	void _update_res_map();
 	void _clear();
 	
-	nsstring m_res_dir;
-	nsstring m_import_dir;
 	nsstring m_notes;
 	nsstring m_creator;
 	nsstring m_creation_date;
 	nsstring m_edit_date;
 
-	bool m_bound;
+	bool m_enabled;
 	manager_map m_managers;
 	nsstring_set m_parents;
 	res_type_map m_resmap;
 	res_type_map m_unloaded;
 	bool m_add_name;
-	bool m_lock_res_dir;
 };
 
 template <class PUPer>

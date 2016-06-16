@@ -29,7 +29,7 @@ int main()
     nse.start();
 
     nsplugin * plg = nse.load_plugin("testplug.bbp");
-	plg->bind();
+	plg->enable();
 	nse.set_active(plg);
 
 	// Setup build brush (simple one)

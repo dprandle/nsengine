@@ -28,57 +28,9 @@ nsplugin * get_plugin(uint32 id)
 nsplugin_manager::nsplugin_manager() :
 	nsres_manager(type_to_hash(nsplugin_manager))
 {
+	set_local_dir(LOCAL_PLUGIN_DIR_DEFAULT);
 	set_save_mode(text);
 }
 
 nsplugin_manager::~nsplugin_manager()
 {}
-
-bool nsplugin_manager::add(nsresource * res)
-{
-	if (nsres_manager::add(res))
-	{
-		nsplugin * plug = static_cast<nsplugin*>(res);
-		plug->set_res_dir(m_owned_plugins_res_dir);
-		plug->set_import_dir(nse.import_dir());
-		return true;
-	}
-	return false;
-}
-
-bool nsplugin_manager::bind(nsplugin * plg)
-{
-	return plg->bind();
-}
-
-void nsplugin_manager::set_res_dir(const nsstring & pDirectory)
-{
-	m_owned_plugins_res_dir = pDirectory;
-	auto iter = m_id_resmap.begin();
-	while (iter != m_id_resmap.end())
-	{
-		nsplugin * plug = get(iter->first);
-		plug->set_res_dir(m_owned_plugins_res_dir);
-		++iter;
-	}
-}
-
-void nsplugin_manager::set_plugin_dir(const nsstring & dir)
-{
-	m_res_dir = dir;
-}
-
-const nsstring & nsplugin_manager::plugin_dir()
-{
-	return m_res_dir;
-}
-
-const nsstring & nsplugin_manager::res_dir()
-{
-	return m_owned_plugins_res_dir;
-}
-
-bool nsplugin_manager::unbind(nsplugin * plg)
-{
-	return plg->unbind();
-}

@@ -180,8 +180,6 @@ struct nsgl_texture : public nsgl_obj
 	void unbind();
 
 	int32 target;
-	uint32 depth_func;
-	uint32 depth_mode;
 };
 
 #endif

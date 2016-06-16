@@ -17,6 +17,7 @@
 #include <nsgl_buffer.h>
 #include <nsgl_framebuffer.h>
 #include <nsgl_draw_calls.h>
+#include <nsgl_gbuffer.h>
 #include <nsgl_texture.h>
 #include <nsgl_vao.h>
 #include <nsmaterial.h>
@@ -358,7 +359,7 @@ void gbuffer_render_pass::render()
 		driver->bind_textures(dc->mat);
 		driver->render_instanced_dc(dc);
 	}
-	driver->bind_gbuffer_textures((nsgl_framebuffer*)ren_target);
+    driver->bind_gbuffer_textures(ren_target);
 }
 
 void oit_render_pass::render()
@@ -655,7 +656,7 @@ void final_render_pass::render()
 {
 	read_buffer->target = nsgl_framebuffer::fb_read;
 	read_buffer->bind();
-	read_buffer->set_read_buffer(nsgl_framebuffer::att_color);
+    read_buffer->set_read_buffer(nsgl_framebuffer::att_color);
 
 	glBlitFramebuffer(
 		vp->bounds.x,
@@ -667,7 +668,7 @@ void final_render_pass::render()
 		vp->bounds.z,
 		vp->bounds.w,
 		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST);
+        GL_LINEAR);
 
 	read_buffer->set_read_buffer(nsgl_framebuffer::att_none);
 	read_buffer->unbind();	

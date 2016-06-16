@@ -84,21 +84,35 @@
 ** DONE Test lighting parameters stuff
 ** TODO Test particle system make sure works
 ** TODO Test loading and saving of each resource type
-*** TODO Map
+*** TODO Scene
 *** TODO Mesh
 *** TODO Material
 *** TODO Animation
-*** TODO Plugins
+*** TODO Plugin
 *** DONE Texture
 *** TODO Shader
 *** TODO Entity
+**** TODO nsparticle_comp
+**** TODO nsrender_comp
+**** TODO nsanim_comp
+**** TODO nslight_comp
+**** TODO nsoccupy_comp
+**** TODO nsui_canvas_comp
+**** TODO nssel_comp
+**** TODO nssprite_comp
+**** TODO nsterrain_comp
+**** TODO nstile_brush_comp
+**** TODO nstile_comp
+**** TODO nsui_button_comp
+**** TODO nsui_material_comp
+**** TODO nsui_text_comp
 *** DONE InputMap
 ** TODO Test skybox
 ** TODO Test fog
 * DONE Create UI System
 * TODO Create audio system
 * TODO Create thread mechanism full multiplatform
-* TODO Get basic text rendering working
+* DONE Get basic text rendering working
 * DONE Reintegrate the new engine version in to the toolkit
 * DONE Create method for transparency
 * DONE Implement copy ctor and assignment operators for components and resources [100%]
@@ -125,5 +139,5 @@
 * DONE Moving driver over to specialized class
 ** DONE Add events for resource creation and deletion
 ** DONE Move the gl_context stuff over to gl driver - no need for multiple plugin managers anymore
-** TODO Create necessary management code for creating all the gl stuff outside of the resources themselves
+** DONE Create necessary management code for creating all the gl stuff outside of the resources themselves
    

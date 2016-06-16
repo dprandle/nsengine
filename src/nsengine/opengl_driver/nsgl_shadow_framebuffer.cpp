@@ -19,6 +19,8 @@ void nsshadow_tex2d_target::init(const nsstring & tex_name)
 	tex_params tp;
 	tp.edge_behavior.set(te_clamp,te_clamp,te_clamp);
 	tp.min_filter = tmin_linear;
+	tp.depth_mode = tex_dm_compare;
+	tp.depth_func = tex_dc_less;
 
 	nsgl_framebuffer::attachment * att = create_texture_attachment<nstex2d>(
 		tex_name,
@@ -27,9 +29,6 @@ void nsshadow_tex2d_target::init(const nsstring & tex_name)
 		tex_depth,
 		tex_float,
 		tp);
-
-	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
-	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_func = GL_LESS;
 }
 
 
@@ -48,6 +47,8 @@ void nsshadow_tex_cubemap_target::init(const nsstring & tex_name)
 	tex_params tp;
 	tp.edge_behavior.set(te_clamp,te_clamp,te_clamp);
 	tp.min_filter = tmin_linear;
+	tp.depth_mode = tex_dm_compare;
+	tp.depth_func = tex_dc_less;
 
 	set_draw_buffer(nsgl_framebuffer::att_none);
 	nsgl_framebuffer::attachment * att = create_texture_attachment<nstex_cubemap>(
@@ -58,6 +59,4 @@ void nsshadow_tex_cubemap_target::init(const nsstring & tex_name)
 		tex_float,
 		tp);
 		
-	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_mode = GL_COMPARE_REF_TO_TEXTURE;
-	att->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->depth_func = GL_LESS;
 }

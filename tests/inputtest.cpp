@@ -96,7 +96,7 @@ int main()
 nsplugin * setup_basic_plugin()
 {
     nsplugin * plg = nsep.create("testplug");
-    plg->bind();
+    plg->enable();
     nsep.set_active(plg);
 
     nsscene * scn = plg->create<nsscene>("mainscene");

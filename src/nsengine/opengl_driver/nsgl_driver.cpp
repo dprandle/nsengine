@@ -526,6 +526,7 @@ void nsgl_driver::create_default_render_passes()
 	dir_pass->tbuffers = current_context()->m_tbuffers;
 	dir_pass->rpass = dir_shadow_pass;
 	dir_pass->driver = this;
+    dir_pass->use_vp_size = true;
 	
 	light_shadow_pass * spot_shadow_pass = new light_shadow_pass;
 	spot_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
@@ -622,7 +623,7 @@ void nsgl_driver::create_default_render_passes()
 
 	final_render_pass * final_pass = new final_render_pass;
 	final_pass->ren_target = current_context()->m_default_target;
-	final_pass->read_buffer = render_target(ACCUM_TARGET);
+    final_pass->read_buffer = render_target(ACCUM_TARGET);
 	final_pass->gl_state.depth_test = false;
 	final_pass->gl_state.depth_write = false;
 	final_pass->gl_state.culling = false;
@@ -635,7 +636,7 @@ void nsgl_driver::create_default_render_passes()
 	current_context()->render_passes.push_back(gbuf_pass);
     current_context()->render_passes.push_back(oit_pass);
     current_context()->render_passes.push_back(dir_shadow_pass);
-	current_context()->render_passes.push_back(dir_pass);
+    current_context()->render_passes.push_back(dir_pass);
     current_context()->render_passes.push_back(spot_shadow_pass);
     current_context()->render_passes.push_back(spot_pass);
     current_context()->render_passes.push_back(point_shadow_pass);
@@ -749,14 +750,14 @@ void nsgl_driver::render_to_viewport(viewport * vp)
 	if (!_valid_check())
 		return;
 
-    current_context()->render_passes[oit]->enabled = vp->order_independent_transparency;
+    //current_context()->render_passes[oit]->enabled = vp->order_independent_transparency;
     //current_context()->render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
-    current_context()->render_passes[dir_light]->enabled = vp->dir_lights;
+   // current_context()->render_passes[dir_light]->enabled = vp->dir_lights;
     //current_context()->render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
-    current_context()->render_passes[spot_light]->enabled = vp->spot_lights;
+    //current_context()->render_passes[spot_light]->enabled = vp->spot_lights;
     //current_context()->render_passes[point_shadow]->enabled = vp->point_light_shadows;
-    current_context()->render_passes[point_light]->enabled = vp->point_lights;
-    current_context()->render_passes[selection]->enabled = vp->picking_enabled;
+    //current_context()->render_passes[point_light]->enabled = vp->point_lights;
+   // current_context()->render_passes[selection]->enabled = vp->picking_enabled;
 
 	for (uint32 i = 0; i < current_context()->render_passes.size(); ++i)
 	{
@@ -1146,10 +1147,8 @@ void nsgl_driver::render_light_dc(light_draw_call * idc)
 	{
 		nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
 		so->gl_vao->bind();
-        GLenum ptype = idc->submesh->m_prim_type;//get_gl_prim_type(idc->submesh->m_prim_type);
-        GLsizei sz = static_cast<GLsizei>(idc->submesh->m_indices.size());
-        glDrawElements(ptype,
-                       sz,
+        glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
+                       static_cast<GLsizei>(idc->submesh->m_indices.size()),
                        GL_UNSIGNED_INT,
                        0);
 		so->gl_vao->unbind();
@@ -1384,7 +1383,7 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 						current_context()->all_instanced_draw_calls.size()+1);
 					instanced_draw_call * sel_dc = &current_context()->all_instanced_draw_calls[current_context()->all_instanced_draw_calls.size()-1];
 					sel_dc->submesh = mSMesh;
-					
+                    sel_dc->scn = scene;
 					sel_dc->tform_buffer =
 						sc->scene_info(sel_dc->scn)->video_obj<nsgl_sel_comp_obj>()->gl_tform_buffer;
 					sel_dc->tform_id_buffer = nullptr;

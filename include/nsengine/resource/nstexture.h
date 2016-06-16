@@ -81,17 +81,39 @@ enum tex_edge_behavior
 	te_clamp_mirror
 };
 
+enum tex_depth_mode
+{
+	tex_dm_none,
+	tex_dm_compare
+};
+
+enum tex_depth_compare_func
+{
+	tex_dc_lequal,
+	tex_dc_gequal,
+	tex_dc_less,
+	tex_dc_greater,
+	tex_dc_equal,
+	tex_dc_not_equal,
+	tex_dc_always,
+	tex_dc_never
+};
+
 struct tex_params
 {
 	tex_params():
 		min_filter(tmin_linear_mipmap_linear),
 		mag_filter(tmag_linear),
 		edge_behavior(te_repeat,te_repeat,te_repeat),
+		depth_mode(tex_dm_none),
+		depth_func(tex_dc_lequal),
 		anistropic_filtering(0.0f)
 	{}
 	
 	tex_min_filter min_filter;
 	tex_mag_filter mag_filter;
+	tex_depth_mode depth_mode;
+	tex_depth_compare_func depth_func;
 	nsvec3<tex_edge_behavior> edge_behavior;
 	float anistropic_filtering;
 };

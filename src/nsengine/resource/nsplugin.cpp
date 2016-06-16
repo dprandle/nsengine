@@ -52,33 +52,30 @@ nsplugin::nsplugin():
 	m_creator(),
 	m_creation_date(),
 	m_edit_date(),
-	m_bound(false),
+	m_enabled(false),
 	m_managers(),
-	m_add_name(true),
-	m_lock_res_dir(false)
+	m_add_name(DEFAULT_ADD_NAME_TO_RES_DIR)
 {
 	set_ext(DEFAULT_PLUGIN_EXTENSION);
 }
 
 nsplugin::nsplugin(const nsplugin & copy_):
 	nsresource(copy_),
-	m_res_dir(copy_.m_res_dir),
-	m_import_dir(copy_.m_import_dir),
 	m_notes(copy_.m_notes),
 	m_creator(copy_.m_creator),
 	m_creation_date(copy_.m_creation_date),
 	m_edit_date(copy_.m_edit_date),
-	m_bound(false),
+	m_enabled(false),
 	m_managers(),
 	m_parents(copy_.m_parents),
 	m_resmap(copy_.m_resmap),
 	m_unloaded(),
-	m_add_name(copy_.m_add_name),
-	m_lock_res_dir(false)
+	m_add_name(copy_.m_add_name)
 {}
 
 nsplugin::~nsplugin()
 {
+	enable(false);
 	auto iter = m_managers.begin();
 	while (iter != m_managers.end())
 	{
@@ -91,8 +88,6 @@ nsplugin::~nsplugin()
 nsplugin & nsplugin::operator=(nsplugin rhs)
 {
 	nsresource::operator=(rhs);
-	std::swap(m_res_dir,rhs.m_res_dir);
-	std::swap(m_import_dir,rhs.m_import_dir);
 	std::swap(m_notes,rhs.m_notes);
 	std::swap(m_creator,rhs.m_creator);
 	std::swap(m_creation_date,rhs.m_creation_date);
@@ -103,48 +98,19 @@ nsplugin & nsplugin::operator=(nsplugin rhs)
 	return *this;
 }
 
-void nsplugin::lock_resource_dir(bool lock)
-{
-	m_lock_res_dir = lock;
-}
-
-bool nsplugin::resource_dir_locked()
-{
-	return m_lock_res_dir;
-}
-
 bool nsplugin::add(nsresource * res)
 {
 	if (res == NULL)
 		return false;
 
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::add The plugin " + m_name + " is not bound - it must be bound to add stuff");
+		dprint("nsplugin::add The plugin " + m_name + " is not enabled - it must be enabled to add stuff");
 		return nullptr;
 	}
 
 	nsres_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->add(res);
-}
-
-void nsplugin::add_name_to_res_path(bool add_)
-{
-	m_add_name = add_;
-	auto iter = m_managers.begin();
-	while (iter != m_managers.end())
-	{
-		if (m_add_name)
-			iter->second->set_res_dir(m_res_dir + m_name + "/");
-		else
-			iter->second->set_res_dir(m_res_dir);
-		++iter;
-	}
-}
-
-bool nsplugin::adding_names_to_res_path()
-{
-	return m_add_name;
 }
 
 bool nsplugin::add_manager(nsres_manager * manag)
@@ -156,10 +122,11 @@ bool nsplugin::add_manager(nsres_manager * manag)
 	if (iter.second)
 	{
 		manag->set_plugin_id(m_id);
+		nsstring res_dir = nse.cwd() + nsstring(DEFAULT_RESOURCE_DIR);
 		if (m_add_name)
-			manag->set_res_dir(m_res_dir + m_name + "/");
+			manag->set_res_dir(res_dir + m_name + "/");
 		else
-			manag->set_res_dir(m_res_dir);
+			manag->set_res_dir(res_dir);
 		return true;
 	}
 	return false;
@@ -167,9 +134,9 @@ bool nsplugin::add_manager(nsres_manager * manag)
 
 nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsresource * to_copy)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -179,9 +146,9 @@ nsresource * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsres
 
 nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec2 & screenDim, const fvec2 & clipnf)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_camera The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_camera The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -210,9 +177,9 @@ bool nsplugin::contains(nsresource * res)
 
 nsentity * nsplugin::create_camera(const nsstring & name, const fvec2 & lrclip, const fvec2 & tbclip, const fvec2 & nfclip)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_camera The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_camera The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -239,9 +206,9 @@ nsentity * nsplugin::create_dir_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_dir_light The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_dir_light The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -278,9 +245,9 @@ nsentity * nsplugin::create_point_light(const nsstring & name,
 	float shadowdarkness,
 	int32 shadowsamples)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_point_light The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_point_light The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -322,9 +289,9 @@ bool castshadows,
 float shadowdarkness,
 int32 shadowsamples)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_spot_light The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_spot_light The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -397,9 +364,9 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 	bool collides,
 	tile_t type)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_tile The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_tile The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -444,9 +411,9 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 nsentity * nsplugin::create_tile(const nsstring & name,
 	nsmaterial * mat, bool collides, tile_t type)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_tile The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_tile The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -497,20 +464,15 @@ nsentity * nsplugin::create_tile(const nsstring & name,
 nsentity * nsplugin::create_skydome(const nsstring & name,
 									nsstring cubemap_relative_fname,
 									const nsstring & image_ext,
-									const nsstring & tex_subdir,
-									bool prefix_import_dir_)
+									const nsstring & tex_subdir)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_skydome The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_skydome The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
-	nsentity * skybox = create<nsentity>(name);
-
-	if (prefix_import_dir_)
-		cubemap_relative_fname = m_import_dir + cubemap_relative_fname;
-	
+	nsentity * skybox = create<nsentity>(name);	
 	nstexture * sky_box = manager<nstex_manager>()->load_cubemap(cubemap_relative_fname, image_ext);
 	sky_box->set_subdir(tex_subdir);
 	
@@ -532,12 +494,11 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	float hmax, 
 	const nsstring & hmfile, 
 	const nsstring & dmfile, 
-	const nsstring & nmfile,
-	bool importdir)
+	const nsstring & nmfile)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::create_terrain The plugin " + m_name + " is not bound - it must be bound to create stuff");
+		dprint("nsplugin::create_terrain The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
 		return nullptr;
 	}
 
@@ -562,10 +523,7 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	rc->set_material(0, termat->full_id(), true);
 
 	nstex2d * hm = NULL, * dm = NULL, * nm = NULL;
-	if (importdir)
-		hm = load<nstex2d>(m_import_dir + hmfile, true);
-	else
-		hm = load<nstex2d>(hmfile, true);
+	hm = load<nstex2d>(hmfile, true);
 
 	if (hm == NULL)
 	{
@@ -577,11 +535,7 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 	if (!dmfile.empty())
 	{
 		
-		if (importdir)
-			dm = load<nstex2d>(m_import_dir + dmfile, true);
-		else
-			dm = load<nstex2d>(dmfile, true);
-
+		dm = load<nstex2d>(dmfile, true);
 		if (dm == NULL)
 		{
 			destroy(hm);
@@ -593,11 +547,7 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 
 	if (!nmfile.empty())
 	{
-		if (importdir)
-			nm = load<nstex2d>(m_import_dir + nmfile, true);
-		else
-			nm = load<nstex2d>(nmfile, true);
-
+		nm = load<nstex2d>(nmfile, true);
 		if (nm == NULL)
 		{
 			destroy(dm);
@@ -626,7 +576,7 @@ nsscene * nsplugin::current_scene()
 
 bool nsplugin::destroy_manager(const nsstring & manager_guid)
 {
-	if (m_bound)
+	if (m_enabled)
 		return false;
 	
 	return destroy_manager(hash_id(manager_guid));
@@ -634,7 +584,7 @@ bool nsplugin::destroy_manager(const nsstring & manager_guid)
 
 bool nsplugin::destroy_manager(uint32 manager_typeid)
 {
-	if (m_bound)
+	if (m_enabled)
 		return false;
 	
 	nsres_manager * resman = remove_manager(manager_typeid);
@@ -644,9 +594,9 @@ bool nsplugin::destroy_manager(uint32 manager_typeid)
 
 bool nsplugin::del(nsresource * res)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::del The plugin " + m_name + " is not bound - it must be bound to del stuff");
+		dprint("nsplugin::del The plugin " + m_name + " is not enabled - it must be enabled to del stuff");
 		return nullptr;
 	}
 
@@ -678,9 +628,9 @@ void nsplugin::name_change(const uivec2 & oldid, const uivec2 newid)
 
 nsresource * nsplugin::get(uint32 res_typeid, uint32 resid)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::get The plugin " + m_name + " is not bound - it must be bound to get stuff");
+		dprint("nsplugin::get The plugin " + m_name + " is not enabled - it must be enabled to get stuff");
 		return nullptr;
 	}
 
@@ -690,9 +640,9 @@ nsresource * nsplugin::get(uint32 res_typeid, uint32 resid)
 
 nsresource * nsplugin::get(uint32 res_typeid, nsresource * res)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::get The plugin " + m_name + " is not bound - it must be bound to get stuff");
+		dprint("nsplugin::get The plugin " + m_name + " is not enabled - it must be enabled to get stuff");
 		return nullptr;
 	}
 
@@ -702,9 +652,9 @@ nsresource * nsplugin::get(uint32 res_typeid, nsresource * res)
 
 nsresource * nsplugin::get(uint32 res_typeid, const nsstring & resName)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::get The plugin " + m_name + " is not bound - it must be bound to get stuff");
+		dprint("nsplugin::get The plugin " + m_name + " is not enabled - it must be enabled to get stuff");
 		return nullptr;
 	}
 
@@ -730,9 +680,9 @@ void nsplugin::init()
 
 nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname, bool finalize_)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::load_model The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		dprint("nsplugin::load_model The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
 		return nullptr;
 	}
 
@@ -744,19 +694,15 @@ nsresource * nsplugin::load(uint32 res_typeid, const nsstring & fname, bool fina
 nsentity * nsplugin::load_model(
 	const nsstring & entname,
 	nsstring fname,
-	bool prefix_import_dir,
 	const nsstring & model_name,
 	bool occupy_comp,
 	bool flipuv)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::load_model The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		dprint("nsplugin::load_model The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
 		return nullptr;
 	}
-
-	if (prefix_import_dir)
-		fname = m_import_dir + fname;
 
 	nsentity * ent = create<nsentity>(entname);
 	nsrender_comp * renderComp = ent->create<nsrender_comp>();
@@ -841,16 +787,16 @@ nsentity * nsplugin::load_model(
 	return ent;
 }
 
-bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const nsstring & model_name, bool flipuv)
+bool nsplugin::load_model_resources(
+	nsstring fname,
+	const nsstring & model_name,
+	bool flipuv)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::load_model_resources The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		dprint("nsplugin::load_model_resources The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
 		return false;
 	}
-
-	if (prefix_import_dir)
-		fname = m_import_dir + fname;
 
 	nsstring sceneName = model_name;
 	if (sceneName.empty())
@@ -907,19 +853,16 @@ bool nsplugin::load_model_resources(nsstring fname,bool prefix_import_dir, const
 	return true;
 }
 
-nsmesh * nsplugin::load_model_mesh(nsstring fname,
-								 bool prefix_import_dir,
-								 const nsstring & model_name,
-								 bool flipuv)
+nsmesh * nsplugin::load_model_mesh(
+	nsstring fname,
+	const nsstring & model_name,
+	bool flipuv)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::load_model_mesh The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		dprint("nsplugin::load_model_mesh The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
 		return nullptr;
 	}
-
-	if (prefix_import_dir)
-		fname = m_import_dir + fname;
 
 	nsstring sceneName = model_name;
 	if (sceneName.empty())
@@ -960,19 +903,16 @@ nsmesh * nsplugin::load_model_mesh(nsstring fname,
 	return manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
 }
 
-bool nsplugin::load_model_mats(nsstring fname,
-					 bool prefix_import_dir,
-					 const nsstring & model_name,
-					 bool flipuv)
+bool nsplugin::load_model_mats(
+	nsstring fname,
+	const nsstring & model_name,
+	bool flipuv)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::load_model_mats The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		dprint("nsplugin::load_model_mats The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
 		return false;
 	}
-
-	if (prefix_import_dir)
-		fname = m_import_dir + fname;
 
 	nsstring sceneName = model_name;
 	if (sceneName.empty())
@@ -1025,19 +965,16 @@ bool nsplugin::load_model_mats(nsstring fname,
 		return false;
 }
 
-nsanim_set * nsplugin::load_model_anim(nsstring fname,
-								bool prefix_import_dir,
-								const nsstring & model_name,
-								bool flipuv)
+nsanim_set * nsplugin::load_model_anim(
+	nsstring fname,
+	const nsstring & model_name,
+	bool flipuv)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::load_model_anim The plugin " + m_name + " is not bound - it must be bound to load stuff");
+		dprint("nsplugin::load_model_anim The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
 		return nullptr;
 	}
-
-	if (prefix_import_dir)
-		fname = m_import_dir + fname;
 
 	nsstring sceneName = model_name;
 	if (sceneName.empty())
@@ -1088,6 +1025,9 @@ nsres_manager * nsplugin::manager(const nsstring & manager_guid)
 
 nsres_manager * nsplugin::manager(uint32 manager_typeid)
 {
+	if (!m_enabled)
+		return nullptr;
+	
 	auto iter = m_managers.find(manager_typeid);
 	if (iter == m_managers.end())
 		return NULL;
@@ -1104,9 +1044,9 @@ bool nsplugin::has_manager(const nsstring & manager_guid)
 	return has_manager(hash_id(manager_guid));
 }
 
-bool nsplugin::bound()
+bool nsplugin::is_enabled()
 {
-	return m_bound;
+	return m_enabled;
 }
 
 const nsstring & nsplugin::creator()
@@ -1131,66 +1071,74 @@ const nsstring & nsplugin::creation_date()
 
 const nsstring_set & nsplugin::parents()
 {
-	if (m_bound)
+	if (m_enabled)
 		_update_parents();
 	return m_parents;
 }
 
-bool nsplugin::bind()
+void nsplugin::enable(bool enable_)
 {
-	if (m_bound)
+	if (enable_)
 	{
-		dprint("nsplugin::bind Cannot bind plugin " + m_name + " - it is already bound");
-		return false;
-	}
+		if (m_enabled)
+		{
+			dprint("nsplugin::bind Cannot bind plugin " + m_name + " - it is already enabled");
+			return;
+		}
 	
-	if (!parents_loaded())
-	{
-		dprint("nsplugin::bind Cannot load plugin " + m_name + " without parents loaded");
-		return false;
-	}
+		if (!parents_enabled())
+		{
+			dprint("nsplugin::bind Cannot load plugin " + m_name + " without parents enabled");
+			return;
+		}
 
-	auto liter = m_resmap.begin();
-	while (liter != m_resmap.end())
-	{
-		nsres_manager * rm = manager(liter->first);
-		nsresource * r = rm->load(liter->second.m_res_guid,liter->second.m_res_subdir_and_name, false);
+		auto liter = m_resmap.begin();
+		while (liter != m_resmap.end())
+		{
+			nsres_manager * rm = manager(liter->first);
+			nsresource * r = rm->load(liter->second.m_res_guid,liter->second.m_res_subdir_and_name, false);
 
-		if (r == NULL)
-			m_unloaded.emplace(liter->first, liter->second);
-		else
-			r->set_icon_path(liter->second.m_icon_path);
+			if (r == NULL)
+				m_unloaded.emplace(liter->first, liter->second);
+			else
+				r->set_icon_path(liter->second.m_icon_path);
 		
-		++liter;
-	}
+			++liter;
+		}
 
-	// Finalize loading - the finalize function is for resources that may have dependencies on
-	// themselves - or other resources. This allows the engine to save these dependencies as uivec3
-	// ids on loading - and once all is loaded - the finalize replaces the ids with pointers
-	liter = m_resmap.begin();
-	while (liter != m_resmap.end())
+		// Finalize loading - the finalize function is for resources that may have dependencies on
+		// themselves - or other resources. This allows the engine to save these dependencies as uivec3
+		// ids on loading - and once all is loaded - the finalize replaces the ids with pointers
+		liter = m_resmap.begin();
+		while (liter != m_resmap.end())
+		{
+			nsres_manager * rm = manager(liter->first);
+			rm->finalize_all();
+			++liter;
+		}
+		m_enabled = true;
+	}
+	else
 	{
-		nsres_manager * rm = manager(liter->first);
-		rm->finalize_all();
-		++liter;
+		if (!m_enabled)
+			return;
+		
+		_update_res_map();
+		_update_parents();
+		_clear();
+		m_unloaded.clear();
+		m_enabled = false;
+	}
+}
+
+void nsplugin::save_all_in_plugin(const nsstring & path, nssave_resouces_callback * scallback)
+{
+	if (!m_enabled)
+	{
+		dprint("nsplugin::save_all_in_plugin Cannot save all resources while pugin " + m_name + " is not enabled");
+		return;
 	}
 
-
-	return (m_bound = true);
-}
-
-bool nsplugin::unbind()
-{
-	_update_res_map();
-	_update_parents();
-	_clear();
-	m_unloaded.clear();
-	m_bound = false;
-	return !m_bound;
-}
-
-void nsplugin::save_all(const nsstring & path, nssave_resouces_callback * scallback)
-{
 	auto iter = m_managers.begin();
 	while (iter != m_managers.end())
 	{
@@ -1201,8 +1149,11 @@ void nsplugin::save_all(const nsstring & path, nssave_resouces_callback * scallb
 
 void nsplugin::save_all(uint32 res_typeid, const nsstring & path, nssave_resouces_callback * scallback)
 {
-	if (!m_bound)
-		dprint("nsplugin::save_as Trying to save all plugin:" + m_name + " resources type: " + std::to_string(res_typeid) + " while it is not bound..");
+	if (!m_enabled)
+	{
+		dprint("nsplugin::save_all Cannot save all resources type " + hash_to_guid(res_typeid) + " while pugin " + m_name + " is not enabled");
+		return;
+	}
 
 	nsres_manager * rm = manager(nse.manager_id(res_typeid));
 	return rm->save_all(path, scallback);	
@@ -1213,9 +1164,9 @@ bool nsplugin::save_as(nsresource * res, const nsstring & fname)
 	if (res == nullptr)
 		return false;
 	
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::save_as Trying to save resource " + res->name() + " in plugin " + m_name + " while it is not bound..");
+		dprint("nsplugin::save_as Trying to save resource " + res->name() + " in plugin " + m_name + " while it is not enabled");
 		return false;
 	}
 
@@ -1225,7 +1176,7 @@ bool nsplugin::save_as(nsresource * res, const nsstring & fname)
 
 nsstring nsplugin::details()
 {
-	if (m_bound)
+	if (m_enabled)
 		_update_res_map();
 	
 	nsstring ret;
@@ -1270,9 +1221,9 @@ bool nsplugin::save(nsresource * res, const nsstring & path)
 	if (res == nullptr)
 		return false;
 	
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::save Trying to save resource " + res->name() + " in plugin " + m_name + " while it is not bound..");
+		dprint("nsplugin::save Trying to save resource " + res->name() + " in plugin " + m_name + " while it is not enabled..");
 		return false;
 	}
 	
@@ -1290,16 +1241,11 @@ bool nsplugin::set_current_scene(nsscene * scene, bool new_scene, bool save_prev
 	return manager<nsscene_manager>()->set_current(scene, new_scene, save_previous);
 }
 
-const nsstring & nsplugin::res_dir()
-{
-	return m_res_dir;
-}
-
 bool nsplugin::resource_changed(nsresource * res)
 {
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::resource_changed Trying to check plugin " + m_name + " while it is not bound..");
+		dprint("nsplugin::resource_changed Trying to check plugin " + m_name + " while it is not enabled..");
 		return false;
 	}
 
@@ -1309,7 +1255,7 @@ bool nsplugin::resource_changed(nsresource * res)
 
 uint32 nsplugin::resource_count()
 {
-	if (m_bound)
+	if (m_enabled)
 		_update_res_map();
 	return static_cast<uint32>(m_resmap.size());
 }
@@ -1319,9 +1265,9 @@ bool nsplugin::destroy(nsresource * res)
 	if (res == NULL)
 		return false;
 
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::destroy Trying to destroy " + res->name() + " while owning plugin " + m_name + " is not bound..");
+		dprint("nsplugin::destroy Trying to destroy " + res->name() + " while owning plugin " + m_name + " is not enabled..");
 		return false;
 	}
 
@@ -1329,19 +1275,12 @@ bool nsplugin::destroy(nsresource * res)
 	return rm->destroy(res);
 }
 
-void nsplugin::set_res_dir(const nsstring & dir)
+void nsplugin::set_managers_res_dir(const nsstring & dir)
 {
-	if (m_lock_res_dir)
-		return;
-	
-	m_res_dir = dir;
 	auto iter = m_managers.begin();
 	while (iter != m_managers.end())
 	{
-		if (m_add_name)
-			iter->second->set_res_dir(m_res_dir + m_name + "/");
-		else
-			iter->second->set_res_dir(m_res_dir);
+		iter->second->set_res_dir(dir);
 		++iter;
 	}
 }
@@ -1367,9 +1306,9 @@ nsresource * nsplugin::remove(nsresource * res)
 	if (res == nullptr)
 		return nullptr;
 	
-	if (!m_bound)
+	if (!m_enabled)
 	{
-		dprint("nsplugin::remove Trying to remove " + res->name() + " while owning plugin " + m_name + " is not bound..");
+		dprint("nsplugin::remove Trying to remove " + res->name() + " while owning plugin " + m_name + " is not enabled..");
 		return nullptr;
 	}
 	
@@ -1429,13 +1368,13 @@ void nsplugin::_update_res_map()
 	}
 }
 
-bool nsplugin::parents_loaded()
+bool nsplugin::parents_enabled()
 {
 	auto piter = m_parents.begin();
 	while (piter != m_parents.end())
 	{
 		nsplugin * parent = nsep.get(*piter);
-		if (parent == NULL || !parent->bound())
+		if (parent == NULL || !parent->is_enabled())
 			return false;
 		++piter;
 	}

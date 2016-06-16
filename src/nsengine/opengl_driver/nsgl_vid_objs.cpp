@@ -164,8 +164,10 @@ void nsgl_texture_obj::update()
 	{
 		dprint("nsgl_texture_obj::nsgl_texture_obj - Unrecognized texture type");
 	}
+
 	if (tex->mipmap_autogen())
 		gl_tex->generate_mipmaps();
+    gl_tex->set_parameters(tex->parameters());
 	gl_tex->unbind();
 	needs_update = false;
 }
@@ -303,15 +305,15 @@ void nsgl_tform_comp_obj::update()
 	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
 	
 	bool did_resize = false;
-    //if (psi->m_buffer_resized)
-    //{
+    if (psi->m_buffer_resized)
+    {
 		did_resize = true;
 		gl_tform_buffer->bind();
 		gl_tform_buffer->allocate<fmat4>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
 		gl_tform_id_buffer->bind();
 		gl_tform_id_buffer->allocate<uint32>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
-        //psi->m_buffer_resized = false;
-    //}
+        psi->m_buffer_resized = false;
+    }
 
 	gl_tform_buffer->bind();
 	fmat4 * mappedT = gl_tform_buffer->map_range<fmat4>(0, psi->m_tforms.size(), nsgl_buffer::map_write);
@@ -330,16 +332,16 @@ void nsgl_tform_comp_obj::update()
 		bool showBit = (state & nstform_comp::hide_none) == nstform_comp::hide_none;
 		bool hideBit = (state & nstform_comp::hide_all) == nstform_comp::hide_all;
 
-        //if (!hideBit && (!layerBit && (showBit || !objectBit)))
-        //{
-        //	if (itf->render_update() || did_resize)
-        //	{
+        if (!hideBit && (!layerBit && (showBit || !objectBit)))
+        {
+            if (itf->render_update() || did_resize)
+            {
 				mappedT[psi->m_visible_count] = itf->world_tf();
 				mappedI[psi->m_visible_count] = i;
 				itf->set_render_update(false);
-        //	}
+            }
 			++psi->m_visible_count;
-        //}
+        }
 	}
 	gl_tform_buffer->bind();
 	gl_tform_buffer->unmap();

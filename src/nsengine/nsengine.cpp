@@ -265,14 +265,6 @@ const nsstring & nsengine::import_dir()
 void nsengine::set_import_dir(const nsstring & dir)
 {
 	m_import_dir = dir;
-	auto iter = m_plugins->begin();
-	while (iter != m_plugins->end())
-	{
-		nsplugin * plug = static_cast<nsplugin*>(iter->second);
-		plug->set_import_dir(m_import_dir);
-		++iter;
-	}
-	++iter;
 }
 
 void nsengine::start(bool create_default_systems)
@@ -287,15 +279,12 @@ void nsengine::start(bool create_default_systems)
 	nsfile_os::platform_init();
 
 	m_plugins = new nsplugin_manager();
-	m_plugins->set_plugin_dir(m_cwd + nsstring(LOCAL_PLUGIN_DIR_DEFAULT));
-	m_plugins->set_res_dir(m_cwd + nsstring(DEFAULT_RESOURCE_DIR));
+	m_plugins->set_res_dir(m_cwd);
 
 	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
 	plg->init();
-	plg->bind();
-	plg->set_res_dir(m_cwd + DEFAULT_CORE_DIR);
-	plg->add_name_to_res_path(false);
-	plg->lock_resource_dir(true);
+	plg->enable(true);
+	plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
 	plg->enable_group_save(false);
 	m_driver->init();
 	if (create_default_systems)

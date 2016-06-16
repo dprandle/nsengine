@@ -99,7 +99,7 @@ bool nsgl_gbuffer::create_texture_attachments()
 		G_PICKING_TEX_UNIT,
 		tex_irgba,
 		tex_u32,
-		lin);	
+        lin);
 
 	att = create_texture_attachment<nstex2d>(
 		"gbuffer_wpos",

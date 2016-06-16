@@ -29,6 +29,7 @@
 #include <nsplugin_manager.h>
 #include <nsmaterial.h>
 #include <nsui_system.h>
+#include <nstexture.h>
 #include <nsrender_system.h>
 #include <nsui_canvas_comp.h>
 #include <nsrouter.h>
@@ -65,23 +66,21 @@ int main()
 	gl_driver->setup_default_rendering();
 
     nsplugin * plg = nsep.create("most_basic_test");
-    plg->bind();
+    plg->enable(true);
 	setup_input_map(plg);
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
-    bf.scn = new_scene;
-    bf.plg = plg;
-    nsplugin * cp = nse.core();
 
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
     plg->set_current_scene(new_scene, true, false);
 
     nsentity * grass_tile = plg->create_tile("grass_tile",
 											 nse.import_dir() + "diffuseGrass.png",
-											 nse.import_dir() + "normalGrass.png",
-											 fvec4(1,0,0,1), 16.0, 0.6, fvec3(1,1,1), true);
-    //nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
-    //nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
+                                             nse.import_dir() + "normalGrass.png",
+                                             fvec4(1,0,0,0.5f), 16.0, 0.6, fvec3(1,1,1), true);
+
+    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
+    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
@@ -89,16 +88,16 @@ int main()
 
     new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    //new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    //new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add_gridded(grass_tile,ivec3(32,32,1));
 
 	
 	// Create material for the button bg
 	nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
-	// nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
-	// mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
-	mat->set_color_mode(true);
+    nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
+    mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
+    mat->set_color_mode(false);
 	mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
 	
 	// Create material for the button border
@@ -162,8 +161,8 @@ int main()
 
     nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
     auto pic = tuic->canvas_info(cc);
-    pic->anchor_rect = fvec4(0.5f,0.5f,0.5f,0.5f);
-    pic->pixel_offset_rect = fvec4(-200, -150, 200, 150);
+    pic->anchor_rect = fvec4(0.2f,0.2f,0.2f,0.2f);
+    pic->pixel_offset_rect = fvec4(-410/8.0f, -729/8.0f, 410/8.0f, 729/8.0f);
     pic->pivot = fvec2(0.5f,0.5f);
     pic->layer = 0;
     pic->angle = 0.0f;

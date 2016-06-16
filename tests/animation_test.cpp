@@ -28,7 +28,7 @@ int main()
 //    nse.system<nsrender_system>()->setup_default_rendering();
 
     nsplugin * plg = nse.load_plugin("testplug.bbp");
-	plg->bind();
+	plg->enable();
 	nse.set_active(plg);
 
 	nsinput_map * imap = plg->get<nsinput_map>("bb_toolkit");

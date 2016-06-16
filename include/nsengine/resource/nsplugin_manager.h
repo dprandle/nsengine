@@ -21,11 +21,11 @@ nsplugin * get_plugin(uint32 id);
 class nsplugin_manager : public nsres_manager
 {
 public:
+
 	using nsres_manager::save;
+
 	nsplugin_manager();
 	~nsplugin_manager();
-
-	virtual bool add(nsresource * res);
 	
 	template <class res_type>
 	res_type * create(const nsstring & res_name, nsresource * to_copy=nullptr)
@@ -72,35 +72,6 @@ public:
 	{
 		return remove<nsplugin>(res_name);
 	}
-	
-	template<class T>
-	bool bind(const T & name)
-	{
-		nsplugin * plug = get(name);
-		return bind(plug);
-	}
-
-	bool bind(nsplugin * plg);
-		
-	void set_plugin_dir(const nsstring & dir);
-
-	const nsstring & plugin_dir();
-
-	void set_res_dir(const nsstring & pDirectory);
-
-	const nsstring & res_dir();
-
-	template<class T>
-	bool unbind(const T & name)
-	{
-		nsplugin * plg = get(name);
-		return unbind(plg);
-	}
-
-	bool unbind(nsplugin * plg);
-	
-private:
-	nsstring m_owned_plugins_res_dir;
 };
 
 #define nsep (*nsengine::inst().plugins())

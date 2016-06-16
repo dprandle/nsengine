@@ -3,3 +3,51 @@
 I am now updating the push_scene, push_entity, and _push_light_draw_calls, and rendering calls within the gl_driver to work correctly.
 
 After that I will need to go through the render() function for each pass and transfer them to use any changed draw calls.
+
+
+** Directories
+
+*** nsengine
+
+**** cwd : Current working directory - added before almost all directories
+     starting_val: directory where executable is located
+
+**** import_dir : The default import directory - just a useful directory to keep nothing more
+     starting_val: cwd + DEFAULT_IMPORT_DIR (see nsengine.h)
+
+*** nsres_manager
+
+**** m_res_dir : Directory where all resource managers will be placing their local directories in by default - this is set by the owning plugin. If the plugin's m_add_name variable is set to true, then the plugin's name will be added to the end of the directory
+     starting_val with m_add_name false : cwd + DEFAULT_RESOURCE_DIR (see nsengine.h)
+     starting_val with m_add_name true : cwd + DEFAULT_RESOURCE_DIR + parent_plugin_name + '/' (see nsengine.h)
+	
+**** m_local_dir : This is the subdirectory of m_res_dir where only this manager will be placing its resources
+     starting_val : LOCAL_*RESTYPE*_DIR_DEFAULT (see nsres_manager.h)
+
+*** nsresource
+
+**** m_subdir : This is another subdirectory that a resource can add to separate itself from others of the same type within the manager's local dir folder
+     starting_val : empty
+
+**** m_name : This is the filename of the resource without the file extension added
+     starting_val : empty
+
+**** m_ext : This is the file extension of the resource
+     starting_val : DEFAULT_*RESTYPE*_EXTENSION (see nsresource.h)
+
+
+*** File name formula
+    fname = manager->res_dir() + manager->local_dir() + res->subdir() + res->name() + res->ext()
+
+*** About loading
+    Anytime a path passed to a load function contains '/' or '\', then the manager checks if the first character is '/' or '.', or the if the character ':' is anywhere in the path. If any of these checks are true then the path is treated as absolute and only the file name and extension are assigned to the resource after it is loaded. If all of these checks are false, then all of the path preceding and including the last '/' or '\' is treated as the resource's subdir and the remaining portion as the name and extension.
+
+    A plugin provides a load interface as well for easy resource loading without having to get the manager.
+
+*** About saving
+    Each manager has a saving interface - save(res, path), save_all(path, scallback), and save_as(res, fname). If the path is specified then the resource or resources will be saved to that path rather than the path specified above. The callback run function is called on every individual save whether successful or not. The save_as function saves the resource "res" as the fname provided - exactly as the fname - this means the entire path (or relative from the cd) should be provided here including the extension.
+
+    A plugin has the same save, save_all, and save_as interface where you can pass the resource type id or use a templated call (ie save_all<nsmesh>(path, callback)) except that there is an additional save_all_in_plugin which will save all resources in all managers using the path and callback passed in.
+
+*** About plugins
+    In order to use a plugin it needs to be bound - all calls involving manipulating resources in some way will fail if the plugin is not bound.

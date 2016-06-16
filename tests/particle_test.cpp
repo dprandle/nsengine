@@ -140,7 +140,7 @@ int main()
 
 	// create a plugin to allow us to load and save groups of stuff easily
     nsplugin * plg = nse.create_plugin("ship_resources.bbp");
-	plg->bind();
+	plg->enable();
 	nse.set_active(plg);
 
 	// create a mapping of keys to events

@@ -58,12 +58,14 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 		}
 		else
 		{
+            pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 			glFramebufferTexture2D(
 				target,
 				pAttachment->m_att_point,
 				pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->target,
 				pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->gl_id,
 				0);
+            pAttachment->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->unbind();
 		}
 	}
 
@@ -297,7 +299,7 @@ void nsgl_framebuffer::set_draw_buffers(attachment_point_array * pAttArray)
 		dprint("nsgl_framebuffer::set_draw_buffers - Error empty attachment point array");
 		return;
 	}
-	glDrawBuffers(static_cast<GLsizei>(pAttArray->size()), &(*pAttArray)[0]);
+    glDrawBuffers(static_cast<GLsizei>(pAttArray->size()), pAttArray->data());
 	gl_err_check("nsgl_framebuffer::set_draw_buffers");
 }
 
