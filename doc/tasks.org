@@ -140,4 +140,4 @@
 ** DONE Add events for resource creation and deletion
 ** DONE Move the gl_context stuff over to gl driver - no need for multiple plugin managers anymore
 ** DONE Create necessary management code for creating all the gl stuff outside of the resources themselves
-   
+* DONE Change "resource" to "asset"

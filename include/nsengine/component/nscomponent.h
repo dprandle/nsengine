@@ -24,9 +24,7 @@ class nscomponent_inst;
 class nscomponent
 {
   public:
-
-	friend class nscomp_factory;
-
+	
 	nscomponent(uint32 hashed_type);
 
 	nscomponent(const nscomponent & copy);

@@ -126,7 +126,7 @@ class nssystem;
 class nsplugin;
 class nsevent_dispatcher;
 struct nssave_resouces_callback;
-class nsres_manager;
+class nsasset_manager;
 class nsengine;
 
 
@@ -349,7 +349,7 @@ public:
 		}
 
 
-		nsres_factory_type<res_type> * rf = _create_factory<nsres_factory_type<res_type>, res_type>();
+		nsasset_factory_type<res_type> * rf = _create_factory<nsasset_factory_type<res_type>, res_type>();
 		if (rf == nullptr)
 			return false;
 		
@@ -595,7 +595,7 @@ private:
 // Engine macros
 #define nse nsengine::inst()
 
-nsresource * get_resource(uint32 res_type, const uivec2 & res_id);
+nsasset * get_resource(uint32 res_type, const uivec2 & res_id);
 
 template<class res_type>
 res_type * get_resource(const uivec2 & res_id)

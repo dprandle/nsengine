@@ -34,8 +34,8 @@ file(GLOB SRC_FILES
 "${NSENGINE_SRC_DIR}/math/*.cpp"
 "${NSENGINE_SRC_DIR}/component/*.cpp"
 "${NSENGINE_SRC_DIR}/system/*.cpp"
-"${NSENGINE_SRC_DIR}/resource/*.cpp"
-"${NSENGINE_SRC_DIR}/opengl_driver/*.cpp"
+"${NSENGINE_SRC_DIR}/asset/*.cpp"
+"${NSENGINE_SRC_DIR}/opengl/*.cpp"
 "${HASH_SRC_DIR}/*.cpp"
 "${SOIL_SRC_DIR}/*.cpp"
 "${GLEW_SRC_DIR}/*.cpp"
@@ -46,9 +46,8 @@ file(GLOB HEADER_FILES
 "${NSENGINE_INCLUDE_DIR}/math/*.h"
 "${NSENGINE_INCLUDE_DIR}/component/*.h"
 "${NSENGINE_INCLUDE_DIR}/system/*.h"
-"${NSENGINE_INCLUDE_DIR}/resource/*.h"
-"${NSENGINE_INCLUDE_DIR}/opengl_driver/*.h"
-"${NSENGINE_INCLUDE_DIR}/*.hpp"
+"${NSENGINE_INCLUDE_DIR}/asset/*.h"
+"${NSENGINE_INCLUDE_DIR}/opengl/*.h"
 )
 
 # Set project includes dir
@@ -57,8 +56,8 @@ include_directories(
 "${NSENGINE_INCLUDE_DIR}/math"
 "${NSENGINE_INCLUDE_DIR}/component"
 "${NSENGINE_INCLUDE_DIR}/system"
-"${NSENGINE_INCLUDE_DIR}/resource"
-"${NSENGINE_INCLUDE_DIR}/opengl_driver"
+"${NSENGINE_INCLUDE_DIR}/asset"
+"${NSENGINE_INCLUDE_DIR}/opengl"
 "${ASSIMP_INCLUDE_DIR}"
 "${DEVIL_INCLUDE_DIR}"
 "${LIB_INCLUDE_DIR}"

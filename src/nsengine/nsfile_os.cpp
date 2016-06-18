@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <nsfile_os.h>
-#include <nsres_manager.h>
+#include <nsasset_manager.h>
 #ifdef WIN32
 #include <filesystem>
 #include <Windows.h>
@@ -24,7 +24,7 @@
 #include <time.h>
 #endif
 
-#include <nsres_manager.h>
+#include <nsasset_manager.h>
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -134,7 +134,7 @@ bool create_dir(const nsstring & path)
 	char tmp[256];
 	char *p = NULL;
 	size_t len;
-	nsstring stripped_path = nsres_manager::path_from_filename(path);
+	nsstring stripped_path = nsasset_manager::path_from_filename(path);
 
 	snprintf(tmp, sizeof(tmp),"%s",stripped_path.c_str());
 	len = strlen(tmp);
@@ -203,7 +203,7 @@ nsstring cwd()
 	uint32 sz = readlink("/proc/self/exe", temp, 256);
 	nsstring ret(temp);
 	ret.resize(sz);
-	return nsres_manager::path_from_filename(ret);
+	return nsasset_manager::path_from_filename(ret);
 }
 
 void platform_init()

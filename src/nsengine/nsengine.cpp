@@ -516,7 +516,7 @@ uint32 hash_id(const nsstring & str)
 	return crc32(str.c_str(),static_cast<int32>(str.size()),0);
 }
 
-nsresource * get_resource(uint32 res_type, const uivec2 & res_id)
+nsasset * get_resource(uint32 res_type, const uivec2 & res_id)
 {
 	if (res_type == type_to_hash(nsplugin))
 		return nsep.get(res_id.y);

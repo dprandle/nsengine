@@ -6,8 +6,8 @@
 
 class nscomponent;
 class nssystem;
-class nsres_manager;
-class nsresource;
+class nsasset_manager;
+class nsasset;
 struct nsvid_obj;
 
 class nsfactory
@@ -34,27 +34,27 @@ private:
 	factory_t m_fac_type;
 };
 
-class nsres_factory : public nsfactory
+class nsasset_factory : public nsfactory
 {
 	friend class nsengine;
   public:
-	nsres_factory():
+	nsasset_factory():
 		nsfactory(f_resource)
 	{}
-	virtual nsresource * create(nsresource * copy_=nullptr) = 0;
+	virtual nsasset * create(nsasset * copy_=nullptr) = 0;
 };
 
 template<class obj_type>
-class nsres_factory_type : public nsres_factory
+class nsasset_factory_type : public nsasset_factory
 {
   public:
-	nsres_factory_type() :
-		nsres_factory()
+	nsasset_factory_type() :
+		nsasset_factory()
 	{}
 	
-	nsresource* create(nsresource * copy_)
+	nsasset* create(nsasset * copy_)
 	{
-		nsresource * res_ = nullptr;
+		nsasset * res_ = nullptr;
 		if (copy_ == nullptr)
 		{
 			res_ = new obj_type();
@@ -73,7 +73,7 @@ class nsmanager_factory : public nsfactory
 {
 public:
 	nsmanager_factory() : nsfactory(f_res_manager) {}
-	virtual nsres_manager * create() = 0;
+	virtual nsasset_manager * create() = 0;
 };
 
 template<class obj_type>
@@ -83,9 +83,9 @@ public:
 
 	nsmanager_factory_type() :nsmanager_factory() {}
 
-	nsres_manager * create()
+	nsasset_manager * create()
 	{
-		nsres_manager * rm = new obj_type();
+		nsasset_manager * rm = new obj_type();
 		return rm;
 	}
 };

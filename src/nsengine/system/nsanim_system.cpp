@@ -22,7 +22,7 @@ This file contains all of the neccessary definitions for the nsanim_system class
 #include <nsevent_handler.h>
 #include <nsentity_manager.h>
 #include <nsplugin_manager.h>
-#include <nsres_manager.h>
+#include <nsasset_manager.h>
 #include <nsrender_comp.h>
 
 nsanim_system::nsanim_system() :

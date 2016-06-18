@@ -94,10 +94,10 @@ int main()
 
 	
 	// Create material for the button bg
-	nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
-    nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
-    mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
-    mat->set_color_mode(false);
+    nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
+    //nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
+    //mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
+    mat->set_color_mode(true);
 	mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
 	
 	// Create material for the button border
@@ -135,7 +135,7 @@ int main()
     bf.btn = uibtn;
     uibtn->button_states[0].border_size = fvec4(5,5,5,5);
 	uibtn->button_states[0].border_color = fvec4(1,0,0,0.7);
-    uibtn->button_states[0].top_border_radius = fvec4(50,100,50,50);
+    uibtn->button_states[0].top_border_radius = fvec4(50,50,50,50);
 	uibtn->button_states[0].bottom_border_radius = fvec4(50,50,50,50);
     uibtn->button_states[0].mat_color = fvec4(0.7,0,0,0.5);
     uibtn->button_states[0].text_color = fvec4(0.0,1.0,1.0,1.0);
@@ -143,7 +143,7 @@ int main()
 	uibtn->button_states[1].border_color = fvec4(0,1.0,0,1);
     uibtn->button_states[1].top_border_radius = fvec4(50,50,50,50);
 	uibtn->button_states[1].bottom_border_radius = fvec4(50,50,50,50);
-    uibtn->button_states[1].border_size = fvec4(5,5,5,5);
+    uibtn->button_states[1].border_size = fvec4(3,3,5,5);
     uibtn->button_states[1].mat_color = fvec4(0.0,0.7,0,1);
     uibtn->button_states[1].mat_color_mult = fvec4(1.0,1.0,1.0,0.5);
 

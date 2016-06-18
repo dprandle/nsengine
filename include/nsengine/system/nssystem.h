@@ -21,10 +21,7 @@ class nsscene;
 
 class nssystem : public nsevent_handler
 {
-public:
-
-	friend class nssys_factory;
-	
+public:	
 	nssystem(uint32 hashed_type);
 
 	virtual ~nssystem();
