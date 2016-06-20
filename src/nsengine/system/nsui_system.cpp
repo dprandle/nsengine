@@ -116,8 +116,8 @@ void nsui_system::update()
 					ti_text.coord_rect = bs->text_tex_coord_rect;
 					if (uimat != nullptr)
 					{
-						nsmaterial * mmat = get_resource<nsmaterial>(uimat->mat_id);
-						nsmaterial * border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
+						nsmaterial * mmat = get_asset<nsmaterial>(uimat->mat_id);
+						nsmaterial * border_mat = get_asset<nsmaterial>(uimat->border_mat_id);
 
 						uimat->border_size = bs->border_size[index];
 						uimat->top_border_radius = bs->top_border_radius;
@@ -142,10 +142,10 @@ void nsui_system::update()
 					}
 					if (uitxt != nullptr)
 					{
-						nsfont * fnt = get_resource<nsfont>(uitxt->font_id);
+						nsfont * fnt = get_asset<nsfont>(uitxt->font_id);
 						if (fnt != nullptr)
 						{
-							nsmaterial * fnt_mat = get_resource<nsmaterial>(fnt->material_id);
+							nsmaterial * fnt_mat = get_asset<nsmaterial>(fnt->material_id);
 							if (fnt_mat != nullptr)
 							{
 								ti_border.tex_id = fnt_mat->map_tex_id(nsmaterial::diffuse);

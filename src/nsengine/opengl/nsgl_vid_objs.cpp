@@ -498,7 +498,7 @@ void nsgl_particle_comp_obj::update()
 		comp->enable_simulation(comp->looping());
 	}
 
-	nsshader * pshader = get_resource<nsshader>(comp->shader_id());
+	nsshader * pshader = get_asset<nsshader>(comp->shader_id());
 	if (pshader == nullptr)
 	{
 		dprint("nsgl_particle_comp_obj::update No processing shader set in component - skipping");
@@ -513,7 +513,7 @@ void nsgl_particle_comp_obj::update()
 	}
 
 	pshdr->bind();
-	nstexture * texRand = get_resource<nstexture>(comp->rand_tex_id());
+	nstexture * texRand = get_asset<nstexture>(comp->rand_tex_id());
 	if (texRand != nullptr)
 	{
 		nsgl_texture * gltex = texRand->video_obj<nsgl_texture_obj>()->gl_tex;

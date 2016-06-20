@@ -1,0 +1,209 @@
+type:<nsstring>nsshader</nsstring>
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
+#version 440
+
+layout (location = 0) in vec4 position;
+layout (location = 1) in vec4 velocity;
+layout (location = 2) in vec4 scaleAndAngle;
+layout (location = 3) in vec4 age;
+layout (location = 4) in vec4 trans1;
+layout (location = 5) in vec4 trans2;
+layout (location = 6) in vec4 trans3;
+layout (location = 7) in vec4 trans4;
+
+out vec4 worldPos;
+out vec4 scaleAndAngleOut;
+out float ageV;
+
+mat4 transform;
+
+void main()
+{
+	transform[0] = vec4(trans1.x, trans2.x, trans3.x, trans4.x);
+	transform[1] = vec4(trans1.y, trans2.y, trans3.y, trans4.y);
+	transform[2] = vec4(trans1.z, trans2.z, trans3.z, trans4.z);
+	transform[3] = vec4(trans1.w, trans2.w, trans3.w, trans4.w);
+
+	worldPos = transform * vec4(position.xyz, 1.0);
+	scaleAndAngleOut = scaleAndAngle;
+	ageV = age.x;
+} 
+
+</nsstring>
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>#version 440
+
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+in vec4 worldPos[];
+in vec4 scaleAndAngleOut[];
+in float ageV[];
+
+out vec2 texCoord;
+out float alphaOut;
+
+uniform mat4 projCamMat;
+uniform vec3 camUp;
+uniform vec3 rightVec;
+uniform vec3 camTarget;
+uniform vec3 worldUp;
+
+struct quat
+{
+	float x;
+	float y;
+	float z;
+	float w;
+};
+
+vec3 GetRightVecFromQuat(quat q);
+vec3 GetTargetVecFromQuat(quat q);
+vec3 GetUpVecFromQuat(quat q);
+quat MultiplyQuats(quat left, quat right);
+quat NormalizeQuat(quat q);
+quat RotateQuat(quat q, vec3 axis, float pAngle);
+quat GetQuatFromAxisAngle(vec3 axis, float pAngle);
+mat4 GetRotationMatrixFromQuat(quat q);
+
+vec3 GetRightVecFromQuat(quat q)
+{
+	return vec3(1.0 - 2.0*q.y*q.y - 2.0*q.z*q.z, 2.0*q.x*q.y - 2.0*q.w*q.z, 2.0*q.x*q.z + 2.0*q.w*q.y);
+}
+
+vec3 GetTargetVecFromQuat(quat q)
+{
+	return vec3(2.0*q.x*q.z - 2.0*q.w*q.y, 2.0*q.y*q.z + 2.0*q.w*q.x, 1.0 - 2.0*q.x*q.x - 2.0*q.y*q.y);
+}
+
+vec3 GetUpVecFromQuat(quat q)
+{
+	return vec3(2.0*q.x*q.y + 2.0*q.w*q.z, 1.0 - 2.0*q.x*q.x - 2.0*q.z*q.z, 2.0*q.y*q.z - 2.0*q.w*q.x);
+}
+
+quat MultiplyQuats(quat left, quat right)
+{
+	quat ret;
+	ret.x = left.w*right.x + left.x*right.w + left.y*right.z - left.z*right.y;
+	ret.y = left.w*right.y - left.x*right.z + left.y*right.w + left.z*right.x;
+	ret.z = left.w*right.z + left.x*right.y - left.y*right.x + left.z*right.w;
+	ret.w = left.w*right.w - left.x*right.x - left.y*right.y - left.z*right.z;
+	return ret;
+}
+
+quat NormalizeQuat(quat q)
+{
+	float magnitude = sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+	q.x /= magnitude;
+	q.y /= magnitude;
+	q.z /= magnitude;
+	q.w /= magnitude;
+	return q;
+}
+
+quat RotateQuat(quat q, vec3 axis, float pAngle)
+{
+	quat local = GetQuatFromAxisAngle(axis, pAngle);
+	quat ret = MultiplyQuats(q,local);
+	return ret;
+}
+
+quat GetQuatFromAxisAngle(vec3 axis, float pAngle)
+{
+	quat ret;
+	normalize(axis);
+	float halfAngle = pAngle / 2.0f;
+	float sAng = sin(radians(halfAngle));
+	ret.x = axis.x * sAng;
+	ret.y = axis.y * sAng;
+	ret.z = axis.z * sAng;
+	ret.w = cos(radians(halfAngle));
+	return ret;
+}
+
+mat4 GetRotationMatrixFromQuat(quat q)
+{
+	mat4 retMat;
+	retMat = mat4( 
+				vec4(GetRightVecFromQuat(q), 0.0),
+				vec4(GetUpVecFromQuat(q), 0.0),
+				vec4(GetTargetVecFromQuat(q), 0.0),
+				vec4(0.0,0.0,0.0,1.0) 
+				);
+	return retMat;
+}
+
+
+void main()
+{
+	float cosAng = cos(radians(scaleAndAngleOut[0].z));
+	float sinAng = sin(radians(scaleAndAngleOut[0].z));
+	alphaOut = scaleAndAngleOut[0].w;
+
+	vec3 pos = worldPos[0].xyz;
+	vec2 scale = scaleAndAngleOut[0].xy;
+
+	vec3 rVec = cosAng*rightVec + sinAng*camUp;
+	rVec = normalize(rVec);
+	vec3 uVec = cross(rVec,camTarget);
+	uVec = normalize(uVec);
+
+	pos -= (scale.y * 0.5) * uVec; // bottom of rect
+	pos -= (scale.x * 0.5) * rVec; // bottom left.. first vertex
+	gl_Position = projCamMat * vec4(pos, 1.0);
+	texCoord = vec2(0.0,0.0);
+	EmitVertex();
+
+	pos += (scale.y) * uVec;
+	gl_Position = projCamMat  * vec4(pos, 1.0);
+	texCoord = vec2(0.0,1.0);
+	EmitVertex();
+
+	pos -= (scale.y) * uVec;
+	pos += (scale.x) * rVec;
+	gl_Position = projCamMat * vec4(pos, 1.0);
+	texCoord = vec2(1.0,0.0);
+	EmitVertex();
+
+	pos += (scale.y) * uVec;
+	gl_Position = projCamMat * vec4(pos, 1.0);
+	texCoord = vec2(1.0,1.0);
+	EmitVertex();
+
+	EndPrimitive();
+}
+
+</nsstring>
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>
+#version 440
+
+in vec2 texCoord;
+in float alphaOut;
+
+uniform sampler2D diffuseMap;
+uniform bool colorMode;
+uniform vec4 fragColOut;
+uniform bool hasDiffuseMap = false;
+uniform float lifetimeSecs;
+uniform uint blendMode;
+
+layout (location = 0) out vec4 colorOut;
+
+void main()
+{
+	vec4 difCol = fragColOut;
+	if (!colorMode && hasDiffuseMap)
+		difCol = texture(diffuseMap, texCoord);
+
+	if (blendMode == 0)
+		difCol.a *= alphaOut;
+	else
+		difCol *= alphaOut;
+
+	colorOut = difCol;
+}
+
+</nsstring>

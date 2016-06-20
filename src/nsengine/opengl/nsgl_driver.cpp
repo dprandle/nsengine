@@ -60,14 +60,16 @@ bool render_shaders::error() const
 	return (
 		deflt->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		deflt_wireframe->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
-		deflt_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		dir_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		point_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		spot_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		light_stencil->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+		deflt_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		frag_sort->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+#endif
 		deflt_particle->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		sel_shader->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none);
 }
@@ -77,18 +79,21 @@ bool render_shaders::valid() const
 	return (
 		deflt != nullptr &&
 		deflt_wireframe != nullptr &&
-		deflt_translucent != nullptr &&
 		dir_light != nullptr &&
 		point_light != nullptr &&
 		spot_light != nullptr &&
 		light_stencil != nullptr &&
 		shadow_cube != nullptr &&
 		shadow_2d != nullptr &&
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+		deflt_translucent != nullptr &&
 		frag_sort != nullptr &&
+#endif
 		deflt_particle != nullptr &&
 		sel_shader != nullptr);
 }
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 translucent_buffers::translucent_buffers():
 	atomic_counter(new nsgl_buffer()),
 	header(new nsgl_buffer()),
@@ -145,6 +150,7 @@ void translucent_buffers::reset_atomic_counter()
 	atomic_counter->unmap();
 	atomic_counter->unbind();
 }
+#endif
 
 GLEWContext * glewGetContext()
 {
@@ -155,7 +161,9 @@ GLEWContext * glewGetContext()
 gl_ctxt::gl_ctxt(uint32 id) :
 	vid_ctxt(id),
 	glew_context(new GLEWContext()),
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	m_tbuffers(new translucent_buffers()),
+#endif
 	m_default_target(new nsgl_framebuffer()),
 	m_single_point(new nsgl_buffer())
 {}
@@ -174,7 +182,6 @@ void gl_ctxt::init()
 	}
 	initialized = true;
 
-	m_tbuffers->init();
 
 	// GL default setup
 	glFrontFace(GL_CW);
@@ -194,7 +201,8 @@ void gl_ctxt::init()
 	m_single_point->target = nsgl_buffer::array;
 	m_single_point->init();
 
-	
+	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+	m_tbuffers->init();
 	uint32 data_ = 0;
 	uint32 sz = DEFAULT_ACCUM_BUFFER_RES_X*DEFAULT_ACCUM_BUFFER_RES_Y;
 	i_vector header_data(sz, -1);
@@ -208,7 +216,8 @@ void gl_ctxt::init()
 	m_tbuffers->fragments->allocate(
 		sz*2, sizeof(packed_fragment_data), nullptr, nsgl_buffer::mutable_dynamic_draw);
 	m_tbuffers->fragments->unbind();
-
+	#endif
+	
 	fvec3 point;
 	m_single_point->bind();
 	m_single_point->allocate(1, &point, nsgl_buffer::mutable_dynamic_draw);
@@ -229,7 +238,9 @@ void gl_ctxt::release()
 	}
 	m_single_point->release();
 	m_default_target->release();
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	m_tbuffers->release();
+#endif
 }
 
 gl_ctxt::~gl_ctxt()
@@ -241,7 +252,9 @@ gl_ctxt::~gl_ctxt()
 	}
 	delete m_single_point;	
 	delete m_default_target;
+	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	delete m_tbuffers;
+	#endif
 	delete glew_context;
 }
 
@@ -278,26 +291,29 @@ void nsgl_driver::init()
     m_default_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
     m_default_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
 
+
 	// Rendering shaders
-    nsstring shext = nsstring(DEFAULT_SHADER_EXTENSION);
-    rshaders.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
-	rshaders.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
-	rshaders.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
-	rshaders.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
-	rshaders.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
-	rshaders.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
-	rshaders.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
-	rshaders.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
-	rshaders.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
-	rshaders.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
-	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
+    nsstring shext(DEFAULT_SHADER_EXTENSION), dir(SHADER_DIR);
+    rshaders.deflt = cplg->load<nsshader>(dir + nsstring(GBUFFER_SHADER) + shext, true);
+	rshaders.deflt_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_WF_SHADER) + shext, true);
+	rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	rshaders.light_stencil = cplg->load<nsshader>(dir + nsstring(LIGHTSTENCIL_SHADER) + shext, true);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+	rshaders.frag_sort = cplg->load<nsshader>(dir + nsstring(FRAGMENT_SORT_SHADER) + shext, true);
+#endif
+	rshaders.dir_light = cplg->load<nsshader>(dir + nsstring(DIR_LIGHT_SHADER) + shext, true);
+	rshaders.point_light = cplg->load<nsshader>(dir + nsstring(POINT_LIGHT_SHADER) + shext, true);
+	rshaders.spot_light = cplg->load<nsshader>(dir + nsstring(SPOT_LIGHT_SHADER) + shext, true);
+	rshaders.shadow_cube = cplg->load<nsshader>(dir + nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.shadow_2d = cplg->load<nsshader>(dir + nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.sel_shader = cplg->load<nsshader>(dir + nsstring(SELECTION_SHADER) + shext, true);
+	rshaders.deflt_particle = cplg->load<nsshader>(dir + nsstring(RENDER_PARTICLE_SHADER) + shext, true);
+	cplg->load<nsshader>(dir + nsstring(SKYBOX_SHADER) + shext, true);
+	cplg->load<nsshader>(dir + nsstring(UI_SHADER) + shext, true);
+	cplg->load<nsshader>(dir + nsstring(UI_TEXT_SHADER) + shext, true);
 
 	// particle transform feedback shader
-	nsgl_shader * ps = cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true)->video_obj<nsgl_shader_obj>()->gl_shdr;
+	nsgl_shader * ps = cplg->load<nsshader>(dir + nsstring(PARTICLE_PROCESS_SHADER) + shext, true)->video_obj<nsgl_shader_obj>()->gl_shdr;
 	std::vector<nsstring> outLocs2;
 	outLocs2.push_back("gPosOut");
 	outLocs2.push_back("gVelOut");
@@ -487,6 +503,7 @@ void nsgl_driver::create_default_render_passes()
 	gbuf_pass->driver = this;
 	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	oit_render_pass * oit_pass = new oit_render_pass;
 	oit_pass->tbuffers = current_context()->m_tbuffers;
 	oit_pass->rq = queue(SCENE_TRANSLUCENT_QUEUE);
@@ -498,6 +515,17 @@ void nsgl_driver::create_default_render_passes()
 	oit_pass->gl_state.blending = false;
 	oit_pass->gl_state.stencil_test = false;
 	oit_pass->driver = this;
+#else
+	sorted_translucency_render_pass * st_pass = new sorted_translucency_render_pass;
+	st_pass->rq = queue(SCENE_TRANSLUCENT_QUEUE);
+	st_pass->ren_target = render_target(ACCUM_TARGET);
+	st_pass->gl_state.depth_test = true;
+	st_pass->gl_state.depth_write = false;
+	st_pass->gl_state.culling = false;
+	st_pass->gl_state.blending = true;
+	st_pass->gl_state.stencil_test = false;
+	st_pass->driver = this;	
+#endif
 
 	// setup dir light shadow stage
 	light_shadow_pass * dir_shadow_pass = new light_shadow_pass;
@@ -523,7 +551,9 @@ void nsgl_driver::create_default_render_passes()
 	dir_pass->gl_state.cull_face = GL_BACK;
 	dir_pass->gl_state.blending = false;
 	dir_pass->gl_state.stencil_test = false;
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	dir_pass->tbuffers = current_context()->m_tbuffers;
+#endif
 	dir_pass->rpass = dir_shadow_pass;
 	dir_pass->driver = this;
     dir_pass->use_vp_size = true;
@@ -544,7 +574,9 @@ void nsgl_driver::create_default_render_passes()
 	culled_light_pass * spot_pass = new culled_light_pass;
 	spot_pass->rq = queue(SPOT_LIGHT_QUEUE);
 	spot_pass->ren_target = render_target(ACCUM_TARGET);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	spot_pass->tbuffers = current_context()->m_tbuffers;
+#endif
 	spot_pass->rpass = spot_shadow_pass;
 	spot_pass->gl_state.depth_test = true;
 	spot_pass->gl_state.depth_write = false;
@@ -575,7 +607,9 @@ void nsgl_driver::create_default_render_passes()
 	culled_light_pass * point_pass = new culled_light_pass;
 	point_pass->rq = queue(POINT_LIGHT_QUEUE);
 	point_pass->ren_target = render_target(ACCUM_TARGET);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	point_pass->tbuffers = current_context()->m_tbuffers;
+#endif
 	point_pass->rpass = point_shadow_pass;
 	point_pass->gl_state.depth_test = true;
 	point_pass->gl_state.depth_write = false;
@@ -634,13 +668,18 @@ void nsgl_driver::create_default_render_passes()
 	final_pass->driver = this;
 
 	current_context()->render_passes.push_back(gbuf_pass);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
     current_context()->render_passes.push_back(oit_pass);
+#endif
     current_context()->render_passes.push_back(dir_shadow_pass);
     current_context()->render_passes.push_back(dir_pass);
     current_context()->render_passes.push_back(spot_shadow_pass);
     current_context()->render_passes.push_back(spot_pass);
     current_context()->render_passes.push_back(point_shadow_pass);
     current_context()->render_passes.push_back(point_pass);
+#ifndef ORDER_INDEPENDENT_TRANSLUCENCY
+    current_context()->render_passes.push_back(st_pass);
+#endif
     current_context()->render_passes.push_back(sel_pass_opaque);
     current_context()->render_passes.push_back(ui_pass);
 	current_context()->render_passes.push_back(final_pass);
@@ -688,25 +727,25 @@ void nsgl_driver::push_viewport_ui(viewport * vp)
 
 			if (uimat != nullptr)
 			{
-				uidc->mat = get_resource<nsmaterial>(uimat->mat_id);
+				uidc->mat = get_asset<nsmaterial>(uimat->mat_id);
 				if (uidc->mat == nullptr)
 					uidc->mat = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
-				uidc->shdr = get_resource<nsshader>(uimat->mat_shader_id);
+				uidc->shdr = get_asset<nsshader>(uimat->mat_shader_id);
 				if (uidc->shdr == nullptr)
 					uidc->shdr = nse.core()->get<nsshader>(UI_SHADER);
 				uidc->top_border_radius = uimat->top_border_radius;
 				uidc->bottom_border_radius = uimat->bottom_border_radius;
 				uidc->border_pix = uimat->border_size;
-				uidc->border_mat = get_resource<nsmaterial>(uimat->border_mat_id);
+				uidc->border_mat = get_asset<nsmaterial>(uimat->border_mat_id);
 			}
 			
 			// If there is a ui text component copy that stuff over
 			if (uitxt != nullptr)
 			{
-				uidc->text_shader = get_resource<nsshader>(uitxt->text_shader_id);
+				uidc->text_shader = get_asset<nsshader>(uitxt->text_shader_id);
 				uidc->text = uitxt->text;
-				uidc->fnt = get_resource<nsfont>(uitxt->font_id);
-				uidc->fnt_material = get_resource<nsmaterial>(uidc->fnt->material_id);
+				uidc->fnt = get_asset<nsfont>(uitxt->font_id);
+				uidc->fnt_material = get_asset<nsmaterial>(uidc->fnt->material_id);
 				if (uidc->fnt_material == nullptr)
 					uidc->fnt_material = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
 				uidc->text_line_sizes = uitxt->text_line_sizes;
@@ -774,7 +813,9 @@ void nsgl_driver::render_to_viewport(viewport * vp)
 			rp->finish();
 		}
 	}
-	current_context()->m_tbuffers->reset_atomic_counter();	
+	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+	current_context()->m_tbuffers->reset_atomic_counter();
+	#endif
 }
 
 void nsgl_driver::render_to_all_viewports()
@@ -1050,7 +1091,7 @@ void nsgl_driver::bind_textures(nsmaterial * material)
 	nsmaterial::texmap_map_const_iter cIter = material->begin();
 	while (cIter != material->end())
 	{
-		nstexture * t = get_resource<nstexture>(cIter->second.tex_id);
+		nstexture * t = get_asset<nstexture>(cIter->second.tex_id);
 		if (t != nullptr)
 		{
 			set_active_texture_unit(cIter->first);
@@ -1183,7 +1224,7 @@ void nsgl_driver::_add_lights_from_scene(nsscene * scene)
 	{
 		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
 		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
-		nsmesh * boundingMesh = get_resource<nsmesh>(lcomp->mesh_id());
+		nsmesh * boundingMesh = get_asset<nsmesh>(lcomp->mesh_id());
 		
 		current_context()->all_light_draw_calls.resize(current_context()->all_light_draw_calls.size()+1);
 
@@ -1294,7 +1335,7 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 		sc = (*iter)->get<nssel_comp>();
 		animComp = (*iter)->get<nsanim_comp>();
 		terComp = (*iter)->get<nsterrain_comp>();
-		currentMesh = get_resource<nsmesh>(rComp->mesh_id());
+		currentMesh = get_asset<nsmesh>(rComp->mesh_id());
 		
 		if (lc != nullptr)
 		{
@@ -1323,12 +1364,12 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 		for (uint32 i = 0; i < currentMesh->count(); ++i)
 		{
 			mSMesh = currentMesh->sub(i);
-			mat = get_resource<nsmaterial>(rComp->material_id(i));
+			mat = get_asset<nsmaterial>(rComp->material_id(i));
 
 			if (mat == nullptr)
 				mat = m_default_mat;
 
-			shader = get_resource<nsshader>(mat->shader_id());
+			shader = get_asset<nsshader>(mat->shader_id());
 			fTForms = nullptr;
 
 			if (shader == nullptr)

@@ -1,7 +1,8 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>
-#version 440
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
+#version 410
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 tex;
@@ -27,11 +28,11 @@ uniform vec2 hminmax;
 mat4 transform;
 vec4 localPos;
 
-out vec2 texCoords;
-out vec3 normal;
-out vec3 tangent;
-out vec4 worldPos;
-flat out uint refID;
+out vec2 tex_coords;
+out vec3 normal_v;
+out vec3 tangent_v;
+out vec4 worldPos_v;
+flat out uint refID_v;
 
 void main()
 {
@@ -47,44 +48,117 @@ void main()
 		boneTrans += boneTransforms[boneIDs.z] * boneWeights.z;
 		boneTrans += boneTransforms[boneIDs.w] * boneWeights.w;
 		localPos = boneTrans * vec4(position, 1.0);
-		normal = (transform * boneTrans * vec4(norm, 0.0)).xyz;
-		tangent = (transform * boneTrans * vec4(tang, 0.0)).xyz;
+		normal_v = (transform * boneTrans * vec4(norm, 0.0)).xyz;
+		tangent_v = (transform * boneTrans * vec4(tang, 0.0)).xyz;
 	}
 	else
 	{
 		localPos = nodeTransform * vec4(position, 1.0);
-		normal = (transform  * nodeTransform * vec4(norm, 0.0)).xyz;
-		tangent = (transform  * nodeTransform * vec4(tang, 0.0)).xyz;
+		normal_v = (transform  * nodeTransform * vec4(norm, 0.0)).xyz;
+		tangent_v = (transform  * nodeTransform * vec4(tang, 0.0)).xyz;
 	}
-	
-	worldPos = transform * localPos;
+
+	worldPos_v = transform * localPos;
 
 	if (hasHeightMap)
 	{
 		float heightMult = textureLod(heightMap, tex, 0.0).r; // store height info in red channel
-		worldPos.z += heightMult*(hminmax.y - hminmax.x) + hminmax.x;
+		worldPos_v.z += heightMult*(hminmax.y - hminmax.x) + hminmax.x;
 	}
-	texCoords = tex;
-	refID = referenceID;
-    gl_Position = projCamMat * worldPos;
-}
+	tex_coords = tex;
+	refID_v = referenceID;
+    gl_Position = projCamMat * worldPos_v;
+} 
+
+
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring></nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>
-#version 440
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>
+#version 410
+
+layout (triangles) in;
+layout (line_strip, max_vertices = 6) out;
+
+in vec2 tex_coords[3];
+in vec3 normal_v[3];
+in vec3 tangent_v[3];
+in vec4 worldPos_v[3];
+flat in uint refID_v[3];
+
+out vec2 texCoords;
+out vec3 normal;
+out vec3 tangent;
+out vec4 worldPos;
+flat out uint refID;
+
+void main()
+{
+	refID = refID_v[0];
+	
+	gl_Position = gl_in[0].gl_Position;
+	texCoords = tex_coords[0];
+	normal = normal_v[0];
+	tangent = tangent_v[0];
+	worldPos = worldPos_v[0];
+	EmitVertex();
+	
+	gl_Position = gl_in[1].gl_Position;
+	texCoords = tex_coords[1];
+	normal = normal_v[1];
+	tangent = tangent_v[1];
+	worldPos = worldPos_v[1];
+	EmitVertex();
+	EndPrimitive();
+
+	gl_Position = gl_in[1].gl_Position;
+	texCoords = tex_coords[1];
+	normal = normal_v[1];
+	tangent = tangent_v[1];
+	worldPos = worldPos_v[1];
+	EmitVertex();
+	
+	gl_Position = gl_in[2].gl_Position;
+	texCoords = tex_coords[2];
+	normal = normal_v[2];
+	tangent = tangent_v[2];
+	worldPos = worldPos_v[2];	
+	EmitVertex();
+	EndPrimitive();
+
+	gl_Position = gl_in[2].gl_Position;
+	texCoords = tex_coords[2];
+	normal = normal_v[2];
+	tangent = tangent_v[2];
+	worldPos = worldPos_v[2];   
+	EmitVertex();
+	
+	gl_Position = gl_in[0].gl_Position;
+	texCoords = tex_coords[0];
+	normal = normal_v[0];
+	tangent = tangent_v[0];
+	worldPos = worldPos_v[0];	
+	EmitVertex();
+	EndPrimitive();
+}
+
+
+
+</nsstring>
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>
+#version 410
 
 in vec2 texCoords;
 in vec3 normal;
 in vec3 tangent;
 in vec4 worldPos;
-
 flat in uint refID;
 
 uniform sampler2D diffuseMap;
 uniform sampler2D opacityMap;
 uniform sampler2D normalMap;
+
 uniform uint material_id;
 uniform uint entityID;
 uniform uint pluginID;
@@ -131,15 +205,14 @@ void main()
 			difCol = texture(diffuseMap, texCoords);
 	}
 
-	float alpha = difCol.a;
 	if (hasOpacityMap)
-		alpha = texture(opacityMap, texCoords).a;
-	if (alpha < 0.1)
-		discard;
+		difCol.a = texture(opacityMap, texCoords).a;
 
 	colorOut = difCol.rgb;
-	pickingOut = uvec4(pluginID, entityID, refID, material_id);
 	worldPosOut = vec4(worldPos.xyz, gl_FragCoord.z);
+	pickingOut = uvec4(pluginID, entityID, refID, material_id);
 	normalOut = calculateNormalMap();
 }
+
+
 </nsstring>

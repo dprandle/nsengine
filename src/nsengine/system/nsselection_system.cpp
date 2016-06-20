@@ -908,7 +908,7 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 	if (selection_contains(m_focus_ent))
 		return;
 
-	nsentity * ent = get_resource<nsentity>(pickid.xy());
+	nsentity * ent = get_asset<nsentity>(pickid.xy());
 	nssel_comp * sc;
 	if (ent == nullptr || (sc = ent->get<nssel_comp>()) == nullptr || m_active_scene == nullptr)
 		return;
@@ -1312,7 +1312,7 @@ void nsselection_system::prepare_selection_for_rendering()
 bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 {		
 	uivec3 pickid = pick(evnt->norm_mpos);
-	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+	nsentity * selectedEnt = get_asset<nsentity>(pickid.xy());
 	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
 		return true;
 	if (!selection_contains(pickid))
@@ -1325,7 +1325,7 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 bool nsselection_system::_handle_multi_select(nsaction_event * evnt)
 {		
 	uivec3 pickid = pick(evnt->norm_mpos);
-	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+	nsentity * selectedEnt = get_asset<nsentity>(pickid.xy());
 
 	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
 		return true;
@@ -1341,7 +1341,7 @@ bool nsselection_system::_handle_multi_select(nsaction_event * evnt)
 bool nsselection_system::_handle_shift_select(nsaction_event * evnt)
 {
 	uivec3 pickid = pick(evnt->norm_mpos);
-	nsentity * selectedEnt = get_resource<nsentity>(pickid.xy());
+	nsentity * selectedEnt = get_asset<nsentity>(pickid.xy());
 
 	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
 		return true;
@@ -1359,7 +1359,7 @@ bool nsselection_system::_handle_move_select(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y | axis_z, vp->normalized_bounds);
 	return true;
 }
@@ -1371,7 +1371,7 @@ bool nsselection_system::_handle_move_selection_xy(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
         return true;
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
 	return true;
 }
@@ -1383,7 +1383,7 @@ bool nsselection_system::_handle_move_selection_zy(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_y | axis_z, vp->normalized_bounds);
 	return true;
 }
@@ -1395,7 +1395,7 @@ bool nsselection_system::_handle_move_selection_zx(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_z, vp->normalized_bounds);
 	return true;
 }
@@ -1407,7 +1407,7 @@ bool nsselection_system::_handle_move_selection_x(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_x, vp->normalized_bounds);
 	return true;
 }
@@ -1419,7 +1419,7 @@ bool nsselection_system::_handle_move_selection_y(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_y, vp->normalized_bounds);
 	return true;
 }
@@ -1431,7 +1431,7 @@ bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->front_viewport(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_resource<nsentity>(m_focus_ent.xy());
+	nsentity * ent = get_asset<nsentity>(m_focus_ent.xy());
 	_on_draw_object(ent, evnt->norm_delta, axis_z,vp->normalized_bounds);
 	return true;
 }

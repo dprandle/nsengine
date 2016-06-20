@@ -257,7 +257,7 @@ uivec3_vector nsmaterial::resources()
 	auto iter = m_tex_maps.begin();
 	while (iter != m_tex_maps.end())
 	{
-		nstexture * _tex_ = get_resource<nstexture>(iter->second.tex_id);
+		nstexture * _tex_ = get_asset<nstexture>(iter->second.tex_id);
 		if (_tex_ != NULL)
 		{
 			uivec3_vector tmp = _tex_->resources();
@@ -267,7 +267,7 @@ uivec3_vector nsmaterial::resources()
 		++iter;
 	}
 
-	nsshader * _shdr_ = get_resource<nsshader>(m_shader_id);
+	nsshader * _shdr_ = get_asset<nsshader>(m_shader_id);
 	if (_shdr_ != NULL)
 	{
 		uivec3_vector tmp = _shdr_->resources();

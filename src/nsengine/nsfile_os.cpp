@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <Windows.h>
 #else
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -31,7 +32,7 @@
 #include <iterator>
 #include <stdio.h>
 
-namespace nsfile_os
+namespace platform
 {
 
 #ifdef WIN32
@@ -113,6 +114,102 @@ nsstring cwd()
     nsstring::size_type pos = str.find_last_of( "\\/" );
     str = str.substr(0, pos) + "/";
     return str;
+}
+
+#elif __APPLE__
+
+bool file_exists(const nsstring & filename)
+{
+	struct stat buffer;   
+	return (stat(filename.c_str(), &buffer) == 0);
+}
+
+bool path_exists(nsstring filename)
+{
+	struct stat buffer;   
+	return (stat(filename.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode));
+}
+
+bool create_dir(const nsstring & path)
+{
+	char tmp[256];
+	char *p = NULL;
+	size_t len;
+	nsstring stripped_path = nsasset_manager::path_from_filename(path);
+
+	snprintf(tmp, sizeof(tmp),"%s",stripped_path.c_str());
+	len = strlen(tmp);
+	if(tmp[len - 1] == '/')
+		tmp[len - 1] = 0;
+	for(p = tmp + 1; *p; p++)
+		if(*p == '/') {
+			*p = 0;
+			mkdir(tmp, S_IRWXU);
+			*p = '/';
+		}
+	return (mkdir(tmp, S_IRWXU) == 0);
+}
+
+double system_time()
+{
+	timeval ts;
+	gettimeofday(&ts, nullptr);
+	return (double)ts.tv_sec + (double)ts.tv_usec / 1000000.0;
+}
+
+uint32 remove_dir(const nsstring & dirpath)
+{
+    DIR *dir;
+    struct dirent *entry;
+    char path[PATH_MAX];
+
+    if (path == NULL)
+        return 0;
+	
+    dir = opendir(dirpath.c_str());
+	
+    if (dir == NULL)
+        return 0;
+
+    while ((entry = readdir(dir)) != NULL)
+	{
+        if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+		{
+            snprintf(path, (size_t) PATH_MAX, "%s/%s", dirpath.c_str(), entry->d_name);
+
+            if (entry->d_type == DT_DIR)
+                remove_dir(path);
+			remove(path);
+        }
+
+    }
+    closedir(dir);
+	rmdir(dirpath.c_str());
+    return 1;
+}
+
+bool remove(const nsstring & filename)
+{
+	return (::remove(filename.c_str()) == 0);
+}
+
+bool rename(const nsstring & oldname, const nsstring & newname)
+{
+	return (::rename(oldname.c_str(), newname.c_str()) == 0);
+}
+
+nsstring cwd()
+{
+	char temp[256];
+	uint32 sz = readlink("/proc/self/exe", temp, 256);
+	nsstring ret(temp);
+	ret.resize(sz);
+	return nsasset_manager::path_from_filename(ret);
+}
+
+void platform_init()
+{
+	
 }
 
 #else

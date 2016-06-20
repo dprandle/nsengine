@@ -1,0 +1,103 @@
+type:<nsstring>nsshader</nsstring>
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
+#version 440
+
+layout (location = 0) in vec3 position;
+
+void main()
+{
+	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
+}
+
+
+</nsstring>
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>
+#version 440
+
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+struct vert_info
+{
+	vec2 pos;
+	vec2 tex_coord;
+};
+
+uniform mat3 content_tform;
+uniform vec2 pixel_wh;
+uniform vec2 offset_xy;
+uniform vec4 tex_coord_rect;
+uniform vec4 viewport;
+
+out vec2 tex_coord;
+out vec2 pos;
+
+vert_info verts[4];
+
+void main()
+{
+	verts[0].pos = offset_xy;
+	verts[1].pos = vec2(offset_xy.x, offset_xy.y + pixel_wh.y);
+	verts[2].pos = vec2(offset_xy.x + pixel_wh.x, offset_xy.y);
+	verts[3].pos = offset_xy + pixel_wh;
+	verts[0].tex_coord = tex_coord_rect.xy;
+	verts[1].tex_coord = tex_coord_rect.xw;
+	verts[2].tex_coord = tex_coord_rect.zy;
+	verts[3].tex_coord = tex_coord_rect.zw;
+
+	
+	for (uint i = 0; i < 4; ++i)
+	{
+		pos = verts[i].pos;
+		verts[i].pos = (content_tform * vec3(verts[i].pos, 1.0)).xy;
+		verts[i].pos = verts[i].pos/viewport.zw * 2.0 - vec2(1.0);
+		gl_Position = vec4(verts[i].pos, 1.0, 1.0);
+		tex_coord = verts[i].tex_coord;
+		EmitVertex();
+	}	
+    EndPrimitive();
+}
+
+
+</nsstring>
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>
+#version 440
+
+layout (location = 0) out vec4 final_frag_color;
+layout (location = 1) out uvec3 final_picking;
+
+in vec2 tex_coord;
+in vec2 pos;
+float alpha;
+uniform sampler2D uitexture;
+uniform vec2 rect_bounds;
+uniform uvec4 margins; 
+uniform vec4 frag_color_out;
+uniform uvec3 entity_id;
+uniform vec4 color_mult;
+uniform vec4 color_add;
+uniform bool drawing_cursor;
+
+void main()
+{
+	if (pos.x < margins.x || pos.x > rect_bounds.x - margins.z || pos.y < margins.y || pos.y > rect_bounds.y - margins.w)
+		discard;
+	
+	if (!drawing_cursor)
+	{
+		alpha = texture(uitexture, tex_coord).a;
+		final_frag_color = frag_color_out;
+		final_frag_color.a *= alpha;
+	}
+	else
+	{
+		final_frag_color = frag_color_out;
+	}
+	final_picking = entity_id;
+}
+
+</nsstring>

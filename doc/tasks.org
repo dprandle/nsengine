@@ -1,97 +1,29 @@
-* DONE Rename Everything [100%]
-** DONE Managers [100%]
-*** DONE NSResManager
-*** DONE NSMatManager
-*** DONE NSTexManager
-*** DONE NSEntityManager
-*** DONE NSPluginManager
-*** DONE NSSceneManager
-*** DONE NSAnimManager
-*** DONE NSInputMapManager
-*** DONE NSMeshManager
-*** DONE NSShaderManager
-** DONE Resource [100%]
-*** DONE NSResource
-*** DONE NSAnimSet
-*** DONE NSMesh
-*** DONE NSShader (and all subclasses)
-*** DONE NSTexture (and all subclasses)
-*** DONE NSMaterial
-*** DONE NSScene
-*** DONE NSPlugin
-*** DONE NSInputMap
-*** DONE NSEntity
-** DONE Systems [100%]
-*** DONE NSSystem
-*** DONE NSRenderSystem
-*** DONE NSInputSystem
-*** DONE NSSelectionSystem
-*** DONE NSMovementSystem
-*** DONE NSCameraSystem
-*** DONE NSAnimationSystem
-*** DONE NSParticleSystem
-*** DONE NSBuildSystem
-** DONE Components [100%]
-*** DONE NSComponent
-*** DONE NSCamComp
-*** DONE NSInputComp
-*** DONE NSSelComp
-*** DONE NSTFormComp
-*** DONE NSRenderComp
-*** DONE NSTileComp
-*** DONE NSTileBrushComp
-*** DONE NSAnimComp
-*** DONE NSTerrainComp
-*** DONE NSLightComp
-*** DONE NSOccupyComp
-*** DONE NSParticleComp
-** DONE Math [100%]
-*** DONE NSQuat
-*** DONE NSVec2
-*** DONE NSVec3
-*** DONE NSVec4
-*** DONE NSMat2
-*** DONE NSMat3
-*** DONE NSMat4
-*** DONE Math functions
-** DONE Other OpenGL Classes [100%]
-*** DONE NSBufferObject
-*** DONE NSGLObject
-*** DONE NSTransformFeedbackObject
-*** DONE NSVertexArrayObject
-*** DONE NSFramebuffer
-** DONE Events [100%]
-*** DONE NSEvent
-*** DONE NSEventDispatcher
-*** DONE NSEventHandler
-** DONE Other [100%]
-*** DONE NSCallback
-*** DONE NSDebug
-*** DONE NSEngine
-*** DONE NSFactory
-*** DONE NSFileos functions
-*** DONE NSLogFile
-*** DONE NSPupper
-*** DONE NSTileGrid
-*** DONE NSTimer
-* DONE Redistribute "nsglobal"
-* DONE Get build system working [100%]
-** DONE Get tile brushes working again
-** DONE Get object brushes working again
-** DONE Rework build system events
-* TODO Testing [33%]
-** DONE Test Animation System again
-** DONE Test lighting parameters stuff
+* TODO Create audio system
+
+* TODO Create thread mechanism full multiplatform
+
+* TODO Create memory management system
+
+* TODO Testing [0%]
+
 ** TODO Test particle system make sure works
-** TODO Test loading and saving of each resource type
-*** TODO Scene
-*** TODO Mesh
-*** TODO Material
-*** TODO Animation
-*** TODO Plugin
-*** DONE Texture
-*** TODO Shader
-*** TODO Entity
+
+
+** TODO Test loading and saving of each asset type [11%]
+*** TODO nsscene
+*** TODO nsmesh
+*** TODO nsmaterial
+*** TODO nsanim_set
+*** TODO nsplugin
+*** TODO nstexture [%]
+**** TODO nstex1d
+**** TODO nstex2d
+**** TODO nstex3d
+**** TODO nscubemap
+*** DONE nsshader
+*** TODO nsfont
+    - This needs to have free_type library working along with the new font format using this
+*** TODO nsentity [%]
 **** TODO nsparticle_comp
 **** TODO nsrender_comp
 **** TODO nsanim_comp
@@ -100,44 +32,41 @@
 **** TODO nsui_canvas_comp
 **** TODO nssel_comp
 **** TODO nssprite_comp
+     This has not been built yet - testing should wait until that is finished
 **** TODO nsterrain_comp
 **** TODO nstile_brush_comp
 **** TODO nstile_comp
 **** TODO nsui_button_comp
 **** TODO nsui_material_comp
 **** TODO nsui_text_comp
-*** DONE InputMap
-** TODO Test skybox
-** TODO Test fog
-* DONE Create UI System
-* TODO Create audio system
-* TODO Create thread mechanism full multiplatform
-* DONE Get basic text rendering working
-* DONE Reintegrate the new engine version in to the toolkit
-* DONE Create method for transparency
-* DONE Implement copy ctor and assignment operators for components and resources [100%]
-** DONE nsentity
-** DONE nsmesh
-** DONE nsanim_set
-** DONE nsshader
-** DONE nstexture
-** DONE nsmaterial
-** DONE nsinput_map
-** DONE nsscene
-** DONE nsplugin
-** DONE nsanim_comp
-** DONE nscam_comp
-** DONE nslight_comp
-** DONE nsparticle_comp
-** DONE nsoccupy_comp
-** DONE nsrender_comp
-** DONE nssel_comp
-** DONE nsterrain_comp
-** DONE nstform_comp
-** DONE nstile_brush_comp
-** nstile_comp
-* DONE Moving driver over to specialized class
-** DONE Add events for resource creation and deletion
-** DONE Move the gl_context stuff over to gl driver - no need for multiple plugin managers anymore
-** DONE Create necessary management code for creating all the gl stuff outside of the resources themselves
-* DONE Change "resource" to "asset"
+**** TODO nsinput_map
+
+
+** TODO Test skybox and fog
+
+
+** TODO Test multi-context operation - make sure things that should be auto updated are
+
+
+** TODO Test ability to disable shadows, each type of lights, each type of shadows for the lights, and OIT
+
+
+* TODO Create method for joining multiple transform instances together in to a single mesh
+  - This would take a world space vec3 as the meshes center
+  - All transform instances would be required to have a render component with at least one material and a valid submesh associated with that material
+  - Any submeshes in any of the instances with the same material would be appended to the existing submesh which would require each indice to have the existing submesh's vertice count added to it
+  - All instances would need to be de-childed and/or de-parented within the scene before this operation
+  - Should have option to create a new mesh out of several instances within the scene that does not require these instances to change in any way
+
+
+* TODO Add free_type library and implmement font/rendering mechanics based on that
+
+* TODO Get Mac build working
+
+* TODO Remove gl reference from material - create translation function
+
+* TODO Create scripting system using either chai script or javascript
+
+* TODO Add ui_handle_component - when dragged it will move the anchors of the root rect_tform along with the mouse in screen coords
+
+* TODO Finish sprite comp which will allow you to set up a sprite and it's animations using multiple materials which will probably all reference a single sprite sheet - should be able to create new named animation sets, each full of normalized key frames, and an animation time, along with controls for starting the animation, stopping it, and looping it or playing it once.

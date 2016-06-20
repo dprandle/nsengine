@@ -75,6 +75,15 @@
 #define MAX_GBUFFER_DRAWS 2048
 #define MAX_UI_DRAW_CALLS 1024
 
+#include <nsfile_os.h>
+
+#ifdef GL_4_4
+#define SHADER_DIR "opengl4_4/"
+#define ORDER_INDEPENDENT_TRANSLUCENCY
+#elif defined(GL_4_1)
+#define SHADER_DIR "opengl4_0/"
+#endif
+
 #include <nsvideo_driver.h>
 #include <myGL/glew.h>
 #include <nsgl_draw_calls.h>
@@ -121,6 +130,7 @@ struct packed_fragment_data // 32 bytes total
 	uivec4 ids;
 };
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 struct translucent_buffers
 {
 	translucent_buffers();
@@ -139,7 +149,7 @@ struct translucent_buffers
 	nsgl_buffer * fragments;
 	ui_vector header_clr_data;
 };
-
+#endif
 
 GLEWContext * glewGetContext();
 
@@ -152,7 +162,11 @@ struct gl_ctxt : public vid_ctxt
 	virtual void release();
 
 	GLEWContext * glew_context; // created in ctor
+
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	translucent_buffers * m_tbuffers; // created in init
+#endif
+
 	nsgl_framebuffer * m_default_target; // created in init
 	nsgl_buffer * m_single_point;
 

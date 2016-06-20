@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 440
+stage.size:<uint32>2</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>#version 410
 layout (location = 0) in vec3 position;
 
 uniform mat4 transform;
@@ -11,11 +12,10 @@ void main()
 {
 	gl_Position = projCamMat * transform * nodeTransform * vec4(position, 1.0);
 }
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring></nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>#version 440
+stage[1].name:<nsstring>fragment</nsstring>
+stage[1].source:<nsstring>#version 410
 
 #define MAX_MATERIALS 64
 
@@ -162,6 +162,7 @@ void main()
 		fragColor = fragColor * light_influence(worldPos.xyz, normal.xyz, mat);
 	}
 }
+
 
 
 

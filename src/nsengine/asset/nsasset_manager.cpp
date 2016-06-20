@@ -69,8 +69,8 @@ bool nsasset_manager::changed(nsasset * res, nsstring fname)
 	save_as(res, ".tmp");
 
 	ui8_vector v1, v2;
-	nsfile_os::read(".tmp",&v1);
-	nsfile_os::read(fname, &v2);
+	platform::read(".tmp",&v1);
+	platform::read(fname, &v2);
 
 	if (v1.empty() || v2.empty())
 		return true;
@@ -78,7 +78,7 @@ bool nsasset_manager::changed(nsasset * res, nsstring fname)
 	SHA256 sha256;
 	std::string s1 = sha256(&v1[0], v1.size());
 	std::string s2 = sha256(&v2[0], v2.size());
-	nsfile_os::remove(".tmp");
+	platform::remove(".tmp");
 	return (s1 != s2);
 }
 
@@ -127,7 +127,7 @@ bool nsasset_manager::del(nsasset * res)
 {
 	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fName = dir + res->name() + res->extension();
-    bool ret = nsfile_os::remove(fName);
+    bool ret = platform::remove(fName);
 
 	if (ret)
 	{
@@ -372,7 +372,7 @@ bool nsasset_manager::rename(const nsstring & oldName, const nsstring & newName)
 	nsstring dir = m_res_dir + m_local_dir + res->subdir();
 	nsstring fNameOld = dir + oldName + res->extension();
 	nsstring fNameNew = dir + res->name() + res->extension();
-    bool ret = nsfile_os::rename(fNameOld.c_str(), fNameNew.c_str());
+    bool ret = platform::rename(fNameOld.c_str(), fNameNew.c_str());
 			
     if (ret)
 	{
@@ -420,7 +420,7 @@ bool nsasset_manager::save(nsasset * res,const nsstring & path)
 		fName = path + fName;
 	// otherwise create in cwd
 
-    bool fret = nsfile_os::create_dir(fName);
+    bool fret = platform::create_dir(fName);
 	if (fret)
 	{
 		dprint("nsasset_manager::save Created directory " + fName);

@@ -99,7 +99,7 @@ void nsinput_system::_key_press(nsinput_map::key_val pKey)
 {
 	m_current_keys_pressed.insert(pKey);
 	
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	if (inmap == NULL || !key_dispatch_enabled)
 		return;
 
@@ -155,7 +155,7 @@ void nsinput_system::_key_release(nsinput_map::key_val pKey)
 {
 	m_current_keys_pressed.erase(pKey);
 	
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	if (inmap == NULL || !key_dispatch_enabled)
 		return;
 
@@ -206,7 +206,7 @@ void nsinput_system::_mouse_move(const fvec2 & cursorPos)
 {
 	set_cursor_pos(cursorPos);
 
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	if (inmap == NULL || !mmovement_dispatch_enabled)
 		return;
 
@@ -236,7 +236,7 @@ void nsinput_system::_mouse_press(nsinput_map::mouse_button_val pButton, const f
 	m_current_mbuttons_pressed.insert(pButton);
 	set_cursor_pos(mousePos);
 
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	if (inmap == NULL || !mbutton_dispatch_enabled)
 		return;
 
@@ -275,7 +275,7 @@ void nsinput_system::_mouse_release(nsinput_map::mouse_button_val pButton, const
 	m_current_mbuttons_pressed.erase(pButton);
 	set_cursor_pos(mousePos);
 	
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	if (inmap == NULL || !mbutton_dispatch_enabled)
 		return;
 
@@ -311,7 +311,7 @@ void nsinput_system::_mouse_scroll(float pDelta, const fvec2 & mousePos)
 	set_cursor_pos(mousePos);
 	m_scroll_delta = pDelta;
 
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	if (inmap == NULL || !mscroll_dispatch_enabled)
 		return;
 
@@ -345,7 +345,7 @@ void nsinput_system::pop_context()
 
 void nsinput_system::push_context(const nsstring & pName)
 {
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	nsinput_map::ctxt * ctxt = inmap->context(pName);
 
 	if (ctxt == NULL)
@@ -394,7 +394,7 @@ void nsinput_system::update()
 
 bool nsinput_system::_check_trigger_modifiers(const nsinput_map::trigger & t)
 {
-	nsinput_map * inmap = get_resource<nsinput_map>(m_input_map_id);
+	nsinput_map * inmap = get_asset<nsinput_map>(m_input_map_id);
 	
 	// If Key_Any is not part of key modifiers than there must be a key for key match
 	if ( (t.key_modifiers.find(nsinput_map::key_any) == t.key_modifiers.end()) &&

@@ -595,13 +595,13 @@ private:
 // Engine macros
 #define nse nsengine::inst()
 
-nsasset * get_resource(uint32 res_type, const uivec2 & res_id);
+nsasset * get_asset(uint32 res_type, const uivec2 & res_id);
 
 template<class res_type>
-res_type * get_resource(const uivec2 & res_id)
+res_type * get_asset(const uivec2 & res_id)
 {
 	uint32 hashed_type = type_to_hash(res_type);
-	return static_cast<res_type*>(get_resource(hashed_type,res_id));	
+	return static_cast<res_type*>(get_asset(hashed_type,res_id));	
 }
 
 

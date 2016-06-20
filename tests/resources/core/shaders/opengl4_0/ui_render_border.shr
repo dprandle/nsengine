@@ -1,0 +1,138 @@
+type:<nsstring>nsshader</nsstring>
+vertex.type:<uint32>35633</uint32>
+vertex.source:<nsstring>
+#version 410
+layout (location = 0) in vec3 position;
+
+void main()
+{
+	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
+}
+</nsstring>
+geometry.type:<uint32>36313</uint32>
+geometry.source:<nsstring>
+#version 410
+
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+struct vert_info
+{
+	vec2 pos;
+	vec2 tex_coord;
+};
+
+uniform vec4 border_pix;
+uniform mat3 content_tform;
+uniform vec4 tex_coord_rect;
+uniform vec4 viewport;
+uniform vec2 wscale;
+
+out vec2 tex_coord;
+vert_info verts[4];
+
+//vec2 inner_rect[4];
+//vec2 outer_rect[4];
+//vec2 verts[4];
+
+// void draw_trap()
+// {
+// 	for (uint i = 0; i < 4; ++i)
+// 	{
+// 		gl_Position = vec4( verts[i] / viewport.zw * 2 - vec2(1.0), 1.0, 1.0);
+// 		EmitVertex();
+// 	}
+//     EndPrimitive();	
+// }
+
+void main()
+{
+	vec2 outer_pos = viewport.zw * wscale;
+	verts[0].pos = vec2(0,0) - border_pix.xy;
+	verts[1].pos = vec2(0, outer_pos.y) + vec2(-border_pix.x, border_pix.w);
+	verts[2].pos = vec2(outer_pos.x, 0) + vec2( border_pix.z,-border_pix.y);
+	verts[3].pos = outer_pos + border_pix.zw;
+	verts[0].tex_coord = tex_coord_rect.xy;
+	verts[1].tex_coord = tex_coord_rect.xw;
+	verts[2].tex_coord = tex_coord_rect.zy;
+	verts[3].tex_coord = tex_coord_rect.zw;
+
+	for (uint i = 0; i < 4; ++i)
+	{
+		verts[i].pos = (content_tform * vec3(verts[i].pos, 1.0)).xy;
+		verts[i].pos = verts[i].pos/viewport.zw * 2.0 - vec2(1.0);
+		gl_Position = vec4(verts[i].pos, 1.0, 1.0);
+		tex_coord = verts[i].tex_coord;
+		EmitVertex();
+	}	
+    EndPrimitive();
+
+	// vec2 outer_pos = viewport.zw * content_wscale;
+	// inner_rect[0] = vec2(0,0);
+	// inner_rect[1] = vec2(0, outer_pos.y);
+	// inner_rect[2] = vec2(outer_pos.x, 0);
+	// inner_rect[3] = outer_pos;
+	// outer_rect[0] = inner_rect[0] - border_pix.xy;
+	// outer_rect[1] = inner_rect[1] + vec2(-border_pix.x, border_pix.w);
+	// outer_rect[2] = inner_rect[2] + vec2( border_pix.z,-border_pix.y);
+	// outer_rect[3] = inner_rect[3] + border_pix.zw;
+	
+	// for (uint i = 0; i < 4; ++i)
+	// {
+	// 	inner_rect[i] = (content_tform * vec3(inner_rect[i], 1.0)).xy;
+	// 	outer_rect[i] = (content_tform * vec3(outer_rect[i], 1.0)).xy;
+	// }
+
+	// verts[0] = outer_rect[0];
+	// verts[1] = outer_rect[1];
+	// verts[2] = inner_rect[0];
+	// verts[3] = inner_rect[1];
+	// draw_trap();
+	
+	// verts[0] = inner_rect[1];
+	// verts[1] = outer_rect[1];
+	// verts[2] = inner_rect[3];
+	// verts[3] = outer_rect[3];
+	// draw_trap();
+	
+	// verts[0] = inner_rect[2];
+	// verts[1] = inner_rect[3];
+	// verts[2] = outer_rect[2];
+	// verts[3] = outer_rect[3];
+	// draw_trap();
+	
+	// verts[0] = outer_rect[0];
+	// verts[1] = inner_rect[0];
+	// verts[2] = outer_rect[2];
+	// verts[3] = inner_rect[2];
+	// draw_trap();
+}
+</nsstring>
+fragment.type:<uint32>35632</uint32>
+fragment.source:<nsstring>
+#version 410
+
+layout (location = 0) out vec4 final_frag_color;
+layout (location = 1) out uvec3 final_picking;
+
+in vec2 tex_coord;
+
+uniform vec2 wscale;
+uniform vec4 inner_rad_top;
+uniform vec4 inner_rad_bottom;
+uniform float pixel_blend;
+uniform vec4 viewport;
+
+uniform sampler2D uitexture;
+uniform vec4 frag_color_out;
+uniform uvec3 entity_id;
+uniform bool color_mode;
+uniform vec4 color_mult;
+uniform vec4 color_add;
+
+void main()
+{
+	final_frag_color = frag_color_out * color_mult + color_add;
+	final_picking = entity_id;
+}
+</nsstring>

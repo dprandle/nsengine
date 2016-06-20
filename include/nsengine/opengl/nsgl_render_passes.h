@@ -13,6 +13,7 @@
 #ifndef NSGL_RENDER_PASSES_H
 #define NSGL_RENDER_PASSES_H
 
+#include <nsfile_os.h>
 #include <nsmath.h>
 #include <nsvideo_driver.h>
 
@@ -80,10 +81,17 @@ struct gbuffer_render_pass : public gl_render_pass
 	virtual void render();
 };
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 struct oit_render_pass : public gl_render_pass
 {
 	virtual void render();
 	translucent_buffers * tbuffers;
+};
+#endif
+
+struct sorted_translucency_render_pass : public gl_render_pass
+{
+	virtual void render() {}
 };
 
 struct light_shadow_pass : public gl_render_pass

@@ -72,7 +72,7 @@ nsengine::nsengine():
 #ifdef NSDEBUG
 	m_deb(new nsdebug()),
 #endif
-	m_cwd(nsfile_os::cwd())
+	m_cwd(platform::cwd())
 {
 	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
 	srand(static_cast<unsigned>(time(0)));
@@ -276,7 +276,7 @@ void nsengine::start(bool create_default_systems)
 	}
 	
 	_init_factories();
-	nsfile_os::platform_init();
+	platform::platform_init();
 
 	m_plugins = new nsplugin_manager();
 	m_plugins->set_res_dir(m_cwd);
@@ -516,7 +516,7 @@ uint32 hash_id(const nsstring & str)
 	return crc32(str.c_str(),static_cast<int32>(str.size()),0);
 }
 
-nsasset * get_resource(uint32 res_type, const uivec2 & res_id)
+nsasset * get_asset(uint32 res_type, const uivec2 & res_id)
 {
 	if (res_type == type_to_hash(nsplugin))
 		return nsep.get(res_id.y);

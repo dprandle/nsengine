@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
 #version 440
 
 layout (location = 0) in vec3 position;
@@ -70,9 +71,10 @@ void main()
 } 
 
 
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring>
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>
 #version 440
 
 layout (triangles) in;
@@ -141,9 +143,10 @@ void main()
 }
 
 
+
 </nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>
 #version 440
 
 in vec2 texCoords;
@@ -210,5 +213,6 @@ void main()
 	pickingOut = uvec4(pluginID, entityID, refID, material_id);
 	normalOut = calculateNormalMap();
 }
+
 
 </nsstring>

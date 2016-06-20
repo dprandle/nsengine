@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 410
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>#version 410
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 tex;
@@ -50,9 +51,10 @@ void main()
 
 	gl_Position = worldPos;
 }
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring>
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>
 #version 440
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 18) out;
@@ -115,9 +117,10 @@ void main()
 		EndPrimitive();
 	}
 }
+
 </nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>#version 440
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>#version 440
 
 
 uniform float maxDepth;
@@ -128,4 +131,5 @@ void main()
 {
 	gl_FragDepth = length(worldPos.xyz - lightPos) / maxDepth;
 }
+
 </nsstring>

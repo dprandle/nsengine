@@ -83,7 +83,7 @@ uivec3_vector nsfont::resources()
 	auto iter = m_pages.begin();
 	while (iter != m_pages.end())
 	{
-		nstexture * _tex_ = get_resource<nstexture>(*iter);
+		nstexture * _tex_ = get_asset<nstexture>(*iter);
 		if (_tex_ != NULL)
 		{
 			uivec3_vector tmp = _tex_->resources();

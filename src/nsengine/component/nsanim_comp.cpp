@@ -123,7 +123,7 @@ uivec3_vector nsanim_comp::resources()
 	// Build map
 	uivec3_vector ret;
 	
-	nsanim_set * _anim_set_ = get_resource<nsanim_set>(m_anim_set_id);
+	nsanim_set * _anim_set_ = get_asset<nsanim_set>(m_anim_set_id);
 	if (_anim_set_ != NULL)
 	{
 		uivec3_vector tmp = _anim_set_->resources();

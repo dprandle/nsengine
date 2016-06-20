@@ -71,7 +71,7 @@ void nsanim_system::update()
 				continue;
 			}
 
-			nsmesh * msh = get_resource<nsmesh>(meshID);
+			nsmesh * msh = get_asset<nsmesh>(meshID);
 			if (msh == nullptr)
 			{
 				dprint("nsanim_system::update mesh with id " + meshID.to_string() + " is null in anim ent " + (*entIter)->name());
@@ -90,7 +90,7 @@ void nsanim_system::update()
 			auto finalTF = animComp->final_transforms();
 			finalTF->resize(nTree->m_name_joint_map.size());
 
-			nsanim_set * animset = get_resource<nsanim_set>(animsetID);
+			nsanim_set * animset = get_asset<nsanim_set>(animsetID);
 			if (animset == nullptr)
 			{
 				++entIter;

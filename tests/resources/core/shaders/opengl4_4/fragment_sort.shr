@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
 #version 440
 
 layout (location = 0) in vec3 position;
@@ -9,9 +10,10 @@ void main()
 {
 	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
 }
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring>
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>
 #version 440
 
 layout (points) in;
@@ -29,9 +31,10 @@ void main()
     EmitVertex();
     EndPrimitive();
 }
+
 </nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring>
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>
 #version 440
 
 #define MAX_BUCKET_COUNT 8
@@ -135,4 +138,5 @@ void main()
 	if (first_indice != -1)
 	  	reorder_linked_list(header_index, sort_fragment_list(first_indice));
 }
+
 </nsstring>

@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 440
+stage.size:<uint32>1</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>#version 440
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 tex;
@@ -54,8 +55,5 @@ void main()
 
     gl_Position = projMat * worldPos;
 } 
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring></nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring></nsstring>

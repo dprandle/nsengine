@@ -1,0 +1,195 @@
+type:<nsstring>nsshader</nsstring>
+stage.size:<uint32>3</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
+#version 410
+layout (location = 0) in vec3 position;
+
+void main()
+{
+	gl_Position =  vec4(1.0, 1.0, 1.0, 1.0);
+}
+
+</nsstring>
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>
+#version 410
+
+layout (points) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+void main()
+{
+    gl_Position = vec4(-1.0,-1.0, 1.0, 1.0);
+    EmitVertex();
+	gl_Position = vec4(-1.0, 1.0, 1.0, 1.0);
+	EmitVertex();
+	gl_Position = vec4(1.0, -1.0, 1.0, 1.0);
+	EmitVertex();
+    gl_Position = vec4(1.0,  1.0, 1.0, 1.0);
+    EmitVertex();
+    EndPrimitive();
+}
+
+</nsstring>
+stage[2].name:<nsstring>fragment</nsstring>
+stage[2].source:<nsstring>
+#version 410
+
+#define MAX_MATERIALS 64
+
+layout (location = 0) out vec4 final_frag_color;
+layout (location = 1) out uvec3 final_picking;
+
+struct DirectionLight 
+{
+	float ambientIntensity;
+	float diffuseIntensity;
+	float shadowDarkness;
+	vec3 direction;
+	vec3 color;
+};
+
+struct Material
+{
+	float spec_power;
+	float spec_intensity;
+	vec3 spec_color;
+};
+
+uvec4 ent_mat_id;
+
+uniform DirectionLight light;
+uniform sampler2DShadow shadowMap;
+
+uniform sampler2D gDiffuseMap;
+uniform usampler2D gMatMap;
+uniform sampler2D gWorldPosMap;
+uniform sampler2D gNormalMap;
+
+uniform vec4 viewport;
+uniform vec3 camWorldPos;
+uniform vec4 bgColor;
+uniform vec2 shadowTexSize;
+uniform uvec2 fog_factor;
+uniform vec4 fog_color;
+uniform int shadowSamples;
+uniform float epsilon;
+uniform mat4 projLightMat;
+uniform bool castShadows;
+uniform bool lightingEnabled;
+
+uniform Material materials[MAX_MATERIALS];
+
+float shadow_factor(vec3 worldPos)
+{
+	vec4 lightPos = projLightMat * vec4(worldPos,1.0);
+	vec3 coords = lightPos.xyz / lightPos.w;
+	vec3 uvCoords;
+	uvCoords.x = 0.5 * coords.x + 0.5;
+	uvCoords.y = 0.5 * coords.y + 0.5;
+	uvCoords.z = 0.5 * coords.z + 0.5 - epsilon;
+
+	if (shadowSamples == 0)
+		return light.shadowDarkness*texture(shadowMap, uvCoords) + (1 - light.shadowDarkness);
+
+	float total = 0.0;
+	float xDelta = 1.0 / shadowTexSize.x;
+	float yDelta = 1.0 / shadowTexSize.y;
+
+	int negBoundary = shadowSamples * -1;
+
+	for (int i = negBoundary; i <= shadowSamples; ++i)
+	{
+		for (int j = negBoundary; j <= shadowSamples; ++j)
+		{
+			vec3 delta = vec3(j*xDelta,i*yDelta, 0.0);
+			total += light.shadowDarkness*texture(shadowMap, uvCoords + delta) + (1 - light.shadowDarkness);
+		}
+	}
+
+    return total / ((2*shadowSamples+1)*(2*shadowSamples+1));
+}
+
+// Compute the linear fog_factor factor
+// This function gets the linear fog_factor factor according to the linear fog_factor equation..
+// f = (fogEnd - depth) / (fogEnd - fogBegin)
+// depth is calculated : dot(Normal of Camera, distance of fragment from camera)
+float linear_fog_factor(vec3 worldPos)
+{
+	float factor;
+	vec3 dVec = (camWorldPos.xyz - worldPos.xyz);
+	factor = (fog_factor.y - length(dVec) ) / (fog_factor.y - fog_factor.x);
+	factor = clamp( factor, 0.0, 1.0 );
+	return factor;
+}
+
+vec2 uv_from_screen_size()
+{
+	return gl_FragCoord.xy/vec2(1920,1080);
+//	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw);
+}
+
+vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)
+{
+	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
+	float diffuseFactor = dot(norm, -light.direction);
+
+	vec4 diffuseColor  = vec4(0.0, 0.0, 0.0, 0.0);
+	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
+
+	float shadowFactor = 1.0;
+	if (castShadows)
+		shadowFactor = shadow_factor(worldPos);
+
+	if (diffuseFactor > 0) 
+	{
+		diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
+        vec3 vertexToEye = normalize(camWorldPos - worldPos);
+        vec3 lightReflect = normalize(reflect(light.direction,norm));
+
+        float specularFactor = dot(vertexToEye, lightReflect);
+		specularFactor = pow(specularFactor, mat.spec_power);
+		if (specularFactor > 0)
+			specularColor = vec4(mat.spec_color, 1.0) * mat.spec_intensity * specularFactor;
+	}
+
+	return ambientColor + shadowFactor*(specularColor + diffuseColor);
+}
+
+vec4 lit_color_from_attachments(vec2 tex_coord)
+{
+	Material mat;
+	float fog_factor;
+	vec4 light_factor;
+	ent_mat_id = texture(gMatMap, tex_coord);
+	uint mat_id = ent_mat_id.w; 
+	vec4 base_color = texture(gDiffuseMap, tex_coord);
+	vec4 wpos = texture(gWorldPosMap, tex_coord);
+	vec4 normal = texture(gNormalMap, tex_coord);
+
+	if (mat_id > MAX_MATERIALS)
+	{
+		if (mat_id != 255)
+			base_color = vec4(bgColor.xyz, base_color.a);
+	}
+	else if (lightingEnabled)
+	{
+		fog_factor = linear_fog_factor(wpos.xyz);
+		mat = materials[mat_id]; // mat_id should be good - well see if we can use this
+		if (mat.spec_color == vec3(0.0,0.0,0.0))
+			mat.spec_color = light.color;
+		light_factor = light_influence(wpos.xyz, normal.xyz, mat);
+		base_color = mix(base_color * light_factor, fog_color, 1 - fog_factor);
+	}
+	return base_color;
+}
+
+void main()
+{
+	vec2 texCoord = uv_from_screen_size();
+	final_frag_color = lit_color_from_attachments(texCoord);
+	final_picking = ent_mat_id.xyz;
+}
+
+</nsstring>

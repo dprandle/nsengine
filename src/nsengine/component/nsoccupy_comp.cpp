@@ -215,7 +215,7 @@ uivec3_vector nsoccupy_comp::resources()
 {
 	uivec3_vector ret;
 
-	nsmaterial * _mat_ = get_resource<nsmaterial>(m_mat_id);
+	nsmaterial * _mat_ = get_asset<nsmaterial>(m_mat_id);
 	if (_mat_ != NULL)
 	{
 		uivec3_vector tmp = _mat_->resources();
@@ -223,7 +223,7 @@ uivec3_vector nsoccupy_comp::resources()
 		ret.push_back(uivec3(_mat_->full_id(), type_to_hash(nsmaterial)));
 	}
 	
-	nsmesh * _mesh_ = get_resource<nsmesh>(m_mesh_id);
+	nsmesh * _mesh_ = get_asset<nsmesh>(m_mesh_id);
 	if (_mesh_ != NULL)
 	{
 		uivec3_vector tmp = _mesh_->resources();

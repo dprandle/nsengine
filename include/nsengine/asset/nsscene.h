@@ -87,6 +87,10 @@ class nsscene : public nsasset
 
 	void init();
 
+	void enable(bool to_enable);
+
+	bool is_enabled();
+
 	template<class comp_type>
 	const entity_set * entities_with_comp() const
 	{
@@ -147,63 +151,51 @@ private:
 	void _add_all_comp_entries(nsentity * ent);
 	void _on_comp_remove(nscomponent * comp_t);
 	void _on_comp_add(nscomponent * comp_t);
+	void _populate_pup_vec();
+	struct instance_tform_info
+	{
+		instance_tform_info(nsscene * scn, const instance_tform & it);
+
+		uivec2 ent_id;
+		bool render_update;
+		int32 hidden_state;
+		fquat orient;
+		fvec3 position;
+		fvec3 scaling;
+		fmat4 world_tform;
+		fmat4 world_inv_tform;
+		fmat4 local_tform;
+		fmat4 local_inv_tform;
+
+		uivec3 parent;
+		std::vector<uivec3> children;
+	};
 	
 	nsentity *  m_skydome;
 	uint32 m_max_players;
     fvec4 m_bg_color;
 	nsstring m_notes;
 	nsstring m_creator;
+	bool m_enabled;
 	nstile_grid * m_tile_grid;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
 	uivec2_vector m_unloaded;
+
+	std::vector<instance_tform_info> m_pupped_tforms;
 };
 
 
 template<class PUPer>
 void pup(PUPer & p, nsscene & sc)
 {
+//	sc.m_pupped_tforms.clear();
+//	sc._populate_pup_vec();
+//	pup(p, sc.m_pupped_tforms, "scene_tforms");
+
 	// pup(p, sc.m_max_players, "max_players");
 	// pup(p, sc.m_bg_color, "bg_color");
 	// pup(p, sc.m_notes, "notes");
 	// pup(p, sc.m_creator, "creator");
-
-	// sc.unloaded().clear();
-	// uivec2_vector entids;
-
-
-	// auto iter = sc.entities().begin();
-	// while (iter != sc.entities().end())
-	// {
-	// 	entids.push_back(uivec2((*iter)->plugin_id(), (*iter)->id()));
-	// 	++iter;
-	// }
-
-	// pup(p, entids, "entids");
-
-	// for (uint32 i = 0; i < entids.size(); ++i)
-	// {
-	// 	nsentity * ent = get_resource<nsentity>(entids[i]);
-
-	// 	if (ent == NULL)
-	// 	{
-	// 		sc.unloaded().push_back(entids[i]);
-	// 		continue;
-	// 	}
-
-	// 	nstform_comp * tc = ent->get<nstform_comp>();
-	// 	if (tc == NULL)
-	// 		tc = ent->create<nstform_comp>();
-	// 	tc->pup(&p);
-	// 	if (p.mode() == PUP_IN)
-	// 	{
-	// 		nsoccupy_comp * oc = ent->get<nsoccupy_comp>();
-	// 		if (oc != NULL)
-	// 		{
-	// 			for (uint32 i = 0; i < tc->count(); ++i)
-	// 				sc.grid().add(uivec3(ent->plugin_id(), ent->id(), i), oc->spaces(), tc->wpos(i));
-	// 		}
-	// 	}
-	// }
 }
 
 #endif

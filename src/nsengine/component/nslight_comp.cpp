@@ -187,7 +187,7 @@ uivec3_vector nslight_comp::resources()
 	// Build map
 	uivec3_vector ret;
 
-	nsmesh * _mesh_ = get_resource<nsmesh>(m_bounding_mesh_id);
+	nsmesh * _mesh_ = get_asset<nsmesh>(m_bounding_mesh_id);
 	if (_mesh_ != NULL)
 	{
 		uivec3_vector tmp = _mesh_->resources();

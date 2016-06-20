@@ -76,7 +76,7 @@ void nsui_canvas_comp::finalize()
 	for (uint32 i = 0; i < m_pupped_rects.size(); ++i)
 	{
 		// Load the current rect
-		nsentity * ent = get_resource<nsentity>(m_pupped_rects[i].this_ent);
+		nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].this_ent);
 		if (ent == nullptr)
 		{
 			m_unloaded_ents.push_back(m_pupped_rects[i].this_ent);
@@ -93,7 +93,7 @@ void nsui_canvas_comp::finalize()
 		// Try to load the current rect's parent
 		if (m_pupped_rects[i].pupped_parent != uivec2(0))
 		{
-			nsentity * parent_ent = get_resource<nsentity>(m_pupped_rects[i].pupped_parent);
+			nsentity * parent_ent = get_asset<nsentity>(m_pupped_rects[i].pupped_parent);
 			if (parent_ent == nullptr)
 			{
 				dprint("nsui_canvas_comp::finalize - Could not load parent ent with id " +
@@ -111,7 +111,7 @@ void nsui_canvas_comp::finalize()
 		// load the current rect's children
 		for (uint32 j = 0; j < m_pupped_rects[i].m_pupped_children.size(); ++j)
 		{
-			nsentity * ent = get_resource<nsentity>(m_pupped_rects[i].m_pupped_children[j]);
+			nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].m_pupped_children[j]);
 			if (ent == nullptr)
 			{
 				dprint("nsui_canvas_comp::finalize - Could not load child ent with id " + m_unloaded_ents.back().to_string());

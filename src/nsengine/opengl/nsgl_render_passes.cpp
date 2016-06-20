@@ -210,7 +210,7 @@ void ui_render_pass::render()
 				}
 
 				char_info & ci = uidc->fnt->get_char_info(uidc->text[i]);
-				nstex2d * tex = get_resource<nstex2d>(uidc->fnt->texture_id(ci.page_index));
+				nstex2d * tex = get_asset<nstex2d>(uidc->fnt->texture_id(ci.page_index));
 				if (tex == nullptr)
 					continue;
 
@@ -362,6 +362,7 @@ void gbuffer_render_pass::render()
     driver->bind_gbuffer_textures(ren_target);
 }
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 void oit_render_pass::render()
 {
 	ivec4 viewp = gl_state.current_viewport;
@@ -420,7 +421,7 @@ void oit_render_pass::render()
 			driver->set_cull_face(dc->mat->cull_mode());
 			driver->bind_textures(dc->mat);
 		}
-		tbuffers->bind_buffers();
+	    tbuffers->bind_buffers();
 		driver->render_instanced_dc(dc);
 	}
 	ren_target->update_draw_buffers();
@@ -437,6 +438,7 @@ void oit_render_pass::render()
 	glDrawArrays(GL_POINTS, 0, 1);	
 	tbuffers->unbind_buffers();
 }
+#endif
 
 void light_shadow_pass::render()
 {
@@ -506,7 +508,12 @@ void light_pass::render()
 			gl_render_pass::setup();
 		}
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
+#else
+		ren_target->update_draw_buffers();
+#endif
+
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
 		gl_shdr->bind();
 		gl_shdr->set_uniform("shadowMap", SHADOW_TEX_UNIT);
@@ -546,10 +553,14 @@ void light_pass::render()
 		gl_shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		gl_shdr->set_uniform("fog_color", vp->m_fog_color);
 		gl_shdr->set_uniform("lightingEnabled", vp->dir_lights);
-		
+
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->bind_buffers();
+#endif
 		driver->render_light_dc(dc);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->unbind_buffers();
+#endif
 	}
 }
 
@@ -646,9 +657,13 @@ void culled_light_pass::render()
 			gl_shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 		}
 
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY		
 		tbuffers->bind_buffers();
+#endif
 		driver->render_light_dc(dc);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->unbind_buffers();
+#endif
 	}
 }
 

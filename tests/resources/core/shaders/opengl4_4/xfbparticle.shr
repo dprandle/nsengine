@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 440
+stage.size:<uint32>2</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>#version 440
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec4 velocity;
@@ -19,9 +20,10 @@ void main()
 	scaleAndAngleOut = scaleAndAngle;
 	ageOut = age;
 } 
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring>#version 440
+stage[1].name:<nsstring>geometry</nsstring>
+stage[1].source:<nsstring>#version 440
 
 layout (points) in;
 layout (points, max_vertices = 64) out;
@@ -230,6 +232,5 @@ void main()
 }
 
 
+
 </nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring></nsstring>

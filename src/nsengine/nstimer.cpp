@@ -55,7 +55,7 @@ void nstimer::resume()
 
 void nstimer::start()
 {
-	m_start = nsfile_os::system_time();
+	m_start = platform::system_time();
 	m_current = m_start;
 	m_last = m_start;
 	m_running = true;
@@ -65,5 +65,5 @@ void nstimer::update()
 {
 	m_last = m_current;
 	if (m_running)
-		m_current = nsfile_os::system_time();
+		m_current = platform::system_time();
 }

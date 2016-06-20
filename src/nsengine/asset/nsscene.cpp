@@ -37,6 +37,7 @@ nsscene::nsscene():
 	m_notes(),
 	m_creator(),
 	m_tile_grid(new nstile_grid()),
+	m_enabled(false),
 	m_ents_by_comp(),
 	m_unloaded()
 {
@@ -51,6 +52,7 @@ nsscene::nsscene(const nsscene & copy_):
 	m_bg_color(copy_.m_bg_color),
 	m_notes(copy_.m_notes),
 	m_creator(copy_.m_creator),
+	m_enabled(copy_.m_enabled),
 	m_tile_grid(new nstile_grid()),
 	m_ents_by_comp(),
 	m_unloaded()
@@ -357,7 +359,7 @@ uivec3_vector nsscene::resources()
 	uivec3_vector ret;
 
 	if (ents == nullptr)
-		ret;
+		return ret;
 
 	auto iter = ents->begin();
 	while (iter != ents->end())
@@ -638,7 +640,7 @@ bool nsscene::remove(fvec3 & pWorldPos, bool remove_children)
 	if (refid == uivec3(0))
 		return false;
 
-	return remove(get_resource<nsentity>(refid.xy()), refid.z, remove_children);
+	return remove(get_asset<nsentity>(refid.xy()), refid.z, remove_children);
 }
 
 bool nsscene::remove(nsentity * ent, bool remove_children)
@@ -757,4 +759,82 @@ void nsscene::_add_all_comp_entries(nsentity * ent)
 		_on_comp_add(citer->second);
 		++citer;
 	}	
+}
+
+nsscene::instance_tform_info::instance_tform_info(nsscene * scn, const instance_tform & it):
+	parent(),
+	children(),
+	ent_id(it.m_owner->owner()->full_id()),
+	render_update(it.m_render_update),
+	hidden_state(it.m_hidden_state),
+	orient(it.m_orient),
+	position(it.m_position),
+	scaling(it.m_scaling),
+	world_tform(it.m_world_tform),
+	world_inv_tform(it.m_world_inv_tform),
+	local_tform(it.m_local_tform),
+	local_inv_tform(it.m_local_inv_tform)
+{
+	if (it.m_parent != nullptr)
+	{
+		tform_per_scene_info * pse = it.m_parent->m_owner->per_scene_info(scn);
+		uint32 tformid = (it.m_parent - &pse->m_tforms[0]);
+		parent = uivec3(it.m_owner->owner()->full_id(),tformid);
+	}
+	auto child_iter = it.m_children.begin();
+	while (child_iter != it.m_children.end())
+	{
+		tform_per_scene_info * pse = (*child_iter)->m_owner->per_scene_info(scn);
+		uint32 tformid = ((*child_iter) - &pse->m_tforms[0]);
+		children.push_back(uivec3(it.m_owner->owner()->full_id(),tformid));
+		++child_iter;
+	}		
+}
+
+void nsscene::enable(bool to_enable)
+{
+	if (to_enable)
+	{
+		auto add_iter = m_pupped_tforms.begin();
+		while (add_iter != m_pupped_tforms.end())
+		{
+			
+			++add_iter;
+		}
+
+		auto piter = m_pupped_tforms.begin();
+		while (piter != m_pupped_tforms.end())
+		{
+			instance_tform itf;
+			nsentity * ent = get_asset<nsentity>(piter->parent.xy());
+			if (ent != nullptr)
+			{
+				instance_tform * itf_parent = ent->get<nstform_comp>()->instance_transform(this, piter->parent.z);
+				itf.m_parent = itf_parent;
+			}
+			for (uint32 i = 0; i < piter->children.size(); ++i)
+			{
+				nsentity * cent = get_asset<nsentity>(piter->children[i].xy());
+				instance_tform * itf_child = ent->get<nstform_comp>()->instance_transform(this, piter->children[i].z);
+//				itf.m_children.push
+			}
+			++piter;
+		}
+	}
+}
+
+void nsscene::_populate_pup_vec()
+{
+	auto ents = entities_in_scene();
+	auto ent_iter = ents->begin();
+	while (ent_iter != ents->end())
+	{
+		tform_per_scene_info * psi = (*ent_iter)->get<nstform_comp>()->per_scene_info(this);
+		for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
+		{
+			instance_tform & itf = psi->m_tforms[i];
+			m_pupped_tforms.emplace_back(instance_tform_info(this, itf));
+		}
+		++ent_iter;
+	}
 }

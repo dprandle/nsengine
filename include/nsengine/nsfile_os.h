@@ -4,7 +4,15 @@
 #include <sys/stat.h>
 #include <nsvector.h>
 
-namespace nsfile_os
+#ifdef WIN32
+#define GL_4_4
+#elif defined(__APPLE__)
+#define GL_4_1
+#else
+#define GL_4_1
+
+#endif
+namespace platform
 {
 
 void platform_init();

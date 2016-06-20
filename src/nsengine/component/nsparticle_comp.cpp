@@ -116,7 +116,7 @@ uivec3_vector nsparticle_comp::resources()
 {
 	uivec3_vector ret;
 
-	nstexture * _tex_ = get_resource<nstexture>(m_rand_tex_id);
+	nstexture * _tex_ = get_asset<nstexture>(m_rand_tex_id);
 	if (_tex_ != NULL)
 	{
 		uivec3_vector tmp = _tex_->resources();
@@ -124,7 +124,7 @@ uivec3_vector nsparticle_comp::resources()
 		ret.push_back(uivec3(_tex_->full_id(), type_to_hash(nstexture)));
 	}
 
-	nsmaterial * _mat_ = get_resource<nsmaterial>(m_mat_id);
+	nsmaterial * _mat_ = get_asset<nsmaterial>(m_mat_id);
 	if (_mat_ != NULL)
 	{
 		uivec3_vector tmp = _mat_->resources();
@@ -132,7 +132,7 @@ uivec3_vector nsparticle_comp::resources()
 		ret.push_back(uivec3(_mat_->full_id(), type_to_hash(nsmaterial)));
 	}
 
-	nsshader * _shdr_ = get_resource<nsshader>(m_xfb_shader_id);
+	nsshader * _shdr_ = get_asset<nsshader>(m_xfb_shader_id);
 	if (_shdr_ != NULL)
 	{
 		uivec3_vector tmp = _shdr_->resources();

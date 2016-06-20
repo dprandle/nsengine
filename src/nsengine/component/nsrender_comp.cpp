@@ -90,7 +90,7 @@ uivec3_vector nsrender_comp::resources()
 	// Build map
 	uivec3_vector ret;
 
-	nsmesh * _mesh_ = get_resource<nsmesh>(m_mesh_id);
+	nsmesh * _mesh_ = get_asset<nsmesh>(m_mesh_id);
 	if (_mesh_ != NULL)
 	{
 		uivec3_vector tmp = _mesh_->resources();
@@ -102,7 +102,7 @@ uivec3_vector nsrender_comp::resources()
 	auto iter = begin_mat();
 	while (iter != end_mat())
 	{
-		nsmaterial * mat = get_resource<nsmaterial>(iter->second);
+		nsmaterial * mat = get_asset<nsmaterial>(iter->second);
 		if (mat != NULL)
 		{
 			uivec3_vector tmp = mat->resources();
