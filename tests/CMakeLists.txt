@@ -1,7 +1,19 @@
 link_libraries(nsengine)
 link_libraries(glfw)
 
-if (UNIX)
+
+if (APPLE)
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("Building debug inputtest")
+    link_libraries(${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/lib/${PLATFORM}/libassimp.dylib)
+    link_libraries(${PROJECT_SOURCE_DIR}/deps/devil-1.7.8/lib/${PLATFORM}/libIL.dylib)
+  else()
+    message("Building release inputtest")
+    link_libraries(${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/lib/${PLATFORM}/libassimp.dylib)
+    link_libraries(${PROJECT_SOURCE_DIR}/deps/devil-1.7.8/lib/${PLATFORM}/libIL.dylib)
+  endif()
+
+elseif (UNIX)
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message("Building debug inputtest")
     link_libraries(${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/lib/${PLATFORM}/libassimpd.so.3)

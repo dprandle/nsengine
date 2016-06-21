@@ -303,11 +303,11 @@ class nsgl_driver : public nsvideo_driver
 
 	void bind_gbuffer_textures(nsgl_framebuffer * fb);
 	
-	void render_instanced_dc(instanced_draw_call * idc);
+    void render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader);
 
-	void render_light_dc(light_draw_call * idc);
+    void render_light_dc(light_draw_call * idc, nsgl_shader * bound_shader);
 
-	void render_ui_dc(ui_draw_call * idc);
+    void render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader);
 
 	render_shaders rshaders;
 	

@@ -14,11 +14,19 @@
 #ifdef WIN32
 #include <filesystem>
 #include <Windows.h>
-#else
+#elif __APPLE__
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+#include <time.h>
+#include <libproc.h>
+#else
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
@@ -162,9 +170,6 @@ uint32 remove_dir(const nsstring & dirpath)
     DIR *dir;
     struct dirent *entry;
     char path[PATH_MAX];
-
-    if (path == NULL)
-        return 0;
 	
     dir = opendir(dirpath.c_str());
 	
@@ -200,11 +205,12 @@ bool rename(const nsstring & oldname, const nsstring & newname)
 
 nsstring cwd()
 {
-	char temp[256];
-	uint32 sz = readlink("/proc/self/exe", temp, 256);
-	nsstring ret(temp);
-	ret.resize(sz);
-	return nsasset_manager::path_from_filename(ret);
+    pid_t pid;
+    char pathbuf[1024];
+    pid = getpid();
+    proc_pidpath(pid, pathbuf, sizeof(pathbuf));
+    nsstring ret(pathbuf);
+    return nsasset_manager::path_from_filename(ret);
 }
 
 void platform_init()

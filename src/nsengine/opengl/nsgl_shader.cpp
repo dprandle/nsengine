@@ -128,9 +128,7 @@ bool nsgl_shader::link()
 		return false;
 	}
 	dprint("nsgl_shader::link - Succesfully linked shader");
-	
-	/*Validate may fail on older GPUS - add exceptions here!!*/
-	return _validate();
+    return true;
 }
 
 nsstring nsgl_shader::stage_name(shader_stage stage)
@@ -403,7 +401,7 @@ uint32 nsgl_shader::attrib_loc(const nsstring & var_name) const
 	gl_err_check("nsgl_shader::attrib_loc");
 }
 
-bool nsgl_shader::_validate()
+bool nsgl_shader::validate()
 {
 	glValidateProgram(gl_id);
 	GLint worked;
@@ -414,10 +412,8 @@ bool nsgl_shader::_validate()
         glGetProgramInfoLog(gl_id, sizeof(infoLog), NULL, infoLog);
 		nsstring info(infoLog);
 		info = "----Error validating shader----\n" + info;
-		error_state = error_validation;
 		validation_error_msg(info);
 		dprint(info);
-		release();
         return false;
     }
 	return true;

@@ -80,7 +80,7 @@ void ui_render_pass::render()
 			driver->enable_culling(uidc->mat->culling());
 			driver->set_cull_face(uidc->mat->cull_mode());
 			driver->bind_textures(uidc->mat);
-			driver->render_ui_dc(uidc);
+            driver->render_ui_dc(uidc, gl_shdr);
 
 			driver->set_stencil_func(GL_NOTEQUAL, 1, 0xFF);
 
@@ -113,7 +113,7 @@ void ui_render_pass::render()
 			gl_shdr->set_uniform("color_add", ti.color_add);
 			driver->enable_culling(uidc->border_mat->culling());
 			driver->set_cull_face(uidc->border_mat->cull_mode());
-			driver->render_ui_dc(uidc);
+            driver->render_ui_dc(uidc, gl_shdr);
 			driver->enable_stencil_test(false);
 		}
 		
@@ -238,7 +238,7 @@ void ui_render_pass::render()
 				if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
 					cursor_xy.x = cursor_pos.x;				
 
-				driver->render_ui_dc(uidc);
+                driver->render_ui_dc(uidc, gl_txt_shdr);
 			}
 
 // lets draw the cursor if the text is editable - ie has a text input component
@@ -248,7 +248,7 @@ void ui_render_pass::render()
 				gl_txt_shdr->set_uniform("frag_color_out", uidc->cursor_color);
 				gl_txt_shdr->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width,fi.line_height));
 				gl_txt_shdr->set_uniform("offset_xy",cursor_xy);
-				driver->render_ui_dc(uidc);
+                driver->render_ui_dc(uidc, gl_txt_shdr);
 			}
 		}
 	}
@@ -284,21 +284,21 @@ void selection_render_pass::render()
 		}
 		gl_shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-		driver->render_instanced_dc(dc);
+        driver->render_instanced_dc(dc, gl_shdr);
 		
 		glPolygonMode(GL_FRONT, GL_LINE);
 		glLineWidth(4.0f);
 		driver->set_stencil_func(GL_NOTEQUAL, 1, -1);
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
 		gl_shdr->set_uniform("fragColOut", fvec4(dc->sel_color.rgb(),1.0f));	
-		driver->render_instanced_dc(dc);
+        driver->render_instanced_dc(dc, gl_shdr);
 		
 		glLineWidth(1.0f);
 		glPolygonMode(GL_FRONT, GL_FILL);
 		driver->enable_depth_test(false);
 		driver->set_stencil_func(GL_EQUAL, 1, 0);
 		gl_shdr->set_uniform("fragColOut", dc->sel_color);
-		driver->render_instanced_dc(dc);
+        driver->render_instanced_dc(dc, gl_shdr);
 	}	
 }
 
@@ -357,7 +357,7 @@ void gbuffer_render_pass::render()
 		driver->enable_culling(dc->mat->culling());
 		driver->set_cull_face(dc->mat->cull_mode());
 		driver->bind_textures(dc->mat);
-		driver->render_instanced_dc(dc);
+        driver->render_instanced_dc(dc, gl_shdr);
 	}
     driver->bind_gbuffer_textures(ren_target);
 }
@@ -486,7 +486,7 @@ void light_shadow_pass::render()
 
 			driver->enable_culling(idc->mat->culling());
 			driver->set_cull_face(idc->mat->cull_mode());
-			driver->render_instanced_dc(idc);
+            driver->render_instanced_dc(idc, cur_shdr);
 		}
 	}
 }
@@ -557,7 +557,7 @@ void light_pass::render()
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->bind_buffers();
 #endif
-		driver->render_light_dc(dc);
+        driver->render_light_dc(dc, gl_shdr);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->unbind_buffers();
 #endif
@@ -591,7 +591,7 @@ void culled_light_pass::render()
 		else
 			st_shdr->set_uniform("nodeTransform", fmat4());
 		st_shdr->set_uniform("transform", dc->light_transform);
-		driver->render_light_dc(dc);
+        driver->render_light_dc(dc, st_shdr);
 		
 		driver->enable_depth_test(false);
 		driver->enable_culling(true);
@@ -660,7 +660,7 @@ void culled_light_pass::render()
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY		
 		tbuffers->bind_buffers();
 #endif
-		driver->render_light_dc(dc);
+        driver->render_light_dc(dc, gl_shdr);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->unbind_buffers();
 #endif
@@ -676,14 +676,14 @@ void final_render_pass::render()
 	glBlitFramebuffer(
 		vp->bounds.x,
 		vp->bounds.y,
-		vp->bounds.z,
-		vp->bounds.w,
+        vp->bounds.z,
+        vp->bounds.w,
 		vp->bounds.x,
 		vp->bounds.y,
 		vp->bounds.z,
 		vp->bounds.w,
 		GL_COLOR_BUFFER_BIT,
-        GL_LINEAR);
+        GL_NEAREST);
 
 	read_buffer->set_read_buffer(nsgl_framebuffer::att_none);
 	read_buffer->unbind();	

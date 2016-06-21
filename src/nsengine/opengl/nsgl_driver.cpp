@@ -26,6 +26,7 @@
 #include <nsshader.h>
 #include <nsui_button_comp.h>
 #include <nsui_canvas_comp.h>
+#include <nsmesh.h>
 #include <nsui_comp.h>
 #include <nsfont.h>
 #include <nsscene.h>
@@ -170,7 +171,7 @@ gl_ctxt::gl_ctxt(uint32 id) :
 
 void gl_ctxt::init()
 {
-	glewExperimental = true;
+    glewExperimental = GL_TRUE;
 
     // Initialize the glew extensions - if this fails we want a crash because there is nothing
 	// useful the program can do without these initialized
@@ -182,8 +183,9 @@ void gl_ctxt::init()
 	}
 	initialized = true;
 
-
 	// GL default setup
+    gl_err_check("GL_INIT Normal Enum Wierdness");
+
 	glFrontFace(GL_CW);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -196,10 +198,6 @@ void gl_ctxt::init()
 
 	// Create the default framebuffer
 	m_default_target->gl_id = 0;
-
-	// Get single point from render system and initialize it
-	m_single_point->target = nsgl_buffer::array;
-	m_single_point->init();
 
 	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	m_tbuffers->init();
@@ -219,6 +217,9 @@ void gl_ctxt::init()
 	#endif
 	
 	fvec3 point;
+    // Get single point from render system and initialize it
+    m_single_point->target = nsgl_buffer::array;
+    m_single_point->init();
 	m_single_point->bind();
 	m_single_point->allocate(1, &point, nsgl_buffer::mutable_dynamic_draw);
 	m_single_point->unbind();
@@ -286,7 +287,7 @@ void nsgl_driver::init()
 	}
 	
 	// Default material
-	nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
+    nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
 	m_default_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
     m_default_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
     m_default_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
@@ -296,9 +297,9 @@ void nsgl_driver::init()
     nsstring shext(DEFAULT_SHADER_EXTENSION), dir(SHADER_DIR);
     rshaders.deflt = cplg->load<nsshader>(dir + nsstring(GBUFFER_SHADER) + shext, true);
 	rshaders.deflt_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_WF_SHADER) + shext, true);
-	rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
 	rshaders.light_stencil = cplg->load<nsshader>(dir + nsstring(LIGHTSTENCIL_SHADER) + shext, true);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+    rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
 	rshaders.frag_sort = cplg->load<nsshader>(dir + nsstring(FRAGMENT_SORT_SHADER) + shext, true);
 #endif
 	rshaders.dir_light = cplg->load<nsshader>(dir + nsstring(DIR_LIGHT_SHADER) + shext, true);
@@ -323,13 +324,15 @@ void nsgl_driver::init()
 	ps->xfb_locs = outLocs2;
 
 	// Light bounds, skydome, and tile meshes
-    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-	cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);	
+    nsmesh * mft = cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    nsmesh * mt = cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    nsmesh * mht = cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    nsmesh * mpl = cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    nsmesh * msl = cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    nsmesh * mdl = cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    nsmesh * ms = cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);
+
+
 }
 
 void nsgl_driver::release()
@@ -664,7 +667,7 @@ void nsgl_driver::create_default_render_passes()
 	final_pass->gl_state.blending = false;
 	final_pass->gl_state.stencil_test = false;
 	final_pass->gl_state.cull_face = GL_BACK;
-	final_pass->use_vp_size = true;
+    final_pass->use_vp_size = false;
 	final_pass->driver = this;
 
 	current_context()->render_passes.push_back(gbuf_pass);
@@ -673,15 +676,15 @@ void nsgl_driver::create_default_render_passes()
 #endif
     current_context()->render_passes.push_back(dir_shadow_pass);
     current_context()->render_passes.push_back(dir_pass);
-    current_context()->render_passes.push_back(spot_shadow_pass);
-    current_context()->render_passes.push_back(spot_pass);
-    current_context()->render_passes.push_back(point_shadow_pass);
-    current_context()->render_passes.push_back(point_pass);
+    //current_context()->render_passes.push_back(spot_shadow_pass);
+    //current_context()->render_passes.push_back(spot_pass);
+    //current_context()->render_passes.push_back(point_shadow_pass);
+    //current_context()->render_passes.push_back(point_pass);
 #ifndef ORDER_INDEPENDENT_TRANSLUCENCY
-    current_context()->render_passes.push_back(st_pass);
+    //current_context()->render_passes.push_back(st_pass);
 #endif
     current_context()->render_passes.push_back(sel_pass_opaque);
-    current_context()->render_passes.push_back(ui_pass);
+    //current_context()->render_passes.push_back(ui_pass);
 	current_context()->render_passes.push_back(final_pass);
 }
 
@@ -1129,7 +1132,7 @@ void nsgl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	}
 }
 
-void nsgl_driver::render_instanced_dc(instanced_draw_call * idc)
+void nsgl_driver::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader)
 {
 	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
 	so->gl_vao->bind();
@@ -1152,15 +1155,15 @@ void nsgl_driver::render_instanced_dc(instanced_draw_call * idc)
 		so->gl_vao->vertex_attrib_I_ptr(nsgl_shader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
 		so->gl_vao->vertex_attrib_div(nsgl_shader::loc_ref_id, 1);	
 	}
-	
+
+    bound_shader->validate();
 	gl_err_check("instanced_geometry_draw_call::render pre");
     glDrawElementsInstanced(get_gl_prim_type(idc->submesh->m_prim_type),
 							static_cast<GLsizei>(idc->submesh->m_indices.size()),
 							GL_UNSIGNED_INT,
 							0,
                             idc->transform_count);
-	gl_err_check("instanced_geometry_draw_call::render post");	
-
+    gl_err_check("instanced_geometry_draw_call::render post");
 	if (idc->tform_buffer != nullptr)
 	{
 		idc->tform_buffer->bind();
@@ -1175,38 +1178,40 @@ void nsgl_driver::render_instanced_dc(instanced_draw_call * idc)
 	so->gl_vao->unbind();
 }
 
-void nsgl_driver::render_light_dc(light_draw_call * idc)
+void nsgl_driver::render_light_dc(light_draw_call * idc, nsgl_shader * bound_shader)
 {
-	gl_err_check("pre dir_light_pass::render");
+    nsmesh::submesh * sub = nullptr;
+
 	if (idc->submesh == nullptr)
-	{
-		current_context()->m_single_point->bind();
-		glDrawArrays(GL_POINTS, 0, 1);
-		current_context()->m_single_point->unbind();
-	}
+        sub = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS)->sub(0);
 	else
-	{
-		nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
-		so->gl_vao->bind();
-        glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
-                       static_cast<GLsizei>(idc->submesh->m_indices.size()),
-                       GL_UNSIGNED_INT,
-                       0);
-		so->gl_vao->unbind();
-	}
-	gl_err_check("post dir_light_pass::render");	
+        sub = idc->submesh;
+
+    nsgl_submesh_obj * so = sub->video_obj<nsgl_submesh_obj>();
+    so->gl_vao->bind();
+    bound_shader->validate();
+    gl_err_check("pre render_light_dc::render pre");
+    glDrawElements(get_gl_prim_type(sub->m_prim_type),
+                   static_cast<GLsizei>(sub->m_indices.size()),
+                   GL_UNSIGNED_INT,
+                   0);
+    gl_err_check("post render_light_dc::render post");
+    so->gl_vao->unbind();
 }
 
-void nsgl_driver::render_ui_dc(ui_draw_call * idc)
+void nsgl_driver::render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader)
 {
-	gl_err_check("pre ui_draw_call::render");
-	if (current_context()->m_single_point != nullptr)
-	{
-		current_context()->m_single_point->bind();
-		glDrawArrays(GL_POINTS, 0, 1);
-		current_context()->m_single_point->unbind();
-	}
-    gl_err_check("post ui_draw_call::render");	
+    nsmesh::submesh * sub = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS)->sub(0);
+    nsgl_submesh_obj * so = sub->video_obj<nsgl_submesh_obj>();
+    so->gl_vao->bind();
+    bound_shader->validate();
+    gl_err_check("pre render_light_dc::render pre");
+    glDrawElements(get_gl_prim_type(sub->m_prim_type),
+                   static_cast<GLsizei>(sub->m_indices.size()),
+                   GL_UNSIGNED_INT,
+                   0);
+    gl_err_check("post render_light_dc::render post");
+    so->gl_vao->unbind();
 }
 
 void nsgl_driver::_add_lights_from_scene(nsscene * scene)

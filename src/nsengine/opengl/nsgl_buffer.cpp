@@ -56,9 +56,12 @@ void nsgl_buffer::unbind()
 	}
 	else
 	{
-		glBindBuffer(target, gl_id);
+        glBindBuffer(target, 0);
 	}
-	gl_err_check("nsgl_buffer::unbind");
+    if (gl_err_check("nsgl_buffer::unbind"))
+    {
+        dprint("Checking errors");
+    }
 }
 
 void nsgl_buffer::init()
@@ -69,7 +72,11 @@ void nsgl_buffer::init()
 		return;
 	}
 	glGenBuffers(1, &gl_id);
-	gl_err_check("nsgl_buffer::init");	
+    if (gl_err_check("nsgl_buffer::init"))
+    {
+        dprint("tooty fruity");
+    }
+    return;
 }
 	
 void nsgl_buffer::release()
@@ -133,6 +140,9 @@ void * nsgl_buffer::map_range(uint32 byte_offset, uint32 byte_length, access_map
 
 void nsgl_buffer::unmap()
 {
-	glUnmapBuffer(target);
+    if (glUnmapBuffer(target) == GL_FALSE)
+    {
+        dprint("nsgl_buffer::unmap - Error unmapping buffer");
+    }
 	gl_err_check("nsbuffer_object::unmap");
 }

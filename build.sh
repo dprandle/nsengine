@@ -11,7 +11,7 @@ copy_dirs()
 {    
     cp -r tests/import bin/$PLATFORM 
     cp -r tests/resources bin/$PLATFORM 
-    cp -r tests/logs bin/$PLATFORM 
+    mkdir bin/$PLATFORM/logs
 }
 
 build()
@@ -19,7 +19,7 @@ build()
     mkdir -p build/$PLATFORM/$CONFIG
     cd build/$PLATFORM/$CONFIG
     cmake -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE -DPLATFORM=$PLATFORM -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../../..
-    make -j8
+    make -j
     mv compile_commands.json ../../
     cd ../../..
 }

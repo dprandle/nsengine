@@ -316,10 +316,10 @@ void nsgl_tform_comp_obj::update()
     }
 
 	gl_tform_buffer->bind();
-	fmat4 * mappedT = gl_tform_buffer->map_range<fmat4>(0, psi->m_tforms.size(), nsgl_buffer::map_write);
+    fmat4 * mappedT = gl_tform_buffer->map<fmat4>(nsgl_buffer::write_only);
 
 	gl_tform_id_buffer->bind();
-	uint32 * mappedI = gl_tform_id_buffer->map_range<uint32>(0, psi->m_tforms.size(), nsgl_buffer::map_write);
+    uint32 * mappedI = gl_tform_id_buffer->map<uint32>(nsgl_buffer::write_only);
 	gl_tform_id_buffer->unbind();
 
 	psi->m_visible_count = 0;

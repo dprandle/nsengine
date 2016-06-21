@@ -154,7 +154,7 @@ struct nsgl_shader : public nsgl_obj
 	ns::signal<nsstring &> validation_error_msg;
 	
 	void _setup_xfb();
-	bool _validate();
+    bool validate();
 
 	error_state_type error_state;
 	xfb_mode xfb;

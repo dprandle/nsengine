@@ -2,6 +2,8 @@
 #define NSGLFW_H
 
 #include <nsmath.h>
+#include <nsfile_os.h>
+#include <nsvideo_driver.h>
 
 struct GLFWwindow;
 
@@ -62,6 +64,17 @@ bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title
     if (!glfwInit())
         return false;
 
+#ifdef GL_4_4
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+#elif defined(GL_4_1)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
 	GLFWmonitor * mon = NULL;
 	if (fullscreen)
 		mon = glfwGetPrimaryMonitor();		
@@ -78,7 +91,7 @@ bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title
 	glfwSetMouseButtonCallback(win, glfw_mousebutton_callback);
 	glfwSetCursorPosCallback(win, glfw_cursorpos_callback);
 	glfwSetScrollCallback(win, glfw_scroll_callback);
-	glfwSetFramebufferSizeCallback(win, glfw_resizewindow_callback); 
+    glfwSetFramebufferSizeCallback(win, glfw_resizewindow_callback);
     return true;
 }
 
@@ -467,13 +480,9 @@ void glfw_mousebutton_callback(GLFWwindow * pWindow, int32 pButton, int32 pActio
 
 void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 {
-    int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
-    glfwGetWindowSize(pWindow, &winX, &winY);
-    pPosY = winY - pPosY; // Switch to opengl coords
+    ivec2 window_size = nse.video_driver()->window_size();
     // normalize coords
-    pPosY /= double(winY);
-    pPosX /= double(winX);
-    nse.event_dispatch()->push<nsmouse_move_event>(fvec2(float(pPosX),float(pPosY)));
+    nse.event_dispatch()->push<nsmouse_move_event>(fvec2(pPosX / float(window_size.x), pPosY / float(window_size.y)));
 }
 
 void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset)

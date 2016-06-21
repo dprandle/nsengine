@@ -1,5 +1,5 @@
 type:<nsstring>nsshader</nsstring>
-stage.size:<uint32>1</uint32>
+stage.size:<uint32>2</uint32>
 stage[0].name:<nsstring>vertex</nsstring>
 stage[0].source:<nsstring>#version 410
 
@@ -55,5 +55,15 @@ void main()
 
     gl_Position = projMat * worldPos;
 } 
+
+</nsstring>
+stage[1].name:<nsstring>fragment</nsstring>
+stage[1].source:<nsstring>#version 410
+layout (location = 0) out vec4 colorOut;
+uniform vec4 fragColOut;
+void main()
+{
+	colorOut = vec4(fragColOut);
+}
 
 </nsstring>

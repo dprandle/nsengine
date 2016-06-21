@@ -60,8 +60,8 @@ int main()
     glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
     button_funcs bf;
     bf.m_router = new nsrouter;
-	
-	nsgl_driver * gl_driver = nse.create_video_driver<nsgl_driver>();
+
+    nsgl_driver * gl_driver = nse.create_video_driver<nsgl_driver>();
     nse.start();
 	gl_driver->setup_default_rendering();
 

@@ -1,5 +1,5 @@
 type:<nsstring>nsshader</nsstring>
-stage.size:<uint32>1</uint32>
+stage.size:<uint32>2</uint32>
 stage[0].name:<nsstring>vertex</nsstring>
 stage[0].source:<nsstring>#version 410
 layout (location = 0) in vec3 position;
@@ -11,6 +11,16 @@ uniform mat4 nodeTransform;
 void main()
 {
 	gl_Position = projCamMat * transform * nodeTransform * vec4(position, 1.0);
+}
+
+</nsstring>
+stage[1].name:<nsstring>fragment</nsstring>
+stage[1].source:<nsstring>#version 410
+layout (location = 0) out vec4 colorOut;
+uniform vec4 fragColOut;
+void main()
+{
+	colorOut = vec4(fragColOut);
 }
 
 </nsstring>

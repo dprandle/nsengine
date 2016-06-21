@@ -32,6 +32,7 @@ bool gl_err_check(nsstring errorMessage)
 		nsstringstream ss;
 		ss << errorMessage << "\nOpenGL Error Code : " << err;
 		dprint(ss.str());
+        //abort();
 #endif
 		return true;
 	}
