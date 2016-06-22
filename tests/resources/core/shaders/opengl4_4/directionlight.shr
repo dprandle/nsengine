@@ -102,6 +102,7 @@ uniform usampler2D gMatMap;
 uniform sampler2D gWorldPosMap;
 uniform sampler2D gNormalMap;
 
+uniform vec2 gbuf_tex_size;
 uniform vec4 viewport;
 uniform vec3 camWorldPos;
 uniform vec4 bgColor;
@@ -196,8 +197,7 @@ float linear_fog_factor(vec3 worldPos)
 
 vec2 uv_from_screen_size()
 {
-	return gl_FragCoord.xy/vec2(1920,1080);
-//	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw);
+	return gl_FragCoord.xy / gbuf_tex_size;
 }
 
 vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)

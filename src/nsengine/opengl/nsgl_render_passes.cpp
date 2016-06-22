@@ -422,7 +422,7 @@ void oit_render_pass::render()
 			driver->bind_textures(dc->mat);
 		}
 	    tbuffers->bind_buffers();
-		driver->render_instanced_dc(dc);
+        driver->render_instanced_dc(dc, gl_shdr);
 	}
 	ren_target->update_draw_buffers();
 	driver->enable_depth_test(false);
@@ -433,10 +433,20 @@ void oit_render_pass::render()
 	fsort->bind();
 	fsort->set_uniform("gMatMap", int32(G_PICKING_TEX_UNIT));
 	fsort->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-	driver->current_context()->m_single_point->bind();
-	tbuffers->bind_buffers();
-	glDrawArrays(GL_POINTS, 0, 1);	
-	tbuffers->unbind_buffers();
+    fsort->set_uniform("gbuf_tex_size", fvec2(ren_target->size.x,ren_target->size.y));
+
+    nsmesh::submesh * sub = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS)->sub(0);
+    nsgl_submesh_obj * so = sub->video_obj<nsgl_submesh_obj>();
+    so->gl_vao->bind();
+    tbuffers->bind_buffers();
+    gl_err_check("pre oit_render_pass::render pre");
+    glDrawElements(get_gl_prim_type(sub->m_prim_type),
+                   static_cast<GLsizei>(sub->m_indices.size()),
+                   GL_UNSIGNED_INT,
+                   0);
+    gl_err_check("post oit_render_pass::render post");
+    tbuffers->unbind_buffers();
+    so->gl_vao->unbind();
 }
 #endif
 
@@ -524,6 +534,7 @@ void light_pass::render()
 		gl_shdr->set_uniform("epsilon", DEFAULT_SHADOW_EPSILON);
 		gl_shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());
 		gl_shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
+		gl_shdr->set_uniform("gbuf_tex_size", fvec2(ren_target->size.x,ren_target->size.y));
 		gl_shdr->set_uniform("light.diffuseIntensity", dc->diffuse_intensity);
 		gl_shdr->set_uniform("light.ambientIntensity", dc->ambient_intensity);
 		gl_shdr->set_uniform("castShadows", dc->cast_shadows);
@@ -610,6 +621,7 @@ void culled_light_pass::render()
 		gl_shdr->set_uniform("projCamMat",
 							 vp->camera->get<nscam_comp>()->proj_cam());
 		gl_shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
+		gl_shdr->set_uniform("gbuf_tex_size", fvec2(ren_target->size.x,ren_target->size.y));
 		gl_shdr->set_uniform("light.diffuseIntensity", dc->diffuse_intensity);
 		gl_shdr->set_uniform("light.ambientIntensity", dc->ambient_intensity);
 		gl_shdr->set_uniform("castShadows", dc->cast_shadows);

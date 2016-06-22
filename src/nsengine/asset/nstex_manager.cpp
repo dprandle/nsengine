@@ -15,7 +15,7 @@
 #include <soil/SOIL.h>
 
 #include <nstex_manager.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nstexture.h>
 #include <nsengine.h>
 #include <nsplugin_manager.h>

@@ -75,14 +75,8 @@
 #define MAX_GBUFFER_DRAWS 2048
 #define MAX_UI_DRAW_CALLS 1024
 
-#include <nsfile_os.h>
+#include <nsplatform.h>
 
-#ifdef GL_4_4
-#define SHADER_DIR "opengl4_4/"
-#define ORDER_INDEPENDENT_TRANSLUCENCY
-#elif defined(GL_4_1)
-#define SHADER_DIR "opengl4_0/"
-#endif
 
 #include <nsvideo_driver.h>
 #include <myGL/glew.h>

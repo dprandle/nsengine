@@ -11,7 +11,7 @@
 */
 
 #include <nsshader_manager.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsengine.h>
 #include <nsplugin_manager.h>
 

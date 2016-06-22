@@ -58,7 +58,9 @@ struct nsgl_framebuffer : public nsgl_obj
 
 	void bind();
 
-	uivec3 pick(float norm_mouse_x, float norm_mouse_y, uint32 att_index);
+	uivec3 pick(int pixel_x, int pixel_y, uint32 att_index);
+
+	uivec3 pick(const ivec2 & pixel_xy, uint32 att_index);
 
 	attachment * create_renderbuffer_attachment(
 		attach_point att_point_,

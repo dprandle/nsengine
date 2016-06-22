@@ -49,6 +49,7 @@ uniform sampler2D gWorldPosMap;
 uniform sampler2D gNormalMap;
 
 uniform SpotLight light;
+uniform vec2 gbuf_tex_size;
 uniform vec4 viewport;
 uniform vec3 camWorldPos;
 uniform mat4 projLightMat;
@@ -91,8 +92,7 @@ float shadow_factor(vec3 worldPos)
 
 vec2 tex_coord()
 {
-	return gl_FragCoord.xy/vec2(1920,1080);
-//	return (gl_FragCoord.xy - viewport.xy) / (viewport.zw - viewport.xy);
+	return gl_FragCoord.xy / gbuf_tex_size;
 }
 
 vec4 light_influence(vec3 worldPos, vec3 norm, Material mat)

@@ -16,7 +16,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nsui_system.h>
 #include <nsvideo_driver.h>
 #include <hash/crc32.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsengine.h>
 #include <nsrender_system.h>
 #include <nsscene.h>

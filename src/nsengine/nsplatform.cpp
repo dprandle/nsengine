@@ -9,7 +9,7 @@
 */
 
 #include <iostream>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsasset_manager.h>
 #ifdef WIN32
 #include <filesystem>

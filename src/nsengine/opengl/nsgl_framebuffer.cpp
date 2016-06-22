@@ -89,19 +89,22 @@ bool nsgl_framebuffer::add(attachment * pAttachment, bool pOverwrite)
 	return true;
 }
 
-uivec3 nsgl_framebuffer::pick(float mouse_x, float mouse_y, uint32 att_index)
+uivec3 nsgl_framebuffer::pick(int pixel_x, int pixel_y, uint32 att_index)
 {
-	ivec2 tex_dim(mouse_x*size.x,mouse_y*size.y);
 	target = nsgl_framebuffer::fb_read;
 	bind();
 	set_read_buffer(nsgl_framebuffer::att_color+att_index);
 	uivec3 index;
-	glReadPixels(tex_dim.x, tex_dim.y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
+	glReadPixels(pixel_x, pixel_y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &index);
 	gl_err_check("nsgl_framebuffer::pick");
 	set_read_buffer(nsgl_framebuffer::att_none);
 	return index;
 }
 
+uivec3 nsgl_framebuffer::pick(const ivec2 & pixel_xy, uint32 att_index)
+{
+	return pick(pixel_xy.x,pixel_xy.y, att_index);
+}
 
 void nsgl_framebuffer::bind()
 {

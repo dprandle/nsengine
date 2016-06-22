@@ -12,7 +12,7 @@
 
 #include <nsdebug.h>
 #include <nslog_file.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 
 nsdebug::nsdebug() : m_console_open(false),
 	m_logging_messages(true), 

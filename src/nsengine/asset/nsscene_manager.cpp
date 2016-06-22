@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 #include <nsentity.h>
 #include <nsengine.h>
 #include <nsentity_manager.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsplugin_manager.h>
 
 nsscene * get_scene(const uivec2 & id)

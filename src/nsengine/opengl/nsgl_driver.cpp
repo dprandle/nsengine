@@ -502,7 +502,6 @@ void nsgl_driver::create_default_render_passes()
 	gbuf_pass->gl_state.cull_face = GL_BACK;
 	gbuf_pass->gl_state.blending = false;
 	gbuf_pass->gl_state.stencil_test = false;
-	gbuf_pass->use_vp_size = true;
 	gbuf_pass->driver = this;
 	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
@@ -559,7 +558,6 @@ void nsgl_driver::create_default_render_passes()
 #endif
 	dir_pass->rpass = dir_shadow_pass;
 	dir_pass->driver = this;
-    dir_pass->use_vp_size = true;
 	
 	light_shadow_pass * spot_shadow_pass = new light_shadow_pass;
 	spot_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
@@ -667,7 +665,6 @@ void nsgl_driver::create_default_render_passes()
 	final_pass->gl_state.blending = false;
 	final_pass->gl_state.stencil_test = false;
 	final_pass->gl_state.cull_face = GL_BACK;
-    final_pass->use_vp_size = false;
 	final_pass->driver = this;
 
 	current_context()->render_passes.push_back(gbuf_pass);
@@ -676,15 +673,15 @@ void nsgl_driver::create_default_render_passes()
 #endif
     current_context()->render_passes.push_back(dir_shadow_pass);
     current_context()->render_passes.push_back(dir_pass);
-    //current_context()->render_passes.push_back(spot_shadow_pass);
-    //current_context()->render_passes.push_back(spot_pass);
-    //current_context()->render_passes.push_back(point_shadow_pass);
-    //current_context()->render_passes.push_back(point_pass);
+    current_context()->render_passes.push_back(spot_shadow_pass);
+    current_context()->render_passes.push_back(spot_pass);
+    current_context()->render_passes.push_back(point_shadow_pass);
+    current_context()->render_passes.push_back(point_pass);
 #ifndef ORDER_INDEPENDENT_TRANSLUCENCY
     //current_context()->render_passes.push_back(st_pass);
 #endif
     current_context()->render_passes.push_back(sel_pass_opaque);
-    //current_context()->render_passes.push_back(ui_pass);
+    current_context()->render_passes.push_back(ui_pass);
 	current_context()->render_passes.push_back(final_pass);
 }
 
@@ -1110,10 +1107,8 @@ uivec3 nsgl_driver::pick(const fvec2 & mouse_pos)
 	if (pck == NULL)
 		return uivec3();
 
-	fvec2 screen_size = fvec2(current_context()->m_default_target->size.x, current_context()->m_default_target->size.y);
-	fvec2 accum_size = fvec2(pck->size.x,pck->size.y);
-	fvec2 rmpos = mouse_pos % (screen_size / accum_size);
-	uivec3 index = pck->pick(rmpos.x, rmpos.y, 1);
+	ivec2 winsize = window_size();
+	uivec3 index = pck->pick(mouse_pos.x * winsize.x, mouse_pos.y * winsize.y, 1);
 	return index;
 }
 

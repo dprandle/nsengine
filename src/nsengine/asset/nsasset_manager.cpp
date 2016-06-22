@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the nsasset_manager cla
 #include <nsengine.h>
 #include <nsasset_manager.h>
 #include <nspupper.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsfactory.h>
 #include <nscallback.h>
 #include <hash/sha256.h>

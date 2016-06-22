@@ -2,7 +2,7 @@
 #define NSGLFW_H
 
 #include <nsmath.h>
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsvideo_driver.h>
 
 struct GLFWwindow;
@@ -40,23 +40,27 @@ GLFWwindow * win;
 
 fvec2 platform_normalized_mpos()
 {
+    ivec2 window_size = nse.video_driver()->window_size();
+	
+    vec2 cpos;
+    glfwGetCursorPos(win, &cpos.x, &cpos.y);
 
-    double xPos = 0.0, yPos = 0.0; int32 frameBufX = 0, frameBufY = 0, winX = 0, winY = 0;
-    glfwGetCursorPos(win, &xPos, &yPos);
-    glfwGetFramebufferSize(win, &frameBufX, &frameBufY);
-    glfwGetWindowSize(win, &winX, &winY);
+	fvec2 norm_cpos(cpos.x / double(window_size.x), 1.0f - cpos.y / double(window_size.y));
+//    glfwGetFramebufferSize(win, &frameBufX, &frameBufY);
+//    glfwGetWindowSize(win, &winX, &winY);
 
-    yPos = winY - yPos; // Switch to opengl coords
+//    yPos = winY - yPos; // Switch to opengl coords
 
     // normalize coords
-    yPos /= double(frameBufY);
-    xPos /= double(frameBufX);
+	//   yPos /= double(frameBufY);
+//    xPos /= double(frameBufX);
 
     // so compilers wont complain turn in to floats explicitly
-    float normXPos = float(xPos);
-    float normYPos = float(yPos);
+//    float normXPos = float(xPos);
+	//   float normYPos = float(yPos);
 
-	return fvec2(normXPos,normYPos);
+//	return fvec2(normXPos,1.0normYPos);
+	return norm_cpos;
 }
 
 bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title)
@@ -69,7 +73,7 @@ bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 #elif defined(GL_4_1)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #endif
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -482,7 +486,7 @@ void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 {
     ivec2 window_size = nse.video_driver()->window_size();
     // normalize coords
-    nse.event_dispatch()->push<nsmouse_move_event>(fvec2(pPosX / float(window_size.x), pPosY / float(window_size.y)));
+    nse.event_dispatch()->push<nsmouse_move_event>(fvec2(pPosX / float(window_size.x), 1.0f - pPosY / float(window_size.y)));
 }
 
 void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset)

@@ -13,13 +13,22 @@
 #ifndef NSGL_RENDER_PASSES_H
 #define NSGL_RENDER_PASSES_H
 
-#include <nsfile_os.h>
+#include <nsplatform.h>
 #include <nsmath.h>
 #include <nsvideo_driver.h>
 
+#ifdef GL_4_4
+#define SHADER_DIR "opengl4_4/"
+#define ORDER_INDEPENDENT_TRANSLUCENCY
+#elif defined(GL_4_1)
+#define SHADER_DIR "opengl4_1/"
+#endif
+
 struct nsgl_driver;
 struct nsgl_framebuffer;
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 struct translucent_buffers;
+#endif
 struct light_draw_call;
 
 struct opengl_state
@@ -104,7 +113,9 @@ struct light_pass : public gl_render_pass
 {
 	virtual void render();
 	light_shadow_pass * rpass;
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY	
 	translucent_buffers * tbuffers;
+#endif
 };
 
 struct culled_light_pass : public light_pass

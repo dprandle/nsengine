@@ -1,5 +1,5 @@
-#ifndef NSFILEOS_H
-#define NSFILEOS_H
+#ifndef NSPLATFORM_H
+#define NSPLATFORM_H
 
 #include <sys/stat.h>
 #include <nsvector.h>
@@ -9,7 +9,7 @@
 #elif defined(__APPLE__)
 #define GL_4_1
 #else
-#define GL_4_1
+#define GL_4_4
 
 #endif
 namespace platform
