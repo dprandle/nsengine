@@ -97,7 +97,7 @@ bool nsgl_gbuffer::create_texture_attachments()
 		"gbuffer_picking",
 		nsgl_framebuffer::attach_point(nsgl_framebuffer::att_color + col_picking),
 		G_PICKING_TEX_UNIT,
-		tex_irgba,
+        tex_irgba,
 		tex_u32,
         lin);
 

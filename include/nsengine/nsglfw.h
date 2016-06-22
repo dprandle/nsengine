@@ -45,22 +45,12 @@ fvec2 platform_normalized_mpos()
     vec2 cpos;
     glfwGetCursorPos(win, &cpos.x, &cpos.y);
 
-	fvec2 norm_cpos(cpos.x / double(window_size.x), 1.0f - cpos.y / double(window_size.y));
-//    glfwGetFramebufferSize(win, &frameBufX, &frameBufY);
-//    glfwGetWindowSize(win, &winX, &winY);
+#ifdef RETINA_DISPLAY
+    cpos *= 2;
+#endif
 
-//    yPos = winY - yPos; // Switch to opengl coords
-
-    // normalize coords
-	//   yPos /= double(frameBufY);
-//    xPos /= double(frameBufX);
-
-    // so compilers wont complain turn in to floats explicitly
-//    float normXPos = float(xPos);
-	//   float normYPos = float(yPos);
-
-//	return fvec2(normXPos,1.0normYPos);
-	return norm_cpos;
+    fvec2 norm_cpos(cpos.x / double(window_size.x), 1.0f - cpos.y / double(window_size.y));
+    return norm_cpos;
 }
 
 bool glfw_setup(const ivec2 & screendim, bool fullscreen, const nsstring & title)
@@ -486,6 +476,9 @@ void glfw_cursorpos_callback(GLFWwindow * pWindow, double pPosX, double pPosY)
 {
     ivec2 window_size = nse.video_driver()->window_size();
     // normalize coords
+#ifdef RETINA_DISPLAY
+    pPosX *= 2; pPosY *= 2;
+#endif
     nse.event_dispatch()->push<nsmouse_move_event>(fvec2(pPosX / float(window_size.x), 1.0f - pPosY / float(window_size.y)));
 }
 
@@ -497,7 +490,7 @@ void glfw_scroll_callback(GLFWwindow * pWindow, double pXOffset, double pYOffset
 
 void glfw_resizewindow_callback(GLFWwindow* window, int32 width, int32 height)
 {
-	nse.event_dispatch()->push<window_resize_event>(0,ivec2(width,height));
+    nse.event_dispatch()->push<window_resize_event>(0,ivec2(width,height));
 }
 
 

@@ -57,13 +57,15 @@ struct button_funcs
 */
 int main()
 {
-    glfw_setup(ivec2(400,400), false, "Build And Battle 1.0.0");
+    glfw_setup(ivec2(1920,1080) / 2, false, "Build And Battle 1.0.0");
     button_funcs bf;
     bf.m_router = new nsrouter;
 
     nsgl_driver * gl_driver = nse.create_video_driver<nsgl_driver>();
     nse.start();
 	gl_driver->setup_default_rendering();
+
+    nse.event_dispatch()->push<window_resize_event>(0, ivec2(1920,1080));
 
     nsplugin * plg = nsep.create("most_basic_test");
     plg->enable(true);

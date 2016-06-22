@@ -8,8 +8,10 @@
 #define GL_4_4
 #elif defined(__APPLE__)
 #define GL_4_1
+#define RETINA_DISPLAY
 #else
 #define GL_4_4
+
 
 #endif
 namespace platform

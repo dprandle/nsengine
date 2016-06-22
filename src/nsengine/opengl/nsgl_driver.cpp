@@ -940,7 +940,10 @@ void nsgl_driver::enable_depth_test(bool enable)
 		glDisable(GL_DEPTH_TEST);
 		current_context()->m_gl_state.depth_write = enable;
 	}
-	gl_err_check("nsopengl_driver::enable_depth_test");
+    if (gl_err_check("nsopengl_driver::enable_depth_test"))
+    {
+        dprint("poop");
+    }
 	current_context()->m_gl_state.depth_test = enable;
 }
 
