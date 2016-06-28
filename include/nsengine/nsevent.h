@@ -31,6 +31,68 @@ struct nsevent
 	uint32 id;
 };
 
+struct nswindow_closed_event : public nsevent
+{
+	nswindow_closed_event(uint32 ctxt_id):
+		nsevent(ctxt_id)
+	{}
+};
+
+struct nswindow_position_event : public nsevent
+{
+	nswindow_position_event(uint32 ctxt_id, const ivec2 & new_pos):
+		nsevent(ctxt_id),
+		new_win_pos(new_pos)
+	{}
+	
+	ivec2 new_win_pos;
+};
+
+struct nswindow_minimized_event : public nsevent
+{
+	nswindow_minimized_event(uint32 ctxt_id):
+		nsevent(ctxt_id)
+	{}
+};
+
+struct nswindow_fullscreened_event : public nsevent
+{
+	nswindow_fullscreened_event(uint32 ctxt_id, const ivec2 & resolution_):
+		nsevent(ctxt_id),
+		resolution(resolution_)
+	{}
+	
+	ivec2 resolution;
+};
+
+struct nswindow_restored_event : public nsevent
+{
+	nswindow_restored_event(uint32 ctxt_id):
+		nsevent(ctxt_id)
+	{}
+};
+
+struct nswindow_maximized_event : public nsevent
+{
+	nswindow_maximized_event(uint32 ctxt_id):
+		nsevent(ctxt_id)
+	{}
+};
+
+struct nswindow_focused_event : public nsevent
+{
+	nswindow_focused_event(uint32 ctxt_id):
+		nsevent(ctxt_id)
+	{}
+};
+
+struct nswindow_unfocused_event : public nsevent
+{
+	nswindow_unfocused_event(uint32 ctxt_id):
+		nsevent(ctxt_id)
+	{}
+};
+
 struct nskey_event : public nsevent
 {
 

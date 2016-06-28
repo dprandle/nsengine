@@ -110,7 +110,10 @@ void pup(PUPer & p, nsvec2<T> & v2);
 template <class T>
 struct nsvec2
 {
-	nsvec2(const nsvec2<T> & copy_) : x(copy_.x), y(copy_.y) {}
+	template <class T2>
+	explicit nsvec2(const nsvec2<T2> & copy_) : x(static_cast<T>(copy_.x)),
+												y(static_cast<T>(copy_.y))
+	{}
 
 	nsvec2(const T & init_=static_cast<T>(0)) : x(init_), y(init_) {}
 

@@ -286,15 +286,35 @@ void selection_render_pass::render()
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
         driver->render_instanced_dc(dc, gl_shdr);
 		
-		glPolygonMode(GL_FRONT, GL_LINE);
-		glLineWidth(4.0f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        gl_err_check("selection_render_pass::render - glPolygonMode error 1");
+
+        glEnable(GL_LINE_SMOOTH);
+        gl_err_check("selection_render_pass::render - glEnable(GL_LINE_SMOOTH) error 1");
+
+        float lineWidth[2];
+        glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidth);
+		if (lineWidth[1] > 4.0f)
+			lineWidth[1] = 4.0f;
+        gl_err_check("selection_render_pass::render - glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidth)");
+
+        glLineWidth(lineWidth[1]);
+        gl_err_check("selection_render_pass::render - glLineWidth error 1");
+
 		driver->set_stencil_func(GL_NOTEQUAL, 1, -1);
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
 		gl_shdr->set_uniform("fragColOut", fvec4(dc->sel_color.rgb(),1.0f));	
         driver->render_instanced_dc(dc, gl_shdr);
 		
-		glLineWidth(1.0f);
-		glPolygonMode(GL_FRONT, GL_FILL);
+        glLineWidth(lineWidth[0]);
+        gl_err_check("selection_render_pass::render - glLineWidth error 2");
+
+        glDisable(GL_LINE_SMOOTH);
+        gl_err_check("selection_render_pass::render - glEnable(GL_LINE_SMOOTH) error 2");
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        gl_err_check("selection_render_pass::render - glPolygonMode error 2");
+
 		driver->enable_depth_test(false);
 		driver->set_stencil_func(GL_EQUAL, 1, 0);
 		gl_shdr->set_uniform("fragColOut", dc->sel_color);

@@ -47,7 +47,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsgl_driver.h>
 
 nsplugin::nsplugin():
-    nsasset(type_to_hash(nsplugin)),
+	nsasset(hash_id("nsplugin")),
 	m_notes(),
 	m_creator(),
 	m_creation_date(),

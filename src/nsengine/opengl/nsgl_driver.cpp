@@ -262,20 +262,20 @@ gl_ctxt::~gl_ctxt()
 nsgl_driver::nsgl_driver() :
 	nsvideo_driver(),
 	m_default_mat(nullptr)
-{}
+{
+	nse.register_vid_obj_type<nsgl_shader_obj>(SHADER_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_texture_obj>(TEXTURE_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_submesh_obj>(MESH_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_tform_comp_obj>(TFORM_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_sel_comp_obj>(SEL_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_particle_comp_obj>(PARTICLE_VID_OBJ_GUID);
+}
 
 nsgl_driver::~nsgl_driver()
 {}
 
 void nsgl_driver::init()
 {
-    nse.register_vid_obj_type<nsgl_shader_obj>(SHADER_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_texture_obj>(TEXTURE_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_submesh_obj>(MESH_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_tform_comp_obj>(TFORM_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_sel_comp_obj>(SEL_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_particle_comp_obj>(PARTICLE_VID_OBJ_GUID);
-
 	if (m_current_context == nullptr)
 		create_context();
 	
@@ -940,10 +940,7 @@ void nsgl_driver::enable_depth_test(bool enable)
 		glDisable(GL_DEPTH_TEST);
 		current_context()->m_gl_state.depth_write = enable;
 	}
-    if (gl_err_check("nsopengl_driver::enable_depth_test"))
-    {
-        dprint("poop");
-    }
+    gl_err_check("nsopengl_driver::enable_depth_test");
 	current_context()->m_gl_state.depth_test = enable;
 }
 

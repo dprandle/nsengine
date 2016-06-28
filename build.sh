@@ -11,7 +11,7 @@ copy_dirs()
 {    
     cp -r tests/import bin/$PLATFORM 
     cp -r tests/resources bin/$PLATFORM 
-    mkdir bin/$PLATFORM/logs
+    mkdir -p bin/$PLATFORM/logs
 }
 
 build()

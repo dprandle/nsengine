@@ -132,16 +132,22 @@ class nsengine;
 
 // Debuggin setup
 //#define NSDEBUG
+
+// Engine macros
+extern nsengine * global_engine_ptr;
+
+#define nse (*global_engine_ptr)
+
+#define type_to_guid(type) nse.guid(std::type_index(typeid(type)))
+#define hash_to_guid(hash) nse.guid(hash)
+#define type_to_hash(type) nse.type_id(std::type_index(typeid(type)))
+
 #define NSDEBUG_RT
 #ifdef NSDEBUG
-#define dprint(str) nsengine::inst().debug_print(str)
+#define dprint(str) nse.debug_print(str)
 #else
 #define dprint(str)
 #endif
-
-#define type_to_guid(type) nsengine::inst().guid(std::type_index(typeid(type)))
-#define hash_to_guid(hash) nsengine::inst().guid(hash)
-#define type_to_hash(type) nsengine::inst().type_id(std::type_index(typeid(type)))
 
 #include <map>
 #include <nsfactory.h>
@@ -196,6 +202,8 @@ public:
 		return static_cast<sys_type*>(create_system(tid));
 	}
 
+	void create_core_plugin();
+	
 	nssystem * create_system(uint32 type_id);
 	
 	nssystem * create_system(const nsstring & guid_);
@@ -501,11 +509,6 @@ public:
 	nsdebug * debug();
 #endif
 
-	/*!
-	Get engine instance.. if this is the first call then a new instance is created (static)
-	*/
-	static nsengine & inst();
-
 private:
 
 	void _create_factory_systems();
@@ -591,9 +594,6 @@ private:
 	nsstring m_import_dir;
 	nsstring m_cwd;
 };
-
-// Engine macros
-#define nse nsengine::inst()
 
 nsasset * get_asset(uint32 res_type, const uivec2 & res_id);
 

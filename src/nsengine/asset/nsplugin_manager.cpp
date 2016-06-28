@@ -26,7 +26,7 @@ nsplugin * get_plugin(uint32 id)
 }
 
 nsplugin_manager::nsplugin_manager() :
-	nsasset_manager(type_to_hash(nsplugin_manager))
+	nsasset_manager(hash_id("nsplugin_manager"))
 {
 	set_local_dir(LOCAL_PLUGIN_DIR_DEFAULT);
 	set_save_mode(text);

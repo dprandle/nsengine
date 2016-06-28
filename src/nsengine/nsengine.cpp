@@ -65,6 +65,8 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nsdebug.h>
 #endif
 
+nsengine * global_engine_ptr;
+
 nsengine::nsengine():
 	m_systems(new system_hash_map()),
 	m_event_disp(new nsevent_dispatcher()),
@@ -72,7 +74,8 @@ nsengine::nsengine():
 #ifdef NSDEBUG
 	m_deb(new nsdebug()),
 #endif
-	m_cwd(platform::cwd())
+	m_cwd(platform::cwd()),
+	m_driver(nullptr)
 {
 	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
 	srand(static_cast<unsigned>(time(0)));
@@ -85,6 +88,14 @@ nsengine::nsengine():
 	m_deb->set_log_dir(m_cwd + "logs");
 	m_deb->clear_log();
 #endif
+
+	_init_factories();
+	platform::platform_init();
+
+	m_plugins = new nsplugin_manager();
+	m_plugins->set_res_dir(m_cwd);
+
+	global_engine_ptr = this;
 }
 
 nsengine::~nsengine()
@@ -96,6 +107,15 @@ nsengine::~nsengine()
 #ifdef NSDEBUG
 	delete m_deb;
 #endif
+}
+
+void nsengine::create_core_plugin()
+{
+	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
+	plg->init();
+	plg->enable(true);
+	plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
+	plg->enable_group_save(false);	
 }
 
 bool nsengine::add_system(nssystem * sys_to_add)
@@ -269,24 +289,12 @@ void nsengine::set_import_dir(const nsstring & dir)
 
 void nsengine::start(bool create_default_systems)
 {
-	if (m_driver == nullptr)
+	if (m_driver == nullptr || !m_driver->initialized())
 	{
-		dprint("nsengine::start Cannot initialize engine without video driver created (use nse.create_video_driver<driver_type>()");
+		dprint("nsengine::start Cannot start engine without video driver created and initialized");
 		return;
 	}
 	
-	_init_factories();
-	platform::platform_init();
-
-	m_plugins = new nsplugin_manager();
-	m_plugins->set_res_dir(m_cwd);
-
-	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
-	plg->init();
-	plg->enable(true);
-	plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
-	plg->enable_group_save(false);
-	m_driver->init();
 	if (create_default_systems)
 		_create_factory_systems();
 	m_timer->start();
@@ -503,12 +511,6 @@ void nsengine::_init_factories()
 	register_resource<nsshader, nsshader_manager>("nsshader");
 	register_resource<nsfont, nsfont_manager>("nsfont");
 	register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
-}
-
-nsengine & nsengine::inst()
-{
-	static nsengine eng;
-	return eng;
 }
 
 uint32 hash_id(const nsstring & str)

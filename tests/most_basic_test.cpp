@@ -6,7 +6,6 @@
 #include <nsinput_map.h>
 #include <iostream>
 #include <nsengine.h>
-#include <nsglfw.h>
 #include <nsscene.h>
 #include <iostream>
 #include <nsplugin.h>
@@ -33,6 +32,7 @@
 #include <nsrender_system.h>
 #include <nsui_canvas_comp.h>
 #include <nsrouter.h>
+#include <nsgl_window.h>
 
 void setup_input_map(nsplugin * plg);
 
@@ -57,16 +57,14 @@ struct button_funcs
 */
 int main()
 {
-    glfw_setup(ivec2(1920,1080) / 2, false, "Build And Battle 1.0.0");
+//    glfw_setup(ivec2(1920,1080) / 2, false, "Build And Battle 1.0.0");
     button_funcs bf;
     bf.m_router = new nsrouter;
-
-    nsgl_driver * gl_driver = nse.create_video_driver<nsgl_driver>();
-    nse.start();
-	gl_driver->setup_default_rendering();
-
-    nse.event_dispatch()->push<window_resize_event>(0, ivec2(1920,1080));
-
+	nsengine e;
+	
+    nsgl_window wind(ivec2(800,600), "Basic Test");
+    e.start();
+	
     nsplugin * plg = nsep.create("most_basic_test");
     plg->enable(true);
 	setup_input_map(plg);
@@ -177,18 +175,16 @@ int main()
     nse.set_active_scene(new_scene);
 
 	
-    while (glfw_window_open())
+    while (wind.is_open())//glfw_window_open())
     {
         nse.update();
-		
 		nse.video_driver()->push_scene(new_scene);
 		nse.video_driver()->render_to_all_viewports();
 		nse.video_driver()->clear_render_queues();
-        glfw_update();
+		wind.update();
     }
 
     nse.shutdown();
-	glfw_shutdown();
     return 0;
 }
 

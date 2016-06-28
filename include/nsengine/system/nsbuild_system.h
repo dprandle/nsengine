@@ -135,6 +135,7 @@ private:
 	bool _handle_insert_entity(nsaction_event * evnt);
 	bool _handle_select_move_toggle(nsaction_event * evnt);
 	bool _handle_cam_change_event(nscam_change_event * evnt);
+	bool _handle_mouse_move_event(nsmouse_move_event * mevnt);
 	
 	nsentity * m_tile_brush;
 	nsentity * m_object_brush;
@@ -157,6 +158,7 @@ private:
 	bool m_painting;
 	bool m_erasing;
 	bool m_stamp_mode;
+	fvec2 m_norm_mpos;
 };
 
 

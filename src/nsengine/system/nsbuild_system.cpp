@@ -334,6 +334,7 @@ void nsbuild_system::init()
 	register_action_handler(nsbuild_system::_handle_toggle_build, NSTOGGLE_BUILD);
 	register_action_handler(nsbuild_system::_handle_toggle_tile_build_mode, NSTOGGLE_TILE_BUILD_MODE);
 	register_handler(nsbuild_system::_handle_cam_change_event);
+	register_handler(nsbuild_system::_handle_mouse_move_event);
 }
 
 bool nsbuild_system::enabled() const
@@ -363,7 +364,6 @@ void nsbuild_system::to_cursor()
 
 	nstform_comp * cam_tform = camera->get<nstform_comp>();
 	nscam_comp * camc = camera->get<nscam_comp>();
-	fvec2 cursor_pos = platform_normalized_mpos();
 
 	nstform_comp * brush_tform = nullptr;
 	instance_tform * itf = nullptr;
@@ -395,8 +395,8 @@ void nsbuild_system::to_cursor()
 	fvec4 screen_space = camc->proj_cam() * fvec4(original_pos, 1.0f);
 
 	screen_space /= screen_space.w;
-	screen_space.x = (2*cursor_pos.u-1);
-	screen_space.y = (2*cursor_pos.v-1);
+	screen_space.x = (2*m_norm_mpos.u-1);
+	screen_space.y = (2*m_norm_mpos.v-1);
 
 	fvec4 new_pos = camc->inv_proj_cam() * screen_space;
 	
@@ -856,5 +856,11 @@ bool nsbuild_system::_handle_insert_entity(nsaction_event * evnt)
 			  break;
 		}
 	}
+	return true;
+}
+
+bool nsbuild_system::_handle_mouse_move_event(nsmouse_move_event * mevnt)
+{
+	m_norm_mpos = mevnt->normalized_mpos;
 	return true;
 }

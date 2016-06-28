@@ -15,66 +15,119 @@
 
 #include <nsmath.h>
 
-struct GLFWwindow;
-
 struct window_params
 {
 	bool fullscreen;
 };
 
+struct full_screen_video_mode
+{
+	ivec2 resolution;
+	int32 refresh_rate;
+	ivec3 rgb_bit_depth;
+};
+
 enum window_state
 {
-	minimized,
-	maximized,
-	full_screen,
-	restored
+	window_minimized,
+	window_maximized,
+	window_full_screen,
+	window_restored
+};
+
+class nstex2d;
+
+enum window_creation_hint
+{
+	win_hint_resizable = 0x01,
+	win_hint_decorated = 0x02,
+	win_hint_always_on_top = 0x04
 };
 
 class nswindow
 {
-	void show();
-
-	void hide();
-
-	bool is_open();
-
-	bool visible();
-
-	void set_state(window_state ws);
-
-	window_state get_state();
+  public:
 	
-	const fvec2 & cursor_pos();
-
-	void poll_input();
-
-	const fvec2 & size(bool pixel = true);
-
-	void resize(const ivec2 & sz, bool pixel = true);
-
-	void swap_buffers();
-
-	void set_position(const ivec2 & pos);
-
-	const ivec2 & position();
-
-  private: // non-copyable or deleteable by anything except engine
-
-	friend class nsengine;
-
-	fvec2 m_size;
-	fvec2 m_position;
-	fvec2 m_norm_cpos;
-	bool m_visible;
-	window_state m_state;
+	nswindow(
+		const ivec2 & window_size,
+		const nsstring & win_title,
+		const nsstring & win_icon_path,
+		uint8 creation_hint,
+		window_state state_,
+		const ivec2 & position_,
+		bool visible_,
+		bool focused);
 	
-	GLFWwindow * m_window;
+	virtual ~nswindow();
 
-	nswindow();
-	~nswindow();
+	virtual void close();
+
+	virtual bool is_open();
+
+
+	virtual void update() = 0;
+
+	virtual void make_current() = 0;
+	
+
+	virtual void set_visible(bool visible) = 0;
+
+	virtual void set_cursor_pos(const fvec2 & norm_cpos) = 0;
+
+	virtual void set_state(window_state ws) = 0;
+
+	virtual void resize(const ivec2 & sz) = 0;
+
+	virtual void set_position(const ivec2 & pos) = 0;
+
+	virtual void focus() = 0;
+
+	virtual void set_icon(nstex2d * icon) = 0;
+
+	virtual void set_title(const nsstring & title) = 0;
+
+	virtual bool visible();
+
+	virtual const fvec2 & cursor_pos();
+
+	virtual window_state get_state();
+
+	virtual const ivec2 & size();
+
+	virtual const ivec2 & position();
+
+	virtual bool focused();
+
+	virtual nstex2d * icon();
+
+	virtual const nsstring & icon_path();
+
+	virtual const nsstring & title();
+
+	virtual bool user_resizable();
+
+	virtual bool always_on_top();
+
+	virtual bool decorated();
+
+  protected: // non-copyable or deleteable by anything except engine
+
 	nswindow(const nswindow & copy);
 	nswindow & operator=(const nswindow & copy);
 
+	ivec2 m_size;
+	ivec2 m_position;
+	uint8 m_creation_hint;
+	fvec2 m_norm_cpos;
+	bool m_visible;
+	window_state m_state;
+	bool m_open;
+	bool m_focused;
+	nsstring m_title;
+	nstex2d * m_icon;
+	nsstring m_icon_path;
+	std::vector<full_screen_video_mode> m_vid_modes;
+	uint32 m_vid_mode_index;
 };
 
 

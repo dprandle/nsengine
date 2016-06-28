@@ -56,7 +56,6 @@ public:
 	};
 
 	nsplugin();
-
 	nsplugin(const nsplugin & copy_);
 
 	~nsplugin();

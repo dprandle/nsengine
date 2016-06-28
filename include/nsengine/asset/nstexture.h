@@ -315,6 +315,8 @@ class nstex2d : public nstexture
 	nstex2d & operator=(nstex2d rhs);
 
 	int32 pixel_count() const;
+
+	void flip_verticle();
 	
 	virtual void pup(nsfile_pupper * p);
 

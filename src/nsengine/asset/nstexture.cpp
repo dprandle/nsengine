@@ -319,6 +319,23 @@ const ivec2 & nstex2d::size() const
 	return m_size;
 }
 
+void nstex2d::flip_verticle()
+{
+    uint8 bpp = bytes_per_pixel();
+    for (int y = 0; y < m_size.y / 2; y++)
+	{
+        for (int x = 0; x < m_size.x * bpp; x++)
+        {
+            uint32 cur_index = y * m_size.x * bpp + x;
+            uint32 flip_index = m_size.w * bpp * (m_size.h - y + 1) + x;
+
+			uint8 temp_byte = m_raw_data[cur_index];
+			m_raw_data[cur_index] = m_raw_data[flip_index];
+			m_raw_data[flip_index] = temp_byte;
+		}
+    }
+}
+
 void nstex2d::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)

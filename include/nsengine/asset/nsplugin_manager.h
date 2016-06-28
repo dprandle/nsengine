@@ -24,7 +24,7 @@ public:
 
 	using nsasset_manager::save;
 
-	nsplugin_manager();
+	nsplugin_manager();	
 	~nsplugin_manager();
 	
 	template <class res_type>
@@ -74,6 +74,6 @@ public:
 	}
 };
 
-#define nsep (*nsengine::inst().plugins())
+#define nsep (*nse.plugins())
 
 #endif
