@@ -21,7 +21,7 @@
 #include <nsoccupy_comp.h>
 
 class nsrender_comp;
-class nsrender_system;
+class nstform_system;
 
 class nsscene : public nsasset
 {

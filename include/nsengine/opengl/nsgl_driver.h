@@ -147,59 +147,22 @@ struct translucent_buffers
 
 GLEWContext * glewGetContext();
 
+class nsgl_driver;
+
 struct gl_ctxt : public vid_ctxt
 {
 	gl_ctxt(uint32 id);
 	~gl_ctxt();
 
-	virtual void init();
-	virtual void release();
+	void init();
 
-	GLEWContext * glew_context; // created in ctor
+	void release();
 
-#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-	translucent_buffers * m_tbuffers; // created in init
-#endif
-
-	nsgl_framebuffer * m_default_target; // created in init
-	nsgl_buffer * m_single_point;
-
-	rt_map render_targets; // created and removed by driver
-	opengl_state m_gl_state;
-	mat_id_map mat_shader_ids;
-	
-	std::vector<instanced_draw_call> all_instanced_draw_calls;
-	std::vector<light_draw_call> all_light_draw_calls;
-	std::vector<ui_draw_call> all_ui_draw_calls;
-};
-
-class nsgl_driver : public nsvideo_driver
-{
-  public:
-	enum render_pass_t
-	{
-		geometry,
-		oit,
-		dir_shadow,
-		dir_light,
-		spot_shadow,
-		spot_light,
-		point_shadow,
-		point_light,
-		selection,
-		final
-	};
-		
-	nsgl_driver();
-	~nsgl_driver();
-	
 	bool add_render_target(const nsstring & name, nsgl_framebuffer * rt);
 
 	nsgl_framebuffer * render_target(const nsstring & name);
 
 	nsgl_framebuffer * remove_render_target(const nsstring & name);
-
-	nsgl_framebuffer * default_target();
 
 	void destroy_render_target(const nsstring & name);
 
@@ -215,38 +178,22 @@ class nsgl_driver : public nsvideo_driver
 
 	void create_default_render_passes();
 
-	uint8 create_context();
+	void window_resized(const ivec2 & new_size);
 
-	gl_ctxt * current_context();
-
-	gl_ctxt * context(uint8 id);
-
-	opengl_state current_gl_state();
+	const ivec2 & window_size();
 
 	uivec3 pick(const fvec2 & mouse_pos);
 
-	nsmaterial * default_mat();
+	void push_scene(nsscene * scn);
 
-	void set_default_mat(nsmaterial * pDefMaterial);
+	void push_entity(nsentity * ent);
 
-	virtual void window_resized(const ivec2 & new_size);
-
-	virtual const ivec2 & window_size();
-
-	virtual void push_scene(nsscene * scn);
-
-	virtual void push_entity(nsentity * ent);
-
-	virtual void push_viewport_ui(viewport * vp);
+	void push_viewport_ui(viewport * vp);
 	
-	virtual void render_to_viewport(viewport * vp);
+	void render_to_viewport(viewport * vp);
 
-	virtual void render_to_all_viewports();
-
-	virtual void init();
-
-	virtual void release();
-
+	void render_to_all_viewports();
+	
 	uint32 active_tex_unit();
 
 	void set_active_texture_unit(uint32 tex_unit);
@@ -291,7 +238,7 @@ class nsgl_driver : public nsvideo_driver
 
 	void set_gl_state(const opengl_state & state);
 
-	void set_viewport(const ivec4 & val);
+	void set_gl_viewport(const ivec4 & val);
 
 	void bind_textures(nsmaterial * material);
 
@@ -303,14 +250,72 @@ class nsgl_driver : public nsvideo_driver
 
     void render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader);
 
+	void _add_draw_calls_from_scene(nsscene * scene);
+
+	void _add_lights_from_scene(nsscene * scene);
+
+	GLEWContext * glew_context; // created in ctor
+
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+	translucent_buffers * m_tbuffers; // created in init
+#endif
+
+	nsgl_framebuffer * m_default_target; // created in init
+	nsgl_buffer * m_single_point;
+
+	rt_map render_targets; // created and removed by driver
+	opengl_state m_gl_state;
+	mat_id_map mat_shader_ids;
+
+	nsgl_driver * driver;
+	
+	std::vector<instanced_draw_call> all_instanced_draw_calls;
+	std::vector<light_draw_call> all_light_draw_calls;
+	std::vector<ui_draw_call> all_ui_draw_calls;
+};
+
+class nsgl_driver : public nsvideo_driver
+{
+  public:
+	enum render_pass_t
+	{
+		geometry,
+		oit,
+		dir_shadow,
+		dir_light,
+		spot_shadow,
+		spot_light,
+		point_shadow,
+		point_light,
+		selection,
+		final
+	};
+		
+	nsgl_driver();
+	~nsgl_driver();
+	
+	uint8 create_context();
+
+	gl_ctxt * current_context();
+
+	gl_ctxt * context(uint8 id);
+
+	opengl_state current_gl_state();
+
+	nsmaterial * default_mat();
+
+	void set_default_mat(nsmaterial * pDefMaterial);
+
+	void init();
+
+	void release();
+
+	bool shaders_are_valid();
+
 	render_shaders rshaders;
 	
   private:
-
-	void _add_draw_calls_from_scene(nsscene * scene);
-	void _add_lights_from_scene(nsscene * scene);
 	
-	bool _valid_check();
 	nsmaterial * m_default_mat;
 };
 

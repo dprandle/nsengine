@@ -48,10 +48,14 @@ class nsgl_window : public nswindow
 		bool focused_=true);
 
 	~nsgl_window();
+
+	void close();
 	
 	void update();
 
 	void make_current();
+
+	bool is_current();
 
 	void set_visible(bool visible);
 

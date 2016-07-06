@@ -170,21 +170,21 @@ int main()
 
     viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
     vp.ui_canvases.push_back(canvas);
-    nse.video_driver()->insert_viewport("main_view",vp);
 
+    wind.vid_context()->insert_viewport("main_view",vp);
     nse.set_active_scene(new_scene);
 
 	
     while (wind.is_open())//glfw_window_open())
     {
         nse.update();
-		nse.video_driver()->push_scene(new_scene);
-		nse.video_driver()->render_to_all_viewports();
-		nse.video_driver()->clear_render_queues();
+		wind.vid_context()->push_scene(new_scene);
+		wind.vid_context()->render_to_all_viewports();
+		wind.vid_context()->clear_render_queues();
 		wind.update();
     }
 
-    nse.shutdown();
+    nse.release();
     return 0;
 }
 

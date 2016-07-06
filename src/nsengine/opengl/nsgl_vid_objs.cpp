@@ -305,15 +305,15 @@ void nsgl_tform_comp_obj::update()
 	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
 	
 	bool did_resize = false;
-    if (psi->m_buffer_resized)
-    {
+    //if (psi->m_buffer_resized)
+    //{
 		did_resize = true;
 		gl_tform_buffer->bind();
 		gl_tform_buffer->allocate<fmat4>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
 		gl_tform_id_buffer->bind();
 		gl_tform_id_buffer->allocate<uint32>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
         psi->m_buffer_resized = false;
-    }
+    //}
 
 	gl_tform_buffer->bind();
     fmat4 * mappedT = gl_tform_buffer->map<fmat4>(nsgl_buffer::write_only);
@@ -517,7 +517,7 @@ void nsgl_particle_comp_obj::update()
 	if (texRand != nullptr)
 	{
 		nsgl_texture * gltex = texRand->video_obj<nsgl_texture_obj>()->gl_tex;
-		nse.video_driver<nsgl_driver>()->set_active_texture_unit(RAND_TEX_UNIT);
+		nse.video_driver<nsgl_driver>()->current_context()->set_active_texture_unit(RAND_TEX_UNIT);
 		gltex->bind();
 	}
 		

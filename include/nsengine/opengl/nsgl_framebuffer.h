@@ -78,7 +78,9 @@ struct nsgl_framebuffer : public nsgl_obj
 		bool mipmaps=false)
 	{
 		nsplugin * plg = nsep.get(ENGINE_PLUG);
-		tex_type * tex = plg->create<tex_type>(pName);
+        tex_type * tex = plg->get<tex_type>(pName);
+        if (tex == nullptr)
+            tex = plg->create<tex_type>(pName);
 		tex->set_format(format_);
 		tex->set_parameters(pms);
 		tex->enable_mipmap_autogen(mipmaps);

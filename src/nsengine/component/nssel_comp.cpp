@@ -16,6 +16,7 @@ This file contains all of the neccessary definitions for the nssel_comp class.
 #include <nssel_comp.h>
 #include <nstimer.h>
 #include <nsgl_buffer.h>
+#include <nsscene.h>
 
 nssel_comp::nssel_comp() :
 	nscomponent(type_to_hash(nssel_comp)),
@@ -188,9 +189,18 @@ sel_per_scene_info * nssel_comp::scene_info(nsscene * scn)
 
 void sel_per_scene_info::video_context_init()
 {
-	video_context_release();
-	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(SEL_VID_OBJ_GUID)->create(this);
+	vid_ctxt * vc = nse.video_driver()->current_context();
+	if (vc != nullptr)
+	{
+		if (ctxt_objs[vc->context_id] == nullptr)
+		{
+			ctxt_objs[vc->context_id] = nse.factory<nsvid_obj_factory>(SEL_VID_OBJ_GUID)->create(this);
+		}
+		else
+		{
+			dprint("sel_per_scene_info::video_context_init - Context has already been initialized for sel_psi " + owner->owner()->name() + " in scene " + scene->name() + " in ctxtid " + std::to_string(vc->context_id));
+		}
+	}
 }
 
 sel_per_scene_info::~sel_per_scene_info()

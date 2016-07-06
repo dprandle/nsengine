@@ -137,11 +137,66 @@ struct vid_ctxt
 	vid_ctxt(uint32 cntxt_id);
 	virtual ~vid_ctxt();
 
+	viewport * insert_viewport(
+		const nsstring & vp_name,
+		const viewport & vp,
+		const nsstring & insert_before="");
+
+	bool remove_viewport(const nsstring & vp_name);
+
+	viewport * find_viewport(const nsstring & vp_name);
+
+	void move_viewport_back(const nsstring & vp_name);
+
+	void move_viewport_forward(const nsstring & vp_name);
+
+	void move_viewport_to_back(const nsstring & vp_name);
+
+	void move_viewport_to_front(const nsstring & vp_name);
+
+	viewport * front_viewport_at_screen_pos(const fvec2 & screen_pos);
+
+	void destroy_all_render_queues();
+
+	bool add_queue(const nsstring & name, render_queue * rt);
+	
+	render_queue * create_queue(const nsstring & name);
+
+	void destroy_queue(const nsstring & name);
+
+	render_queue * queue(const nsstring & name);
+
+	render_queue * remove_queue(const nsstring & name);
+
+	void destroy_all_render_passes();
+
+	void cleanup_vid_objs();
+
+	virtual void clear_render_queues();
+
+	virtual void update_vid_objs();	
+
+	virtual void window_resized(const ivec2 & new_size);
+
 	virtual void init() = 0;
+
 	virtual void release() = 0;
 
-	virtual void update_vid_objs();
-	
+	virtual uivec3 pick(const fvec2 & mouse_pos) = 0;
+
+	virtual void push_scene(nsscene * scn) = 0;
+
+	virtual void push_entity(nsentity * ent) = 0;
+
+	virtual void push_viewport_ui(viewport * vp) = 0;
+
+	virtual void render_to_viewport(viewport * vp) = 0;
+
+	virtual void render_to_all_viewports() = 0;
+
+	virtual void setup_default_rendering() = 0;
+
+	virtual const ivec2 & window_size() = 0;
 
 	uint32 context_id;
 	bool initialized;
@@ -161,69 +216,14 @@ class nsvideo_driver
 	
 	virtual ~nsvideo_driver();
 
-	virtual void push_scene(nsscene * scn) = 0;
+	virtual void init();
 
-	virtual void push_entity(nsentity * ent) = 0;
-
-	virtual void push_viewport_ui(viewport * vp) = 0;
-
-	virtual void render_to_viewport(viewport * vp) = 0;
-
-	virtual void render_to_all_viewports() = 0;
-
-	virtual void init()=0;
-
-	virtual void release()=0;
-
-	void cleanup_vid_objs();
+	virtual void release();
 
 	void enable_auto_cleanup(bool enable);
 
 	bool auto_cleanup();
-
-	void destroy_all_render_queues();
-
-	virtual void clear_render_queues();
-
-	bool add_queue(const nsstring & name, render_queue * rt);
 	
-	render_queue * create_queue(const nsstring & name);
-
-	void destroy_queue(const nsstring & name);
-
-	render_queue * queue(const nsstring & name);
-
-	render_queue * remove_queue(const nsstring & name);
-
-	void destroy_all_render_passes();
-
-	render_pass_vector * render_passes();
-
-	viewport * insert_viewport(
-		const nsstring & vp_name,
-		const viewport & vp,
-		const nsstring & insert_before="");
-
-	bool remove_viewport(const nsstring & vp_name);
-
-	viewport * find_viewport(const nsstring & vp_name);
-
-	void move_viewport_back(const nsstring & vp_name);
-
-	void move_viewport_forward(const nsstring & vp_name);
-
-	void move_viewport_to_back(const nsstring & vp_name);
-
-	void move_viewport_to_front(const nsstring & vp_name);
-
-	viewport * focused_viewport();
-
-	void set_focused_viewport(viewport * vp);
-
-	viewport * front_viewport(const fvec2 & screen_pos);
-	
-	std::list<vp_node> * viewports();
-
 	virtual uint8 create_context() = 0;
 
 	virtual bool destroy_context(uint8 c_id);
@@ -233,15 +233,9 @@ class nsvideo_driver
 	virtual vid_ctxt * current_context();
 
 	virtual vid_ctxt * context(uint8 id);
-
-	virtual uivec3 pick(const fvec2 & mouse_pos) = 0;
 	
 	bool initialized();
-
-	virtual void window_resized(const ivec2 & new_size);
-
-	virtual const ivec2 & window_size() = 0;
-
+	
 	ns::signal<vid_ctxt*> context_switch;
 
   protected:
@@ -249,6 +243,7 @@ class nsvideo_driver
 	bool m_auto_cleanup;
 	vid_ctxt * m_current_context;
 	vid_ctxt * m_contexts[MAX_CONTEXT_COUNT];
+	bool m_initialized;
 };
 
 class nsvideo_object;

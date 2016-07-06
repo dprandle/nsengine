@@ -166,8 +166,24 @@ gl_ctxt::gl_ctxt(uint32 id) :
 	m_tbuffers(new translucent_buffers()),
 #endif
 	m_default_target(new nsgl_framebuffer()),
-	m_single_point(new nsgl_buffer())
+	m_single_point(new nsgl_buffer()),
+	driver(nullptr)
 {}
+
+gl_ctxt::~gl_ctxt()
+{
+	while (render_targets.begin() != render_targets.end())
+	{
+		delete render_targets.begin()->second;
+		render_targets.erase(render_targets.begin());
+	}
+	delete m_single_point;	
+	delete m_default_target;
+	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+	delete m_tbuffers;
+	#endif
+	delete glew_context;
+}
 
 void gl_ctxt::init()
 {
@@ -244,131 +260,18 @@ void gl_ctxt::release()
 #endif
 }
 
-gl_ctxt::~gl_ctxt()
+uivec3 gl_ctxt::pick(const fvec2 & mouse_pos)
 {
-	while (render_targets.begin() != render_targets.end())
-	{
-		delete render_targets.begin()->second;
-		render_targets.erase(render_targets.begin());
-	}
-	delete m_single_point;	
-	delete m_default_target;
-	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-	delete m_tbuffers;
-	#endif
-	delete glew_context;
+	nsgl_framebuffer * pck = (nsgl_framebuffer*)render_target(ACCUM_TARGET);
+	if (pck == NULL)
+		return uivec3();
+
+	ivec2 winsize = window_size();
+	uivec3 index = pck->pick(mouse_pos.x * winsize.x, mouse_pos.y * winsize.y, 1);
+	return index;
 }
 
-nsgl_driver::nsgl_driver() :
-	nsvideo_driver(),
-	m_default_mat(nullptr)
-{
-	nse.register_vid_obj_type<nsgl_shader_obj>(SHADER_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_texture_obj>(TEXTURE_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_submesh_obj>(MESH_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_tform_comp_obj>(TFORM_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_sel_comp_obj>(SEL_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_particle_comp_obj>(PARTICLE_VID_OBJ_GUID);
-}
-
-nsgl_driver::~nsgl_driver()
-{}
-
-void nsgl_driver::init()
-{
-	if (m_current_context == nullptr)
-		create_context();
-	
-	nsplugin * cplg = nse.core();
-	if (cplg == nullptr)
-	{
-		dprint("nsgl_driver::nsgl_driver You must call nse.start() before creating the video driver");
-		return;
-	}
-	
-	// Default material
-    nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
-	m_default_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
-    m_default_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
-    m_default_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
-
-
-	// Rendering shaders
-    nsstring shext(DEFAULT_SHADER_EXTENSION), dir(SHADER_DIR);
-    rshaders.deflt = cplg->load<nsshader>(dir + nsstring(GBUFFER_SHADER) + shext, true);
-	rshaders.deflt_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_WF_SHADER) + shext, true);
-	rshaders.light_stencil = cplg->load<nsshader>(dir + nsstring(LIGHTSTENCIL_SHADER) + shext, true);
-#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-    rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
-	rshaders.frag_sort = cplg->load<nsshader>(dir + nsstring(FRAGMENT_SORT_SHADER) + shext, true);
-#endif
-	rshaders.dir_light = cplg->load<nsshader>(dir + nsstring(DIR_LIGHT_SHADER) + shext, true);
-	rshaders.point_light = cplg->load<nsshader>(dir + nsstring(POINT_LIGHT_SHADER) + shext, true);
-	rshaders.spot_light = cplg->load<nsshader>(dir + nsstring(SPOT_LIGHT_SHADER) + shext, true);
-	rshaders.shadow_cube = cplg->load<nsshader>(dir + nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.shadow_2d = cplg->load<nsshader>(dir + nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.sel_shader = cplg->load<nsshader>(dir + nsstring(SELECTION_SHADER) + shext, true);
-	rshaders.deflt_particle = cplg->load<nsshader>(dir + nsstring(RENDER_PARTICLE_SHADER) + shext, true);
-	cplg->load<nsshader>(dir + nsstring(SKYBOX_SHADER) + shext, true);
-	cplg->load<nsshader>(dir + nsstring(UI_SHADER) + shext, true);
-	cplg->load<nsshader>(dir + nsstring(UI_TEXT_SHADER) + shext, true);
-
-	// particle transform feedback shader
-	nsgl_shader * ps = cplg->load<nsshader>(dir + nsstring(PARTICLE_PROCESS_SHADER) + shext, true)->video_obj<nsgl_shader_obj>()->gl_shdr;
-	std::vector<nsstring> outLocs2;
-	outLocs2.push_back("gPosOut");
-	outLocs2.push_back("gVelOut");
-	outLocs2.push_back("gScaleAndAngleOut");
-	outLocs2.push_back("gAgeOut");
-	ps->xfb = nsgl_shader::xfb_interleaved;
-	ps->xfb_locs = outLocs2;
-
-	// Light bounds, skydome, and tile meshes
-    nsmesh * mft = cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    nsmesh * mt = cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    nsmesh * mht = cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    nsmesh * mpl = cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    nsmesh * msl = cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    nsmesh * mdl = cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
-    nsmesh * ms = cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);
-
-
-}
-
-void nsgl_driver::release()
-{}
-
-uint8 nsgl_driver::create_context()
-{
-
-	for (uint8 id = 0; id < MAX_CONTEXT_COUNT; ++id)
-	{
-		if (m_contexts[id] == nullptr)
-		{
-			m_contexts[id] = new gl_ctxt(id);
-			m_current_context = m_contexts[id];
-			m_current_context->init();
-			make_context_current(id); // i know already current - but want to call the signal and update objs
-			return id;
-		}
-	}
-	dprint("nsgl_driver::creat_context Unable to create context - context slots are all occupied");
-	return -1;
-}
-
-gl_ctxt * nsgl_driver::current_context()
-{
-    return static_cast<gl_ctxt*>(m_current_context);
-}
-
-gl_ctxt * nsgl_driver::context(uint8 id)
-{
-	if (id > MAX_CONTEXT_COUNT)
-		return nullptr;
-	return static_cast<gl_ctxt*>(m_contexts[id]);		
-}
-
-void nsgl_driver::create_default_render_targets()
+void gl_ctxt::create_default_render_targets()
 {
 	// Create all of the framebuffers
 	nsgl_gbuffer * gbuffer = new nsgl_gbuffer;
@@ -423,7 +326,7 @@ void nsgl_driver::create_default_render_targets()
 	add_render_target(POINT_SHADOW_TARGET, point_shadow_target);	
 }
 
-void nsgl_driver::create_default_render_queues()
+void gl_ctxt::create_default_render_queues()
 {
 	create_queue(SCENE_OPAQUE_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
 	create_queue(SCENE_TRANSLUCENT_QUEUE)->reserve(MAX_GBUFFER_DRAWS);
@@ -434,63 +337,53 @@ void nsgl_driver::create_default_render_queues()
 	create_queue(UI_RENDER_QUEUE)->reserve(MAX_UI_DRAW_CALLS);
 }
 
-void nsgl_driver::setup_default_rendering()
+void gl_ctxt::setup_default_rendering()
 {
-	if (current_context() == nullptr)
-	{
-		dprint("nsopengl_driver::setup_default_rendering You need to create a context before setting up rendering");
-		return;
-	}
 	create_default_render_queues();
 	create_default_render_targets();
 	create_default_render_passes();
 }
 
-void nsgl_driver::destroy_all_render_targets()
+void gl_ctxt::destroy_all_render_targets()
 {
-	while (current_context()->render_targets.begin() != current_context()->render_targets.end())
-		destroy_render_target(current_context()->render_targets.begin()->first);
-	current_context()->render_targets.clear();
+	while (render_targets.begin() != render_targets.end())
+		destroy_render_target(render_targets.begin()->first);
+	render_targets.clear();
 }
 
-bool nsgl_driver::add_render_target(const nsstring & name, nsgl_framebuffer * rt)
+bool gl_ctxt::add_render_target(const nsstring & name, nsgl_framebuffer * rt)
 {
-	return current_context()->render_targets.emplace(name, rt).second;
+	return render_targets.emplace(name, rt).second;
 }
 
-nsgl_framebuffer * nsgl_driver::default_target()
-{
-	return current_context()->m_default_target;
-}
-
-nsgl_framebuffer * nsgl_driver::remove_render_target(const nsstring & name)
+nsgl_framebuffer * gl_ctxt::remove_render_target(const nsstring & name)
 {
 	nsgl_framebuffer * fb = nullptr;
-	auto iter = current_context()->render_targets.find(name);
-	if (iter != current_context()->render_targets.end())
+	auto iter = render_targets.find(name);
+	if (iter != render_targets.end())
 	{
 		fb = iter->second;
-		current_context()->render_targets.erase(iter);
+		render_targets.erase(iter);
 	}
 	return fb;
 }
 
-nsgl_framebuffer * nsgl_driver::render_target(const nsstring & name)
+nsgl_framebuffer * gl_ctxt::render_target(const nsstring & name)
 {
-	auto iter = current_context()->render_targets.find(name);
-	if (iter != current_context()->render_targets.end())
+	auto iter = render_targets.find(name);
+	if (iter != render_targets.end())
 		return iter->second;
 	return nullptr;
 }
 
-void nsgl_driver::destroy_render_target(const nsstring & name)
+void gl_ctxt::destroy_render_target(const nsstring & name)
 {
 	nsgl_framebuffer * rt = remove_render_target(name);
 	rt->release();
 	delete rt;
 }
 
-void nsgl_driver::create_default_render_passes()
+void gl_ctxt::create_default_render_passes()
 {
 	// setup gbuffer geometry stage
 	gbuffer_render_pass * gbuf_pass = new gbuffer_render_pass;
@@ -502,12 +395,12 @@ void nsgl_driver::create_default_render_passes()
 	gbuf_pass->gl_state.cull_face = GL_BACK;
 	gbuf_pass->gl_state.blending = false;
 	gbuf_pass->gl_state.stencil_test = false;
-	gbuf_pass->driver = this;
+	gbuf_pass->driver_ctxt = this;
 	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	oit_render_pass * oit_pass = new oit_render_pass;
-	oit_pass->tbuffers = current_context()->m_tbuffers;
+	oit_pass->tbuffers = m_tbuffers;
 	oit_pass->rq = queue(SCENE_TRANSLUCENT_QUEUE);
 	oit_pass->ren_target = render_target(ACCUM_TARGET);
 	oit_pass->gl_state.depth_test = true;
@@ -516,7 +409,7 @@ void nsgl_driver::create_default_render_passes()
 	oit_pass->gl_state.cull_face = GL_BACK;
 	oit_pass->gl_state.blending = false;
 	oit_pass->gl_state.stencil_test = false;
-	oit_pass->driver = this;
+	oit_pass->driver_ctxt = this;
 #else
 	sorted_translucency_render_pass * st_pass = new sorted_translucency_render_pass;
 	st_pass->rq = queue(SCENE_TRANSLUCENT_QUEUE);
@@ -526,7 +419,7 @@ void nsgl_driver::create_default_render_passes()
 	st_pass->gl_state.culling = false;
 	st_pass->gl_state.blending = true;
 	st_pass->gl_state.stencil_test = false;
-	st_pass->driver = this;	
+	st_pass->driver_ctxt = this;	
 #endif
 
 	// setup dir light shadow stage
@@ -541,7 +434,7 @@ void nsgl_driver::create_default_render_passes()
 	dir_shadow_pass->gl_state.stencil_test = false;
 	dir_shadow_pass->gl_state.clear_mask = GL_DEPTH_BUFFER_BIT;
 	dir_shadow_pass->enabled = false;
-	dir_shadow_pass->driver = this;
+	dir_shadow_pass->driver_ctxt = this;
 
 	// setup dir light stage
 	light_pass * dir_pass = new light_pass;
@@ -554,10 +447,10 @@ void nsgl_driver::create_default_render_passes()
 	dir_pass->gl_state.blending = false;
 	dir_pass->gl_state.stencil_test = false;
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-	dir_pass->tbuffers = current_context()->m_tbuffers;
+	dir_pass->tbuffers = m_tbuffers;
 #endif
 	dir_pass->rpass = dir_shadow_pass;
-	dir_pass->driver = this;
+	dir_pass->driver_ctxt = this;
 	
 	light_shadow_pass * spot_shadow_pass = new light_shadow_pass;
 	spot_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
@@ -570,13 +463,13 @@ void nsgl_driver::create_default_render_passes()
 	spot_shadow_pass->gl_state.blending = false;
 	spot_shadow_pass->gl_state.stencil_test = false;
 	spot_shadow_pass->gl_state.clear_mask = GL_DEPTH_BUFFER_BIT;
-	spot_shadow_pass->driver = this;
+	spot_shadow_pass->driver_ctxt = this;
 
 	culled_light_pass * spot_pass = new culled_light_pass;
 	spot_pass->rq = queue(SPOT_LIGHT_QUEUE);
 	spot_pass->ren_target = render_target(ACCUM_TARGET);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-	spot_pass->tbuffers = current_context()->m_tbuffers;
+	spot_pass->tbuffers = m_tbuffers;
 #endif
 	spot_pass->rpass = spot_shadow_pass;
 	spot_pass->gl_state.depth_test = true;
@@ -590,7 +483,7 @@ void nsgl_driver::create_default_render_passes()
 	spot_pass->gl_state.stencil_op_back = ivec3(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 	spot_pass->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 	spot_pass->gl_state.clear_mask = GL_STENCIL_BUFFER_BIT;
-	spot_pass->driver = this;
+	spot_pass->driver_ctxt = this;
 
 	light_shadow_pass * point_shadow_pass = new light_shadow_pass;
 	point_shadow_pass->rq = queue(SCENE_OPAQUE_QUEUE);
@@ -603,13 +496,13 @@ void nsgl_driver::create_default_render_passes()
 	point_shadow_pass->gl_state.stencil_test = false;
 	point_shadow_pass->gl_state.clear_mask = GL_DEPTH_BUFFER_BIT;
 	point_shadow_pass->enabled = false;
-	point_shadow_pass->driver = this;
+	point_shadow_pass->driver_ctxt = this;
 
 	culled_light_pass * point_pass = new culled_light_pass;
 	point_pass->rq = queue(POINT_LIGHT_QUEUE);
 	point_pass->ren_target = render_target(ACCUM_TARGET);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-	point_pass->tbuffers = current_context()->m_tbuffers;
+	point_pass->tbuffers = m_tbuffers;
 #endif
 	point_pass->rpass = point_shadow_pass;
 	point_pass->gl_state.depth_test = true;
@@ -623,7 +516,7 @@ void nsgl_driver::create_default_render_passes()
 	point_pass->gl_state.stencil_op_back = ivec3(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 	point_pass->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 	point_pass->gl_state.clear_mask = GL_STENCIL_BUFFER_BIT;
-	point_pass->driver = this;
+	point_pass->driver_ctxt = this;
 
 	selection_render_pass * sel_pass_opaque = new selection_render_pass;
 	sel_pass_opaque->rq = queue(SCENE_SELECTION_QUEUE);
@@ -640,7 +533,7 @@ void nsgl_driver::create_default_render_passes()
 	sel_pass_opaque->gl_state.stencil_op_back = ivec3(GL_KEEP, GL_KEEP, GL_REPLACE);
 	sel_pass_opaque->gl_state.stencil_op_front = ivec3(GL_KEEP, GL_KEEP, GL_REPLACE);
 	sel_pass_opaque->gl_state.stencil_func = ivec3(GL_ALWAYS, 1, -1);
-	sel_pass_opaque->driver = this;
+	sel_pass_opaque->driver_ctxt = this;
 
 	ui_render_pass * ui_pass = new ui_render_pass;
 	ui_pass->rq = queue(UI_RENDER_QUEUE);
@@ -654,10 +547,10 @@ void nsgl_driver::create_default_render_passes()
 	ui_pass->gl_state.depth_test = false;
 	ui_pass->gl_state.depth_write = false;
 	ui_pass->gl_state.stencil_test = false;
-	ui_pass->driver = this;
+	ui_pass->driver_ctxt = this;
 
 	final_render_pass * final_pass = new final_render_pass;
-	final_pass->ren_target = current_context()->m_default_target;
+	final_pass->ren_target = m_default_target;
     final_pass->read_buffer = render_target(ACCUM_TARGET);
 	final_pass->gl_state.depth_test = false;
 	final_pass->gl_state.depth_write = false;
@@ -665,44 +558,63 @@ void nsgl_driver::create_default_render_passes()
 	final_pass->gl_state.blending = false;
 	final_pass->gl_state.stencil_test = false;
 	final_pass->gl_state.cull_face = GL_BACK;
-	final_pass->driver = this;
+	final_pass->driver_ctxt = this;
 
-	current_context()->render_passes.push_back(gbuf_pass);
+	render_passes.push_back(gbuf_pass);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-    current_context()->render_passes.push_back(oit_pass);
+    render_passes.push_back(oit_pass);
 #endif
-    current_context()->render_passes.push_back(dir_shadow_pass);
-    current_context()->render_passes.push_back(dir_pass);
-    current_context()->render_passes.push_back(spot_shadow_pass);
-    current_context()->render_passes.push_back(spot_pass);
-    current_context()->render_passes.push_back(point_shadow_pass);
-    current_context()->render_passes.push_back(point_pass);
+    render_passes.push_back(dir_shadow_pass);
+    render_passes.push_back(dir_pass);
+    render_passes.push_back(spot_shadow_pass);
+    render_passes.push_back(spot_pass);
+    render_passes.push_back(point_shadow_pass);
+    render_passes.push_back(point_pass);
 #ifndef ORDER_INDEPENDENT_TRANSLUCENCY
-    //current_context()->render_passes.push_back(st_pass);
+    //render_passes.push_back(st_pass);
 #endif
-    current_context()->render_passes.push_back(sel_pass_opaque);
-    current_context()->render_passes.push_back(ui_pass);
-	current_context()->render_passes.push_back(final_pass);
+    render_passes.push_back(sel_pass_opaque);
+    render_passes.push_back(ui_pass);
+	render_passes.push_back(final_pass);
 }
 
-void nsgl_driver::window_resized(const ivec2 & new_size)
+void gl_ctxt::window_resized(const ivec2 & new_size)
 {
-	current_context()->m_default_target->resize(new_size);
-	nsvideo_driver::window_resized(new_size);
+	m_default_target->resize(new_size);
+	vid_ctxt::window_resized(new_size);
 }
 
-const ivec2 & nsgl_driver::window_size()
+const ivec2 & gl_ctxt::window_size()
 {
-	return current_context()->m_default_target->size;
+	return m_default_target->size;
 }
 
-void nsgl_driver::push_scene(nsscene * scn)
+void gl_ctxt::push_scene(nsscene * scn)
 {
+	// now go through second time after recursive update
+	auto ents = scn->entities_in_scene();
+
+	if (ents == nullptr)
+		return;
+	
+	auto ent_iter = ents->begin();
+	while (ent_iter != ents->end())
+	{
+		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
+        if (tForm->update_posted())
+		{
+			tform_per_scene_info * psi = tForm->per_scene_info(scn);
+			psi->video_update();
+			//  tForm->post_update(false);
+		}
+		++ent_iter;
+	}
+
 	_add_draw_calls_from_scene(scn);
 	_add_lights_from_scene(scn);
 }
 
-void nsgl_driver::push_viewport_ui(viewport * vp)
+void gl_ctxt::push_viewport_ui(viewport * vp)
 {
 	render_queue * dc_dq = queue(UI_RENDER_QUEUE);
 	for (uint32 i = 0; i < vp->ui_canvases.size(); ++i)
@@ -718,8 +630,8 @@ void nsgl_driver::push_viewport_ui(viewport * vp)
 			nsui_text_comp * uitxt = cur_ent->get<nsui_text_comp>();
 			nsui_text_input_comp * uitxt_input = cur_ent->get<nsui_text_input_comp>();
 			
-			current_context()->all_ui_draw_calls.resize(current_context()->all_ui_draw_calls.size()+1);
-			ui_draw_call * uidc = &current_context()->all_ui_draw_calls[current_context()->all_ui_draw_calls.size()-1];
+			all_ui_draw_calls.resize(all_ui_draw_calls.size()+1);
+			ui_draw_call * uidc = &all_ui_draw_calls[all_ui_draw_calls.size()-1];
 
 			uidc->entity_id = uivec3(cur_ent->full_id(),0);
 			uidc->content_wscale = tuic->content_world_scale(uicc);
@@ -768,39 +680,36 @@ void nsgl_driver::push_viewport_ui(viewport * vp)
 	}	
 }
 
-void nsgl_driver::push_entity(nsentity * ent)
+void gl_ctxt::push_entity(nsentity * ent)
 {
 }
 
-void nsgl_driver::clear_render_queues()
+void gl_ctxt::clear_render_queues()
 {
-	nsvideo_driver::clear_render_queues();
-	current_context()->mat_shader_ids.clear();	
-	current_context()->all_instanced_draw_calls.resize(0);
-	current_context()->all_light_draw_calls.resize(0);
-	current_context()->all_ui_draw_calls.resize(0);
+	vid_ctxt::clear_render_queues();
+	mat_shader_ids.clear();
+	all_instanced_draw_calls.resize(0);
+	all_light_draw_calls.resize(0);
+	all_ui_draw_calls.resize(0);
 }
 	
-void nsgl_driver::render_to_viewport(viewport * vp)
+void gl_ctxt::render_to_viewport(viewport * vp)
 {
-	if (current_context() == nullptr)
+	if (!nse.video_driver<nsgl_driver>()->shaders_are_valid())
 		return;
 
-	if (!_valid_check())
-		return;
+    //render_passes[oit]->enabled = vp->order_independent_transparency;
+    //render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
+   // render_passes[dir_light]->enabled = vp->dir_lights;
+    //render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
+    //render_passes[spot_light]->enabled = vp->spot_lights;
+    //render_passes[point_shadow]->enabled = vp->point_light_shadows;
+    //render_passes[point_light]->enabled = vp->point_lights;
+   // render_passes[selection]->enabled = vp->picking_enabled;
 
-    //current_context()->render_passes[oit]->enabled = vp->order_independent_transparency;
-    //current_context()->render_passes[dir_shadow]->enabled = vp->dir_light_shadows;
-   // current_context()->render_passes[dir_light]->enabled = vp->dir_lights;
-    //current_context()->render_passes[spot_shadow]->enabled = vp->spot_light_shadows;
-    //current_context()->render_passes[spot_light]->enabled = vp->spot_lights;
-    //current_context()->render_passes[point_shadow]->enabled = vp->point_light_shadows;
-    //current_context()->render_passes[point_light]->enabled = vp->point_lights;
-   // current_context()->render_passes[selection]->enabled = vp->picking_enabled;
-
-	for (uint32 i = 0; i < current_context()->render_passes.size(); ++i)
+	for (uint32 i = 0; i < render_passes.size(); ++i)
 	{
-		gl_render_pass * rp = (gl_render_pass *)current_context()->render_passes[i];
+		gl_render_pass * rp = (gl_render_pass *)render_passes[i];
 		if (rp == nullptr || rp->ren_target == nullptr)
 		{
 			dprint("nsvideo_driver::_render_pass - pass " + std::to_string(i) + " is not correctly setup");
@@ -814,17 +723,14 @@ void nsgl_driver::render_to_viewport(viewport * vp)
 		}
 	}
 	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-	current_context()->m_tbuffers->reset_atomic_counter();
+	m_tbuffers->reset_atomic_counter();
 	#endif
 }
 
-void nsgl_driver::render_to_all_viewports()
+void gl_ctxt::render_to_all_viewports()
 {
-	if (current_context() == nullptr)
-		return;
-
 	static bool vperr = false;
-    if (current_context()->vp_list.empty())
+    if (vp_list.empty())
 	{
         if (!vperr)
             dprint("nsrender_system::render Warning - no viewports - will render nothing");
@@ -833,10 +739,10 @@ void nsgl_driver::render_to_all_viewports()
 	}
     vperr = false;
 	
-	auto iter = current_context()->vp_list.begin();
-	while (iter != current_context()->vp_list.end())
+	auto iter = vp_list.begin();
+	while (iter != vp_list.end())
 	{
-		current_context()->all_ui_draw_calls.resize(0);
+		all_ui_draw_calls.resize(0);
 		queue(UI_RENDER_QUEUE)->resize(0);
 		push_viewport_ui(iter->vp);
 		render_to_viewport(iter->vp);
@@ -844,19 +750,9 @@ void nsgl_driver::render_to_all_viewports()
 	}	
 }
 
-nsmaterial * nsgl_driver::default_mat()
+void gl_ctxt::set_gl_state(const opengl_state & state)
 {
-	return m_default_mat;
-}
-
-void nsgl_driver::set_default_mat(nsmaterial * mat)
-{
-	m_default_mat = mat;
-}
-
-void nsgl_driver::set_gl_state(const opengl_state & state)
-{
-	set_viewport(state.current_viewport);
+	set_gl_viewport(state.current_viewport);
 	enable_depth_test(state.depth_test);
 	enable_depth_write(state.depth_write);
 	enable_stencil_test(state.stencil_test);
@@ -883,53 +779,25 @@ void nsgl_driver::set_gl_state(const opengl_state & state)
 		clear_framebuffer(state.clear_mask);
 }
 
-void nsgl_driver::set_blend_eqn(int32 eqn)
+void gl_ctxt::set_blend_eqn(int32 eqn)
 {
 	if (eqn == 0)
 		return;
 	
 	glBlendEquation(eqn);
-	current_context()->m_gl_state.blend_eqn = eqn;
+	m_gl_state.blend_eqn = eqn;
 	gl_err_check("nsopengl_driver::set_blend_eqn");	
 }
 
-bool nsgl_driver::_valid_check()
-{
-	static bool shadererr = false;
-	static bool shadernull = false;
 
-	if (!rshaders.valid())
-	{
-		if (!shadernull)
-		{
-			dprint("nsopengl_driver::_validCheck: Error - one of the rendering shaders is nullptr ");
-			shadernull = true;
-		}
-		return false;
-	}
-	shadernull = false;
-
-	if (rshaders.error())
-	{
-		if (!shadererr)
-		{
-			dprint("nsopengl_driver::_validCheck: Error in one of the rendering shaders - check compile log");
-			shadererr = true;
-		}
-		return false;
-	}
-	shadererr = false;
-	return true;
-}
-
-void nsgl_driver::enable_depth_write(bool enable)
+void gl_ctxt::enable_depth_write(bool enable)
 {
 	glDepthMask(enable);
-	current_context()->m_gl_state.depth_write = enable;
+	m_gl_state.depth_write = enable;
 	gl_err_check("nsopengl_driver::enable_depth_write");
 }
 
-void nsgl_driver::enable_depth_test(bool enable)
+void gl_ctxt::enable_depth_test(bool enable)
 {
 	if (enable)
 	{
@@ -938,155 +806,150 @@ void nsgl_driver::enable_depth_test(bool enable)
 	else
 	{
 		glDisable(GL_DEPTH_TEST);
-		current_context()->m_gl_state.depth_write = enable;
+		m_gl_state.depth_write = enable;
 	}
     gl_err_check("nsopengl_driver::enable_depth_test");
-	current_context()->m_gl_state.depth_test = enable;
+	m_gl_state.depth_test = enable;
 }
 
-void nsgl_driver::enable_stencil_test(bool enable)
+void gl_ctxt::enable_stencil_test(bool enable)
 {
 	if (enable)
 		glEnable(GL_STENCIL_TEST);
 	else
 		glDisable(GL_STENCIL_TEST);
 	gl_err_check("nsopengl_driver::enable_stencil_test");
-	current_context()->m_gl_state.stencil_test = enable;
+	m_gl_state.stencil_test = enable;
 }
 
-void nsgl_driver::enable_blending(bool enable)
+void gl_ctxt::enable_blending(bool enable)
 {
 	if (enable)
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);
-	current_context()->m_gl_state.blending = enable;
+	m_gl_state.blending = enable;
 	gl_err_check("nsopengl_driver::enable_blending");
 }
 
-void nsgl_driver::enable_culling(bool enable)
+void gl_ctxt::enable_culling(bool enable)
 {
 	if (enable)
 		glEnable(GL_CULL_FACE);
 	else
 		glDisable(GL_CULL_FACE);
-	current_context()->m_gl_state.culling = enable;
+	m_gl_state.culling = enable;
 	gl_err_check("nsopengl_driver::enable_culling");
 }
 
-void nsgl_driver::set_cull_face(int32 cull_face)
+void gl_ctxt::set_cull_face(int32 cull_face)
 {
-	if (cull_face != current_context()->m_gl_state.cull_face)
+	if (cull_face != m_gl_state.cull_face)
 	{
 		glCullFace(cull_face);
-		current_context()->m_gl_state.cull_face = cull_face;
+		m_gl_state.cull_face = cull_face;
 		gl_err_check("nsopengl_driver::set_cull_face");
 	}	
 }
 
-opengl_state nsgl_driver::current_gl_state()
-{
-	return current_context()->m_gl_state;
-}
-
-void nsgl_driver::set_blend_func(int32 sfactor, int32 dfactor)
+void gl_ctxt::set_blend_func(int32 sfactor, int32 dfactor)
 {
 	set_blend_func(ivec2(sfactor,dfactor));
 }
 
-void nsgl_driver::set_blend_func(const ivec2 & blend_func)
+void gl_ctxt::set_blend_func(const ivec2 & blend_func)
 {
 	glBlendFunc(blend_func.x, blend_func.y);
-	current_context()->m_gl_state.blend_func = blend_func;
+	m_gl_state.blend_func = blend_func;
 	gl_err_check("nsopengl_driver::set_blend_func");
 }
 
-void nsgl_driver::set_stencil_func(int32 func, int32 ref, int32 mask)
+void gl_ctxt::set_stencil_func(int32 func, int32 ref, int32 mask)
 {
 	set_stencil_func(ivec3(func,ref,mask));
 }
 
-void nsgl_driver::set_stencil_func(const ivec3 & stencil_func)
+void gl_ctxt::set_stencil_func(const ivec3 & stencil_func)
 {
 	glStencilFunc(stencil_func.x, stencil_func.y, stencil_func.z);
-	current_context()->m_gl_state.stencil_func = stencil_func;
+	m_gl_state.stencil_func = stencil_func;
 	gl_err_check("nsopengl_driver::set_stencil_func");
 }
 
-void nsgl_driver::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
+void gl_ctxt::set_stencil_op(int32 sfail, int32 dpfail, int32 dppass)
 {
 	set_stencil_op(ivec3( sfail, dpfail, dppass));
 }
 
-void nsgl_driver::set_stencil_op(const ivec3 & stencil_op)
+void gl_ctxt::set_stencil_op(const ivec3 & stencil_op)
 {
 	glStencilOp(stencil_op.x, stencil_op.y, stencil_op.z);
-	current_context()->m_gl_state.stencil_op_back = stencil_op;
-	current_context()->m_gl_state.stencil_op_front = stencil_op;
+	m_gl_state.stencil_op_back = stencil_op;
+	m_gl_state.stencil_op_front = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op");
 }
 
-void nsgl_driver::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass)
+void gl_ctxt::set_stencil_op_back(int32 sfail, int32 dpfail, int32 dppass)
 {
 	set_stencil_op_back(ivec3(sfail, dpfail, dppass));	
 }
 	
-void nsgl_driver::set_stencil_op_back(const ivec3 & stencil_op)
+void gl_ctxt::set_stencil_op_back(const ivec3 & stencil_op)
 {
 	glStencilOpSeparate(GL_BACK, stencil_op.x, stencil_op.y, stencil_op.z);
-	current_context()->m_gl_state.stencil_op_back = stencil_op;
+	m_gl_state.stencil_op_back = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op_back");
 }
 
-void nsgl_driver::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass)
+void gl_ctxt::set_stencil_op_front(int32 sfail, int32 dpfail, int32 dppass)
 {
 	set_stencil_op_front(ivec3(sfail, dpfail, dppass));		
 }
 	
-void nsgl_driver::set_stencil_op_front(const ivec3 & stencil_op)
+void gl_ctxt::set_stencil_op_front(const ivec3 & stencil_op)
 {
 	glStencilOpSeparate(GL_FRONT, stencil_op.x, stencil_op.y, stencil_op.z);
-	current_context()->m_gl_state.stencil_op_front = stencil_op;
+	m_gl_state.stencil_op_front = stencil_op;
 	gl_err_check("nsopengl_driver::set_stencil_op_front");
 }
 
-uint32 nsgl_driver::bound_fbo()
+uint32 gl_ctxt::bound_fbo()
 {
 	GLint params;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &params);
 	return params;
 }
 
-uint32 nsgl_driver::active_tex_unit()
+uint32 gl_ctxt::active_tex_unit()
 {
 	GLint act_un;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &act_un);
 	return act_un - BASE_TEX_UNIT;
 }
 
-void nsgl_driver::set_active_texture_unit(uint32 tex_unit)
+void gl_ctxt::set_active_texture_unit(uint32 tex_unit)
 {
 	glActiveTexture(BASE_TEX_UNIT + tex_unit);
 	gl_err_check("nsopengl_driver::set_active_texture_unit");
 }
 
-void nsgl_driver::set_viewport(const ivec4 & val)
+void gl_ctxt::set_gl_viewport(const ivec4 & val)
 {
-	if (current_context()->m_gl_state.current_viewport != val)
+	if (m_gl_state.current_viewport != val)
 	{
 		glViewport(val.x, val.y, val.z, val.w);
-		current_context()->m_gl_state.current_viewport = val;
+		m_gl_state.current_viewport = val;
 		gl_err_check("nsopengl_driver::set_viewport");
 	}
 }
 
-void nsgl_driver::clear_framebuffer(uint32 clear_mask)
+void gl_ctxt::clear_framebuffer(uint32 clear_mask)
 {
 	glClear(clear_mask);
 	gl_err_check("nsopengl_driver::clear_framebuffer");
 }
 
-void nsgl_driver::bind_textures(nsmaterial * material)
+void gl_ctxt::bind_textures(nsmaterial * material)
 {
 	nsmaterial::texmap_map_const_iter cIter = material->begin();
 	while (cIter != material->end())
@@ -1101,18 +964,7 @@ void nsgl_driver::bind_textures(nsmaterial * material)
 	}	
 }
 
-uivec3 nsgl_driver::pick(const fvec2 & mouse_pos)
-{
-	nsgl_framebuffer * pck = (nsgl_framebuffer*)render_target(ACCUM_TARGET);
-	if (pck == NULL)
-		return uivec3();
-
-	ivec2 winsize = window_size();
-	uivec3 index = pck->pick(mouse_pos.x * winsize.x, mouse_pos.y * winsize.y, 1);
-	return index;
-}
-
-void nsgl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
+void gl_ctxt::bind_gbuffer_textures(nsgl_framebuffer * fb)
 {
 	nsgl_gbuffer * obj = dynamic_cast<nsgl_gbuffer*>(fb);
 
@@ -1127,7 +979,7 @@ void nsgl_driver::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	}
 }
 
-void nsgl_driver::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader)
+void gl_ctxt::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader)
 {
 	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
 	so->gl_vao->bind();
@@ -1173,7 +1025,7 @@ void nsgl_driver::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * b
 	so->gl_vao->unbind();
 }
 
-void nsgl_driver::render_light_dc(light_draw_call * idc, nsgl_shader * bound_shader)
+void gl_ctxt::render_light_dc(light_draw_call * idc, nsgl_shader * bound_shader)
 {
     nsmesh::submesh * sub = nullptr;
 
@@ -1194,7 +1046,7 @@ void nsgl_driver::render_light_dc(light_draw_call * idc, nsgl_shader * bound_sha
     so->gl_vao->unbind();
 }
 
-void nsgl_driver::render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader)
+void gl_ctxt::render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader)
 {
     nsmesh::submesh * sub = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS)->sub(0);
     nsgl_submesh_obj * so = sub->video_obj<nsgl_submesh_obj>();
@@ -1209,7 +1061,7 @@ void nsgl_driver::render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader)
     so->gl_vao->unbind();
 }
 
-void nsgl_driver::_add_lights_from_scene(nsscene * scene)
+void gl_ctxt::_add_lights_from_scene(nsscene * scene)
 {
 	auto ents = scene->entities_with_comp<nslight_comp>();
 	if (ents == nullptr)
@@ -1226,7 +1078,7 @@ void nsgl_driver::_add_lights_from_scene(nsscene * scene)
 		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
 		nsmesh * boundingMesh = get_asset<nsmesh>(lcomp->mesh_id());
 		
-		current_context()->all_light_draw_calls.resize(current_context()->all_light_draw_calls.size()+1);
+		all_light_draw_calls.resize(all_light_draw_calls.size()+1);
 
 		fmat4 proj;
 		if (lcomp->get_light_type() == nslight_comp::l_spot)
@@ -1238,7 +1090,7 @@ void nsgl_driver::_add_lights_from_scene(nsscene * scene)
 
 		for (uint32 i = 0; i < tcomp->instance_count(scene); ++i)
 		{
-			light_draw_call * ldc = &current_context()->all_light_draw_calls[current_context()->all_light_draw_calls.size()-1];
+			light_draw_call * ldc = &all_light_draw_calls[all_light_draw_calls.size()-1];
 			auto itf = tcomp->instance_transform(scene, i);
 			
 			ldc->submesh = nullptr;
@@ -1252,7 +1104,7 @@ void nsgl_driver::_add_lights_from_scene(nsscene * scene)
 			ldc->light_type = lcomp->get_light_type();
 			ldc->shadow_samples = lcomp->shadow_samples();
 			ldc->shadow_darkness = lcomp->shadow_darkness();
-			ldc->material_ids = &current_context()->mat_shader_ids;
+			ldc->material_ids = &mat_shader_ids;
 			ldc->spot_atten = lcomp->atten();
 			ldc->light_pos = itf->world_position();
 			ldc->light_transform = itf->world_tf() % lcomp->scaling();
@@ -1294,13 +1146,12 @@ void nsgl_driver::_add_lights_from_scene(nsscene * scene)
 	}
 }
 
-void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
+void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 {
-	viewport * vp = focused_viewport();
-	if (vp == nullptr)
+	if (focused_vp == nullptr)
 		return;
 
-	nsentity * camera = vp->camera;
+	nsentity * camera = focused_vp->camera;
 	if (camera == NULL)
 		return;
 
@@ -1367,7 +1218,7 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 			mat = get_asset<nsmaterial>(rComp->material_id(i));
 
 			if (mat == nullptr)
-				mat = m_default_mat;
+				mat = nse.video_driver<nsgl_driver>()->default_mat();
 
 			shader = get_asset<nsshader>(mat->shader_id());
 			fTForms = nullptr;
@@ -1390,8 +1241,8 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 
 			
 			if (tComp != nullptr)
-			{			  current_context()->all_instanced_draw_calls.resize(current_context()->all_instanced_draw_calls.size()+1);
-				instanced_draw_call * dc = &current_context()->all_instanced_draw_calls[current_context()->all_instanced_draw_calls.size()-1];
+			{			  all_instanced_draw_calls.resize(all_instanced_draw_calls.size()+1);
+				instanced_draw_call * dc = &all_instanced_draw_calls[all_instanced_draw_calls.size()-1];
 				dc->submesh = mSMesh;
 				dc->tform_buffer =
 					tComp->per_scene_info(scene)->video_obj<nsgl_tform_comp_obj>()->gl_tform_buffer;
@@ -1420,9 +1271,9 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 
 				if (sc != nullptr && sc->selected(scene))
 				{
-					current_context()->all_instanced_draw_calls.resize(
-						current_context()->all_instanced_draw_calls.size()+1);
-					instanced_draw_call * sel_dc = &current_context()->all_instanced_draw_calls[current_context()->all_instanced_draw_calls.size()-1];
+					all_instanced_draw_calls.resize(
+						all_instanced_draw_calls.size()+1);
+					instanced_draw_call * sel_dc = &all_instanced_draw_calls[all_instanced_draw_calls.size()-1];
 					sel_dc->submesh = mSMesh;
                     sel_dc->scn = scene;
 					sel_dc->tform_buffer =
@@ -1437,7 +1288,7 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 					scene_sel->push_back(sel_dc);
 				}
 
-				auto inserted = current_context()->mat_shader_ids.emplace(mat, mat_id);
+				auto inserted = mat_shader_ids.emplace(mat, mat_id);
 				if (inserted.second)
 					++mat_id;
 			}
@@ -1445,6 +1296,162 @@ void nsgl_driver::_add_draw_calls_from_scene(nsscene * scene)
 		
 		++iter;
 	}
+}
+
+
+nsgl_driver::nsgl_driver() :
+	nsvideo_driver(),
+	m_default_mat(nullptr)
+{
+	nse.register_vid_obj_type<nsgl_shader_obj>(SHADER_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_texture_obj>(TEXTURE_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_submesh_obj>(MESH_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_tform_comp_obj>(TFORM_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_sel_comp_obj>(SEL_VID_OBJ_GUID);
+    nse.register_vid_obj_type<nsgl_particle_comp_obj>(PARTICLE_VID_OBJ_GUID);
+}
+
+nsgl_driver::~nsgl_driver()
+{}
+
+void nsgl_driver::init()
+{
+	if (m_initialized)
+		return;
+	
+	nsplugin * cplg = nse.core();
+	if (cplg == nullptr)
+	{
+		dprint("nsgl_driver::nsgl_driver You must call nse.start() before creating the video driver");
+		return;
+	}
+	
+	// Default material
+    nstexture * tex = cplg->load<nstex2d>(nsstring(DEFAULT_MATERIAL) + nsstring(DEFAULT_TEX_EXTENSION), true);
+	m_default_mat = cplg->create<nsmaterial>(nsstring(DEFAULT_MATERIAL));
+    m_default_mat->add_tex_map(nsmaterial::diffuse, tex->full_id());
+    m_default_mat->set_color(fvec4(0.0f,1.0f,1.0f,1.0f));
+
+
+	// Rendering shaders
+    nsstring shext(DEFAULT_SHADER_EXTENSION), dir(SHADER_DIR);
+    rshaders.deflt = cplg->load<nsshader>(dir + nsstring(GBUFFER_SHADER) + shext, true);
+	rshaders.deflt_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_WF_SHADER) + shext, true);
+	rshaders.light_stencil = cplg->load<nsshader>(dir + nsstring(LIGHTSTENCIL_SHADER) + shext, true);
+#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
+    rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	rshaders.frag_sort = cplg->load<nsshader>(dir + nsstring(FRAGMENT_SORT_SHADER) + shext, true);
+#endif
+	rshaders.dir_light = cplg->load<nsshader>(dir + nsstring(DIR_LIGHT_SHADER) + shext, true);
+	rshaders.point_light = cplg->load<nsshader>(dir + nsstring(POINT_LIGHT_SHADER) + shext, true);
+	rshaders.spot_light = cplg->load<nsshader>(dir + nsstring(SPOT_LIGHT_SHADER) + shext, true);
+	rshaders.shadow_cube = cplg->load<nsshader>(dir + nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.shadow_2d = cplg->load<nsshader>(dir + nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.sel_shader = cplg->load<nsshader>(dir + nsstring(SELECTION_SHADER) + shext, true);
+	rshaders.deflt_particle = cplg->load<nsshader>(dir + nsstring(RENDER_PARTICLE_SHADER) + shext, true);
+	cplg->load<nsshader>(dir + nsstring(SKYBOX_SHADER) + shext, true);
+	cplg->load<nsshader>(dir + nsstring(UI_SHADER) + shext, true);
+	cplg->load<nsshader>(dir + nsstring(UI_TEXT_SHADER) + shext, true);
+
+    // FIGURE THIS OUT LATER
+	// particle transform feedback shader
+    //nsgl_shader * ps =
+    cplg->load<nsshader>(dir + nsstring(PARTICLE_PROCESS_SHADER) + shext, true);
+//	std::vector<nsstring> outLocs2;
+//	outLocs2.push_back("gPosOut");
+//	outLocs2.push_back("gVelOut");
+//	outLocs2.push_back("gScaleAndAngleOut");
+//	outLocs2.push_back("gAgeOut");
+//	ps->xfb = nsgl_shader::xfb_interleaved;
+//	ps->xfb_locs = outLocs2;
+
+	// Light bounds, skydome, and tile meshes
+    cplg->load<nsmesh>(nsstring(MESH_FULL_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_TERRAIN) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_HALF_TILE) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_POINTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_SPOTLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
+    cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);
+
+	nsvideo_driver::init();
+}
+
+void nsgl_driver::release()
+{
+	if (!m_initialized)
+		return;	
+	nsvideo_driver::release();
+}
+
+uint8 nsgl_driver::create_context()
+{
+	for (uint8 id = 0; id < MAX_CONTEXT_COUNT; ++id)
+	{
+		if (m_contexts[id] == nullptr)
+		{
+			gl_ctxt * ctxt = new gl_ctxt(id);
+			ctxt->driver = this;
+			m_contexts[id] = ctxt;
+			m_current_context = ctxt;
+			m_current_context->init();
+			make_context_current(id); // i know already current - but want to call the signal and update objs
+			return id;
+		}
+	}
+	dprint("nsgl_driver::creat_context Unable to create context - context slots are all occupied");
+	return -1;
+}
+
+gl_ctxt * nsgl_driver::current_context()
+{
+    return static_cast<gl_ctxt*>(m_current_context);
+}
+
+gl_ctxt * nsgl_driver::context(uint8 id)
+{
+	if (id > MAX_CONTEXT_COUNT)
+		return nullptr;
+	return static_cast<gl_ctxt*>(m_contexts[id]);		
+}
+
+nsmaterial * nsgl_driver::default_mat()
+{
+	return m_default_mat;
+}
+
+void nsgl_driver::set_default_mat(nsmaterial * mat)
+{
+	m_default_mat = mat;
+}
+
+bool nsgl_driver::shaders_are_valid()
+{
+	static bool shadererr = false;
+	static bool shadernull = false;
+
+	if (!rshaders.valid())
+	{
+		if (!shadernull)
+		{
+			dprint("nsopengl_driver::_validCheck: Error - one of the rendering shaders is nullptr ");
+			shadernull = true;
+		}
+		return false;
+	}
+	shadernull = false;
+
+	if (rshaders.error())
+	{
+		if (!shadererr)
+		{
+			dprint("nsopengl_driver::_validCheck: Error in one of the rendering shaders - check compile log");
+			shadererr = true;
+		}
+		return false;
+	}
+	shadererr = false;
+	return true;
 }
 
 int32 get_gl_prim_type(mesh_primitive_type pt)

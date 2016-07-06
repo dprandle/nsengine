@@ -34,6 +34,7 @@
 #include <nsrouter.h>
 #include <nsgl_window.h>
 
+nsscene * setup_basic_scene(nsplugin * plg);
 void setup_input_map(nsplugin * plg);
 
 
@@ -41,21 +42,20 @@ struct button_funcs
 {
     void on_new_game()
     {
-       // wind->set_visible(false);
-//        if (wind->get_state() == window_full_screen)
-//            wind->set_state(window_restored);
-//        else
-//            wind->set_state(window_full_screen);
-        wind->set_title("PooperScooper");
+		
     }
 
 	nsgl_window * wind;
+	nsgl_window * wind2;
+	
     nsplugin * plg;
     nsscene * scn;
     nsrouter * m_router;
 	nsui_button_comp * btn;
 };
 
+button_funcs bf;
+nsengine e;
 /*
   This test adds camera controls and movement controls to an input map from scratch
   The generated input map can be used in other tests
@@ -63,23 +63,86 @@ struct button_funcs
 */
 int main()
 {
-    button_funcs bf;
     bf.m_router = new nsrouter;
+	e.init(new nsgl_driver);
 
-	nsengine e;
-	
     nsgl_window wind(ivec2(800,600), "Basic Test");
-    e.start();
-
+    nsgl_window wind2(ivec2(900,700), "Second Window Test");
 	bf.wind = &wind;
-	
-    nsplugin * plg = nsep.create("most_basic_test");
+
+
+	nsplugin * plg = nsep.create("most_basic_test");
     plg->enable(true);
+
+	nstex2d * tx = plg->load<nstex2d>("./import/bbicon.png", true);
+    tx->flip_verticle();
+    wind.set_icon(tx);
+	
 	setup_input_map(plg);
+	nsscene * new_scene = setup_basic_scene(plg);
+
+    viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), plg->get<nsentity>("scenecam"));
+    vp.ui_canvases.push_back(plg->get<nsentity>("canvas"));
+
+    wind.vid_context()->insert_viewport("main_view",vp);
+	wind2.vid_context()->insert_viewport("main_view",vp);
+	
+    e.start();
+    while (e.running())
+    {
+        e.update();
+
+		if (wind.is_current())
+		{
+			wind.vid_context()->push_scene(new_scene);
+			wind.vid_context()->render_to_all_viewports();
+			wind.vid_context()->clear_render_queues();
+			wind.update();
+		}
+		
+		if (wind2.is_current())
+		{
+            wind2.vid_context()->push_scene(new_scene);
+            wind2.vid_context()->render_to_all_viewports();
+            wind2.vid_context()->clear_render_queues();
+            wind2.update();
+		}
+    }
+
+    e.release();
+    return 0;
+}
+
+void setup_input_map(nsplugin * plg)
+{
+	nsinput_map * im = plg->create<nsinput_map>("basic_input");
+	im->create_context("main_global_ctxt");
+	
+    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
+    change_vp.add_key_mod(nsinput_map::key_any);
+    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
+
+	nse.system<nscamera_system>()->setup_input_map(im, "main_global_ctxt");
+	nse.system<nsselection_system>()->setup_input_map(im, "main_global_ctxt");
+	nse.system<nsui_system>()->setup_input_map(im, "main_global_ctxt");
+	nse.system<nsinput_system>()->set_input_map(im->full_id());
+	nse.system<nsinput_system>()->push_context("main_global_ctxt");	
+}
+
+nsscene * setup_basic_scene(nsplugin * plg)
+{
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
     plg->set_current_scene(new_scene, true, false);
+
+    nsentity * grass_tile = plg->create_tile("grass_tile",
+                                             nse.import_dir() + "diffuseGrass.png",
+                                             nse.import_dir() + "normalGrass.png",
+                                             fvec4(1,0,0,0.5f), 16.0, 0.6, fvec3(1,1,1), true);
+
+    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
+    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
 
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
@@ -88,15 +151,14 @@ int main()
 
     new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add_gridded(grass_tile,ivec3(32,32,1));
 	
 	// Create material for the button bg
     nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
     mat->set_color_mode(true);
 	mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
-
-    nstex2d * tx = plg->load<nstex2d>("./import/bbicon.png", true);
-    tx->flip_verticle();
-    wind.set_icon(tx);
 	
 	// Create material for the button border
 	nsmaterial * border_mat = plg->create<nsmaterial>("border_mat");
@@ -165,39 +227,6 @@ int main()
     pic->layer = 0;
     pic->angle = 0.0f;
 
-
-    viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
-    vp.ui_canvases.push_back(canvas);
-    nse.video_driver()->insert_viewport("main_view",vp);
-
     nse.set_active_scene(new_scene);
-
-	
-    while (wind.is_open())//glfw_window_open())
-    {
-        nse.update();
-		nse.video_driver()->push_scene(new_scene);
-		nse.video_driver()->render_to_all_viewports();
-		nse.video_driver()->clear_render_queues();
-		wind.update();
-    }
-
-    nse.shutdown();
-    return 0;
-}
-
-void setup_input_map(nsplugin * plg)
-{
-	nsinput_map * im = plg->create<nsinput_map>("basic_input");
-	im->create_context("main_global_ctxt");
-	
-    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
-    change_vp.add_key_mod(nsinput_map::key_any);
-    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
-
-	nse.system<nscamera_system>()->setup_input_map(im, "main_global_ctxt");
-	nse.system<nsselection_system>()->setup_input_map(im, "main_global_ctxt");
-	nse.system<nsui_system>()->setup_input_map(im, "main_global_ctxt");
-	nse.system<nsinput_system>()->set_input_map(im->full_id());
-	nse.system<nsinput_system>()->push_context("main_global_ctxt");	
+	return new_scene;
 }

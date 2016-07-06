@@ -85,9 +85,18 @@ uint32 nstexture::compressed_size()
 
 void nstexture::video_context_init()
 {
-   	video_context_release();
-	uint8 context_id = nse.video_driver()->current_context()->context_id;
-    ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(TEXTURE_VID_OBJ_GUID)->create(this);
+	vid_ctxt * vc = nse.video_driver()->current_context();
+	if (vc != nullptr)
+	{
+		if (ctxt_objs[vc->context_id] == nullptr)
+		{
+			ctxt_objs[vc->context_id] = nse.factory<nsvid_obj_factory>(TEXTURE_VID_OBJ_GUID)->create(this);
+		}
+		else
+		{
+			dprint("nstexture::video_context_init - Context has already been initialized for texture " + m_name + " in ctxtid " + std::to_string(vc->context_id));
+		}
+	}
 }
 
 void nstexture::enable_mipmap_autogen(bool enable)
@@ -327,12 +336,14 @@ void nstex2d::flip_verticle()
         for (int x = 0; x < m_size.x * bpp; x++)
         {
             uint32 cur_index = y * m_size.x * bpp + x;
-            uint32 flip_index = m_size.w * bpp * (m_size.h - y + 1) + x;
+            uint32 flip_index = m_size.w * bpp * (m_size.h - y - 1) + x;
 
 			uint8 temp_byte = m_raw_data[cur_index];
 			m_raw_data[cur_index] = m_raw_data[flip_index];
 			m_raw_data[flip_index] = temp_byte;
 		}
+        int p = 5;
+        p = p + 5;
     }
 }
 

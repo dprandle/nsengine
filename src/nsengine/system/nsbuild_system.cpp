@@ -354,7 +354,7 @@ bool nsbuild_system::mirror() const
 
 void nsbuild_system::to_cursor()
 {
-	viewport * vp = nse.video_driver()->focused_viewport();
+	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return;
 

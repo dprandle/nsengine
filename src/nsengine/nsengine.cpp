@@ -68,55 +68,30 @@ This file contains all of the neccessary definitions for the nsengine class.
 nsengine * global_engine_ptr;
 
 nsengine::nsengine():
-	m_systems(new system_hash_map()),
-	m_event_disp(new nsevent_dispatcher()),
-	m_timer(new nstimer()),
+	m_obj_type_hashes(),
+	m_obj_type_names(),
+	m_factories(),
+	m_res_manager_map(),
+	m_driver(nullptr),
+	m_sys_update_order(),
+	m_systems(nullptr),
+	m_plugins(nullptr),
+	m_event_disp(nullptr),
+	m_timer(nullptr),
 #ifdef NSDEBUG
-	m_deb(new nsdebug()),
+	m_deb(nullptr),
 #endif
-	m_cwd(platform::cwd()),
-	m_driver(nullptr)
+	m_import_dir(),
+	m_cwd(),
+	m_running(false),
+	m_initialized(false)
 {
-	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
-	srand(static_cast<unsigned>(time(0)));
-    ilInit();
-	ilEnable(IL_ORIGIN_SET);
-	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-
-#ifdef NSDEBUG
-	m_deb->set_log_file("engine_debug.log");
-	m_deb->set_log_dir(m_cwd + "logs");
-	m_deb->clear_log();
-#endif
-
-	_init_factories();
-	platform::platform_init();
-
-	m_plugins = new nsplugin_manager();
-	m_plugins->set_res_dir(m_cwd);
-
 	global_engine_ptr = this;
+	_init_factories();
 }
 
 nsengine::~nsengine()
-{
-	delete m_plugins;
-	delete m_systems;
-	delete m_event_disp;
-	delete m_timer;
-#ifdef NSDEBUG
-	delete m_deb;
-#endif
-}
-
-void nsengine::create_core_plugin()
-{
-	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
-	plg->init();
-	plg->enable(true);
-	plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
-	plg->enable_group_save(false);	
-}
+{}
 
 bool nsengine::add_system(nssystem * sys_to_add)
 {
@@ -287,26 +262,80 @@ void nsengine::set_import_dir(const nsstring & dir)
 	m_import_dir = dir;
 }
 
-void nsengine::start(bool create_default_systems)
+void nsengine::start()
 {
-	if (m_driver == nullptr || !m_driver->initialized())
+	if (m_initialized && !m_running)
 	{
-		dprint("nsengine::start Cannot start engine without video driver created and initialized");
-		return;
+		m_timer->start();
+		m_running = true;
 	}
-	
-	if (create_default_systems)
-		_create_factory_systems();
-	m_timer->start();
 }
 
-void nsengine::shutdown()
+void nsengine::stop()
 {
-	m_plugins->destroy_all();
-	delete m_plugins;
-	m_plugins = nullptr;
+	if (m_initialized && m_running)
+	{
+		m_timer->pause();
+		m_running = false;
+	}
+}
+
+void nsengine::init(nsvideo_driver * drvr)
+{
+	if (m_initialized)
+		return;
 	
-	m_event_disp->clear();
+	m_driver = drvr;
+	m_systems = new system_hash_map;
+	m_event_disp = new nsevent_dispatcher;
+	m_timer = new nstimer;
+	
+	platform::platform_init();
+	m_cwd = platform::cwd();
+	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
+
+	m_deb = new nsdebug;
+#ifdef NSDEBUG
+	m_deb->set_log_file("engine_debug.log");
+	m_deb->set_log_dir(m_cwd + "logs");
+	m_deb->clear_log();
+#endif
+
+    ilInit();
+	ilEnable(IL_ORIGIN_SET);
+	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+
+	srand(static_cast<unsigned>(time(0)));
+
+	m_plugins = new nsplugin_manager;
+	m_plugins->set_res_dir(m_cwd);
+
+	nsplugin * plg = m_plugins->create(ENGINE_PLUG);
+    plg->init();
+    plg->enable(true);
+    plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
+    plg->enable_group_save(false);
+
+	_create_factory_systems();
+	m_driver->init();
+	m_initialized = true;
+	if (!m_driver->initialized())
+		release();
+}
+
+bool nsengine::running()
+{
+	return m_running;
+}
+
+void nsengine::release()
+{
+	if (!m_initialized)
+		return;
+
+	ilShutDown();
+	
+	// delete all systems
 	auto iter = m_systems->begin();
 	while (iter != m_systems->end())
 	{
@@ -316,9 +345,34 @@ void nsengine::shutdown()
 		++iter;
 	}
 	m_systems->clear();
+	m_sys_update_order.clear();
+
+	m_event_disp->clear();
+	delete m_event_disp;
+	m_event_disp = nullptr;
+
+	m_plugins->destroy_all();
+	delete m_plugins;
+	m_plugins = nullptr;
+	
+	delete m_systems;
+	m_systems = nullptr;
+	
+	delete m_event_disp;
+	m_event_disp = nullptr;
+	
+	delete m_timer;
+	m_timer = nullptr;
+	
+#ifdef NSDEBUG
+	delete m_deb;
+	m_deb = nullptr;
+#endif
+	
 	delete m_driver;
 	m_driver = nullptr;
-	m_timer->pause();
+	
+	m_initialized = false;
 }
 
 nsfactory * nsengine::factory(uint32 hash_id)
@@ -481,7 +535,7 @@ void nsengine::_init_factories()
 	register_system<nscamera_system>("nscamera_system");
 	register_system<nsinput_system>("nsinput_system");
 	register_system<nsparticle_system>("nsparticle_system");
-	register_system<nsrender_system>("nsrender_system");
+	register_system<nstform_system>("nsrender_system");
 	register_system<nsselection_system>("nsselection_system");
 	register_system<nsui_system>("nsui_system");
 	

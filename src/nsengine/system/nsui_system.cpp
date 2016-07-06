@@ -61,7 +61,7 @@ void nsui_system::update()
         nse.system<nsinput_system>()->key_dispatch_enabled = true;
 
 	// update each canvas' transform information
-	auto vp_list = nse.video_driver()->viewports();
+	std::list<vp_node> * vp_list = &nse.video_driver()->current_context()->vp_list;
 	auto vp_iter = vp_list->begin();
 	while (vp_iter != vp_list->end())
 	{
@@ -187,7 +187,7 @@ void nsui_system::update()
 			}
 
 			// Do the update stuff and then sort
-			const ivec2 & sz = nse.video_driver()->window_size();
+			const ivec2 & sz = nse.video_driver()->current_context()->window_size();
 			fvec2 vp_size = vp_iter->vp->normalized_bounds.zw() - vp_iter->vp->normalized_bounds.xy();
 			fvec2 fsz(sz.x,sz.y);
 			nsentity * canvas = vp_iter->vp->ui_canvases[i];
@@ -235,7 +235,7 @@ bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 	if (nse.system<nsselection_system>()->selection_being_dragged())
 		return true;
 	
-	viewport * vp = nse.video_driver()->focused_viewport();
+	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
 
@@ -285,7 +285,7 @@ bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 
 bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 {
-	viewport * vp = nse.video_driver()->focused_viewport();
+	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
 
@@ -335,7 +335,7 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 
 bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 {
-	viewport * vp = nse.video_driver()->focused_viewport();
+	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
 

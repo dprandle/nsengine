@@ -18,12 +18,12 @@
 
 #include <nssystem.h>
 
-class nsrender_system : public nssystem
+class nstform_system : public nssystem
 {
   public:
 	
-	nsrender_system();
-	~nsrender_system();
+	nstform_system();
+	~nstform_system();
 
 	void init();
 

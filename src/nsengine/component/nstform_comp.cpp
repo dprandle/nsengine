@@ -20,6 +20,7 @@
 #include <nsshader.h>
 #include <nsmesh.h>
 #include <nsgl_buffer.h>
+#include <nsscene.h>
 
 nstform_comp::nstform_comp():
 	nscomponent(type_to_hash(nstform_comp)),
@@ -395,9 +396,18 @@ tform_per_scene_info::tform_per_scene_info(nstform_comp * owner_, nsscene * scn)
 
 void tform_per_scene_info::video_context_init()
 {
-	video_context_release();
-	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(TFORM_VID_OBJ_GUID)->create(this);
+	vid_ctxt * vc = nse.video_driver()->current_context();
+	if (vc != nullptr)
+	{
+		if (ctxt_objs[vc->context_id] == nullptr)
+		{
+			ctxt_objs[vc->context_id] = nse.factory<nsvid_obj_factory>(TFORM_VID_OBJ_GUID)->create(this);
+		}
+		else
+		{
+			dprint("nstform_per_scene_info::video_context_init - Context has already been initialized for tform_psi " + owner->owner()->name() + " in scene " + scene->name() + " in ctxtid " + std::to_string(vc->context_id));
+		}
+	}
 }
 
 tform_per_scene_info::~tform_per_scene_info()

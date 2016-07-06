@@ -54,7 +54,7 @@ void nsparticle_system::update()
 	if (scene_error_check())
 		return;
 	
-	viewport * vp = nse.video_driver()->focused_viewport();
+	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return;
 	

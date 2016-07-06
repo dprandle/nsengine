@@ -32,20 +32,20 @@
 #include <nsrender_comp.h>
 #include <nslight_comp.h>
 
-nsrender_system::nsrender_system() :
-	nssystem(type_to_hash(nsrender_system))
+nstform_system::nstform_system() :
+	nssystem(type_to_hash(nstform_system))
 {}
 
-nsrender_system::~nsrender_system()
+nstform_system::~nstform_system()
 {}
 
-void nsrender_system::init()
+void nstform_system::init()
 {
-	register_handler(nsrender_system::_handle_window_resize);
-	register_action_handler(nsrender_system::_handle_viewport_change, VIEWPORT_CHANGE);
+	register_handler(nstform_system::_handle_window_resize);
+	register_action_handler(nstform_system::_handle_viewport_change, VIEWPORT_CHANGE);
 }
 
-void nsrender_system::update()
+void nstform_system::update()
 {
 	if (scene_error_check())
 		return;
@@ -68,36 +68,25 @@ void nsrender_system::update()
 		++ent_iter;
 	}
 
-	// now go through second time after recursive update
-	ent_iter = scene_ents->begin();
-	while (ent_iter != scene_ents->end())
-	{
-		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-        if (tForm->update_posted())
-        {
-			tform_per_scene_info * psi = tForm->m_scenes_info.find(m_active_scene)->second;
-			psi->video_update();
-            tForm->post_update(false);
-        }
-		++ent_iter;
-	}
 }
 
-int32 nsrender_system::update_priority()
+int32 nstform_system::update_priority()
 {
 	return RENDER_SYS_UPDATE_PR;
 }
 
-bool nsrender_system::_handle_window_resize(window_resize_event * evt)
+bool nstform_system::_handle_window_resize(window_resize_event * evt)
 {
-	nse.video_driver()->window_resized(evt->new_size);
+	// This assumes that the event generated is for the current context - should be true unless there is
+	// a bug in the input event generating code
+	nse.video_driver()->current_context()->window_resized(evt->new_size);
 	return true;
 }
 
-bool nsrender_system::_handle_viewport_change(nsaction_event * evt)
+bool nstform_system::_handle_viewport_change(nsaction_event * evt)
 {
-	viewport * vp = nse.video_driver()->front_viewport(evt->norm_mpos);
+	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evt->norm_mpos);
 	if (vp != nullptr)
-		nse.video_driver()->set_focused_viewport(vp);
+		nse.video_driver()->current_context()->focused_vp = vp;
 	return true;
 }

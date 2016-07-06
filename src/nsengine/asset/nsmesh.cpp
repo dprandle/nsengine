@@ -592,9 +592,18 @@ void nsmesh::submesh::resize(uint32 pNewSize)
 
 void nsmesh::submesh::video_context_init()
 {
-	video_context_release();
-	uint8 context_id = nse.video_driver()->current_context()->context_id;
-	ctxt_objs[context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create(this);
+	vid_ctxt * vc = nse.video_driver()->current_context();
+	if (vc != nullptr)
+	{
+		if (ctxt_objs[vc->context_id] == nullptr)
+		{
+			ctxt_objs[vc->context_id] = nse.factory<nsvid_obj_factory>(MESH_VID_OBJ_GUID)->create(this);
+		}
+		else
+		{
+			dprint("nsmesh::submesh::video_context_init - Context has already been initialized for mesh " + m_parent_mesh->name() + " in ctxtid " + std::to_string(vc->context_id));
+		}
+	}
 }
 
 nsmesh::node::node(const nsstring & pName, node * pParentNode):m_name(pName),

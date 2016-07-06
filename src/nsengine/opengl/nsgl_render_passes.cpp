@@ -40,7 +40,7 @@ void gl_render_pass::setup()
 	else
 		gl_state.current_viewport = ivec4(0, 0, tgt->size);
 	
-	driver->set_gl_state(gl_state);
+	driver_ctxt->set_gl_state(gl_state);
 }
 
 void ui_render_pass::render()
@@ -64,9 +64,9 @@ void ui_render_pass::render()
 			gl_shdr->set_uniform("content_tform", uidc->content_tform);
 			gl_shdr->set_uniform("pixel_blend", 2.0f);
 
-			driver->enable_stencil_test(true);
-			driver->set_stencil_func(GL_ALWAYS, 1, 0xFF);
-			driver->set_stencil_op(GL_KEEP, GL_KEEP, GL_REPLACE);			
+			driver_ctxt->enable_stencil_test(true);
+			driver_ctxt->set_stencil_func(GL_ALWAYS, 1, 0xFF);
+			driver_ctxt->set_stencil_op(GL_KEEP, GL_KEEP, GL_REPLACE);			
 			
 			gl_shdr->set_uniform("border_rad_top", uidc->top_border_radius);
 			gl_shdr->set_uniform("border_rad_bottom", uidc->bottom_border_radius);
@@ -77,12 +77,12 @@ void ui_render_pass::render()
 			gl_shdr->set_uniform("tex_coord_rect", ti.coord_rect);
 			gl_shdr->set_uniform("color_mult", ti.color_mult);
 			gl_shdr->set_uniform("color_add", ti.color_add);
-			driver->enable_culling(uidc->mat->culling());
-			driver->set_cull_face(uidc->mat->cull_mode());
-			driver->bind_textures(uidc->mat);
-            driver->render_ui_dc(uidc, gl_shdr);
+			driver_ctxt->enable_culling(uidc->mat->culling());
+			driver_ctxt->set_cull_face(uidc->mat->cull_mode());
+			driver_ctxt->bind_textures(uidc->mat);
+            driver_ctxt->render_ui_dc(uidc, gl_shdr);
 
-			driver->set_stencil_func(GL_NOTEQUAL, 1, 0xFF);
+			driver_ctxt->set_stencil_func(GL_NOTEQUAL, 1, 0xFF);
 
 			if (uidc->top_border_radius != fvec4(0.0f))
 			{
@@ -111,10 +111,10 @@ void ui_render_pass::render()
 			gl_shdr->set_uniform("tex_coord_rect", ti.coord_rect);
 			gl_shdr->set_uniform("color_mult", ti.color_mult);
 			gl_shdr->set_uniform("color_add", ti.color_add);
-			driver->enable_culling(uidc->border_mat->culling());
-			driver->set_cull_face(uidc->border_mat->cull_mode());
-            driver->render_ui_dc(uidc, gl_shdr);
-			driver->enable_stencil_test(false);
+			driver_ctxt->enable_culling(uidc->border_mat->culling());
+			driver_ctxt->set_cull_face(uidc->border_mat->cull_mode());
+            driver_ctxt->render_ui_dc(uidc, gl_shdr);
+			driver_ctxt->enable_stencil_test(false);
 		}
 		
         // render the text part of the ui-element
@@ -214,7 +214,7 @@ void ui_render_pass::render()
 				if (tex == nullptr)
 					continue;
 
-				driver->set_active_texture_unit(nsmaterial::diffuse);
+				driver_ctxt->set_active_texture_unit(nsmaterial::diffuse);
 				tex->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 
 				ivec2 tsz = tex->size();
@@ -238,7 +238,7 @@ void ui_render_pass::render()
 				if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
 					cursor_xy.x = cursor_pos.x;				
 
-                driver->render_ui_dc(uidc, gl_txt_shdr);
+                driver_ctxt->render_ui_dc(uidc, gl_txt_shdr);
 			}
 
 // lets draw the cursor if the text is editable - ie has a text input component
@@ -248,7 +248,7 @@ void ui_render_pass::render()
 				gl_txt_shdr->set_uniform("frag_color_out", uidc->cursor_color);
 				gl_txt_shdr->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width,fi.line_height));
 				gl_txt_shdr->set_uniform("offset_xy",cursor_xy);
-                driver->render_ui_dc(uidc, gl_txt_shdr);
+                driver_ctxt->render_ui_dc(uidc, gl_txt_shdr);
 			}
 		}
 	}
@@ -284,7 +284,7 @@ void selection_render_pass::render()
 		}
 		gl_shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-        driver->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_instanced_dc(dc, gl_shdr);
 		
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         gl_err_check("selection_render_pass::render - glPolygonMode error 1");
@@ -301,10 +301,10 @@ void selection_render_pass::render()
         glLineWidth(lineWidth[1]);
         gl_err_check("selection_render_pass::render - glLineWidth error 1");
 
-		driver->set_stencil_func(GL_NOTEQUAL, 1, -1);
+		driver_ctxt->set_stencil_func(GL_NOTEQUAL, 1, -1);
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
 		gl_shdr->set_uniform("fragColOut", fvec4(dc->sel_color.rgb(),1.0f));	
-        driver->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_instanced_dc(dc, gl_shdr);
 		
         glLineWidth(lineWidth[0]);
         gl_err_check("selection_render_pass::render - glLineWidth error 2");
@@ -315,10 +315,10 @@ void selection_render_pass::render()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         gl_err_check("selection_render_pass::render - glPolygonMode error 2");
 
-		driver->enable_depth_test(false);
-		driver->set_stencil_func(GL_EQUAL, 1, 0);
+		driver_ctxt->enable_depth_test(false);
+		driver_ctxt->set_stencil_func(GL_EQUAL, 1, 0);
 		gl_shdr->set_uniform("fragColOut", dc->sel_color);
-        driver->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_instanced_dc(dc, gl_shdr);
 	}	
 }
 
@@ -374,12 +374,12 @@ void gbuffer_render_pass::render()
 		else
 			gl_shdr->set_uniform("hasBones", false);
 
-		driver->enable_culling(dc->mat->culling());
-		driver->set_cull_face(dc->mat->cull_mode());
-		driver->bind_textures(dc->mat);
-        driver->render_instanced_dc(dc, gl_shdr);
+		driver_ctxt->enable_culling(dc->mat->culling());
+		driver_ctxt->set_cull_face(dc->mat->cull_mode());
+		driver_ctxt->bind_textures(dc->mat);
+        driver_ctxt->render_instanced_dc(dc, gl_shdr);
 	}
-    driver->bind_gbuffer_textures(ren_target);
+    driver_ctxt->bind_gbuffer_textures(ren_target);
 }
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
@@ -437,19 +437,19 @@ void oit_render_pass::render()
 
 		if (dc->mat != nullptr)
 		{
-			driver->enable_culling(dc->mat->culling());
-			driver->set_cull_face(dc->mat->cull_mode());
-			driver->bind_textures(dc->mat);
+			driver_ctxt->enable_culling(dc->mat->culling());
+			driver_ctxt->set_cull_face(dc->mat->cull_mode());
+			driver_ctxt->bind_textures(dc->mat);
 		}
 	    tbuffers->bind_buffers();
-        driver->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_instanced_dc(dc, gl_shdr);
 	}
 	ren_target->update_draw_buffers();
-	driver->enable_depth_test(false);
-	driver->enable_culling(true);
-	driver->set_cull_face(GL_BACK);
+	driver_ctxt->enable_depth_test(false);
+	driver_ctxt->enable_culling(true);
+	driver_ctxt->set_cull_face(GL_BACK);
 
-	nsgl_shader * fsort = driver->rshaders.frag_sort->video_obj<nsgl_shader_obj>()->gl_shdr;
+	nsgl_shader * fsort = nse.video_driver<nsgl_driver>()->rshaders.frag_sort->video_obj<nsgl_shader_obj>()->gl_shdr;
 	fsort->bind();
 	fsort->set_uniform("gMatMap", int32(G_PICKING_TEX_UNIT));
 	fsort->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
@@ -476,14 +476,14 @@ void light_shadow_pass::render()
 	ivec4 & viewp = gl_state.current_viewport;
 	if (ldc->light_type == nslight_comp::l_point)
 	{
-		cur_shdr = driver->rshaders.shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr;
+		cur_shdr = driver_ctxt->driver->rshaders.shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr;
 		cur_shdr->bind();
 		cur_shdr->set_uniform("lightPos", ldc->light_pos);
 		cur_shdr->set_uniform("maxDepth", ldc->max_depth);
 	}
 	else
 	{
-		cur_shdr = driver->rshaders.shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr;
+		cur_shdr = driver_ctxt->driver->rshaders.shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr;
 		cur_shdr->bind();
 	}
 	cur_shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
@@ -514,9 +514,9 @@ void light_shadow_pass::render()
 			cur_shdr->set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
 			cur_shdr->set_uniform("hminmax", idc->height_minmax);
 
-			driver->enable_culling(idc->mat->culling());
-			driver->set_cull_face(idc->mat->cull_mode());
-            driver->render_instanced_dc(idc, cur_shdr);
+			driver_ctxt->enable_culling(idc->mat->culling());
+			driver_ctxt->set_cull_face(idc->mat->cull_mode());
+            driver_ctxt->render_instanced_dc(idc, cur_shdr);
 		}
 	}
 }
@@ -533,7 +533,7 @@ void light_pass::render()
 			rpass->setup();
 			rpass->render();
 			nsgl_framebuffer::attachment * attch = rpass->ren_target->att(nsgl_framebuffer::att_depth);
-			driver->set_active_texture_unit(attch->m_tex_unit);
+			driver_ctxt->set_active_texture_unit(attch->m_tex_unit);
 			attch->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 			gl_render_pass::setup();
 		}
@@ -561,7 +561,7 @@ void light_pass::render()
 		gl_shdr->set_uniform("light.color", dc->light_color);
 		gl_shdr->set_uniform("shadowSamples", dc->shadow_samples);
 		gl_shdr->set_uniform("light.shadowDarkness", dc->shadow_darkness);
-		const ivec2 & ss = driver->render_target(DIR_SHADOW2D_TARGET)->size;
+		const ivec2 & ss = driver_ctxt->render_target(DIR_SHADOW2D_TARGET)->size;
 		gl_shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 		
 		nsstring id;
@@ -588,7 +588,7 @@ void light_pass::render()
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->bind_buffers();
 #endif
-        driver->render_light_dc(dc, gl_shdr);
+        driver_ctxt->render_light_dc(dc, gl_shdr);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->unbind_buffers();
 #endif
@@ -606,12 +606,12 @@ void culled_light_pass::render()
 			rpass->setup();
 			rpass->render();
 			nsgl_framebuffer::attachment * attch = rpass->ren_target->att(nsgl_framebuffer::att_depth);
-			driver->set_active_texture_unit(attch->m_tex_unit);
+			driver_ctxt->set_active_texture_unit(attch->m_tex_unit);
 			attch->m_texture->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 			gl_render_pass::setup();
 		}
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_none);
-		nsgl_shader * st_shdr = driver->rshaders.light_stencil->video_obj<nsgl_shader_obj>()->gl_shdr;
+		nsgl_shader * st_shdr = driver_ctxt->driver->rshaders.light_stencil->video_obj<nsgl_shader_obj>()->gl_shdr;
 		ivec4 & viewp = gl_state.current_viewport;
 		st_shdr->bind();
 		st_shdr->set_uniform("projCamMat", vp->camera->get<nscam_comp>()->proj_cam());
@@ -622,12 +622,12 @@ void culled_light_pass::render()
 		else
 			st_shdr->set_uniform("nodeTransform", fmat4());
 		st_shdr->set_uniform("transform", dc->light_transform);
-        driver->render_light_dc(dc, st_shdr);
+        driver_ctxt->render_light_dc(dc, st_shdr);
 		
-		driver->enable_depth_test(false);
-		driver->enable_culling(true);
-		driver->set_cull_face(GL_FRONT);
-		driver->set_stencil_func(GL_NOTEQUAL, 0, 0xFF);
+		driver_ctxt->enable_depth_test(false);
+		driver_ctxt->enable_culling(true);
+		driver_ctxt->set_cull_face(GL_FRONT);
+		driver_ctxt->set_stencil_func(GL_NOTEQUAL, 0, 0xFF);
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
 
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
@@ -679,20 +679,20 @@ void culled_light_pass::render()
 			gl_shdr->set_uniform("projLightMat", dc->proj_light_mat);
 			gl_shdr->set_uniform("light.direction", dc->direction);
 			gl_shdr->set_uniform("light.cutoff", dc->cutoff);
-			const ivec2 & ss = driver->render_target(SPOT_SHADOW2D_TARGET)->size;
+			const ivec2 & ss = driver_ctxt->render_target(SPOT_SHADOW2D_TARGET)->size;
 			gl_shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 
 		}
 		else
 		{
-			const ivec2 & ss = driver->render_target(POINT_SHADOW_TARGET)->size;
+			const ivec2 & ss = driver_ctxt->render_target(POINT_SHADOW_TARGET)->size;
 			gl_shdr->set_uniform("shadowTexSize", fvec2(ss.x, ss.y));
 		}
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY		
 		tbuffers->bind_buffers();
 #endif
-        driver->render_light_dc(dc, gl_shdr);
+        driver_ctxt->render_light_dc(dc, gl_shdr);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		tbuffers->unbind_buffers();
 #endif

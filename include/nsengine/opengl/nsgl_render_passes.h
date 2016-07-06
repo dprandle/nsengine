@@ -24,7 +24,7 @@
 #define SHADER_DIR "opengl4_1/"
 #endif
 
-struct nsgl_driver;
+struct gl_ctxt;
 struct nsgl_framebuffer;
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 struct translucent_buffers;
@@ -81,7 +81,7 @@ struct gl_render_pass : public render_pass
 
 	bool use_vp_size;
 	nsgl_framebuffer * ren_target;
-	nsgl_driver * driver;
+	gl_ctxt * driver_ctxt;
 	opengl_state gl_state;
 };
 

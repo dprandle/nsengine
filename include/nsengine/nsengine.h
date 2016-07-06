@@ -111,7 +111,7 @@ This file contains all of the neccessary declartations for the nsengine class.
 
 class nsscene;
 class nsvideo_driver;
-class nsrender_system;
+class nstform_system;
 class nsanim_manager;
 class nsmesh_manager;
 class nstex_manager;
@@ -181,14 +181,6 @@ public:
 
 	system_hash_map::iterator begin_system();
 
-	template<class T>
-	T * create_video_driver()
-	{
-		_cleanup_driver();
-		m_driver = new T();
-		return static_cast<T*>(m_driver);
-	}
-
 	template<class T=nsvideo_driver>
 	T * video_driver()
 	{
@@ -201,8 +193,6 @@ public:
 		uint32 tid = type_id(std::type_index(typeid(sys_type)));
 		return static_cast<sys_type*>(create_system(tid));
 	}
-
-	void create_core_plugin();
 	
 	nssystem * create_system(uint32 type_id);
 	
@@ -482,11 +472,17 @@ public:
 
 	void set_import_dir(const nsstring & dir);
 
-	void shutdown();
+	void release();
+
+	bool running();
+
+	void init(nsvideo_driver * driver);	
 
 	void set_active_scene(nsscene * active_scene);
 
-	void start(bool create_default_systems=true);
+	void start();
+
+	void stop();
 
 	template<class sys_type>
 	sys_type * system()
@@ -593,6 +589,8 @@ private:
 
 	nsstring m_import_dir;
 	nsstring m_cwd;
+	bool m_running;
+	bool m_initialized;
 };
 
 nsasset * get_asset(uint32 res_type, const uivec2 & res_id);

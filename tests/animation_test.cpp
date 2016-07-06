@@ -55,7 +55,7 @@ int main()
         glfw_update();
     }
 
-    nse.shutdown();
+    nse.release();
 	glfw_shutdown();
     return 0;
 }

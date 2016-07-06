@@ -44,6 +44,8 @@ enum window_creation_hint
 	win_hint_always_on_top = 0x04
 };
 
+struct vid_ctxt;
+
 class nswindow
 {
   public:

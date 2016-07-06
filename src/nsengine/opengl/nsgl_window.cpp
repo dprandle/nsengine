@@ -102,29 +102,26 @@ nsgl_window::nsgl_window(
 	glfwSetWindowPosCallback(m_window, glfw_window_position_callback);
 	
 	glfwMakeContextCurrent(m_window);
-	
-	if (window_count == 1)
-	{
-        nsengine * ptr = &nse;
-		nse.create_core_plugin();
-		m_driver = nse.create_video_driver<nsgl_driver>();
-		m_driver->init();
-		// would like to be able to call init and create context separately
-		m_ctxt = m_driver->current_context();
-	}
-	else
-	{
-		m_driver->create_context();
-		m_ctxt = m_driver->current_context();
-	}
-	m_driver->setup_default_rendering();
-	m_driver->window_resized(fbsize);	
+
+	m_driver = nse.video_driver<nsgl_driver>();
+    m_driver->create_context();
+    m_ctxt = m_driver->current_context();
+	m_ctxt->setup_default_rendering();
+	m_ctxt->window_resized(fbsize);	
 }
 
 nsgl_window::~nsgl_window()
 {
+	if (m_open)
+		close();
+}
+
+void nsgl_window::close()
+{
+	make_current();
 	m_driver->destroy_context(m_ctxt->context_id);
 	glfwDestroyWindow(m_window);
+	nswindow::close();
 }
 
 void nsgl_window::update()
@@ -138,6 +135,13 @@ void nsgl_window::make_current()
 	glfwMakeContextCurrent(m_window);
 	m_driver->make_context_current(m_ctxt->context_id);
 }
+
+bool nsgl_window::is_current()
+{
+	GLFWwindow * win = glfwGetCurrentContext();
+	return (m_window == win && nse.video_driver()->current_context() == m_ctxt);
+}
+
 
 void nsgl_window::set_visible(bool visible)
 {
@@ -303,7 +307,7 @@ void glfw_resize_window_callback(GLFWwindow* window, int32 width, int32 height)
 	}
     nse.event_dispatch()->push<window_resize_event>(0,win->m_size);
 #ifdef EVENT_OUTPUT
-	std::cout << "window resize callback" << std::endl;
+    std::cout << "window " << win->m_ctxt->context_id << " resize callback" << std::endl;
 #endif
 }
 
@@ -313,6 +317,10 @@ void glfw_focus_change_callback(GLFWwindow* window, int give_or_taken)
 	if (give_or_taken)
 	{
 		win->m_focused = true;
+		win->make_current();
+#ifdef EVENT_OUTPUT
+    std::cout << "window " << win->m_ctxt->context_id << " gained focus callback" << std::endl;
+#endif
 		nse.event_dispatch()->push<nswindow_focused_event>(win->m_ctxt->context_id);
 	}
 	else
@@ -328,7 +336,7 @@ void glfw_close_window_callback(GLFWwindow* window)
 	win->close();
 	nse.event_dispatch()->push<nswindow_closed_event>(win->m_ctxt->context_id);
 #ifdef EVENT_OUTPUT
-	std::cout << "window close callback" << std::endl;
+    std::cout << "window " << win->m_ctxt->context_id << " close callback" << std::endl;
 #endif
 }
 
@@ -340,7 +348,7 @@ void glfw_minimize_window_callback(GLFWwindow * window, int min_or_restore)
 		win->m_state = window_minimized;
 		nse.event_dispatch()->push<nswindow_minimized_event>(win->m_ctxt->context_id);
 #ifdef EVENT_OUTPUT
-		std::cout << "minimize window callback" << std::endl;
+        std::cout << "minimize window " << win->m_ctxt->context_id << " callback" << std::endl;
 #endif
 	}
 	else
@@ -348,7 +356,7 @@ void glfw_minimize_window_callback(GLFWwindow * window, int min_or_restore)
 		win->m_state = window_restored;
 		nse.event_dispatch()->push<nswindow_restored_event>(win->m_ctxt->context_id);
 #ifdef EVENT_OUTPUT
-		std::cout << "minimize window restore callback" << std::endl;
+        std::cout << "minimize window " << win->m_ctxt->context_id << " restore callback" << std::endl;
 #endif
 	}
 }
@@ -361,7 +369,7 @@ void glfw_maximize_window_callback(GLFWwindow * window, int max_or_restore)
 		win->m_state = window_maximized;
 		nse.event_dispatch()->push<nswindow_maximized_event>(win->m_ctxt->context_id);
 #ifdef EVENT_OUTPUT
-	std::cout << "maximize window callback" << std::endl;
+    std::cout << "maximize window " << win->m_ctxt->context_id << " callback" << std::endl;
 #endif
 	}
 	else
@@ -369,7 +377,7 @@ void glfw_maximize_window_callback(GLFWwindow * window, int max_or_restore)
 		win->m_state = window_restored;
 		nse.event_dispatch()->push<nswindow_restored_event>(win->m_ctxt->context_id);
 #ifdef EVENT_OUTPUT
-	std::cout << "maximize window restore callback" << std::endl;
+    std::cout << "maximize window " << win->m_ctxt->context_id << " restore callback" << std::endl;
 #endif
 	}
 }
