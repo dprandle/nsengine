@@ -284,7 +284,8 @@ void nsgl_submesh_obj::update()
 nsgl_tform_comp_obj::nsgl_tform_comp_obj(nsvideo_object * parent_):
 	nsvid_obj(parent_),
 	gl_tform_buffer(new nsgl_buffer()),
-	gl_tform_id_buffer(new nsgl_buffer())
+	gl_tform_id_buffer(new nsgl_buffer()),
+	last_size(0)
 {
 	gl_tform_buffer->target = nsgl_buffer::array;
 	gl_tform_id_buffer->target = nsgl_buffer::array;
@@ -305,15 +306,15 @@ void nsgl_tform_comp_obj::update()
 	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
 	
 	bool did_resize = false;
-    //if (psi->m_buffer_resized)
-    //{
+    if (psi->m_tforms.size() != last_size)
+    {
 		did_resize = true;
 		gl_tform_buffer->bind();
 		gl_tform_buffer->allocate<fmat4>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
 		gl_tform_id_buffer->bind();
 		gl_tform_id_buffer->allocate<uint32>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
-        psi->m_buffer_resized = false;
-    //}
+		last_size = psi->m_tforms.size();
+    }
 
 	gl_tform_buffer->bind();
     fmat4 * mappedT = gl_tform_buffer->map<fmat4>(nsgl_buffer::write_only);
@@ -334,12 +335,8 @@ void nsgl_tform_comp_obj::update()
 
         if (!hideBit && (!layerBit && (showBit || !objectBit)))
         {
-            if (itf->render_update() || did_resize)
-            {
-				mappedT[psi->m_visible_count] = itf->world_tf();
-				mappedI[psi->m_visible_count] = i;
-				itf->set_render_update(false);
-            }
+			mappedT[psi->m_visible_count] = itf->world_tf();
+			mappedI[psi->m_visible_count] = i;
 			++psi->m_visible_count;
         }
 	}
@@ -353,7 +350,8 @@ void nsgl_tform_comp_obj::update()
 
 nsgl_sel_comp_obj::nsgl_sel_comp_obj(nsvideo_object * parent_):
 	nsvid_obj(parent_),
-	gl_tform_buffer(new nsgl_buffer)
+	gl_tform_buffer(new nsgl_buffer),
+	last_size(0)
 {
 	gl_tform_buffer->target = nsgl_buffer::array;
 	gl_tform_buffer->init();
@@ -371,11 +369,12 @@ void nsgl_sel_comp_obj::update()
 	nstform_comp * tc = psi->owner->owner()->get<nstform_comp>();
 	
 	gl_tform_buffer->bind();
-	if (psi->owner->update_posted())
-	{
+
+	if (psi->m_selection.size() != last_size)
+    {
 		gl_tform_buffer->allocate<fmat4>(psi->m_selection.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
-		psi->owner->post_update(false);
-	}
+        last_size = psi->m_selection.size();
+    }
 	
 	if (!psi->m_selection.empty())
 	{

@@ -177,8 +177,6 @@ public:
 
 	nsasset_manager * create_manager(const nsstring & manager_guid);
 
-	nsscene * current_scene();
-
 	template<class ResType, class T>
 	bool del(const T & name)
 	{
@@ -334,8 +332,6 @@ public:
 	bool save_as(nsasset * res, const nsstring & fname);
 
 	void set_creator(const nsstring & pCreator);
-
-	bool set_current_scene(nsscene * scene, bool new_scene, bool save_previous);
 
 	void set_notes(const nsstring & pNotes);
 

@@ -121,8 +121,6 @@ public:
 	void tile_swap(nsentity * newtile);
 
 	virtual void update();
-
-	void prepare_selection_for_rendering();
 	
 protected:
 
@@ -153,6 +151,7 @@ protected:
 	bool _handle_move_selection_z(nsaction_event * evnt);
 	bool _handle_move_selection_toggle(nsaction_event * evnt);
 	bool _handle_rotate_selection(nsaction_event * evnt);
+	bool _handle_scene_ent_removed(scene_ent_removed * evnt);
 	
 	void _reset_focus(const uivec3 & pickid);
 
@@ -216,52 +215,6 @@ protected:
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
 	fmat4 m_trans;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
 };
 
 #endif

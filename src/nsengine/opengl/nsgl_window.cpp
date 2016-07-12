@@ -17,6 +17,11 @@ void glfw_minimize_window_callback(GLFWwindow * window, int min_or_restore);
 void glfw_maximize_window_callback(GLFWwindow * window, int max_or_restore);
 void glfw_window_position_callback(GLFWwindow * window, int x_pos, int y_pos);
 
+void window_poll_input()
+{
+	glfwPollEvents();
+}
+
 nsgl_window::nsgl_window(
 	const ivec2 & window_size,
 	const nsstring & win_title,
@@ -100,34 +105,41 @@ nsgl_window::nsgl_window(
 	glfwSetWindowIconifyCallback(m_window, glfw_minimize_window_callback);
 	glfwSetWindowCloseCallback(m_window, glfw_close_window_callback);
 	glfwSetWindowPosCallback(m_window, glfw_window_position_callback);
-	
 	glfwMakeContextCurrent(m_window);
+	glfwSwapInterval(1);
 
 	m_driver = nse.video_driver<nsgl_driver>();
     m_driver->create_context();
     m_ctxt = m_driver->current_context();
 	m_ctxt->setup_default_rendering();
-	m_ctxt->window_resized(fbsize);	
+    nse.event_dispatch()->push<window_resize_event>(m_ctxt->context_id, fbsize);
 }
 
 nsgl_window::~nsgl_window()
-{
-	if (m_open)
-		close();
-}
+{}
 
 void nsgl_window::close()
 {
+	GLFWwindow * curc = glfwGetCurrentContext();
+	gl_ctxt * ctxt = m_driver->current_context();
+    if (ctxt == m_ctxt)
+        ctxt = nullptr;
+    if (curc == m_window)
+        curc = nullptr;
+	
 	make_current();
 	m_driver->destroy_context(m_ctxt->context_id);
 	glfwDestroyWindow(m_window);
 	nswindow::close();
+
+	glfwMakeContextCurrent(curc);
+	if (ctxt != nullptr)
+		m_driver->make_context_current(ctxt->context_id);
 }
 
 void nsgl_window::update()
 {
-	glfwSwapBuffers(m_window);
-	glfwPollEvents();
+	glfwSwapBuffers(m_window);	
 }
 
 void nsgl_window::make_current()
@@ -317,7 +329,7 @@ void glfw_focus_change_callback(GLFWwindow* window, int give_or_taken)
 	if (give_or_taken)
 	{
 		win->m_focused = true;
-		win->make_current();
+        win->make_current();
 #ifdef EVENT_OUTPUT
     std::cout << "window " << win->m_ctxt->context_id << " gained focus callback" << std::endl;
 #endif

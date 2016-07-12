@@ -193,6 +193,8 @@ struct gl_ctxt : public vid_ctxt
 	void render_to_viewport(viewport * vp);
 
 	void render_to_all_viewports();
+
+	void render(nsscene * scn);
 	
 	uint32 active_tex_unit();
 

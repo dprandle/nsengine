@@ -66,7 +66,7 @@ void nsbuild_system::change_layer(const int32 & pAmount)
 
 void nsbuild_system::enable(const bool & pEnable)
 {
-	if (m_active_scene == nullptr)
+	if (scene_error_check())
 		return;
 	
 	if (pEnable && !m_enabled)
@@ -100,7 +100,8 @@ void nsbuild_system::enable(const bool & pEnable)
 			while (brushIter != brushComp->end())
 			{
 				fvec3 pos = nstile_grid::world(ivec3(brushIter->x, brushIter->y, m_layer));
-				uint32 tFormID = m_active_scene->add(m_tile_brush, nullptr, true, pos);	
+				uint32 tFormID = m_active_scene->add(m_tile_brush, nullptr, true, pos);
+				m_tile_brush->get<nstform_comp>()->save_with_scene = false;
 				nse.system<nsselection_system>()->add_to_selection(m_tile_brush, tFormID);
 				nse.system<nsselection_system>()->set_focus_entity(uivec3(m_tile_brush->full_id(),tFormID));					
 				if (m_mirror_mode)
@@ -108,6 +109,7 @@ void nsbuild_system::enable(const bool & pEnable)
 					fvec3 mirrorPos = m_mirror_center*2.0f - pos;
 					mirrorPos.z = pos.z;
 					uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, true, mirrorPos);
+					m_mirror_brush->get<nstform_comp>()->save_with_scene = false;
 					nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
 					auto tfi = m_mirror_brush->get<nstform_comp>()->instance_transform(m_active_scene, mirror_tform_id);
 					tfi->set_hidden_state(nstform_comp::hide_all);
@@ -150,6 +152,7 @@ void nsbuild_system::enable(const bool & pEnable)
 
 			nssel_comp * selComp = m_object_brush->get<nssel_comp>();
 			uint32 tFormID = m_active_scene->add(m_object_brush, nullptr, false, pos);
+			m_object_brush->get<nstform_comp>()->save_with_scene = false;
 			nse.system<nsselection_system>()->add_to_selection(m_object_brush, tFormID);
 			selComp->set_selected(m_active_scene, true);
 
@@ -168,6 +171,7 @@ void nsbuild_system::enable(const bool & pEnable)
 				fvec3 mirrorPos = m_mirror_center*2.0f - pos;
 				mirrorPos.z = pos.z;
 				uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, false, mirrorPos);
+				m_mirror_brush->get<nstform_comp>()->save_with_scene = false;
 				nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
 				auto tfi = m_mirror_brush->get<nstform_comp>()->instance_transform(m_active_scene, mirror_tform_id);
 				tfi->set_hidden_state(nstform_comp::hide_all);

@@ -51,9 +51,12 @@ public:
 template <class PUPer>
 void pup(PUPer & p, nsui_material_comp & tc)
 {
-	pup(p, tc.mat_shader_id, "content_shader_id");
+	pup(p, tc.mat_shader_id, "mat_shader_id");
 	pup(p, tc.mat_id, "mat_id");
-	pup(p, tc.border_size, "border");
+	pup(p, tc.border_mat_id, "border_mat_id");
+	pup(p, tc.border_size, "border_size");
+	pup(p, tc.top_border_radius, "top_border_radius");
+	pup(p, tc.bottom_border_radius, "bottom_border_radius");
 }
 
 class nsui_text_comp : public nscomponent

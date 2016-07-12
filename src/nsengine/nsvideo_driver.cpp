@@ -26,13 +26,16 @@ vp_node::~vp_node()
 {}
 
 vid_ctxt::vid_ctxt(uint32 cntxt_id):
+	auto_cleanup(true),
+	auto_update_vobjs(true),
 	context_id(cntxt_id),
 	initialized(false),
 	render_queues(),
 	render_passes(),
 	need_release(),
 	focused_vp(nullptr),
-	vp_list()
+	vp_list(),
+	registered_vid_objs()
 {}
 
 vid_ctxt::~vid_ctxt()
@@ -52,6 +55,9 @@ vid_ctxt::~vid_ctxt()
 		delete vp_list.back().vp;
 		vp_list.pop_back();
 	}
+
+	while (registered_vid_objs.begin() != registered_vid_objs.end())
+		(*registered_vid_objs.begin())->parent->video_context_release();
 }
 
 void vid_ctxt::update_vid_objs()
@@ -317,8 +323,6 @@ void vid_ctxt::window_resized(const ivec2 & new_size)
 }
 
 nsvideo_driver::nsvideo_driver():
-	m_auto_update_vobjs(true),
-	m_auto_cleanup(true),
 	m_current_context(nullptr),
 	m_contexts(),
 	m_initialized(false)
@@ -356,14 +360,15 @@ bool nsvideo_driver::destroy_context(uint8 c_id)
 {
 	if (c_id >= MAX_CONTEXT_COUNT)
 		return false;
-
-	m_contexts[c_id]->release();
-
-	if (c_id == m_current_context->context_id)
-		m_current_context = nullptr;
+	uint8 current_id = m_current_context->context_id;
 	
+	m_contexts[c_id]->release();
 	delete m_contexts[c_id];
 	m_contexts[c_id] = nullptr;
+
+	if (c_id == current_id)
+		m_current_context = nullptr;
+	
 	return true;
 }
 
@@ -378,26 +383,15 @@ bool nsvideo_driver::make_context_current(uint8 c_id)
 	context_switch(m_current_context);
 
 	// Auto cleanup will delete all vid_ctxt_objs that were deleted
-	if (m_auto_cleanup)
+	if (m_current_context->auto_cleanup)
 		m_current_context->cleanup_vid_objs();
-	if (m_auto_update_vobjs)
-		m_current_context->update_vid_objs();
+
 	return true;
 }
 
 vid_ctxt * nsvideo_driver::current_context()
 {
 	return m_current_context;
-}
-
-void nsvideo_driver::enable_auto_cleanup(bool enable)
-{
-	m_auto_cleanup = enable;
-}
-
-bool nsvideo_driver::auto_cleanup()
-{
-	return m_auto_cleanup;
 }
 
 bool nsvideo_driver::initialized()
@@ -453,6 +447,7 @@ nsvideo_object::~nsvideo_object()
 		if (ctxt_objs[i] != nullptr)
 		{
 			vid_ctxt * ctxt = nse.video_driver()->context(i);
+			ctxt_objs[i]->parent = nullptr;
 			ctxt->need_release.push_back(ctxt_objs[i]);
 			ctxt_objs[i] = nullptr;
 		}
@@ -489,12 +484,7 @@ void nsvideo_object::video_update()
 		for (uint8 i = 0; i < 16; ++i)
 		{
 			if (ctxt_objs[i] != nullptr)
-			{
-				if (i == cxt->context_id)
-					ctxt_objs[i]->update();
-				else
-					ctxt_objs[i]->needs_update = true;
-			}
+				ctxt_objs[i]->needs_update = true;
 		}
 	}
 }

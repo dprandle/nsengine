@@ -85,6 +85,10 @@ public:
 
 	const uivec3 & at(const map_index & space_) const;
 
+	void init();
+
+	void release();
+
 	uivec3 get(const fvec3 & pos_) const;
 
 	uivec3 get(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;

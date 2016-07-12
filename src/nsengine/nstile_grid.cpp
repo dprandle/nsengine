@@ -14,6 +14,22 @@ This file contains all of the neccessary definitions for the nstile_grid class.
 #include <nstform_comp.h>
 
 nstile_grid::nstile_grid()
+{}
+
+nstile_grid::nstile_grid(const nstile_grid & copy_):
+	m_world_map(copy_.m_world_map)
+{}
+
+nstile_grid::~nstile_grid()
+{}
+
+void nstile_grid::release()
+{
+	map_world nmp;
+	m_world_map.swap(nmp);	
+}
+
+void nstile_grid::init()
 {
 	m_world_map.resize(8);
 
@@ -26,17 +42,8 @@ nstile_grid::nstile_grid()
 			for (uint32 k = 0; k < 64; ++k)
 				m_world_map[i][j][k].resize(64);
 		}
-	}
+	}	
 }
-
-nstile_grid::nstile_grid(const nstile_grid & copy_):
-	m_world_map(copy_.m_world_map)
-{
-	
-}
-
-nstile_grid::~nstile_grid()
-{}
 
 nstile_grid & nstile_grid::operator=(nstile_grid rhs)
 {

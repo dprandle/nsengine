@@ -17,20 +17,30 @@ nsui_canvas_comp::nsui_canvas_comp() :
 	nscomponent(type_to_hash(nsui_canvas_comp)),
 	m_unloaded_ents(),
 	m_ents_by_comp(),
-	m_pupped_rects()
+    m_pupped_rects(),
+    m_enabled(false)
 {}
 
 nsui_canvas_comp::nsui_canvas_comp(const nsui_canvas_comp & copy):
 	nscomponent(copy),
 	m_unloaded_ents(),
 	m_ents_by_comp(),
-	m_pupped_rects()
+	m_pupped_rects(),
+	m_enabled(false)
 {
+	std::vector<rect_info> pprects;
+	if (copy.m_enabled)
+	{
+		
+	}
 //	auto ents = copy.entities_in_canvas();
 }
 
 nsui_canvas_comp::~nsui_canvas_comp()
-{}
+{
+	if (m_enabled)
+		enable(false);
+}
 
 nsui_canvas_comp* nsui_canvas_comp::copy(const nscomponent * to_copy)
 {
@@ -42,8 +52,6 @@ nsui_canvas_comp* nsui_canvas_comp::copy(const nscomponent * to_copy)
 
 void nsui_canvas_comp::init()
 {
-	add(m_owner);
-	m_owner->get<nsrect_tform_comp>()->m_canvas_settings.find(this)->second.m_parent = nullptr;
 }
 
 void nsui_canvas_comp::release()
@@ -67,67 +75,128 @@ void nsui_canvas_comp::pup(nsfile_pupper * p)
 
 void nsui_canvas_comp::update_rects(const fvec2 & pscreen_size)
 {
+	if (!m_enabled)
+	{
+		dprint("nsui_canvas_comp::update Cannot update disabled canvas " + m_owner->name());
+		return;
+	}
+
 	m_owner->get<nsrect_tform_comp>()->update_recursively(this, pscreen_size);
 }
 
-void nsui_canvas_comp::finalize()
+void nsui_canvas_comp::enable(bool enbl)
 {
-	// Go through all saved rects and load them
-	for (uint32 i = 0; i < m_pupped_rects.size(); ++i)
-	{
-		// Load the current rect
-		nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].this_ent);
-		if (ent == nullptr)
-		{
-			m_unloaded_ents.push_back(m_pupped_rects[i].this_ent);
-			dprint("nsui_canvas_comp::finalize - Could not load ent with id " +
-				   m_pupped_rects[i].this_ent.to_string());
-			continue;
-		}
-		add(ent);
+    if (enbl)
+    {
+		if (m_enabled)
+			return;
+
 		
-		nsrect_tform_comp * tuic = ent->get<nsrect_tform_comp>();
-		auto child_emp_iter = tuic->m_canvas_settings.find(this);
-		child_emp_iter->second.pci = m_pupped_rects[i].pci;
+		m_enabled = true;
 
-		// Try to load the current rect's parent
-		if (m_pupped_rects[i].pupped_parent != uivec2(0))
-		{
-			nsentity * parent_ent = get_asset<nsentity>(m_pupped_rects[i].pupped_parent);
-			if (parent_ent == nullptr)
-			{
-				dprint("nsui_canvas_comp::finalize - Could not load parent ent with id " +
-					   m_pupped_rects[i].pupped_parent.to_string());
-			}
-			else
-			{
-				nsrect_tform_comp * tuic_parent = parent_ent->get<nsrect_tform_comp>();
-				if (tuic_parent == nullptr)
-					tuic_parent = parent_ent->create<nsrect_tform_comp>();
-				child_emp_iter->second.m_parent = tuic_parent;
-			}
-		}
+		add(m_owner);
+		m_owner->get<nsrect_tform_comp>()->m_canvas_settings.find(this)->second.m_parent = nullptr;
 
-		// load the current rect's children
-		for (uint32 j = 0; j < m_pupped_rects[i].m_pupped_children.size(); ++j)
-		{
-			nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].m_pupped_children[j]);
-			if (ent == nullptr)
-			{
-				dprint("nsui_canvas_comp::finalize - Could not load child ent with id " + m_unloaded_ents.back().to_string());
-				continue;
-			}
-			nsrect_tform_comp * tuic_child = ent->get<nsrect_tform_comp>();
-			if (tuic_child == nullptr)
-				tuic_child = ent->create<nsrect_tform_comp>();
-			child_emp_iter->second.m_children.push_back(tuic_child);
-		}
+        // Go through all saved rects and load them
+        for (uint32 i = 0; i < m_pupped_rects.size(); ++i)
+        {
+
+            // Load the current rect
+            nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].this_ent);
+            if (ent == nullptr)
+            {
+                m_unloaded_ents.push_back(m_pupped_rects[i].this_ent);
+                dprint("nsui_canvas_comp::finalize - Could not load ent with id " +
+                       m_pupped_rects[i].this_ent.to_string());
+                continue;
+            }
+
+			if (m_owner != ent)
+				add(ent);
+
+            // Set all the canvas per canvas info in the rect comp to match the pupped rect comp
+            nsrect_tform_comp * tuic = ent->get<nsrect_tform_comp>();
+            tuic->m_canvas_settings.find(this)->second.pci = m_pupped_rects[i].pci;
+        }
+
+        // Now that all rect comps have been loaded, set all parents and children accordingly
+        for (uint32 i = 0; i < m_pupped_rects.size(); ++i)
+        {
+			nsentity * cur_ent = get_asset<nsentity>(m_pupped_rects[i].this_ent);
+			nsrect_tform_comp::per_canvas_settings & cur_pcs =
+				cur_ent->get<nsrect_tform_comp>()->m_canvas_settings.find(this)->second;
+			
+            // Try to load the current rect's parent
+            if (m_pupped_rects[i].pupped_parent != uivec2(0))
+            {
+                nsentity * parent_ent = get_asset<nsentity>(m_pupped_rects[i].pupped_parent);
+                if (parent_ent == nullptr)
+                {
+                    dprint("nsui_canvas_comp::finalize - Could not load parent ent with id " +
+                           m_pupped_rects[i].pupped_parent.to_string());
+                }
+                else
+                {
+                    nsrect_tform_comp * tuic_parent = parent_ent->get<nsrect_tform_comp>();
+                    cur_pcs.m_parent = tuic_parent;
+                }
+            }
+
+            // load the current rect's children
+            for (uint32 j = 0; j < m_pupped_rects[i].m_pupped_children.size(); ++j)
+            {
+                nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].m_pupped_children[j]);
+                if (ent == nullptr)
+                {
+                    dprint("nsui_canvas_comp::finalize - Could not load child ent with id " + m_unloaded_ents.back().to_string());
+                    continue;
+                }
+                nsrect_tform_comp * tuic_child = ent->get<nsrect_tform_comp>();
+                cur_pcs.m_children.push_back(tuic_child);
+            }
+        }
+        m_pupped_rects.clear();
+    }
+    else
+    {
+		if (!m_enabled)
+			return;
+
+		m_pupped_rects.clear();
+		_populate_pup_vec();
+		clear();
+		m_enabled = false;
+    }
+}
+
+void nsui_canvas_comp::clear()
+{
+	if (!m_enabled)
+	{
+		dprint("nsui_canvas_comp::clear Cannot clear disabled canvas " + m_owner->name());
+		return;
 	}
-	m_pupped_rects.clear();
+	
+//	auto ents = entities_in_canvas();
+//	if (ents == nullptr)
+//		return;
+
+//	while (ents->begin() != ents->end())
+//		remove(*(ents->begin()), true);
+
+    remove(m_owner,true);
+	
+	m_unloaded_ents.clear();	
 }
 
 void nsui_canvas_comp::add(nsentity * to_add)
 {
+	if (!m_enabled)
+	{
+		dprint("nsui_canvas_comp::add Cannot add to disabled canvas " + m_owner->name());
+		return;
+	}
+
 	nsrect_tform_comp * tuic = to_add->get<nsrect_tform_comp>();
 	if (tuic == nullptr)
 		tuic = to_add->create<nsrect_tform_comp>();
@@ -147,6 +216,12 @@ void nsui_canvas_comp::add(nsentity * to_add)
 
 void nsui_canvas_comp::remove(nsentity * to_remove, bool remove_children)
 {
+	if (!m_enabled)
+	{
+		dprint("nsui_canvas_comp::remove Cannot remove from disabled canvas " + m_owner->name());
+		return;
+	}
+
 	nsrect_tform_comp * tuic = to_remove->get<nsrect_tform_comp>();
 	auto fiter = tuic->m_canvas_settings.find(this);
 
@@ -213,6 +288,11 @@ entity_set * nsui_canvas_comp::entities_in_canvas()
 	return entities_with_comp<nsrect_tform_comp>();
 }
 
+bool nsui_canvas_comp::is_enabled()
+{
+    return m_enabled;
+}
+
 void nsui_canvas_comp::_populate_pup_vec()
 {
 	entity_set * ents = entities_in_canvas();
@@ -225,15 +305,18 @@ void nsui_canvas_comp::_populate_pup_vec()
 	{
 		rect_info ri;
 		nsrect_tform_comp * tuic = (*iter)->get<nsrect_tform_comp>();
+
+        ri.this_ent = (*iter)->full_id();
 		auto fiter = tuic->m_canvas_settings.find(this);
-		
 		ri.pci = fiter->second.pci;
+
 		if (fiter->second.m_parent != nullptr)
 			ri.pupped_parent = fiter->second.m_parent->owner()->full_id();
 
 		for (uint32 i = 0; i < fiter->second.m_children.size(); ++i)
 			ri.m_pupped_children.push_back(fiter->second.m_children[i]->owner()->full_id());
 
+        m_pupped_rects.push_back(ri);
 		++iter;
 	}
 }

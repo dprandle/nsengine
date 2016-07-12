@@ -495,6 +495,7 @@ void nsselection_system::init()
 	register_action_handler(nsselection_system::_handle_move_selection_z, NSSEL_MOVE_Z);
 	register_action_handler(nsselection_system::_handle_move_selection_toggle, NSSEL_MOVE_TOGGLE);
 	register_action_handler(nsselection_system::_handle_rotate_selection, "rotate_selection");
+	register_handler(nsselection_system::_handle_scene_ent_removed);
 }
 
 int32 nsselection_system::update_priority()
@@ -1259,7 +1260,20 @@ void nsselection_system::update()
 		translate_selection(m_total_frame_translation);
 		m_total_frame_translation = 0.0f;
 	}
-	prepare_selection_for_rendering();
+
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
+	{
+		nssel_comp * sc = (*iter)->get<nssel_comp>();
+		nstform_comp * tc = (*iter)->get<nstform_comp>();
+		if (sc->update_posted() || tc->update_posted())
+		{
+			sel_per_scene_info * psi = sc->scene_info(m_active_scene);
+			psi->video_update();
+			sc->post_update(false);
+		}
+		++iter;
+	}
 }
 
 void nsselection_system::snap_selection_to_grid()
@@ -1272,6 +1286,8 @@ void nsselection_system::snap_selection_to_grid()
 	{
 		nssel_comp * scomp = (*iter)->get<nssel_comp>();
 		nstform_comp * tcomp = (*iter)->get<nstform_comp>();
+
+		sel_per_scene_info * psi = scomp->scene_info(m_active_scene);
 
 		auto selection = scomp->selection(m_active_scene);
 		if (selection == nullptr)
@@ -1293,20 +1309,6 @@ void nsselection_system::snap_selection_to_grid()
 		++iter;
 	}
 	
-}
-
-void nsselection_system::prepare_selection_for_rendering()
-{
-	// now go through and resize and sel_comp buffers that need resizing and then
-	// set the tforms if there has been movement this frame
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		nssel_comp * sc = (*iter)->get<nssel_comp>();
-		sel_per_scene_info * psi = sc->scene_info(m_active_scene);
-		psi->video_update();
-		++iter;
-	}	
 }
 
 bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
@@ -1453,6 +1455,14 @@ bool nsselection_system::_handle_move_selection_toggle(nsaction_event * evnt)
 	}
 	m_toggle_move = true;
 	m_moving = evnt->cur_state;
+	return true;
+}
+
+bool nsselection_system::_handle_scene_ent_removed(scene_ent_removed * evnt)
+{
+	nsscene * scn = get_asset<nsscene>(evnt->scn_id);
+	if (scn != nullptr)
+		refresh_selection(scn);
 	return true;
 }
 

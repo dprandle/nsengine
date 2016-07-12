@@ -66,6 +66,7 @@ int main()
     bf.m_router = new nsrouter;
 	e.init(new nsgl_driver);
 
+
     nsgl_window wind(ivec2(800,600), "Basic Test");
     nsgl_window wind2(ivec2(900,700), "Second Window Test");
 	bf.wind = &wind;
@@ -85,28 +86,47 @@ int main()
     vp.ui_canvases.push_back(plg->get<nsentity>("canvas"));
 
     wind.vid_context()->insert_viewport("main_view",vp);
+    vp.camera = plg->get<nsentity>("scenecam2");
 	wind2.vid_context()->insert_viewport("main_view",vp);
 	
     e.start();
+
     while (e.running())
     {
         e.update();
 
-		if (wind.is_current())
-		{
-			wind.vid_context()->push_scene(new_scene);
-			wind.vid_context()->render_to_all_viewports();
-			wind.vid_context()->clear_render_queues();
-			wind.update();
-		}
-		
-		if (wind2.is_current())
-		{
-            wind2.vid_context()->push_scene(new_scene);
-            wind2.vid_context()->render_to_all_viewports();
-            wind2.vid_context()->clear_render_queues();
+        if (wind.is_current() && wind.is_open())
+        {
+            if (wind2.is_open())
+            {
+                wind2.make_current();
+                wind2.vid_context()->render(new_scene);
+                wind2.update();
+            }
+
+            wind.make_current();
+            wind.vid_context()->render(new_scene);
+            wind.update();
+        }
+        else if (wind2.is_current() && wind2.is_open())
+        {
+            if (wind.is_open())
+            {
+                wind.make_current();
+                wind.vid_context()->render(new_scene);
+                wind.update();
+            }
+
+            wind2.make_current();
+            wind2.vid_context()->render(new_scene);
             wind2.update();
-		}
+        }
+        window_poll_input();
+
+        if (!wind.is_open() && !wind2.is_open())
+        {
+            e.stop();
+        }
     }
 
     e.release();
@@ -133,9 +153,9 @@ nsscene * setup_basic_scene(nsplugin * plg)
 {
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
+	new_scene->enable(true);
+	
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-    plg->set_current_scene(new_scene, true, false);
-
     nsentity * grass_tile = plg->create_tile("grass_tile",
                                              nse.import_dir() + "diffuseGrass.png",
                                              nse.import_dir() + "normalGrass.png",
@@ -145,11 +165,14 @@ nsscene * setup_basic_scene(nsplugin * plg)
     nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
 
     nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+    nsentity * cam2 = plg->create_camera("scenecam2", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
     nsentity * ui_button = plg->create<nsentity>("button_new_match");
 
     new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
+    new_scene->add(cam2,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));

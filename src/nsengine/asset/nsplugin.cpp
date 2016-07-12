@@ -22,6 +22,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsentity.h>
 #include <nstexture.h>
 #include <nsshader.h>
+#include <nsui_canvas_comp.h>
 #include <nsfont.h>
 
 #include <nsfont_manager.h>
@@ -32,6 +33,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsmesh_manager.h>
 #include <nsplugin_manager.h>
 #include <nstex_manager.h>
+#include <nsentity_manager.h>
 
 #include <nscam_comp.h>
 #include <nsanim_comp.h>
@@ -76,13 +78,13 @@ nsplugin::nsplugin(const nsplugin & copy_):
 nsplugin::~nsplugin()
 {
 	enable(false);
-	auto iter = m_managers.begin();
-	while (iter != m_managers.end())
-	{
-		delete iter->second;
-		++iter;
-	}
-	m_managers.clear();
+    auto iter = m_managers.begin();
+    while (iter != m_managers.end())
+    {
+        delete iter->second;
+        ++iter;
+    }
+    m_managers.clear();
 }
 
 nsplugin & nsplugin::operator=(nsplugin rhs)
@@ -566,12 +568,6 @@ nsentity * nsplugin::create_terrain(const nsstring & name,
 
 	
 	return terr;
-}
-
-nsscene * nsplugin::current_scene()
-{
-	nsscene_manager * sm = manager<nsscene_manager>();
-	return sm->current();
 }
 
 bool nsplugin::destroy_manager(const nsstring & manager_guid)
@@ -1236,11 +1232,6 @@ void nsplugin::set_creation_date(const nsstring & pCreationDate)
 	m_creation_date = pCreationDate;
 }
 
-bool nsplugin::set_current_scene(nsscene * scene, bool new_scene, bool save_previous)
-{
-	return manager<nsscene_manager>()->set_current(scene, new_scene, save_previous);
-}
-
 bool nsplugin::resource_changed(nsasset * res)
 {
 	if (!m_enabled)
@@ -1383,6 +1374,19 @@ bool nsplugin::parents_enabled()
 
 void nsplugin::_clear()
 {
+    // destroy first
+    manager<nsscene_manager>()->destroy_all();\
+
+    auto emgr = manager<nsentity_manager>();
+    auto ent_iter = emgr->begin();
+    while (ent_iter != emgr->end())
+    {
+        nsentity * cur_ent = emgr->get(ent_iter->first);
+        cur_ent->del<nsui_canvas_comp>();
+        ++ent_iter;
+    }
+
+
 	auto iter = m_managers.begin();
 	while (iter != m_managers.end())
 	{

@@ -72,6 +72,8 @@ struct nsgl_tform_comp_obj : public nsvid_obj
 	nsgl_buffer * gl_tform_buffer;
 
 	nsgl_buffer * gl_tform_id_buffer;
+	
+	uint32 last_size;
 };
 
 struct nsgl_sel_comp_obj : public nsvid_obj
@@ -83,6 +85,9 @@ struct nsgl_sel_comp_obj : public nsvid_obj
 	void update();
 
 	nsgl_buffer * gl_tform_buffer;
+
+	uint32 last_size;
+
 };
 
 struct nsgl_particle_comp_obj : public nsvid_obj

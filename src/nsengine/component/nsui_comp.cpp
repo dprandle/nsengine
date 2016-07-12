@@ -17,6 +17,7 @@ nsui_material_comp::nsui_material_comp() :
 	nscomponent(type_to_hash(nsui_material_comp)),
 	mat_shader_id(0),
 	mat_id(0),
+	border_mat_id(),
 	border_size(0.0f),
 	top_border_radius(0.0f),
 	bottom_border_radius(0.0f)
@@ -26,6 +27,7 @@ nsui_material_comp::nsui_material_comp(const nsui_material_comp & copy):
 	nscomponent(copy),
 	mat_shader_id(copy.mat_shader_id),
 	mat_id(copy.mat_id),
+	border_mat_id(copy.border_mat_id),
 	border_size(copy.border_size),
 	top_border_radius(copy.top_border_radius),
 	bottom_border_radius(copy.bottom_border_radius)
@@ -64,6 +66,7 @@ nsui_material_comp & nsui_material_comp::operator=(nsui_material_comp rhs_)
 	nscomponent::operator=(rhs_);
 	std::swap(mat_shader_id,rhs_.mat_shader_id);
 	std::swap(mat_id,rhs_.mat_id);
+	std::swap(border_mat_id,rhs_.border_mat_id);
 	std::swap(border_size,rhs_.border_size);
 	std::swap(top_border_radius,rhs_.top_border_radius);
 	std::swap(bottom_border_radius,rhs_.bottom_border_radius);

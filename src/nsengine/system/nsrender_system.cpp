@@ -68,6 +68,19 @@ void nstform_system::update()
 		++ent_iter;
 	}
 
+	ent_iter = scene_ents->begin();
+	while (ent_iter != scene_ents->end())
+	{
+		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
+        if (tForm->update_posted())
+		{
+			tform_per_scene_info * psi = tForm->per_scene_info(m_active_scene);
+			psi->video_update();
+			tForm->post_update(false);
+		}
+		++ent_iter;
+	}
+
 }
 
 int32 nstform_system::update_priority()

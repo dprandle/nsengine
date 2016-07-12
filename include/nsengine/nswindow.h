@@ -46,6 +46,8 @@ enum window_creation_hint
 
 struct vid_ctxt;
 
+void window_poll_input();
+
 class nswindow
 {
   public:

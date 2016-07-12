@@ -39,7 +39,7 @@ nsscene::nsscene():
 	m_tile_grid(new nstile_grid()),
 	m_enabled(false),
 	m_ents_by_comp(),
-	m_unloaded()
+	m_unloaded_tforms()
 {
 	set_ext(DEFAULT_SCENE_EXTENSION);
 }
@@ -55,7 +55,7 @@ nsscene::nsscene(const nsscene & copy_):
 	m_enabled(copy_.m_enabled),
 	m_tile_grid(new nstile_grid()),
 	m_ents_by_comp(),
-	m_unloaded()
+	m_unloaded_tforms()
 {
 	auto ents = copy_.entities_in_scene();
 	if (ents != nullptr)
@@ -77,6 +77,8 @@ nsscene::nsscene(const nsscene & copy_):
 
 nsscene::~nsscene()
 {
+    if (m_enabled)
+        enable(false);
 	delete m_tile_grid;
 }
 
@@ -96,6 +98,12 @@ nsscene & nsscene::operator=(nsscene rhs)
 
 void nsscene::clear()
 {
+	if (!m_enabled)
+	{
+		dprint("nsscene::clear Cannot clear disabled scene " + m_name);
+		return;
+	}
+	
 	auto ents = entities_in_scene();
 	if (ents == nullptr)
 		return;
@@ -103,7 +111,7 @@ void nsscene::clear()
 	while (ents->begin() != ents->end())
 		remove(*(ents->begin()), true);
 	
-	m_unloaded.clear();
+	m_unloaded_tforms.clear();
 }
 
 
@@ -113,6 +121,12 @@ uint32 nsscene::add(
 	const instance_tform & tf_info,
 	bool add_children)
 {
+	if (!m_enabled)
+	{
+		dprint("nsscene::add Cannot add entity to disabled scene " + m_name);
+		return -1;
+	}
+
 	nstform_comp * tComp = ent->get<nstform_comp>();
 	nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
 
@@ -125,9 +139,13 @@ uint32 nsscene::add(
 		make_tform = true;
 	}
 
-	auto fiter = tComp->m_scenes_info.emplace(
-		this,
-		new tform_per_scene_info(tComp,this)).first;
+    auto fiter = tComp->m_scenes_info.find(this);
+    if (fiter == tComp->m_scenes_info.end())
+    {
+        fiter = tComp->m_scenes_info.emplace(
+                    this,
+                    new tform_per_scene_info(tComp,this)).first;
+    }
 	tform_per_scene_info & pse = *fiter->second;
 	
 	uint32 tfid = pse.m_tforms.size();
@@ -135,7 +153,7 @@ uint32 nsscene::add(
 	instance_tform & tf = pse.m_tforms[tfid];
 	tf = tf_info;
 	tf.m_scene = this;
-	tf.m_owner = tComp;
+    tf.m_owner = tComp;
 	tf.set_parent(parent, true);
 
 	// If there is an occupy component, attemp at inserting it in to the map. It will fail if the space
@@ -165,18 +183,24 @@ uint32 nsscene::add(
 	{
 		for (uint32 i = 0; i < tf_info.m_children.size(); ++i)
 		{
-			if (add(tf_info.m_children[i]->owner()->owner(), &tf, *tf_info.m_children[i], add_children) == -1)
+			instance_handle ihnd = tf_info.m_children[i];
+			instance_tform * chld = ihnd.tfc->instance_transform(this, ihnd.ind);
+			
+			if (add(chld->owner()->owner(), &tf, *chld, add_children) == -1)
 			{
 				dprint("nsscene::add Could not add child of " + ent->name() + " tformid " + std::to_string(tfid) + " because occupy_comp did not allow it");
 			}
 		}
 	}
 
+	nse.event_dispatch()->push<scene_tform_added>(uivec3(ent->full_id(),tfid),full_id());
+
 	if (make_tform)
 	{
 		_add_all_comp_entries(ent);
 		sig_connect(ent->component_added, nsscene::_on_comp_add);
 		sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+		nse.event_dispatch()->push<scene_ent_added>(ent->full_id(),full_id());
 	}
 	
 	tComp->post_update(true);
@@ -208,6 +232,12 @@ void nsscene::add_gridded(
 	const fvec3 & scaling_
 	)
 {
+	if (!m_enabled)
+	{
+		dprint("nsscene::add_gridded Cannot add entity to disabled scene " + m_name);
+		return;
+	}
+
 	nstform_comp * tComp = ent->get<nstform_comp>();
     bool added_tform = false;
 	if (tComp == nullptr)
@@ -545,6 +575,12 @@ void nsscene::name_change(const uivec2 & oldid, const uivec2 newid)
 
 bool nsscene::remove(instance_tform * itform, bool remove_children)
 {
+	if (!m_enabled)
+	{
+		dprint("nsscene::remove Cannot remove entity in disabled scene " + m_name);
+		return false;
+	}
+
 	nstform_comp * tComp = itform->owner();
 	nsentity * entity = tComp->owner();
 	
@@ -576,13 +612,34 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 	else
 	{
 		*itform = pse->m_tforms.back();
+
 		pse->m_tforms.pop_back();
 		itform->update = true;
 		pse->m_buffer_resized = true;
 		itform->owner()->post_update(true);
 	}
 
-    uint32 tformid = (itform - &pse->m_tforms[0]);
+    uint32 old_index = pse->m_tforms.size();
+    uint32 tformid = itform->current_tform_id();
+
+    // Replace parent's child id with our new one
+    if (itform->m_parent.is_valid())
+    {
+        instance_tform * par_itf = itform->m_parent.tfc->instance_transform(this, itform->m_parent.ind);
+        for (uint32 i = 0; i < par_itf->m_children.size(); ++i)
+        {
+            if (par_itf->m_children[i] == instance_handle(itform->owner(),old_index))
+                par_itf->m_children[i].ind = tformid;
+        }
+    }
+
+    // Replace childrens' parent ids with our new one
+    for (uint32 i = 0; i < itform->m_children.size(); ++i)
+    {
+        instance_tform * chld = itform->m_children[i].tfc->instance_transform(this, itform->m_children[i].ind);
+        chld->m_parent.ind = tformid;
+    }
+
 	nssel_comp * sel_cmp = entity->get<nssel_comp>();
 	if (sel_cmp != nullptr)
 	{
@@ -608,6 +665,8 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		}
 	}
 
+	nse.event_dispatch()->push<scene_tform_removed>(uivec3(entity->full_id(),tformid),full_id());
+	
 	if (pse->m_tforms.size() == 0)
 	{
 		sig_disconnect(tComp->owner()->component_added);
@@ -618,11 +677,12 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		tComp->m_scenes_info.erase(fiter);		
 		if (tComp->m_scenes_info.empty())
 			entity->del<nstform_comp>();
+
+		nse.event_dispatch()->push<scene_ent_removed>(entity->full_id(),full_id());
 		
 		if (m_skydome == entity)
 			m_skydome = nullptr;
 	}
-	
 	return true;
 }
 
@@ -698,9 +758,14 @@ void nsscene::set_skydome(nsentity * skydome, bool addToSceneIfNeeded)
 	}
 }
 
-uivec2_vector & nsscene::unloaded()
+nsscene::pupped_vec & nsscene::unloaded()
 {
-	return m_unloaded;
+	return m_unloaded_tforms;
+}
+
+bool nsscene::is_enabled()
+{
+	return m_enabled;
 }
 
 void nsscene::_on_comp_add(nscomponent * comp_t)
@@ -732,7 +797,6 @@ void nsscene::_on_comp_remove(nscomponent * comp_t)
 			auto emp_iter = sc->m_scene_selection.find(this);
 			delete emp_iter->second;
 			sc->m_scene_selection.erase(emp_iter);
-			nse.system<nsselection_system>()->refresh_selection(this);
 		}
 	}
 	else
@@ -761,32 +825,24 @@ void nsscene::_add_all_comp_entries(nsentity * ent)
 	}	
 }
 
-nsscene::instance_tform_info::instance_tform_info(nsscene * scn, const instance_tform & it):
+nsscene::pupped_tform_info::pupped_tform_info(uint32 id, const instance_tform & it):
 	parent(),
 	children(),
-	ent_id(it.m_owner->owner()->full_id()),
-	render_update(it.m_render_update),
-	hidden_state(it.m_hidden_state),
-	orient(it.m_orient),
-	position(it.m_position),
-	scaling(it.m_scaling),
-	world_tform(it.m_world_tform),
-	world_inv_tform(it.m_world_inv_tform),
-	local_tform(it.m_local_tform),
-	local_inv_tform(it.m_local_inv_tform)
+	itf(it),
+    ent_tform_id()
 {
-	if (it.m_parent != nullptr)
+    if (it.m_owner != nullptr)
+    {
+        ent_tform_id = uivec3(it.m_owner->owner()->full_id(),id);
+    }
+	if (it.m_parent.is_valid())
 	{
-		tform_per_scene_info * pse = it.m_parent->m_owner->per_scene_info(scn);
-		uint32 tformid = (it.m_parent - &pse->m_tforms[0]);
-		parent = uivec3(it.m_owner->owner()->full_id(),tformid);
+        parent = uivec3(it.m_parent.tfc->owner()->full_id(),it.m_parent.ind);
 	}
 	auto child_iter = it.m_children.begin();
 	while (child_iter != it.m_children.end())
 	{
-		tform_per_scene_info * pse = (*child_iter)->m_owner->per_scene_info(scn);
-		uint32 tformid = ((*child_iter) - &pse->m_tforms[0]);
-		children.push_back(uivec3(it.m_owner->owner()->full_id(),tformid));
+        children.push_back(uivec3(child_iter->tfc->owner()->full_id(),child_iter->ind));
 		++child_iter;
 	}		
 }
@@ -795,31 +851,66 @@ void nsscene::enable(bool to_enable)
 {
 	if (to_enable)
 	{
+		if (m_enabled)
+			return;
+
+		m_tile_grid->init();
+        m_enabled = true;
+		
+		// If enabling the scene, go through the pupped vec and load - clear the pupped vec after loading
+		// Any unloaded tforms are added to the "unloaded" pupped vec
+		
 		auto add_iter = m_pupped_tforms.begin();
 		while (add_iter != m_pupped_tforms.end())
 		{
-			
-			++add_iter;
+			nsentity * ent = get_asset<nsentity>(add_iter->ent_tform_id.xy());
+			if (ent == nullptr)
+			{
+				m_unloaded_tforms.emplace_back(*add_iter);
+				add_iter = m_pupped_tforms.erase(add_iter);
+				dprint("nsscene::enable - Could not load entity tform with id " + add_iter->ent_tform_id.to_string());
+			}
+			else
+			{
+				uint32 id = add(ent, nullptr, add_iter->itf, false);
+				dprint("nsscene::enable - Adding tform " + std::to_string(id) + " to entity " + ent->name());
+				++add_iter;
+			}
 		}
 
+		// After having added all tforms, preserving the ids, we should be able to assign parent/children
+		// accordingly now
 		auto piter = m_pupped_tforms.begin();
 		while (piter != m_pupped_tforms.end())
 		{
-			instance_tform itf;
-			nsentity * ent = get_asset<nsentity>(piter->parent.xy());
-			if (ent != nullptr)
+            instance_tform * itf = get_asset<nsentity>(piter->ent_tform_id.xy())->get<nstform_comp>()->instance_transform(this, piter->ent_tform_id.z);
+            nsentity * parent_ent = get_asset<nsentity>(piter->parent.xy());
+            if (parent_ent != nullptr)
 			{
-				instance_tform * itf_parent = ent->get<nstform_comp>()->instance_transform(this, piter->parent.z);
-				itf.m_parent = itf_parent;
+                itf->m_parent.tfc = parent_ent->get<nstform_comp>();
+				itf->m_parent.ind = piter->parent.z;
 			}
 			for (uint32 i = 0; i < piter->children.size(); ++i)
 			{
 				nsentity * cent = get_asset<nsentity>(piter->children[i].xy());
-				instance_tform * itf_child = ent->get<nstform_comp>()->instance_transform(this, piter->children[i].z);
-//				itf.m_children.push
+				itf->m_children.push_back(instance_handle(cent->get<nstform_comp>(), piter->children[i].z));
 			}
 			++piter;
 		}
+		m_pupped_tforms.clear();
+	}
+	else
+	{
+		if (!m_enabled)
+			return;
+		
+		// If disabling, fill the pupped vec and then remove everything from the scene
+		m_pupped_tforms.clear();
+		_populate_pup_vec();
+		clear();
+
+		m_tile_grid->release();
+		m_enabled = false;
 	}
 }
 
@@ -829,12 +920,17 @@ void nsscene::_populate_pup_vec()
 	auto ent_iter = ents->begin();
 	while (ent_iter != ents->end())
 	{
-		tform_per_scene_info * psi = (*ent_iter)->get<nstform_comp>()->per_scene_info(this);
-		for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
-		{
-			instance_tform & itf = psi->m_tforms[i];
-			m_pupped_tforms.emplace_back(instance_tform_info(this, itf));
-		}
+        nstform_comp * tfc = (*ent_iter)->get<nstform_comp>();
+        if (tfc->save_with_scene)
+        {
+            tform_per_scene_info * psi = tfc->per_scene_info(this);
+
+            for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
+            {
+                instance_tform & itf = psi->m_tforms[i];
+                m_pupped_tforms.emplace_back(pupped_tform_info(i,itf));
+            }
+        }
 		++ent_iter;
 	}
 }

@@ -511,6 +511,9 @@ void nscamera_system::set_camera_focus_manipulator(nsentity * cam_manip)
 
 bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -532,6 +535,9 @@ bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -553,6 +559,9 @@ bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_zoom(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -572,66 +581,99 @@ bool nscamera_system::_handle_camera_zoom(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_top_view_0(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_top_0);
 	return true;
 }		
 
 bool nscamera_system::_handle_camera_iso_view_0(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_iso_0);
 	return true;
 }	
 
 bool nscamera_system::_handle_camera_front_view_0(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_front_0);
 	return true;
 }
 
 bool nscamera_system::_handle_camera_top_view_120(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_top_120);
 	return true;
 }		
 
 bool nscamera_system::_handle_camera_iso_view_120(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_iso_120);
 	return true;
 }	
 
 bool nscamera_system::_handle_camera_front_view_120(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_front_120);
 	return true;
 }
 
 bool nscamera_system::_handle_camera_top_view_240(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_top_240);
 	return true;
 }		
 
 bool nscamera_system::_handle_camera_iso_view_240(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_iso_240);
 	return true;
 }	
 
 bool nscamera_system::_handle_camera_front_view_240(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	set_view(view_front_240);
 	return true;
 }
 
 bool nscamera_system::_handle_camera_toggle_mode(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	toggle_mode();
 	return true;
 }
 
 bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -648,6 +690,9 @@ bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -665,6 +710,9 @@ bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -682,6 +730,9 @@ bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return true;
@@ -698,13 +749,16 @@ bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 
 void nscamera_system::set_active_scene(nsscene * active_scene)
 {
-	if (m_active_scene != nullptr)
+    if (m_active_scene != nullptr && m_active_scene->is_enabled())
 		m_active_scene->remove(m_cam_focus_manipulator, false);
 	nssystem::set_active_scene(active_scene);
 }
 
 bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 {
+    if (scene_error_check())
+        return true;
+
 	nsentity * ent = m_active_scene->find_entity(evnt->focus_id.xy());
 	if (ent == nullptr)
 		return true;

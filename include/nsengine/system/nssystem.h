@@ -46,6 +46,8 @@ public:
 
 	bool m_scene_null_error;
 
+	bool m_scene_disabled_error;
+
 	nsscene * m_active_scene;
 
   private:

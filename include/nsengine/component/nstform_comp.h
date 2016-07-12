@@ -27,45 +27,43 @@ class nsscene;
 
 class nstform_comp;
 
+struct instance_handle
+{
+	instance_handle(nstform_comp * tfc_=nullptr, uint32 tf_ind = -1):
+		tfc(tfc_),
+		ind(tf_ind)
+	{}
+
+	bool is_valid() const
+	{
+		return tfc != nullptr && ind != -1;
+	}
+
+	void invalidate()
+	{
+		tfc = nullptr; ind = -1;
+	}
+
+	bool operator==(const instance_handle & rhs)
+	{
+		return tfc == rhs.tfc && ind == rhs.ind;
+	}
+	
+	nstform_comp * tfc;
+	uint32 ind;
+};
+
 struct instance_tform
 {
+	template <class PUPer>
+	friend void pup(PUPer & p, instance_tform & iv, const nsstring & var_name);
+
 	friend class nsscene;
 	friend class nsrender_system;
 	
-	instance_tform() :
-		m_hidden_state(0),
-		m_orient(),
-		m_position(),
-		m_scaling(1.0f, 1.0f, 1.0f),
-		update(true),
-		snap_to_grid(true),
-		m_owner(nullptr),
-		m_scene(nullptr),
-		m_parent(nullptr),
-		m_children(),
-		m_world_tform(),
-		m_world_inv_tform(),
-		m_local_tform(),
-		m_local_inv_tform()
-	{}
+	instance_tform();
 
-	instance_tform(const instance_tform & copy):
-		m_hidden_state(0),
-		m_orient(copy.m_orient),
-		m_position(copy.m_position),
-		m_scaling(copy.m_scaling),
-		update(true),
-		snap_to_grid(copy.snap_to_grid),
-		m_owner(nullptr),
-		m_scene(nullptr),
-		m_render_update(true),
-		m_parent(nullptr),
-		m_children(),
-		m_world_tform(),
-		m_world_inv_tform(),
-		m_local_tform(),
-		m_local_inv_tform()
-	{}
+	instance_tform(const instance_tform & copy);
 
 	instance_tform & operator=(instance_tform rhs);
 
@@ -79,6 +77,8 @@ struct instance_tform
     void remove_child(instance_tform * child, bool keep_world_transform);
 
     void remove_children(bool keep_world_transform);
+
+	uint32 current_tform_id();
 	
 	bool has_child(instance_tform * child);
 	
@@ -141,7 +141,7 @@ struct instance_tform
   private:
 
 	nstform_comp * m_owner;
-	instance_tform * m_parent;
+	instance_handle m_parent;
 	nsscene * m_scene;
 	bool m_render_update;
 	int32 m_hidden_state;
@@ -150,12 +150,22 @@ struct instance_tform
 	fvec3 m_scaling;
 
 	
-	std::vector<instance_tform*> m_children;
+	std::vector<instance_handle> m_children;
 	fmat4 m_world_tform;
 	fmat4 m_world_inv_tform;
 	fmat4 m_local_tform;
 	fmat4 m_local_inv_tform;
 };
+
+template <class PUPer>
+void pup(PUPer & p, instance_tform & iv, const nsstring & var_name)
+{
+	pup(p, iv.m_hidden_state, var_name + ".hidden_state");
+	pup(p, iv.m_orient, var_name + ".orient");
+	pup(p, iv.m_position, var_name + ".position");
+	pup(p, iv.m_scaling, var_name + ".scaling");
+	pup(p, iv.snap_to_grid, var_name + ".snap_to_grid");
+}
 
 typedef std::vector<instance_tform> instance_vec;
 
@@ -213,20 +223,4 @@ class nstform_comp : public nscomponent
 	std::unordered_map<const nsscene *, tform_per_scene_info *> m_scenes_info;
 };
 
-
-template <class PUPer>
-void pup(PUPer & p, instance_tform & iv)
-{
-	// pup(p, iv.hidden_state, varName + ".hidden_state");
-	// pup(p, iv.orient, varName + ".orient");
-	// pup(p, iv.posistion, varName + ".position");
-	// pup(p, iv.scaling, varName + ".scaling");
-	// pup(p, iv.world_tform, varName + ".parent_tform");
-	// pup(p, iv.local_inv_tform, varName + ".inv_tform");
-	// pup(p, iv.local_tform, varName + ".tform");
-	// pup(p, iv.render_id, varName + ".render_id");
-	// pup(p, iv.snap_to_grid, varName + ".snap_to_grid");
-	// pup(p, iv.parent_enabled, varName + ".parent_enabled");
-	// pup(p, iv.parent_id, varName + ".parent_id");
-}
 #endif

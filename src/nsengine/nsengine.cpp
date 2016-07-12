@@ -78,6 +78,7 @@ nsengine::nsengine():
 	m_plugins(nullptr),
 	m_event_disp(nullptr),
 	m_timer(nullptr),
+    m_active_scene(nullptr),
 #ifdef NSDEBUG
 	m_deb(nullptr),
 #endif
@@ -334,7 +335,11 @@ void nsengine::release()
 		return;
 
 	ilShutDown();
-	
+   
+	m_plugins->destroy_all();
+	delete m_plugins;
+	m_plugins = nullptr;
+
 	// delete all systems
 	auto iter = m_systems->begin();
 	while (iter != m_systems->end())
@@ -351,10 +356,6 @@ void nsengine::release()
 	delete m_event_disp;
 	m_event_disp = nullptr;
 
-	m_plugins->destroy_all();
-	delete m_plugins;
-	m_plugins = nullptr;
-	
 	delete m_systems;
 	m_systems = nullptr;
 	
@@ -364,13 +365,14 @@ void nsengine::release()
 	delete m_timer;
 	m_timer = nullptr;
 	
-#ifdef NSDEBUG
-	delete m_deb;
-	m_deb = nullptr;
-#endif
 	
 	delete m_driver;
 	m_driver = nullptr;
+
+#ifdef NSDEBUG
+    delete m_deb;
+    m_deb = nullptr;
+#endif
 	
 	m_initialized = false;
 }
@@ -407,6 +409,11 @@ uint32 nsengine::type_id(std::type_index type)
 	return 0;
 }
 
+nsscene * nsengine::active_scene()
+{
+    return m_active_scene;
+}
+
 nsfactory * nsengine::_remove_factory(uint32 hash_id)
 {
 	nsfactory * f = factory(hash_id);
@@ -418,16 +425,27 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
 
 void nsengine::set_active_scene(nsscene * active_scene)
 {
+    m_active_scene = active_scene;
+
+    if (m_active_scene != nullptr && !m_active_scene->is_enabled())
+        m_active_scene->enable(true);
+	
 	auto sys_iter = m_systems->begin();
 	while (sys_iter != m_systems->end())
 	{
-		sys_iter->second->set_active_scene(active_scene);
+        sys_iter->second->set_active_scene(m_active_scene);
 		++sys_iter;
 	}	
 }
 
 void nsengine::update()
 {
+	if (nse.video_driver()->current_context() == nullptr)
+	{
+		event_dispatch()->clear();
+		return;
+	}
+	
 	static double accumulator = 0.0;
 	timer()->update();
 	accumulator += timer()->dt();

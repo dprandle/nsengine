@@ -194,10 +194,14 @@ struct vid_ctxt
 
 	virtual void render_to_all_viewports() = 0;
 
+	virtual void render(nsscene * scn) = 0;
+
 	virtual void setup_default_rendering() = 0;
 
 	virtual const ivec2 & window_size() = 0;
 
+	bool auto_cleanup;
+	bool auto_update_vobjs;
 	uint32 context_id;
 	bool initialized;
 	queue_map render_queues;
@@ -220,10 +224,6 @@ class nsvideo_driver
 
 	virtual void release();
 
-	void enable_auto_cleanup(bool enable);
-
-	bool auto_cleanup();
-	
 	virtual uint8 create_context() = 0;
 
 	virtual bool destroy_context(uint8 c_id);
@@ -239,8 +239,7 @@ class nsvideo_driver
 	ns::signal<vid_ctxt*> context_switch;
 
   protected:
-	bool m_auto_update_vobjs;
-	bool m_auto_cleanup;
+	
 	vid_ctxt * m_current_context;
 	vid_ctxt * m_contexts[MAX_CONTEXT_COUNT];
 	bool m_initialized;

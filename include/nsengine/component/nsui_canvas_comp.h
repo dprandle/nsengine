@@ -59,7 +59,11 @@ public:
 
 	void release();
 
-	void finalize();
+    void enable(bool enbl);
+
+	void clear();
+
+    bool is_enabled();
 
 	void pup(nsfile_pupper * p);
 
@@ -85,8 +89,10 @@ public:
 		uivec2 this_ent;
 		std::vector<uivec2> m_pupped_children;
 	};
-	
+
 	std::vector<rect_info> m_pupped_rects;
+
+    bool m_enabled;
 };
 
 template <class PUPer>

@@ -28,6 +28,17 @@ class nsscene : public nsasset
 	SLOT_OBJECT
 	public:
 
+	struct pupped_tform_info
+	{
+		pupped_tform_info(uint32 tfid=-1, const instance_tform & it=instance_tform());
+		instance_tform itf;
+        uivec3 ent_tform_id;
+		uivec3 parent;
+		std::vector<uivec3> children;
+	};
+
+	typedef std::vector<pupped_tform_info> pupped_vec;
+	
 	template<class PUPer>
 	friend void pup(PUPer & p, nsscene & sc);
 
@@ -143,7 +154,7 @@ class nsscene : public nsasset
 
 	void set_skydome(nsentity * skydome, bool addToSceneIfNeeded = true);
 
-	uivec2_vector & unloaded();
+	pupped_vec & unloaded();
 
 private:
 
@@ -152,25 +163,7 @@ private:
 	void _on_comp_remove(nscomponent * comp_t);
 	void _on_comp_add(nscomponent * comp_t);
 	void _populate_pup_vec();
-	struct instance_tform_info
-	{
-		instance_tform_info(nsscene * scn, const instance_tform & it);
-
-		uivec2 ent_id;
-		bool render_update;
-		int32 hidden_state;
-		fquat orient;
-		fvec3 position;
-		fvec3 scaling;
-		fmat4 world_tform;
-		fmat4 world_inv_tform;
-		fmat4 local_tform;
-		fmat4 local_inv_tform;
-
-		uivec3 parent;
-		std::vector<uivec3> children;
-	};
-	
+		
 	nsentity *  m_skydome;
 	uint32 m_max_players;
     fvec4 m_bg_color;
@@ -179,23 +172,39 @@ private:
 	bool m_enabled;
 	nstile_grid * m_tile_grid;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
-	uivec2_vector m_unloaded;
 
-	std::vector<instance_tform_info> m_pupped_tforms;
+	pupped_vec m_unloaded_tforms;
+	pupped_vec m_pupped_tforms;
 };
 
+template<class PUPer>
+void pup(PUPer & p, nsscene::pupped_tform_info & ptfi, const nsstring & var_name)
+{
+	pup(p, ptfi.ent_tform_id, var_name + ".ent_id");
+	pup(p, ptfi.itf, var_name);
+	pup(p, ptfi.parent, var_name + ".parent");
+	pup(p, ptfi.children, var_name + ".children");
+}
 
 template<class PUPer>
 void pup(PUPer & p, nsscene & sc)
 {
-//	sc.m_pupped_tforms.clear();
-//	sc._populate_pup_vec();
-//	pup(p, sc.m_pupped_tforms, "scene_tforms");
-
-	// pup(p, sc.m_max_players, "max_players");
-	// pup(p, sc.m_bg_color, "bg_color");
-	// pup(p, sc.m_notes, "notes");
-	// pup(p, sc.m_creator, "creator");
+	if (sc.m_enabled)
+	{
+		if (p.mode() == PUP_IN)
+			return;
+		sc._populate_pup_vec();
+		pup(p, sc.m_pupped_tforms, "scene_tforms");
+		sc.m_pupped_tforms.clear();
+	}
+	else
+	{
+        pup(p, sc.m_pupped_tforms, "scene_tforms");
+	}
+    pup(p, sc.m_max_players, "max_players");
+	pup(p, sc.m_bg_color, "bg_color");
+	pup(p, sc.m_notes, "notes");
+	pup(p, sc.m_creator, "creator");
 }
 
 #endif

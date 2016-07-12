@@ -174,6 +174,8 @@ public:
 	~nsengine();
 
 	typedef std::map<int32, uint32> sys_priority_map;
+
+    nsscene * active_scene();
 	
 	bool add_system(nssystem * pSystem);
 
@@ -582,6 +584,7 @@ private:
 	nsplugin_manager * m_plugins;
 	nsevent_dispatcher * m_event_disp;
 	nstimer * m_timer;
+    nsscene * m_active_scene;
 
 #ifdef NSDEBUG
 	nsdebug * m_deb;

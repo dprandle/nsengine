@@ -592,24 +592,14 @@ const ivec2 & gl_ctxt::window_size()
 void gl_ctxt::push_scene(nsscene * scn)
 {
 	// now go through second time after recursive update
+    if (scn == nullptr)
+        return;
+
 	auto ents = scn->entities_in_scene();
 
 	if (ents == nullptr)
 		return;
 	
-	auto ent_iter = ents->begin();
-	while (ent_iter != ents->end())
-	{
-		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-        if (tForm->update_posted())
-		{
-			tform_per_scene_info * psi = tForm->per_scene_info(scn);
-			psi->video_update();
-			//  tForm->post_update(false);
-		}
-		++ent_iter;
-	}
-
 	_add_draw_calls_from_scene(scn);
 	_add_lights_from_scene(scn);
 }
@@ -727,6 +717,16 @@ void gl_ctxt::render_to_viewport(viewport * vp)
 	#endif
 }
 
+void gl_ctxt::render(nsscene *scn)
+{
+    if (auto_update_vobjs)
+        update_vid_objs();
+
+	push_scene(scn);
+	render_to_all_viewports();
+	clear_render_queues();
+}
+
 void gl_ctxt::render_to_all_viewports()
 {
 	static bool vperr = false;
@@ -738,7 +738,7 @@ void gl_ctxt::render_to_all_viewports()
         return;
 	}
     vperr = false;
-	
+
 	auto iter = vp_list.begin();
 	while (iter != vp_list.end())
 	{

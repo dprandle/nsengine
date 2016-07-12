@@ -76,8 +76,11 @@ instance_tform * nstform_comp::instance_transform(const nsscene * scn, uint32 tf
 
 void instance_tform::translate_world_space(const fvec3 & amount)
 {
-    if (m_parent != nullptr)
-        m_position = (m_parent->world_inv_tf() * fvec4(world_position() + amount,1.0f)).xyz();
+    if (m_parent.is_valid())
+	{
+		instance_tform * itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+        m_position = (itf->world_inv_tf() * fvec4(world_position() + amount,1.0f)).xyz();
+	}
     else
         m_position += amount;
     update = true;
@@ -92,12 +95,56 @@ nstform_comp & nstform_comp::operator=(nstform_comp rhs_)
 	return (*this);
 }
 
+instance_tform::instance_tform():
+	m_hidden_state(0),
+	m_orient(),
+	m_position(),
+	m_scaling(1.0f, 1.0f, 1.0f),
+	update(true),
+	snap_to_grid(true),
+	m_owner(nullptr),
+	m_scene(nullptr),
+	m_parent(),
+	m_children(),
+	m_world_tform(),
+	m_world_inv_tform(),
+	m_local_tform(),
+	m_local_inv_tform()
+{}
+
+instance_tform::instance_tform(const instance_tform & copy):
+	m_hidden_state(copy.m_hidden_state),
+	m_orient(copy.m_orient),
+	m_position(copy.m_position),
+	m_scaling(copy.m_scaling),
+	update(true),
+	snap_to_grid(copy.snap_to_grid),
+	m_owner(copy.m_owner),
+	m_scene(copy.m_scene),
+	m_render_update(true),
+	m_parent(copy.m_parent),
+	m_children(copy.m_children),
+	m_world_tform(copy.m_world_tform),
+	m_world_inv_tform(copy.m_world_inv_tform),
+	m_local_tform(copy.m_local_tform),
+	m_local_inv_tform(copy.m_local_inv_tform)
+{}
+
 instance_tform & instance_tform::operator=(instance_tform rhs)
 {
+	std::swap(m_owner, rhs.m_owner);
+	std::swap(m_parent, rhs.m_parent);
+	std::swap(m_scene, rhs.m_scene);
+	std::swap(m_render_update, rhs.m_render_update);
 	std::swap(m_hidden_state, rhs.m_hidden_state);
 	std::swap(m_orient, rhs.m_orient);
 	std::swap(m_position, rhs.m_position);
 	std::swap(m_scaling, rhs.m_scaling);
+	std::swap(m_children, rhs.m_children);
+	std::swap(m_world_tform, rhs.m_world_tform);
+	std::swap(m_world_inv_tform, rhs.m_world_inv_tform);
+	std::swap(m_local_tform, rhs.m_local_tform);
+	std::swap(m_local_inv_tform, rhs.m_local_inv_tform);
 	std::swap(update, rhs.update);
 	std::swap(snap_to_grid, rhs.snap_to_grid);
 	return *this;
@@ -111,21 +158,23 @@ void instance_tform::add_child(instance_tform * child, bool keep_world_transform
 	if (has_child(child))
 		return;
 	
-	if (child->m_parent != nullptr)
-        child->m_parent->remove_child(child, keep_world_transform);
+	if (child->m_parent.is_valid())
+	{
+		instance_tform * cparent_itf = child->m_parent.tfc->instance_transform(m_scene, child->m_parent.ind);
+        cparent_itf->remove_child(child, keep_world_transform);
+	}
 		
-
     if (update)
         recursive_compute();
 
-    m_children.push_back(child);
+    m_children.push_back(instance_handle(child->owner(),child->current_tform_id()));
 
     if (child->update)
         child->recursive_compute();
 
     fvec3 wpos = child->world_position();
     fquat worient = child->world_orientation();
-	child->m_parent = this;
+	child->m_parent = instance_handle(owner(),current_tform_id());
     child->update = true;
     child->owner()->post_update(true);
     if (keep_world_transform)
@@ -135,15 +184,22 @@ void instance_tform::add_child(instance_tform * child, bool keep_world_transform
     }
 }
 
+uint32 instance_tform::current_tform_id()
+{
+    return (this - &m_owner->per_scene_info(m_scene)->m_tforms[0]);
+}
+
 void instance_tform::remove_child(instance_tform * child, bool keep_world_transform)
 {
     if (update)
         recursive_compute();
 
+	instance_handle hnd(child->owner(),child->current_tform_id());
+	
 	auto child_iter = m_children.begin();
 	while (child_iter != m_children.end())
 	{
-		if (*child_iter == child)
+		if (*child_iter == hnd)
 		{
             m_children.erase(child_iter);
 
@@ -152,7 +208,7 @@ void instance_tform::remove_child(instance_tform * child, bool keep_world_transf
 
             fvec3 wpos = child->world_position();
             fquat worient = child->world_orientation();
-			child->m_parent = nullptr;
+			child->m_parent.invalidate();
             child->update = true;
 
             child->owner()->post_update(true);
@@ -169,15 +225,24 @@ void instance_tform::remove_child(instance_tform * child, bool keep_world_transf
 
 void instance_tform::remove_children(bool keep_world_transform)
 {
-    while (m_children.begin() != m_children.end())
-        remove_child(*m_children.begin(),keep_world_transform);
+	auto citer = m_children.begin();
+    while (citer != m_children.end())
+	{
+		instance_tform * chld = citer->tfc->instance_transform(m_scene, citer->ind);
+		if (chld != nullptr)
+			remove_child(chld, keep_world_transform);
+		++citer;
+	}
+	m_children.clear();
 }
 
 bool instance_tform::has_child(instance_tform * child)
 {
+	instance_handle hnd(child->owner(), child->current_tform_id());
 	for (uint32 i = 0; i < m_children.size(); ++i)
 	{
-		if (m_children[i] == child || m_children[i]->has_child(child))
+		instance_tform * chld = m_children[i].tfc->instance_transform(m_scene, m_children[i].ind);
+		if (m_children[i] == hnd || chld->has_child(child))
 			return true;
 	}
 	return false;
@@ -187,8 +252,11 @@ void instance_tform::set_parent(instance_tform * parent, bool keep_world_transfo
 {
 	if (parent == nullptr)
 	{
-		if (m_parent != nullptr)
-            m_parent->remove_child(this,keep_world_transform);
+		if (m_parent.is_valid())
+		{
+			instance_tform * par_itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+            par_itf->remove_child(this, keep_world_transform);
+		}
 	}
 	else
         parent->add_child(this,keep_world_transform);
@@ -196,7 +264,9 @@ void instance_tform::set_parent(instance_tform * parent, bool keep_world_transfo
 
 instance_tform * instance_tform::parent()
 {
-	return m_parent;	
+	if (m_parent.is_valid())
+		return m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+	return nullptr;
 }
 
 nsscene * instance_tform::scene()
@@ -220,16 +290,24 @@ void instance_tform::recursive_compute()
 		m_owner->post_update(true);
 		m_render_update = true;
 	}
-	if ((m_parent != nullptr) && (update || m_parent->update))
+	if (m_parent.is_valid())
 	{
-		m_world_tform = m_parent->m_world_tform * m_local_tform;
-        m_world_inv_tform = inverse(m_world_tform);
-        //m_world_inv_tform =  m_world_inv_tform * m_parent->m_world_inv_tform;
-		m_owner->post_update(true);
-		m_render_update = true;
+		instance_tform * par_itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+		if (update || par_itf->update)
+		{
+			m_world_tform = par_itf->m_world_tform * m_local_tform;
+			m_world_inv_tform = inverse(m_world_tform);
+			//m_world_inv_tform =  m_world_inv_tform * m_parent->m_world_inv_tform;
+			m_owner->post_update(true);
+			m_render_update = true;
+		}
 	}
 	for (uint32 i = 0; i < m_children.size(); ++i)
-		m_children[i]->recursive_compute();
+    {
+		instance_tform * child_itf = m_children[i].tfc->instance_transform(m_scene, m_children[i].ind);
+        child_itf->update = true;
+		child_itf->recursive_compute();
+    }
 	update = false;
 }
 
@@ -291,36 +369,50 @@ void instance_tform::rotate(const fquat & rotation)
 
 fvec3 instance_tform::world_position() const
 {
-	if (m_parent != nullptr)
-        return (m_parent->world_tf() * fvec4(m_position)).xyz();
+	if (m_parent.is_valid())
+	{
+		instance_tform * par_itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+        return (par_itf->world_tf() * fvec4(m_position)).xyz();
+	}
 	return m_position;
 }
 
 fquat instance_tform::world_orientation() const
 {
-    if (m_parent != nullptr)
-        return m_parent->world_orientation() * m_orient;
+    if (m_parent.is_valid())
+	{
+		instance_tform * par_itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+        return par_itf->world_orientation() * m_orient;
+	}
     return m_orient;
 }
 
 void instance_tform::set_world_position(const fvec3 & pos)
 {
-	if (m_parent != nullptr)
-        m_position = (m_parent->world_inv_tf() * fvec4(pos,1.0f)).xyz();
+	if (m_parent.is_valid())
+	{
+		instance_tform * par_itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+        m_position = (par_itf->world_inv_tf() * fvec4(pos,1.0f)).xyz();
+	}
 	else
+	{
 		m_position = pos;
+	}
     update = true;
     m_owner->post_update(true);
 }
 
 void instance_tform::set_world_orientation(const fquat & orient_)
 {
-    if (m_parent != nullptr)
+    if (m_parent.is_valid())
     {
-        m_orient = m_parent->world_orientation().invert() * orient_;
+		instance_tform * par_itf = m_parent.tfc->instance_transform(m_scene, m_parent.ind);
+        m_orient = par_itf->world_orientation().invert() * orient_;
     }
     else
+	{
         m_orient = orient_;
+	}
     update = true;
     m_owner->post_update(true);
 }
@@ -365,7 +457,13 @@ instance_tform * instance_tform::child(uint32 index)
 {
     if (index >= m_children.size())
         return nullptr;
-	return m_children[index];
+
+	if (m_children[index].is_valid())
+	{
+		return m_children[index].tfc->instance_transform(m_scene, m_children[index].ind);
+	}
+	
+	return nullptr;
 }
 
 uint32 instance_tform::child_count()

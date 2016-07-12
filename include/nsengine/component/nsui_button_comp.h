@@ -100,9 +100,39 @@ public:
 };
 
 template <class PUPer>
+void pup(PUPer & p, nsui_button_comp::button_state & btn, const nsstring & var_name)
+{
+	pup(p,btn.mat_color,"mat_color");
+	pup(p,btn.mat_color_mult,"mat_color_mult");
+	pup(p,btn.mat_color_add,"mat_color_add");
+	pup(p,btn.mat_tex_coord_rect,"mat_tex_coord_rect");
+	pup(p,btn.border_color,"border_color");
+	pup(p,btn.border_color_add,"border_color_add");
+	pup(p,btn.border_color_mult,"border_color_mult");
+	pup(p,btn.border_tex_coord_rect,"border_tex_coord_rect");
+	pup(p,btn.border_size,"border_size");
+	pup(p,btn.top_border_radius,"top_border_radius");
+	pup(p,btn.bottom_border_radius,"bottom_border_radius");
+	pup(p,btn.text_color,"text_color");
+	pup(p,btn.text_color_add,"text_color_add");
+	pup(p,btn.text_color_mult,"text_color_mult");
+	pup(p,btn.text_tex_coord_rect,"text_tex_coord_rect");
+}
+
+template <class PUPer>
 void pup(PUPer & p, nsui_button_comp & tc)
 {
-	// do nothing for now
+	pup(p,tc.is_pressed,"is_pressed");
+	pup(p,tc.is_hover,"is_hover");
+	pup(p,tc.is_toggled,"is_toggled");
+	pup(p,tc.is_enabled,"is_enabled");
+	pup(p,tc.toggle_enabled,"toggle_enabled");
+	for (uint8 i = 0; i < 4; ++i)
+	{
+		pup(p,tc.button_states[i],"button_states[" + std::to_string(i) + "]");
+		pup(p,tc.button_states[i],"toggled_button_states[" + std::to_string(i) + "]");
+	}
+	pup(p,tc.m_mat_color_mode,"m_mat_color_mode");
 }
 
 #endif

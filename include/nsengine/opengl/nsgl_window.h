@@ -50,9 +50,9 @@ class nsgl_window : public nswindow
 	~nsgl_window();
 
 	void close();
-	
-	void update();
 
+	void update();
+	
 	void make_current();
 
 	bool is_current();

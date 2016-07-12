@@ -86,7 +86,7 @@ struct nsgl_framebuffer : public nsgl_obj
 		tex->enable_mipmap_autogen(mipmaps);
 		tex->set_component_data_type(pixel_type_);
 		tex->resize(size, false);
-		tex->video_update();
+        tex->video_obj()->update();
 
 		attachment * att = new attachment();
 		att->m_att_point = att_point_;

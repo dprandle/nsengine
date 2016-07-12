@@ -33,6 +33,7 @@
 #include <nsui_canvas_comp.h>
 #include <nsrouter.h>
 #include <nsgl_window.h>
+#include <nsscene_manager.h>
 
 void setup_input_map(nsplugin * plg);
 
@@ -41,13 +42,27 @@ struct button_funcs
 {
     void on_new_game()
     {
-		btn->is_enabled = false;
+        if (can != nullptr && can->is_enabled())
+        {
+//            plg->save(scn);
+//            nse.set_active_scene(nullptr);
+//            plg->destroy(scn);
+//            scn = nullptr;
+            can->enable(false);
+        }
+        else
+        {
+            can->enable(true);
+//            scn = plg->load<nsscene>("new_scene.map",true);
+//            nse.set_active_scene(scn);
+        }
     }
 
     nsplugin * plg;
     nsscene * scn;
     nsrouter * m_router;
 	nsui_button_comp * btn;
+    nsui_canvas_comp * can;
 };
 
 /*
@@ -61,22 +76,35 @@ int main()
     button_funcs bf;
     bf.m_router = new nsrouter;
 	nsengine e;
+    e.init(new nsgl_driver);
 	
     nsgl_window wind(ivec2(800,600), "Basic Test");
-    e.start();
 	
     nsplugin * plg = nsep.create("most_basic_test");
     plg->enable(true);
-	setup_input_map(plg);
+    plg->manager<nsscene_manager>()->set_save_mode(nsasset_manager::text);
+
+    nsinput_map * im = plg->create<nsinput_map>("basic_input");
+    im->create_context("main_global_ctxt");
+
+    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
+    change_vp.add_key_mod(nsinput_map::key_any);
+    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
-
+	new_scene->enable(true);
+    bf.scn = new_scene;
+    bf.plg = plg;
+	
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-    plg->set_current_scene(new_scene, true, false);
-
     nsentity * grass_tile = plg->create_tile("grass_tile",
 											 nse.import_dir() + "diffuseGrass.png",
                                              nse.import_dir() + "normalGrass.png",
+                                             fvec4(1,0,0,0.5f), 16.0, 0.6, fvec3(1,1,1), true);
+
+    nsentity * stone_tile = plg->create_tile("stone_tile",
+                                             nse.import_dir() + "diffuseStone.png",
+                                             nse.import_dir() + "normalStone.png",
                                              fvec4(1,0,0,0.5f), 16.0, 0.6, fvec3(1,1,1), true);
 
     nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
@@ -90,7 +118,9 @@ int main()
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add_gridded(grass_tile,ivec3(32,32,1));
+    new_scene->add_gridded(grass_tile,ivec3(3,3,1));
+    new_scene->add(stone_tile, grass_tile->get<nstform_comp>()->instance_transform(new_scene,3),true,fvec3(0,0,-20));
+    grass_tile->get<nstform_comp>()->instance_transform(new_scene,3)->set_parent(spot_light->get<nstform_comp>()->instance_transform(new_scene,0), true);
 
 	
 	// Create material for the button bg
@@ -157,7 +187,9 @@ int main()
     uibtn->button_states[3].mat_color = fvec4(0.4,0.4,0.4,0.6);
 	
     nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();
+    cc->enable(true);
     cc->add(ui_button);
+    bf.can = cc;
 
     nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
     auto pic = tuic->canvas_info(cc);
@@ -167,6 +199,10 @@ int main()
     pic->layer = 0;
     pic->angle = 0.0f;
 
+    plg->save_all_in_plugin();
+    nsep.save(plg);
+
+
 
     viewport vp(fvec4(0.0f,0.0f,1.0f,1.0f), cam);
     vp.ui_canvases.push_back(canvas);
@@ -174,14 +210,34 @@ int main()
     wind.vid_context()->insert_viewport("main_view",vp);
     nse.set_active_scene(new_scene);
 
+
+    nse.system<nscamera_system>()->setup_input_map(im, "main_global_ctxt");
+    nse.system<nsselection_system>()->setup_input_map(im, "main_global_ctxt");
+    nse.system<nsui_system>()->setup_input_map(im, "main_global_ctxt");
+    nse.system<nsinput_system>()->set_input_map(im->full_id());
+    nse.system<nsinput_system>()->push_context("main_global_ctxt");
 	
-    while (wind.is_open())//glfw_window_open())
+    e.start();
+
+    cc->enable(false);
+    cc->enable(true);
+    cc->enable(false);
+    cc->enable(true);
+    cc->enable(false);
+    cc->enable(true);
+    cc->enable(false);
+    cc->enable(true);
+    cc->enable(false);
+    cc->enable(true);
+    while (e.running())
     {
         nse.update();
-		wind.vid_context()->push_scene(new_scene);
-		wind.vid_context()->render_to_all_viewports();
-		wind.vid_context()->clear_render_queues();
-		wind.update();
+        wind.vid_context()->render(nse.active_scene());
+        wind.update();
+		window_poll_input();
+
+        if (!wind.is_open())
+            e.stop();
     }
 
     nse.release();
@@ -190,16 +246,5 @@ int main()
 
 void setup_input_map(nsplugin * plg)
 {
-	nsinput_map * im = plg->create<nsinput_map>("basic_input");
-	im->create_context("main_global_ctxt");
-	
-    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
-    change_vp.add_key_mod(nsinput_map::key_any);
-    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
 
-	nse.system<nscamera_system>()->setup_input_map(im, "main_global_ctxt");
-	nse.system<nsselection_system>()->setup_input_map(im, "main_global_ctxt");
-	nse.system<nsui_system>()->setup_input_map(im, "main_global_ctxt");
-	nse.system<nsinput_system>()->set_input_map(im->full_id());
-	nse.system<nsinput_system>()->push_context("main_global_ctxt");	
 }

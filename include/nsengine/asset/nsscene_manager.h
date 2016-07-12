@@ -57,8 +57,6 @@ public:
 	{
 		return load<nsscene>(fname, finalize_);
 	}
-
-	virtual nsscene * load(uint32 res_type_id, const nsstring & fname);
 	
 	template<class res_type, class T >
 	res_type * remove(const T & res_name)
@@ -78,15 +76,6 @@ public:
 		nsasset * res = get(res_name);
 		return save(res, path);
 	}
-
-	virtual bool save(nsasset * res, const nsstring & path="");
-	
-	nsscene * current();
-	
-	bool set_current(nsscene * scene, bool new_scene, bool save_previous);
-
-private:
-	nsscene * mCurrentScene;
 };
 
 #endif
