@@ -929,6 +929,8 @@ void nsscene::_populate_pup_vec()
             {
                 instance_tform & itf = psi->m_tforms[i];
                 m_pupped_tforms.emplace_back(pupped_tform_info(i,itf));
+                m_pupped_tforms.back().itf.m_children.clear();
+				m_pupped_tforms.back().itf.m_parent.invalidate();
             }
         }
 		++ent_iter;

@@ -38,8 +38,6 @@ nsui_canvas_comp::nsui_canvas_comp(const nsui_canvas_comp & copy):
 
 nsui_canvas_comp::~nsui_canvas_comp()
 {
-	if (m_enabled)
-		enable(false);
 }
 
 nsui_canvas_comp* nsui_canvas_comp::copy(const nscomponent * to_copy)
@@ -56,7 +54,8 @@ void nsui_canvas_comp::init()
 
 void nsui_canvas_comp::release()
 {
-	remove(m_owner, true);
+    if (m_enabled)
+        enable(false);
 }
 
 void nsui_canvas_comp::pup(nsfile_pupper * p)
@@ -95,7 +94,6 @@ void nsui_canvas_comp::enable(bool enbl)
 		m_enabled = true;
 
 		add(m_owner);
-		m_owner->get<nsrect_tform_comp>()->m_canvas_settings.find(this)->second.m_parent = nullptr;
 
         // Go through all saved rects and load them
         for (uint32 i = 0; i < m_pupped_rects.size(); ++i)
@@ -123,8 +121,7 @@ void nsui_canvas_comp::enable(bool enbl)
         for (uint32 i = 0; i < m_pupped_rects.size(); ++i)
         {
 			nsentity * cur_ent = get_asset<nsentity>(m_pupped_rects[i].this_ent);
-			nsrect_tform_comp::per_canvas_settings & cur_pcs =
-				cur_ent->get<nsrect_tform_comp>()->m_canvas_settings.find(this)->second;
+            nsrect_tform_comp * rtc = cur_ent->get<nsrect_tform_comp>();
 			
             // Try to load the current rect's parent
             if (m_pupped_rects[i].pupped_parent != uivec2(0))
@@ -138,21 +135,8 @@ void nsui_canvas_comp::enable(bool enbl)
                 else
                 {
                     nsrect_tform_comp * tuic_parent = parent_ent->get<nsrect_tform_comp>();
-                    cur_pcs.m_parent = tuic_parent;
+                    rtc->set_parent(this, tuic_parent);
                 }
-            }
-
-            // load the current rect's children
-            for (uint32 j = 0; j < m_pupped_rects[i].m_pupped_children.size(); ++j)
-            {
-                nsentity * ent = get_asset<nsentity>(m_pupped_rects[i].m_pupped_children[j]);
-                if (ent == nullptr)
-                {
-                    dprint("nsui_canvas_comp::finalize - Could not load child ent with id " + m_unloaded_ents.back().to_string());
-                    continue;
-                }
-                nsrect_tform_comp * tuic_child = ent->get<nsrect_tform_comp>();
-                cur_pcs.m_children.push_back(tuic_child);
             }
         }
         m_pupped_rects.clear();

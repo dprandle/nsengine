@@ -1020,10 +1020,7 @@ nsasset_manager * nsplugin::manager(const nsstring & manager_guid)
 }
 
 nsasset_manager * nsplugin::manager(uint32 manager_typeid)
-{
-	if (!m_enabled)
-		return nullptr;
-	
+{	
 	auto iter = m_managers.find(manager_typeid);
 	if (iter == m_managers.end())
 		return NULL;
@@ -1088,6 +1085,8 @@ void nsplugin::enable(bool enable_)
 			return;
 		}
 
+        m_enabled = true;
+
 		auto liter = m_resmap.begin();
 		while (liter != m_resmap.end())
 		{
@@ -1112,7 +1111,6 @@ void nsplugin::enable(bool enable_)
 			rm->finalize_all();
 			++liter;
 		}
-		m_enabled = true;
 	}
 	else
 	{
@@ -1375,7 +1373,8 @@ bool nsplugin::parents_enabled()
 void nsplugin::_clear()
 {
     // destroy first
-    manager<nsscene_manager>()->destroy_all();\
+    manager<nsscene_manager>()->destroy_all();
+
 
     auto emgr = manager<nsentity_manager>();
     auto ent_iter = emgr->begin();
