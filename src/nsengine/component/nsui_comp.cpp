@@ -80,6 +80,7 @@ nsui_text_comp::nsui_text_comp() :
 	nscomponent(type_to_hash(nsui_text_comp)),
 	text_shader_id(),
 	font_id(),
+	font_material_id(),
 	margins(0),
 	text(),
 	text_alignment(top_left),
@@ -92,6 +93,7 @@ nsui_text_comp::nsui_text_comp(const nsui_text_comp & copy):
 	nscomponent(copy),
 	text_shader_id(copy.text_shader_id),
 	font_id(copy.font_id),
+	font_material_id(copy.font_material_id),
 	margins(copy.margins),
 	text(copy.text),
 	text_alignment(copy.text_alignment),
@@ -131,6 +133,7 @@ nsui_text_comp & nsui_text_comp::operator=(nsui_text_comp rhs_)
 	nscomponent::operator=(rhs_);
 	std::swap(text_shader_id,rhs_.text_shader_id);
 	std::swap(font_id,rhs_.font_id);
+	std::swap(font_material_id,rhs_.font_material_id);
 	std::swap(margins,rhs_.margins);
 	std::swap(text,rhs_.text);
 	std::swap(text_alignment,rhs_.text_alignment);

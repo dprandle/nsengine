@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(nsengine)
 
-# Set the source directory
+# Set the source directories
 set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src/nsengine)
 set(HASH_SRC_DIR ${PROJECT_SOURCE_DIR}/src/hash)
 set(SOIL_SRC_DIR ${PROJECT_SOURCE_DIR}/src/soil)
@@ -14,6 +14,7 @@ set(LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/include)
 set(DEVIL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/devil-1.7.8/include)
 set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glfw-3.2/include)
+set(FREETYPE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/freetype-2.6.5/include)
 
 # Postfix debug builds with d
 set(CMAKE_DEBUG_POSTFIX d)
@@ -62,6 +63,7 @@ include_directories(
 "${DEVIL_INCLUDE_DIR}"
 "${LIB_INCLUDE_DIR}"
 "${GLFW_INCLUDE_DIR}"
+"${FREETYPE_INCLUDE_DIR}"
 )
 
 # Preprocessor definitions
@@ -101,4 +103,5 @@ execute_process(COMMAND ${PROJECT_SOURCE_DIR}/config.bat ${PROJECT_SOURCE_DIR})
 endif()
 
 add_subdirectory(deps/glfw-3.2)
+add_subdirectory(deps/freetype-2.6.5)
 add_subdirectory(tests)

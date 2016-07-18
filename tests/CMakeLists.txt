@@ -1,5 +1,6 @@
 link_libraries(nsengine)
 link_libraries(glfw)
+link_libraries(freetype)
 
 
 if (APPLE)

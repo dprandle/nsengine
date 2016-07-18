@@ -23,6 +23,7 @@ nsgl_texture::~nsgl_texture()
 
 void nsgl_texture::init()
 {
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	if (gl_id != 0)
 	{
 		dprint("nsgl_texture::init Error trying to initialize already initialized texture");

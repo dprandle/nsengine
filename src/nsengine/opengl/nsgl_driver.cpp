@@ -647,7 +647,7 @@ void gl_ctxt::push_viewport_ui(viewport * vp)
 				uidc->text_shader = get_asset<nsshader>(uitxt->text_shader_id);
 				uidc->text = uitxt->text;
 				uidc->fnt = get_asset<nsfont>(uitxt->font_id);
-				uidc->fnt_material = get_asset<nsmaterial>(uidc->fnt->material_id);
+				uidc->fnt_material = get_asset<nsmaterial>(uitxt->font_material_id);
 				if (uidc->fnt_material == nullptr)
 					uidc->fnt_material = nse.core()->get<nsmaterial>(DEFAULT_MATERIAL);
 				uidc->text_line_sizes = uitxt->text_line_sizes;

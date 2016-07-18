@@ -302,10 +302,11 @@ void nsengine::init(nsvideo_driver * drvr)
 	m_deb->clear_log();
 #endif
 
+	// Initialize devIL
     ilInit();
 	ilEnable(IL_ORIGIN_SET);
 	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-
+	
 	srand(static_cast<unsigned>(time(0)));
 
 	m_plugins = new nsplugin_manager;

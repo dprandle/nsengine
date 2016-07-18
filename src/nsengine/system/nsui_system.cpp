@@ -145,7 +145,7 @@ void nsui_system::update()
 						nsfont * fnt = get_asset<nsfont>(uitxt->font_id);
 						if (fnt != nullptr)
 						{
-							nsmaterial * fnt_mat = get_asset<nsmaterial>(fnt->material_id);
+							nsmaterial * fnt_mat = get_asset<nsmaterial>(uitxt->font_material_id);
 							if (fnt_mat != nullptr)
 							{
 								ti_border.tex_id = fnt_mat->map_tex_id(nsmaterial::diffuse);

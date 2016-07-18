@@ -13,126 +13,138 @@
 #include <nsfont.h>
 #include <nsengine.h>
 #include <nstexture.h>
-
-font_info::font_info():
-	face(),
-	pt(0),
-	bold(false),
-	italic(false),
-	charset(),
-	unicode(false),
-	stretch(0),
-	smooth(false),
-	super_sampling(0),
-	padding(0),
-	spacing(0),
-	line_height(0),
-	base(0),
-	page_count(0),
-	packed(false)
-{
-}
-
-char_info::char_info():
-	rect(-1),
-	offset(0),
-	xadvance(-1),
-	page_index(-1),
-	channel(-1)
-{}
-
-bool char_info::valid()
-{
-	return !(
-		rect == uivec4(-1) &&
-		offset == ivec2(0) &&
-		xadvance == uint8(-1) &&
-		page_index == uint8(-1) &&
-		channel == uint8(-1)
-		);
-}
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 nsfont::nsfont():
 	nsasset(type_to_hash(nsfont)),
-	material_id(0),
-	m_fi()
+	m_faces(),
+	m_font_file_data(),
+	m_cur_pt_size(DEFAULT_IMPORT_PT_SIZE),
+	m_cur_dpi(DEFAULT_FONT_DPI)
 {
-	m_pages.reserve(256); // max page index
-	m_chars.resize(256); // should initialize to "invalid" char_info
 	set_ext(DEFAULT_FONT_EXTENSION);
 }
 
 nsfont::nsfont(const nsfont & copy):
 	nsasset(copy),
-	material_id(copy.material_id),
-	m_fi(copy.m_fi),
-	m_chars(copy.m_chars),
-	m_pages(copy.m_pages)
+	m_faces(),
+	m_font_file_data(copy.m_font_file_data),
+	m_cur_pt_size(copy.m_cur_pt_size),
+	m_cur_dpi(copy.m_cur_dpi)
 {}
 	
 nsfont::~nsfont()
 {}
+
+void nsfont::set_point_size(float pt_size)
+{
+	m_cur_pt_size = pt_size;
+	_update_faces();
+}
+
+float nsfont::point_size()
+{
+	return m_cur_pt_size;
+}
+
+void nsfont::set_dpi(uint16 dpi)
+{
+	m_cur_dpi = dpi;
+	_update_faces();
+}
+
+uint16 nsfont::dpi()
+{
+	return m_cur_dpi;
+}
+
+void nsfont::_update_faces()
+{
+	for (uint8 i = 0; i < m_faces.size(); ++i)
+	{
+		uint8 error = FT_Set_Char_Size(
+          m_faces[i].ft_face, /* handle to face object */
+          0, /* char_width in 1/64th of points  */
+          m_cur_pt_size*64, /* char_height in 1/64th of points */
+          m_cur_dpi, /* horizontal device resolution    */
+          m_cur_dpi);
+		_build_face_texture(i);
+	}
+}
+
+char_info nsfont::get_char_info(uint8 face_index, char c)
+{
+	if (face_index > m_faces.size())
+		return char_info();
+	return m_faces[face_index].ci[c];
+}
+
+nstex2d * nsfont::get_atlas(uint8 face_index)
+{
+	if (face_index > m_faces.size())
+		return nullptr;
+	return m_faces[face_index].atlas;
+}
+
+void nsfont::_build_face_texture(uint8 face_index)
+{
+	font_face & ff = m_faces[face_index];
+	FT_GlyphSlot g = ff.ft_face->glyph;
+	
+	// running total size (for atlas)
+	ivec2 size;
+	
+	for(int i = 0; i < 128; ++i)
+	{
+		if( FT_Load_Char(ff.ft_face, i, FT_LOAD_RENDER) )
+		{
+			std::stringstream ss;
+			ss << "nsfont::_build_face_texture - Loading character " << char(i) << " failed";
+			dprint(ss.str());
+			continue;
+		}
+
+		ff.ci[i].adv.set(g->advance.x >> 6,g->advance.y >> 6);
+		ff.ci[i].bm_size.set(g->bitmap.width, g->bitmap.rows);
+		ff.ci[i].bm_lt.set(g->bitmap_left,g->bitmap_top);
+		ff.ci[i].tc.x = size.w; // width before adding this char's width
+
+		// add to width and take the largest height
+		size.w += g->bitmap.width;
+		size.h = ivec2(size.h, g->bitmap.rows).max();
+	}
+
+	ff.atlas->resize(size, true);
+	uint8 * dat = ff.atlas->data();
+	for (uint8 i = 0; i < 128; ++i)
+	{
+		if( FT_Load_Char(ff.ft_face, i, FT_LOAD_RENDER) )
+			continue;
+		
+		uint32 x_offset = uint32(ff.ci[i].tc.x);
+		ivec2 bm_size(ff.ci[i].bm_size);
+		for (int32 row = 0; row < bm_size.h; ++row)
+		{
+			for (uint32 j = 0; j < bm_size.w; ++j)
+				dat[row * ff.atlas->size().w + j + x_offset] = g->bitmap.buffer[(bm_size.h-row-1) * g->bitmap.width + j];
+		}
+        ff.ci[i].tc.x /= size.w;
+	}
+//	ff.atlas->flip_verticle();
+    ff.atlas->video_update();
+}
 
 void nsfont::init()
 {}
 
 uivec3_vector nsfont::resources()
 {
-	uivec3_vector ret;
-	// add all texture maps that are available
-	auto iter = m_pages.begin();
-	while (iter != m_pages.end())
-	{
-		nstexture * _tex_ = get_asset<nstexture>(*iter);
-		if (_tex_ != NULL)
-		{
-			uivec3_vector tmp = _tex_->resources();
-			ret.insert(ret.end(), tmp.begin(), tmp.end());
-			ret.push_back(uivec3(_tex_->full_id(), type_to_hash(nstexture)));
-		}
-		++iter;
-	}
-	return ret;
+	return uivec3_vector();
 }
 
 void nsfont::name_change(const uivec2 & oldid, const uivec2 newid)
 {
-	auto iter = m_pages.begin();
-	while (iter != m_pages.end())
-	{
-		if (iter->x == oldid.x)
-		{
-			iter->x = newid.x;
-			if (iter->y == oldid.y)
-				iter->y = newid.y;
-		}
-		++iter;
-	}	
-}
-
-char_info & nsfont::get_char_info(char c)
-{
-	return m_chars[uint8(c)];
-}
-
-font_info & nsfont::get_font_info()
-{
-	return m_fi;
-}
-
-uivec2 & nsfont::texture_id(uint8 page_index)
-{
-	return m_pages[page_index];
-}
-
-void nsfont::push_page(const uivec2 & page)
-{
-	m_pages.push_back(page);
-}
-
-void nsfont::pop_page()
-{
-	m_pages.pop_back();
 }
 
 void nsfont::pup(nsfile_pupper * p)
@@ -152,9 +164,5 @@ void nsfont::pup(nsfile_pupper * p)
 nsfont & nsfont::operator=(nsfont rhs)
 {
 	nsasset::operator=(rhs);
-	std::swap(material_id, rhs.material_id);
-	std::swap(m_fi,rhs.m_fi);
-	std::swap(m_chars,rhs.m_chars);
-	std::swap(m_pages,rhs.m_pages);
 	return *this;
 }

@@ -18,6 +18,9 @@
 
 nsfont * get_font(const uivec2 & id);
 
+struct FT_LibraryRec_;
+extern FT_LibraryRec_ * ftlib;
+
 class nsfont_manager : public nsasset_manager
 {
 public:
@@ -34,6 +37,8 @@ public:
 	{
 		return create<nsfont>(res_name, to_copy); // Create regular font by default
 	}
+
+	virtual nsfont * create(uint32 res_type_id, const nsstring & res_name, nsasset * to_copy=nullptr);
 
 	template <class res_type, class T>
 	res_type * get(const T & res_name)
@@ -72,13 +77,12 @@ public:
 		return remove<nsfont>(res_name);
 	}
 
-	nsfont * load_external(const nsstring & fname);
-};
+	nsfont * import(const nsstring & fname);
 
-void parse_char_line(const nsstring & l, nsfont * fnt);
-void parse_common_line(const nsstring & l, font_info & fi);
-void parse_info_line(const nsstring & l, font_info & fi);
-uint8 tex_name_from_line(const nsstring & l, nsstring & name);
-uint8 parse_count_from_line(const nsstring & l);
+  private:
+	
+	bool _load_font_faces(nsfont * fnt);
+	
+};
 
 #endif

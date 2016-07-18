@@ -378,7 +378,7 @@ void nstex2d::resize(const ivec2 & size, bool resize_data)
 		m_raw_data = new uint8[new_size];
 		for (uint32 i = 0; i < new_size; ++i)
 		{
-			if (i < pixel_count()*bytes_per_pixel())
+			if (tmp != nullptr && i < pixel_count()*bytes_per_pixel())
 				m_raw_data[i] = tmp[i];
 			else
 				m_raw_data[i] = 0;

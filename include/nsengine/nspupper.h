@@ -138,6 +138,15 @@ void pup_bytes(nsbinary_file_pupper & p_, T & val_)
 		p_.fs.write((char*)&val_, sizeof(T));
 }
 
+template <class T>
+void pup_chunk(nsbinary_file_pupper & p_, T & val_, uint32 count)
+{
+	if (p_.mode() == PUP_IN)
+		p_.fs.read((char*)&val_, sizeof(T));
+	else
+		p_.fs.write((char*)&val_, sizeof(T));
+}
+
 // STL Types
 template<class PUPer, class T>
 void pup(PUPer & p_, std::vector<T> & vec, const nsstring & var_name_)

@@ -93,6 +93,7 @@ public:
 
 	uivec2 text_shader_id;
 	uivec2 font_id;
+	uivec2 font_material_id;
 	uivec4 margins;	
 	nsstring text;
 	t_alignment text_alignment;	
@@ -112,6 +113,7 @@ void pup(PUPer & p, nsui_text_comp & tc)
 {
 	pup(p, tc.text_shader_id, "text_shader_id");
 	pup(p, tc.font_id, "font_id");
+	pup(p, tc.font_material_id, "font_mat_id");
 	pup(p, tc.margins, "margins;");
 	pup(p, tc.text, "text");
 	pup(p, tc.text_alignment, "text_alignment;");

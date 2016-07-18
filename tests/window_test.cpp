@@ -200,8 +200,8 @@ nsscene * setup_basic_scene(nsplugin * plg)
 	uic->mat_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
 
 	nsui_text_comp * uitxt = ui_button->create<nsui_text_comp>();
-    nsfont * fnt = plg->load<nsfont>("./import/cosn.fnt",true);
-	fnt->material_id = fnt_mat->full_id();
+    nsfont * fnt = plg->load<nsfont>("/usr/share/fonts/truetype/arial.ttf",true);
+	uitxt->font_material_id = fnt_mat->full_id();
     uitxt->font_id = fnt->full_id();
     uitxt->text = ">>> ";
     uitxt->text_shader_id = nse.core()->get<nsshader>(UI_TEXT_SHADER)->full_id();
