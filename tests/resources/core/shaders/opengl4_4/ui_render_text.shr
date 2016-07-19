@@ -74,8 +74,6 @@ in vec2 tex_coord;
 in vec2 pos;
 float alpha;
 uniform sampler2D uitexture;
-uniform vec2 rect_bounds;
-uniform uvec4 margins; 
 uniform vec4 frag_color_out;
 uniform uvec3 entity_id;
 uniform vec4 color_mult;
@@ -83,19 +81,16 @@ uniform vec4 color_add;
 uniform bool drawing_cursor;
 
 void main()
-{
-	if (pos.x < margins.x || pos.x > rect_bounds.x - margins.z || pos.y < margins.y || pos.y > rect_bounds.y - margins.w)
-		discard;
-	
+{	
 	if (!drawing_cursor)
 	{
-		alpha = texture(uitexture, tex_coord).a;
-		final_frag_color = frag_color_out;
+		alpha = texture(uitexture, tex_coord).r;
+		final_frag_color = frag_color_out * color_mult + color_add;
 		final_frag_color.a *= alpha;
 	}
 	else
 	{
-		final_frag_color = frag_color_out;
+		final_frag_color = frag_color_out * color_mult + color_add;
 	}
 	final_picking = entity_id;
 }

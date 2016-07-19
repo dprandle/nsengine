@@ -83,6 +83,7 @@ void ui_render_pass::render()
             driver_ctxt->render_ui_dc(uidc, gl_shdr);
 
 			driver_ctxt->set_stencil_func(GL_NOTEQUAL, 1, 0xFF);
+			driver_ctxt->set_stencil_op(GL_KEEP, GL_KEEP, GL_ZERO);			
 
 			if (uidc->top_border_radius != fvec4(0.0f))
 			{
@@ -114,142 +115,147 @@ void ui_render_pass::render()
 			driver_ctxt->enable_culling(uidc->border_mat->culling());
 			driver_ctxt->set_cull_face(uidc->border_mat->cull_mode());
             driver_ctxt->render_ui_dc(uidc, gl_shdr);
-			driver_ctxt->enable_stencil_test(false);
 		}
-		
+
+		driver_ctxt->set_stencil_func(GL_EQUAL, 1, 0xFF);
         // render the text part of the ui-element
 		if (uidc->fnt != nullptr)
 		{
-			// nsgl_shader * gl_txt_shdr = uidc->text_shader->video_obj<nsgl_shader_obj>()->gl_shdr;
-			// gl_txt_shdr->bind();
-			// gl_txt_shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
-			// gl_txt_shdr->set_uniform("entity_id", uidc->entity_id);
-			// gl_txt_shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
-			// gl_txt_shdr->set_uniform("content_tform", uidc->content_tform);
-			// gl_txt_shdr->set_uniform("frag_color_out", uidc->fnt_material->color());
+			uint8 face_index = 0;
+			
+			nstexture * atlas = uidc->fnt->get_atlas(face_index);
+			if (atlas != nullptr)
+			{
+				nsgl_shader * gl_txt_shdr = uidc->text_shader->video_obj<nsgl_shader_obj>()->gl_shdr;
+				gl_txt_shdr->bind();
+				gl_txt_shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
+				gl_txt_shdr->set_uniform("entity_id", uidc->entity_id);
+				gl_txt_shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
+				gl_txt_shdr->set_uniform("content_tform", uidc->content_tform);
+				gl_txt_shdr->set_uniform("frag_color_out", uidc->fnt_material->color());
 
-			// tex_map_info ti = uidc->fnt_material->mat_tex_info(nsmaterial::diffuse);
-			// gl_txt_shdr->set_uniform("color_mult", ti.color_mult);
-			// gl_txt_shdr->set_uniform("color_add", ti.color_add);
+				tex_map_info ti = uidc->fnt_material->mat_tex_info(nsmaterial::diffuse);
+				gl_txt_shdr->set_uniform("color_mult", ti.color_mult);
+				gl_txt_shdr->set_uniform("color_add", ti.color_add);
 
-// 			fvec2 rect_wh = fvec2(viewp.z, viewp.w) % uidc->content_wscale;
-// 			fvec2 cursor_pos(0,0);
-// 			int32 cur_line = 0;
-// 			int32 line_index = 0;
-// 			std::vector<float> x_offsets;
+				fvec2 rect_wh = fvec2(viewp.z, viewp.w) % uidc->content_wscale;
+				fvec2 cursor_pos(0,0);
+				int32 cur_line = 0;
+				int32 line_index = 0;
+				float line_height = uidc->fnt->line_height(face_index);
+				std::vector<float> x_offsets;
 
-//             // figure out the vertical starting cursor pos
-// 			if (uidc->alignment < 3) // top alignment
-// 			{
-// //				cursor_pos.y = rect_wh.h - fi.line_height - uidc->text_margins.w;
-// 			}
-// 			else if (uidc->alignment < 6) // middle alignment
-// 			{
-// //				cursor_pos.y = (rect_wh.h - uidc->text_margins.y - uidc->text_margins.w - fi.line_height) / 2.0f;
-// //				float v_offset_factor = float(uidc->text_line_sizes.size()-1) / 2.0f;
-// //				cursor_pos.y += v_offset_factor * float(fi.line_height);
-// 			}
-// 			else // bottom alignment
-// 			{
-// //				cursor_pos.y = uidc->text_margins.y + (uidc->text_line_sizes.size() -1) * fi.line_height;
-// 			}
+				// figure out the vertical starting cursor pos
+				if (uidc->alignment < 3) // top alignment
+				{
+					cursor_pos.y = rect_wh.h - line_height*0.75f - uidc->text_margins.w;
+				}
+				else if (uidc->alignment < 6) // middle alignment
+				{
+					float cntr_pt = (rect_wh.h - (uidc->text_margins.y + uidc->text_margins.w + line_height/2.0f)) / 2.0f;
+					float v_offset_factor = float(uidc->text_line_sizes.size()-1) / 2.0f;
+					cursor_pos.y = cntr_pt + v_offset_factor * line_height;
+				}
+				else // bottom alignment
+				{
+					cursor_pos.y = uidc->text_margins.y + (uidc->text_line_sizes.size() -1) * line_height * 0.75f;
+				}
 
-//             // figure out the first line's horizontal pos
-// 			if (uidc->alignment % 3 == 0) // left
-// 			{
-// //				x_offsets.resize(uidc->text_line_sizes.size(), uidc->text_margins.x);
-// 			}
-// 			else if (uidc->alignment % 3 == 1) // center
-// 			{
-// 				// x_offsets.resize(uidc->text_line_sizes.size(), 0);
-// 				// uint32 ti = 0;
-// 				// for (uint32 i = 0; i < x_offsets.size(); ++i)
-// 				// {
-// 				// 	float xoff = 0.0f;
-// 				// 	for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
-// 				// 	{
-// 				// 		char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
-// 				// 		xoff += ci.xadvance;
-// 				// 		++ti;
-// 				// 	}
-// 				// 	++ti; // newline char
-// 				// 	x_offsets[i] = (rect_wh.w - uidc->text_margins.x - uidc->text_margins.z - xoff) / 2.0f;
-// 				// }
-// 			}
-// 			else // right
-// 			{
-// 				// x_offsets.resize(uidc->text_line_sizes.size(), 0);
-// 				// uint32 ti = 0;
-// 				// for (uint32 i = 0; i < x_offsets.size(); ++i)
-// 				// {
-// 				// 	float xoff = 0.0f;
-// 				// 	for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
-// 				// 	{
-// 				// 		char_info & ci = uidc->fnt->get_char_info(uidc->text[ti]);
-// 				// 		xoff += ci.xadvance;
-// 				// 		++ti;
-// 				// 	}
-// 				// 	++ti;
-// 				// 	x_offsets[i] = (rect_wh.w - uidc->text_margins.z - xoff);
-// 				// }
-// 			}
-// 			cursor_pos.x = x_offsets[0];
-// 			fvec2 cursor_xy(x_offsets[uidc->cursor_offset.y],cursor_pos.y);
-// 			for (uint32 i = 0; i < uidc->text.size(); ++i)
-// 			{
-// 				if (uidc->text[i] == '\n')
-// 				{
-// 					// cursor_pos.y -= fi.line_height;
-// 					// line_index = 0;
-// 					// ++cur_line;
-// 					// cursor_pos.x = x_offsets[cur_line];
-// 					// if (cur_line == uidc->cursor_offset.y)
-// 					// 	cursor_xy.y = cursor_pos.y;
-// 					// continue;
-// 				}
+				// figure out the first line's horizontal pos
+				if (uidc->alignment % 3 == 0) // left
+				{
+					x_offsets.resize(uidc->text_line_sizes.size(), uidc->text_margins.x);
+				}
+				else if (uidc->alignment % 3 == 1) // center
+				{
+					x_offsets.resize(uidc->text_line_sizes.size(), 0);
+					uint32 ti = 0;
+					for (uint32 i = 0; i < x_offsets.size(); ++i)
+					{
+						float xoff = 0.0f;
+						for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
+						{
+							char_info * ci = uidc->fnt->get_char_info(face_index, uidc->text[ti]);
+							xoff += ci->adv.x;
+							++ti;
+						}
+						++ti; // newline char
+						x_offsets[i] = (rect_wh.w - uidc->text_margins.x - uidc->text_margins.z - xoff) / 2.0f;
+					}
+				}
+				else // right
+				{
+					x_offsets.resize(uidc->text_line_sizes.size(), 0);
+					uint32 ti = 0;
+					for (uint32 i = 0; i < x_offsets.size(); ++i)
+					{
+						float xoff = 0.0f;
+						for (uint32 j = 0; j < uidc->text_line_sizes[i]; ++j)
+						{
+							char_info * ci = uidc->fnt->get_char_info(face_index, uidc->text[ti]);
+							xoff += ci->adv.x;
+							++ti;
+						}
+						++ti;
+						x_offsets[i] = (rect_wh.w - uidc->text_margins.z - xoff);
+					}
+				}
+			
+				cursor_pos.x = x_offsets[0];
+				fvec2 cursor_xy(x_offsets[uidc->cursor_offset.y],cursor_pos.y);
+				for (uint32 i = 0; i < uidc->text.size(); ++i)
+				{
+					if (uidc->text[i] == '\n')
+					{
+						cursor_pos.y -= line_height;
+						line_index = 0;
+						++cur_line;
+						cursor_pos.x = x_offsets[cur_line];
+						if (cur_line == uidc->cursor_offset.y)
+							cursor_xy.y = cursor_pos.y;
+						continue;
+					}
 
-// 				// char_info & ci = uidc->fnt->get_char_info(uidc->text[i]);
-// 				// nstex2d * tex = get_asset<nstex2d>(uidc->fnt->texture_id(ci.page_index));
-// 				// if (tex == nullptr)
-// 				// 	continue;
+					char_info * ci = uidc->fnt->get_char_info(face_index, uidc->text[i]);
 
-// 				driver_ctxt->set_active_texture_unit(nsmaterial::diffuse);
-// 				tex->video_obj<nsgl_texture_obj>()->gl_tex->bind();
+					driver_ctxt->set_active_texture_unit(nsmaterial::diffuse);
+					atlas->video_obj<nsgl_texture_obj>()->gl_tex->bind();
 
-// 				ivec2 tsz = tex->size();
-// 				fvec2 tex_size(tsz.x,tsz.y);
+					ivec2 tsz(ci->bm_size);
+					fvec2 tex_size(tsz.x,tsz.y);
 
-// 				fvec4 rect(ci.rect.x / tex_size.x,
-// 						   ((tex_size.y - ci.rect.y) - ci.rect.w) / tex_size.y,
-// 						   (ci.rect.x + ci.rect.z) / tex_size.x,
-// 						   (tex_size.y - ci.rect.y) / tex_size.y);
+					gl_txt_shdr->set_uniform("pixel_wh", ci->bm_size);
+					gl_txt_shdr->set_uniform("drawing_cursor", false);
 
-				// gl_txt_shdr->set_uniform("pixel_wh", fvec2(ci.rect.z,ci.rect.w));
-				// gl_txt_shdr->set_uniform("drawing_cursor", false);
-				// gl_txt_shdr->set_uniform("offset_xy", fvec2(cursor_pos.x + ci.offset.x, cursor_pos.y + fi.line_height - ci.offset.y - ci.rect.w));
-				// gl_txt_shdr->set_uniform("tex_coord_rect", rect);
-				// gl_txt_shdr->set_uniform("rect_bounds", rect_wh);
-				// gl_txt_shdr->set_uniform("margins", uidc->text_margins);
+					gl_txt_shdr->set_uniform(
+						"offset_xy",
+						fvec2(cursor_pos.x + ci->bearing.x, cursor_pos.y - (ci->bm_size.y - ci->bearing.y)));
+					
+					gl_txt_shdr->set_uniform("tex_coord_rect", ci->tc);
 
-				// cursor_pos.x += ci.xadvance;
-				// ++line_index;
+					cursor_pos.x += ci->adv.x;
+					++line_index;
 
-				// if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
-				// 	cursor_xy.x = cursor_pos.x;				
+					if (cur_line == uidc->cursor_offset.y && line_index == uidc->cursor_offset.x)
+						cursor_xy.x = cursor_pos.x;				
 
-//                driver_ctxt->render_ui_dc(uidc, gl_txt_shdr);
-			}
+					driver_ctxt->render_ui_dc(uidc, gl_txt_shdr);
+				}
 
 // lets draw the cursor if the text is editable - ie has a text input component
-			// if (uidc->text_editable)
-			// {
-			// 	gl_txt_shdr->set_uniform("drawing_cursor", true);
-			// 	gl_txt_shdr->set_uniform("frag_color_out", uidc->cursor_color);
-			// 	gl_txt_shdr->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width,fi.line_height));
-			// 	gl_txt_shdr->set_uniform("offset_xy",cursor_xy);
-            //     driver_ctxt->render_ui_dc(uidc, gl_txt_shdr);
-			// }
-		
+				if (uidc->text_editable)
+				{
+					gl_txt_shdr->set_uniform("drawing_cursor", true);
+					gl_txt_shdr->set_uniform("frag_color_out", uidc->cursor_color);
+					gl_txt_shdr->set_uniform("color_mult", fvec4(1.0f));
+					gl_txt_shdr->set_uniform("color_add", fvec4(0.0f));
+					gl_txt_shdr->set_uniform("pixel_wh", fvec2(uidc->cursor_pixel_width, line_height));
+					gl_txt_shdr->set_uniform("offset_xy",fvec2(cursor_xy.x, cursor_xy.y - line_height/4.0f));
+					driver_ctxt->render_ui_dc(uidc, gl_txt_shdr);
+				}
+			}		
+		}
+		driver_ctxt->enable_stencil_test(false);
 	}
 }
 

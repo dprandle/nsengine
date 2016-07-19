@@ -26,34 +26,25 @@ struct char_info
 	fvec2 adv; // advance
 	fvec2 bm_size; // bitmap width and rows
 	fvec2 bm_lt; // bitmap left and top
-	fvec2 tc;
+	fvec2 bearing;
+	fvec4 tc;
 };
 
 struct font_face
 {
 	font_face():
 		ft_face(nullptr),
-		atlas(nullptr)
+		atlas(nullptr),
+		line_height(0.0f),
+		max_advance(0.0f),
+		ci()
 	{}
 	
 	FT_FaceRec_ * ft_face;
 	nstex2d * atlas;
+	float line_height;
+	float max_advance;
 	char_info ci[128];
-};
-
-struct char_bmp_info
-{
-	char_bmp_info(uint8 * dat=nullptr, uivec2 sz=0, int pitch_ = 0, uint8 bytes_per_pixel_=1):
-		size(sz),
-		data(dat),
-		pitch(pitch_),
-		bytes_per_pixel(bytes_per_pixel_)
-	{}
-	
-	uivec2 size;
-	int pitch;
-	uint8 bytes_per_pixel;
-	uint8 * data;
 };
 
 class nsfont : public nsasset
@@ -88,9 +79,13 @@ class nsfont : public nsasset
 
 	uint16 dpi();
 
-	char_info get_char_info(uint8 face_index, char c);
+	char_info * get_char_info(uint8 face_index, char c);
 
 	nstex2d * get_atlas(uint8 face_index);
+
+	float line_height(uint8 face_index);
+
+	float max_advance(uint8 face_index);
 	
   private:
 

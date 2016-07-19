@@ -135,7 +135,7 @@ int main()
     nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
     //nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
     //mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
-    mat->set_color_mode(false);
+    mat->set_color_mode(true);
     mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
 	
     // Create material for the button border
@@ -156,14 +156,13 @@ int main()
 
     nsui_text_comp * uitxt = ui_button->create<nsui_text_comp>();
     nsfont * fnt = plg->load<nsfont>("/usr/share/fonts/truetype/freefont/FreeSans.ttf",true);
+    fnt->set_point_size(30);
 
-    uivec2 fid = fnt->get_atlas(0)->full_id();
-    mat->add_tex_map(nsmaterial::diffuse, fid);
     uitxt->font_material_id = fnt_mat->full_id();
     uitxt->font_id = fnt->full_id();
-    uitxt->text = ">>> ";
+    uitxt->text = ">>>";
     uitxt->text_shader_id = nse.core()->get<nsshader>(UI_TEXT_SHADER)->full_id();
-    uitxt->text_alignment = nsui_text_comp::bottom_left;
+    uitxt->text_alignment = nsui_text_comp::middle_left;
     uitxt->margins = uivec4(3,3,3,3);
 
     nsui_text_input_comp * uitxt_input = ui_button->create<nsui_text_input_comp>();
@@ -174,22 +173,18 @@ int main()
     nsui_button_comp * uibtn = ui_button->create<nsui_button_comp>();
     bf.m_router->connect(&bf,&button_funcs::on_new_game,uibtn->pressed);
     bf.btn = uibtn;
-    uibtn->button_states[0].border_size = fvec4(5,5,5,5);
-    uibtn->button_states[0].border_color = fvec4(1,0,0,0.7);
-    uibtn->button_states[0].top_border_radius = fvec4(5,5,5,5);
-    uibtn->button_states[0].bottom_border_radius = fvec4(5);
-    uibtn->button_states[0].mat_color = fvec4(0.7,0,0,0.5);
-    uibtn->button_states[0].text_color = fvec4(0.0,1.0,1.0,1.0);
+    uibtn->button_states[0].border_size = fvec4(10,10,10,10);
+    uibtn->button_states[0].border_color = fvec4(0,0,0,0.7);
+    uibtn->button_states[0].mat_color = fvec4(0.3, 0.3, 0.3, 0.5);
+    uibtn->button_states[0].text_color = fvec4(1.0,1.0,1.0,1.0);
 
-    uibtn->button_states[1].border_color = fvec4(0,1.0,0,1);
-    uibtn->button_states[1].top_border_radius = fvec4(50,50,50,50);
-    uibtn->button_states[1].bottom_border_radius = fvec4(50,50,50,50);
-    uibtn->button_states[1].border_size = fvec4(3,3,5,5);
-    uibtn->button_states[1].mat_color = fvec4(0.0,0.7,0,1);
-    uibtn->button_states[1].mat_color_mult = fvec4(1.0,1.0,1.0,0.5);
+    uibtn->button_states[1].border_size = fvec4(0,0,10,0);
+    uibtn->button_states[1].border_color = fvec4(0,0,0,0.7);
+    uibtn->button_states[1].mat_color = fvec4(0.0, 0.0, 0.0, 0.5);
+    uibtn->button_states[1].text_color = fvec4(1.0,1.0,1.0,1.0);
 
     uibtn->button_states[2].border_color = fvec4(0,0,1,1);
-    uibtn->button_states[2].border_size = fvec4(30,30,30,30);
+    uibtn->button_states[2].border_size = fvec4(5,5,5,5);
     uibtn->button_states[2].mat_color = fvec4(1,0,0,1);
     uibtn->button_states[2].mat_color_mult = fvec4(0.7,0,0,1);
 
@@ -203,9 +198,10 @@ int main()
 
     nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
     auto pic = tuic->canvas_info(cc);
-    pic->anchor_rect = fvec4(0.5f,0.2f,0.5f,0.2f);
-    float h = 40;
-    pic->pixel_offset_rect = fvec4(-128*h/2, -h/2, 128*h/2, h/2);
+    pic->anchor_rect = fvec4(0.0f,0.0f,1.0f,0.0f);
+    float h = 60;
+    float w = 1920;
+    pic->pixel_offset_rect = fvec4(10, 10, -10, h-10);
     pic->pivot = fvec2(0.5f,0.5f);
     pic->layer = 0;
     pic->angle = 0.0f;

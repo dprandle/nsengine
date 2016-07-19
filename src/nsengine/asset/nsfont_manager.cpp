@@ -139,6 +139,9 @@ bool nsfont_manager::_load_font_faces(nsfont * fnt)
 	fnt->m_faces.back().atlas->set_format(tex_red);
 	fnt->m_faces.back().atlas->set_component_data_type(tex_u8);
 	fnt->m_faces.back().atlas->enable_group_save(false);
+	tex_params tp;
+	tp.min_filter = tmin_linear;
+	fnt->m_faces.back().atlas->set_parameters(tp);
 	for (uint8 i = 1; i < num_faces; ++i)
 	{
 		fnt->m_faces.push_back(font_face());	
