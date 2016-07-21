@@ -121,6 +121,8 @@ int main()
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
     nsentity * ui_button = plg->create<nsentity>("button_new_match");
+    nsentity * skbox = plg->create_skydome("sky_box", nse.import_dir() + "skydomes/space.cube", "jpg", "skydomes");
+    new_scene->set_skydome(skbox);
 
     new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));

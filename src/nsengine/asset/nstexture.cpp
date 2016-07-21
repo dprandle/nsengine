@@ -140,20 +140,31 @@ uint8 nstexture::bytes_per_pixel() const
 	return channels() * bytes_per_channel();
 }
 
-void nstexture::copy_data(uint8 * to_copy, uint32 write_offset_in_bytes)
+void nstexture::copy_data(uint8 * data, uint32 pixel_offset)
 {
-	for (uint32 i = write_offset_in_bytes; i < pixel_count()*bytes_per_pixel(); ++i)
-		m_raw_data[i] = to_copy[i-write_offset_in_bytes];
+	uint32 offset = pixel_offset*bytes_per_pixel();
+	uint32 mdat_size = pixel_count()*bytes_per_pixel() - offset;
+	for (uint32 i = 0; i < mdat_size; ++i)
+		m_raw_data[offset + i] = data[i];
 	m_compressed_size = 0;	
 }
 
-void nstexture::copy_data(uint8 * to_copy, uint32 buffer_max_size_in_bytes, uint32 write_offset_in_bytes)
+void nstexture::copy_data(uint8 * data, uint32 data_size, uint32 pixel_offset, bool repeat)
 {
-	buffer_max_size_in_bytes = write_offset_in_bytes + buffer_max_size_in_bytes;
-	if (buffer_max_size_in_bytes > pixel_count()*bytes_per_pixel())
-		buffer_max_size_in_bytes = pixel_count()*bytes_per_pixel();
-	for (uint32 i = write_offset_in_bytes; i < buffer_max_size_in_bytes; ++i)
-		m_raw_data[i] = to_copy[i-write_offset_in_bytes];
+	uint32 offset = pixel_offset*bytes_per_pixel();
+	uint32 mdat_size = pixel_count()*bytes_per_pixel() - offset;
+
+	if (data_size < mdat_size && !repeat)
+		mdat_size = data_size;
+
+	uint32 dat_ind = 0;
+	for (uint32 i = 0; i < mdat_size; ++i)
+	{
+		m_raw_data[i+offset] = data[dat_ind];
+		++dat_ind;
+		if (dat_ind == data_size)
+			dat_ind = 0;
+	}
 	m_compressed_size = 0;
 }
 
@@ -519,7 +530,7 @@ void nstex_cubemap::resize(const ivec2 & size, bool resize_data)
 		m_raw_data = new uint8[new_size];
 		for (uint32 i = 0; i < new_size; ++i)
 		{
-			if (i < pixel_count()*bytes_per_pixel())
+            if (i < pixel_count()*bytes_per_pixel())
 				m_raw_data[i] = tmp[i];
 			else
 				m_raw_data[i] = 0;
@@ -529,11 +540,18 @@ void nstex_cubemap::resize(const ivec2 & size, bool resize_data)
 	}
 }
 
-void nstex_cubemap::copy_data(uint8 * to_copy, uint8 cube_face)
+void nstex_cubemap::copy_data(uint8 * data, uint32 cube_face)
 {
 	if (cube_face > 5)
 		return;
-	nstexture::copy_data(to_copy, cube_face*m_size.w*m_size.h*bytes_per_pixel());
+    nstexture::copy_data(data, m_size.w * m_size.h * bytes_per_pixel(), cube_face*m_size.w*m_size.h, false);
+}
+
+void nstex_cubemap::copy_data(uint8 * data, uint32 data_size, uint32 cube_face, bool repeat)
+{
+	if (cube_face > 5)
+		return;
+	nstexture::copy_data(data, data_size, cube_face*m_size.w*m_size.h, repeat);		
 }
 
 uint8 * nstex_cubemap::data(uint8 cube_face)

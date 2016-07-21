@@ -14,6 +14,9 @@
 #include <IL/il.h>
 #include <soil/SOIL.h>
 
+#include <stb_image.h>
+#include <stb_image_write.h>
+
 #include <nstex_manager.h>
 #include <nsplatform.h>
 #include <nstexture.h>
@@ -84,9 +87,9 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 		return NULL;
 	
 	nsstring resName(fname);
-	nsstring resExtension;
+	nsstring res_ext;
 	nsstring fName;
-	nsstring subDir;
+	nsstring sub_dir;
 	bool shouldPrefix = false;
 	
 	nsstring prefixdirs = m_res_dir + m_local_dir;
@@ -96,7 +99,7 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
 		{
-			subDir = resName.substr(0, pos + 1);
+			sub_dir = resName.substr(0, pos + 1);
 			shouldPrefix = true;
 		}
 		resName = resName.substr(pos + 1);
@@ -105,11 +108,11 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 		shouldPrefix = true;
 
 	size_t extPos = resName.find_last_of(".");
-	resExtension = resName.substr(extPos);
+	res_ext = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
 	if (shouldPrefix)
-		fName = prefixdirs + subDir + resName + resExtension;
+		fName = prefixdirs + sub_dir + resName + res_ext;
 	else
 		fName = fname;
 
@@ -119,50 +122,34 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	else
 		return NULL;
 
-	tex->set_subdir(subDir); // should be "" for false appendDirectories
-	tex->set_ext(resExtension);
 
-	// Load the image using the IL loading library
-	ILuint imageID;
-	ilGenImages(1, &imageID);
-	ilBindImage(imageID);
-
-	// Make sure worked - if not send error message to log file
-	
-	int32 worked = ilLoadImage(fName.c_str());
-	int32 converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-	if (!worked || !converted)
+	ivec2 sz; int32 bpp;
+	uint8 * data = stbi_load(fName.c_str(), &sz.x, &sz.y, &bpp, 0);
+	if (data == nullptr)
 	{
-		if (!worked)
-		{
-			dprint("nstex_manager::load_image Could not load nstex2d from file " + fName);
-			ilDeleteImages(1, &imageID);
-			uint32 err = ilGetError();
-			destroy(resName);
-			return NULL;
-		}
-		dprint("nstex_manager::load_image Could not convert nstex2d with name " + tex->name() + " to specified format");
-		ilDeleteImages(1, &imageID);
+		dprint("nstex_manager::load_image Error loading image data from " + fName);
 		destroy(resName);
-		return NULL;
+		return nullptr;
 	}
 
-	ivec2 dim;
-	
-	// Generate the texture and assign data from the data loaded by IL
-	tex->set_format(tex_rgba);
-	tex->set_component_data_type(tex_u8);
-	dim.w = ilGetInteger(IL_IMAGE_WIDTH);
-	dim.h = ilGetInteger(IL_IMAGE_HEIGHT);
-	tex->resize(dim);
-	tex->copy_data(ilGetData());
+	if (!set_tex_format(bpp,tex))
+	{
+		dprint("nstex_manager::load_image Error setting format for texture " + fName);
+		destroy(resName);
+		return nullptr;		
+	}
 
+	tex->set_subdir(sub_dir);
+	tex->set_ext(res_ext);
+	tex->resize(sz);
+	tex->copy_data(data, 0);
+	stbi_image_free(data);
+	
 	if (load_with_mipmaps_enabled)
 		tex->enable_mipmap_autogen(true);
 	if (vid_update_on_load)
 		tex->video_update();
 
-	ilDeleteImages(1, &imageID);
 	dprint("nstex_manager::load_image Successfully loaded nstex2d from file " + fName);
 	return tex;
 }
@@ -176,9 +163,9 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	const nsstring & fname)
 {
 	nsstring resName(fname);
-	nsstring resExtension;
+	nsstring res_ext;
 	nsstring fName(fname);
-	nsstring subDir;
+	nsstring sub_dir;
 	bool shouldPrefix = false;
 	
 	nsstring prefixdirs = m_res_dir + m_local_dir;
@@ -188,7 +175,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	{
 		if (resName[0] != '/' && resName[0] != '.' && resName.find(":") == nsstring::npos) // then subdir
 		{
-			subDir = resName.substr(0, pos + 1);
+			sub_dir = resName.substr(0, pos + 1);
 			shouldPrefix = true;
 		}
 		resName = resName.substr(pos + 1);
@@ -197,11 +184,11 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		fName = "";
 
 	size_t extPos = resName.find_last_of(".");
-	resExtension = resName.substr(extPos);
+	res_ext = resName.substr(extPos);
 	resName = resName.substr(0, extPos);
 
 	if (shouldPrefix)
-		fName = prefixdirs + subDir;
+		fName = prefixdirs + sub_dir;
 	else
 		fName = path_from_filename(fName);
 	
@@ -211,8 +198,8 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 	else
 		return NULL;
 	
-	tex->set_subdir(subDir);
-	tex->set_ext(resExtension);
+	tex->set_subdir(sub_dir);
+	tex->set_ext(res_ext);
 
 	std::vector<nsstring> fNames;
 	fNames.resize(6);
@@ -223,39 +210,40 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 
 	tex_params tp;
 	tp.edge_behavior.set(te_clamp,te_clamp,te_clamp);
-
 	tex->set_parameters(tp);
-	tex->set_format(tex_rgba);
-	tex->set_component_data_type(tex_u8);
 
+	ivec2 first_sz, cur_sz; int32 first_bpp, cur_bpp;
 	for (uint32 i = 0; i < fNames.size(); ++i)
 	{
-		ILuint imageID;
-		ilGenImages(1, &imageID);
-		ilBindImage(imageID);
+        uint8 * data = stbi_load(fNames[i].c_str(), &cur_sz.x, &cur_sz.y, &cur_bpp, 0);
 
-		int32 worked = ilLoadImage(fNames[i].c_str());
-		int32 converted = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-		if (!worked || !converted)
+		if (i == 0)
 		{
-			if (!worked)
+			first_sz = cur_sz; first_bpp = cur_bpp;
+			
+            if (data == nullptr || !set_tex_format(first_bpp, tex))
 			{
-				dprint("nstex_manager::load_cubemap Could not load nstex_cubemap from file " + fNames[i]);
-				ilDeleteImages(1, &imageID);
+				dprint("nstex_manager::load_cubemap Error setting format for cubemap " + fName);
 				destroy(resName);
-				return NULL;
+				return nullptr;		
 			}
-
-			dprint("nstex_manager::load_cubemap Could not convert nstex_cubemap with name " + tex->name() + " to specified format");
-			ilDeleteImages(1, &imageID);
-			destroy(resName);
-			return NULL;
+			tex->resize(first_sz, true);
 		}
-		tex->resize(ivec2(ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)));
-		tex->copy_data(ilGetData(), i);
+
+		if (data == nullptr || cur_sz != first_sz || cur_bpp != first_bpp)
+		{
+			dprint("nstex_manager::load_cubemap Error loading image data from " + fNames[0]);
+			uint8 dat = 0x80;
+			tex->copy_data(&dat, 1, i, true); // set all face data to grey (0x80,0x80,0x80,0x80)
+			stbi_image_free(data);
+			continue;
+		}
+
+		tex->copy_data(data, i);
 		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
-		ilDeleteImages(1, &imageID);
+		stbi_image_free(data);
 	}
+	
 	if (load_with_mipmaps_enabled)
 		tex->enable_mipmap_autogen(true);
 	if (vid_update_on_load)
@@ -565,4 +553,35 @@ uint32 nstex_manager::_translate_pixel_type_il(pixel_component_type pt)
 		  dprint("nstex_manager::_translate_pixel_type_il Cannot translate data type for saving with il");
 		  return 0;
 	}
+}
+
+
+int set_tex_format(int bpp, nstexture * tex)
+{
+	if (bpp == 4)
+	{
+		dprint("set_tex_bpp - setting texture to rgba with single byte per comp and 4 bpp");
+		tex->set_format(tex_rgba);
+	}
+	else if (bpp == 3)
+	{
+		dprint("set_tex_bpp - setting texture to rgb with single byte per comp and 3 bpp");
+		tex->set_format(tex_rgb);
+	}
+	else if (bpp == 2)
+	{
+		dprint("set_tex_bpp - setting texture to rg with single byte per comp and 2 bpp");
+		tex->set_format(tex_rg);
+	}
+	else if (bpp == 1)
+	{
+		dprint("set_tex_bpp - setting texture to red with single byte per comp/pixel");
+		tex->set_format(tex_red);
+	}
+	else
+	{
+		return 0;
+	}
+	tex->set_component_data_type(tex_u8);
+	return 1;
 }

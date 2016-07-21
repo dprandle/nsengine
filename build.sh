@@ -10,7 +10,8 @@ CHANGE_DIR=NO
 copy_dirs()
 {    
     cp -r tests/import bin/$PLATFORM 
-    cp -r tests/resources bin/$PLATFORM 
+    cp -r tests/resources bin/$PLATFORM
+    cp -r deps/assimp-3.1.1/bin/$PLATFORM bin/$PLATFORM
     mkdir -p bin/$PLATFORM/logs
 }
 

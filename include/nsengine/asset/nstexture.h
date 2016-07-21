@@ -154,9 +154,9 @@ class nstexture : public nsasset, public nsvideo_object
 
 	void set_data(uint8 * image_data);
 
-	void copy_data(uint8 * to_copy, uint32 write_offset_in_bytes=0);
-
-	void copy_data(uint8 * to_copy, uint32 buffer_max_size_in_bytes, uint32 write_offset_in_bytes);
+	virtual void copy_data(uint8 * data, uint32 pixel_offset);
+	
+	virtual void copy_data(uint8 * data, uint32 data_size, uint32 pixel_offset, bool repeat);
 
 	uint8 * data();
 
@@ -402,7 +402,9 @@ class nstex_cubemap : public nstexture
 	
 	void resize(const ivec2 & size, bool resize_data=true);
 
-	void copy_data(uint8 * to_copy, uint8 cube_face);
+	void copy_data(uint8 * data, uint32 cube_face);
+
+	void copy_data(uint8 * data, uint32 data_size, uint32 cube_face, bool repeat);
 
 	uint8 * data(uint8 cube_face);
 	

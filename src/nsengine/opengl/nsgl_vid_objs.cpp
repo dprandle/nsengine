@@ -148,7 +148,7 @@ void nsgl_texture_obj::update()
 		{
 			uint8 * data_ptr = texcube->data();
 			if (data_ptr != nullptr)
-				data_ptr += texcube->size().x*texcube->size().y*i;
+				data_ptr += texcube->size().x*texcube->size().y*texcube->bytes_per_pixel()*i;
 
 			gl_tex->allocate_2d(
 				data_ptr,

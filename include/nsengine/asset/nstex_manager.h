@@ -112,4 +112,5 @@ public:
 	uint32 _translate_pixel_type_il(pixel_component_type pt);
 };
 
+int set_tex_format(int bpp, nstexture * tex);
 #endif
