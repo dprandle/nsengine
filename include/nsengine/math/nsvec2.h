@@ -3,10 +3,10 @@
 
 
 #define EPS_VEC_0 0.000001f
-#include <nsstring.h>
+#include "nsstring.h"
 #include <cmath>
 #include <stdexcept>
-#include <nstypes.h>
+#include "nstypes.h"
 
 template <class T>
 struct nsvec3;

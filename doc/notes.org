@@ -5,6 +5,7 @@ I am now updating the push_scene, push_entity, and _push_light_draw_calls, and r
 After that I will need to go through the render() function for each pass and transfer them to use any changed draw calls.
 
 
+
 ** Directories
 
 *** nsengine
@@ -51,3 +52,19 @@ After that I will need to go through the render() function for each pass and tra
 
 *** About plugins
     In order to use a plugin it needs to be bound - all calls involving manipulating resources in some way will fail if the plugin is not bound.
+
+
+Reg Expr. Emacs
+
+. Match single char
+* match the preceding reg exp as many times as possible
+
+ie .* will match essentially anything
+
+You can group the search string to have it in the replace string
+
+<\(*.\)h> for search
+and "\1h" for replace will do: <my_header.h> to "my_header.h" for example
+
+
+SPACE to replace one, and 'n' to skip.

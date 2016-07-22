@@ -19,9 +19,9 @@ This file contains all of the neccessary declarations for the nsparticle_comp cl
 #define DEFAULT_PART_LIFETIME 5000
 #define DEFAULT_PART_EMISSION 180
 
-#include <nscomponent.h>
-#include <nsmap.h>
-#include <nsvideo_driver.h>
+#include "nscomponent.h"
+#include "nsmap.h"
+#include "nsvideo_driver.h"
 
 class nsentity;
 class nsgl_xfb;

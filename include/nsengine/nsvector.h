@@ -1,7 +1,7 @@
 #ifndef NSVECTOR_H
 #define NSVECTOR_H
 
-#include <nsmath.h>
+#include "nsmath.h"
 #include <vector>
 
 typedef std::vector<char> c_vector;

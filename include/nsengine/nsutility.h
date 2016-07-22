@@ -13,8 +13,8 @@
 #ifndef NSUTILITY_H
 #define NSUTILITY_H
 
-#include <nsstring.h>
-#include <nsvector.h>
+#include "nsstring.h"
+#include "nsvector.h"
 
 namespace util
 {

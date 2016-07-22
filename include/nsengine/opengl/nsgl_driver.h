@@ -75,13 +75,13 @@
 #define MAX_GBUFFER_DRAWS 2048
 #define MAX_UI_DRAW_CALLS 1024
 
-#include <nsplatform.h>
+#include "nsplatform.h"
 
 
-#include <nsvideo_driver.h>
-#include <myGL/glew.h>
-#include <nsgl_draw_calls.h>
-#include <nsgl_render_passes.h>
+#include "nsvideo_driver.h"
+#include "glew.h"
+#include "nsgl_draw_calls.h"
+#include "nsgl_render_passes.h"
 
 class nsmaterial;
 class nsscene;

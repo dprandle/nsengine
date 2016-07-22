@@ -36,9 +36,10 @@
 #define SHADOW_TEX_UNIT 17
 #define RAND_TEX_UNIT 18
 
-#include <nsgl_object.h>
-#include <nsunordered_map.h>
-#include <nssignal.h>
+#include "nsgl_object.h"
+#include "nsunordered_map.h"
+#include "nssignal.h"
+#include "glew.h"
 
 struct nsgl_shader : public nsgl_obj
 {

@@ -13,9 +13,9 @@
 #ifndef NSGL_DRAW_CALLS_H
 #define NSGL_DRAW_CALLS_H
 
-#include <nsvector.h>
-#include <nsmesh.h>
-#include <nsvideo_driver.h>
+#include "nsvector.h"
+#include "nsmesh.h"
+#include "nsvideo_driver.h"
 
 class nsshader;
 class nsmaterial;

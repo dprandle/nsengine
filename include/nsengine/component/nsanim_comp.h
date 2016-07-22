@@ -13,9 +13,9 @@
 #ifndef NSANIM_COMP_H
 #define NSANIM_COMP_H
 
-#include <nscomponent.h>
-#include <nsanim_set.h>
-#include <nsmesh.h>
+#include "nscomponent.h"
+#include "nsanim_set.h"
+#include "nsmesh.h"
 
 class nstimer;
 

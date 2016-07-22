@@ -13,7 +13,8 @@
 #ifndef NSGL_BUFFER_H
 #define NSGL_BUFFER_H
 
-#include <nsgl_object.h>
+#include "nsgl_object.h"
+#include "glew.h"
 
 struct nsgl_buffer : public nsgl_obj
 {

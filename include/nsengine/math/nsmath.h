@@ -4,10 +4,10 @@
 #define PI 3.14159265359f
 #define EPS 0.0001f
 
-#include <nstypes.h>
+#include "nstypes.h"
 #include <cmath>
 #include <stdexcept>
-#include <nsstring.h>
+#include "nsstring.h"
 
 float clampf(float val_, const float & min_, const float & max_);
 double clamp(double val_, const double & min_, const double & max_);

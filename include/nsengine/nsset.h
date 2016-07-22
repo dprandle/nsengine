@@ -1,7 +1,7 @@
 #ifndef NSSET_H
 #define NSSET_H
 
-#include <nsmath.h>
+#include "nsmath.h"
 #include <set>
 
 typedef std::set<char> c_set;

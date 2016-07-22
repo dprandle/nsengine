@@ -21,7 +21,7 @@ This file contains all of the neccessary declarations for the nscam_comp class.
 #define DEFAULT_CAM_TOP_VIEW_HEIGHT 80.0f
 #define DEFAULT_FOV_ANGLE 45.0f
 
-#include <nscomponent.h>
+#include "nscomponent.h"
 
 class nsentity;
 class nstimer;

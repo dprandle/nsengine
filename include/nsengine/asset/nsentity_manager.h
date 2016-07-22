@@ -13,8 +13,8 @@
 #ifndef NSENTITY_MANAGER_H
 #define NSENTITY_MANAGER_H
 
-#include <nsasset_manager.h>
-#include <nsentity.h>
+#include "nsasset_manager.h"
+#include "nsentity.h"
 
 nsentity * get_entity(const uivec2 & id);
 

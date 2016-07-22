@@ -1,7 +1,7 @@
 #ifndef NSENUM_HASH
 #define NSENUM_HASH
 
-#include <nsstring.h>
+#include "nsstring.h"
 
 struct EnumHash
 {

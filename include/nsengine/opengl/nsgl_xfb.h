@@ -13,7 +13,8 @@ This file contains all of the neccessary declarations for the nsgl_xfb class.
 #ifndef NSGL_XFB_H
 #define NSGL_XFB_H
 
-#include <nsgl_object.h>
+#include "nsgl_object.h"
+#include "glew.h"
 
 struct nsgl_xfb : public nsgl_obj
 {

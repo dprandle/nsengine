@@ -13,8 +13,8 @@
 #ifndef NSFONT_MANAGER_H
 #define NSFONT_MANAGER_H
 
-#include <nsasset_manager.h>
-#include <nsfont.h>
+#include "nsasset_manager.h"
+#include "nsfont.h"
 
 nsfont * get_font(const uivec2 & id);
 

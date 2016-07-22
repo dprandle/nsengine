@@ -3,16 +3,11 @@ cmake_minimum_required(VERSION 2.8)
 project(nsengine)
 
 # Set the source directories
-set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src/nsengine)
-set(HASH_SRC_DIR ${PROJECT_SOURCE_DIR}/src/hash)
-set(SOIL_SRC_DIR ${PROJECT_SOURCE_DIR}/src/soil)
-set(GLEW_SRC_DIR ${PROJECT_SOURCE_DIR}/src/glew)
+set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
 # Set the include directory
 set(NSENGINE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/nsengine)
-set(LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/include)
-set(DEVIL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/devil-1.7.8/include)
 set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glfw-3.2/include)
 set(FREETYPE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/freetype-2.6.5/include)
 
@@ -27,19 +22,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 
 # Set the src files for the project
 file(GLOB SRC_FILES 
-"${NSENGINE_SRC_DIR}/*.c"
-"${HASH_SRC_DIR}/*.c"
-"${SOIL_SRC_DIR}/*.c"
-"${GLEW_SRC_DIR}/*.c"
 "${NSENGINE_SRC_DIR}/*.cpp"
 "${NSENGINE_SRC_DIR}/math/*.cpp"
 "${NSENGINE_SRC_DIR}/component/*.cpp"
 "${NSENGINE_SRC_DIR}/system/*.cpp"
 "${NSENGINE_SRC_DIR}/asset/*.cpp"
 "${NSENGINE_SRC_DIR}/opengl/*.cpp"
-"${HASH_SRC_DIR}/*.cpp"
-"${SOIL_SRC_DIR}/*.cpp"
-"${GLEW_SRC_DIR}/*.cpp"
+"${NSENGINE_SRC_DIR}/hash/*.cpp"
+"${NSENGINE_SRC_DIR}/*.c"
+"${NSENGINE_SRC_DIR}/math/*.c"
+"${NSENGINE_SRC_DIR}/component/*.c"
+"${NSENGINE_SRC_DIR}/system/*.c"
+"${NSENGINE_SRC_DIR}/asset/*.c"
+"${NSENGINE_SRC_DIR}/opengl/*.c"
+"${NSENGINE_SRC_DIR}/hash/*.c"
 )
 
 file(GLOB HEADER_FILES
@@ -48,6 +44,7 @@ file(GLOB HEADER_FILES
 "${NSENGINE_INCLUDE_DIR}/component/*.h"
 "${NSENGINE_INCLUDE_DIR}/system/*.h"
 "${NSENGINE_INCLUDE_DIR}/asset/*.h"
+"${NSENGINE_INCLUDE_DIR}/hash/*.h"
 "${NSENGINE_INCLUDE_DIR}/opengl/*.h"
 )
 
@@ -59,15 +56,14 @@ include_directories(
 "${NSENGINE_INCLUDE_DIR}/system"
 "${NSENGINE_INCLUDE_DIR}/asset"
 "${NSENGINE_INCLUDE_DIR}/opengl"
+"${NSENGINE_INCLUDE_DIR}/hash"
 "${ASSIMP_INCLUDE_DIR}"
-"${DEVIL_INCLUDE_DIR}"
-"${LIB_INCLUDE_DIR}"
 "${GLFW_INCLUDE_DIR}"
 "${FREETYPE_INCLUDE_DIR}"
 )
 
 # Preprocessor definitions
-add_definitions(-DGLEW_MX -DGLEW_STATIC)
+add_definitions(-DGLEW_MX -DGLEW_STATIC -DSTB_IMAGE_WRITE_IMPLEMENTATION -DSTB_IMAGE_IMPLEMENTATION)
 add_definitions(-DNSDEBUG)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

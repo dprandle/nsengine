@@ -13,8 +13,8 @@
 #ifndef NSCOMPONENT_H
 #define NSCOMPONENT_H
 
-#include <nspupper.h>
-#include <nsrouter.h>
+#include "nspupper.h"
+#include "nsrouter.h"
 
 class nsentity;
 class nsevent;

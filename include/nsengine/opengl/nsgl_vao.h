@@ -13,9 +13,9 @@ This file contains all of the neccessary declarations for the nsvertex_array_obj
 #ifndef NSGL_VAO_H
 #define NSGL_VAO_H
 
-#include <nsgl_object.h>
-#include <nsmap.h>
-#include <nsset.h>
+#include "nsgl_object.h"
+#include "nsmap.h"
+#include "nsset.h"
 
 struct nsgl_buffer;
 

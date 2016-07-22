@@ -1,7 +1,7 @@
 #ifndef NSGL_GBUFFER_H
 #define NSGL_GBUFFER_H
 
-#include <nsgl_framebuffer.h>
+#include "nsgl_framebuffer.h"
 
 struct nsgl_gbuffer : public nsgl_framebuffer
 {

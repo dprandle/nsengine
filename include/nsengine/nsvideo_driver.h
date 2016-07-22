@@ -13,12 +13,12 @@
 #ifndef NSVIDEO_DRIVER_H
 #define NSVIDEO_DRIVER_H
 
-#include <nsstring.h>
-#include <nsmath.h>
-#include <nsunordered_map.h>
-#include <nsset.h>
+#include "nsstring.h"
+#include "nsmath.h"
+#include "nsunordered_map.h"
+#include "nsset.h"
 #include <list>
-#include <nsrouter.h>
+#include "nsrouter.h"
 
 class nsparticle_comp;
 struct tform_per_scene_info;

@@ -13,10 +13,11 @@
 #ifndef NSFRAMEBUFFER_H
 #define NSFRAMEBUFFER_H
 
-#include <nsengine.h>
-#include <nsgl_object.h>
-#include <nstexture.h>
-#include <nsplugin_manager.h>
+#include "nsengine.h"
+#include "glew.h"
+#include "nsgl_object.h"
+#include "nstexture.h"
+#include "nsplugin_manager.h"
 
 struct nsgl_renderbuffer;
 

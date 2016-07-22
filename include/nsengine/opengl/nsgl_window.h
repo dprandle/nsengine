@@ -13,7 +13,7 @@
 #ifndef NSGL_WINDOW_H
 #define NSGL_WINDOW_H
 
-#include <nswindow.h>
+#include "nswindow.h"
 
 #define EVENT_OUTPUT
 

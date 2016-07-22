@@ -13,9 +13,9 @@ This file contains all of the neccessary declarations for the nsui_button_comp c
 #ifndef NSUI_BUTTON_COMP_H
 #define NSUI_BUTTON_COMP_H
 
-#include <nscomponent.h>
-#include <nsstring.h>
-#include <nsrouter.h>
+#include "nscomponent.h"
+#include "nsstring.h"
+#include "nsrouter.h"
 
 class nsui_button_comp;
 

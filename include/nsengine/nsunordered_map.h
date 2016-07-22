@@ -1,8 +1,8 @@
 #ifndef NSUNORDERED_MAP_H
 #define NSUNORDERED_MAP_H
 
-#include <nsmath.h>
-#include <nsenum_hash.h>
+#include "nsmath.h"
+#include "nsenum_hash.h"
 #include <unordered_map>
 
 typedef std::unordered_map<float,char> f_c_umap;

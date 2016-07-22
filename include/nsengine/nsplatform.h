@@ -2,7 +2,7 @@
 #define NSPLATFORM_H
 
 #include <sys/stat.h>
-#include <nsvector.h>
+#include "nsvector.h"
 
 #ifdef WIN32
 #define GL_4_4

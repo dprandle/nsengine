@@ -13,8 +13,8 @@
 #ifndef NSGL_OBJECT_H
 #define NSGL_OBJECT_H
 
-#include <myGL/glew.h>
-#include <nsvector.h>
+//#include "glew.h"
+#include "nsvector.h"
 
 bool gl_err_check(nsstring errorMessage);
 

@@ -18,8 +18,8 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #define UI_MOUSE_PRESS "ui_mouse_press"
 #define UI_MOUSE_RELEASE "ui_mouse_release"
 
-#include <nssystem.h>
-#include <nsrender_system.h>
+#include "nssystem.h"
+#include "nsrender_system.h"
 
 class nsui_canvas_comp;
 class nsrect_tform_comp;

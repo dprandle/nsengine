@@ -21,10 +21,10 @@
 #define BASE_TEX_UNIT GL_TEXTURE0
 #define BASE_CUBEMAP_FACE GL_TEXTURE_CUBE_MAP_POSITIVE_X
 
-#include <nsasset.h>
-#include <nsvector.h>
-#include <nsvideo_driver.h>
-#include <nssignal.h>
+#include "nsasset.h"
+#include "nsvector.h"
+#include "nsvideo_driver.h"
+#include "nssignal.h"
 
 class nstexture_inst;
 

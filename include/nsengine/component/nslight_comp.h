@@ -18,7 +18,7 @@ This file contains all of the neccessary declarations for the nslight_comp class
 #define SHADOW_UPPER_LIMIT 1.0
 #define LIGHT_CUTOFF 0.1f
 
-#include <nscomponent.h>
+#include "nscomponent.h"
 
 class nsmesh;
 class nsentity;

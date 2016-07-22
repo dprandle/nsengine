@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the nssignal class.
 #ifndef NSSIGNAL_H
 #define NSSIGNAL_H
 
-#include <nsvector.h>
+#include "nsvector.h"
 
 class nsrouter;
 

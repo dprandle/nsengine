@@ -13,7 +13,7 @@ This file contains all of the neccessary declarations for the nstile_comp class.
 #ifndef NSTILE_COMP_H
 #define NSTILE_COMP_H
 
-#include <nscomponent.h>
+#include "nscomponent.h"
 
 class nstile_comp : public nscomponent
 {

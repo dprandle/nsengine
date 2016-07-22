@@ -26,9 +26,9 @@
 #define DEFAULT_FONT_EXTENSION ".bft"
 #define CUBEMAP_TEX_EXTENSION ".cube"
 
-#include <nspupper.h>
-#include <nsvector.h>
-#include <nssignal.h>
+#include "nspupper.h"
+#include "nsvector.h"
+#include "nssignal.h"
 
 class nsasset_inst;
 

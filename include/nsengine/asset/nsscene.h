@@ -15,10 +15,10 @@
 
 #define SCENE_MAX_PLAYERS 16
 
-#include <nsasset.h>
-#include <nsentity.h>
-#include <nstile_grid.h>
-#include <nsoccupy_comp.h>
+#include "nsasset.h"
+#include "nsentity.h"
+#include "nstile_grid.h"
+#include "nsoccupy_comp.h"
 
 class nsrender_comp;
 class nstform_system;

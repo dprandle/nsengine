@@ -13,8 +13,8 @@ This file contains all of the neccessary declarations for the nsplugin_manager c
 #ifndef NSPLUGIN_MANAGER_H
 #define NSPLUGIN_MANAGER_H
 
-#include <nsasset_manager.h>
-#include <nsplugin.h>
+#include "nsasset_manager.h"
+#include "nsplugin.h"
 
 nsplugin * get_plugin(uint32 id);
 

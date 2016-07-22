@@ -13,8 +13,8 @@ This file contains all of the neccessary declarations for the nsinput_system cla
 #ifndef NSINPUT_SYSTEM_H
 #define NSINPUT_SYSTEM_H
 
-#include <nssystem.h>
-#include <nsinput_map.h>
+#include "nssystem.h"
+#include "nsinput_map.h"
 
 fvec2 platform_normalized_mpos();
 

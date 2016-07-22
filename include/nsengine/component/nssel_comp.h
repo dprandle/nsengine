@@ -19,9 +19,9 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 #define DEFAULT_SEL_A 0.5f
 #define DEFAULT_SEL_MASK_A 0.2f
 
-#include <nscomponent.h>
-#include <nsunordered_set.h>
-#include <nsvideo_driver.h>
+#include "nscomponent.h"
+#include "nsunordered_set.h"
+#include "nsvideo_driver.h"
 
 class nsshader;
 class nstimer;

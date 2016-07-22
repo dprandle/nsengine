@@ -13,9 +13,9 @@
 #ifndef NSGL_RENDER_PASSES_H
 #define NSGL_RENDER_PASSES_H
 
-#include <nsplatform.h>
-#include <nsmath.h>
-#include <nsvideo_driver.h>
+#include "nsplatform.h"
+#include "nsmath.h"
+#include "nsvideo_driver.h"
 
 #ifdef GL_4_4
 #define SHADER_DIR "opengl4_4/"

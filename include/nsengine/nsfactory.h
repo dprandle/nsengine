@@ -1,8 +1,8 @@
 #ifndef NSFACTORY_H
 #define NSFACTORY_H
 
-//#include <nsglobal.h>
-#include <nstypes.h>
+//#include "nsglobal.h"
+#include "nstypes.h"
 
 class nscomponent;
 class nssystem;

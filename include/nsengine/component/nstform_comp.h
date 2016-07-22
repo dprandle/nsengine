@@ -16,8 +16,8 @@
 #define MAX_TF_BUFFER_SIZE 10048576
 #define MAX_TF_BUFFER_COUNT 32 // about 100 mb
 
-#include <nscomponent.h>
-#include <nsvideo_driver.h>
+#include "nscomponent.h"
+#include "nsvideo_driver.h"
 
 class nsgl_buffer;
 class nsgl_vao;

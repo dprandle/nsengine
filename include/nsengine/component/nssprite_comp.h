@@ -13,7 +13,7 @@
 #ifndef NSSPRITE_COMP_H
 #define NSSPRITE_COMP_H
 
-#include <nscomponent.h>
+#include "nscomponent.h"
 
 class nssprite_sheet_comp : public nscomponent
 {

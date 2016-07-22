@@ -19,8 +19,8 @@
 #ifndef NSTEX_MANAGER_H
 #define NSTEX_MANAGER_H
 
-#include <nsasset_manager.h>
-#include <nstexture.h>
+#include "nsasset_manager.h"
+#include "nstexture.h"
 
 nstexture * get_texture(const uivec2 & id);
 
@@ -106,10 +106,6 @@ public:
 	bool vid_update_on_load;
 
 	bool load_with_mipmaps_enabled;
-
-  private:
-	uint32 _translate_format_il(tex_format ft);
-	uint32 _translate_pixel_type_il(pixel_component_type pt);
 };
 
 int set_tex_format(int bpp, nstexture * tex);

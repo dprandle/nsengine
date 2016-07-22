@@ -13,7 +13,7 @@
 #ifndef NSWINDOW_H
 #define NSWINDOW_H
 
-#include <nsmath.h>
+#include "nsmath.h"
 
 struct window_params
 {

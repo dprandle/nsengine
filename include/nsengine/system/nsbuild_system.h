@@ -23,7 +23,7 @@ This file contains all of the neccessary declarations for the nsbuild_system cla
 #define NSTOGGLE_BUILD_ERASE_MODE "toggle_build_erase_mode"
 #define NSTOGGLE_TILE_BUILD_MODE "toggle_tile_build_mode"
 
-#include <nssystem.h>
+#include "nssystem.h"
 
 class nsentity;
 

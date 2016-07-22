@@ -24,7 +24,7 @@
 #define LOCAL_PLUGIN_DIR_DEFAULT "plugins/"
 #define LOCAL_FONT_DIR_DEFAULT "fonts/"
 
-#include <nsengine.h>
+#include "nsengine.h"
 
 class nsasset;
 

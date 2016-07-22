@@ -13,7 +13,7 @@ This file contains all of the neccessary declarations for the nstile_brush_comp 
 #ifndef NSTILE_BRUSH_COMP_H
 #define NSTILE_BRUSH_COMP_H
 
-#include <nscomponent.h>
+#include "nscomponent.h"
 
 class nstile_brush_comp : public nscomponent
 {
