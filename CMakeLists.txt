@@ -7,9 +7,9 @@ set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
 # Set the include directory
 set(NSENGINE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/nsengine)
-set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp-3.1.1/include)
-set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glfw-3.2/include)
-set(FREETYPE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/freetype-2.6.5/include)
+set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp/include)
+set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glfw/include)
+set(FREETYPE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/freetype/include)
 
 # Postfix debug builds with d
 set(CMAKE_DEBUG_POSTFIX d)
@@ -98,6 +98,5 @@ if (WIN32)
 execute_process(COMMAND ${PROJECT_SOURCE_DIR}/config.bat ${PROJECT_SOURCE_DIR})
 endif()
 
-add_subdirectory(deps/glfw-3.2)
-add_subdirectory(deps/freetype-2.6.5)
+#add_subdirectory(deps/assimp)
 add_subdirectory(tests)

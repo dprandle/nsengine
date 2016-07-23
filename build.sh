@@ -11,12 +11,44 @@ copy_dirs()
 {    
     cp -r tests/import bin/$PLATFORM 
     cp -r tests/resources bin/$PLATFORM
-    cp -r deps/assimp-3.1.1/bin/$PLATFORM bin/$PLATFORM
     mkdir -p bin/$PLATFORM/logs
 }
 
 build()
 {
+    mkdir -p deps/freetype/build
+    cd deps/freetype/build
+    cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../lib/x64"\
+          -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../../../lib/x64"\
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../bin/x64"\
+          -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE ..
+    make -j
+    cd ../../..
+
+    mkdir -p deps/glfw/build
+    cd deps/glfw/build
+    cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../../lib/x64"\
+          -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../../../../lib/x64"\
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../../bin/x64"\
+          -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE\
+          -DGLFW_BUILD_EXAMPLES=OFF\
+          -DGLFW_BUILD_TESTS=OFF\
+          -DGLFW_BUILD_DOCS=OFF\
+          -DCMAKE_DEBUG_POSTFIX="d"\
+          -DGLFW_INSTALL=OFF ..
+    make -j
+    cd ../../..
+
+    mkdir -p deps/assimp/build
+    cd deps/assimp/build
+    cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../../lib/x64"\
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../../bin/x64"\
+          -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE\
+          -DASSIMP_BUILD_ASSIMP_TOOLS=OFF\
+          -DASSIMP_BUILD_TESTS=OFF ..
+    make -j
+    cd ../../..
+
     mkdir -p build/$PLATFORM/$CONFIG
     cd build/$PLATFORM/$CONFIG
     cmake -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE -DPLATFORM=$PLATFORM -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../../..
@@ -38,13 +70,15 @@ do
     elif [ "$var" = "-x64" ]; then
 	PLATFORM=x64
     elif [ "$var" = "-c" ]; then
-	rm -r build/$PLATFORM/$CONFIG
-	rm -r bin/$PLATFORM
-	rm -r lib/$PLATFORM
+	rm -r -f deps/assimp/build
+	rm -r -f build/$PLATFORM/$CONFIG
+	rm -r -f bin/$PLATFORM
+	rm -r -f lib/$PLATFORM
     elif [ "$var" = "-call" ]; then
-	rm -r build
-	rm -r bin
-	rm -r lib
+	rm -r -f deps/assimp/build
+	rm -r -f build
+	rm -r -f bin
+	rm -r -f lib
     elif [ "$var" = "-all" ]; then
 	BUILD_ALL=YES
     fi
