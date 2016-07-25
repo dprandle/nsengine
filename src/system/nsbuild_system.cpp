@@ -479,7 +479,7 @@ void nsbuild_system::paint()
 						uint32 tFormMID = m_active_scene->add(m_tile_build_ent, nullptr, true, new_pos);
 						if (tFormMID == -1)
 						{
-							m_active_scene->remove(m_tile_build_ent, tFormID);
+                            m_active_scene->remove(m_tile_build_ent, tFormID, true);
 							continue;
 						}
 					}
@@ -853,10 +853,10 @@ bool nsbuild_system::_handle_insert_entity(nsaction_event * evnt)
 		switch (m_current_mode)
 		{
 		  case(build_mode) :
-			  m_painting = evnt->cur_state;
+              m_painting = evnt->cur_state != 0;
 			  break;
 		  case(erase_mode) :
-			  m_erasing = evnt->cur_state;
+              m_erasing = evnt->cur_state != 0;
 			  break;
 		}
 	}

@@ -17,7 +17,7 @@
 #include "nsrouter.h"
 
 class nsentity;
-class nsevent;
+struct nsevent;
 class nstimer;
 class nscomponent_inst;
 

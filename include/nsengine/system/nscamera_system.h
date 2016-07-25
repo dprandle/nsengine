@@ -43,8 +43,8 @@ This file contains all of the neccessary declarations for the nscamera_system cl
 class nsentity;
 class nscam_comp;
 class nstform_comp;
-class nsaction_event;
-class nsstate_event;
+struct nsaction_event;
+struct nsstate_event;
 
 class nscamera_system : public nssystem
 {

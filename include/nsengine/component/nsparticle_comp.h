@@ -24,10 +24,10 @@ This file contains all of the neccessary declarations for the nsparticle_comp cl
 #include "nsvideo_driver.h"
 
 class nsentity;
-class nsgl_xfb;
-class nsgl_vao;
-class nsgl_buffer;
-class nsevent;
+struct nsgl_xfb;
+struct nsgl_vao;
+struct nsgl_buffer;
+struct nsevent;
 
 struct particle
 {

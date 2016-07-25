@@ -84,14 +84,14 @@ void nsoccupy_comp::build(const nsbounding_box & pBox)
 	for (uint32 i = 0; i < 4; ++i)
 	{
 		if (plus[i] >= 0.0f)
-			iplus[i] = std::floor(plus[i]);
+            iplus[i] = int32(std::floor(plus[i]));
 		else
-			iplus[i] = std::ceil(plus[i]);
+            iplus[i] = int32(std::ceil(plus[i]));
 
 		if (minus[i] >= 0.0f)
-			iminus[i] = std::floor(minus[i]);
+            iminus[i] = int32(std::floor(minus[i]));
 		else
-			iminus[i] = std::ceil(minus[i]);
+            iminus[i] = int32(std::ceil(minus[i]));
 
 		if (std::abs(fract(plus[i])) > R_FACTOR)
 			iplus[i] += 1;

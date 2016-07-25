@@ -14,7 +14,7 @@ class nstexture;
 #include "nsmesh.h"
 struct tform_per_scene_info;
 struct sel_per_scene_info;
-struct nsparticle_comp;
+class nsparticle_comp;
 
 struct nsgl_shader_obj : public nsvid_obj
 {

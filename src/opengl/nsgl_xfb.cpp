@@ -12,7 +12,7 @@
 
 #include <nsengine.h>
 #include <nsgl_xfb.h>
-#include <glew.h>
+#include <nsgl_driver.h>
 
 nsgl_xfb::nsgl_xfb():
 	prim_mode(gl_triangles),

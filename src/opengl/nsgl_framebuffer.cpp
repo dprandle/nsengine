@@ -15,6 +15,7 @@
 #include <nsgl_framebuffer.h>
 #include <nsasset_manager.h>
 #include <nsengine.h>
+#include <nsgl_driver.h>
 #include <nsgl_texture.h>
 
 nsgl_framebuffer::nsgl_framebuffer() :

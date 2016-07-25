@@ -59,7 +59,7 @@ void ui_render_pass::render()
 			gl_shdr->bind();
 			gl_shdr->set_uniform("uitexture", DIFFUSE_TEX_UNIT);
 			gl_shdr->set_uniform("entity_id", uidc->entity_id);
-			gl_shdr->set_uniform("viewport", fvec4(0,0,viewp.z,viewp.w));
+            gl_shdr->set_uniform("viewport", fvec4(0,0,float(viewp.z),float(viewp.w)));
 			gl_shdr->set_uniform("wscale", uidc->content_wscale);
 			gl_shdr->set_uniform("content_tform", uidc->content_tform);
 			gl_shdr->set_uniform("pixel_blend", 2.0f);

@@ -308,10 +308,10 @@ void vid_ctxt::window_resized(const ivec2 & new_size)
 	{
 		if (iter->vp->normalized_bounds != fvec4(0.0f))
 		{
-			iter->vp->bounds.x = iter->vp->normalized_bounds.x * new_size.x;
-			iter->vp->bounds.y = iter->vp->normalized_bounds.y * new_size.y;
-            iter->vp->bounds.z = iter->vp->normalized_bounds.z * new_size.x;
-			iter->vp->bounds.w = iter->vp->normalized_bounds.w * new_size.y;
+            iter->vp->bounds.x = int32(iter->vp->normalized_bounds.x * new_size.x);
+            iter->vp->bounds.y = int32(iter->vp->normalized_bounds.y * new_size.y);
+            iter->vp->bounds.z = int32(iter->vp->normalized_bounds.z * new_size.x);
+            iter->vp->bounds.w = int32(iter->vp->normalized_bounds.w * new_size.y);
 			if (iter->vp->camera != nullptr)
 			{
 				nscam_comp * cc = iter->vp->camera->get<nscam_comp>();

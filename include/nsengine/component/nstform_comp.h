@@ -19,9 +19,9 @@
 #include "nscomponent.h"
 #include "nsvideo_driver.h"
 
-class nsgl_buffer;
-class nsgl_vao;
-class nsgl_xfb;
+struct nsgl_buffer;
+struct nsgl_vao;
+struct nsgl_xfb;
 class nstimer;
 class nsscene;
 

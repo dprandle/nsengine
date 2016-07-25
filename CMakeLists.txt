@@ -94,9 +94,5 @@ endif()
 # Adding executable
 add_library(nsengine STATIC ${SRC_FILES} ${HEADER_FILES})
 
-if (WIN32)
-execute_process(COMMAND ${PROJECT_SOURCE_DIR}/config.bat ${PROJECT_SOURCE_DIR})
-endif()
-
 #add_subdirectory(deps/assimp)
 add_subdirectory(tests)

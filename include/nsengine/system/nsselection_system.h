@@ -32,8 +32,8 @@ This file contains all of the neccessary declarations for the nsselection_system
 class nsscene;
 class nssel_comp;
 class nsselection_shader;
-class nsaction_event;
-class nsstate_event;
+struct nsaction_event;
+struct nsstate_event;
 
 class nsselection_system : public nssystem
 {

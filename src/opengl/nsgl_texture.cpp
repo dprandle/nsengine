@@ -281,7 +281,7 @@ bool nsgl_texture::upload_3d(
 	
 void nsgl_texture::download_data(uint8 * array_, tex_format format, pixel_component_type type, uint16 level)
 {
-	uint target = target;
+    uint32 target = target;
 	if (target == tex_cubemap)
 	{
 		target = BASE_CUBEMAP_FACE + level;

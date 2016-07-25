@@ -252,7 +252,7 @@ bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 	for (uint32 i = 0; i < vp->ui_canvases.size(); ++i)
 	{
 		nsui_canvas_comp * uicc = vp->ui_canvases[i]->get<nsui_canvas_comp>();
-		for (uint i = 0; i < uicc->m_ordered_ents.size(); ++i)
+        for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
 		{
 			nsrect_tform_comp * rtc = uicc->m_ordered_ents[i]->get<nsrect_tform_comp>();
 			nsui_button_comp * uibtn = rtc->owner()->get<nsui_button_comp>();
@@ -304,7 +304,7 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 	for (uint32 i = 0; i < vp->ui_canvases.size(); ++i)
 	{
 		nsui_canvas_comp * uicc = vp->ui_canvases[i]->get<nsui_canvas_comp>();
-		for (uint i = 0; i < uicc->m_ordered_ents.size(); ++i)
+        for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
 		{
 			nsrect_tform_comp * rtc = uicc->m_ordered_ents[i]->get<nsrect_tform_comp>();
 			nsui_button_comp * uibtn = rtc->owner()->get<nsui_button_comp>();
@@ -352,7 +352,7 @@ bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 	for (uint32 i = 0; i < vp->ui_canvases.size(); ++i)
 	{
 		nsui_canvas_comp * uicc = vp->ui_canvases[i]->get<nsui_canvas_comp>();
-		for (uint i = 0; i < uicc->m_ordered_ents.size(); ++i)
+        for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
 		{
 			nsrect_tform_comp * rtc = uicc->m_ordered_ents[i]->get<nsrect_tform_comp>();
 			nsui_button_comp * uibtn = rtc->owner()->get<nsui_button_comp>();
@@ -401,7 +401,7 @@ bool nsui_system::mpos_over_element(const fvec2 & norm_mpos, viewport * vp)
 	for (uint32 i = 0; i < vp->ui_canvases.size(); ++i)
 	{
 		nsui_canvas_comp * uicc = vp->ui_canvases[i]->get<nsui_canvas_comp>();
-		for (uint i = 0; i < uicc->m_ordered_ents.size(); ++i)
+        for (uint32 i = 0; i < uicc->m_ordered_ents.size(); ++i)
 		{
 			nsrect_tform_comp * rtc = uicc->m_ordered_ents[i]->get<nsrect_tform_comp>();
 			nsui_button_comp * uibtn = rtc->owner()->get<nsui_button_comp>();

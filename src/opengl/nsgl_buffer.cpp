@@ -14,6 +14,7 @@
 #include <nsgl_buffer.h>
 #include <nsgl_object.h>
 #include <nsengine.h>
+#include <nsgl_driver.h>
 
 nsgl_buffer::nsgl_buffer():
     nsgl_obj(),

@@ -151,7 +151,7 @@ int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
     int success;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
 
-    nsfile_os::create_dir(fname);
+    platform::create_dir(fname);
     HANDLE hDumpFile = CreateFile(
 		fname.c_str(),
 		GENERIC_READ|GENERIC_WRITE,

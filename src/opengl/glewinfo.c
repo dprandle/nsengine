@@ -35,7 +35,7 @@
 #include <string.h>
 #include <glew.h>
 #if defined(_WIN32)
-#include <myGL/wglew.h>
+#include <wglew.h>
 #elif !defined(__APPLE__) && !defined(__HAIKU__) || defined(GLEW_APPLE_GLX)
 #include <glxew.h>
 #endif

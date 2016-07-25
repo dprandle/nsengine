@@ -170,6 +170,8 @@ nsgl_shader::shader_stage_info * nsgl_shader::stage_info(shader_stage stage)
 		  return &stages[4];
 	  case (compute_shader):
 		  return &stages[5];
+    default:
+        return nullptr;
 	}
 }
 
@@ -179,7 +181,7 @@ void nsgl_shader::_setup_xfb()
 	for (uint32 i = 0; i < xfb_locs.size(); ++i)
 	{
 		GLchar * str = new GLchar[xfb_locs[i].size() + 1];
-		strcpy(str, xfb_locs[i].c_str());
+        strcpy(str, xfb_locs[i].c_str());
 		varyings[i] = str;
 	}
 

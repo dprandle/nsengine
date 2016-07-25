@@ -489,7 +489,7 @@ void nsgl_particle_comp_obj::update()
 {
 	nsparticle_comp * comp = (nsparticle_comp *)parent;
 	if (comp->simulating())
-		comp->elapsed() += nse.timer()->fixed();
+        comp->elapsed() += double(nse.timer()->fixed());
 
 	if (comp->elapsed() * 1000 >= comp->lifetime())
 	{

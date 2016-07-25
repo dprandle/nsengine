@@ -25,7 +25,7 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 
 class nsshader;
 class nstimer;
-class nsgl_buffer;
+struct nsgl_buffer;
 class nsscene;
 class nssel_comp;
 

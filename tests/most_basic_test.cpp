@@ -157,7 +157,7 @@ int main()
     uic->mat_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
 
     nsui_text_comp * uitxt = ui_button->create<nsui_text_comp>();
-    nsfont * fnt = plg->load<nsfont>("/usr/share/fonts/truetype/freefont/FreeSans.ttf",true);
+    nsfont * fnt = plg->load<nsfont>(nse.import_dir() + "sample.otf",true);
     fnt->set_point_size(30);
 
     uitxt->font_material_id = fnt_mat->full_id();
