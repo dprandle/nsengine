@@ -403,6 +403,8 @@ public:
 			return false;
 		}
 
+		void hello();
+
 		std::type_index ti(typeid(vid_obj_type));
 		auto check = m_obj_type_hashes.emplace(ti, hashed);
 

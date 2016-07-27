@@ -1,12 +1,10 @@
+link_libraries(nsengine)
 
 link_directories(${PROJECT_SOURCE_DIR}/lib/${PLATFORM})
-
-link_libraries(debug nsengined)
 link_libraries(debug freetyped)
-link_libraries(debug glfw3d)
-link_libraries(optimized nsengine)
+link_libraries(debug glfwd)
 link_libraries(optimized freetype)
-link_libraries(optimized glfw3)
+link_libraries(optimized glfw)
 
 if (UNIX)
   link_libraries(debug assimpd)

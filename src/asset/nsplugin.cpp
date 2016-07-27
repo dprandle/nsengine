@@ -108,7 +108,7 @@ bool nsplugin::add(nsasset * res)
 	if (!m_enabled)
 	{
 		dprint("nsplugin::add The plugin " + m_name + " is not enabled - it must be enabled to add stuff");
-		return nullptr;
+		return false;
 	}
 
 	nsasset_manager * rm = manager(nse.manager_id(res->type()));
@@ -593,7 +593,7 @@ bool nsplugin::del(nsasset * res)
 	if (!m_enabled)
 	{
 		dprint("nsplugin::del The plugin " + m_name + " is not enabled - it must be enabled to del stuff");
-		return nullptr;
+		return false;
 	}
 
 	nsasset_manager * rm = manager(nse.manager_id(res->type()));

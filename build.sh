@@ -21,6 +21,7 @@ build()
     cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../lib/x64"\
           -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../../../lib/x64"\
           -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../bin/x64"\
+	  -DBUILD_SHARED_LIBS=ON\
           -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE ..
     make -j
     cd ../../..
@@ -30,6 +31,7 @@ build()
     cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../../lib/x64"\
           -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../../../../lib/x64"\
           -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../../bin/x64"\
+	  -DBUILD_SHARED_LIBS=ON\
           -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE\
           -DGLFW_BUILD_EXAMPLES=OFF\
           -DGLFW_BUILD_TESTS=OFF\

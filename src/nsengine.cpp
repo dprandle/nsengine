@@ -1,5 +1,4 @@
-/*!
-\file nsengine.cpp
+/* nsengine.cpp
 
 \brief Definition file for nsengine class
 
@@ -34,7 +33,6 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nssel_comp.h>
 #include <nsterrain_comp.h>
 #include <nsanim_system.h>
-
 #include <nsinput_system.h>
 #include <nsparticle_comp.h>
 #include <nstimer.h>
@@ -128,6 +126,7 @@ bool nsengine::_destroy_factory(uint32 hashid)
 bool nsengine::destroy_system(uint32 type_id)
 {
 	nssystem * sys = remove_system(type_id);
+	
 	if (sys == NULL)
 		return false;
 	delete sys;
@@ -209,6 +208,7 @@ nssystem * nsengine::system(const nsstring & guid_)
 bool nsengine::has_system(uint32 type_id)
 {
 	return (m_systems->find(type_id) != m_systems->end());
+	
 }
 
 bool nsengine::has_system(const nsstring & guid_)
