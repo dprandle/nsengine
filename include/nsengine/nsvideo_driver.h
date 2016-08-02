@@ -180,7 +180,7 @@ struct vid_ctxt
 
 	virtual void init() = 0;
 
-	virtual void release() = 0;
+	virtual void release();
 
 	virtual uivec3 pick(const fvec2 & mouse_pos) = 0;
 

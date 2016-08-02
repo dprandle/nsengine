@@ -84,11 +84,9 @@ void nsentity::finalize()
 
 void nsentity::clear()
 {
-	auto iter = m_components.begin();
-	while (iter != m_components.end())
+	while (m_components.begin() != m_components.end())
 	{
-		delete iter->second;
-		iter = m_components.erase(iter);
+		del(m_components.begin()->first);
 	}
 }
 

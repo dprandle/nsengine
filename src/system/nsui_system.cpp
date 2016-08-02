@@ -298,6 +298,9 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 
 	fvec2 vpnsize = vp->normalized_bounds.zw() - vp->normalized_bounds.xy();
 	fvec2 mpos((evnt->norm_mpos - vp->normalized_bounds.xy()) / vpnsize);
+	
+	std::cout << "event norm_mpos: " << evnt->norm_mpos.to_string() << std::endl;
+	std::cout << "vpnsize: " << vpnsize.to_string() << std::endl;
 
 	m_pressed_button = nullptr;
 	m_focused_ui_ent = nullptr;	
@@ -317,8 +320,7 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 			pos[1] = (tform * fvec3(0.0f,outer_pos.y,1.0f)).xy();
 			pos[2] = (tform * fvec3(outer_pos.x, 0.0f,1.0f)).xy();
 			pos[3] = (tform * fvec3(outer_pos,1.0f)).xy();
-			mpos %= vp_size;
-            if (point_in_rect(mpos, pos))
+            if (point_in_rect(mpos % vp_size, pos))
             {
 				m_focused_ui_ent = uicc->m_ordered_ents[i];
 				if (uibtn != nullptr && uibtn->is_enabled)
@@ -369,8 +371,7 @@ bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 			pos[1] = (tform * fvec3(0.0f,outer_pos.y,1.0f)).xy();
 			pos[2] = (tform * fvec3(outer_pos.x, 0.0f,1.0f)).xy();
 			pos[3] = (tform * fvec3(outer_pos,1.0f)).xy();
-			mpos %= vp_size;
-            if (point_in_rect(mpos, pos) && m_pressed_button == uibtn)
+            if (point_in_rect(mpos % vp_size, pos) && m_pressed_button == uibtn)
             {
 				uibtn->pressed();
 				if (uibtn->toggle_enabled)

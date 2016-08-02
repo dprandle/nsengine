@@ -55,7 +55,10 @@ vid_ctxt::~vid_ctxt()
 		delete vp_list.back().vp;
 		vp_list.pop_back();
 	}
+}
 
+void vid_ctxt::release()
+{
 	while (registered_vid_objs.begin() != registered_vid_objs.end())
 		(*registered_vid_objs.begin())->parent->video_context_release();
 }

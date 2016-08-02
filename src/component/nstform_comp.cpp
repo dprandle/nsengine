@@ -186,7 +186,10 @@ void instance_tform::add_child(instance_tform * child, bool keep_world_transform
 
 uint32 instance_tform::current_tform_id()
 {
-    return (this - &m_owner->per_scene_info(m_scene)->m_tforms[0]);
+	tform_per_scene_info * psi = m_owner->per_scene_info(m_scene);
+	if (psi->m_tforms.empty())
+		return -1;
+    return (this - &(psi->m_tforms[0]));
 }
 
 void instance_tform::remove_child(instance_tform * child, bool keep_world_transform)

@@ -44,7 +44,7 @@ struct button_funcs
     {
         if (nse.active_scene()->is_enabled())
         {
-  //          nse.active_scene()->enable(false);
+	          nse.active_scene()->enable(false);
               //plg->enable(false);
 //            plg->save(scn);
 //            nse.set_active_scene(nullptr);
@@ -54,11 +54,11 @@ struct button_funcs
         }
         else
         {
- //           nse.active_scene()->enable(true);
-            //plg->enable(true);
-            //can->enable(true);
-//            scn = plg->load<nsscene>("new_scene.map",true);
-//            nse.set_active_scene(scn);
+				nse.active_scene()->enable(true);
+			//plg->enable(true);
+			//can->enable(true);
+			//            scn = plg->load<nsscene>("new_scene.map",true);
+			//            nse.set_active_scene(scn);
         }
     }
 
@@ -102,7 +102,7 @@ int main()
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
     new_scene->enable(true);
-
+	bf.scn = new_scene;
 	
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
     nsentity * grass_tile = plg->create_tile("grass_tile",
@@ -128,7 +128,7 @@ int main()
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add_gridded(grass_tile,ivec3(3,3,1));
+    new_scene->add_gridded(grass_tile,ivec3(64,64,1));
     new_scene->add(stone_tile, grass_tile->get<nstform_comp>()->instance_transform(new_scene,3),true,fvec3(0,0,-20));
     grass_tile->get<nstform_comp>()->instance_transform(new_scene,3)->set_parent(spot_light->get<nstform_comp>()->instance_transform(new_scene,0), true);
 
@@ -200,19 +200,16 @@ int main()
 
     nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
     auto pic = tuic->canvas_info(cc);
-    pic->anchor_rect = fvec4(0.0f,0.0f,1.0f,0.0f);
-    float h = 60;
-    float w = 1920;
-    pic->pixel_offset_rect = fvec4(10, 10, -10, h-10);
+    pic->anchor_rect = fvec4(0.1f,0.9f,0.1f,0.9f);
+    float h = 40;
+    float w = 100;
+    pic->pixel_offset_rect = fvec4(-w/2, -h/2, w/2, h/2);
     pic->pivot = fvec2(0.5f,0.5f);
     pic->layer = 0;
     pic->angle = 0.0f;
 
 //    plg->save_all_in_plugin();
 //    nsep.save(plg);
-
-    nsui_button_comp * bc = plg->get<nsentity>("button_new_match")->get<nsui_button_comp>();
-    bf.m_router->connect(&bf,&button_funcs::on_new_game,bc->pressed);
 
     vp->ui_canvases.push_back(canvas);
     vp->camera = plg->get<nsentity>("scenecam");
@@ -246,7 +243,7 @@ void setup_input_map(nsplugin * plg)
     nsinput_map * im = plg->create<nsinput_map>("basic_input");
     im->create_context("main_global_ctxt");
 
-    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
-    change_vp.add_key_mod(nsinput_map::key_any);
-    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
+    //nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
+    //change_vp.add_key_mod(nsinput_map::key_any);
+    //im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
 }

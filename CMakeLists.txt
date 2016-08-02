@@ -63,16 +63,9 @@ include_directories(
 )
 
 # Preprocessor definitions
-add_definitions(-DGLEW_MX -DGLEW_STATIC -DSTB_IMAGE_WRITE_IMPLEMENTATION -DSTB_IMAGE_IMPLEMENTATION)
-add_definitions(-DNSDEBUG)
+add_definitions(-DGLEW_MX -DGLEW_STATIC -DSTB_IMAGE_WRITE_IMPLEMENTATION -DSTB_IMAGE_IMPLEMENTATION -DNSDEBUG)
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-message("Debug build starting...\n")
-endif ()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
-endif ()
+message("${CMAKE_BUILD_TYPE} build starting...\n")
 
 if (UNIX)
   add_definitions(-std=c++11)
@@ -89,6 +82,8 @@ if (UNIX)
 elseif (WIN32)
   set(LINKER_ARGS "/WX /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:LIBCMT")
   set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ${LINKER_ARGS}" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 endif()
 
 # Adding executable

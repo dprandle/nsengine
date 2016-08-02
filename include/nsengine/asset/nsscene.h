@@ -38,6 +38,12 @@ class nsscene : public nsasset
 	};
 
 	typedef std::vector<pupped_tform_info> pupped_vec;
+
+	struct pupped_vec_info
+	{
+		pupped_vec pv;
+		uivec2 sky_id;
+	};
 	
 	template<class PUPer>
 	friend void pup(PUPer & p, nsscene & sc);
@@ -173,8 +179,8 @@ private:
 	nstile_grid * m_tile_grid;
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
 
-	pupped_vec m_unloaded_tforms;
-	pupped_vec m_pupped_tforms;
+	pupped_vec_info m_unloaded_tforms;
+	pupped_vec_info m_pupped_tforms;
 };
 
 template<class PUPer>
@@ -187,6 +193,13 @@ void pup(PUPer & p, nsscene::pupped_tform_info & ptfi, const nsstring & var_name
 }
 
 template<class PUPer>
+void pup(PUPer & p, nsscene::pupped_vec_info & pi, const nsstring & var_name)
+{
+	pup(p, pi.pv, var_name + ".pv");
+	pup(p, pi.sky_id, var_name + ".sky_id");
+}
+
+template<class PUPer>
 void pup(PUPer & p, nsscene & sc)
 {
 	if (sc.m_enabled)
@@ -195,7 +208,8 @@ void pup(PUPer & p, nsscene & sc)
 			return;
 		sc._populate_pup_vec();
 		pup(p, sc.m_pupped_tforms, "scene_tforms");
-		sc.m_pupped_tforms.clear();
+		sc.m_pupped_tforms.pv.clear();
+		sc.m_pupped_tforms.sky_id = uivec2();
 	}
 	else
 	{

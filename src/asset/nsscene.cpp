@@ -111,7 +111,7 @@ void nsscene::clear()
 	while (ents->begin() != ents->end())
 		remove(*(ents->begin()), true);
 	
-	m_unloaded_tforms.clear();
+	m_unloaded_tforms.pv.clear();
 }
 
 
@@ -622,22 +622,36 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
     uint32 old_index = pse->m_tforms.size();
     uint32 tformid = itform->current_tform_id();
 
-    // Replace parent's child id with our new one
-    if (itform->m_parent.is_valid())
-    {
-        instance_tform * par_itf = itform->m_parent.tfc->instance_transform(this, itform->m_parent.ind);
-        for (uint32 i = 0; i < par_itf->m_children.size(); ++i)
-        {
-            if (par_itf->m_children[i] == instance_handle(itform->owner(),old_index))
-                par_itf->m_children[i].ind = tformid;
-        }
+    
+	if (itform->m_parent.is_valid())
+	{
+		instance_tform * par_itf = itform->m_parent.tfc->instance_transform(this, itform->m_parent.ind);
+		if (tformid != -1) // Replace parent's child id with our new one if the new tformid is valid
+		{
+			for (uint32 i = 0; i < par_itf->m_children.size(); ++i)
+			{
+				if (par_itf->m_children[i] == instance_handle(itform->owner(), old_index))
+					par_itf->m_children[i].ind = tformid;
+			}
+		}
+		else // otherwise remove us from our parent's children
+		{
+			par_itf->remove_child(itform, false);
+		}
     }
 
     // Replace childrens' parent ids with our new one
     for (uint32 i = 0; i < itform->m_children.size(); ++i)
     {
-        instance_tform * chld = itform->m_children[i].tfc->instance_transform(this, itform->m_children[i].ind);
-        chld->m_parent.ind = tformid;
+		instance_tform * chld = itform->m_children[i].tfc->instance_transform(this, itform->m_children[i].ind);
+		if (tformid != -1)
+		{
+			chld->m_parent.ind = tformid;
+		}
+		else
+		{
+			chld->set_parent(nullptr, true);
+		}
     }
 
 	nssel_comp * sel_cmp = entity->get<nssel_comp>();
@@ -657,7 +671,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		m_tile_grid->remove(occComp->spaces(), pos);
 
 		// This should take care of updating the reference ID for the space that got switched..
-		if (pse->m_tforms.size() != 0)
+		if (tformid != -1)
 		{
 			fvec3 newPos = pse->m_tforms[tformid].world_position();
 			m_tile_grid->remove(occComp->spaces(), newPos);
@@ -667,7 +681,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 
 	nse.event_dispatch()->push<scene_tform_removed>(uivec3(entity->full_id(),tformid),full_id());
 	
-	if (pse->m_tforms.size() == 0)
+	if (tformid == -1)
 	{
 		sig_disconnect(tComp->owner()->component_added);
 		sig_disconnect(tComp->owner()->component_removed);
@@ -760,7 +774,7 @@ void nsscene::set_skydome(nsentity * skydome, bool addToSceneIfNeeded)
 
 nsscene::pupped_vec & nsscene::unloaded()
 {
-	return m_unloaded_tforms;
+	return m_unloaded_tforms.pv;
 }
 
 bool nsscene::is_enabled()
@@ -860,14 +874,14 @@ void nsscene::enable(bool to_enable)
 		// If enabling the scene, go through the pupped vec and load - clear the pupped vec after loading
 		// Any unloaded tforms are added to the "unloaded" pupped vec
 		
-		auto add_iter = m_pupped_tforms.begin();
-		while (add_iter != m_pupped_tforms.end())
+		auto add_iter = m_pupped_tforms.pv.begin();
+		while (add_iter != m_pupped_tforms.pv.end())
 		{
 			nsentity * ent = get_asset<nsentity>(add_iter->ent_tform_id.xy());
 			if (ent == nullptr)
 			{
-				m_unloaded_tforms.emplace_back(*add_iter);
-				add_iter = m_pupped_tforms.erase(add_iter);
+				m_unloaded_tforms.pv.emplace_back(*add_iter);
+				add_iter = m_pupped_tforms.pv.erase(add_iter);
 				dprint("nsscene::enable - Could not load entity tform with id " + add_iter->ent_tform_id.to_string());
 			}
 			else
@@ -880,8 +894,8 @@ void nsscene::enable(bool to_enable)
 
 		// After having added all tforms, preserving the ids, we should be able to assign parent/children
 		// accordingly now
-		auto piter = m_pupped_tforms.begin();
-		while (piter != m_pupped_tforms.end())
+		auto piter = m_pupped_tforms.pv.begin();
+		while (piter != m_pupped_tforms.pv.end())
 		{
             instance_tform * itf = get_asset<nsentity>(piter->ent_tform_id.xy())->get<nstform_comp>()->instance_transform(this, piter->ent_tform_id.z);
             nsentity * parent_ent = get_asset<nsentity>(piter->parent.xy());
@@ -897,7 +911,10 @@ void nsscene::enable(bool to_enable)
 			}
 			++piter;
 		}
-		m_pupped_tforms.clear();
+
+		m_pupped_tforms.pv.clear();
+		m_skydome = find_entity(m_pupped_tforms.sky_id);
+		m_pupped_tforms.sky_id = uivec2();
 	}
 	else
 	{
@@ -905,10 +922,14 @@ void nsscene::enable(bool to_enable)
 			return;
 		
 		// If disabling, fill the pupped vec and then remove everything from the scene
-		m_pupped_tforms.clear();
-		_populate_pup_vec();
-		clear();
+		m_pupped_tforms.pv.clear();
 
+		_populate_pup_vec();
+		m_pupped_tforms.sky_id = uivec2();
+		if (m_skydome != nullptr)
+			m_pupped_tforms.sky_id = m_skydome->full_id();
+
+		clear();
 		m_tile_grid->release();
 		m_enabled = false;
 	}
@@ -928,9 +949,9 @@ void nsscene::_populate_pup_vec()
             for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
             {
                 instance_tform & itf = psi->m_tforms[i];
-                m_pupped_tforms.emplace_back(pupped_tform_info(i,itf));
-                m_pupped_tforms.back().itf.m_children.clear();
-				m_pupped_tforms.back().itf.m_parent.invalidate();
+                m_pupped_tforms.pv.emplace_back(pupped_tform_info(i,itf));
+                m_pupped_tforms.pv.back().itf.m_children.clear();
+				m_pupped_tforms.pv.back().itf.m_parent.invalidate();
             }
         }
 		++ent_iter;

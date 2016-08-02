@@ -58,12 +58,12 @@ void nstform_system::update()
 	auto ent_iter = scene_ents->begin();
 	while (ent_iter != scene_ents->end())
 	{
-		nstform_comp *tfc = (*ent_iter)->get<nstform_comp>();
-		for (uint32 i = 0; i < tfc->instance_count(m_active_scene); ++i)
+		tform_per_scene_info * psi = (*ent_iter)->get<nstform_comp>()->per_scene_info(m_active_scene);
+		for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 		{
-			auto itf = tfc->instance_transform(m_active_scene, i);
-			if (itf->parent() == nullptr)
-				itf->recursive_compute();
+			instance_tform & itf = psi->m_tforms[i];
+			if (itf.parent() == nullptr)
+				itf.recursive_compute();
 		}
 		++ent_iter;
 	}

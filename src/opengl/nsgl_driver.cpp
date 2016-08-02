@@ -258,6 +258,7 @@ void gl_ctxt::release()
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	m_tbuffers->release();
 #endif
+	vid_ctxt::release();
 }
 
 uivec3 gl_ctxt::pick(const fvec2 & mouse_pos)
