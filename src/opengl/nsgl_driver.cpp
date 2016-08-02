@@ -1077,6 +1077,7 @@ void gl_ctxt::_add_lights_from_scene(nsscene * scene)
 	{
 		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
 		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
+		tform_per_scene_info * tpsi = tcomp->per_scene_info(scene);
 		nsmesh * boundingMesh = get_asset<nsmesh>(lcomp->mesh_id());
 		
 		all_light_draw_calls.resize(all_light_draw_calls.size()+1);
@@ -1089,10 +1090,11 @@ void gl_ctxt::_add_lights_from_scene(nsscene * scene)
 		else
 			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
 
-		for (uint32 i = 0; i < tcomp->instance_count(scene); ++i)
+		
+		for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
 		{
 			light_draw_call * ldc = &all_light_draw_calls[all_light_draw_calls.size()-1];
-			auto itf = tcomp->instance_transform(scene, i);
+			auto itf = &tpsi->m_tforms[i];
 			
 			ldc->submesh = nullptr;
 			ldc->bg_color = scene->bg_color();

@@ -1,5 +1,7 @@
+link_libraries(nsengine)
 
 if (UNIX)
+  message("Linking UNIX libraries")
   link_directories(${PROJECT_SOURCE_DIR}/lib/${PLATFORM})
   link_libraries(debug assimpd)
   link_libraries(optimized assimp)
@@ -14,7 +16,6 @@ elseif (WIN32)
   link_libraries(DbgHelp)
 endif()
 
-link_libraries(nsengine)
 link_libraries(debug freetyped)
 link_libraries(optimized freetype)
 

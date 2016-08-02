@@ -63,12 +63,12 @@ nsscene::nsscene(const nsscene & copy_):
 		auto iter = ents->begin();
 		while (iter != ents->end())
 		{
-			nstform_comp * tfc = (*iter)->get<nstform_comp>();
-			for (uint32 i = 0; i < tfc->instance_count(&copy_); ++i)
+			tform_per_scene_info * psi = (*iter)->get<nstform_comp>()->per_scene_info(&copy_);
+			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 			{
-				instance_tform & itf = *tfc->instance_transform(&copy_, i);
+				instance_tform & itf = psi->m_tforms[i];
 				if (itf.parent() == nullptr) // if root scene node
-					add(*iter, nullptr, *tfc->instance_transform(&copy_, i), true); // add children too
+					add(*iter, nullptr, itf, true); // add children too
 			}
 			++iter;
 		}
@@ -152,8 +152,7 @@ uint32 nsscene::add(
 	pse.m_tforms.resize(tfid + 1);
 	instance_tform & tf = pse.m_tforms[tfid];
 	tf = tf_info;
-	tf.m_scene = this;
-    tf.m_owner = tComp;
+    tf.m_owner = &pse;
 	tf.set_parent(parent, true);
 
 	// If there is an occupy component, attemp at inserting it in to the map. It will fail if the space
@@ -163,7 +162,7 @@ uint32 nsscene::add(
 	{
 		// Get the transform ID that would result if we inserted it in to the scene
 		// We don't want to insert it yet because we first want to check if the space is open
-		uint32 pID = tComp->instance_count(this);
+		uint32 pID = pse.m_tforms.size();
 		if (!m_tile_grid->add(uivec3(ent->full_id(), pID), occComp->spaces(), tf_info.world_position()))
 		{
 			tf.set_parent(nullptr, true);
@@ -184,9 +183,9 @@ uint32 nsscene::add(
 		for (uint32 i = 0; i < tf_info.m_children.size(); ++i)
 		{
 			instance_handle ihnd = tf_info.m_children[i];
-			instance_tform * chld = ihnd.tfc->instance_transform(this, ihnd.ind);
+			instance_tform & chld = ihnd.tfc->m_tforms[ihnd.ind];
 			
-			if (add(chld->owner()->owner(), &tf, *chld, add_children) == -1)
+			if (add(chld.owner()->owner->owner(), &tf, chld, add_children) == -1)
 			{
 				dprint("nsscene::add Could not add child of " + ent->name() + " tformid " + std::to_string(tfid) + " because occupy_comp did not allow it");
 			}
@@ -246,9 +245,14 @@ void nsscene::add_gridded(
         added_tform = true;
     }
 
-	auto fiter = tComp->m_scenes_info.emplace(
-		this,
-		new tform_per_scene_info(tComp,this)).first;
+	// Create a new per scene tform entry
+	auto fiter = tComp->m_scenes_info.find(this);
+    if (fiter == tComp->m_scenes_info.end())
+    {
+        fiter = tComp->m_scenes_info.emplace(
+                    this,
+                    new tform_per_scene_info(tComp,this)).first;
+    }
 	tform_per_scene_info & pse = *fiter->second;
 
 	// Figure out the total number of transforms needed and allocate that 
@@ -451,7 +455,7 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 				if (ent != nullptr)
 				{
 					nstform_comp * tc = ent->get<nstform_comp>();
-					instance_tform * itf = tc->instance_transform(this, id.z);
+					instance_tform * itf = &tc->per_scene_info(this)->m_tforms[id.z];
 					if (pHide)
 						itf->m_hidden_state |= nstform_comp::hide_layer;
 					else
@@ -480,7 +484,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
-						instance_tform * itf = tc->instance_transform(this, id.z);
+						instance_tform * itf = &tc->per_scene_info(this)->m_tforms[id.z];
 						if (pHide)
 							itf->m_hidden_state |= nstform_comp::hide_layer;
 						else
@@ -504,7 +508,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
-						instance_tform * itf = tc->instance_transform(this, id.z);
+						instance_tform * itf = &tc->per_scene_info(this)->m_tforms[id.z];
 						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
@@ -531,7 +535,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
-						instance_tform * itf = tc->instance_transform(this, id.z);
+						instance_tform * itf = &tc->per_scene_info(this)->m_tforms[id.z];
 						if (pHide)
 							itf->m_hidden_state |= nstform_comp::hide_layer;
 						else
@@ -555,7 +559,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
-						instance_tform * itf = tc->instance_transform(this, id.z);
+						instance_tform * itf = &tc->per_scene_info(this)->m_tforms[id.z];
 						itf->m_hidden_state &= ~nstform_comp::hide_layer;
 					}
 				}
@@ -581,7 +585,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		return false;
 	}
 
-	nstform_comp * tComp = itform->owner();
+	nstform_comp * tComp = itform->owner()->owner;
 	nsentity * entity = tComp->owner();
 	
 	auto fiter = tComp->m_scenes_info.find(this);
@@ -616,7 +620,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		pse->m_tforms.pop_back();
 		itform->update = true;
 		pse->m_buffer_resized = true;
-		itform->owner()->post_update(true);
+		itform->owner()->owner->post_update(true);
 	}
 
     uint32 old_index = pse->m_tforms.size();
@@ -625,7 +629,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
     
 	if (itform->m_parent.is_valid())
 	{
-		instance_tform * par_itf = itform->m_parent.tfc->instance_transform(this, itform->m_parent.ind);
+		instance_tform * par_itf = itform->parent();
 		if (tformid != -1) // Replace parent's child id with our new one if the new tformid is valid
 		{
 			for (uint32 i = 0; i < par_itf->m_children.size(); ++i)
@@ -643,7 +647,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
     // Replace childrens' parent ids with our new one
     for (uint32 i = 0; i < itform->m_children.size(); ++i)
     {
-		instance_tform * chld = itform->m_children[i].tfc->instance_transform(this, itform->m_children[i].ind);
+		instance_tform * chld = &itform->m_children[i].tfc->m_tforms[itform->m_children[i].ind];
 		if (tformid != -1)
 		{
 			chld->m_parent.ind = tformid;
@@ -705,7 +709,7 @@ bool nsscene::remove(nsentity * entity, uint32 tformid, bool remove_children)
 	nstform_comp * tComp = entity->get<nstform_comp>();
 	if (tComp == nullptr)
 		return false;
-	return remove(tComp->instance_transform(this, tformid), remove_children);
+	return remove(&tComp->per_scene_info(this)->m_tforms[tformid], remove_children);
 }
 
 bool nsscene::remove(fvec3 & pWorldPos, bool remove_children)
@@ -847,16 +851,16 @@ nsscene::pupped_tform_info::pupped_tform_info(uint32 id, const instance_tform & 
 {
     if (it.m_owner != nullptr)
     {
-        ent_tform_id = uivec3(it.m_owner->owner()->full_id(),id);
+        ent_tform_id = uivec3(it.m_owner->owner->owner()->full_id(),id);
     }
 	if (it.m_parent.is_valid())
 	{
-        parent = uivec3(it.m_parent.tfc->owner()->full_id(),it.m_parent.ind);
+        parent = uivec3(it.m_parent.tfc->owner->owner()->full_id(),it.m_parent.ind);
 	}
 	auto child_iter = it.m_children.begin();
 	while (child_iter != it.m_children.end())
 	{
-        children.push_back(uivec3(child_iter->tfc->owner()->full_id(),child_iter->ind));
+        children.push_back(uivec3(child_iter->tfc->owner->owner()->full_id(),child_iter->ind));
 		++child_iter;
 	}		
 }
@@ -897,17 +901,21 @@ void nsscene::enable(bool to_enable)
 		auto piter = m_pupped_tforms.pv.begin();
 		while (piter != m_pupped_tforms.pv.end())
 		{
-            instance_tform * itf = get_asset<nsentity>(piter->ent_tform_id.xy())->get<nstform_comp>()->instance_transform(this, piter->ent_tform_id.z);
+			nsentity * ent = get_asset<nsentity>(piter->ent_tform_id.xy());
+			tform_per_scene_info * tpsi = ent->get<nstform_comp>()->per_scene_info(this);
+            instance_tform * itf = &tpsi->m_tforms[piter->ent_tform_id.z];
             nsentity * parent_ent = get_asset<nsentity>(piter->parent.xy());
             if (parent_ent != nullptr)
 			{
-                itf->m_parent.tfc = parent_ent->get<nstform_comp>();
+                itf->m_parent.tfc = parent_ent->get<nstform_comp>()->per_scene_info(this);
 				itf->m_parent.ind = piter->parent.z;
 			}
 			for (uint32 i = 0; i < piter->children.size(); ++i)
 			{
 				nsentity * cent = get_asset<nsentity>(piter->children[i].xy());
-				itf->m_children.push_back(instance_handle(cent->get<nstform_comp>(), piter->children[i].z));
+				itf->m_children.push_back(instance_handle(
+											  cent->get<nstform_comp>()->per_scene_info(this),
+											  piter->children[i].z));
 			}
 			++piter;
 		}

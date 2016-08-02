@@ -86,11 +86,18 @@ bool nsselection_system::add_to_selection(nsentity * ent, uint32 tformid)
 		nstform_comp * tForm = ent->get<nstform_comp>();
 		if (tForm == nullptr)
 		{
-			dprint("nsselection_system::add tForm is null for ent " + ent->name());
+			dprint("nsselection_system::add_to_selection tForm is null for ent " + ent->name());
+			return false;
+		}
+		tform_per_scene_info * tpsi = tForm->per_scene_info(m_active_scene);
+
+		if (tformid > tpsi->m_tforms.size())
+		{
+			dprint("nsselection_system::add_to_selection Index out of bounds for " + ent->name());
 			return false;
 		}
 
-		fvec3 wp = tForm->instance_transform(m_active_scene, tformid)->world_position();
+		fvec3 wp = tpsi->m_tforms[tformid].world_position();
 		fvec3 newPos = nse.system<nsbuild_system>()->center()*2.0f - wp;
 		newPos.z = wp.z;
 
@@ -123,10 +130,11 @@ bool nsselection_system::add_selection_to_grid(nsscene * scn)
 			auto selection = selComp->selection(scn);
 			if (selection != nullptr)
 			{
+				tform_per_scene_info * psi = tComp->per_scene_info(scn);
 				auto selIter = selection->begin();
 				while (selIter != selection->end())
 				{
-					fvec3 pos = tComp->instance_transform(scn, *selIter)->world_position();
+					fvec3 pos = psi->m_tforms[*selIter].world_position();
 					if (!scn->grid().add(
 							uivec3((*iter)->plugin_id(), (*iter)->id(), *selIter),
 							occComp->spaces(),
@@ -193,6 +201,7 @@ bool nsselection_system::selection_collides_with_tilegrid()
 	{
 		nssel_comp * selComp = (*iter)->get<nssel_comp>();
 		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_scene);
 		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 		if (occComp != nullptr)
 		{
@@ -200,8 +209,9 @@ bool nsselection_system::selection_collides_with_tilegrid()
 			auto selIter = selection->begin();
 			while (selIter != selection->end())
 			{
-				fvec3 wpos = tComp->instance_transform(m_active_scene, *selIter)->world_position();
-				has_collision = has_collision || m_active_scene->grid().occupied(occComp->spaces(), wpos);
+				fvec3 wpos = tpsi->m_tforms[*selIter].world_position();
+				has_collision = has_collision ||
+					m_active_scene->grid().occupied(occComp->spaces(), wpos);
 				++selIter;
 			}
 		}			
@@ -551,6 +561,7 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 	nssel_comp * sc = ent->get<nssel_comp>();
 	nstform_comp * tc = ent->get<nstform_comp>();
 	auto selection = sc->selection(m_active_scene);
+	tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
 	
 	if (pPressed)
 	{
@@ -562,7 +573,7 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 			m_focus_ent = pID;
 			if (!m_moving)
 			{
-				fvec3 originalPos = tc->instance_transform(m_active_scene, m_focus_ent.z)->world_position();
+				fvec3 originalPos = tpsi->m_tforms[m_focus_ent.z].world_position();
 				m_cached_point = originalPos;
 				remove_from_grid();
 				m_moving = true;
@@ -580,22 +591,22 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 		{
 			if (pSnapZOnly)
 			{
-				for (uint32 i = 0; i < tc->instance_count(m_active_scene); ++i)
+				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
 				{
-					auto itf = tc->instance_transform(m_active_scene, i);
-					fvec3 wpos = itf->world_position();
+					instance_tform & itf = tpsi->m_tforms[i];
+					fvec3 wpos = itf.world_position();
 					nstile_grid::snap(wpos);
-					itf->set_world_position(fvec3(itf->world_position().xy(),wpos.z));
+					itf.set_world_position(fvec3(itf.world_position().xy(),wpos.z));
 				}
 			}
 			else
 			{
-				for (uint32 i = 0; i < tc->instance_count(m_active_scene); ++i)
+				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
 				{
-					auto itf = tc->instance_transform(m_active_scene, i);
-					fvec3 wpos = itf->world_position();
+					instance_tform & itf = tpsi->m_tforms[i];
+					fvec3 wpos = itf.world_position();
 					nstile_grid::snap(wpos);
-					itf->set_world_position(wpos);
+					itf.set_world_position(wpos);
 				}				
 			}
 		}
@@ -606,16 +617,15 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 			nsentity * ent = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
 			if (ent == nullptr)
 				return;
-
-			auto f_itf = ent->get<nstform_comp>()->instance_transform(m_active_scene, m_focus_ent.z);
+			tform_per_scene_info * tfpsi = ent->get<nstform_comp>()->per_scene_info(m_active_scene);
+			instance_tform & f_itf = tfpsi->m_tforms[m_focus_ent.z];
 
 			if (selection_collides_with_tilegrid())
 			{
-				f_itf->recursive_compute();
-				fvec3 pTranslate = m_cached_point - f_itf->world_position();
+				f_itf.recursive_compute();
+				fvec3 pTranslate = m_cached_point - f_itf.world_position();
 
 				translate_selection(pTranslate);
-
 				set_selection_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 
 				if (!add_selection_to_grid(m_active_scene))
@@ -625,7 +635,7 @@ void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 
 			}
 			else
 			{
-				fvec3 pos = f_itf->world_position();
+				fvec3 pos = f_itf.world_position();
 				m_active_scene->grid().snap(pos);
 				add_selection_to_grid(m_active_scene);
 			}
@@ -646,7 +656,7 @@ void nsselection_system::translate_selection(const fvec3 & amount)
 	{
 		nssel_comp * scomp = (*iter)->get<nssel_comp>();
 		nstform_comp * tcomp = (*iter)->get<nstform_comp>();
-
+		tform_per_scene_info * tpsi = tcomp->per_scene_info(m_active_scene);
 		auto selection = scomp->selection(m_active_scene);
 		if (selection == nullptr)
 			return;
@@ -654,9 +664,9 @@ void nsselection_system::translate_selection(const fvec3 & amount)
 		auto selIter = selection->begin();
 		while (selIter != selection->end())
 		{
-			instance_tform * itf = tcomp->instance_transform(m_active_scene, *selIter);
-			fvec3 translated_amount = itf->world_position() + amount;
-			itf->set_world_position(translated_amount);
+			instance_tform & itf = tpsi->m_tforms[*selIter];
+			fvec3 translated_amount = itf.world_position() + amount;
+			itf.set_world_position(translated_amount);
             tcomp->post_update(true);
 			++selIter;
 		}
@@ -674,7 +684,8 @@ void nsselection_system::rotate_selection(const fquat & rotation)
 	{
 		nssel_comp * scomp = (*iter)->get<nssel_comp>();
 		nstform_comp * tcomp = (*iter)->get<nstform_comp>();
-
+		tform_per_scene_info * tpsi = tcomp->per_scene_info(m_active_scene);
+		
 		auto selection = scomp->selection(m_active_scene);
 		if (selection == nullptr)
 			return;
@@ -682,8 +693,7 @@ void nsselection_system::rotate_selection(const fquat & rotation)
 		auto selIter = selection->begin();
 		while (selIter != selection->end())
 		{
-			instance_tform * itf = tcomp->instance_transform(m_active_scene, *selIter);
-			itf->rotate(rotation);
+			tpsi->m_tforms[*selIter].rotate(rotation);
 			++selIter;
 		}
 		++iter;
@@ -729,8 +739,10 @@ void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 					continue;
 
 				nstform_comp * tForm = focEnt->get<nstform_comp>();
-				instance_tform * itf = tForm->instance_transform(m_active_scene, m_focus_ent.z);
-				fvec3 pos = itf->world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+				tform_per_scene_info * tpsi = tForm->per_scene_info(m_active_scene);
+				
+				instance_tform & itf = tpsi->m_tforms[m_focus_ent.z];
+				fvec3 pos = itf.world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
 				uivec3 refid = m_active_scene->ref_id(pos);
 				nsentity * selEnt = get_entity(refid.xy());
 				if (selEnt == nullptr)
@@ -761,7 +773,8 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 		return;
 
 	nstform_comp * camTForm = cam->get<nstform_comp>();
-	instance_tform * cam_itf = camTForm->instance_transform(m_active_scene, 0);
+	tform_per_scene_info * cam_psi = camTForm->per_scene_info(m_active_scene);
+	instance_tform & cam_itf = cam_psi->m_tforms[0];
 	nscam_comp * camc = cam->get<nscam_comp>();
 	nstform_comp * tComp = ent->get<nstform_comp>();
     if (tComp == nullptr)
@@ -769,15 +782,10 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
         dprint("nsselection_system::_on_draw_object Entity " + ent->name() + " not in scene");
         return;
     }
-	instance_tform * itf = tComp->instance_transform(m_active_scene, m_focus_ent.z);
-    if (itf == nullptr)
-    {
-        dprint("nsselection_system::_on_draw_object Entity " + ent->name() + " not in scene");
-        return;
-    }
+	instance_tform & itf = tComp->per_scene_info(m_active_scene)->m_tforms[m_focus_ent.z];
 
 	fvec2 delta(pDelta * 2.0f / (norm_vp.zw() - norm_vp.xy()));
-	fvec3 originalPos = itf->world_position();
+	fvec3 originalPos = itf.world_position();
 	fvec4 screenSpace = camc->proj_cam() * fvec4(originalPos, 1.0f);
 	screenSpace /= screenSpace.w;
 	screenSpace.x += delta.u;
@@ -787,12 +795,12 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	newPos /= newPos.w;
 
 	fvec3 fpos(newPos.xyz());
-	fvec3 castVec = fpos - cam_itf->world_position();
+	fvec3 castVec = fpos - cam_itf.world_position();
 	castVec.normalize();
 	float depth = 0.0f;
 	fvec3 normal;
 
-    fvec3 targetVec = cam_itf->world_orientation().target();
+    fvec3 targetVec = cam_itf.world_orientation().target();
 	fvec3 projVec = project_plane(targetVec, fvec3(0.0f,0.0f,-1.0f));
 	fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
 	
@@ -909,13 +917,13 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 	if (selection_contains(m_focus_ent))
 		return;
 
-	nsentity * ent = get_asset<nsentity>(pickid.xy());
-	nssel_comp * sc;
-	if (ent == nullptr || (sc = ent->get<nssel_comp>()) == nullptr || m_active_scene == nullptr)
-		return;
+	// nsentity * ent = get_asset<nsentity>(pickid.xy());
+	// nssel_comp * sc;
+	// if (ent == nullptr || (sc = ent->get<nssel_comp>()) == nullptr || m_active_scene == nullptr)
+	// 	return;
 
-	nstform_comp * tc = ent->get<nstform_comp>();
-	fvec3 original_pos = tc->instance_transform(m_active_scene, pickid.z)->world_position();
+	// // nstform_comp * tc = ent->get<nstform_comp>();
+	// // original_pos = tc->per_scene_info(m_active_scene)->m_tforms[pickid.z].world_position();
 }
 
 void nsselection_system::remove_from_selection(nsentity * ent, uint32 pTFormID)
@@ -963,8 +971,8 @@ void nsselection_system::remove_from_grid()
 			auto selIter = selection->begin();
 			while (selIter != selection->end())
 			{
-				instance_tform * itf = tComp->instance_transform(m_active_scene, *selIter);
-				m_active_scene->grid().remove(occComp->spaces(), itf->world_position());
+				instance_tform & itf = tComp->per_scene_info(m_active_scene)->m_tforms[*selIter];
+				m_active_scene->grid().remove(occComp->spaces(), itf.world_position());
 				++selIter;
 			}
 		}
@@ -1106,6 +1114,7 @@ void nsselection_system::tile_swap(nsentity * pNewTile)
 	{
 		nssel_comp * selC = (*iter)->get<nssel_comp>();
 		nstform_comp * tComp = (*iter)->get<nstform_comp>();
+		tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_scene);
 		auto selection = selC->selection(m_active_scene);
 		if (selection == nullptr)
 		{
@@ -1118,8 +1127,7 @@ void nsselection_system::tile_swap(nsentity * pNewTile)
 		auto iter2 = selection->begin();
 		while (iter2 != selection->end())
 		{
-			instance_tform * itf = tComp->instance_transform(m_active_scene, *iter2);
-			posVec[i] = itf->world_position();
+			posVec[i] = tpsi->m_tforms[*iter2].world_position();
 			++iter2;
 			++i;
 		}
@@ -1128,10 +1136,9 @@ void nsselection_system::tile_swap(nsentity * pNewTile)
 		{
 			uivec3 id = m_active_scene->ref_id(posVec[cur]);
 			nstform_comp * tfc = m_active_scene->find_entity(id.xy())->get<nstform_comp>();
-			instance_tform copy = *tfc->instance_transform(m_active_scene, id.z);
-			
-			m_active_scene->remove(posVec[cur], false);
+			instance_tform & copy = tfc->per_scene_info(m_active_scene)->m_tforms[id.z];			
 			m_active_scene->add(pNewTile, nullptr, copy, false);
+			m_active_scene->remove(posVec[cur], false);
 		}
 
 		++iter;
@@ -1183,8 +1190,6 @@ bool nsselection_system::valid_tile_swap()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		nssel_comp * selComp = (*iter)->get<nssel_comp>();
-		nstform_comp * tComp = (*iter)->get<nstform_comp>();
 		if (!(*iter)->has<nstile_comp>())
 			return false;
 		++iter;
@@ -1210,11 +1215,11 @@ void nsselection_system::update()
 		if (ent != nullptr)
 		{
 			nstform_comp * foc_tform = ent->get<nstform_comp>();
-			instance_tform * foc_itf = foc_tform->instance_transform(m_active_scene, m_focus_ent.z);
+			instance_tform & foc_itf = foc_tform->per_scene_info(m_active_scene)->m_tforms[m_focus_ent.z];
 
 			if (m_moving)
 			{
-				fvec3 originalPos = foc_itf->world_position();
+				fvec3 originalPos = foc_itf.world_position();
 				m_cached_point = originalPos;
 				if (!nse.system<nsbuild_system>()->enabled())
 					remove_from_grid();
@@ -1224,8 +1229,8 @@ void nsselection_system::update()
 				snap_selection_to_grid();
 				if (selection_collides_with_tilegrid())
 				{
-					foc_itf->recursive_compute();
-					fvec3 pTranslate = m_cached_point - foc_itf->world_position();
+					foc_itf.recursive_compute();
+					fvec3 pTranslate = m_cached_point - foc_itf.world_position();
 					translate_selection(pTranslate);
 					set_selection_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 					if (!add_selection_to_grid(m_active_scene))
@@ -1235,7 +1240,7 @@ void nsselection_system::update()
 				}
 				else
 				{
-					fvec3 pos = foc_itf->world_position();
+					fvec3 pos = foc_itf.world_position();
 					m_active_scene->grid().snap(pos);
 					if (!nse.system<nsbuild_system>()->enabled())
 						add_selection_to_grid(m_active_scene);
@@ -1286,9 +1291,7 @@ void nsselection_system::snap_selection_to_grid()
 	{
 		nssel_comp * scomp = (*iter)->get<nssel_comp>();
 		nstform_comp * tcomp = (*iter)->get<nstform_comp>();
-
-		sel_per_scene_info * psi = scomp->scene_info(m_active_scene);
-
+		tform_per_scene_info * tpsi = tcomp->per_scene_info(m_active_scene);
 		auto selection = scomp->selection(m_active_scene);
 		if (selection == nullptr)
 			return;
@@ -1296,12 +1299,12 @@ void nsselection_system::snap_selection_to_grid()
 		auto selIter = selection->begin();
 		while (selIter != selection->end())
 		{
-			instance_tform * itf = tcomp->instance_transform(m_active_scene, *selIter);
-			if (itf->snap_to_grid)
+			instance_tform & itf = tpsi->m_tforms[*selIter];
+			if (itf.snap_to_grid)
 			{
-				fvec3 snapped_pos = itf->world_position();
+				fvec3 snapped_pos = itf.world_position();
 				nstile_grid::snap(snapped_pos);
-				itf->set_world_position(snapped_pos);
+				itf.set_world_position(snapped_pos);
                 tcomp->post_update(true);
 			}
 			++selIter;

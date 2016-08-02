@@ -63,7 +63,11 @@ include_directories(
 )
 
 # Preprocessor definitions
-add_definitions(-DGLEW_MX -DGLEW_STATIC -DSTB_IMAGE_WRITE_IMPLEMENTATION -DSTB_IMAGE_IMPLEMENTATION -DNSDEBUG)
+add_definitions(-DGLEW_MX -DGLEW_STATIC -DSTB_IMAGE_WRITE_IMPLEMENTATION -DSTB_IMAGE_IMPLEMENTATION)
+
+if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    add_definitions(-DNSDEBUG)
+endif()
 
 message("${CMAKE_BUILD_TYPE} build starting...\n")
 
@@ -75,7 +79,7 @@ if (UNIX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fms-extensions")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-  if (PLATFORM STREQUAL "x86")
+  if (${PLATFORM} STREQUAL "x86")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
   endif()

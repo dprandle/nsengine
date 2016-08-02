@@ -295,8 +295,8 @@ void nsengine::init(nsvideo_driver * drvr)
 	m_cwd = platform::cwd();
 	m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
 
-	m_deb = new nsdebug;
 #ifdef NSDEBUG
+	m_deb = new nsdebug;
 	m_deb->set_log_file("engine_debug.log");
 	m_deb->set_log_dir(m_cwd + "logs");
 	m_deb->clear_log();

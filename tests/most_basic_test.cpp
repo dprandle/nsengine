@@ -126,11 +126,23 @@ int main()
 
     new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add_gridded(grass_tile,ivec3(64,64,1));
-    new_scene->add(stone_tile, grass_tile->get<nstform_comp>()->instance_transform(new_scene,3),true,fvec3(0,0,-20));
-    grass_tile->get<nstform_comp>()->instance_transform(new_scene,3)->set_parent(spot_light->get<nstform_comp>()->instance_transform(new_scene,0), true);
+    uint32 plid = new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+
+	instance_tform * itf =
+		&point_light->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[plid];
+
+	new_scene->add(spot_light, itf, false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+
+	new_scene->add_gridded(grass_tile,ivec3(64,64,1));
+
+	new_scene->add(stone_tile,
+				   &grass_tile->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[3],
+				   true,
+				   fvec3(0,0,-20));
+	
+	grass_tile->get<nstform_comp>()->per_scene_info(
+	   new_scene)->m_tforms[3].set_parent(
+		   &spot_light->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[0], true);
 
 	
     // Create material for the button bg

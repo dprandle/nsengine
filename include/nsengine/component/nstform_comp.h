@@ -29,27 +29,15 @@ class nstform_comp;
 
 struct instance_handle
 {
-	instance_handle(nstform_comp * tfc_=nullptr, uint32 tf_ind = -1):
-		tfc(tfc_),
-		ind(tf_ind)
-	{}
+	instance_handle(tform_per_scene_info * tfc_=nullptr, uint32 tf_ind = -1);
 
-	bool is_valid() const
-	{
-		return tfc != nullptr && ind != -1;
-	}
+	bool is_valid() const;
 
-	void invalidate()
-	{
-		tfc = nullptr; ind = -1;
-	}
+	void invalidate();
 
-	bool operator==(const instance_handle & rhs)
-	{
-		return tfc == rhs.tfc && ind == rhs.ind;
-	}
+	bool operator==(const instance_handle & rhs);
 	
-	nstform_comp * tfc;
+	tform_per_scene_info * tfc;
 	uint32 ind;
 };
 
@@ -84,7 +72,7 @@ struct instance_tform
 	
     void set_parent(instance_tform * parent, bool keep_world_transform);
 	
-	instance_tform * parent();
+	instance_tform * parent() const;
 
 	instance_tform * child(uint32 index);
 
@@ -94,9 +82,7 @@ struct instance_tform
 
     void set_hidden_state(int32 state);
 
-	nstform_comp * owner();
-
-	nsscene * scene();
+	tform_per_scene_info * owner();
 
     void translate(const fvec3 & amount);
 
@@ -140,9 +126,8 @@ struct instance_tform
 
   private:
 
-	nstform_comp * m_owner;
+	tform_per_scene_info * m_owner;
 	instance_handle m_parent;
-	nsscene * m_scene;
 	bool m_render_update;
 	int32 m_hidden_state;
 	fquat m_orient;
@@ -208,11 +193,7 @@ class nstform_comp : public nscomponent
 
 	void release();
 
-	instance_tform * instance_transform(const nsscene * scn, uint32 tform_id);
-
-	uint32 instance_count(const nsscene * scn) const;
-
-	tform_per_scene_info * per_scene_info(nsscene * scn);
+	tform_per_scene_info * per_scene_info(const nsscene * scn);
 
 	nstform_comp & operator=(nstform_comp rhs_);
 

@@ -585,7 +585,7 @@ void light_pass::render()
 		gl_shdr->set_uniform("bgColor", dc->bg_color);
 		gl_shdr->set_uniform("light.direction", dc->direction);
 		gl_shdr->set_uniform("camWorldPos",
-							 vp->camera->get<nstform_comp>()->instance_transform(dc->scn, 0)->world_position());
+vp->camera->get<nstform_comp>()->per_scene_info(dc->scn)->m_tforms[0].world_position());
 		gl_shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		gl_shdr->set_uniform("fog_color", vp->m_fog_color);
 		gl_shdr->set_uniform("lightingEnabled", vp->dir_lights);

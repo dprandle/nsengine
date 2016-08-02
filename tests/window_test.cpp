@@ -175,7 +175,6 @@ nsscene * setup_basic_scene(nsplugin * plg)
     new_scene->add(cam2,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(spot_light, point_light->get<nstform_comp>()->instance_transform(new_scene,0), false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
     new_scene->add_gridded(grass_tile,ivec3(32,32,1));
 	
 	// Create material for the button bg

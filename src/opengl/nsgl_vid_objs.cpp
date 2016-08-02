@@ -366,7 +366,8 @@ nsgl_sel_comp_obj::~nsgl_sel_comp_obj()
 void nsgl_sel_comp_obj::update()
 {
 	sel_per_scene_info * psi = (sel_per_scene_info*)parent;
-	nstform_comp * tc = psi->owner->owner()->get<nstform_comp>();
+	tform_per_scene_info * tfpsi =
+		psi->owner->owner()->get<nstform_comp>()->per_scene_info(psi->scene);
 	
 	gl_tform_buffer->bind();
 
@@ -384,7 +385,7 @@ void nsgl_sel_comp_obj::update()
 		auto sel_iter = psi->m_selection.begin();
 		while (sel_iter != psi->m_selection.end())
 		{
-			mapped[count] = tc->instance_transform(psi->scene, *sel_iter)->world_tf();
+			mapped[count] = tfpsi->m_tforms[*sel_iter].world_tf();
 			++sel_iter;
 			++count;
 		}
@@ -396,10 +397,10 @@ void nsgl_sel_comp_obj::update()
 
 nsgl_particle_comp_obj::nsgl_particle_comp_obj(nsvideo_object * parent_):
 	nsvid_obj(parent_),
-	gl_front_buffer(new nsgl_buffer()),
-	gl_back_buffer(new nsgl_buffer()),
 	last_size(0),
-	buffer_index(0)
+	buffer_index(0),
+	gl_front_buffer(new nsgl_buffer()),
+	gl_back_buffer(new nsgl_buffer())
 {
 	nsparticle_comp * pcomp = (nsparticle_comp*)parent;
 	
