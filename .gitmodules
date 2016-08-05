@@ -1,6 +1,0 @@
-[submodule "deps/glfw"]
-	path = deps/glfw
-	url = https://github.com/dprandle/glfw.git
-[submodule "deps/freetype"]
-	path = deps/freetype
-	url = https://github.com/dprandle/freetype.git
