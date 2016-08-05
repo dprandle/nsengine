@@ -16,51 +16,22 @@ copy_dirs()
 
 copy_libs()
 {
+    rm -r lib/$PLATFORM
     mkdir -p lib/$PLATFORM
-    cp -r deps/sndfile/lib/libsndfile* lib/$PLATFORM    
+    cp -r deps/sndfile/lib/$PLATFORM/libsndfile* lib/$PLATFORM
+    cp -r deps/freetype/lib/$PLATFORM/libfreetype* lib/$PLATFORM
+    cp -r deps/glfw/lib/$PLATFORM/libglfw* lib/$PLATFORM
+    cp -r deps/assimp/lib/$PLATFORM/libassimp* lib/$PLATFORM
 }
 
 build()
 {
-    mkdir -p deps/freetype/build
-    cd deps/freetype/build
-    cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../lib/x64"\
-          -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../../../lib/x64"\
-          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../bin/x64"\
-	  -DBUILD_SHARED_LIBS=ON\
-          -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE ..
-    make -j
-    cd ../../..
-
-    mkdir -p deps/glfw/build
-    cd deps/glfw/build
-    cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../../lib/x64"\
-          -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="../../../../lib/x64"\
-          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../../bin/x64"\
-	  -DBUILD_SHARED_LIBS=ON\
-          -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE\
-          -DGLFW_BUILD_EXAMPLES=OFF\
-          -DGLFW_BUILD_TESTS=OFF\
-          -DGLFW_BUILD_DOCS=OFF\
-          -DCMAKE_DEBUG_POSTFIX="d"\
-          -DGLFW_INSTALL=OFF ..
-    make -j
-    cd ../../..
-
-    mkdir -p deps/assimp/build
-    cd deps/assimp/build
-    cmake -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="../../../../lib/x64"\
-          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="../../../../bin/x64"\
-          -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE\
-          -DASSIMP_BUILD_ASSIMP_TOOLS=OFF\
-          -DASSIMP_BUILD_TESTS=OFF ..
-    make -j
-    cd ../../..
-
     mkdir -p build/$PLATFORM/$CONFIG
     cd build/$PLATFORM/$CONFIG
-    cmake -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE -DPLATFORM=$PLATFORM -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../../..
-    make -j
+    cmake -DCMAKE_BUILD_TYPE=$CONFIG_CMAKE\
+	  -DPLATFORM=$PLATFORM\
+	  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ../../..
+    make -j8
     mv compile_commands.json ../../
     cd ../../..
 }
