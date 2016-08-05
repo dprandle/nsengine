@@ -25,6 +25,8 @@ public:
 
 	nsfactory(factory_t fac_type_) : m_fac_type(fac_type_) {}
 
+	virtual ~nsfactory() {}
+
 	factory_t type()
 	{
 		return m_fac_type;

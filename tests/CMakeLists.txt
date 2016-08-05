@@ -18,6 +18,8 @@ endif()
 
 link_libraries(debug freetyped)
 link_libraries(optimized freetype)
+link_libraries(openal)
+link_libraries(sndfile)
 
 # link with opengl (no debug version)
 find_package(OpenGL REQUIRED)
@@ -33,3 +35,6 @@ set_target_properties(most_basic_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POS
 
 add_executable(window_test window_test.cpp)
 set_target_properties(window_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+add_executable(audio_test audio_test.cpp)
+set_target_properties(audio_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

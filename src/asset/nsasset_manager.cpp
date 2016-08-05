@@ -482,10 +482,12 @@ void nsasset_manager::set_plugin_id(uint32 plugid)
 
 void nsasset_manager::destroy_all()
 {
-	while (begin() != end())
+	auto iter = m_id_resmap.begin();
+	while (iter != m_id_resmap.end())
 	{
-		if (!destroy(begin()->second))
-			return;
+		iter->second->release();
+		delete iter->second;
+		++iter;
 	}
 	m_id_resmap.clear();
 }

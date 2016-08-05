@@ -129,6 +129,7 @@ void nsgl_window::close()
 	
 	make_current();
 	m_driver->destroy_context(m_ctxt->context_id);
+	m_ctxt = nullptr;
 	glfwDestroyWindow(m_window);
 	nswindow::close();
 
@@ -345,11 +346,11 @@ void glfw_focus_change_callback(GLFWwindow* window, int give_or_taken)
 void glfw_close_window_callback(GLFWwindow* window)
 {
 	nsgl_window * win = (nsgl_window*)glfwGetWindowUserPointer(window);
-	win->close();
 	nse.event_dispatch()->push<nswindow_closed_event>(win->m_ctxt->context_id);
 #ifdef EVENT_OUTPUT
     std::cout << "window " << win->m_ctxt->context_id << " close callback" << std::endl;
 #endif
+	win->close();
 }
 
 void glfw_minimize_window_callback(GLFWwindow * window, int min_or_restore)

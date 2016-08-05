@@ -14,6 +14,12 @@ copy_dirs()
     mkdir -p bin/$PLATFORM/logs
 }
 
+copy_libs()
+{
+    mkdir -p lib/$PLATFORM
+    cp -r deps/sndfile/lib/libsndfile* lib/$PLATFORM    
+}
+
 build()
 {
     mkdir -p deps/freetype/build
@@ -87,6 +93,7 @@ do
 done
 
 if [ "$BUILD_ALL" = NO ]; then
+    copy_libs
     build
     copy_dirs
 else

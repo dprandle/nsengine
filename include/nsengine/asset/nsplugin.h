@@ -237,6 +237,8 @@ public:
 
 	void init();
 
+	void release();
+
 	const nsstring & creator();
 
 	nsstring details();
@@ -358,11 +360,12 @@ public:
 
 	bool destroy(nsasset * res);
 	
-private:
+	void destroy_all();
+
+  private:
 	
 	void _update_parents();
 	void _update_res_map();
-	void _clear();
 	
 	nsstring m_notes;
 	nsstring m_creator;

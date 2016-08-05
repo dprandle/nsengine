@@ -39,9 +39,7 @@ nsentity::nsentity(const nsentity & copy):
 }
 
 nsentity::~nsentity()
-{
-	clear();
-}
+{}
 
 nsentity & nsentity::operator=(nsentity rhs)
 {
@@ -82,12 +80,16 @@ void nsentity::finalize()
 	}
 }
 
-void nsentity::clear()
+void nsentity::destroy_all()
 {
-	while (m_components.begin() != m_components.end())
+	auto cur_comp = m_components.begin();
+	while (cur_comp != m_components.end())
 	{
-		del(m_components.begin()->first);
+		cur_comp->second->release();
+		delete cur_comp->second;
+		++cur_comp;
 	}
+	m_components.clear();
 }
 
 nsentity::comp_set::iterator nsentity::begin()
@@ -136,12 +138,12 @@ nscomponent * nsentity::create(const nsstring & guid)
 	return create(hash_id(guid));
 }
 
-bool nsentity::del(const nsstring & guid)
+bool nsentity::destroy(const nsstring & guid)
 {
-	return del(hash_id(guid));
+	return destroy(hash_id(guid));
 }
 
-bool nsentity::del(uint32 type_id)
+bool nsentity::destroy(uint32 type_id)
 {
 	nscomponent * cmp = remove(type_id);
 	if (cmp != NULL) // Log delete
@@ -228,6 +230,11 @@ bool nsentity::has(uint32 type_id)
 void nsentity::init()
 {
 	// do nothing
+}
+
+void nsentity::release()
+{
+	destroy_all();
 }
 
 nscomponent * nsentity::remove(uint32 type_id)

@@ -225,7 +225,7 @@ void nsui_canvas_comp::remove(nsentity * to_remove, bool remove_children)
 	_remove_all_comp_entries(to_remove);
 	tuic->m_canvas_settings.erase(this);
 	if (tuic->m_canvas_settings.empty())
-		to_remove->del<nsrect_tform_comp>();
+		to_remove->destroy<nsrect_tform_comp>();
 }
 
 void nsui_canvas_comp::_remove_all_comp_entries(nsentity * ent)

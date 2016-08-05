@@ -302,11 +302,11 @@ bool rename(const nsstring & oldname, const nsstring & newname)
 
 nsstring cwd()
 {
-	char temp[256];
-	uint32 sz = readlink("/proc/self/exe", temp, 256);
-	nsstring ret(temp);
-	ret.resize(sz);
-	return nsasset_manager::path_from_filename(ret);
+    char temp[256] = {};
+    uint32 sz = readlink("/proc/self/exe", temp, 256);
+    nsstring ret(temp);
+    ret.resize(sz);
+    return nsasset_manager::path_from_filename(ret);
 }
 
 void platform_init()

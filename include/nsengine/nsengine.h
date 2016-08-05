@@ -572,6 +572,8 @@ private:
 	}
 
 	void _init_factories();
+	void _destroy_factories();
+
 	void _remove_sys(uint32 type_id);
 		
 	type_hash_map m_obj_type_hashes;

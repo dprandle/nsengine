@@ -77,14 +77,6 @@ nsplugin::nsplugin(const nsplugin & copy_):
 
 nsplugin::~nsplugin()
 {
-	enable(false);
-    auto iter = m_managers.begin();
-    while (iter != m_managers.end())
-    {
-        delete iter->second;
-        ++iter;
-    }
-    m_managers.clear();
 }
 
 nsplugin & nsplugin::operator=(nsplugin rhs)
@@ -674,6 +666,18 @@ void nsplugin::init()
 	}
 }
 
+void nsplugin::release()
+{
+	enable(false);
+    auto iter = m_managers.begin();
+    while (iter != m_managers.end())
+    {
+        delete iter->second;
+        ++iter;
+    }
+    m_managers.clear();	
+}
+
 nsasset * nsplugin::load(uint32 res_typeid, const nsstring & fname, bool finalize_)
 {
 	if (!m_enabled)
@@ -1119,7 +1123,7 @@ void nsplugin::enable(bool enable_)
 		
 		_update_res_map();
 		_update_parents();
-		_clear();
+		destroy_all();
 		m_unloaded.clear();
 		m_enabled = false;
 	}
@@ -1370,18 +1374,21 @@ bool nsplugin::parents_enabled()
 	return true;
 }
 
-void nsplugin::_clear()
+void nsplugin::destroy_all()
 {
-    // destroy first
+    // destroy scenes and canvases first
     manager<nsscene_manager>()->destroy_all();
-
 
     auto emgr = manager<nsentity_manager>();
     auto ent_iter = emgr->begin();
     while (ent_iter != emgr->end())
     {
         nsentity * cur_ent = emgr->get(ent_iter->first);
-        cur_ent->del<nsui_canvas_comp>();
+		nscomponent * cmp = cur_ent->get<nsui_canvas_comp>();
+		
+		if (cmp != nullptr)
+			cur_ent->destroy(cmp->type());
+
         ++ent_iter;
     }
 

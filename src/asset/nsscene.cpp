@@ -172,7 +172,7 @@ uint32 nsscene::add(
 				tComp->m_scenes_info.erase(fiter);
 
 			if (tComp->m_scenes_info.empty())
-				ent->del<nstform_comp>();
+				ent->destroy<nstform_comp>();
 			
 			return -1;
 		}
@@ -694,7 +694,7 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		delete pse;
 		tComp->m_scenes_info.erase(fiter);		
 		if (tComp->m_scenes_info.empty())
-			entity->del<nstform_comp>();
+			entity->destroy<nstform_comp>();
 
 		nse.event_dispatch()->push<scene_ent_removed>(entity->full_id(),full_id());
 		

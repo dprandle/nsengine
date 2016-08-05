@@ -141,8 +141,8 @@ void nsbuild_system::enable(const bool & pEnable)
 			if (m_object_build_ent == nullptr)
 				return;
 
-			m_object_brush->del<nsrender_comp>();
-			m_object_brush->del<nslight_comp>();
+			m_object_brush->destroy<nsrender_comp>();
+			m_object_brush->destroy<nslight_comp>();
             m_object_brush->create(m_object_build_ent->get<nsrender_comp>());
 			m_object_brush->create(m_object_build_ent->get<nslight_comp>());
 			fvec3 pos = nstile_grid::world(ivec3(0,0,m_layer));
@@ -177,12 +177,12 @@ void nsbuild_system::enable(const bool & pEnable)
 				tmirror_psi->m_tforms[mirror_tform_id].set_hidden_state(nstform_comp::hide_all);
 			}
 
-			m_object_brush->del<nsoccupy_comp>();
+			m_object_brush->destroy<nsoccupy_comp>();
             m_object_brush->create(m_object_build_ent->get<nsoccupy_comp>());
 
 			if (m_mirror_mode)
 			{
-				m_mirror_brush->del<nsoccupy_comp>();
+				m_mirror_brush->destroy<nsoccupy_comp>();
 				m_mirror_brush->create(m_object_build_ent->get<nsoccupy_comp>());
 			}
 				
@@ -201,9 +201,9 @@ void nsbuild_system::enable(const bool & pEnable)
 
 		if (m_current_brush_type == brush_object && m_object_brush != nullptr)
 		{
-			m_object_brush->del<nsoccupy_comp>();
-			m_object_brush->del<nsrender_comp>();
-			m_object_brush->del<nslight_comp>();
+			m_object_brush->destroy<nsoccupy_comp>();
+			m_object_brush->destroy<nsrender_comp>();
+			m_object_brush->destroy<nslight_comp>();
 			m_active_scene->remove(m_object_brush, true);
 		}
 

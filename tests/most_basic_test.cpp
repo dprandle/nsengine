@@ -133,7 +133,7 @@ int main()
 
 	new_scene->add(spot_light, itf, false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 
-	new_scene->add_gridded(grass_tile,ivec3(64,64,1));
+    new_scene->add_gridded(grass_tile,ivec3(8,8,1));
 
 	new_scene->add(stone_tile,
 				   &grass_tile->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[3],

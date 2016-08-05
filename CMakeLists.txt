@@ -10,6 +10,7 @@ set(NSENGINE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/nsengine)
 set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp/include)
 set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/glfw/include)
 set(FREETYPE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/freetype/include)
+set(SNDFILE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/sndfile/include)
 
 # Postfix debug builds with d
 set(CMAKE_DEBUG_POSTFIX d)
@@ -60,6 +61,7 @@ include_directories(
 "${ASSIMP_INCLUDE_DIR}"
 "${GLFW_INCLUDE_DIR}"
 "${FREETYPE_INCLUDE_DIR}"
+"${SNDFILE_INCLUDE_DIR}"
 )
 
 # Preprocessor definitions

@@ -1,6 +1,3 @@
-[submodule "deps/assimp"]
-	path = deps/assimp
-	url = https://github.com/dprandle/assimp.git
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/dprandle/glfw.git

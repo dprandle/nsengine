@@ -42,8 +42,6 @@ public:
 	comp_set::iterator begin();
 	comp_set::iterator end();
 
-	void clear();
-
 	void finalize();
 
 	template<class comp_type>
@@ -53,7 +51,6 @@ public:
 		return static_cast<comp_type*>(create(tid));
 	}
 
-
 	nscomponent * create(nscomponent * to_copy);
 
 	nscomponent * create(const nsstring & guid);
@@ -61,15 +58,17 @@ public:
 	nscomponent * create(uint32 type_id);
 
 	template<class comp_type>
-	bool del()
+	bool destroy()
 	{
 		uint32 tid = nse.type_id(std::type_index(typeid(comp_type)));
-		return del(tid);
+		return destroy(tid);
 	}
 
-	bool del(uint32 type_id);
+	bool destroy(uint32 type_id);
 
-	bool del(const nsstring & guid);
+	bool destroy(const nsstring & guid);
+
+	void destroy_all();
 
 	template<class comp_type>
 	comp_type * get()
@@ -104,6 +103,8 @@ public:
 	bool has(const nsstring & guid);
 
 	void init();
+
+	void release();
 
 	template<class comp_type>
 	comp_type * remove()
