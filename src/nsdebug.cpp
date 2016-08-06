@@ -29,6 +29,7 @@ nsdebug::~nsdebug()
 {
 	delete m_log_file;
 }
+
 void nsdebug::clear_log()
 {
 	m_log_file->clear();
@@ -79,7 +80,7 @@ void nsdebug::print(const nsstring & pMessage) const
 	if (m_msg_cb)
 		m_msg_cb(pMessage,m_msg_inst);
 	//if (mRenderMessages)
-		//; write later
+	//; write later
 	if (m_logging_messages)
 		log(pMessage);
 }
@@ -124,28 +125,28 @@ int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
     int type = MiniDumpNormal;
     switch (ilevel)
     {
-    case (info_level_small):
-        type |= MiniDumpWithIndirectlyReferencedMemory |
-                MiniDumpScanMemory;
-        break;
-    case (info_level_medium):
-        type |= MiniDumpWithDataSegs |
-                MiniDumpWithPrivateReadWriteMemory |
-                MiniDumpWithHandleData |
-                MiniDumpWithFullMemoryInfo |
-                MiniDumpWithThreadInfo |
-                MiniDumpWithUnloadedModules;
-        break;
-    case (info_level_large):
-        type |= MiniDumpWithDataSegs |
-                MiniDumpWithPrivateReadWriteMemory |
-                MiniDumpWithHandleData |
-                MiniDumpWithFullMemory |
-                MiniDumpWithFullMemoryInfo |
-                MiniDumpWithThreadInfo |
-                MiniDumpWithUnloadedModules |
-                MiniDumpWithProcessThreadData;
-        break;
+	  case (info_level_small):
+		  type |= MiniDumpWithIndirectlyReferencedMemory |
+			  MiniDumpScanMemory;
+		  break;
+	  case (info_level_medium):
+		  type |= MiniDumpWithDataSegs |
+			  MiniDumpWithPrivateReadWriteMemory |
+			  MiniDumpWithHandleData |
+			  MiniDumpWithFullMemoryInfo |
+			  MiniDumpWithThreadInfo |
+			  MiniDumpWithUnloadedModules;
+		  break;
+	  case (info_level_large):
+		  type |= MiniDumpWithDataSegs |
+			  MiniDumpWithPrivateReadWriteMemory |
+			  MiniDumpWithHandleData |
+			  MiniDumpWithFullMemory |
+			  MiniDumpWithFullMemoryInfo |
+			  MiniDumpWithThreadInfo |
+			  MiniDumpWithUnloadedModules |
+			  MiniDumpWithProcessThreadData;
+		  break;
     }
 
     int success;
@@ -174,5 +175,6 @@ int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
 int nsdebug_dump::save(const nsstring & fname, void * param, info_level ilevel)
 {
     return 0;
+	
 }
 #endif

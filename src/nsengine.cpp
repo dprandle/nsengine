@@ -128,10 +128,10 @@ bool nsengine::_destroy_factory(uint32 hashid)
 bool nsengine::destroy_system(uint32 type_id)
 {
     nssystem * sys = remove_system(type_id);
-
+	
     if (sys == NULL)
         return false;
-    delete sys;
+    delete sys;		
     return true;
 }
 
@@ -158,7 +158,7 @@ nssystem * nsengine::create_system(uint32 type_id)
         delete system;
         return NULL;
     }
-    system->init();
+    system->init();	
     return system;
 }
 

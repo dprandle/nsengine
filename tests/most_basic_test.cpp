@@ -35,34 +35,43 @@
 #include <nsgl_window.h>
 #include <nsscene_manager.h>
 
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <sndfile.h>
+#include <iostream>
+#include <nstypes.h>
+
 void setup_input_map(nsplugin * plg);
 
+uint32 al_buf_name, source;
 
 struct button_funcs
 {
     void on_new_game()
     {
-        if (nse.active_scene()->is_enabled())
-        {
-	          nse.active_scene()->enable(false);
-              //plg->enable(false);
-//            plg->save(scn);
-//            nse.set_active_scene(nullptr);
-//            plg->destroy(scn);
-//            scn = nullptr;
-            //can->enable(false);
-        }
-        else
-        {
-				nse.active_scene()->enable(true);
-			//plg->enable(true);
-			//can->enable(true);
-			//            scn = plg->load<nsscene>("new_scene.map",true);
-			//            nse.set_active_scene(scn);
-        }
+		alSourcePlay(source);
+//         if (nse.active_scene()->is_enabled())
+//         {
+// //	          nse.active_scene()->enable(false);
+//               //plg->enable(false);
+// //            plg->save(scn);
+// //            nse.set_active_scene(nullptr);
+// //            plg->destroy(scn);
+// //            scn = nullptr;
+//             //can->enable(false);
+//         }
+//         else
+//         {
+// //				nse.active_scene()->enable(true);
+// 			//plg->enable(true);
+// 			//can->enable(true);
+// 			//            scn = plg->load<nsscene>("new_scene.map",true);
+// 			//            nse.set_active_scene(scn);
+//         }
     }
 
     nsplugin * plg;
+	
     nsscene * scn;
     nsrouter * m_router;
     nsui_button_comp * btn;
@@ -78,9 +87,42 @@ struct button_funcs
 int main()
 {
 //    glfw_setup(ivec2(1920,1080) / 2, false, "Build And Battle 1.0.0");
+
+    ALCdevice *dev;
+    ALCcontext *ctx;
+
+    dev = alcOpenDevice(nullptr);
+    if(!dev)
+    {
+        fprintf(stderr, "Oops\n");
+        return 1;
+    }
+    ctx = alcCreateContext(dev, nullptr);
+    alcMakeContextCurrent(ctx);
+    if(!ctx)
+    {
+        fprintf(stderr, "Oops2\n");
+        return 1;
+    }
+
+    SF_INFO si = {};
+    SNDFILE * file = nullptr;
+    file = sf_open("import/example2.ogg", SFM_READ, &si);
+    if (file == nullptr)
+        std::cout << "Could not load file" << std::endl;
+    int16 * buffer = new int16[si.channels*si.frames];
+    sf_readf_short(file, buffer, si.frames);
+
+    alGenBuffers(1, &al_buf_name);
+
+    alBufferData(al_buf_name, AL_FORMAT_STEREO16, buffer, si.channels*si.frames*sizeof(int16), si.samplerate);
+
+    alGenSources(1, &source);
+	alSourcei(source, AL_BUFFER, al_buf_name);
+
     nsengine e;
     button_funcs bf;
-
+	
     bf.m_router = new nsrouter;
     e.init(new nsgl_driver);
 	
