@@ -20,7 +20,7 @@
 
 nsentity * get_entity(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsentity>(id.y);
@@ -42,7 +42,7 @@ entity_ptr_set nsentity_manager::entities(uint32 comp_type_id)
 	auto iter = m_id_resmap.begin();
 	while (iter != m_id_resmap.end())
 	{
-		nsentity * curEnt = get(iter->first);
+		nsentity * curEnt = get<nsentity>(iter->first);
 		if (curEnt->has(comp_type_id))
 			ret.emplace(curEnt);
 		++iter;

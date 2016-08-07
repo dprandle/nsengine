@@ -28,80 +28,32 @@ class nstex_manager : public nsasset_manager
 {
 public:
 
+	MANAGER_TEMPLATES
+	
 	nstex_manager();
 	~nstex_manager();
 
-	template <class res_type>
-	res_type * create(const nsstring & resName, nsasset * to_copy=nullptr)
-	{
-		return nsasset_manager::create<res_type>(resName, to_copy);
-	}
-
-	virtual nstex2d * create(const nsstring & resName, nsasset * to_copy=nullptr)
-	{
-		return create<nstex2d>(resName, to_copy); // Create 2d texture by default
-	}
-
-	template <class res_type, class T>
-	res_type * get(const T & rname)
-	{
-		return nsasset_manager::get<res_type>(rname);
-	}
-	
-	template<class T>
-	nstexture * get(const T & resname)
-	{
-		return get<nstexture>(resname);
-	}
-
-	template<class res_type>
-	res_type * load(const nsstring & fname, bool finalize_)
-	{
-		return nsasset_manager::load<res_type>(fname, finalize_);
-	}
-
-	nstexture * load(const nsstring & fname, bool finalize_);
-
 	nstexture * load(uint32 res_type_id, const nsstring & fname, bool finalize_);
 	
-	template<class res_type, class T >
-	res_type * remove(const T & rname)
-	{
-		return nsasset_manager::remove<res_type>(rname);
-	}
+	bool del(nsasset * res);
 
-	template<class T >
-	nstexture * remove(const T & rname)
-	{
-		return remove<nstexture>(rname);
-	}
-
-	template<class T>
-	bool save(const T & res_name, nsstring path="")
-	{
-		nsasset * res = get(res_name);
-		return save(res, path);
-	}
-
-	virtual bool del(nsasset * res);
-
-	virtual bool save(nsasset * res, const nsstring & path);
+	bool save(nsasset * res, const nsstring & path);
 	
-	virtual nstex_cubemap * load_cubemap(const nsstring & fname, const nsstring & cube_all_ext);
+	nstex_cubemap * load_cubemap(const nsstring & fname, const nsstring & cube_all_ext);
 
-	virtual nstex_cubemap * load_cubemap(const nsstring & pXPlus,
-									   const nsstring & pXMinus,
-									   const nsstring & pYPlus,
-									   const nsstring & pYMinus,
-									   const nsstring & pZPlus,
-									   const nsstring & pZMinus,
-									   const nsstring & fname);
+	nstex_cubemap * load_cubemap(const nsstring & pXPlus,
+								 const nsstring & pXMinus,
+								 const nsstring & pYPlus,
+								 const nsstring & pYMinus,
+								 const nsstring & pZPlus,
+								 const nsstring & pZMinus,
+								 const nsstring & fname);
 
-	virtual nstex2d * load_image(const nsstring & fname);
+	nstex2d * load_image(const nsstring & fname);
 
-	virtual bool save(nstex2d * image, const nsstring & path);
+	bool save_image(nstex2d * image, const nsstring & path);
 
-	virtual bool save(nstex_cubemap * cubemap, const nsstring & path);
+	bool save_cubemap(nstex_cubemap * cubemap, const nsstring & path);
 
 	bool vid_update_on_load;
 

@@ -27,11 +27,13 @@ class nstform_system : public nssystem
 
 	void init();
 
+	void release();
+
 	void toggle_debug_draw();
 
 	void update();
 
-	virtual int32 update_priority();
+	int32 update_priority();
 	
   private:
 

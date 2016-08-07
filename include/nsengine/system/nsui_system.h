@@ -35,15 +35,15 @@ class nsui_system : public nssystem
 
 	~nsui_system();
 
-	virtual void init();
+	void init();
 
 	void setup_input_map(nsinput_map * imap, const nsstring & global_imap_ctxt_name);
 
-	virtual void release();
+	void release();
 
 	nsentity * focused_ui_element();
 
-	virtual void update();
+	void update();
 
 	int32 update_priority();
 

@@ -23,11 +23,13 @@ public:
 
 	~nsanim_system();
 
-	virtual void init();
+	void init();
 
-	virtual void update();
+	void release();
 
-	virtual int32 update_priority();
+	void update();
+
+	int32 update_priority();
 
 };
 

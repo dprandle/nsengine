@@ -26,17 +26,17 @@ public:
 
 	virtual ~nssystem();
 
-	virtual void init()=0;
+	virtual void init() = 0;
 
-	virtual void release() {}
+	virtual void release() = 0;
 
 	virtual void update() = 0;
-
-	nsscene * active_scene();
 
 	virtual void set_active_scene(nsscene * active_scene);
 
 	virtual int32 update_priority() = 0;
+
+	nsscene * active_scene();
 
 	bool scene_error_check();
 

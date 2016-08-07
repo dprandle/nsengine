@@ -19,58 +19,15 @@
 nsentity * get_entity(const uivec2 & id);
 
 typedef std::set<nsentity*> entity_ptr_set;
+
 class nsentity_manager : public nsasset_manager
 {
-public:
+  public:
+
+	MANAGER_TEMPLATES
 	
 	nsentity_manager();
 	~nsentity_manager();
-
-	template <class res_type>
-	res_type * create(const nsstring & res_name, nsasset * to_copy=nullptr)
-	{
-		return nsasset_manager::create<res_type>(res_name, to_copy);
-	}
-
-	virtual nsentity * create(const nsstring & res_name, nsasset * to_copy=nullptr)
-	{
-		return create<nsentity>(res_name, to_copy);
-	}
-
-	template <class res_type, class T>
-	res_type * get(const T & res_name)
-	{
-		return nsasset_manager::get<res_type>(res_name);
-	}
-	
-	template<class T>
-	nsentity * get(const T & res_name)
-	{
-		return get<nsentity>(res_name);
-	}
-
-	template<class res_type>
-	res_type * load(const nsstring & fname, bool finalize_)
-	{
-		return nsasset_manager::load<res_type>(fname, finalize_);
-	}
-
-	nsentity * load(const nsstring & fname, bool finalize_)
-	{
-		return load<nsentity>(fname, finalize_);
-	}
-	
-	template<class res_type, class T >
-	res_type * remove(const T & res_name)
-	{
-		return nsasset_manager::remove<res_type>(res_name);
-	}
-
-	template<class T >
-	nsentity * remove(const T & res_name)
-	{
-		return remove<nsentity>(res_name);
-	}
 
 	template<class comp_type>
 	entity_ptr_set entities()

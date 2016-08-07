@@ -17,7 +17,7 @@
 #include "glew.h"
 #include "nsgl_object.h"
 #include "nstexture.h"
-#include "nsplugin_manager.h"
+#include <nsplugin_manager.h>
 
 struct nsgl_renderbuffer;
 
@@ -78,7 +78,7 @@ struct nsgl_framebuffer : public nsgl_obj
 		tex_params pms = tex_params(),
 		bool mipmaps=false)
 	{
-		nsplugin * plg = nsep.get(ENGINE_PLUG);
+		nsplugin * plg = nsep.get<nsplugin>(ENGINE_PLUG);
         tex_type * tex = plg->get<tex_type>(pName);
         if (tex == nullptr)
             tex = plg->create<tex_type>(pName);

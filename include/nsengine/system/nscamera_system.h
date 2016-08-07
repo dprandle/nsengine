@@ -83,7 +83,9 @@ class nscamera_system : public nssystem
 
 	void init();
 
-	virtual void update();
+	void release();
+
+	void update();
 
 	const camera_mode & mode() const;
 

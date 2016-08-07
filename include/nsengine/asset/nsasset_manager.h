@@ -23,6 +23,12 @@
 #define LOCAL_SCENE_DIR_DEFAULT "maps/"
 #define LOCAL_PLUGIN_DIR_DEFAULT "plugins/"
 #define LOCAL_FONT_DIR_DEFAULT "fonts/"
+#define LOCAL_AUDIO_DIR_DEFAULT "audio/"
+
+#define MANAGER_TEMPLATES using nsasset_manager::create; \
+	using nsasset_manager::get;						   \
+	using nsasset_manager::load;					   \
+	using nsasset_manager::remove;
 
 #include "nsengine.h"
 
@@ -35,7 +41,35 @@ public:
 	nsasset_manager(uint32 hashed_type);
 
 	virtual ~nsasset_manager();
-		
+
+	virtual bool add(nsasset * res);
+
+	virtual nsasset * create(uint32 res_type_id,
+							 const nsstring & res_name,
+							 nsasset * to_copy=nullptr);
+
+	virtual bool del(nsasset * res);
+
+	virtual nsasset * load(uint32 res_type_id, const nsstring & fname, bool finalize);
+	
+	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
+
+	virtual nsasset * remove(uint32 res_type_id);
+
+	virtual bool rename(const nsstring & oldName, const nsstring & newName);
+	
+	virtual bool save(nsasset * res, const nsstring & path);
+	
+	virtual void save_all(const nsstring & path="", nssave_resouces_callback * scallback = NULL);
+
+	virtual bool save_as(nsasset * res, const nsstring & fname);
+	
+	virtual void set_res_dir(const nsstring & pDirectory);
+
+	virtual void destroy_all();
+	
+	virtual bool destroy(nsasset * res);
+
 	enum s_mode
 	{
 		binary,
@@ -44,8 +78,6 @@ public:
 
 	typedef std::unordered_map<uint32, nsasset*> map_type;
 
-	virtual bool add(nsasset * res);
-
 	map_type::iterator begin();
 
 	template<class T>
@@ -53,12 +85,6 @@ public:
 	{
 		nsasset * res = get(resource);
 		return changed(res,fname);
-	}
-
-	template<class T>
-	bool copy(const T & to_copy, const nsstring & copy_name="")
-	{
-		return this->copy(get(to_copy), copy_name);
 	}
 	
 	template<class T>
@@ -73,14 +99,6 @@ public:
 		uint32 res_type_id = type_to_hash(res_type);
 		return static_cast<res_type*>(create(res_type_id, res_name, to_copy));
 	}
-	
-	// template <class res_type>
-	// res_type * create(const res_type & res_copy)
-	// {
-	// 	uint32 res_type_id = type_to_hash(res_type);
-	// 	return static_cast<res_type*>(create(res_type_id, res_name));
-	// }
-
 
 	template<class T>
 	bool del(const T & res_name)
@@ -130,19 +148,15 @@ public:
 		return save_as(res, fname);
 	}
 
-	virtual bool changed(nsasset * res, nsstring fname);
+	bool changed(nsasset * res, nsstring fname);
 
-	virtual bool contains(nsasset * res);
+	bool contains(nsasset * res);
 
 	uint32 count() const;
 
-	virtual nsasset * create(const nsstring & res_name, nsasset * to_copy)=0;
-
-	virtual nsasset * create(uint32 res_type_id, const nsstring & res_name, nsasset * to_copy=nullptr);
-
-	nsasset * create(const nsstring & guid_, const nsstring & res_name, nsasset * to_copy=nullptr);
-
-	virtual bool del(nsasset * res);
+	nsasset * create(const nsstring & guid_,
+					 const nsstring & res_name,
+					 nsasset * to_copy=nullptr);
 
 	map_type::iterator end();
 
@@ -152,53 +166,31 @@ public:
 
 	void finalize_all();
 
-	virtual nsasset * get(uint32 resid);
+	nsasset * get(uint32 resid);
 
-	virtual nsasset * get(const nsstring & res_name);
+	nsasset * get(const nsstring & res_name);
 
-	virtual nsasset * get(nsasset * res);
+	nsasset * get(nsasset * res);
 
-	virtual const nsstring & res_dir();
+	const nsstring & res_dir();
 
 	const nsstring & local_dir();
 
 	uint32 plugin_id();
-
-	virtual nsasset * load(const nsstring & fname, bool finalize) = 0;
-	
-	virtual nsasset * load(uint32 res_type_id, const nsstring & fname, bool finalize);
 	
 	nsasset * load(const nsstring & res_guid, const nsstring & fname, bool finalize);
+
+	nsasset * remove(const nsstring & res_name);
 	
-	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
-
-	virtual nsasset * remove(uint32 res_type_id);
-
-	virtual nsasset * remove(const nsstring & res_name);
-	
-	virtual nsasset * remove(nsasset * res);
-
-	virtual bool rename(const nsstring & oldName, const nsstring & newName);
-	
-	virtual bool save(nsasset * res,const nsstring & path);
-
-	virtual void save_all(const nsstring & path="", nssave_resouces_callback * scallback = NULL);
-
-	virtual bool save_as(nsasset * res, const nsstring & fname);
+	nsasset * remove(nsasset * res);
 
 	void set_plugin_id(uint32 plugid);
-	
-	virtual void set_res_dir(const nsstring & pDirectory);
 
 	void set_local_dir(const nsstring & pDirectory);
 
 	s_mode save_mode() const;
 
 	void set_save_mode(s_mode sm);
-
-	virtual void destroy_all();
-	
-	virtual bool destroy(nsasset * res);
 
 	static nsstring name_from_filename(const nsstring & fname);
 

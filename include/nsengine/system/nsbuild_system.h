@@ -76,7 +76,9 @@ public:
 
 	const mode_t & mode() const;
 
-	virtual void init();
+	void init();
+
+	void release();
 
 	bool enabled() const;
 

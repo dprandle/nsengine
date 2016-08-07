@@ -17,7 +17,7 @@
 
 nsmesh * get_mesh(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsmesh>(id.y);
@@ -33,11 +33,6 @@ nsmesh_manager::nsmesh_manager():
 nsmesh_manager::~nsmesh_manager()
 {}
 
-nsmesh * nsmesh_manager::load(const nsstring & fname, bool finalize_)
-{
-	return load<nsmesh>(fname, finalize_);
-}
-
 nsmesh * nsmesh_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize)
 {
 	nsmesh * msh = (nsmesh*)nsasset_manager::load(res_type_id,fname,finalize);
@@ -51,7 +46,7 @@ nsmesh * nsmesh_manager::load(uint32 res_type_id, const nsstring & fname, bool f
 
 nsmesh* nsmesh_manager::assimp_load_mesh(const aiScene * scene, const nsstring & pMeshName)
 {
-	nsmesh * mesh = create(pMeshName);
+	nsmesh * mesh = create<nsmesh>(pMeshName);
 	_assimp_load_submeshes(mesh, scene);
 	_assimp_load_node_heirarchy(mesh,scene->mRootNode);
 	mesh->calc_aabb();

@@ -370,6 +370,11 @@ void nsinput_system::init()
     register_handler(nsinput_system::mouse_move_event);
 }
 
+void nsinput_system::release()
+{
+	
+}
+
 int32 nsinput_system::update_priority()
 {
 	return INP_SYS_UPDATE_PR;

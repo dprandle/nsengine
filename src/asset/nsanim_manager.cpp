@@ -21,7 +21,7 @@
 
 nsanim_set * get_anim_set(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsanim_set>(id.y);
@@ -38,7 +38,7 @@ nsanim_manager::~nsanim_manager()
 
 nsanim_set * nsanim_manager::assimp_load_anim_set(const aiScene * pScene, const nsstring & pSceneName)
 {
-	nsanim_set * animSet = create(pSceneName);
+	nsanim_set * animSet = create<nsanim_set>(pSceneName);
 	for (uint32 i = 0; i < pScene->mNumAnimations; ++i)
 	{
 		nsstringstream ss;

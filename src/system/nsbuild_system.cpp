@@ -340,6 +340,9 @@ void nsbuild_system::init()
 	register_handler(nsbuild_system::_handle_mouse_move_event);
 }
 
+void nsbuild_system::release()
+{}
+
 bool nsbuild_system::enabled() const
 {
 	return m_enabled;

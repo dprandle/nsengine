@@ -70,6 +70,11 @@ void nscamera_system::init()
 	register_action_handler(nscamera_system::_handle_camera_toggle_mode, NSCAM_TOGGLEMODE);
 }
 
+void nscamera_system::release()
+{
+	
+}
+
 void nscamera_system::change_sensitivity(float pAmount, const sensitivity_t & pWhich)
 {
 	if (pWhich == sens_turn)

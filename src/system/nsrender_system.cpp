@@ -45,6 +45,11 @@ void nstform_system::init()
 	register_action_handler(nstform_system::_handle_viewport_change, VIEWPORT_CHANGE);
 }
 
+void nstform_system::release()
+{
+	
+}
+
 void nstform_system::update()
 {
 	if (scene_error_check())
@@ -85,7 +90,7 @@ void nstform_system::update()
 
 int32 nstform_system::update_priority()
 {
-	return RENDER_SYS_UPDATE_PR;
+	return TFORM_SYS_UPDATE_PR;
 }
 
 bool nstform_system::_handle_window_resize(window_resize_event * evt)

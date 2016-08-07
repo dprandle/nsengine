@@ -34,8 +34,10 @@ nsanim_system::~nsanim_system()
 {}
 
 void nsanim_system::init()
-{
-}
+{}
+
+void nsanim_system::release()
+{}
 
 void nsanim_system::update()
 {

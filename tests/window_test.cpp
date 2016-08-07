@@ -72,7 +72,7 @@ int main()
 	bf.wind = &wind;
 
 
-	nsplugin * plg = nsep.create("most_basic_test");
+	nsplugin * plg = nsep.create<nsplugin>("most_basic_test");
     plg->enable(true);
 
 	nstex2d * tx = plg->load<nstex2d>("./import/bbicon.png", true);

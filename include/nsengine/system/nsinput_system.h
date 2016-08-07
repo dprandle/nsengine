@@ -26,7 +26,7 @@ public:
 
 	nsinput_system();
 
-	virtual ~nsinput_system();
+	~nsinput_system();
 
 	const fvec2 & cursor_pos();
 
@@ -38,15 +38,17 @@ public:
 
 	bool mouse_scroll_event(nsmouse_scroll_event * evnt);
 	
-	virtual void init();
+	void init();
+
+	void release();
 
 	void set_input_map(const uivec2 & resid);
 
 	const uivec2 & input_map();
 
-	virtual void update();
+	void update();
 
-	virtual int32 update_priority();
+	int32 update_priority();
 
 	void clear_contexts();
 

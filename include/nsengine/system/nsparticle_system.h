@@ -23,17 +23,19 @@ class nsshader;
 
 class nsparticle_system : public nssystem
 {
-public:
-
+  public:
+	
 	nsparticle_system();
 
 	~nsparticle_system();
 
-	virtual int32 update_priority();
+	void init();
 
-	virtual void init();
+	void release();
 
-	virtual void update();
+	void update();
+
+	int32 update_priority();
 };
 
 #endif

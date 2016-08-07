@@ -17,7 +17,7 @@
 
 nsshader * get_shader(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsshader>(id.y);
@@ -40,9 +40,4 @@ nsshader * nsshader_manager::load(uint32 res_type_id, const nsstring & fname, bo
 	if (vid_update_on_load)
 		shdr->video_update();
 	return shdr;
-}
-
-nsshader * nsshader_manager::load(const nsstring & fname, bool finalize_)
-{
-	return load<nsshader>(fname, finalize_);
 }

@@ -20,7 +20,7 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 
 nsscene * get_scene(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsscene>(id.y);

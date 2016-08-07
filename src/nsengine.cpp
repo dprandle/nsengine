@@ -58,6 +58,10 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nsrender_comp.h>
 #include <nsui_comp.h>
 #include <nsfont_manager.h>
+#include <nsaudio_system.h>
+#include <nsaudio_manager.h>
+
+
 
 #ifdef NSDEBUG
 #include <nsdebug.h>
@@ -232,7 +236,7 @@ void nsengine::name_change(const uivec2 & oldid, const uivec2 newid)
 
 nsplugin * nsengine::core()
 {
-    return m_plugins->get(ENGINE_PLUG);
+    return m_plugins->get<nsplugin>(ENGINE_PLUG);
 }
 
 nsplugin_manager * nsengine::plugins()
@@ -309,7 +313,7 @@ void nsengine::init(nsvideo_driver * drvr)
     m_plugins = new nsplugin_manager;
     m_plugins->set_res_dir(m_cwd);
 
-    nsplugin * plg = m_plugins->create(ENGINE_PLUG);
+    nsplugin * plg = m_plugins->create<nsplugin>(ENGINE_PLUG);
     plg->init();
     plg->enable(true);
     plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
@@ -551,6 +555,7 @@ void nsengine::_init_factories()
     register_system<nstform_system>("nsrender_system");
     register_system<nsselection_system>("nsselection_system");
     register_system<nsui_system>("nsui_system");
+	register_system<nsaudio_system>("nsaudio_system");
 
     register_manager<nsanim_manager>("nsanim_manager");
     register_manager<nsentity_manager>("nsentity_manager");
@@ -562,6 +567,7 @@ void nsengine::_init_factories()
     register_manager<nsinput_map_manager>("nsinput_map_manager");
     register_manager<nsplugin_manager>("nsplugin_manager");
     register_manager<nsfont_manager>("nsfont_manager");
+	register_manager<nsaudio_manager>("nsaudio_manager");
 
     register_resource<nsanim_set, nsanim_manager>("nsanim_set");
     register_resource<nsentity, nsentity_manager>("nsentity");
@@ -578,6 +584,7 @@ void nsengine::_init_factories()
     register_resource<nsshader, nsshader_manager>("nsshader");
     register_resource<nsfont, nsfont_manager>("nsfont");
     register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
+	register_resource<nsaudio_clip, nsaudio_manager>("nsaudio_clip");
 }
 
 void nsengine::_destroy_factories()
@@ -601,7 +608,7 @@ nsasset * get_asset(uint32 res_type, const uivec2 & res_id)
     if (res_type == type_to_hash(nsplugin))
         return nsep.get(res_id.y);
 
-    nsplugin * plg = nsep.get(res_id.x);
+    nsplugin * plg = nsep.get<nsplugin>(res_id.x);
     if (plg == nullptr)
         return nullptr;
 

@@ -22,7 +22,7 @@ This file contains all of the neccessary definitions for the nsplugin_manager cl
 
 nsplugin * get_plugin(uint32 id)
 {
-	return nsep.get(id);
+	return nsep.get<nsplugin>(id);
 }
 
 nsplugin_manager::nsplugin_manager() :

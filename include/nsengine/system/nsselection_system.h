@@ -76,14 +76,15 @@ public:
 
 	bool mirror_selection_enabled();
 
-	virtual int32 update_priority();
+	int32 update_priority();
 
 	uivec3 pick(float mousex, float mousey);
 
 	uivec3 pick(const fvec2 & mpos);
 
-	virtual void init();
+	void init();
 
+	void release();
 //	bool valid_brush();
 
 	bool valid_tile_swap();

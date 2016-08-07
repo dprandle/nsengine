@@ -41,6 +41,12 @@ nsparticle_system::~nsparticle_system()
 
 void nsparticle_system::init()
 {
+	
+}
+
+void nsparticle_system::release()
+{
+	
 }
 
 int32 nsparticle_system::update_priority()

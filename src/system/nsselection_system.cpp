@@ -508,6 +508,11 @@ void nsselection_system::init()
 	register_handler(nsselection_system::_handle_scene_ent_removed);
 }
 
+void nsselection_system::release()
+{
+	
+}
+
 int32 nsselection_system::update_priority()
 {
 	return SEL_SYS_UPDATE_PR;

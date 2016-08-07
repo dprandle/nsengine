@@ -1366,7 +1366,7 @@ bool nsplugin::parents_enabled()
 	auto piter = m_parents.begin();
 	while (piter != m_parents.end())
 	{
-		nsplugin * parent = nsep.get(*piter);
+		nsplugin * parent = nsep.get<nsplugin>(*piter);
 		if (parent == NULL || !parent->is_enabled())
 			return false;
 		++piter;
@@ -1383,7 +1383,7 @@ void nsplugin::destroy_all()
     auto ent_iter = emgr->begin();
     while (ent_iter != emgr->end())
     {
-        nsentity * cur_ent = emgr->get(ent_iter->first);
+        nsentity * cur_ent = emgr->get<nsentity>(ent_iter->first);
 		nscomponent * cmp = cur_ent->get<nsui_canvas_comp>();
 		
 		if (cmp != nullptr)

@@ -18,7 +18,7 @@
 
 nsmaterial * get_material(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsmaterial>(id.y);
@@ -36,8 +36,8 @@ nsmat_manager::~nsmat_manager()
 
 nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, const aiMaterial * pAIMat, const nsstring & pTexDir)
 {
-	nsmaterial * mat = create(pMaterialName);
-	nsplugin * plg = nsep.get(m_plugin_id);
+	nsmaterial * mat = create<nsmaterial>(pMaterialName);
+	nsplugin * plg = get_plugin(m_plugin_id);
 	nstex_manager * texmanager = plg->manager<nstex_manager>();
 	
 	bool ret = false;
@@ -82,7 +82,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -107,7 +107,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -132,7 +132,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -157,7 +157,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -182,7 +182,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -207,7 +207,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -232,7 +232,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -257,7 +257,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -282,7 +282,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -307,7 +307,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{
@@ -332,7 +332,7 @@ nsmaterial* nsmat_manager::assimp_load_material(const nsstring & pMaterialName, 
 				lookName = texName.substr(0, extPos);
 				nstexture * tex = texmanager->load_image(pTexDir + texName);
 				if (tex == NULL)
-					tex = texmanager->get(lookName);
+					tex = texmanager->get<nstexture>(lookName);
 
 				if (tex != NULL)
 				{

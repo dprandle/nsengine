@@ -22,7 +22,7 @@ FT_LibraryRec_ * ftlib = nullptr;
 
 nsfont * get_font(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = nsep.get<nsplugin>(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nsfont>(id.y);
@@ -90,7 +90,7 @@ nsfont * nsfont_manager::load(uint32 res_type_id, const nsstring & fname, bool f
 
 nsfont * nsfont_manager::import(const nsstring & fname)
 {
-	nsfont * new_fnt = create(name_from_filename(fname));
+	nsfont * new_fnt = nsasset_manager::create<nsfont>(name_from_filename(fname));
 	if (new_fnt == nullptr)
 		return nullptr;
 
@@ -135,7 +135,7 @@ bool nsfont_manager::_load_font_faces(nsfont * fnt)
 
 	nsstring tex_name(fnt->m_faces.back().ft_face->family_name);
 	tex_name += " " + nsstring(fnt->m_faces.back().ft_face->style_name);
-	fnt->m_faces.back().atlas = nsep.get(m_plugin_id)->create<nstex2d>(tex_name);
+	fnt->m_faces.back().atlas = get_plugin(m_plugin_id)->create<nstex2d>(tex_name);
 	fnt->m_faces.back().atlas->set_format(tex_red);
 	fnt->m_faces.back().atlas->set_component_data_type(tex_u8);
 	fnt->m_faces.back().atlas->enable_group_save(false);
@@ -167,7 +167,7 @@ bool nsfont_manager::_load_font_faces(nsfont * fnt)
 
 		nsstring tex_name(fnt->m_faces.back().ft_face->family_name);
 		tex_name += " " + nsstring(fnt->m_faces.back().ft_face->style_name);
-		fnt->m_faces.back().atlas = nsep.get(m_plugin_id)->create<nstex2d>(tex_name);
+		fnt->m_faces.back().atlas = get_plugin(m_plugin_id)->create<nstex2d>(tex_name);
 		fnt->m_faces.back().atlas->set_format(tex_red);
 		fnt->m_faces.back().atlas->set_component_data_type(tex_u8);
 		fnt->m_faces.back().atlas->enable_group_save(false);

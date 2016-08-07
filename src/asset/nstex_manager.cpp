@@ -22,7 +22,7 @@
 
 nstexture * get_texture(const uivec2 & id)
 {
-	nsplugin * plg = nsep.get(id.x);
+	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
 	return plg->get<nstexture>(id.y);
@@ -38,11 +38,6 @@ nstex_manager::nstex_manager():
 
 nstex_manager::~nstex_manager()
 {}
-
-nstexture * nstex_manager::load(const nsstring & fname, bool finalize_)
-{
-	return load<nstexture>(fname, finalize_);
-}
 
 nstexture * nstex_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize_)
 {
@@ -313,14 +308,14 @@ bool nstex_manager::save(nsasset * res, const nsstring & path)
 	nstex_cubemap * castedCube = dynamic_cast<nstex_cubemap*>(res);
 	
 	if (castedCube != NULL)
-		return save(castedCube, path);
+		return save_cubemap(castedCube, path);
 	else if (casted2d != NULL)
-		return save(casted2d, path);
+		return save_image(casted2d, path);
 	else
 		return nsasset_manager::save(res, path);
 }
 
-bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
+bool nstex_manager::save_cubemap(nstex_cubemap * cubemap, const nsstring & path)
 {
 	if (cubemap == NULL)
 	{
@@ -435,7 +430,7 @@ bool nstex_manager::save(nstex_cubemap * cubemap, const nsstring & path)
 	}
 }
 
-bool nstex_manager::save(nstex2d * image, const nsstring & path)
+bool nstex_manager::save_image(nstex2d * image, const nsstring & path)
 {
 	if (image == NULL)
 		return false;
