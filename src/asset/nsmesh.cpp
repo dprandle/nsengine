@@ -745,7 +745,7 @@ nsmesh_plane::~nsmesh_plane()
 void nsmesh_plane::init()
 {
 	submesh * smsh = create();
-	smsh->m_prim_type = prim_triangles;
+	smsh->m_prim_type = prim_triangle_strip;
 	
 	smsh->m_verts.push_back(fvec3(-1,-1,0));
 	smsh->m_verts.push_back(fvec3(-1,1,0));

@@ -15,9 +15,21 @@
 
 #include "nscomponent.h"
 
+class nstex2d;
+
+struct sprite_animation
+{
+	nsstring name;
+	uint32 hashed_name;
+	nstex2d * tex;
+	fvec4_vector frames;
+	float duration;
+};
+
 class nssprite_sheet_comp : public nscomponent
 {
 public:
+
 	template <class PUPer>
 	friend void pup(PUPer & p, nssprite_sheet_comp & tc);
 
@@ -34,6 +46,13 @@ public:
 
 	nssprite_sheet_comp & operator=(nssprite_sheet_comp rhs_);
 
+	float elapsed;
+
+	std::vector<sprite_animation> animations;
+
+	uint32 current_anim;
+	bool loop;
+	bool playing;
 };
 
 template <class PUPer>

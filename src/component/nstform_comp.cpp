@@ -154,7 +154,7 @@ instance_tform & instance_tform::operator=(instance_tform rhs)
 
 void instance_tform::add_child(instance_tform * child, bool keep_world_transform)
 {
-	if (m_owner != child->m_owner)
+    if (m_owner->scene != child->m_owner->scene)
 		return;
 	
 	if (has_child(child))

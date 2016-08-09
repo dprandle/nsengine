@@ -358,6 +358,24 @@ void gbuffer_render_pass::render()
 		if (dc->transparent_picking)
 			ent_id = 0;
 
+		if (dc->mat != nullptr)
+		{
+			tex_map_info tmi = dc->mat->mat_tex_info(nsmaterial::diffuse);
+			gl_shdr->set_uniform("tex_coord_rect_d", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_d", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_d", tmi.color_add);
+
+			tmi = dc->mat->mat_tex_info(nsmaterial::normal);
+			gl_shdr->set_uniform("tex_coord_rect_n", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_n", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_n", tmi.color_add);
+
+			tmi = dc->mat->mat_tex_info(nsmaterial::opacity);
+			gl_shdr->set_uniform("tex_coord_rect_o", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_o", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_o", tmi.color_add);
+		}
+
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
 		gl_shdr->set_uniform("entityID", ent_id);
 		gl_shdr->set_uniform("pluginID", dc->plugin_id);
@@ -414,6 +432,24 @@ void oit_render_pass::render()
 		gl_shdr->set_uniform("fragColOut", dc->mat->color());
 		gl_shdr->set_uniform("force_alpha", dc->mat->using_alpha_from_color());
 		gl_shdr->set_uniform("material_id",  dc->mat_index);
+
+		if (dc->mat != nullptr)
+		{
+			tex_map_info tmi = dc->mat->mat_tex_info(nsmaterial::diffuse);
+			gl_shdr->set_uniform("tex_coord_rect_d", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_d", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_d", tmi.color_add);
+
+			tmi = dc->mat->mat_tex_info(nsmaterial::normal);
+			gl_shdr->set_uniform("tex_coord_rect_n", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_n", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_n", tmi.color_add);
+
+			tmi = dc->mat->mat_tex_info(nsmaterial::opacity);
+			gl_shdr->set_uniform("tex_coord_rect_o", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_o", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_o", tmi.color_add);
+		}
 
 		uint32 ent_id = dc->entity_id;
 		if (dc->transparent_picking)

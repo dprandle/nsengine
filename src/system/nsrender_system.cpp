@@ -50,6 +50,13 @@ void nstform_system::release()
 	
 }
 
+void nstform_system::setup_input_map(nsinput_map * im, const nsstring & global_ctxt)
+{
+	nsinput_map::trigger change_vp(VIEWPORT_CHANGE, nsinput_map::t_pressed);
+    change_vp.add_key_mod(nsinput_map::key_any);
+    im->add_mouse_trigger(global_ctxt, nsinput_map::left_button, change_vp);
+}
+
 void nstform_system::update()
 {
 	if (scene_error_check())

@@ -27,6 +27,8 @@ class nstform_system : public nssystem
 
 	void init();
 
+	void setup_input_map(nsinput_map * im, const nsstring & global_ctxt);
+
 	void release();
 
 	void toggle_debug_draw();

@@ -9,6 +9,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <nssprite_comp.h>
 #include <nsui_button_comp.h>
 #include <nsui_canvas_comp.h>
 #include <nsrect_tform_comp.h>
@@ -546,6 +547,7 @@ void nsengine::_init_factories()
     register_component<nsui_text_comp>("nsui_text_comp");
     register_component<nsui_canvas_comp>("nsui_canvas_comp");
     register_component<nsui_button_comp>("nsui_button_comp");
+	register_component<nssprite_sheet_comp>("nssprite_sheet_comp");
 
     register_system<nsanim_system>("nsanim_system");
     register_system<nsbuild_system>("nsbuild_system");

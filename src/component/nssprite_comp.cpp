@@ -14,11 +14,19 @@ This file contains all of the neccessary definitions for the nssprite_comp class
 #include <nsentity.h>
 
 nssprite_sheet_comp::nssprite_sheet_comp() :
-	nscomponent(type_to_hash(nssprite_sheet_comp))
+	nscomponent(type_to_hash(nssprite_sheet_comp)),
+	elapsed(0.0f),
+	current_anim(0),
+	loop(false),
+	playing(false)
 {}
 
 nssprite_sheet_comp::nssprite_sheet_comp(const nssprite_sheet_comp & copy):
-	nscomponent(copy)
+	nscomponent(copy),
+	elapsed(copy.elapsed),
+	current_anim(copy.current_anim),
+	loop(copy.loop),
+	playing(copy.playing)
 {}
 
 nssprite_sheet_comp::~nssprite_sheet_comp()

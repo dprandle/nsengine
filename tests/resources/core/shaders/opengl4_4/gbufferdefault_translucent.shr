@@ -132,6 +132,20 @@ uniform vec4 viewport;
 uniform sampler2D diffuseMap;
 uniform sampler2D opacityMap;
 uniform sampler2D normalMap;
+
+uniform vec4 tex_coord_rect_d;
+uniform vec4 tex_coord_rect_o;
+uniform vec4 tex_coord_rect_n;
+
+uniform vec4 color_add_d;
+uniform vec4 color_mult_d;
+
+uniform vec4 color_add_n;
+uniform vec4 color_mult_n;
+
+uniform vec4 color_add_o;
+uniform vec4 color_mult_o;
+
 uniform uint material_id;
 uniform bool colorMode;
 uniform bool force_alpha;
@@ -142,6 +156,14 @@ uniform bool hasOpacityMap;
 uniform bool hasHeightMap;
 uniform uint entityID;
 uniform uint pluginID;
+
+vec2 adj_tex_coords(vec4 rect)
+{
+	vec2 texc;
+	texc.x = texCoords.x * (rect.z - rect.x) + rect.x;
+	texc.y = texCoords.y * (rect.w - rect.y) + rect.y;
+	return texc;
+}
 
 uint pack_color(vec4 color)
 {
@@ -184,7 +206,7 @@ vec3 calculateNormalMap()
 		vec3 tang = normalize(tangent);
 		tang = normalize(tang - dot(tang, norm) * norm);
 		vec3 biTangent = cross(tang, norm);
-		vec3 bmNormal = texture(normalMap, texCoords).xyz;
+		vec3 bmNormal = (texture(normalMap, adj_tex_coords(tex_coord_rect_n))*color_mult_n + color_add_n).xyz;
 		bmNormal = 2.0 * bmNormal - vec3(1.0, 1.0, 1.0);
 		vec3 nNormal;
 		mat3 transBumpMap = mat3(tang, biTangent, norm);
@@ -206,11 +228,11 @@ void main()
 		if (hasHeightMap)
 			fdata.color = texture(diffuseMap, vec2(worldPos.xy)/20);
 		else
-			fdata.color = texture(diffuseMap, texCoords);
+			fdata.color = texture(diffuseMap, adj_tex_coords(tex_coord_rect_d)) * color_mult_d + color_add_d;
 	}
 
 	if (hasOpacityMap)
-		fdata.color.a = texture(opacityMap, texCoords).a;
+		fdata.color.a = (texture(opacityMap, adj_tex_coords(tex_coord_rect_o)) * color_mult_o + color_add_o).a;
 
 	if (force_alpha)
 		fdata.color.a = fragColOut.a;
