@@ -19,11 +19,14 @@ class nstex2d;
 
 struct sprite_animation
 {
+	sprite_animation();
+	
 	nsstring name;
 	uint32 hashed_name;
 	nstex2d * tex;
 	fvec4_vector frames;
 	float duration;
+	uint32 current_frame;
 };
 
 class nssprite_sheet_comp : public nscomponent

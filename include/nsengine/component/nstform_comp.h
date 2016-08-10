@@ -41,6 +41,32 @@ struct instance_handle
 	uint32 ind;
 };
 
+struct accel_over_time
+{
+	accel_over_time(fvec3 accel_=fvec3(), float duration_=0.0f):
+		accel(accel_),
+        duration(duration_),
+        elapsed(0.0f)
+	{}
+	
+	fvec3 accel;
+	float duration;
+	float elapsed;
+};
+
+struct physic_instance
+{
+	physic_instance():
+		velocity(),
+		accels()
+	{
+		accels.reserve(32);
+	}
+	
+	fvec3 velocity;
+	std::vector<accel_over_time> accels;
+};
+
 struct instance_tform
 {
 	template <class PUPer>
@@ -59,6 +85,7 @@ struct instance_tform
 
 	bool update;
 	bool snap_to_grid;
+	physic_instance phys;
 
     void add_child(instance_tform * child, bool keep_world_transform);
 	
@@ -124,6 +151,7 @@ struct instance_tform
 	
 	const fmat4 & local_inv_tf() const;
 
+
   private:
 
 	tform_per_scene_info * m_owner;
@@ -143,6 +171,21 @@ struct instance_tform
 };
 
 template <class PUPer>
+void pup(PUPer & p, accel_over_time & iv, const nsstring & var_name)
+{
+	pup(p, iv.accel, var_name + ".accel");
+	pup(p, iv.duration, var_name + ".duration");
+	pup(p, iv.elapsed, var_name + ".elapsed");
+}
+
+template <class PUPer>
+void pup(PUPer & p, physic_instance & iv, const nsstring & var_name)
+{
+	pup(p, iv.velocity, var_name + ".velocity");
+	pup(p, iv.accels, var_name + ".accels");
+}
+
+template <class PUPer>
 void pup(PUPer & p, instance_tform & iv, const nsstring & var_name)
 {
 	pup(p, iv.m_hidden_state, var_name + ".hidden_state");
@@ -150,6 +193,7 @@ void pup(PUPer & p, instance_tform & iv, const nsstring & var_name)
 	pup(p, iv.m_position, var_name + ".position");
 	pup(p, iv.m_scaling, var_name + ".scaling");
 	pup(p, iv.snap_to_grid, var_name + ".snap_to_grid");
+	pup(p, iv.phys, var_name + ".phys");
 }
 
 typedef std::vector<instance_tform> instance_vec;

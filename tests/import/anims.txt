@@ -1,0 +1,3 @@
+486 by 709 right walk
+495 by 713 left walk
+492 by 708 idle

@@ -13,6 +13,15 @@ This file contains all of the neccessary definitions for the nssprite_comp class
 #include <nssprite_comp.h>
 #include <nsentity.h>
 
+sprite_animation::sprite_animation():
+	name(),
+	hashed_name(0),
+	tex(nullptr),
+	frames(),
+	duration(0.0f),
+	current_frame(0)
+{}
+
 nssprite_sheet_comp::nssprite_sheet_comp() :
 	nscomponent(type_to_hash(nssprite_sheet_comp)),
 	elapsed(0.0f),

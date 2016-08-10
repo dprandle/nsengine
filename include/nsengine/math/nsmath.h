@@ -153,7 +153,6 @@ typedef nsmat4<float> fmat4;
 typedef nsmat4<double> mat4;
 typedef nsmat4<ldouble> ldmat4;
 
-
 template<class T>
 T degrees(const T & val_)
 {
@@ -164,6 +163,109 @@ template<class T>
 T radians(const T & val_)
 {
 	return (PI / 180) * val_;
+}
+
+template<class T>
+struct nsbox
+{
+	nsbox<T>(const nsvec3<T> & min_=nsvec3<T>(), const nsvec3<T> & max_=nsvec3<T>()):
+	min(min_),
+		max(max_)
+	{}
+	
+	nsvec3<T> min;
+	nsvec3<T> max;
+
+	nsbox<T> operator+(const nsvec3<T> & rhs)
+	{
+		return nsbox<T>(min+rhs,max+rhs);
+	}
+
+	nsbox<T> operator-(const nsvec3<T> & rhs)
+	{
+		return nsbox<T>(min-rhs,max-rhs);		
+	}
+
+	nsbox<T> & operator+=(const nsvec3<T> & rhs)
+	{
+		min+=rhs;
+		max+=rhs;
+		return *this;
+	}
+	
+	nsbox<T> & operator-=(const nsvec3<T> & rhs)
+	{
+		min-=rhs;
+		max-=rhs;
+		return *this;		
+	}
+};
+
+typedef nsbox<char> cbox;
+typedef nsbox<char16> c16box;
+typedef nsbox<char32> c32box;
+typedef nsbox<wchar> cwbox;
+typedef nsbox<int8> i8box;
+typedef nsbox<int16> i16box;
+typedef nsbox<int32> ibox;
+typedef nsbox<int64> i64box;
+typedef nsbox<uint8> ui8box;
+typedef nsbox<uint16> ui16box;
+typedef nsbox<uint32> uibox;
+typedef nsbox<uint64> ui64box;
+typedef nsbox<float> fbox;
+typedef nsbox<double> dbox;
+typedef nsbox<ldouble> ldbox;
+
+template<class T>
+int collision_plane_sphere(const nsvec4<T> & plane, const nsvec4<T> & sphere)
+{
+	T dotp = dot(plane.xyz(), sphere.xyz()) - plane.w; 
+    if(dotp > sphere.w)
+        return 1; // The sphere is in front of the plane
+    else if(dotp < -sphere.w)
+        return 2; // The sphere is behind the plane
+    return 3; // The sphere collides/straddles with the plane
+}
+
+template<class T>
+int collision_plane_aabb(const nsvec4<T> & plane, const nsbox<T> & aabb)
+{
+    // Get the Extense vector
+	
+    nsvec3<T> ext = (aabb.max - aabb.min)/2.0f;
+    
+    // Get the center of the Box
+    nsvec3<T> center = aabb.min + ext;
+
+	nsvec3<T> norm = plane.xyz();
+	
+    // Dot Product between the plane normal and the center of the Axis Aligned Box
+    // using absolute values
+    float rad = abs(norm.x*ext.x) + abs(norm.y*ext.y) + abs(norm.z*ext.z);
+ 
+    nsvec4<T> sphere(center,rad);
+    return collision_plane_sphere(plane, sphere);
+}
+
+template<class T>
+bool collision_aabb_aabb(const nsbox<T> & aabb1, const nsbox<T> & aabb2)
+{
+    //Check if Box1's max is greater than Box2's min and Box1's min is less than Box2's max
+    return(
+		aabb1.max.x > aabb2.min.x &&
+		aabb1.min.x < aabb2.max.x &&
+		aabb1.max.y > aabb2.min.y &&
+		aabb1.min.y < aabb2.max.y &&
+		aabb1.max.z > aabb2.min.z &&
+		aabb1.min.z < aabb2.max.z);
+}
+
+template<class T>
+bool collision_sphere_sphere(const nsvec4<T> & sphere1, const nsvec4<T> & sphere2)
+{
+	float dist = (sphere2 - sphere1).xyz().length_sq();
+	return dist <= sphere2.w*sphere2.w + sphere1.w*sphere1.w;
 }
 
 #include <vector>

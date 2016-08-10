@@ -1275,14 +1275,22 @@ void nsselection_system::update()
 	while (iter != m_selected_ents.end())
 	{
 		nssel_comp * sc = (*iter)->get<nssel_comp>();
+		sel_per_scene_info * psi = sc->scene_info(m_active_scene);
 		nstform_comp * tc = (*iter)->get<nstform_comp>();
 		if (sc->update_posted() || tc->update_posted())
 		{
-			sel_per_scene_info * psi = sc->scene_info(m_active_scene);
 			psi->video_update();
 			sc->post_update(false);
 		}
-		++iter;
+		if (psi->m_selection.empty())
+		{
+			psi->m_selected = false;
+			iter = m_selected_ents.erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
 	}
 }
 
