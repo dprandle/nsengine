@@ -28,6 +28,7 @@
 #include <nsoccupy_comp.h>
 #include <nsplugin_manager.h>
 #include <nslight_comp.h>
+#include <nscube_grid.h>
 
 nsscene::nsscene():
 	nsasset(type_to_hash(nsscene)),
@@ -36,8 +37,9 @@ nsscene::nsscene():
 	m_bg_color(),
 	m_notes(),
 	m_creator(),
-	m_tile_grid(new nstile_grid()),
 	m_enabled(false),
+	m_tile_grid(new nstile_grid()),
+	cube_grid(new nscube_grid()),
 	m_ents_by_comp(),
 	m_unloaded_tforms()
 {
@@ -54,6 +56,7 @@ nsscene::nsscene(const nsscene & copy_):
 	m_creator(copy_.m_creator),
 	m_enabled(copy_.m_enabled),
 	m_tile_grid(new nstile_grid()),
+	cube_grid(new nscube_grid()),
 	m_ents_by_comp(),
 	m_unloaded_tforms()
 {
@@ -80,6 +83,7 @@ nsscene::~nsscene()
     if (m_enabled)
         enable(false);
 	delete m_tile_grid;
+	delete cube_grid;
 }
 
 nsscene & nsscene::operator=(nsscene rhs)

@@ -65,6 +65,7 @@ struct physic_instance
 	
 	fvec3 velocity;
 	std::vector<accel_over_time> accels;
+	fbox aabb;
 };
 
 struct instance_tform
@@ -86,6 +87,7 @@ struct instance_tform
 	bool update;
 	bool snap_to_grid;
 	physic_instance phys;
+	bool in_cube_grid;
 
     void add_child(instance_tform * child, bool keep_world_transform);
 	
@@ -183,6 +185,7 @@ void pup(PUPer & p, physic_instance & iv, const nsstring & var_name)
 {
 	pup(p, iv.velocity, var_name + ".velocity");
 	pup(p, iv.accels, var_name + ".accels");
+	pup(p, iv.aabb, var_name + ".aabb");
 }
 
 template <class PUPer>

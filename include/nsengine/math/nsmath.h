@@ -4,10 +4,10 @@
 #define PI 3.14159265359f
 #define EPS 0.0001f
 
-#include "nstypes.h"
+#include <nstypes.h>
 #include <cmath>
 #include <stdexcept>
-#include "nsstring.h"
+#include <nsstring.h>
 
 float clampf(float val_, const float & min_, const float & max_);
 double clamp(double val_, const double & min_, const double & max_);
@@ -28,17 +28,7 @@ T radians(const T & val_);
 
 float random_float(float high_ = 1.0f, float low_ = 0.0f);
 
-#include "nsmat4.h"
-
-template<class T>
-bool point_in_rect(const nsvec2<T> & point, nsvec2<T> rect[4])
-{
-    nsvec2<T> v = point - rect[0];
-    nsvec2<T> v1 = rect[1] - rect[0];
-    nsvec2<T> v2 = rect[2] - rect[0];
-    T f1 = v * v1, f2 = v1 * v1, f3 = v * v2, f4 = v2 * v2;
-    return (0 <= f1 && f1 <= f2) && (0 <= f3 && f3 <= f4);	
-}
+#include <nsmat4.h>
 
 // Math typedefs
 typedef nsvec2<char> cvec2;
@@ -201,6 +191,14 @@ struct nsbox
 	}
 };
 
+template<class PUPer, class T>
+void pup(PUPer & p, nsbox<T> & box, const nsstring & var_name_)
+{
+	pup(p, box.min, var_name_ + ".min");
+	pup(p, box.max, var_name_ + ".max");
+}
+
+
 typedef nsbox<char> cbox;
 typedef nsbox<char16> c16box;
 typedef nsbox<char32> c32box;
@@ -216,6 +214,16 @@ typedef nsbox<uint64> ui64box;
 typedef nsbox<float> fbox;
 typedef nsbox<double> dbox;
 typedef nsbox<ldouble> ldbox;
+
+template<class T>
+bool point_in_rect(const nsvec2<T> & point, nsvec2<T> rect[4])
+{
+    nsvec2<T> v = point - rect[0];
+    nsvec2<T> v1 = rect[1] - rect[0];
+    nsvec2<T> v2 = rect[2] - rect[0];
+    T f1 = v * v1, f2 = v1 * v1, f3 = v * v2, f4 = v2 * v2;
+    return (0 <= f1 && f1 <= f2) && (0 <= f3 && f3 <= f4);	
+}
 
 template<class T>
 int collision_plane_sphere(const nsvec4<T> & plane, const nsvec4<T> & sphere)
@@ -249,16 +257,13 @@ int collision_plane_aabb(const nsvec4<T> & plane, const nsbox<T> & aabb)
 }
 
 template<class T>
-bool collision_aabb_aabb(const nsbox<T> & aabb1, const nsbox<T> & aabb2)
+bool collision_aabb_aabb(const nsbox<T> & aabb1, const nsbox<T> & aabb2, int8 mask=0)
 {
     //Check if Box1's max is greater than Box2's min and Box1's min is less than Box2's max
     return(
-		aabb1.max.x > aabb2.min.x &&
-		aabb1.min.x < aabb2.max.x &&
-		aabb1.max.y > aabb2.min.y &&
-		aabb1.min.y < aabb2.max.y &&
-		aabb1.max.z > aabb2.min.z &&
-		aabb1.min.z < aabb2.max.z);
+        ((aabb1.max.x >= aabb2.min.x) && (aabb1.min.x <= aabb2.max.x) || (mask & 0x01)) &&
+        ((aabb1.max.y >= aabb2.min.y) && (aabb1.min.y <= aabb2.max.y) || (mask & 0x02)) &&
+		((aabb1.max.z >= aabb2.min.z) && (aabb1.min.z <= aabb2.max.z) || (mask & 0x04)));
 }
 
 template<class T>
@@ -266,6 +271,48 @@ bool collision_sphere_sphere(const nsvec4<T> & sphere1, const nsvec4<T> & sphere
 {
 	float dist = (sphere2 - sphere1).xyz().length_sq();
 	return dist <= sphere2.w*sphere2.w + sphere1.w*sphere1.w;
+}
+
+template<class T>
+nsbox<T> transform_obb_to_aabb(const nsbox<T> & obb, const nsmat4<T> & tform)
+{
+	nsvec3<T> verts[8];
+	nsbox<T> ret;
+
+	verts[0] = obb.min;
+	verts[1] = nsvec3<T>(obb.max.x, obb.min.y, obb.min.z);
+	verts[2] = nsvec3<T>(obb.min.x, obb.max.y, obb.min.z);
+	verts[3] = nsvec3<T>(obb.max.x, obb.max.y, obb.min.z);
+	verts[4] = nsvec3<T>(obb.min.x, obb.min.y, obb.max.z);
+	verts[5] = nsvec3<T>(obb.max.x, obb.min.y, obb.max.z);
+	verts[6] = nsvec3<T>(obb.min.x, obb.max.y, obb.max.z);
+	verts[7] = obb.max;
+
+	for (uint8 i = 0; i < 8; ++i)
+	{
+		verts[i] = (tform * verts[i]).xyz();
+
+		if (i == 0)
+		{
+			ret.min = verts[i];
+			ret.max = verts[i];
+		}
+		
+		if (verts[i].x > ret.max.x)
+			ret.max.x = verts[i].x;
+		if (verts[i].y > ret.max.y)
+			ret.max.y = verts[i].y;
+		if (verts[i].z > ret.max.z)
+			ret.max.z = verts[i].z;
+
+		if (verts[i].x < ret.min.x)
+			ret.min.x = verts[i].x;
+		if (verts[i].y < ret.min.y)
+			ret.min.y = verts[i].y;
+		if (verts[i].z < ret.min.z)
+			ret.min.z = verts[i].z;
+	}
+	return ret;
 }
 
 #include <vector>

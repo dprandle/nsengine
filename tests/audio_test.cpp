@@ -4,6 +4,8 @@
 #include <nsgl_driver.h>
 #include <nsgl_window.h>
 
+#include <nscube_grid.h>
+
 // asset managers
 #include <nsplugin_manager.h>
 
@@ -52,15 +54,19 @@ class nsphysic_comp : public nscomponent
 
 	void pup(nsfile_pupper * p);
 
-	fbox aabb;
+	fbox obb;
 	float mass;
 	bool gravity;
+	bool dynamic;
+
+	std::vector<instance_tform*> frame_collisions;
 };
 
 nsphysic_comp::nsphysic_comp():
 	nscomponent(type_to_hash(nsphysic_comp)),
     mass(80.0f),
-	gravity(true)
+	gravity(true),
+	dynamic(false)
 {
 		
 }
@@ -111,7 +117,7 @@ class nsphysic2d_system : public nssystem
 	nsphysic2d_system():
 		nssystem(type_to_hash(nsphysic2d_system)),
         gravity(0.0f,GRAVITY_ACCEL * WORLD_MULT,0.0f),
-		bottom_plane(0.0f,1.0f,0.0f,-60.0f)
+        bottom_plane(0.0f,1.0f,0.0f,-80.0f)
 	{
 		
 	}
@@ -123,7 +129,17 @@ class nsphysic2d_system : public nssystem
 
 	void init()
 	{
+		nsplugin * cplg = nse.core();
+
+		nsmesh_plane * mp = cplg->create<nsmesh_plane>("mesh_plane");
 		
+		bb_shower = cplg->create<nsentity>("bbshower");
+		nsmaterial * red_mat = cplg->create<nsmaterial>("red_mat");
+		red_mat->set_color_mode(true);
+		red_mat->set_color(fvec4(1.0f,0.0f,0.0f,1.0f));
+		nsrender_comp * rc = bb_shower->create<nsrender_comp>();
+		rc->set_mesh_id(mp->full_id());
+		rc->set_material(0, red_mat->full_id());
 	}
 
 	void setup_input_map(nsinput_map * im, const nsstring & gctxt)
@@ -135,59 +151,194 @@ class nsphysic2d_system : public nssystem
 		
 	}
 
+	void draw_tile_grid()
+	{
+		m_active_scene->remove(bb_shower, false);
+		ibox wb = m_active_scene->cube_grid->grid_bounds();
+		for (int z = wb.min.z; z < wb.max.z; ++z)
+		{
+			for (int y = wb.min.y; y < wb.max.y; ++y)
+			{
+                for (int x = wb.min.x; x < wb.max.x; ++x)
+				{
+					auto items = m_active_scene->cube_grid->items_at(ivec3(x,y,z));
+                    if (items != nullptr && !items->empty())
+					{
+                        m_active_scene->add(
+							bb_shower,
+							nullptr,
+							false,
+							nscube_grid::world_from(ivec3(x,y,-1)),
+							fquat(),
+							fvec3(CUBE_X_GRID/2.3f,CUBE_Y_GRID/2.30f,1.0f));
+					}
+				}
+			}
+		}		
+	}
+
 	void update()
 	{
-		entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();
+		if (scene_error_check())
+			return;
+
+		draw_tile_grid();
+
+		// Lets do some physics!
+		entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();		
 		auto iter = ents->begin();
 		while (iter != ents->end())
 		{
 			nsphysic_comp * pc = (*iter)->get<nsphysic_comp>();
 			nstform_comp * tc = (*iter)->get<nstform_comp>();
 			nssel_comp *sc = (*iter)->get<nssel_comp>();
-			sel_per_scene_info * spi = sc->scene_info(m_active_scene);
+			if (sc != nullptr)
+			{
+				sel_per_scene_info * spi = sc->scene_info(m_active_scene);
+			}
 			
 			tform_per_scene_info * psi = tc->per_scene_info(m_active_scene);
 			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 			{
-				instance_tform & itf = psi->m_tforms[i];
+				instance_tform & itf = psi->m_tforms[i];				
 
-				fvec3 resultant;
-				if (pc->gravity && !spi->m_selected)
-					resultant = gravity;
-
-				auto accel_iter = itf.phys.accels.begin();			
-				while (accel_iter != itf.phys.accels.end())
+				if (pc->dynamic)
 				{
-					resultant += accel_iter->accel;
-					accel_iter->elapsed += nse.timer()->fixed();
-					if (accel_iter->elapsed >= accel_iter->duration)
-						accel_iter = itf.phys.accels.erase(accel_iter);
-					else
-						++accel_iter;
+					m_active_scene->cube_grid->remove(&itf);
+					m_active_scene->cube_grid->search_and_remove(uivec3((*iter)->full_id(),i),
+																 itf.phys.aabb);
+					itf.in_cube_grid = false;
+
+					fvec3 resultant;
+					if (pc->gravity)// && !spi->m_selected)
+						resultant = gravity;
+
+					auto accel_iter = itf.phys.accels.begin();			
+					while (accel_iter != itf.phys.accels.end())
+					{
+						resultant += accel_iter->accel;
+						accel_iter->elapsed += nse.timer()->fixed();
+						if (accel_iter->elapsed >= accel_iter->duration)
+							accel_iter = itf.phys.accels.erase(accel_iter);
+						else
+							++accel_iter;
+					}
+
+					fvec3 pos_av = itf.world_position() + 0.5f*itf.phys.velocity * nse.timer()->fixed();
+					itf.phys.velocity += (resultant / pc->mass) * nse.timer()->fixed();
+					pos_av += 0.5f * itf.phys.velocity * nse.timer()->fixed();
+
+					itf.set_world_position(pos_av);
+					itf.recursive_compute();
+				
+					// update location in structure
+				
+					itf.phys.aabb = transform_obb_to_aabb(pc->obb, itf.world_tf());
+
+					while (collision_plane_aabb(bottom_plane, itf.phys.aabb) == 3)
+					{
+						pos_av.y += 0.1f;
+						itf.phys.aabb.max.y += 0.1f; itf.phys.aabb.min.y += 0.1f;
+						itf.phys.velocity.y = 0.0f;
+					}
+					itf.set_world_position(pos_av);
 				}
 
-
-				fvec3 pos_av = itf.world_position() + 0.5f*itf.phys.velocity * nse.timer()->fixed();
-				itf.phys.velocity += (resultant / pc->mass) * nse.timer()->fixed();
-				pos_av += 0.5f * itf.phys.velocity * nse.timer()->fixed();
-
-				fbox updated_bx = pc->aabb + pos_av;
-				int ret = collision_plane_aabb(bottom_plane, updated_bx);
-				if (ret == 3)
+				if (!itf.in_cube_grid)
 				{
-					pos_av.y = bottom_plane.w + 1.0f;
-					itf.phys.velocity.y = 0.0f;
+					itf.recursive_compute();
+					itf.phys.aabb = transform_obb_to_aabb(pc->obb, itf.world_tf());
+					m_active_scene->cube_grid->insert(&itf);
+					itf.in_cube_grid = true;
 				}
-				
-				itf.set_world_position(pos_av);
-				
+
+			}			
+			++iter;
+		}
+
+		// finally go through collisions!
+		check_and_resolve_collisions();
+	}
+
+	void check_and_resolve_collisions()
+	{
+		nscube_grid * cg = m_active_scene->cube_grid; // shortcut
+		
+		entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();		
+		auto iter = ents->begin();
+		while (iter != ents->end())
+		{
+			nsphysic_comp * pc = (*iter)->get<nsphysic_comp>();
+
+			if (!pc->dynamic) // no using checking collisions of static stuff
+			{
+				++iter;
+				continue;
 			}
 			
+			nstform_comp * tc = (*iter)->get<nstform_comp>();
+			tform_per_scene_info * psi = tc->per_scene_info(m_active_scene);
+			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
+			{
+				instance_tform & itf = psi->m_tforms[i];
+				
+				// lets get our bounding box in terms of grid spaces
+				ibox bb_grid = nscube_grid::grid_from(itf.phys.aabb);
+
+				// now put together a list of items in the cells surrounding me
+				uivec3_vector items;
+				items.reserve(128);
+
+				// go through top and bottom row
+				for (int x = bb_grid.min.x - 1; x < bb_grid.max.x + 1; ++x)
+				{
+					uivec3_vector * iptr = cg->items_at( ivec3(x, bb_grid.min.y-1, bb_grid.min.z));
+					if (iptr != nullptr)
+						items.insert(items.end(), iptr->begin(), iptr->end());
+					iptr = cg->items_at(ivec3(x, bb_grid.max.y,bb_grid.min.z));
+					if (iptr != nullptr)
+						items.insert(items.end(), iptr->begin(), iptr->end());					
+				}
+
+				// go left and right
+				for (int y = bb_grid.min.y; y < bb_grid.max.y + 1; ++y)
+				{
+					uivec3_vector * iptr = cg->items_at( ivec3(bb_grid.min.x - 1, y, bb_grid.min.z));
+					if (iptr != nullptr)
+						items.insert(items.end(), iptr->begin(), iptr->end());
+					iptr = cg->items_at( ivec3(bb_grid.max.x, y, bb_grid.min.z));
+					if (iptr != nullptr)
+						items.insert(items.end(), iptr->begin(), iptr->end());
+				}
+
+				// Now we have our list of possible things we could collide with - check it
+				auto item_iter = items.begin();
+				while (item_iter != items.end())
+				{
+					nsentity * ent_col = get_entity(item_iter->xy());
+
+					tform_per_scene_info * psi_col =
+						ent_col->get<nstform_comp>()->per_scene_info(m_active_scene);
+
+					instance_tform & tfi_col = psi_col->m_tforms[item_iter->z];
+					fvec3 adj;
+					fvec3 vel_unit = normalize(itf.phys.velocity);
+                    if (collision_aabb_aabb(itf.phys.aabb, tfi_col.phys.aabb,0x04))
+					{
+						adj = vel_unit * -0.2f;
+						itf.translate(adj);
+						itf.phys.velocity *= 0.3f;
+//                        nse.event_dispatch()->push<collision_event>(
+//							uivec3((*iter)->full_id(),i), *item_iter);
+					}
+					
+					++item_iter;
+				}
+
+				
+			}			
 			++iter;
-
-
-			
-		}
+		}		
 	}
 
 	int32 update_priority()
@@ -195,6 +346,7 @@ class nsphysic2d_system : public nssystem
 		return PHYSIC_2D_SYS_UPDATE_PR;
 	}
 
+	nsentity * bb_shower;
 	fvec3 gravity;
 	fvec4 bottom_plane;
 };
@@ -414,7 +566,8 @@ nsentity * import_sprite_from_file(nsplugin * plg)
 
 	nsphysic_comp * pc = zombie->create<nsphysic_comp>();
 	pln->calc_aabb();
-	pc->aabb = fbox(pln->aabb().mMin,pln->aabb().mMax);
+	pc->obb = fbox(pln->aabb().mMin,pln->aabb().mMax);
+	pc->dynamic =true;
 
 	nssprite_sheet_comp * ssc = zombie->create<nssprite_sheet_comp>();
 	ssc->animations.resize(3);
@@ -513,9 +666,13 @@ int main()
 	mat2->add_tex_map(nsmaterial::diffuse, ti, true);
 
 	nsmesh_plane * bgmsh = plg->create<nsmesh_plane>("bgmesh");
+	bgmsh->calc_aabb();
 	
 	nsentity * layer1 = plg->create<nsentity>("layer1");
 	nsentity * layer2 = plg->create<nsentity>("layer2");
+	nsentity * platform_1 = plg->create<nsentity>("platform_1");
+	nsentity * platform_2 = plg->create<nsentity>("platform_2");
+	
 
 	nsrender_comp * rc = layer1->create<nsrender_comp>();
 	rc->set_material(0, mat1->full_id());
@@ -523,7 +680,30 @@ int main()
 
 	rc = layer2->create<nsrender_comp>();
 	rc->set_material(0, mat2->full_id());
+	rc->set_mesh_id(bgmsh->full_id());	
+
+	nsmaterial * platform_mat = plg->create<nsmaterial>("platform_mat");
+	platform_mat->set_color(fvec4(0.0f,0.6f,0.3f,1.0f));
+	platform_mat->set_color_mode(true);
+	
+	rc = platform_1->create<nsrender_comp>();
+	rc->set_material(0, platform_mat->full_id());
 	rc->set_mesh_id(bgmsh->full_id());
+
+	nsphysic_comp * pcc = platform_1->create<nsphysic_comp>();
+	pcc->obb = fbox(bgmsh->aabb().mMin,bgmsh->aabb().mMax);
+
+	
+	nsmaterial * platform_mat2 = plg->create<nsmaterial>("platform_mat2");
+	platform_mat2->set_color(fvec4(1.0f,0.6f,0.3f,1.0f));
+	platform_mat2->set_color_mode(true);
+	
+	rc = platform_2->create<nsrender_comp>();
+	rc->set_material(0, platform_mat2->full_id());
+	rc->set_mesh_id(bgmsh->full_id());
+
+	nsphysic_comp * pcc2 = platform_2->create<nsphysic_comp>();
+	pcc2->obb = fbox(bgmsh->aabb().mMin,bgmsh->aabb().mMax);
 
 	new_scene->add(layer1,nullptr,false,fvec3(0,0,0),
 		orientation(fvec4(0,0,1,180)),fvec3(3072/10,1536/15,1));
@@ -531,12 +711,17 @@ int main()
 	new_scene->add(layer2,nullptr,false,fvec3(0,0,-2.0),
 		orientation(fvec4(0,0,1,180)),fvec3(3072/10,1536/15,1));
 	
-	
+	new_scene->add(
+		platform_1,nullptr,false,fvec3(20.0f,50.0f,-5.0f),fquat(),fvec3(100.0f,20.0f,1.0f));
+
+	new_scene->add(
+		platform_2,nullptr,false,fvec3(200.0f,30.0f,-6.0f),fquat(),fvec3(30.0f,10.0f,1.0f));
+
 	new_scene->add(
 		zombie,
 		nullptr,
 		false,
-		fvec3(0,0,-5),
+		fvec3(0,0,-7.0f),
 		orientation(fvec4(0,0,1,180)),
 		fvec3(10.0f,10*resf,10.0f));
 

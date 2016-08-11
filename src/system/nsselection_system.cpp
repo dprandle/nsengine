@@ -192,32 +192,33 @@ void nsselection_system::change_layer(int32 pChange)
 
 bool nsselection_system::selection_collides_with_tilegrid()
 {
-	if (m_active_scene == nullptr)
-		return false;
+	return false;
+	// if (m_active_scene == nullptr)
+	// 	return false;
 
-	bool has_collision = false;
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		nssel_comp * selComp = (*iter)->get<nssel_comp>();
-		nstform_comp * tComp = (*iter)->get<nstform_comp>();
-		tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_scene);
-		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
-		if (occComp != nullptr)
-		{
-			auto selection = selComp->selection(m_active_scene); 
-			auto selIter = selection->begin();
-			while (selIter != selection->end())
-			{
-				fvec3 wpos = tpsi->m_tforms[*selIter].world_position();
-				has_collision = has_collision ||
-					m_active_scene->grid().occupied(occComp->spaces(), wpos);
-				++selIter;
-			}
-		}			
-		++iter;
-	}
-	return has_collision;
+	// bool has_collision = false;
+	// auto iter = m_selected_ents.begin();
+	// while (iter != m_selected_ents.end())
+	// {
+	// 	nssel_comp * selComp = (*iter)->get<nssel_comp>();
+	// 	nstform_comp * tComp = (*iter)->get<nstform_comp>();
+	// 	tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_scene);
+	// 	nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
+	// 	if (occComp != nullptr)
+	// 	{
+	// 		auto selection = selComp->selection(m_active_scene); 
+	// 		auto selIter = selection->begin();
+	// 		while (selIter != selection->end())
+	// 		{
+	// 			fvec3 wpos = tpsi->m_tforms[*selIter].world_position();
+	// 			has_collision = has_collision ||
+	// 				m_active_scene->grid().occupied(occComp->spaces(), wpos);
+	// 			++selIter;
+	// 		}
+	// 	}			
+	// 	++iter;
+	// }
+	// return has_collision;
 }
 
 void nsselection_system::refresh_selection(nsscene * scene_to_refresh)

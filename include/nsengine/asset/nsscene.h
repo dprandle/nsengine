@@ -17,9 +17,11 @@
 
 #include "nsasset.h"
 #include "nsentity.h"
-#include "nstile_grid.h"
+//#include "nstile_grid.h"
 #include "nsoccupy_comp.h"
 
+class nstile_grid;
+class nscube_grid;
 class nsrender_comp;
 class nstform_system;
 
@@ -162,6 +164,9 @@ class nsscene : public nsasset
 
 	pupped_vec & unloaded();
 
+	nscube_grid * cube_grid;
+
+	
 private:
 
 	void _remove_all_comp_entries(nsentity * ent);
@@ -177,6 +182,7 @@ private:
 	nsstring m_creator;
 	bool m_enabled;
 	nstile_grid * m_tile_grid;
+	
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
 
 	pupped_vec_info m_unloaded_tforms;

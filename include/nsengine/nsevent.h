@@ -240,4 +240,16 @@ struct scene_ent_removed : public nsevent
 	uivec2 scn_id;
 };
 
+struct collision_event : public nsevent
+{
+	collision_event(const uivec3 & ent_c1_, const uivec3 & ent_c2_):
+		nsevent(),
+		ent_c1(ent_c1_),
+		ent_c2(ent_c2_)
+	{}
+	
+	uivec3 ent_c1;
+	uivec3 ent_c2;
+};
+
 #endif

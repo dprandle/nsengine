@@ -10,6 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <nscube_grid.h>
 #include <nstform_comp.h>
 #include <nsrender_comp.h>
 #include <nsentity.h>
@@ -102,6 +103,7 @@ nstform_comp & nstform_comp::operator=(nstform_comp rhs_)
 instance_tform::instance_tform():
 	update(true),
 	snap_to_grid(true),
+	in_cube_grid(false),
 	m_owner(nullptr),
 	m_parent(),
 	m_render_update(true),
@@ -119,6 +121,7 @@ instance_tform::instance_tform():
 instance_tform::instance_tform(const instance_tform & copy):
 	update(true),
 	snap_to_grid(copy.snap_to_grid),
+	in_cube_grid(false),
 	m_owner(copy.m_owner),
 	m_parent(copy.m_parent),
 	m_render_update(true),
@@ -288,6 +291,7 @@ void instance_tform::recursive_compute()
 
 		m_world_tform = m_local_tform;
 		m_world_inv_tform = m_local_inv_tform;
+		
 		m_owner->owner->post_update(true);
 		m_render_update = true;
 	}
