@@ -58,6 +58,7 @@ class nsphysic_comp : public nscomponent
 	float mass;
 	bool gravity;
 	bool dynamic;
+	float bounciness; // ie 0 means completely inelastic and 1 means perfectly elastic
 
 	std::vector<instance_tform*> frame_collisions;
 };
@@ -66,7 +67,8 @@ nsphysic_comp::nsphysic_comp():
 	nscomponent(type_to_hash(nsphysic_comp)),
     mass(80.0f),
 	gravity(true),
-	dynamic(false)
+	dynamic(false),
+	bounciness(0.0f)
 {
 		
 }
@@ -110,6 +112,12 @@ void nsphysic_comp::pup(nsfile_pupper * p)
 {
 	
 }
+
+struct col_stuff
+{
+	uivec3 space_ind;
+	fvec3 norm;
+};
 
 class nsphysic2d_system : public nssystem
 {
@@ -177,6 +185,70 @@ class nsphysic2d_system : public nssystem
 		}		
 	}
 
+	// vi is initial vel
+	// m12 is mass 1 and 2 (x and y)
+	// f is bounciness factor
+	// float find_v2_mag_both_dynamic_objs(const fvec2 & m12, float vi, float f)
+	// {
+	// 	float m1sqrd = m12.x * m12.x;
+	// 	float m1_m2 = m12.x * m12.y;
+	// 	fvec3 args(
+	// 		m1sqrd + m1_m2,
+	// 		-2.0f * m1_m2 * vi,
+	// 		m1sqrd * vi * vi * (1.0 - f)
+	// 		);
+	// 	fvec2 possible_vals = solve_quadratic(args);
+	// 	if (m12.x > m12.y)
+	// 	{
+	// 		return possible_vals.min();
+	// 	}
+	// 	else
+	// 		return possible_vals.max();
+	// }
+
+	// vi is initial vel
+	// m12 is mass 1 and 2 (x and y)
+	// f is bounciness factor
+	// float find_v2_mag(const fvec2 & m12, float vi, float f)
+	// {
+	// 	float m1sqrd = m12.x * m12.x;
+	// 	float m1_m2 = m12.x * m12.y;
+	// 	fvec3 args(
+	// 		m1sqrd + m1_m2,
+	// 		-2.0f * m1_m2 * vi,
+	// 		m1sqrd * vi * vi * (1.0 - f)
+	// 		);
+	// 	fvec2 possible_vals = solve_quadratic(args);
+	// 	if (m12.y > m12.x)
+	// 	{
+	// 		return possible_vals.min();
+	// 	}
+	// 	else
+	// 		return possible_vals.max();
+	// }
+
+	// float find_v1_mag_from_vi_and_v2(const fvec2 & m12, float v2, float vi)
+	// {
+	// 	return vi * (2 * m12.x / (m12.x + m12.y));
+	// }
+	
+	// // vi is initial vel
+	// // m12 is mass 1 and 2 (x and y)
+	// // f is bounciness factor
+	// float find_v1_mag_from_vi(const fvec2 & m12, float vi, float f)
+	// {
+	// 	float v2 = find_v2_mag(m12, vi, f);
+	// 	return find_v1_mag_from_v2(m12, v2, vi);
+	// }
+
+	// float find_v1_mag_from_v2(const fvec2 & m12, float v2, float f)
+	// {
+	// 	float v2 = find_v2_mag(m12, vi, f);
+	// 	return find_v1_mag_from_v2(m12, v2, vi);
+	// }
+
+
+
 	void update()
 	{
 		if (scene_error_check())
@@ -232,7 +304,7 @@ class nsphysic2d_system : public nssystem
 					itf.recursive_compute();
 				
 					// update location in structure
-				
+					
 					itf.phys.aabb = transform_obb_to_aabb(pc->obb, itf.world_tf());
 
 					while (collision_plane_aabb(bottom_plane, itf.phys.aabb) == 3)
@@ -260,6 +332,50 @@ class nsphysic2d_system : public nssystem
 		check_and_resolve_collisions();
 	}
 
+	void add_col_items_to_vec(std::vector<col_stuff> & vec, uivec3_vector * item_ptr, const fvec3 & norm)
+	{
+		if (item_ptr != nullptr)
+		{
+			auto iter = item_ptr->begin();
+			while (iter != item_ptr->end())
+			{
+				col_stuff cs;
+				cs.space_ind = *iter;
+				cs.norm = norm;
+				vec.push_back(cs);
+				++iter;
+			}
+		}
+	}
+
+	fbox calc_final_velocities(const fvec3 & init_vel_a,
+								const fvec3 & init_vel_b,
+								const fvec3 & normal,
+								const fvec2 & masses,
+								float restitution)
+	{
+		fvec3 pln_a = project_plane(init_vel_a, normal);
+		fvec3 pln_b = project_plane(init_vel_b, normal);
+
+		fvec3 norm_a = project_plane(init_vel_a, pln_a);
+		fvec3 norm_b = project_plane(init_vel_b, pln_b);
+
+		float mag_v1a = norm_a.length();
+		float mag_v1b = norm_b.length();
+
+		float mass_ratio = masses.x / masses.y;
+		float mag_v2a =
+			((restitution - mass_ratio) * mag_v1a + (1.0f - restitution) * mag_v1b) /
+			(1.0f - mass_ratio);
+		float mag_v2b = mag_v1b - mass_ratio * (mag_v1a - mag_v2a);
+
+		norm_a.normalize();
+		norm_a *= mag_v2a;
+		norm_b.normalize();
+		norm_b *= mag_v2b;
+		return fbox(pln_a + norm_a, pln_b + norm_b);
+	}
+
 	void check_and_resolve_collisions()
 	{
 		nscube_grid * cg = m_active_scene->cube_grid; // shortcut
@@ -277,6 +393,7 @@ class nsphysic2d_system : public nssystem
 			}
 			
 			nstform_comp * tc = (*iter)->get<nstform_comp>();
+			
 			tform_per_scene_info * psi = tc->per_scene_info(m_active_scene);
 			for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 			{
@@ -286,50 +403,62 @@ class nsphysic2d_system : public nssystem
 				ibox bb_grid = nscube_grid::grid_from(itf.phys.aabb);
 
 				// now put together a list of items in the cells surrounding me
-				uivec3_vector items;
+				std::vector<col_stuff> items;
 				items.reserve(128);
 
 				// go through top and bottom row
 				for (int x = bb_grid.min.x - 1; x < bb_grid.max.x + 1; ++x)
 				{
 					uivec3_vector * iptr = cg->items_at( ivec3(x, bb_grid.min.y-1, bb_grid.min.z));
-					if (iptr != nullptr)
-						items.insert(items.end(), iptr->begin(), iptr->end());
+					add_col_items_to_vec(items, iptr, fvec3(0,-1,0));
 					iptr = cg->items_at(ivec3(x, bb_grid.max.y,bb_grid.min.z));
-					if (iptr != nullptr)
-						items.insert(items.end(), iptr->begin(), iptr->end());					
+					add_col_items_to_vec(items, iptr, fvec3(0,1,0));
 				}
 
 				// go left and right
 				for (int y = bb_grid.min.y; y < bb_grid.max.y + 1; ++y)
 				{
 					uivec3_vector * iptr = cg->items_at( ivec3(bb_grid.min.x - 1, y, bb_grid.min.z));
-					if (iptr != nullptr)
-						items.insert(items.end(), iptr->begin(), iptr->end());
+					add_col_items_to_vec(items, iptr, fvec3(-1,0,0));
 					iptr = cg->items_at( ivec3(bb_grid.max.x, y, bb_grid.min.z));
-					if (iptr != nullptr)
-						items.insert(items.end(), iptr->begin(), iptr->end());
+					add_col_items_to_vec(items, iptr, fvec3(1,0,0));
 				}
 
 				// Now we have our list of possible things we could collide with - check it
 				auto item_iter = items.begin();
 				while (item_iter != items.end())
 				{
-					nsentity * ent_col = get_entity(item_iter->xy());
+					nsentity * ent_col = get_entity(item_iter->space_ind.xy());
+					nsphysic_comp * phy_col = ent_col->get<nsphysic_comp>();
+
+					float bounciness = phy_col->bounciness + pc->bounciness;
+					clampf(bounciness, 0.0f, 1.0f);
 
 					tform_per_scene_info * psi_col =
 						ent_col->get<nstform_comp>()->per_scene_info(m_active_scene);
 
-					instance_tform & tfi_col = psi_col->m_tforms[item_iter->z];
+					instance_tform & tfi_col = psi_col->m_tforms[item_iter->space_ind.z];
+
 					fvec3 adj;
-					fvec3 vel_unit = normalize(itf.phys.velocity);
-                    if (collision_aabb_aabb(itf.phys.aabb, tfi_col.phys.aabb,0x04))
+					bool collision = false;
+                    if (collision_aabb_aabb(itf.phys.aabb+adj, tfi_col.phys.aabb,0x04))
 					{
-						adj = vel_unit * -0.2f;
-						itf.translate(adj);
-						itf.phys.velocity *= 0.3f;
-//                        nse.event_dispatch()->push<collision_event>(
-//							uivec3((*iter)->full_id(),i), *item_iter);
+						adj -= item_iter->norm * 0.1f;
+						collision = true;
+					}
+					itf.translate(adj);
+
+					if (collision)
+					{
+						fbox final_vels = calc_final_velocities(
+							itf.phys.velocity,
+							tfi_col.phys.velocity,
+							item_iter->norm,
+							fvec2(pc->mass, 100000.0f),
+							bounciness);
+						itf.phys.velocity = final_vels.a;
+						nse.event_dispatch()->push<collision_event>(
+						   uivec3((*iter)->full_id(),i), item_iter->space_ind);						
 					}
 					
 					++item_iter;

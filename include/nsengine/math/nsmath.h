@@ -163,9 +163,34 @@ struct nsbox
 		max(max_)
 	{}
 	
-	nsvec3<T> min;
-	nsvec3<T> max;
+	nsbox<T>(const nsbox<T> & copy):
+		min(copy.min),
+		max(copy.max)
+	{}
 
+	nsbox<T> & operator=(const nsbox<T> & rhs)
+	{
+		if (this != &rhs)
+		min = rhs.min;
+		max = rhs.max;
+		return *this;
+	}
+
+	union
+	{
+		struct
+		{
+			nsvec3<T> min;
+			nsvec3<T> max;
+		};
+
+		struct
+		{
+			nsvec3<T> a;
+			nsvec3<T> b;
+		};
+	};
+		
 	nsbox<T> operator+(const nsvec3<T> & rhs)
 	{
 		return nsbox<T>(min+rhs,max+rhs);
@@ -223,6 +248,16 @@ bool point_in_rect(const nsvec2<T> & point, nsvec2<T> rect[4])
     nsvec2<T> v2 = rect[2] - rect[0];
     T f1 = v * v1, f2 = v1 * v1, f3 = v * v2, f4 = v2 * v2;
     return (0 <= f1 && f1 <= f2) && (0 <= f3 && f3 <= f4);	
+}
+
+template<class T>
+nsvec2<T> solve_quadratic(const nsvec3<T> abc)
+{
+	nsvec2<T> ret;
+	T rhs = T(sqrt(abc.y*abc.y - 4*abc.x*abc.z)) / (2 * abc.x);
+	T lhs = abc.y*T(-1) / (2 * abc.x);
+	ret.x = lhs + rhs;
+	ret.y = lhs - rhs;
 }
 
 template<class T>
