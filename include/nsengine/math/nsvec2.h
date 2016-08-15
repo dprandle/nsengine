@@ -3,10 +3,10 @@
 
 
 #define EPS_VEC_0 0.000001f
-#include "nsstring.h"
+#include <nsstring.h>
 #include <cmath>
 #include <stdexcept>
-#include "nstypes.h"
+#include <nstypes.h>
 
 template <class T>
 struct nsvec3;
@@ -222,9 +222,9 @@ struct nsvec2
 
 	nsvec2<T> & minimize(const nsvec2<T> & rhs_)
 	{
-		if (x < rhs_.x)
+		if (x > rhs_.x)
 			x = rhs_.x;
-		if (y < rhs_.y)
+		if (y > rhs_.y)
 			y = rhs_.y;
 		return *this;
 	}
@@ -239,9 +239,9 @@ struct nsvec2
 
 	nsvec2<T> & maximize(const nsvec2<T> & rhs_)
 	{
-		if (x > rhs_.x)
+		if (x < rhs_.x)
 			x = rhs_.x;
-		if (y > rhs_.y)
+		if (y < rhs_.y)
 			y = rhs_.y;
 		return *this;
 	}

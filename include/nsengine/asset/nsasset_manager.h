@@ -30,7 +30,7 @@
 	using nsasset_manager::load;					   \
 	using nsasset_manager::remove;
 
-#include "nsengine.h"
+#include <nsengine.h>
 
 class nsasset;
 

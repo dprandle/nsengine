@@ -10,8 +10,8 @@ This file contains all of the neccessary definitions for the nsterrain_comp clas
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsterrain_comp.h>
-#include <nsentity.h>
+#include <component/nsterrain_comp.h>
+#include <asset/nsentity.h>
 
 nsterrain_comp::nsterrain_comp() :
 	nscomponent(type_to_hash(nsterrain_comp)),

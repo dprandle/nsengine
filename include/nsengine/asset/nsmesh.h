@@ -4,8 +4,8 @@
 
 #define JOINTS_PER_VERTEX 4
 
-#include "nsvideo_driver.h"
-#include "nsasset.h"
+#include <nsvideo_driver.h>
+#include <asset/nsasset.h>
 
 enum mesh_primitive_type
 {

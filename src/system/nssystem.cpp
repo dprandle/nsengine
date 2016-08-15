@@ -10,8 +10,8 @@ This file contains all of the neccessary definitions for the nssystem class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <nssystem.h>
-#include <nsscene.h>
+#include <system/nssystem.h>
+#include <asset/nsscene.h>
 
 nssystem::nssystem(uint32 hashed_type):
 	m_scene_null_error(false),

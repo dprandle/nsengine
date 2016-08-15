@@ -23,9 +23,9 @@ This file contains all of the neccessary declarations for the nstile_grid class.
 #define TILE_GRID_RESIZE_PAD 16
 
 
-#include "nsvector.h"
-#include "nsunordered_map.h"
-#include "nsunordered_set.h"
+#include <nsvector.h>
+#include <nsunordered_map.h>
+#include <nsunordered_set.h>
 
 class nstile_grid
 {

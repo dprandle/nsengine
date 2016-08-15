@@ -10,7 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nscomponent.h>
+#include <component/nscomponent.h>
 
 nscomponent::nscomponent(uint32 hashed_type): 
 	m_owner(NULL),

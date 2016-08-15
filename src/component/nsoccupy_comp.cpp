@@ -11,14 +11,14 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 */
 
 
-#include <nsoccupy_comp.h>
+#include <component/nsoccupy_comp.h>
 #include <nstile_grid.h>
-#include <nsentity.h>
-#include <nsplugin.h>
+#include <asset/nsentity.h>
+#include <asset/nsplugin.h>
 #include <cmath>
-#include <nsmesh.h>
-#include <nsmaterial.h>
-#include <nsrender_system.h>
+#include <asset/nsmesh.h>
+#include <asset/nsmaterial.h>
+#include <system/nstform_system.h>
 #include <nsengine.h>
 
 nsoccupy_comp::nsoccupy_comp() :

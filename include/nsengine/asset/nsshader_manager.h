@@ -14,8 +14,8 @@
 #ifndef NSSHADER_MANAGER_H
 #define NSSHADER_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nsshader.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsshader.h>
 
 nsshader * get_shader(const uivec2 & id);
 

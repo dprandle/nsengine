@@ -11,9 +11,9 @@ This file contains all of the neccessary definitions for the nsgl_vao class.
 */
 
 
-#include <nsgl_vao.h>
-#include <nsgl_buffer.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_vao.h>
+#include <opengl/nsgl_buffer.h>
+#include <opengl/nsgl_driver.h>
 #include <nsengine.h>
 
 nsgl_vao::nsgl_vao() :

@@ -15,9 +15,9 @@ This file contains all of the neccessary declarations for the NSEventHandler cla
 
 #include <vector>
 #include <typeindex>
-#include "nsevent.h"
-#include "nsengine.h"
-#include "nsevent_dispatcher.h"
+#include <nsevent.h>
+#include <nsengine.h>
+#include <nsevent_dispatcher.h>
 
 //1) Make it so that events have one more parameter - uint32 id - use this for action events
 

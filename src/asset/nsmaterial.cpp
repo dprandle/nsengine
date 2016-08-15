@@ -10,15 +10,15 @@ Description:
 	that the class may use
 *--------------------------------------------------------------------------------------------------*/
 
-#include <nsmaterial.h>
-#include <nstexture.h>
+#include <asset/nsmaterial.h>
+#include <asset/nstexture.h>
 #include <nslog_file.h>
-#include <nsshader.h>
+#include <asset/nsshader.h>
 #include <nsengine.h>
-#include <nsshader_manager.h>
-#include <nstex_manager.h>
+#include <asset/nsshader_manager.h>
+#include <asset/nstex_manager.h>
 
-#include <glew.h>
+#include <opengl/glew.h>
 
 nsmaterial::nsmaterial():
 	nsasset(type_to_hash(nsmaterial)),

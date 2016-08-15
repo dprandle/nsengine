@@ -1,7 +1,7 @@
 #ifndef NSGL_VID_OBJS_H
 #define NSGL_VID_OBJS_H
 
-#include "nsvideo_driver.h"
+#include <nsvideo_driver.h>
 
 struct nsgl_shader;
 struct nsgl_buffer;
@@ -11,7 +11,7 @@ struct nsgl_texture;
 
 class nsshader;
 class nstexture;
-#include "nsmesh.h"
+#include <asset/nsmesh.h>
 struct tform_per_scene_info;
 struct sel_per_scene_info;
 class nsparticle_comp;

@@ -13,7 +13,7 @@
 #ifndef NSROUTER_H
 #define NSROUTER_H
 
-#include "nssignal.h"
+#include <nssignal.h>
 
 #define SLOT_OBJECT nsrouter m_router;
 #define sig_connect(signal, slot) m_router.connect(this, &slot, signal)

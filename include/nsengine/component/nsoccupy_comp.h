@@ -15,7 +15,7 @@ This file contains all of the neccessary declarations for the nsoccupy_comp clas
 
 #define R_FACTOR 0.25f
 
-#include "nscomponent.h"
+#include <component/nscomponent.h>
 
 class nsoccupy_comp : public nscomponent
 {

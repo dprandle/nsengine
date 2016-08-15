@@ -13,8 +13,8 @@
 #ifndef NSAUDIO_MANAGER_H
 #define NSAUDIO_MANAGER_H
 
-#include <nsasset_manager.h>
-#include <nsaudio_source.h>
+#include <asset/nsasset_manager.h>
+#include <asset/nsaudio_clip.h>
 
 class nsaudio_manager : public nsasset_manager
 {

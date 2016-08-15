@@ -13,9 +13,9 @@ This file contains all of the neccessary declarations for the nsui_comp class.
 #ifndef NSUI_COMP_H
 #define NSUI_COMP_H
 
-#include "nscomponent.h"
-#include "nsstring.h"
-#include "nsrouter.h"
+#include <component/nscomponent.h>
+#include <nsstring.h>
+#include <nsrouter.h>
 
 class nsmaterial;
 class nsfont;

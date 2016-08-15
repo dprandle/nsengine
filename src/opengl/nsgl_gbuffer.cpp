@@ -1,6 +1,6 @@
-#include <nsgl_gbuffer.h>
-#include <nsgl_shader.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_gbuffer.h>
+#include <opengl/nsgl_shader.h>
+#include <opengl/nsgl_driver.h>
 #include <nsengine.h>
 
 nsgl_gbuffer::nsgl_gbuffer():

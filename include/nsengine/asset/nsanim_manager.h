@@ -13,8 +13,8 @@
 #ifndef NSANIM_MANAGER_H
 #define NSANIM_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nsanim_set.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsanim_set.h>
 
 struct aiScene;
 

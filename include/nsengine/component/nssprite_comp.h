@@ -13,9 +13,38 @@
 #ifndef NSSPRITE_COMP_H
 #define NSSPRITE_COMP_H
 
-#include "nscomponent.h"
+#include <component/nscomponent.h>
+#include <signal.h>
 
 class nstex2d;
+
+struct anim_frame
+{
+	anim_frame():
+		tc(),
+		audio_source_ind(0),
+		emit_signal(false)
+	{}
+	
+	fvec4 tc;
+	uint32 audio_source_ind;
+	bool emit_signal;
+};
+
+struct sprite_animation;
+
+struct anim_frame_sound_info
+{
+	anim_frame_sound_info(nsentity * ent_=nullptr, sprite_animation * anim_=nullptr, uint32 frame_ind_=0):
+		ent(ent_),
+		anim(anim_),
+		frame_ind(frame_ind_)
+	{}
+	
+	nsentity * ent;
+	sprite_animation * anim;
+	uint32 frame_ind;
+};
 
 struct sprite_animation
 {
@@ -24,9 +53,10 @@ struct sprite_animation
 	nsstring name;
 	uint32 hashed_name;
 	nstex2d * tex;
-	fvec4_vector frames;
+	std::vector<anim_frame> frames;
 	float duration;
 	uint32 current_frame;
+	ns::signal<const anim_frame_sound_info &> next_frame;
 };
 
 class nssprite_sheet_comp : public nscomponent
@@ -51,7 +81,7 @@ public:
 
 	float elapsed;
 
-	std::vector<sprite_animation> animations;
+	std::vector<sprite_animation*> animations;
 
 	uint32 current_anim;
 	bool loop;

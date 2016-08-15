@@ -10,7 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsanim_set.h>
+#include <asset/nsanim_set.h>
 #include <nsengine.h>
 
 nsanim_set::nsanim_set():

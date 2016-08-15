@@ -13,7 +13,7 @@ This file contains all of the neccessary declarations for the nsterrain_comp cla
 #ifndef NSTERRAIN_COMP_H
 #define NSTERRAIN_COMP_H
 
-#include "nscomponent.h"
+#include <component/nscomponent.h>
 
 class nsterrain_comp : public nscomponent
 {

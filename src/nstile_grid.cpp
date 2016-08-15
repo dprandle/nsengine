@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nstile_grid class.
 */
 
 #include <nstile_grid.h>
-#include <nstform_comp.h>
+#include <component/nstform_comp.h>
 
 nstile_grid::nstile_grid()
 {}

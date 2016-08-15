@@ -11,12 +11,12 @@
 */
 
 
-#include <nsentity_manager.h>
+#include <asset/nsentity_manager.h>
 #include <nsengine.h>
-#include <nsscene_manager.h>
-#include <nsscene.h>
+#include <asset/nsscene_manager.h>
+#include <asset/nsscene.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsentity * get_entity(const uivec2 & id)
 {

@@ -13,7 +13,7 @@ This file contains all of the neccessary declarations for the nsanim_system clas
 #ifndef NSANIM_SYSTEM_H
 #define NSANIM_SYSTEM_H
 
-#include "nssystem.h"
+#include <system/nssystem.h>
 
 class nsanim_system : public nssystem
 {

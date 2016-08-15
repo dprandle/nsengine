@@ -10,24 +10,24 @@ This file contains all of the neccessary declarations for the nsui_system class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsinput_map.h>
-#include <nsselection_system.h>
-#include <nsui_system.h>
-#include <nsentity.h>
-#include <nsscene.h>
-#include <nsplugin_manager.h>
-#include <nsui_comp.h>
-#include <nsshader.h>
-#include <nsmaterial.h>
-#include <nsentity_manager.h>
-#include <nsgl_driver.h>
-#include <nsgl_framebuffer.h>
+#include <asset/nsinput_map.h>
+#include <system/nsselection_system.h>
+#include <system/nsui_system.h>
+#include <asset/nsentity.h>
+#include <asset/nsscene.h>
+#include <asset/nsplugin_manager.h>
+#include <component/nsui_comp.h>
+#include <asset/nsshader.h>
+#include <asset/nsmaterial.h>
+#include <asset/nsentity_manager.h>
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_framebuffer.h>
 #include <nstimer.h>
-#include <nsrect_tform_comp.h>
-#include <nsui_canvas_comp.h>
-#include <nsui_button_comp.h>
-#include <nsfont.h>
-#include <nsinput_system.h>
+#include <component/nsrect_tform_comp.h>
+#include <component/nsui_canvas_comp.h>
+#include <component/nsui_button_comp.h>
+#include <asset/nsfont.h>
+#include <system/nsinput_system.h>
 
 nsui_system::nsui_system():
 	nssystem(type_to_hash(nsui_system)),

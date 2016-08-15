@@ -27,6 +27,8 @@ class custom_comp_type_sep : public nscomponent
 
 // c file
 
+// Dont forget to register comp type!!
+
 //#include <custom_comp_type_sep.h>
 #include <nsengine.h>
 

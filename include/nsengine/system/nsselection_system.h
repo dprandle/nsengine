@@ -13,8 +13,8 @@ This file contains all of the neccessary declarations for the nsselection_system
 #ifndef NSSELECTION_SYSTEM_H
 #define NSSELECTION_SYSTEM_H
 
-#include "nssystem.h"
-#include "nsentity_manager.h"
+#include <system/nssystem.h>
+#include <asset/nsentity_manager.h>
 
 #define NSSEL_SELECT "select_entity"
 #define NSSEL_SHIFTSELECT "shift_select"

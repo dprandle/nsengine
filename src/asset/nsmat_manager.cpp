@@ -10,11 +10,11 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsmat_manager.h>
+#include <asset/nsmat_manager.h>
 #include <assimp/material.h>
-#include <nstex_manager.h>
+#include <asset/nstex_manager.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsmaterial * get_material(const uivec2 & id)
 {

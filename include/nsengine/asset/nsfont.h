@@ -16,7 +16,7 @@
 #define DEFAULT_IMPORT_PT_SIZE 44
 #define DEFAULT_FONT_DPI 100.13
 
-#include "nsasset.h"
+#include <asset/nsasset.h>
 
 struct FT_FaceRec_;
 class nstex2d;

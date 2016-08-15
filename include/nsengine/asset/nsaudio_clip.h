@@ -9,10 +9,10 @@
 	\date November 23 2013
 	\copywrite Earth Banana Games 2013
 */
-#ifndef NSAUDIO_SOURCE_H
-#define NSAUDIO_SOURCE_H
+#ifndef NSAUDIO_CLIP_H
+#define NSAUDIO_CLIP_H
 
-#include <nsasset.h>
+#include <asset/nsasset.h>
 #include <memory>
 
 struct SNDFILE_tag;
@@ -39,6 +39,8 @@ public:
 	uint32 al_id();
 
 	int32 sample_freq();
+
+	int32 frame_count();
 
 	int8 channel_count();
 

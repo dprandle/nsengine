@@ -10,11 +10,11 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsanim_comp.h>
+#include <component/nsanim_comp.h>
 #include <nstimer.h>
 #include <nsengine.h>
-#include <nsanim_manager.h>
-#include <nsentity.h>
+#include <asset/nsanim_manager.h>
+#include <asset/nsentity.h>
 
 nsanim_comp::nsanim_comp():
 	nscomponent(type_to_hash(nsanim_comp)),

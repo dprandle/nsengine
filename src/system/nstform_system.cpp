@@ -10,27 +10,27 @@
   \copywrite Earth Banana Games 2013
 */
 
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
-#include <nsshader_manager.h>
-#include <nsrender_system.h>
+#include <asset/nsplugin_manager.h>
+#include <asset/nsshader_manager.h>
+#include <system/nstform_system.h>
 #include <nsvideo_driver.h>
-#include <nscam_comp.h>
-#include <nsscene.h>
-#include <nsplugin.h>
-#include <nsmesh.h>
-#include <nstexture.h>
-#include <nsmaterial.h>
-#include <nsshader.h>
-#include <nsgl_framebuffer.h>
-#include <nsui_system.h>
+#include <component/nscam_comp.h>
+#include <asset/nsscene.h>
+#include <asset/nsplugin.h>
+#include <asset/nsmesh.h>
+#include <asset/nstexture.h>
+#include <asset/nsmaterial.h>
+#include <asset/nsshader.h>
+#include <opengl/nsgl_framebuffer.h>
+#include <system/nsui_system.h>
 
-#include <nsanim_comp.h>
-#include <nsterrain_comp.h>
-#include <nssel_comp.h>
-#include <nsrender_comp.h>
-#include <nslight_comp.h>
+#include <component/nsanim_comp.h>
+#include <component/nsterrain_comp.h>
+#include <component/nssel_comp.h>
+#include <component/nsrender_comp.h>
+#include <component/nslight_comp.h>
 
 nstform_system::nstform_system() :
 	nssystem(type_to_hash(nstform_system))

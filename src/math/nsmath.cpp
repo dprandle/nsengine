@@ -1,4 +1,4 @@
-#include <nsmath.h>
+#include <math/nsmath.h>
 
 float clampf(float pVal, const float & pMin, const float & pMax)
 {

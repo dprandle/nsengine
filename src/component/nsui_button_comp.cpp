@@ -10,8 +10,8 @@ This file contains all of the neccessary definitions for the nsui_button_comp cl
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsui_button_comp.h>
-#include <nsentity.h>
+#include <component/nsui_button_comp.h>
+#include <asset/nsentity.h>
 
 nsui_button_comp::nsui_button_comp() :
 	nscomponent(type_to_hash(nsui_button_comp)),

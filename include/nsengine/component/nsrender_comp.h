@@ -13,8 +13,8 @@
 #ifndef NSRENDER_COMP_H
 #define NSRENDER_COMP_H
 
-#include "nscomponent.h"
-#include "nsmap.h"
+#include <component/nscomponent.h>
+#include <nsmap.h>
 
 class nsmesh;
 class nstimer;

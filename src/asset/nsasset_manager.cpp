@@ -11,13 +11,13 @@ This file contains all of the neccessary definitions for the nsasset_manager cla
 */
 
 #include <nsengine.h>
-#include <nsasset_manager.h>
+#include <asset/nsasset_manager.h>
 #include <nspupper.h>
 #include <nsplatform.h>
 #include <nsfactory.h>
 #include <nscallback.h>
 #include <hash/sha256.h>
-#include <nsasset.h>
+#include <asset/nsasset.h>
 
 nsasset_manager::nsasset_manager(uint32 hashed_type):
 m_res_dir(),

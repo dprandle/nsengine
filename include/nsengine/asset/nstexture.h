@@ -21,10 +21,10 @@
 #define BASE_TEX_UNIT GL_TEXTURE0
 #define BASE_CUBEMAP_FACE GL_TEXTURE_CUBE_MAP_POSITIVE_X
 
-#include "nsasset.h"
-#include "nsvector.h"
-#include "nsvideo_driver.h"
-#include "nssignal.h"
+#include <asset/nsasset.h>
+#include <nsvector.h>
+#include <nsvideo_driver.h>
+#include <nssignal.h>
 
 class nstexture_inst;
 
@@ -317,6 +317,8 @@ class nstex2d : public nstexture
 	int32 pixel_count() const;
 
 	void flip_verticle();
+
+	void flip_horizontal();	
 	
 	virtual void pup(nsfile_pupper * p);
 
@@ -395,6 +397,10 @@ class nstex_cubemap : public nstexture
 	nstex_cubemap & operator=(nstex_cubemap rhs);
 
 	int32 pixel_count() const;
+
+	void flip_verticle(uint8 cube_face);
+
+	void flip_horizontal(uint8 cube_face);	
 	
 	void pup(nsfile_pupper * p);
 

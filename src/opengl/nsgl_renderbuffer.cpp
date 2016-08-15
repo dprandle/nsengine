@@ -1,6 +1,6 @@
-#include <nsgl_renderbuffer.h>
+#include <opengl/nsgl_renderbuffer.h>
 #include <nsengine.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 
 nsgl_renderbuffer::nsgl_renderbuffer() :
 	sample_num(0),

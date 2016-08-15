@@ -15,7 +15,7 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 
 #define DEFAULT_PROCESS_PARTICLE_SHADER "xfbparticle"
 
-#include "nssystem.h"
+#include <system/nssystem.h>
 
 class nsscene;
 class nssel_comp;

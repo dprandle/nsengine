@@ -11,20 +11,20 @@
 */
 
 #include <nstimer.h>
-#include <nsentity.h>
-#include <nsgl_vid_objs.h>
-#include <nsgl_shader.h>
-#include <nsgl_buffer.h>
-#include <nsgl_vao.h>
-#include <nsgl_xfb.h>
-#include <nsgl_texture.h>
-#include <nsshader.h>
-#include <nstexture.h>
-#include <nstform_comp.h>
-#include <nsparticle_comp.h>
-#include <nssel_comp.h>
+#include <asset/nsentity.h>
+#include <opengl/nsgl_vid_objs.h>
+#include <opengl/nsgl_shader.h>
+#include <opengl/nsgl_buffer.h>
+#include <opengl/nsgl_vao.h>
+#include <opengl/nsgl_xfb.h>
+#include <opengl/nsgl_texture.h>
+#include <asset/nsshader.h>
+#include <asset/nstexture.h>
+#include <component/nstform_comp.h>
+#include <component/nsparticle_comp.h>
+#include <component/nssel_comp.h>
 #include <nsengine.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 
 nsgl_shader_obj::nsgl_shader_obj(nsvideo_object * parent_):
 	nsvid_obj(parent_),

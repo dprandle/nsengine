@@ -10,9 +10,9 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsplugin_manager.h>
-#include <nsfont_manager.h>
-#include <nstex_manager.h>
+#include <asset/nsplugin_manager.h>
+#include <asset/nsfont_manager.h>
+#include <asset/nstex_manager.h>
 #include <nsutility.h>
 #include <nsplatform.h>
 #include <ft2build.h>

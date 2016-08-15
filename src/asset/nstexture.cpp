@@ -12,8 +12,8 @@ Description:
 
 
 #include <nslog_file.h>
-#include <nstexture.h>
-#include <nstex_manager.h>
+#include <asset/nstexture.h>
+#include <asset/nstex_manager.h>
 #include <nsvideo_driver.h>
 
 nstexture::nstexture(uint32 hashed_type) :
@@ -353,10 +353,28 @@ void nstex2d::flip_verticle()
 			m_raw_data[cur_index] = m_raw_data[flip_index];
 			m_raw_data[flip_index] = temp_byte;
 		}
-        int p = 5;
-        p = p + 5;
     }
 }
+
+void nstex2d::flip_horizontal()
+{
+    uint8 bpp = bytes_per_pixel();
+	for (int y = 0; y < m_size.y; y++)
+	{
+		for (int x = 0; x < m_size.x / 2; x++)
+        {
+			uint32 row_offset = y * m_size.x * bpp;
+			uint32 flip_byte_offset = row_offset + (m_size.x - x - 1) * bpp;
+			for (int b = 0; b < bpp; ++b)
+			{
+				uint8 temp_byte = m_raw_data[row_offset + x*bpp + b];
+				m_raw_data[row_offset + x*bpp + b] = m_raw_data[flip_byte_offset + b];
+				m_raw_data[flip_byte_offset + b] = temp_byte;
+			}
+		}
+    }		
+}
+
 
 void nstex2d::pup(nsfile_pupper * p)
 {
@@ -559,6 +577,45 @@ uint8 * nstex_cubemap::data(uint8 cube_face)
 	if (cube_face > 5)
 		return nullptr;
 	return m_raw_data + cube_face * m_size.x * m_size.y * bytes_per_pixel();
+}
+
+void nstex_cubemap::flip_verticle(uint8 cube_face)
+{
+	uint8 * dat = data(cube_face);	
+    uint8 bpp = bytes_per_pixel();
+    for (int y = 0; y < m_size.y / 2; y++)
+	{
+        for (int x = 0; x < m_size.x * bpp; x++)
+        {
+            uint32 cur_index = y * m_size.x * bpp + x;
+            uint32 flip_index = m_size.w * bpp * (m_size.h - y - 1) + x;
+
+			uint8 temp_byte = dat[cur_index];
+			dat[cur_index] = dat[flip_index];
+			dat[flip_index] = temp_byte;
+		}
+    }		
+}
+
+void nstex_cubemap::flip_horizontal(uint8 cube_face)
+{
+	uint8 * dat = data(cube_face);
+	
+    uint8 bpp = bytes_per_pixel();
+	for (int y = 0; y < m_size.y; y++)
+	{
+		for (int x = 0; x < m_size.x / 2; x++)
+        {
+			uint32 row_offset = y * m_size.x * bpp;
+			uint32 flip_byte_offset = row_offset + (m_size.x - x - 1) * bpp;
+			for (int b = 0; b < bpp; ++b)
+			{
+				uint8 temp_byte = dat[row_offset + x*bpp + b];
+				dat[row_offset + x*bpp + b] = dat[flip_byte_offset + b];
+				dat[flip_byte_offset + b] = temp_byte;
+			}
+		}
+    }
 }
 
 void nstex_cubemap::pup(nsfile_pupper * p)

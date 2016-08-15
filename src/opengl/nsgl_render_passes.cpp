@@ -10,24 +10,24 @@
   \copywrite Earth Banana Games 2013
 */
 
-#include <nsgl_render_passes.h>
-#include <nsgl_driver.h>
-#include <nsgl_vid_objs.h>
-#include <nsgl_shader.h>
-#include <nsgl_buffer.h>
-#include <nsgl_framebuffer.h>
-#include <nsgl_draw_calls.h>
-#include <nsgl_gbuffer.h>
-#include <nsgl_texture.h>
-#include <nsgl_vao.h>
-#include <nsmaterial.h>
-#include <nstexture.h>
-#include <nsshader.h>
-#include <nsmesh.h>
-#include <nsfont.h>
-#include <nsentity.h>
-#include <nscam_comp.h>
-#include <nslight_comp.h>
+#include <opengl/nsgl_render_passes.h>
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_vid_objs.h>
+#include <opengl/nsgl_shader.h>
+#include <opengl/nsgl_buffer.h>
+#include <opengl/nsgl_framebuffer.h>
+#include <opengl/nsgl_draw_calls.h>
+#include <opengl/nsgl_gbuffer.h>
+#include <opengl/nsgl_texture.h>
+#include <opengl/nsgl_vao.h>
+#include <asset/nsmaterial.h>
+#include <asset/nstexture.h>
+#include <asset/nsshader.h>
+#include <asset/nsmesh.h>
+#include <asset/nsfont.h>
+#include <asset/nsentity.h>
+#include <component/nscam_comp.h>
+#include <component/nslight_comp.h>
 
 void gl_render_pass::setup()
 {

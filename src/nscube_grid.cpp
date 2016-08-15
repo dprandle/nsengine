@@ -11,8 +11,8 @@ This file contains all of the neccessary definitions for the nscube_grid class.
 */
 
 #include <nscube_grid.h>
-#include <nsentity.h>
-#include <nstform_comp.h>
+#include <asset/nsentity.h>
+#include <component/nstform_comp.h>
 
 nscube_grid::nscube_grid()
 {}
@@ -113,6 +113,27 @@ uivec3_vector * nscube_grid::items_at(const ivec3 & grid_pos_)
 	return nullptr;
 }
 
+void nscube_grid::items_within(const fbox & grid_bounds_, uivec3_vector * found_items)
+{
+	items_within(grid_from(grid_bounds_), found_items);
+}
+
+void nscube_grid::items_within(const ibox & grid_bounds_, uivec3_vector * found_items)
+{
+	for (int32 z = grid_bounds_.min.z; z < grid_bounds_.max.z; ++z)
+	{
+		for (int32 y = grid_bounds_.min.y; y < grid_bounds_.max.y; ++y)
+		{
+			for (int32 x = grid_bounds_.min.x; x < grid_bounds_.max.x; ++x)
+			{
+				uivec3_vector * items = items_at(ivec3(x,y,z));
+				if (items != nullptr)
+					found_items->insert(found_items->end(),items->begin(),items->end());
+			}
+		}
+	}
+}
+
 bool nscube_grid::_index_in_bounds(const uivec4 & ind)
 {
 	if (ind.z < world_map[ind.w].size())
@@ -122,7 +143,8 @@ bool nscube_grid::_index_in_bounds(const uivec4 & ind)
 			if (ind.x < world_map[ind.w][ind.z][ind.y].size())
 				return true;
 		}
-	}	
+	}
+	return false;
 }
 
 const ibox & nscube_grid::grid_bounds()
@@ -211,37 +233,47 @@ void nscube_grid::remove(nsentity * ent)
 
 void nscube_grid::remove(instance_tform * tform)
 {
-//	search_and_remove(tform->)
+	search_and_remove(uivec3(tform->owner()->owner->owner()->full_id(),tform->current_tform_id()), tform->phys.aabb);
 }
 
 bool nscube_grid::_remove_item(const uivec4 & ind, const uivec3 & item)
 {
+	bool rem = false;
 	if (_index_in_bounds(ind))
 	{
 		auto iter = world_map[ind.w][ind.z][ind.y][ind.x].begin();
 		while (iter != world_map[ind.w][ind.z][ind.y][ind.x].end())
 		{
 			if (item == (*iter))
+			{
 				iter = world_map[ind.w][ind.z][ind.y][ind.x].erase(iter);
+				rem = true;
+			}
 			else
 				++iter;
 		}
 	}
+	return rem;
 }
 
 bool nscube_grid::_remove_item(const uivec4 & ind, const uivec2 & item)
 {
+	bool rem = false;
 	if (_index_in_bounds(ind))
 	{
 		auto iter = world_map[ind.w][ind.z][ind.y][ind.x].begin();
 		while (iter != world_map[ind.w][ind.z][ind.y][ind.x].end())
 		{
 			if (item == (*iter).xy())
+			{
 				iter = world_map[ind.w][ind.z][ind.y][ind.x].erase(iter);
+				rem = true;
+			}
 			else
 				++iter;
 		}
 	}
+	return rem;
 }
 
 void nscube_grid::name_change(const uivec2 & oldid, const uivec2 newid)

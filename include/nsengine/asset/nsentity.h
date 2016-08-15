@@ -13,10 +13,10 @@
 #ifndef NSENTITY_H
 #define NSENTITY_H
 
-#include "nstform_comp.h"
-#include "nsasset.h"
-#include "nsengine.h"
-#include "nssignal.h"
+#include <component/nstform_comp.h>
+#include <asset/nsasset.h>
+#include <nsengine.h>
+#include <nssignal.h>
 
 typedef std::unordered_set<nsentity*> entity_set;
 

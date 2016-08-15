@@ -9,59 +9,63 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <nssprite_comp.h>
-#include <nsui_button_comp.h>
-#include <nsui_canvas_comp.h>
-#include <nsrect_tform_comp.h>
-#include <nsui_system.h>
+#include <component/nssprite_comp.h>
+#include <component/nsui_button_comp.h>
+#include <component/nsui_canvas_comp.h>
+#include <component/nsrect_tform_comp.h>
+#include <system/nsui_system.h>
 #include <nsvideo_driver.h>
 #include <hash/crc32.h>
 #include <nsplatform.h>
 #include <nsengine.h>
-#include <nsrender_system.h>
-#include <nsscene.h>
-#include <nsinput_map_manager.h>
-#include <nsentity_manager.h>
-#include <nsanim_manager.h>
-#include <nsmesh_manager.h>
-#include <nstex_manager.h>
-#include <nsmat_manager.h>
+#include <system/nstform_system.h>
+#include <asset/nsscene.h>
+#include <asset/nsinput_map_manager.h>
+#include <asset/nsentity_manager.h>
+#include <asset/nsanim_manager.h>
+#include <asset/nsmesh_manager.h>
+#include <asset/nstex_manager.h>
+#include <asset/nsmat_manager.h>
 #include <nsevent_dispatcher.h>
-#include <nsshader_manager.h>
-#include <nsinput_map.h>
+#include <asset/nsshader_manager.h>
+#include <asset/nsinput_map.h>
 #include <nspupper.h>
-#include <nsscene_manager.h>
-#include <nssel_comp.h>
-#include <nsterrain_comp.h>
-#include <nsanim_system.h>
-#include <nsinput_system.h>
-#include <nsparticle_comp.h>
+#include <asset/nsscene_manager.h>
+#include <component/nssel_comp.h>
+#include <component/nsterrain_comp.h>
+#include <system/nsanim_system.h>
+#include <system/nsinput_system.h>
+#include <component/nsparticle_comp.h>
 #include <nstimer.h>
-#include <nsentity.h>
-#include <nscamera_system.h>
-#include <nsselection_system.h>
+#include <asset/nsentity.h>
+#include <system/nscamera_system.h>
+#include <system/nsselection_system.h>
 #include <nsevent.h>
-#include <nsplugin_manager.h>
-#include <nstile_brush_comp.h>
-#include <nstile_comp.h>
-#include <nsoccupy_comp.h>
-#include <nsbuild_system.h>
-#include <nsparticle_comp.h>
-#include <nsparticle_system.h>
+#include <asset/nsplugin_manager.h>
+#include <component/nstile_brush_comp.h>
+#include <component/nstile_comp.h>
+#include <component/nsoccupy_comp.h>
+#include <system/nsbuild_system.h>
+#include <component/nsparticle_comp.h>
+#include <system/nsparticle_system.h>
 #include <nslog_file.h>
 #include <nsfactory.h>
-#include <nssystem.h>
-#include <nsrender_system.h>
-#include <nsgl_framebuffer.h>
-#include <nsanim_comp.h>
-#include <nslight_comp.h>
-#include <nscam_comp.h>
-#include <nsrender_comp.h>
-#include <nsui_comp.h>
-#include <nsfont_manager.h>
-#include <nsaudio_system.h>
-#include <nsaudio_manager.h>
+#include <system/nssystem.h>
+#include <system/nstform_system.h>
+#include <opengl/nsgl_framebuffer.h>
+#include <component/nsanim_comp.h>
+#include <component/nslight_comp.h>
+#include <component/nscam_comp.h>
+#include <component/nsrender_comp.h>
+#include <component/nsui_comp.h>
+#include <asset/nsfont_manager.h>
+#include <system/nsaudio_system.h>
+#include <asset/nsaudio_manager.h>
 
+#include <component/nsaudio_source_comp.h>
+#include <system/nssprite_anim_system.h>
+#include <system/nsphysics_system.h>
+#include <component/nsphysic_comp.h>
 
 
 #ifdef NSDEBUG
@@ -548,7 +552,10 @@ void nsengine::_init_factories()
     register_component<nsui_canvas_comp>("nsui_canvas_comp");
     register_component<nsui_button_comp>("nsui_button_comp");
 	register_component<nssprite_sheet_comp>("nssprite_sheet_comp");
+	register_component<nsphysic_comp>("nsphysic_comp");
+	register_component<nsaudio_source_comp>("nsaudio_source_comp");
 
+	
     register_system<nsanim_system>("nsanim_system");
     register_system<nsbuild_system>("nsbuild_system");
     register_system<nscamera_system>("nscamera_system");
@@ -558,6 +565,8 @@ void nsengine::_init_factories()
     register_system<nsselection_system>("nsselection_system");
     register_system<nsui_system>("nsui_system");
 	register_system<nsaudio_system>("nsaudio_system");
+	register_system<nssprite_anim_system>("nssprite_anim_system");
+	register_system<nsphysics_system>("nsphysic_system");
 
     register_manager<nsanim_manager>("nsanim_manager");
     register_manager<nsentity_manager>("nsentity_manager");

@@ -19,8 +19,8 @@
 #ifndef NSTEX_MANAGER_H
 #define NSTEX_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nstexture.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nstexture.h>
 
 nstexture * get_texture(const uivec2 & id);
 

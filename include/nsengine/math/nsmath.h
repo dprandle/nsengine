@@ -28,7 +28,7 @@ T radians(const T & val_);
 
 float random_float(float high_ = 1.0f, float low_ = 0.0f);
 
-#include <nsmat4.h>
+#include <math/nsmat4.h>
 
 // Math typedefs
 typedef nsvec2<char> cvec2;
@@ -190,10 +190,20 @@ struct nsbox
 			nsvec3<T> b;
 		};
 	};
-		
+
+	nsbox<T> operator+(const nsbox<T> & rhs)
+	{
+		return nsbox<T>(min+rhs.min,max+rhs.max);
+	}
+
 	nsbox<T> operator+(const nsvec3<T> & rhs)
 	{
 		return nsbox<T>(min+rhs,max+rhs);
+	}
+
+	nsbox<T> operator-(const nsbox<T> & rhs)
+	{
+		return nsbox<T>(min-rhs.min,max-rhs.max);
 	}
 
 	nsbox<T> operator-(const nsvec3<T> & rhs)
@@ -214,6 +224,21 @@ struct nsbox
 		max-=rhs;
 		return *this;		
 	}
+
+	nsbox<T> & operator+=(const nsbox<T> & rhs)
+	{
+		min+=rhs.min;
+		max+=rhs.max;
+		return *this;
+	}
+	
+	nsbox<T> & operator-=(const nsbox<T> & rhs)
+	{
+		min-=rhs.min;
+		max-=rhs.max;
+		return *this;		
+	}
+
 };
 
 template<class PUPer, class T>
@@ -290,6 +315,52 @@ int collision_plane_aabb(const nsvec4<T> & plane, const nsbox<T> & aabb)
     nsvec4<T> sphere(center,rad);
     return collision_plane_sphere(plane, sphere);
 }
+
+template<class T>
+nsvec3<T> closest_point_on_aabb(const nsvec3<T> & point, const nsbox<T> & aabb)
+{
+    nsvec3<T> closes_pt;
+    closes_pt.x = (point.x < aabb.min.x)? aabb.min.x : (point.x > aabb.max.x)? aabb.max.x : point.x;
+    closes_pt.y = (point.y < aabb.min.y)? aabb.min.y : (point.y > aabb.max.y)? aabb.max.y : point.y;
+    closes_pt.z = (point.z < aabb.min.z)? aabb.min.z : (point.z > aabb.max.z)? aabb.max.z : point.z;
+    return closes_pt;
+}
+
+template<class T>
+bool collision_aabb_sphere(const nsbox<T> & aabb, const nsvec4<T> & sphere, nsvec3<T> & norm_col, T & col_depth)
+{
+    // if(aabb.Contains(sphere.Centre))
+    // {
+    //      // Do special code.
+    //      // here, for now don't do a collision, until the centre is
+    //      // outside teh box
+    //      col_depth = 0.0f;
+    //      norm_col = nsvec3<T>(0, 0, 0);
+    //      return true;
+    // }
+
+    // get closest point on box from sphere centre
+    nsvec3<T> x_closest = closest_point_on_aabb(sphere.xyz(), aabb);
+    
+    // find the separation
+    nsvec3<T> x_diff = sphere.xyz() - x_closest;
+
+    // check if points are far enough
+    float dist_sq = x_diff.length_sq();
+
+    if (dist_sq > sphere.w * sphere.w)
+        return false;
+
+    float f_dist = sqrt(dist_sq);
+
+    // collision depth
+    col_depth = sphere.w - f_dist;
+   
+    // normal of collision (going towards the sphere centre)
+    norm_col = x_diff  / f_dist;
+    return true;    
+}
+
 
 template<class T>
 bool collision_aabb_aabb(const nsbox<T> & aabb1, const nsbox<T> & aabb2, int8 mask=0)

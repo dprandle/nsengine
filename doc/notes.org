@@ -57,14 +57,18 @@ After that I will need to go through the render() function for each pass and tra
 Reg Expr. Emacs
 
 . Match single char
+
 * match the preceding reg exp as many times as possible
 
 ie .* will match essentially anything
 
 You can group the search string to have it in the replace string
 
-<\(*.\)h> for search
+<\(.*\)h> for search
 and "\1h" for replace will do: <my_header.h> to "my_header.h" for example
 
 
 SPACE to replace one, and 'n' to skip.
+
+To escape an regexp char simply put brackets "[char]" around it.
+IE to search for "nsrender_system.h" type "nsrender_system[.]h"

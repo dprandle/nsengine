@@ -10,9 +10,9 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsfont.h>
+#include <asset/nsfont.h>
 #include <nsengine.h>
-#include <nstexture.h>
+#include <asset/nstexture.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 

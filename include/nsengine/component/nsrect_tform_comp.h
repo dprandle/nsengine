@@ -13,7 +13,7 @@ This file contains all of the neccessary declarations for the nsrect_tform_comp 
 #ifndef NSRECT_TFORM_COMP_H
 #define NSRECT_TFORM_COMP_H
 
-#include "nscomponent.h"
+#include <component/nscomponent.h>
 
 class nsui_canvas_comp;
 

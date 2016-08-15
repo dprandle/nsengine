@@ -10,10 +10,10 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsmesh_manager.h>
+#include <asset/nsmesh_manager.h>
 #include <assimp/scene.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsmesh * get_mesh(const uivec2 & id)
 {

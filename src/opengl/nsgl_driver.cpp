@@ -10,35 +10,35 @@
   \copywrite Earth Banana Games 2013
 */
 
-#include <nsgl_vid_objs.h>
-#include <nsgl_render_passes.h>
-#include <nsgl_draw_calls.h>
-#include <nsgl_driver.h>
-#include <nsgl_driver.h>
-#include <nsgl_shadow_framebuffer.h>
-#include <nsgl_gbuffer.h>
-#include <nsgl_texture.h>
-#include <nsgl_buffer.h>
-#include <nsgl_shader.h>
-#include <nsgl_vao.h>
+#include <opengl/nsgl_vid_objs.h>
+#include <opengl/nsgl_render_passes.h>
+#include <opengl/nsgl_draw_calls.h>
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_shadow_framebuffer.h>
+#include <opengl/nsgl_gbuffer.h>
+#include <opengl/nsgl_texture.h>
+#include <opengl/nsgl_buffer.h>
+#include <opengl/nsgl_shader.h>
+#include <opengl/nsgl_vao.h>
 
-#include <nsmaterial.h>
-#include <nsshader.h>
-#include <nsui_button_comp.h>
-#include <nsui_canvas_comp.h>
-#include <nsmesh.h>
-#include <nsui_comp.h>
-#include <nsfont.h>
-#include <nsscene.h>
-#include <nscam_comp.h>
-#include <nslight_comp.h>
-#include <nsrender_comp.h>
-#include <nsanim_comp.h>
-#include <nsterrain_comp.h>
-#include <nssel_comp.h>
-#include <nsplugin.h>
+#include <asset/nsmaterial.h>
+#include <asset/nsshader.h>
+#include <component/nsui_button_comp.h>
+#include <component/nsui_canvas_comp.h>
+#include <asset/nsmesh.h>
+#include <component/nsui_comp.h>
+#include <asset/nsfont.h>
+#include <asset/nsscene.h>
+#include <component/nscam_comp.h>
+#include <component/nslight_comp.h>
+#include <component/nsrender_comp.h>
+#include <component/nsanim_comp.h>
+#include <component/nsterrain_comp.h>
+#include <component/nssel_comp.h>
+#include <asset/nsplugin.h>
 #include <nsengine.h>
-#include <nsui_system.h>
+#include <system/nsui_system.h>
 #include <nstimer.h>
 
 render_shaders::render_shaders() :

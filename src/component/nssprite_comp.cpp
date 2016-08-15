@@ -10,8 +10,8 @@ This file contains all of the neccessary definitions for the nssprite_comp class
 \copywrite Earth Banana Games 2013
 */
 
-#include <nssprite_comp.h>
-#include <nsentity.h>
+#include <component/nssprite_comp.h>
+#include <asset/nsentity.h>
 
 sprite_animation::sprite_animation():
 	name(),
@@ -36,10 +36,18 @@ nssprite_sheet_comp::nssprite_sheet_comp(const nssprite_sheet_comp & copy):
 	current_anim(copy.current_anim),
 	loop(copy.loop),
 	playing(copy.playing)
-{}
+{
+	
+}
 
 nssprite_sheet_comp::~nssprite_sheet_comp()
-{}
+{
+	while (animations.begin() != animations.end())
+	{
+		delete animations.back();
+		animations.pop_back();
+	}
+}
 
 nssprite_sheet_comp* nssprite_sheet_comp::copy(const nscomponent * to_copy)
 {

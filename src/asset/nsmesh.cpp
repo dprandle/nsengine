@@ -9,9 +9,9 @@
 //	This file contains the definition for the nsmesh class functions along with any other helper
 //	functions that will aid in loading/using meshes
 //*-----------------------------------------------------------------------------------------------
-#include <nsmesh.h>
+#include <asset/nsmesh.h>
 #include <nsengine.h>
-#include <nsshader.h>
+#include <asset/nsshader.h>
 
 nsmesh::nsmesh():
 	nsasset(type_to_hash(nsmesh)),

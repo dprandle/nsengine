@@ -1,6 +1,6 @@
-#include <nsmath.h>
-#include <nsgl_shader.h>
-#include <nsgl_driver.h>
+#include <math/nsmath.h>
+#include <opengl/nsgl_shader.h>
+#include <opengl/nsgl_driver.h>
 #include <string.h>
 #include <nsengine.h>
 

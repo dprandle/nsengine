@@ -10,10 +10,10 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsshader_manager.h>
+#include <asset/nsshader_manager.h>
 #include <nsplatform.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsshader * get_shader(const uivec2 & id)
 {

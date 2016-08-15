@@ -2,7 +2,7 @@
 #ifndef NSVEC4_H
 #define NSVEC4_H
 
-#include "nsvec3.h"
+#include <math/nsvec3.h>
 
 template <class T>
 nsvec4<T> operator*(const int32 & lhs_, const nsvec4<T> & rhs_);
@@ -231,13 +231,13 @@ struct nsvec4
 
 	nsvec4<T> & minimize(const nsvec4<T> & rhs_)
 	{
-		if (x < rhs_.x)
+		if (x > rhs_.x)
 			x = rhs_.x;
-		if (y < rhs_.y)
+		if (y > rhs_.y)
 			y = rhs_.y;
-		if (z < rhs_.z)
+		if (z > rhs_.z)
 			z = rhs_.z;
-		if (w < rhs_.w)
+		if (w > rhs_.w)
 			w = rhs_.w;
 		return *this;
 	}
@@ -252,13 +252,13 @@ struct nsvec4
 
 	nsvec4<T> & maximize(const nsvec4<T> & rhs_)
 	{
-		if (x > rhs_.x)
+		if (x < rhs_.x)
 			x = rhs_.x;
-		if (y > rhs_.y)
+		if (y < rhs_.y)
 			y = rhs_.y;
-		if (z > rhs_.z)
+		if (z < rhs_.z)
 			z = rhs_.z;
-		if (w > rhs_.w)
+		if (w < rhs_.w)
 			w = rhs_.w;
 		return *this;
 	}
@@ -1707,7 +1707,7 @@ nsvec4<T> lerp(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_, T2 scaling_factor
 template <class T>
 nsvec4<T> min(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_)
 {
-	nsvec2<T> ret(lhs_);
+	nsvec4<T> ret(lhs_);
 	ret.minimize(rhs_);
 	return ret;
 }
@@ -1715,7 +1715,7 @@ nsvec4<T> min(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_)
 template <class T>
 nsvec4<T> max(const nsvec4<T> & lhs_, const nsvec4<T> & rhs_)
 {
-	nsvec2<T> ret(lhs_);
+	nsvec4<T> ret(lhs_);
 	ret.maximize(rhs_);
 	return ret;
 }

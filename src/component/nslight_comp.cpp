@@ -12,14 +12,14 @@ This file contains all of the neccessary definitions for the nslight_comp class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <nslight_comp.h>
-#include <nsmesh.h>
+#include <component/nslight_comp.h>
+#include <asset/nsmesh.h>
 #include <nstimer.h>
-#include <nsentity.h>
-#include <nstform_comp.h>
+#include <asset/nsentity.h>
+#include <component/nstform_comp.h>
 #include <nsengine.h>
-#include <nsmesh_manager.h>
-#include <nscam_comp.h>
+#include <asset/nsmesh_manager.h>
+#include <component/nscam_comp.h>
 
 nslight_comp::nslight_comp() : 
 	nscomponent(type_to_hash(nslight_comp)),

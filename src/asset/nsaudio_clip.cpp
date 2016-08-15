@@ -1,9 +1,9 @@
 /*! 
-	\file nsaudio_source.cpp
+	\file nsaudio_clip.cpp
 	
-	\brief Definition file for nsaudio_source class
+	\brief Definition file for nsaudio_clip class
 
-	This file contains all of the neccessary definitions for the nsaudio_source class.
+	This file contains all of the neccessary definitions for the nsaudio_clip class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -13,8 +13,8 @@
 #include <AL/al.h>
 #include <sndfile.h>
 
-#include <nsaudio_system.h>
-#include <nsaudio_source.h>
+#include <system/nsaudio_system.h>
+#include <asset/nsaudio_clip.h>
 #include <nsengine.h>
 
 audio_stream_obj::audio_stream_obj()
@@ -78,6 +78,11 @@ int32 nsaudio_clip::sample_freq()
 int32 nsaudio_clip::pcm_data_byte_size()
 {
 	return sizeof(int16) * m_frame_cnt * m_channel_cnt;
+}
+
+int32 nsaudio_clip::frame_count()
+{
+	return m_frame_cnt;
 }
 
 bool nsaudio_clip::streamable()

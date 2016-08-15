@@ -10,7 +10,7 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsasset.h>
+#include <asset/nsasset.h>
 #ifdef NOTIFY_ENGINE_NAME_CHANGE
 #include <nsengine.h>
 #endif

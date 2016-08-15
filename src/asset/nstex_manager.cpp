@@ -11,14 +11,14 @@
 */
 #include <iostream>
 
-#include <stb_image_write.h>
-#include <stb_image.h>
+#include <asset/stb_image_write.h>
+#include <asset/stb_image.h>
 
-#include <nstex_manager.h>
+#include <asset/nstex_manager.h>
 #include <nsplatform.h>
-#include <nstexture.h>
+#include <asset/nstexture.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nstexture * get_texture(const uivec2 & id)
 {
@@ -136,6 +136,7 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	tex->resize(sz);
 	tex->copy_data(data, 0);
 	stbi_image_free(data);
+	tex->flip_horizontal();
 	
 	if (load_with_mipmaps_enabled)
 		tex->enable_mipmap_autogen(true);
@@ -234,6 +235,7 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		tex->copy_data(data, i);
 		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
 		stbi_image_free(data);
+		tex->flip_horizontal(i);
 	}
 	
 	if (load_with_mipmaps_enabled)

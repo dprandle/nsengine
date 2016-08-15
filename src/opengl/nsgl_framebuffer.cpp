@@ -10,13 +10,13 @@
   \copywrite Earth Banana Games 2013
 */
 
-#include <nsgl_vid_objs.h>
-#include <nsgl_renderbuffer.h>
-#include <nsgl_framebuffer.h>
-#include <nsasset_manager.h>
+#include <opengl/nsgl_vid_objs.h>
+#include <opengl/nsgl_renderbuffer.h>
+#include <opengl/nsgl_framebuffer.h>
+#include <asset/nsasset_manager.h>
 #include <nsengine.h>
-#include <nsgl_driver.h>
-#include <nsgl_texture.h>
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_texture.h>
 
 nsgl_framebuffer::nsgl_framebuffer() :
 	target(fb_read_draw),

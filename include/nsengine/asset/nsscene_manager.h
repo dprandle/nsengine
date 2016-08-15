@@ -13,8 +13,8 @@ This file contains all of the neccessary declarations for the nsscene_manager cl
 #ifndef NSSCENE_MANAGER_H
 #define NSSCENE_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nsscene.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsscene.h>
 
 nsscene * get_scene(const uivec2 & id);
 

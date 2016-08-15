@@ -10,35 +10,37 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsui_system.h>
-#include <nsrect_tform_comp.h>
+#include <nscube_grid.h>
+#include <system/nsui_system.h>
+#include <component/nsrect_tform_comp.h>
 #include <nsvideo_driver.h>
 #include <iostream>
 #include <nsvector.h>
-#include <nsselection_system.h>
-#include <nsscene_manager.h>
-#include <nsscene.h>
+#include <system/nsselection_system.h>
+#include <asset/nsscene_manager.h>
+#include <asset/nsscene.h>
 #include <nsevent_dispatcher.h>
-#include <nsrender_system.h>
-#include <nssel_comp.h>
-#include <nsmesh_manager.h>
-#include <nstile_comp.h>
-#include <nsshader.h>
+#include <system/nstform_system.h>
+#include <component/nssel_comp.h>
+#include <asset/nsmesh_manager.h>
+#include <component/nstile_comp.h>
+#include <asset/nsshader.h>
 #include <nsevent.h>
-#include <nsentity_manager.h>
-#include <nsoccupy_comp.h>
-#include <nsmat_manager.h>
+#include <asset/nsentity_manager.h>
+#include <component/nsoccupy_comp.h>
+#include <asset/nsmat_manager.h>
 #include <nstile_grid.h>
-#include <nstile_brush_comp.h>
-#include <nsbuild_system.h>
-#include <nscam_comp.h>
-#include <nsterrain_comp.h>
-#include <nsplugin_manager.h>
+#include <component/nstile_brush_comp.h>
+#include <system/nsbuild_system.h>
+#include <component/nscam_comp.h>
+#include <component/nsterrain_comp.h>
+#include <asset/nsplugin_manager.h>
 #include <nsevent.h>
-#include <nsmath.h>
-#include <nsgl_gbuffer.h>
-#include <nsanim_comp.h>
-#include <nsrender_comp.h>
+#include <math/nsmath.h>
+#include <opengl/nsgl_gbuffer.h>
+#include <component/nsanim_comp.h>
+#include <component/nsrender_comp.h>
+#include <component/nsphysic_comp.h>
 
 nsselection_system::nsselection_system() :
     nssystem(type_to_hash(nsselection_system)),
@@ -124,27 +126,30 @@ bool nsselection_system::add_selection_to_grid(nsscene * scn)
 		nssel_comp * selComp = (*iter)->get<nssel_comp>();
 		nstform_comp * tComp = (*iter)->get<nstform_comp>();
 		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
-
-		if (occComp != nullptr)
+		nsphysic_comp * phcomp = (*iter)->get<nsphysic_comp>();
+		
+		auto selection = selComp->selection(scn);
+		if (selection != nullptr)
 		{
-			auto selection = selComp->selection(scn);
-			if (selection != nullptr)
+			tform_per_scene_info * psi = tComp->per_scene_info(scn);
+			auto selIter = selection->begin();
+			while (selIter != selection->end())
 			{
-				tform_per_scene_info * psi = tComp->per_scene_info(scn);
-				auto selIter = selection->begin();
-				while (selIter != selection->end())
+				fvec3 pos = psi->m_tforms[*selIter].world_position();
+				if (occComp != nullptr && !scn->grid().add
+					(
+						uivec3((*iter)->full_id(), *selIter),
+						occComp->spaces(),
+						pos))
 				{
-					fvec3 pos = psi->m_tforms[*selIter].world_position();
-					if (!scn->grid().add(
-							uivec3((*iter)->plugin_id(), (*iter)->id(), *selIter),
-							occComp->spaces(),
-							pos))
-					{
-						dprint("nsselection_system::add_selection_to_grid Could not add selection to grid");
-						return false;
-					}
-					++selIter;
+					dprint("nsselection_system::add_selection_to_grid Could not add selection to grid");
+					return false;
 				}
+
+				if (phcomp != nullptr && !phcomp->dynamic)
+					psi->m_tforms[*selIter].in_cube_grid = false;
+					
+				++selIter;
 			}
 		}
 		++iter;
@@ -226,14 +231,15 @@ void nsselection_system::refresh_selection(nsscene * scene_to_refresh)
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		auto selection = (*iter)->get<nssel_comp>()->selection(scene_to_refresh);
-		if (selection == nullptr)
+		sel_per_scene_info * psi = (*iter)->get<nssel_comp>()->scene_info(m_active_scene);
+		if (psi == nullptr)
 		{
 			iter = m_selected_ents.erase(iter);
 		}
 		else
 		{
-			(*iter)->get<nssel_comp>()->selection(m_active_scene)->clear();
+			psi->m_selection.clear();
+			psi->m_selected = false;
 			++iter;
 		}
 	}	
@@ -244,7 +250,9 @@ void nsselection_system::clear_selection()
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		(*iter)->get<nssel_comp>()->selection(m_active_scene)->clear();
+		sel_per_scene_info * psi = (*iter)->get<nssel_comp>()->scene_info(m_active_scene);
+		psi->m_selection.clear();
+		psi->m_selected = false;
 		++iter;
 	}
 	m_selected_ents.clear();
@@ -814,25 +822,26 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	float angleX = projVec.xy().angle_to(projVecX);
 	
 	// Set normal if not moving in a single plane
-	if ((axis_ == (axis_x | axis_y | axis_z) && angle > 35.0f) || (axis_ & axis_z) != axis_z)
-		normal.set(0.0f,0.0f,-1.0f);
-	else
-	{
-		if (axis_ == axis_z || axis_ == (axis_x | axis_y | axis_z))
-		{
-			if (angleX < 45.0f)
-				normal.set(-1.0f,0.0f,0.0f);
-			else
-				normal.set(0.0f,-1.0f,0.0f);
-		}
-		else
-		{
-			if ((axis_ & axis_x) != axis_x)
-				normal.set(-1.0f,0.0f,0.0f);
-			else
-				normal.set(0.0f,-1.0f,0.0f);
-		}
-	}
+//	if ((axis_ == (axis_x | axis_y | axis_z) && angle > 35.0f) || (axis_ & axis_z) != axis_z)
+
+	normal.set(0.0f,0.0f,-1.0f);
+	// else
+	// {
+	// 	if (axis_ == axis_z || axis_ == (axis_x | axis_y | axis_z))
+	// 	{
+	// 		if (angleX < 45.0f)
+	// 			normal.set(-1.0f,0.0f,0.0f);
+	// 		else
+	// 			normal.set(0.0f,-1.0f,0.0f);
+	// 	}
+	// 	else
+	// 	{
+	// 		if ((axis_ & axis_x) != axis_x)
+	// 			normal.set(-1.0f,0.0f,0.0f);
+	// 		else
+	// 			normal.set(0.0f,-1.0f,0.0f);
+	// 	}
+	// }
 	
 	depth = (normal * (originalPos - fpos)) / (normal * castVec);
 	fpos += castVec*depth;
@@ -941,14 +950,15 @@ void nsselection_system::remove_from_selection(nsentity * ent, uint32 pTFormID)
 	if (selcomp == nullptr)
 		return;
 
-	auto selection = selcomp->selection(m_active_scene);
-	if (selection == nullptr)
+	sel_per_scene_info * spsi = selcomp->scene_info(m_active_scene);
+	if (spsi == nullptr)
 		return;
-
-	selection->erase(pTFormID);
+	
+	spsi->m_selection.erase(pTFormID);
 	selcomp->post_update(true);
-	if (selection->empty())
+	if (spsi->m_selection.empty())
 	{
+		spsi->m_selected = false;
 		auto iter = m_selected_ents.find(ent);
 		m_selected_ents.erase(iter);
 	}
@@ -965,22 +975,25 @@ void nsselection_system::remove_from_grid()
 		nssel_comp * selComp = (*iter)->get<nssel_comp>();
 		nstform_comp * tComp = (*iter)->get<nstform_comp>();
 		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
+		nsphysic_comp * phcomp = (*iter)->get<nsphysic_comp>();
+		
+		auto selection = selComp->selection(m_active_scene);
 
-		if (occComp != nullptr)
-		{
-
-			auto selection = selComp->selection(m_active_scene);
-
-			if (selection == nullptr)
-				return;
+		if (selection == nullptr)
+			return;
 			
-			auto selIter = selection->begin();
-			while (selIter != selection->end())
-			{
-				instance_tform & itf = tComp->per_scene_info(m_active_scene)->m_tforms[*selIter];
+		auto selIter = selection->begin();
+		while (selIter != selection->end())
+		{
+			instance_tform & itf = tComp->per_scene_info(m_active_scene)->m_tforms[*selIter];
+			if (occComp != nullptr)
 				m_active_scene->grid().remove(occComp->spaces(), itf.world_position());
-				++selIter;
+
+			if (phcomp != nullptr && !phcomp->dynamic)
+			{
+				m_active_scene->cube_grid->search_and_remove(uivec3((*iter)->full_id(),*selIter),itf.phys.aabb);
 			}
+			++selIter;
 		}
 		++iter;
 	}
@@ -1252,6 +1265,7 @@ void nsselection_system::update()
 						add_selection_to_grid(m_active_scene);
 					nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 				}
+				
 				m_cached_point = fvec3();
 			}
 		}

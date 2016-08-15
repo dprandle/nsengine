@@ -10,8 +10,8 @@ This file contains all of the neccessary definitions for the nstile_comp class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <nstile_comp.h>
-#include <nsentity.h>
+#include <component/nstile_comp.h>
+#include <asset/nsentity.h>
 
 nstile_comp::nstile_comp() :
 	nscomponent(type_to_hash(nstile_comp))

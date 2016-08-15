@@ -11,9 +11,9 @@ This file contains all of the neccessary definitions for the nsaudio_manager cla
 */
 
 #include <nsengine.h>
-#include <nsaudio_manager.h>
+#include <asset/nsaudio_manager.h>
 #include <sndfile.h>
-#include <nsaudio_source.h>
+#include <asset/nsaudio_clip.h>
 #include <nsplatform.h>
 #include <algorithm>
 

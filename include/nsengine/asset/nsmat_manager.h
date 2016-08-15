@@ -13,8 +13,8 @@
 #ifndef NSMAT_MANAGER_H
 #define NSMAT_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nsmaterial.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsmaterial.h>
 
 nsmaterial * get_material(const uivec2 & id);
 

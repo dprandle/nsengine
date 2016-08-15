@@ -11,8 +11,8 @@ This file contains all of the neccessary definitions for the nstile_brush_comp c
 */
 
 
-#include <nstile_brush_comp.h>
-#include <nsentity.h>
+#include <component/nstile_brush_comp.h>
+#include <asset/nsentity.h>
 
 nstile_brush_comp::nstile_brush_comp() :
 	nscomponent(type_to_hash(nstile_brush_comp)),

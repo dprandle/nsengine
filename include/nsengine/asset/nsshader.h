@@ -1,8 +1,8 @@
 #ifndef NSSHADER_H
 #define NSSHADER_H
 
-#include "nsasset.h"
-#include "nsvideo_driver.h"
+#include <asset/nsasset.h>
+#include <nsvideo_driver.h>
 
 struct shader_stage_info
 {

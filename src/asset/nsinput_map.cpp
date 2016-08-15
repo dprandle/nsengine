@@ -1,4 +1,4 @@
-#include <nsinput_map.h>
+#include <asset/nsinput_map.h>
 #include <nsengine.h>
 
 nsinput_map::nsinput_map():

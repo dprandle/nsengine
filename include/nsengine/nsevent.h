@@ -10,8 +10,8 @@ This file contains all of the neccessary declarations for the NSEvent struct.
 \copywrite Earth Banana Games 2013
 */
 
-#include "nsmath.h"
-#include "nsinput_map.h"
+#include <math/nsmath.h>
+#include <asset/nsinput_map.h>
 
 #ifndef NSEVENT_H
 #define NSEVENT_H
@@ -250,6 +250,42 @@ struct collision_event : public nsevent
 	
 	uivec3 ent_c1;
 	uivec3 ent_c2;
+};
+
+struct audio_play_event : public nsevent
+{
+	audio_play_event(const uivec3 & source_id_, uint32 effect_index_):
+		nsevent(),
+		source_id(source_id_),
+		effect_index(effect_index_)
+	{}
+	
+	uivec3 source_id;
+	uint32 effect_index;
+};
+
+struct audio_start_streaming_event : public nsevent
+{
+	audio_start_streaming_event(const uivec3 & source_id_, uint32 effect_index_):
+		nsevent(),
+		source_id(source_id_),
+		effect_index(effect_index_)
+	{}
+	
+	uivec3 source_id;
+	uint32 effect_index;
+};
+
+struct audio_stop_streaming_event : public nsevent
+{
+	audio_stop_streaming_event(const uivec3 & source_id_, uint32 effect_index_):
+		nsevent(),
+		source_id(source_id_),
+		effect_index(effect_index_)
+	{}
+	
+	uivec3 source_id;
+	uint32 effect_index;
 };
 
 #endif

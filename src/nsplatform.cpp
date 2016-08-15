@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <nsplatform.h>
-#include <nsasset_manager.h>
+#include <asset/nsasset_manager.h>
 #ifdef WIN32
 #include <filesystem>
 #include <Windows.h>
@@ -33,7 +33,7 @@
 #include <time.h>
 #endif
 
-#include <nsasset_manager.h>
+#include <asset/nsasset_manager.h>
 #include <fstream>
 #include <string>
 #include <iostream>

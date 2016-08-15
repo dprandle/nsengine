@@ -15,10 +15,10 @@
 
 #define SCENE_MAX_PLAYERS 16
 
-#include "nsasset.h"
-#include "nsentity.h"
-//#include "nstile_grid.h"
-#include "nsoccupy_comp.h"
+#include <asset/nsasset.h>
+#include <asset/nsentity.h>
+//#include <nstile_grid.h>
+#include <component/nsoccupy_comp.h>
 
 class nstile_grid;
 class nscube_grid;

@@ -1,7 +1,7 @@
 #ifndef NSRENDERBUF_OBJECT_H
 #define NSRENDERBUF_OBJECT_H
 
-#include "nsgl_object.h"
+#include <opengl/nsgl_object.h>
 
 struct nsgl_renderbuffer : public nsgl_obj
 {

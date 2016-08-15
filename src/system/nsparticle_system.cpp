@@ -10,27 +10,27 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsgl_driver.h>
-#include <nsgl_vao.h>
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_vao.h>
 #include <nsvideo_driver.h>
 #include <nsevent_dispatcher.h>
-#include <nsparticle_system.h>
-#include <nsparticle_comp.h>
-#include <nsscene.h>
+#include <system/nsparticle_system.h>
+#include <component/nsparticle_comp.h>
+#include <asset/nsscene.h>
 #include <nsengine.h>
-#include <nsgl_framebuffer.h>
-#include <nsrender_system.h>
-#include <nsshader.h>
-#include <nsshader_manager.h>
-#include <nsentity.h>
+#include <opengl/nsgl_framebuffer.h>
+#include <system/nstform_system.h>
+#include <asset/nsshader.h>
+#include <asset/nsshader_manager.h>
+#include <asset/nsentity.h>
 #include <nstimer.h>
-#include <nsmat_manager.h>
-#include <nstexture.h>
-#include <nsplugin.h>
-#include <nstex_manager.h>
-#include <nsgl_xfb.h>
-#include <nscam_comp.h>
-#include <nsplugin_manager.h>
+#include <asset/nsmat_manager.h>
+#include <asset/nstexture.h>
+#include <asset/nsplugin.h>
+#include <asset/nstex_manager.h>
+#include <opengl/nsgl_xfb.h>
+#include <component/nscam_comp.h>
+#include <asset/nsplugin_manager.h>
 
 nsparticle_system::nsparticle_system() :
 	nssystem(type_to_hash(nsparticle_system))

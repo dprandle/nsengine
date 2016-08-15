@@ -10,24 +10,24 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsselection_system.h>
-#include <nstile_brush_comp.h>
-#include <nsscene.h>
-#include <nsscene_manager.h>
-#include <nsentity.h>
-#include <nsrender_comp.h>
-#include <nsanim_comp.h>
-#include <nstform_comp.h>
+#include <system/nsselection_system.h>
+#include <component/nstile_brush_comp.h>
+#include <asset/nsscene.h>
+#include <asset/nsscene_manager.h>
+#include <asset/nsentity.h>
+#include <component/nsrender_comp.h>
+#include <component/nsanim_comp.h>
+#include <component/nstform_comp.h>
 #include <nstile_grid.h>
-#include <nsrender_system.h>
-#include <nscam_comp.h>
-#include <nsasset_manager.h>
-#include <nssel_comp.h>
+#include <system/nstform_system.h>
+#include <component/nscam_comp.h>
+#include <asset/nsasset_manager.h>
+#include <component/nssel_comp.h>
 #include <nsengine.h>
-#include <nsentity_manager.h>
-#include <nsoccupy_comp.h>
-#include <nsplugin_manager.h>
-#include <nslight_comp.h>
+#include <asset/nsentity_manager.h>
+#include <component/nsoccupy_comp.h>
+#include <asset/nsplugin_manager.h>
+#include <component/nslight_comp.h>
 #include <nscube_grid.h>
 
 nsscene::nsscene():

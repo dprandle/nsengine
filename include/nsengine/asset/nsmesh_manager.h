@@ -13,8 +13,8 @@
 #ifndef NSMESH_MANAGER_H
 #define NSMESH_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nsmesh.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsmesh.h>
 
 nsmesh * get_mesh(const uivec2 & id);
 

@@ -1,7 +1,7 @@
-#include <nsgl_shadow_framebuffer.h>
-#include <nsgl_shader.h>
-#include <nsgl_texture.h>
-#include <nsgl_vid_objs.h>
+#include <opengl/nsgl_shadow_framebuffer.h>
+#include <opengl/nsgl_shader.h>
+#include <opengl/nsgl_texture.h>
+#include <opengl/nsgl_vid_objs.h>
 
 nsshadow_tex2d_target::nsshadow_tex2d_target()
 {}

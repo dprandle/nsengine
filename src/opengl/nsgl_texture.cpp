@@ -11,9 +11,9 @@
 */
 
 #include <nsengine.h>
-#include <glew.h>
-#include <nsgl_texture.h>
-#include <nsgl_driver.h>
+#include <opengl/glew.h>
+#include <opengl/nsgl_texture.h>
+#include <opengl/nsgl_driver.h>
 
 
 nsgl_texture::nsgl_texture():

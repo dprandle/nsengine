@@ -11,11 +11,11 @@
 */
 
 #include <nsvideo_driver.h>
-#include <nsgl_framebuffer.h>
+#include <opengl/nsgl_framebuffer.h>
 #include <nsengine.h>
-#include <nsshader.h>
-#include <nsentity.h>
-#include <nscam_comp.h>
+#include <asset/nsshader.h>
+#include <asset/nsentity.h>
+#include <component/nscam_comp.h>
 
 vp_node::vp_node(const nsstring & vp_name_, viewport * vp_):
 	vp_name(vp_name_),

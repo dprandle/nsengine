@@ -11,14 +11,14 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 */
 
 
-#include <nsparticle_comp.h>
-#include <nsgl_xfb.h>
-#include <nsgl_vao.h>
-#include <nsgl_buffer.h>
-#include <nstex_manager.h>
-#include <nsshader_manager.h>
-#include <nsentity.h>
-#include <nsmat_manager.h>
+#include <component/nsparticle_comp.h>
+#include <opengl/nsgl_xfb.h>
+#include <opengl/nsgl_vao.h>
+#include <opengl/nsgl_buffer.h>
+#include <asset/nstex_manager.h>
+#include <asset/nsshader_manager.h>
+#include <asset/nsentity.h>
+#include <asset/nsmat_manager.h>
 #include <nsengine.h>
 
 nsparticle_comp::nsparticle_comp() :

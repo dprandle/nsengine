@@ -10,14 +10,14 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsrender_comp.h>
-#include <nsmesh.h>
-#include <nsentity.h>
+#include <component/nsrender_comp.h>
+#include <asset/nsmesh.h>
+#include <asset/nsentity.h>
 #include <nstimer.h>
-#include <nsmaterial.h>
-#include <nsmat_manager.h>
+#include <asset/nsmaterial.h>
+#include <asset/nsmat_manager.h>
 #include <nsengine.h>
-#include <nsmesh_manager.h>
+#include <asset/nsmesh_manager.h>
 
 
 nsrender_comp::nsrender_comp() : 

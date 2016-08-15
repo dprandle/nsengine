@@ -1,8 +1,8 @@
 #ifndef NSUNORDERED_SET_H
 #define NSUNORDERED_SET_H
 
-#include "nsmath.h"
-#include "nsenum_hash.h"
+#include <math/nsmath.h>
+#include <nsenum_hash.h>
 #include <unordered_set>
 
 typedef std::unordered_set<char> c_uset;

@@ -11,13 +11,13 @@
 */
 
 #include <nsengine.h>
-#include <nsanim_set.h>
+#include <asset/nsanim_set.h>
 #include <assimp/scene.h>
-#include <nsanim_manager.h>
-#include <nsplugin.h>
+#include <asset/nsanim_manager.h>
+#include <asset/nsplugin.h>
 #include <vector>
 #include <map>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsanim_set * get_anim_set(const uivec2 & id)
 {

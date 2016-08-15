@@ -10,20 +10,20 @@ This file contains all of the neccessary definitions for the nsanim_system class
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsanim_system.h>
-#include <nsanim_comp.h>
-#include <nsentity.h>
-#include <nsscene.h>
-#include <nsanim_manager.h>
-#include <nsmesh_manager.h>
+#include <system/nsanim_system.h>
+#include <component/nsanim_comp.h>
+#include <asset/nsentity.h>
+#include <asset/nsscene.h>
+#include <asset/nsanim_manager.h>
+#include <asset/nsmesh_manager.h>
 #include <nsengine.h>
 #include <nstimer.h>
 #include <nsevent.h>
 #include <nsevent_handler.h>
-#include <nsentity_manager.h>
-#include <nsplugin_manager.h>
-#include <nsasset_manager.h>
-#include <nsrender_comp.h>
+#include <asset/nsentity_manager.h>
+#include <asset/nsplugin_manager.h>
+#include <asset/nsasset_manager.h>
+#include <component/nsrender_comp.h>
 
 nsanim_system::nsanim_system() :
 	nssystem(type_to_hash(nsanim_system))

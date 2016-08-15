@@ -11,8 +11,8 @@
 */
 
 #include <nsengine.h>
-#include <nsgl_xfb.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_xfb.h>
+#include <opengl/nsgl_driver.h>
 
 nsgl_xfb::nsgl_xfb():
 	prim_mode(gl_triangles),

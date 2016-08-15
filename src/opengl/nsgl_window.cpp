@@ -1,10 +1,10 @@
-#include <nsgl_window.h>
-#include <glew.h>
+#include <opengl/nsgl_window.h>
+#include <opengl/glew.h>
 #include <GLFW/glfw3.h>
 #include <nsengine.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 #include <nsevent_dispatcher.h>
-#include <nstexture.h>
+#include <asset/nstexture.h>
 
 void glfw_key_press_callback(GLFWwindow * window_, int32 key_, int32 scancode_, int32 action_, int32 mods_);
 void glfw_mouse_button_callback(GLFWwindow * window_, int32 pButton, int32 action_, int32 mods_);

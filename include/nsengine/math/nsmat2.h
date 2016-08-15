@@ -1,7 +1,7 @@
 #ifndef NSMAT2_H
 #define NSMAT2_H
 
-#include "nsquat.h"
+#include <math/nsquat.h>
 #include <iomanip>
 
 template <class T>

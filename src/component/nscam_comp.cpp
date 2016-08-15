@@ -10,10 +10,10 @@ This file contains all of the neccessary definitions for the nscam_comp class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <nscam_comp.h>
-#include <nsentity.h>
+#include <component/nscam_comp.h>
+#include <asset/nsentity.h>
 #include <nstimer.h>
-#include <nstform_comp.h>
+#include <component/nstform_comp.h>
 #include <algorithm>
 
 nscam_comp::nscam_comp():

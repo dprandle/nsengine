@@ -10,13 +10,13 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsscene_manager.h>
-#include <nsscene.h>
-#include <nsentity.h>
+#include <asset/nsscene_manager.h>
+#include <asset/nsscene.h>
+#include <asset/nsentity.h>
 #include <nsengine.h>
-#include <nsentity_manager.h>
+#include <asset/nsentity_manager.h>
 #include <nsplatform.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsscene * get_scene(const uivec2 & id)
 {

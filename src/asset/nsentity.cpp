@@ -10,11 +10,11 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <nsentity.h>
-#include <nssel_comp.h>
+#include <asset/nsentity.h>
+#include <component/nssel_comp.h>
 #include <nsfactory.h>
 #include <nsengine.h>
-#include <nsplugin_manager.h>
+#include <asset/nsplugin_manager.h>
 
 nsentity::nsentity() :
 	nsasset(type_to_hash(nsentity)),

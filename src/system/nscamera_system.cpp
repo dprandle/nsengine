@@ -11,16 +11,16 @@ This file contains all of the neccessary definitions for the NSCamController cla
 */
 
 #include <iostream>
-#include <nsrender_system.h>
-#include <nscamera_system.h>
-#include <nsentity.h>
-#include <nsselection_system.h>
-#include <nsplugin_manager.h>
+#include <system/nstform_system.h>
+#include <system/nscamera_system.h>
+#include <asset/nsentity.h>
+#include <system/nsselection_system.h>
+#include <asset/nsplugin_manager.h>
 #include <nsevent_dispatcher.h>
 #include <nsevent.h>
-#include <nscam_comp.h>
+#include <component/nscam_comp.h>
 #include <nstimer.h>
-#include <nsscene.h>
+#include <asset/nsscene.h>
 
 
 nscamera_system::nscamera_system() :

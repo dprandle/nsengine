@@ -13,9 +13,9 @@ This file contains all of the neccessary declarations for the nsplugin class.
 #ifndef NSPLUGIN_H
 #define NSPLUGIN_H
 
-#include "nsasset_manager.h"
-#include "nsasset.h"
-#include "nsset.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsasset.h>
+#include <nsset.h>
 
 #define DEFAULT_ADD_NAME_TO_RES_DIR true
 

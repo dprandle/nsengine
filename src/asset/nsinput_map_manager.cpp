@@ -1,4 +1,4 @@
-#include <nsinput_map_manager.h>
+#include <asset/nsinput_map_manager.h>
 
 nsinput_map_manager::nsinput_map_manager():
 	nsasset_manager(type_to_hash(nsinput_map_manager))

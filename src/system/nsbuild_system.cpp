@@ -11,27 +11,27 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 */
 
 #include <iostream>
-#include <nsmath.h>
-#include <nsbuild_system.h>
+#include <math/nsmath.h>
+#include <system/nsbuild_system.h>
 #include <nsevent_dispatcher.h>
-#include <nstile_brush_comp.h>
+#include <component/nstile_brush_comp.h>
 #include <nsevent.h>
-#include <nsscene.h>
-#include <nstile_comp.h>
+#include <asset/nsscene.h>
+#include <component/nstile_comp.h>
 #include <nstile_grid.h>
-#include <nssel_comp.h>
-#include <nsoccupy_comp.h>
-#include <nsrender_system.h>
-#include <nsselection_system.h>
-#include <nsrender_comp.h>
-#include <nsinput_map_manager.h>
-#include <nsentity_manager.h>
-#include <nsplugin_manager.h>
-#include <nsinput_system.h>
-#include <nsentity.h>
-#include <nslight_comp.h>
-#include <nscam_comp.h>
-#include <nscamera_system.h>
+#include <component/nssel_comp.h>
+#include <component/nsoccupy_comp.h>
+#include <system/nstform_system.h>
+#include <system/nsselection_system.h>
+#include <component/nsrender_comp.h>
+#include <asset/nsinput_map_manager.h>
+#include <asset/nsentity_manager.h>
+#include <asset/nsplugin_manager.h>
+#include <system/nsinput_system.h>
+#include <asset/nsentity.h>
+#include <component/nslight_comp.h>
+#include <component/nscam_comp.h>
+#include <system/nscamera_system.h>
 
 nsbuild_system::nsbuild_system():
 nssystem(type_to_hash(nsbuild_system)),

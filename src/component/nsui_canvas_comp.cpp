@@ -10,8 +10,8 @@ This file contains all of the neccessary definitions for the nsui_canvas_comp cl
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsui_canvas_comp.h>
-#include <nsentity.h>
+#include <component/nsui_canvas_comp.h>
+#include <asset/nsentity.h>
 
 nsui_canvas_comp::nsui_canvas_comp() :
 	nscomponent(type_to_hash(nsui_canvas_comp)),

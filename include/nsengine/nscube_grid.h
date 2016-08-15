@@ -37,7 +37,7 @@ This file contains all of the neccessary declarations for the nscube_grid class.
 #include <nsvector.h>
 #include <nsunordered_map.h>
 #include <nsunordered_set.h>
-#include <nsmath.h>
+#include <math/nsmath.h>
 
 class nsentity;
 struct instance_tform;
@@ -83,6 +83,10 @@ public:
 	uivec3_vector * items_at(const fvec3 & pos_);
 
 	uivec3_vector * items_at(const ivec3 & grid_pos_);
+
+	void items_within(const fbox & grid_bounds_, uivec3_vector * found_items);
+
+	void items_within(const ibox & grid_bounds_, uivec3_vector * found_items);
 
 	const ibox & grid_bounds();
 

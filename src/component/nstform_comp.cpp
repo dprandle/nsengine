@@ -11,17 +11,17 @@
 */
 
 #include <nscube_grid.h>
-#include <nstform_comp.h>
-#include <nsrender_comp.h>
-#include <nsentity.h>
+#include <component/nstform_comp.h>
+#include <component/nsrender_comp.h>
+#include <asset/nsentity.h>
 #include <nstile_grid.h>
 #include <nsengine.h>
-#include <nsgl_xfb.h>
-#include <nsgl_vao.h>
-#include <nsshader.h>
-#include <nsmesh.h>
-#include <nsgl_buffer.h>
-#include <nsscene.h>
+#include <opengl/nsgl_xfb.h>
+#include <opengl/nsgl_vao.h>
+#include <asset/nsshader.h>
+#include <asset/nsmesh.h>
+#include <opengl/nsgl_buffer.h>
+#include <asset/nsscene.h>
 
 instance_handle::instance_handle(tform_per_scene_info * tfc_, uint32 tf_ind):
 	tfc(tfc_),

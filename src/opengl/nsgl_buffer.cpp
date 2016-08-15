@@ -11,10 +11,10 @@
 */
 
 
-#include <nsgl_buffer.h>
-#include <nsgl_object.h>
+#include <opengl/nsgl_buffer.h>
+#include <opengl/nsgl_object.h>
 #include <nsengine.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 
 nsgl_buffer::nsgl_buffer():
     nsgl_obj(),

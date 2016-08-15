@@ -13,8 +13,8 @@ This file contains all of the neccessary declartations for the nssystem class.
 #ifndef NSSYSTEM_H
 #define NSSYSTEM_H
 
-#include "nsevent_handler.h"
-#include "nsunordered_map.h"
+#include <nsevent_handler.h>
+#include <nsunordered_map.h>
 
 class nstimer;
 class nsscene;

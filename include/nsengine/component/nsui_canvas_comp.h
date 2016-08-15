@@ -13,10 +13,10 @@ This file contains all of the neccessary declarations for the nsui_canvas_comp c
 #ifndef NSUI_CANVAS_COMP_H
 #define NSUI_CANVAS_COMP_H
 
-#include "nscomponent.h"
-#include "nsrect_tform_comp.h"
-#include "nsentity.h"
-#include "nsrouter.h"
+#include <component/nscomponent.h>
+#include <component/nsrect_tform_comp.h>
+#include <asset/nsentity.h>
+#include <nsrouter.h>
 
 class nsui_canvas_comp : public nscomponent
 {

@@ -16,7 +16,7 @@
 // Input Events
 #define VIEWPORT_CHANGE "mouse_pressed_in_viewport"
 
-#include "nssystem.h"
+#include <system/nssystem.h>
 
 class nstform_system : public nssystem
 {

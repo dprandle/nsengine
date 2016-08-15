@@ -10,18 +10,18 @@ Description:
 	the ol' girl out
 *-----------------------------------------------------------------------------------------------------*/
 
-#include <nsmath.h>
-#include <nsshader.h>
-#include <nsmaterial.h>
-#include <nstform_comp.h>
-#include <nslight_comp.h>
+#include <math/nsmath.h>
+#include <asset/nsshader.h>
+#include <asset/nsmaterial.h>
+#include <component/nstform_comp.h>
+#include <component/nslight_comp.h>
 #include <nsengine.h>
 #include <nsengine.h>
-#include <nsmaterial.h>
+#include <asset/nsmaterial.h>
 #include <exception>
 #include <string.h>
-#include <nsrender_system.h>
-#include <nsgl_driver.h>
+#include <system/nstform_system.h>
+#include <opengl/nsgl_driver.h>
 
 nsshader::nsshader():
 	nsasset(type_to_hash(nsshader)),

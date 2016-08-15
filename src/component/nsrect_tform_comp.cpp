@@ -10,9 +10,9 @@ This file contains all of the neccessary definitions for the nsrect_tform_comp c
 \copywrite Earth Banana Games 2013
 */
 
-#include <nsui_comp.h>
-#include <nsrect_tform_comp.h>
-#include <nsentity.h>
+#include <component/nsui_comp.h>
+#include <component/nsrect_tform_comp.h>
+#include <asset/nsentity.h>
 
 nsrect_tform_comp::nsrect_tform_comp() :
 	nscomponent(type_to_hash(nsrect_tform_comp))

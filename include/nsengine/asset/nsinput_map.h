@@ -1,7 +1,7 @@
 #ifndef NSINPUTMAP_H
 #define NSINPUTMAP_H
 
-#include "nsasset.h"
+#include <asset/nsasset.h>
 
 class nsinput_map : public nsasset
 {

@@ -17,36 +17,36 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsengine.h>
 #include <nsfactory.h>
 
-#include <nsrender_system.h>
-#include <nsplugin.h>
-#include <nsentity.h>
-#include <nstexture.h>
-#include <nsshader.h>
-#include <nsui_canvas_comp.h>
-#include <nsfont.h>
+#include <system/nstform_system.h>
+#include <asset/nsplugin.h>
+#include <asset/nsentity.h>
+#include <asset/nstexture.h>
+#include <asset/nsshader.h>
+#include <component/nsui_canvas_comp.h>
+#include <asset/nsfont.h>
 
-#include <nsfont_manager.h>
-#include <nsasset_manager.h>
-#include <nsscene_manager.h>
-#include <nsmat_manager.h>
-#include <nsanim_manager.h>
-#include <nsmesh_manager.h>
-#include <nsplugin_manager.h>
-#include <nstex_manager.h>
-#include <nsentity_manager.h>
+#include <asset/nsfont_manager.h>
+#include <asset/nsasset_manager.h>
+#include <asset/nsscene_manager.h>
+#include <asset/nsmat_manager.h>
+#include <asset/nsanim_manager.h>
+#include <asset/nsmesh_manager.h>
+#include <asset/nsplugin_manager.h>
+#include <asset/nstex_manager.h>
+#include <asset/nsentity_manager.h>
 
-#include <nscam_comp.h>
-#include <nsanim_comp.h>
-#include <nsoccupy_comp.h>
-#include <nsrender_comp.h>
-#include <nsterrain_comp.h>
-#include <nssel_comp.h>
-#include <nstile_comp.h>
-#include <nslight_comp.h>
+#include <component/nscam_comp.h>
+#include <component/nsanim_comp.h>
+#include <component/nsoccupy_comp.h>
+#include <component/nsrender_comp.h>
+#include <component/nsterrain_comp.h>
+#include <component/nssel_comp.h>
+#include <component/nstile_comp.h>
+#include <component/nslight_comp.h>
 
 
 // SHOULD GO AWAY WHEN DOING MAT THING
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 
 nsplugin::nsplugin():
 	nsasset(hash_id("nsplugin")),

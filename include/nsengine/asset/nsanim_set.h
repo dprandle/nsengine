@@ -15,7 +15,7 @@
 
 #define DEFAULT_TICKS_PER_SECOND 20
 
-#include "nsasset.h"
+#include <asset/nsasset.h>
 
 struct animation_node
 {

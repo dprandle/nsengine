@@ -10,11 +10,11 @@
 	\copywrite Earth Banana Games 2013
 */
 
-#include <glew.h>
-#include <nsgl_object.h>
+#include <opengl/glew.h>
+#include <opengl/nsgl_object.h>
 #include <nslog_file.h>
 #include <nsengine.h>
-#include <nsgl_driver.h>
+#include <opengl/nsgl_driver.h>
 
 nsgl_obj::nsgl_obj():
 	gl_id(0)

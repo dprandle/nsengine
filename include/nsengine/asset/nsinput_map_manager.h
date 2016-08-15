@@ -1,8 +1,8 @@
 #ifndef NSINPUT_MAP_MANAGER_H
 #define NSINPUT_MAP_MANAGER_H
 
-#include "nsasset_manager.h"
-#include "nsinput_map.h"
+#include <asset/nsasset_manager.h>
+#include <asset/nsinput_map.h>
 
 class nsinput_map_manager : public nsasset_manager
 {

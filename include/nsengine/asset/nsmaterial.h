@@ -14,8 +14,8 @@
 #define NSMATERIAL_H
 
 // Inlcudes
-#include "nsasset.h"
-#include "nsunordered_map.h"
+#include <asset/nsasset.h>
+#include <nsunordered_map.h>
 
 struct tex_map_info
 {

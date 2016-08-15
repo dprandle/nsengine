@@ -12,13 +12,13 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 
 #include <iostream>
 
-#include <nsinput_system.h>
+#include <system/nsinput_system.h>
 #include <nsevent.h>
 #include <nsevent_dispatcher.h>
-#include <nsinput_map.h>
-#include <nsscene.h>
-#include <nsplugin.h>
-#include <nsplugin_manager.h>
+#include <asset/nsinput_map.h>
+#include <asset/nsscene.h>
+#include <asset/nsplugin.h>
+#include <asset/nsplugin_manager.h>
 
 nsinput_system::nsinput_system() :
 	nssystem(type_to_hash(nsinput_system)),

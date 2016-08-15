@@ -1,38 +1,42 @@
 #define INPUTTEST
 
+#include <opengl/nsgl_driver.h>
+#include <opengl/nsgl_window.h>
+
+#include <asset/nsfont.h>
+#include <asset/nsfont_manager.h>
+#include <asset/nsshader.h>
+#include <asset/nsinput_map.h>
+#include <asset/nsscene.h>
+#include <asset/nsplugin.h>
+#include <asset/nsmesh_manager.h>
+#include <asset/nsinput_map_manager.h>
+#include <asset/nsmesh_manager.h>
+#include <asset/nsmaterial.h>
+#include <asset/nsplugin_manager.h>
+#include <asset/nstexture.h>
+#include <asset/nsscene_manager.h>
+#include <asset/nsaudio_clip.h>
+
+#include <component/nscam_comp.h>
+#include <component/nssel_comp.h>
+#include <component/nsrender_comp.h>
+#include <component/nsanim_comp.h>
+#include <component/nsrect_tform_comp.h>
+#include <component/nsui_comp.h>
+#include <component/nsui_button_comp.h>
+#include <component/nsui_canvas_comp.h>
+
+#include <system/nsinput_system.h>
+#include <system/nsselection_system.h>
+#include <system/nscamera_system.h>
+#include <system/nsui_system.h>
+#include <system/nstform_system.h>
+
 #include <nstimer.h>
-#include <nsshader.h>
-#include <nsinput_system.h>
-#include <nsinput_map.h>
-#include <iostream>
-#include <nsengine.h>
-#include <nsscene.h>
-#include <iostream>
-#include <nsplugin.h>
-#include <nsmesh_manager.h>
-#include <nsselection_system.h>
-#include <nscamera_system.h>
-#include <nscam_comp.h>
-#include <nsinput_map_manager.h>
-#include <nsmesh_manager.h>
-#include <nsmaterial.h>
-#include <nssel_comp.h>
-#include <nsmath.h>
-#include <nsrender_comp.h>
-#include <nsanim_comp.h>
-#include <nsfont.h>
-#include <nsgl_driver.h>
-#include <nsui_comp.h>
-#include <nsrect_tform_comp.h>
-#include <nsui_button_comp.h>
-#include <nsplugin_manager.h>
-#include <nsmaterial.h>
-#include <nsui_system.h>
-#include <nstexture.h>
-#include <nsrender_system.h>
-#include <nsui_canvas_comp.h>
 #include <nsrouter.h>
-#include <nsgl_window.h>
+
+#include <iostream>
 
 nsscene * setup_basic_scene(nsplugin * plg);
 void setup_input_map(nsplugin * plg);
