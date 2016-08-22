@@ -1190,6 +1190,11 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 		animComp = (*iter)->get<nsanim_comp>();
 		terComp = (*iter)->get<nsterrain_comp>();
 		currentMesh = get_asset<nsmesh>(rComp->mesh_id());
+
+		if (rComp->update_posted())
+		{
+			
+		}
 		
 		if (lc != nullptr)
 		{

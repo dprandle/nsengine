@@ -31,7 +31,8 @@ nstexture * get_texture(const uivec2 & id)
 nstex_manager::nstex_manager():
 	nsasset_manager(type_to_hash(nstex_manager)),
 	vid_update_on_load(true),
-	load_with_mipmaps_enabled(true)
+	load_with_mipmaps_enabled(true),
+	flip_horizontally(false)
 {
 	set_local_dir(LOCAL_TEXTURE_DIR_DEFAULT);
 }
@@ -136,7 +137,9 @@ nstex2d * nstex_manager::load_image(const nsstring & fname)
 	tex->resize(sz);
 	tex->copy_data(data, 0);
 	stbi_image_free(data);
-	tex->flip_horizontal();
+
+	if (flip_horizontally)
+		tex->flip_horizontal();
 	
 	if (load_with_mipmaps_enabled)
 		tex->enable_mipmap_autogen(true);
@@ -235,7 +238,9 @@ nstex_cubemap * nstex_manager::load_cubemap(const nsstring & pXPlus,
 		tex->copy_data(data, i);
 		dprint("nstex_manager::load_cubemap Successfully loaded face " + std::to_string(i) + " of cubemap from file " + fNames[i]);
 		stbi_image_free(data);
-		tex->flip_horizontal(i);
+
+		if (flip_horizontally)
+			tex->flip_horizontal(i);
 	}
 	
 	if (load_with_mipmaps_enabled)

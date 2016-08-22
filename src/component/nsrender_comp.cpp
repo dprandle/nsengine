@@ -23,7 +23,8 @@
 nsrender_comp::nsrender_comp() : 
 	nscomponent(type_to_hash(nsrender_comp)),
 	m_cast_shadow(true),
-	m_mesh_id(0)
+	m_mesh_id(0),
+	currently_instanced(false)
 {}
 
 nsrender_comp::~nsrender_comp()
@@ -33,7 +34,8 @@ nsrender_comp::nsrender_comp(const nsrender_comp & rend_comp):
 	nscomponent(rend_comp),
 	m_cast_shadow(rend_comp.m_cast_shadow),
 	m_mesh_id(rend_comp.m_mesh_id),
-	m_mats(rend_comp.m_mats)
+	m_mats(rend_comp.m_mats),
+	currently_instanced(false)
 {}
 	
 void nsrender_comp::clear_mats()
@@ -224,6 +226,11 @@ void nsrender_comp::set_cast_shadow(bool pShadow)
 void nsrender_comp::set_mesh_id(const uivec2 & pMeshID)
 {
 	m_mesh_id = pMeshID;
+}
+
+bool nsrender_comp::operator==(const nsrender_comp & rhs_)
+{
+	return (m_mesh_id == rhs_.m_mesh_id && m_mats == rhs_.m_mats);
 }
 
 nsrender_comp & nsrender_comp::operator=(nsrender_comp rhs_)

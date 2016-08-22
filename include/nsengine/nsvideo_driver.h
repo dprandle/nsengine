@@ -210,6 +210,8 @@ struct vid_ctxt
 	viewport * focused_vp;
 	std::list<vp_node> vp_list;
 	std::set<nsvid_obj*> registered_vid_objs;
+
+	std::vector<tform_per_scene_info*> instance_objs;
 };
 
 class nsvideo_driver

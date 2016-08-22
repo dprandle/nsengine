@@ -163,7 +163,6 @@ struct instance_tform
 	fquat m_orient;
 	fvec3 m_position;
 	fvec3 m_scaling;
-
 	
 	std::vector<instance_handle> m_children;
 	fmat4 m_world_tform;
@@ -203,15 +202,27 @@ typedef std::vector<instance_tform> instance_vec;
 
 struct tform_per_scene_info : public nsvideo_object
 {
-	tform_per_scene_info(nstform_comp * owner_, nsscene * scn);
+	tform_per_scene_info();
 	~tform_per_scene_info();
 	
 	void video_context_init();
-	nstform_comp * owner;
-	nsscene * scene;
 	instance_vec m_tforms;
 	bool m_buffer_resized;
 	uint32 m_visible_count;
+	nstform_comp * owner;
+
+	nsscene * scene;
+
+// New per scene info stuff - for migrating to new syste
+	std::vector<nstform_comp*> shared_geom_tforms;
+	std::vector<uint32> needs_update_ids;
+	uint32 visible_count;
+	bool needs_update;
+};
+
+struct shared_inst_obj
+{
+	nsvid_obj * vobj;
 };
 
 class nstform_comp : public nscomponent
@@ -245,6 +256,10 @@ class nstform_comp : public nscomponent
 	nstform_comp & operator=(nstform_comp rhs_);
 
 	bool save_with_scene;
+
+	tform_per_scene_info * inst_obj; // shared among all instances
+
+	uint32 inst_id;
 	
   private:
 	

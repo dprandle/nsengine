@@ -127,7 +127,11 @@ void nsphysics_system::update()
 	draw_tile_grid();
 
 	// Lets do some physics!
-	entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();		
+	entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();
+
+	if (ents == nullptr)
+		return;
+	
 	auto iter = ents->begin();
 	while (iter != ents->end())
 	{

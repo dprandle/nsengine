@@ -46,12 +46,14 @@ bool instance_handle::operator==(const instance_handle & rhs)
 nstform_comp::nstform_comp():
 	nscomponent(type_to_hash(nstform_comp)),
 	save_with_scene(true),
-	m_scenes_info()
+	m_scenes_info(),
+	inst_id(0)
 {}
 
 nstform_comp::nstform_comp(const nstform_comp & copy):
 	nscomponent(copy),
-	m_scenes_info(copy.m_scenes_info)
+	m_scenes_info(copy.m_scenes_info),
+	inst_id(0)
 {}
 
 nstform_comp::~nstform_comp()
@@ -476,15 +478,14 @@ bool instance_tform::render_update() const
 	return m_render_update;
 }
 
-tform_per_scene_info::tform_per_scene_info(nstform_comp * owner_, nsscene * scn):
+tform_per_scene_info::tform_per_scene_info():
 	nsvideo_object(),
-	owner(owner_),
-	scene(scn),
+	owner(nullptr),
+	scene(nullptr),
 	m_tforms(),
 	m_buffer_resized(false),
 	m_visible_count(0)
 {
-	video_context_init();
 }
 
 void tform_per_scene_info::video_context_init()

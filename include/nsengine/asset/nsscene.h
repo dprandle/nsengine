@@ -169,6 +169,9 @@ class nsscene : public nsasset
 	
 private:
 
+	void make_ent_instanced_if_needed(nsentity * ent);
+	void make_ent_not_instanced(nsentity * ent);
+	
 	void _remove_all_comp_entries(nsentity * ent);
 	void _add_all_comp_entries(nsentity * ent);
 	void _on_comp_remove(nscomponent * comp_t);

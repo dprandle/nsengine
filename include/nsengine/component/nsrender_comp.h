@@ -19,6 +19,7 @@
 class nsmesh;
 class nstimer;
 class nsmaterial;
+struct nsvid_obj;
 
 class nsrender_comp : public nscomponent
 {
@@ -93,6 +94,10 @@ public:
 
 	nsrender_comp & operator=(nsrender_comp rhs_);
 
+	bool operator==(const nsrender_comp & rhs_);
+
+	bool currently_instanced;
+	
 private:
 	bool m_cast_shadow;
 	uivec2 m_mesh_id;

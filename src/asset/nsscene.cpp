@@ -29,6 +29,7 @@
 #include <asset/nsplugin_manager.h>
 #include <component/nslight_comp.h>
 #include <nscube_grid.h>
+#include <component/nssprite_comp.h>
 
 nsscene::nsscene():
 	nsasset(type_to_hash(nsscene)),
@@ -148,10 +149,12 @@ uint32 nsscene::add(
     {
         fiter = tComp->m_scenes_info.emplace(
                     this,
-                    new tform_per_scene_info(tComp,this)).first;
+                    new tform_per_scene_info()).first;
     }
 	tform_per_scene_info & pse = *fiter->second;
-	
+	pse.video_context_init();
+	pse.scene = this;
+	pse.owner = tComp;
 	uint32 tfid = pse.m_tforms.size();
 	pse.m_tforms.resize(tfid + 1);
 	instance_tform & tf = pse.m_tforms[tfid];
@@ -255,10 +258,12 @@ void nsscene::add_gridded(
     {
         fiter = tComp->m_scenes_info.emplace(
                     this,
-                    new tform_per_scene_info(tComp,this)).first;
+                    new tform_per_scene_info()).first;
     }
 	tform_per_scene_info & pse = *fiter->second;
-
+	pse.video_context_init();
+	pse.owner = tComp;
+	pse.scene = this;
 	// Figure out the total number of transforms needed and allocate that 
 	// much memory (addTransforms does this)
 	uint32 addSize = bounds.x * bounds.y * bounds.z;
@@ -790,6 +795,59 @@ bool nsscene::is_enabled()
 	return m_enabled;
 }
 
+void nsscene::make_ent_instanced_if_needed(nsentity * ent)
+{
+	entity_set * ents_with_rcomp = entities_with_comp<nsrender_comp>();
+	auto fiter = ents_with_rcomp->begin();
+	nsanim_comp * acomp = ent->get<nsanim_comp>();
+	nssprite_sheet_comp * scomp = ent->get<nssprite_sheet_comp>();
+	nstform_comp * tcomp = ent->get<nstform_comp>();
+	nsrender_comp * rcomp = ent->get<nsrender_comp>();	
+	while (fiter != ents_with_rcomp->end())
+	{
+		if ((*fiter) != ent)
+		{
+			nstform_comp * ent_tcomp = (*fiter)->get<nstform_comp>();
+			nsrender_comp * ent_rcomp = (*fiter)->get<nsrender_comp>();
+			nsanim_comp * ent_acomp = (*fiter)->get<nsanim_comp>();
+			nssprite_sheet_comp * ent_scomp = (*fiter)->get<nssprite_sheet_comp>();
+			// The render comps must be equivalent (see operator ==) and the anim/sprite comps must have same address
+			if (ent_rcomp != nullptr && (*rcomp) == (*ent_rcomp) && acomp == ent_acomp && scomp == ent_scomp)
+			{
+				if (ent_tcomp->inst_obj != nullptr)
+				{
+					tcomp->inst_obj = ent_tcomp->inst_obj;
+					tcomp->inst_obj->shared_geom_tforms.push_back(tcomp);
+					tcomp->inst_obj->needs_update = true;
+				}
+				else
+				{
+					tform_per_scene_info * psi = new tform_per_scene_info;
+					nse.video_driver()->current_context()->instance_objs.push_back(psi);
+					tcomp->inst_obj = psi;
+					ent_tcomp->inst_obj = psi;
+					psi->needs_update = true;
+				}
+				rcomp->currently_instanced = true;
+				return;
+			}
+		}
+		++fiter;
+	}
+}
+
+void nsscene::make_ent_not_instanced(nsentity * ent)
+{
+	nstform_comp * tfc = ent->get<nstform_comp>();
+	auto iter = tfc->inst_obj->shared_geom_tforms.begin();
+	while (iter != tfc->inst_obj->shared_geom_tforms.end())
+	{
+		
+		++iter;
+	}
+}
+
+// This adds the component from the comp by type list in the scene
 void nsscene::_on_comp_add(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
@@ -803,8 +861,13 @@ void nsscene::_on_comp_add(nscomponent * comp_t)
 		if (!emp_iter.second)
 			dprint("nsscene::_on_comp_add Something in adding the comp went seriously wrong");
 	}
+	if (comp_t->type() == type_to_hash(nsrender_comp))
+	{
+		
+	}	
 }
 
+// This removes the component from the comp by type list in the scene
 void nsscene::_on_comp_remove(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.find(comp_t->type());
@@ -969,3 +1032,5 @@ void nsscene::_populate_pup_vec()
 		++ent_iter;
 	}
 }
+
+

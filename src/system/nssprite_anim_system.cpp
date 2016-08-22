@@ -33,6 +33,9 @@ void nssprite_anim_system::update()
 	
 	entity_set * ents = m_active_scene->entities_with_comp<nssprite_sheet_comp>();
 
+	if (ents == nullptr)
+		return;
+	
 	entity_set::iterator scn_iter = ents->begin();
 	while (scn_iter != ents->end())
 	{

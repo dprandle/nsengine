@@ -58,6 +58,8 @@ public:
 	bool vid_update_on_load;
 
 	bool load_with_mipmaps_enabled;
+
+    bool flip_horizontally;
 };
 
 int set_tex_format(int bpp, nstexture * tex);

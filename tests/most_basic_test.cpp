@@ -67,30 +67,14 @@ int main()
 	
     bf.m_router = new nsrouter;
     e.init(new nsgl_driver);
-
-        alGenSources(1, &source);
 	
     nsgl_window wind(ivec2(800,600), "Basic Test");
     viewport * vp = wind.vid_context()->insert_viewport("main_view",fvec4(0.0f,0.0f,1.0f,1.0f));
 	
     nsplugin * plg = nsep.create<nsplugin>("most_basic_test");
-    plg->manager<nsscene_manager>()->set_save_mode(nsasset_manager::text);
     plg->enable(true);
-    bf.plg = plg;
-
-    setup_input_map(plg);
-
-    nsaudio_clip * ac = plg->load<nsaudio_clip>("./import/example2.ogg", false);
-	ac->read_data();
-	plg->save(ac);
 	
-	alSourcei(source, AL_BUFFER, ac->al_id());
-
-    nsinput_map * im = plg->get<nsinput_map>("basic_input");
-
-    nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
-    change_vp.add_key_mod(nsinput_map::key_any);
-    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
+    setup_input_map(plg);
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
     new_scene->enable(true);
@@ -113,8 +97,6 @@ int main()
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
     nsentity * ui_button = plg->create<nsentity>("button_new_match");
-    //nsentity * skbox = plg->create_skydome("sky_box", nse.import_dir() + "skydomes/space.cube", "jpg", "skydomes");
-    //new_scene->set_skydome(skbox);
 
     new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
     new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
@@ -212,19 +194,9 @@ int main()
     pic->layer = 0;
     pic->angle = 0.0f;
 
-//    plg->save_all_in_plugin();
-//    nsep.save(plg);
-
     vp->ui_canvases.push_back(canvas);
     vp->camera = plg->get<nsentity>("scenecam");
     nse.set_active_scene(plg->get<nsscene>("new_scene"));
-
-
-    nse.system<nscamera_system>()->setup_input_map(im, "main_global_ctxt");
-    nse.system<nsselection_system>()->setup_input_map(im, "main_global_ctxt");
-    nse.system<nsui_system>()->setup_input_map(im, "main_global_ctxt");
-    nse.system<nsinput_system>()->set_input_map(im->full_id());
-    nse.system<nsinput_system>()->push_context("main_global_ctxt");
 	
     e.start();
     while (e.running())
@@ -247,7 +219,13 @@ void setup_input_map(nsplugin * plg)
     nsinput_map * im = plg->create<nsinput_map>("basic_input");
     im->create_context("main_global_ctxt");
 
-    //nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
-    //change_vp.add_key_mod(nsinput_map::key_any);
-    //im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
+	nse.system<nscamera_system>()->setup_input_map(im, "main_global_ctxt");
+    nse.system<nsselection_system>()->setup_input_map(im, "main_global_ctxt");
+    nse.system<nsui_system>()->setup_input_map(im, "main_global_ctxt");
+    nse.system<nsinput_system>()->set_input_map(im->full_id());
+    nse.system<nsinput_system>()->push_context("main_global_ctxt");
+
+	nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
+    change_vp.add_key_mod(nsinput_map::key_any);
+    im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
 }
