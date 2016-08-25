@@ -60,6 +60,32 @@ nstform_comp::nstform_comp(const nstform_comp & copy):
 
 nstform_comp::~nstform_comp()
 {
+	auto iter = inst_obj->shared_geom_tforms.begin();
+	while (iter != inst_obj->shared_geom_tforms.end())
+	{
+		if (this == *iter)
+		{
+			iter = (*iter)->inst_obj->shared_geom_tforms.erase(iter);
+			dprint("~tform_comp making myself no longer instanced");
+
+#ifdef NSDEBUG
+			nsstringstream ss;
+			ss << "The following instanced ents remain:\n";
+			for (uint32 i = 0; i < inst_obj->shared_geom_tforms.size(); ++i)
+				ss << inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
+			dprint(ss.str());
+#endif
+			inst_obj = nullptr;
+
+			// If there is only one entity left - the auto update code should remove that and delete
+			// the obj
+			return;
+		}
+		else
+		{
+			++iter;
+		}
+	}
 }
 
 void nstform_comp::pup(nsfile_pupper * p)

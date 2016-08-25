@@ -614,11 +614,8 @@ void gl_ctxt::_add_instanced_draw_calls_from_scene(nsscene * scene)
 		if ((*iter)->shared_geom_tforms.size() < 2)
 		{
 			for (uint32 j = 0; j < (*iter)->shared_geom_tforms.size(); ++j)
-			{
-				nsrender_comp * rc = (*iter)->shared_geom_tforms[j]->owner()->get<nsrender_comp>();
-				rc->currently_instanced = false;
 				(*iter)->shared_geom_tforms[j]->inst_obj = nullptr;
-			}
+
 			dprint("gl_ctxt::_add_instanced_draw_calls_from_scene removing shared instance obj as no more shared mesh/material combos left");
 			(*iter)->video_context_release();
 			delete (*iter);

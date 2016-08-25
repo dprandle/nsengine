@@ -96,7 +96,7 @@ public:
 
 	bool operator==(const nsrender_comp & rhs_);
 
-	bool currently_instanced;
+//	bool currently_instanced;
 	
 private:
 	bool m_cast_shadow;

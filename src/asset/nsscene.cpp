@@ -829,7 +829,7 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 					psi->shared_geom_tforms.push_back(ent_tcomp);
 					psi->shared_geom_tforms.push_back(tcomp);
 					psi->needs_update = true;
-					ent_rcomp->currently_instanced = true;
+					//	ent_rcomp->currently_instanced = true;
 				}
 #ifdef NSDEBUG
 				nsstringstream ss;
@@ -838,7 +838,7 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 					ss << tcomp->inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
 				dprint(ss.str());
 #endif
-				rcomp->currently_instanced = true;
+//				rcomp->currently_instanced = true;
 				return;
 			}
 		}
@@ -849,13 +849,9 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 void nsscene::make_ent_not_instanced(nsentity * ent)
 {
 	nstform_comp * tfc = ent->get<nstform_comp>();
-	nsrender_comp * rc = ent->get<nsrender_comp>();
-	
-	// entity is not instanced
-	if (!rc->currently_instanced)
+	if (tfc == nullptr)
 	{
-		dprint("nsscene::make_ent_not_instanced entity " + ent->name() + " is not instanced");
-		assert(tfc->inst_obj == nullptr);
+		dprint("nsscene::make_ent_not_instanced render component being removed from scene after tform comp");
 		return;
 	}
 	
@@ -875,7 +871,6 @@ void nsscene::make_ent_not_instanced(nsentity * ent)
 			dprint(ss.str());
 #endif
 			tfc->inst_obj = nullptr;
-			rc->currently_instanced  = false;
 
 			// If there is only one entity left - the auto update code should remove that and delete
 			// the obj

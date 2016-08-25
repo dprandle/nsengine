@@ -23,8 +23,8 @@
 nsrender_comp::nsrender_comp() : 
 	nscomponent(type_to_hash(nsrender_comp)),
 	m_cast_shadow(true),
-	m_mesh_id(0),
-	currently_instanced(false)
+	m_mesh_id(0)
+//	currently_instanced(false)
 {}
 
 nsrender_comp::~nsrender_comp()
@@ -34,8 +34,8 @@ nsrender_comp::nsrender_comp(const nsrender_comp & rend_comp):
 	nscomponent(rend_comp),
 	m_cast_shadow(rend_comp.m_cast_shadow),
 	m_mesh_id(rend_comp.m_mesh_id),
-	m_mats(rend_comp.m_mats),
-	currently_instanced(false)
+	m_mats(rend_comp.m_mats)
+//	currently_instanced(false)
 {}
 	
 void nsrender_comp::clear_mats()

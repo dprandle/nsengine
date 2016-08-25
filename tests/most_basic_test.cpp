@@ -67,14 +67,25 @@ struct button_funcs
 		scn->add(tile,nullptr,true,cur_offset);
 		cur_offset += fvec3(2 * X_GRID,0.0f,0.0f);
 		++name_offset;
+		current_ents.push_back(tile);
 	}
 
 	void on_remove_selection()
 	{
-		nse.system<nsselection_system>()->delete_selection();
-		cur_offset = fvec3();
+		auto ent_iter = current_ents.begin();
+		while (ent_iter != current_ents.end())
+		{
+			if (nse.system<nsselection_system>()->selection_contains(uivec3((*ent_iter)->full_id(),0)))
+			{
+				plg->destroy(*ent_iter);
+				ent_iter = current_ents.erase(ent_iter);
+			}
+			else
+				++ent_iter;
+		}
 	}
 
+	std::vector<nsentity*> current_ents;
 	uint32 name_offset;
     nsplugin * plg;
     nsscene * scn;

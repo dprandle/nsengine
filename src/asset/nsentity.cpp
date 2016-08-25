@@ -82,14 +82,9 @@ void nsentity::finalize()
 
 void nsentity::destroy_all()
 {
-	auto cur_comp = m_components.begin();
-	while (cur_comp != m_components.end())
-	{
-		cur_comp->second->release();
-		delete cur_comp->second;
-		++cur_comp;
-	}
-	m_components.clear();
+	dprint("nsentity::destroy_all destroying all components in " + m_name);
+	while (m_components.begin() != m_components.end())
+		destroy(m_components.begin()->first);
 }
 
 nsentity::comp_set::iterator nsentity::begin()
@@ -148,11 +143,11 @@ bool nsentity::destroy(uint32 type_id)
 	nscomponent * cmp = remove(type_id);
 	if (cmp != NULL) // Log delete
 	{
+		dprint("nsentity::destroy - destroying \"" + nse.guid(type_id) + "\" from entity " + m_name + "\"");
 		delete cmp;
-		dprint("nsentity::del - Deleting \"" + nse.guid(type_id) + "\" from Entity " + m_name + "\"");
 		return true;
 	}
-	dprint("nsentity::del - Component type \"" + nse.guid(type_id) + "\" was not part of Entity \"" + m_name + "\"");
+	dprint("nsentity::destroy - component type \"" + nse.guid(type_id) + "\" was not part of entity \"" + m_name + "\"");
 	return false;
 }
 
@@ -246,13 +241,13 @@ nscomponent * nsentity::remove(uint32 type_id)
 		comp_t = iter->second;
 		comp_t->release();
 		m_components.erase(iter);
+		dprint("nsentity::remove - removing \"" + nse.guid(type_id) + "\" from entity " + m_name + "\"");
 		component_removed(comp_t);
 		comp_t->set_owner(NULL);
-		dprint("nsentity::remove - Removing \"" + nse.guid(type_id) + "\" from Entity " + m_name + "\"");
 	}
 	else
 	{
-		dprint("nsentity::remove - Component type \"" + nse.guid(type_id) + "\" was not part of Entity \"" + m_name + "\"");
+		dprint("nsentity::remove - component type \"" + nse.guid(type_id) + "\" was not part of Entity \"" + m_name + "\"");
 	}
 
 	return comp_t;
