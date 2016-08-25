@@ -600,9 +600,36 @@ void gl_ctxt::push_scene(nsscene * scn)
 
 	if (ents == nullptr)
 		return;
-	
+
+	_add_instanced_draw_calls_from_scene(scn);
 	_add_draw_calls_from_scene(scn);
 	_add_lights_from_scene(scn);
+}
+
+void gl_ctxt::_add_instanced_draw_calls_from_scene(nsscene * scene)
+{
+	auto iter = instance_objs.begin();
+	while (iter != instance_objs.end())
+	{
+		if ((*iter)->shared_geom_tforms.size() < 2)
+		{
+			for (uint32 j = 0; j < (*iter)->shared_geom_tforms.size(); ++j)
+			{
+				nsrender_comp * rc = (*iter)->shared_geom_tforms[j]->owner()->get<nsrender_comp>();
+				rc->currently_instanced = false;
+				(*iter)->shared_geom_tforms[j]->inst_obj = nullptr;
+			}
+			dprint("gl_ctxt::_add_instanced_draw_calls_from_scene removing shared instance obj as no more shared mesh/material combos left");
+			(*iter)->video_context_release();
+			delete (*iter);
+			iter = instance_objs.erase(iter);
+		}
+		else
+		{
+			// make instanced draw call
+			++iter;
+		}
+	}
 }
 
 void gl_ctxt::push_viewport_ui(viewport * vp)

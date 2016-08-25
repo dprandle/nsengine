@@ -47,12 +47,14 @@ nstform_comp::nstform_comp():
 	nscomponent(type_to_hash(nstform_comp)),
 	save_with_scene(true),
 	m_scenes_info(),
+	inst_obj(nullptr),
 	inst_id(0)
 {}
 
 nstform_comp::nstform_comp(const nstform_comp & copy):
 	nscomponent(copy),
 	m_scenes_info(copy.m_scenes_info),
+	inst_obj(nullptr),
 	inst_id(0)
 {}
 

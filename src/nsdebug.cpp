@@ -13,10 +13,12 @@
 #include <nsdebug.h>
 #include <nslog_file.h>
 #include <nsplatform.h>
+#include <iostream>
 
 nsdebug::nsdebug() : m_console_open(false),
 	m_logging_messages(true), 
 	m_render_messages(true),
+    m_std_out(true),
 	m_deb_level(deb_high),
 	m_msg_cb(NULL),
 	m_msg_inst(NULL),
@@ -81,6 +83,8 @@ void nsdebug::print(const nsstring & pMessage) const
 		m_msg_cb(pMessage,m_msg_inst);
 	//if (mRenderMessages)
 	//; write later
+	if (m_std_out)
+		std::cout << pMessage << std::endl;
 	if (m_logging_messages)
 		log(pMessage);
 }

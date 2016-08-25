@@ -147,10 +147,12 @@ extern nsengine * global_engine_ptr;
 #define NSDEBUG_RT
 #ifdef NSDEBUG
 #define dprint(str) nse.debug_print(str)
+#define NDEBUG
 #else
 #define dprint(str)
 #endif
 
+#include <cassert>
 #include <map>
 #include <nsfactory.h>
 #include <typeindex>

@@ -826,8 +826,18 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 					nse.video_driver()->current_context()->instance_objs.push_back(psi);
 					tcomp->inst_obj = psi;
 					ent_tcomp->inst_obj = psi;
+					psi->shared_geom_tforms.push_back(ent_tcomp);
+					psi->shared_geom_tforms.push_back(tcomp);
 					psi->needs_update = true;
+					ent_rcomp->currently_instanced = true;
 				}
+#ifdef NSDEBUG
+				nsstringstream ss;
+				ss << "nsscene_make_ent_instanced_if_needed making " + ent->name() + " instanced along with the following ents: \n";
+				for (uint32 i = 0; i < tcomp->inst_obj->shared_geom_tforms.size()-1; ++i)
+					ss << tcomp->inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
+				dprint(ss.str());
+#endif
 				rcomp->currently_instanced = true;
 				return;
 			}
@@ -839,12 +849,44 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 void nsscene::make_ent_not_instanced(nsentity * ent)
 {
 	nstform_comp * tfc = ent->get<nstform_comp>();
+	nsrender_comp * rc = ent->get<nsrender_comp>();
+	
+	// entity is not instanced
+	if (!rc->currently_instanced)
+	{
+		dprint("nsscene::make_ent_not_instanced entity " + ent->name() + " is not instanced");
+		assert(tfc->inst_obj == nullptr);
+		return;
+	}
+	
 	auto iter = tfc->inst_obj->shared_geom_tforms.begin();
 	while (iter != tfc->inst_obj->shared_geom_tforms.end())
 	{
-		
-		++iter;
+		if (tfc == *iter)
+		{
+			iter = (*iter)->inst_obj->shared_geom_tforms.erase(iter);
+			dprint("nsscene_make_ent_not_instanced making " + ent->name() + " no longer instanced");
+
+#ifdef NSDEBUG
+			nsstringstream ss;
+			ss << "the scene now contains the following instanced ents\n";
+			for (uint32 i = 0; i < tfc->inst_obj->shared_geom_tforms.size(); ++i)
+				ss << tfc->inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
+			dprint(ss.str());
+#endif
+			tfc->inst_obj = nullptr;
+			rc->currently_instanced  = false;
+
+			// If there is only one entity left - the auto update code should remove that and delete
+			// the obj
+			return;
+		}
+		else
+		{
+			++iter;
+		}
 	}
+	
 }
 
 // This adds the component from the comp by type list in the scene
@@ -852,41 +894,49 @@ void nsscene::_on_comp_add(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
 	fiter.first->second.emplace(comp_t->owner());
-	dprint("nsscene::_on_comp_add Added component " + hash_to_guid(comp_t->type()) + " to entity " + comp_t->owner()->name() + " in scene " + m_name);
-	if (hash_to_guid(comp_t->type()) == "nssel_comp")
+	dprint("nsscene::_on_comp_add added component " + hash_to_guid(comp_t->type()) + " in entity " + comp_t->owner()->name() + " to scene " + m_name);
+	if (comp_t->type() == type_to_hash(nssel_comp))
 	{
-		dprint("nsscene::_on_comp_add Adding scene to selection component");
+		dprint("nsscene::_on_comp_add adding scene to selection component");
 		nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
 		auto emp_iter = sc->m_scene_selection.emplace(this, new sel_per_scene_info(sc,this));
-		if (!emp_iter.second)
-			dprint("nsscene::_on_comp_add Something in adding the comp went seriously wrong");
+		assert(emp_iter.second);
 	}
 	if (comp_t->type() == type_to_hash(nsrender_comp))
 	{
-		
-	}	
+		dprint("nscene::_on_comp_add analyzing render component...");
+		make_ent_instanced_if_needed(comp_t->owner());
+	}
+	if (comp_t->type() == type_to_hash(nsanim_comp) || comp_t->type() == type_to_hash(nssprite_sheet_comp))
+	{
+		make_ent_not_instanced(comp_t->owner());
+		make_ent_instanced_if_needed(comp_t->owner());
+	}
 }
 
 // This removes the component from the comp by type list in the scene
 void nsscene::_on_comp_remove(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.find(comp_t->type());
-	if (fiter != m_ents_by_comp.end())
+	fiter->second.erase(comp_t->owner());
+	dprint("nsscene::_on_comp_remove removed component " + hash_to_guid(comp_t->type()) + " in entity " + comp_t->owner()->name() + " from scene " + m_name);
+	if (comp_t->type() == type_to_hash(nssel_comp))
 	{
-		fiter->second.erase(comp_t->owner());
-		dprint("nsscene::_on_comp_remove Removed component " + hash_to_guid(comp_t->type()) + " from entity " + comp_t->owner()->name() + " in scene " + m_name);
-		if (hash_to_guid(comp_t->type()) == "nssel_comp")
-		{
-			dprint("nsscene::_on_comp_remove Remocing scene from selection component");
-			nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
-			auto emp_iter = sc->m_scene_selection.find(this);
-			delete emp_iter->second;
-			sc->m_scene_selection.erase(emp_iter);
-		}
+		dprint("nsscene::_on_comp_remove removing scene from selection component");
+		nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
+		auto emp_iter = sc->m_scene_selection.find(this);
+		delete emp_iter->second;
+		sc->m_scene_selection.erase(emp_iter);
 	}
-	else
+	if (comp_t->type() == type_to_hash(nsrender_comp))
 	{
-		dprint("nsscene::_on_comp_remove - Trying to remove comp that has not been added apparently");
+		dprint("nscene::_on_comp_remove analyzing render component...");
+		make_ent_not_instanced(comp_t->owner());
+	}
+	if (comp_t->type() == type_to_hash(nsanim_comp) || comp_t->type() == type_to_hash(nssprite_sheet_comp))
+	{
+		make_ent_not_instanced(comp_t->owner());
+		make_ent_instanced_if_needed(comp_t->owner());
 	}
 }
 

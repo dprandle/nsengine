@@ -65,6 +65,7 @@ void nstform_system::update()
 	auto scene_ents = m_active_scene->entities_in_scene();
 	if (scene_ents == nullptr)
 		return;
+	
 
 	// Go through and recursively update the scene
 	auto ent_iter = scene_ents->begin();

@@ -19,6 +19,46 @@ This file contains all of the neccessary declarations for the nsui_button_comp c
 
 class nsui_button_comp;
 
+struct button_state
+{
+	button_state():
+		mat_color(1.0f),
+		mat_color_mult(1.0f),
+		mat_color_add(0.0f),
+		mat_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
+		border_color(1.0f),
+		border_color_mult(1.0f),
+		border_color_add(0.0f),
+		top_border_radius(0.0f),
+		bottom_border_radius(0.0f),
+		border_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
+		border_size(1.0f),
+		text_color(1.0f),
+		text_color_mult(1.0f),
+		text_color_add(0.0f),
+		text_tex_coord_rect(0.0f,0.0f,1.0f,1.0f)
+	{}
+		
+	fvec4 mat_color;
+	fvec4 mat_color_mult;
+	fvec4 mat_color_add;
+	fvec4 mat_tex_coord_rect;
+
+	fvec4 border_color;
+	fvec4 border_color_add;
+	fvec4 border_color_mult;
+	fvec4 border_tex_coord_rect;
+	fvec4 border_size;
+	fvec4 top_border_radius;
+	fvec4 bottom_border_radius;
+
+
+	fvec4 text_color;
+	fvec4 text_color_add;
+	fvec4 text_color_mult;
+	fvec4 text_tex_coord_rect;
+};
+
 class nsui_button_comp : public nscomponent
 {
 public:
@@ -44,46 +84,6 @@ public:
 	ns::signal<> pressed;
 	ns::signal<> released;
 	ns::signal<bool> toggled;
-
-	struct button_state
-	{
-		button_state():
-			mat_color(1.0f),
-			mat_color_mult(1.0f),
-			mat_color_add(0.0f),
-			mat_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
-			border_color(1.0f),
-			border_color_mult(1.0f),
-			border_color_add(0.0f),
-			top_border_radius(0.0f),
-			bottom_border_radius(0.0f),
-			border_tex_coord_rect(0.0f,0.0f,1.0f,1.0f),
-			border_size(1.0f),
-			text_color(1.0f),
-			text_color_mult(1.0f),
-			text_color_add(0.0f),
-			text_tex_coord_rect(0.0f,0.0f,1.0f,1.0f)
-		{}
-		
-		fvec4 mat_color;
-		fvec4 mat_color_mult;
-		fvec4 mat_color_add;
-		fvec4 mat_tex_coord_rect;
-
-		fvec4 border_color;
-		fvec4 border_color_add;
-		fvec4 border_color_mult;
-		fvec4 border_tex_coord_rect;
-		fvec4 border_size;
-		fvec4 top_border_radius;
-		fvec4 bottom_border_radius;
-
-
-		fvec4 text_color;
-		fvec4 text_color_add;
-		fvec4 text_color_mult;
-		fvec4 text_tex_coord_rect;
-	};
 		
 	bool is_pressed;
 	bool is_hover;
@@ -100,7 +100,7 @@ public:
 };
 
 template <class PUPer>
-void pup(PUPer & p, nsui_button_comp::button_state & btn, const nsstring & var_name)
+void pup(PUPer & p, button_state & btn, const nsstring & var_name)
 {
 	pup(p,btn.mat_color,"mat_color");
 	pup(p,btn.mat_color_mult,"mat_color_mult");

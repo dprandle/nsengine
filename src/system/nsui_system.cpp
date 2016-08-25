@@ -97,7 +97,7 @@ void nsui_system::update()
 					else
 						index = 0;
 
-					nsui_button_comp::button_state * bs;
+					button_state * bs;
 					if (uib->toggle_enabled && uib->is_toggled)
 						bs = &uib->toggled_button_states[index];
 					else
@@ -269,8 +269,7 @@ bool nsui_system::_handle_mouse_event(nsmouse_move_event * evnt)
 			pos[1] = (tform * fvec3(0.0f,outer_pos.y,1.0f)).xy();
 			pos[2] = (tform * fvec3(outer_pos.x, 0.0f,1.0f)).xy();
 			pos[3] = (tform * fvec3(outer_pos,1.0f)).xy();
-			mpos %= vp_size;
-            if (point_in_rect(mpos, pos))
+            if (point_in_rect(mpos % vp_size, pos))
             {
 				uibtn->is_hover = true;
             }

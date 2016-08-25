@@ -35,6 +35,7 @@
 
 #include <nstimer.h>
 #include <nsrouter.h>
+#include <nstile_grid.h>
 
 #include <iostream>
 #include <AL/al.h>
@@ -42,22 +43,78 @@
 
 void setup_input_map(nsplugin * plg);
 
-uint32 source;
-
 struct button_funcs
 {
+	button_funcs():
+		name_offset(0),
+		plg(nullptr),
+		scn(nullptr),
+		grass_mat(nullptr),
+		m_router(nullptr),
+		cur_offset()
+	{}
+	
     void on_new_game()
     {
-		alSourcePlay(source);
     }
 
+	void on_add_tile()
+	{
+		nsstring name("grass_tile" + std::to_string(name_offset));
+		nsentity * tile = plg->create_tile(name, grass_mat, false);
+		if (tile == nullptr)
+			tile = plg->get<nsentity>(name);
+		scn->add(tile,nullptr,true,cur_offset);
+		cur_offset += fvec3(2 * X_GRID,0.0f,0.0f);
+		++name_offset;
+	}
+
+	void on_remove_selection()
+	{
+		nse.system<nsselection_system>()->delete_selection();
+		cur_offset = fvec3();
+	}
+
+	uint32 name_offset;
     nsplugin * plg;
-	
     nsscene * scn;
+	nsmaterial * grass_mat;
     nsrouter * m_router;
-    nsui_button_comp * btn;
-    nsui_canvas_comp * can;
+	fvec3 cur_offset;
 };
+
+struct button_style
+{
+	button_style():
+		fnt(nullptr),
+		text_alignment(nsui_text_comp::middle_center),
+		text_margins()
+	{
+		for (uint8 i = 0; i < 4; ++i)
+		{
+			reg_states[i].top_border_radius = fvec4(5,5,5,5);
+			reg_states[i].bottom_border_radius = fvec4(5,5,5,5);
+			reg_states[i].border_size = fvec4(2,2,2,2);
+			toggle_states[i].top_border_radius = fvec4(5,5,5,5);
+			toggle_states[i].bottom_border_radius = fvec4(5,5,5,5);
+			toggle_states[i].border_size = fvec4(2,2,2,2);
+		}
+	}
+	nsfont * fnt;
+	int text_alignment;
+	uivec4 text_margins;
+	button_state reg_states[4];
+	button_state toggle_states[4];
+};
+
+nsui_button_comp * create_button(
+	nsentity * canvas,
+	const nsstring & button_name,
+	button_style style,
+	const fvec2 & norm_center_pos,
+	const fvec2 & size,
+	const nsstring & text
+	);
 
 
 int main()
@@ -73,7 +130,9 @@ int main()
 	
     nsplugin * plg = nsep.create<nsplugin>("most_basic_test");
     plg->enable(true);
+	bf.plg = plg;
 	
+    vp->camera = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     setup_input_map(plg);
 
     nsscene * new_scene = plg->create<nsscene>("new_scene");
@@ -81,121 +140,76 @@ int main()
 	bf.scn = new_scene;
 	
     new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
-    nsentity * grass_tile = plg->create_tile("grass_tile",
-                                             nse.import_dir() + "diffuseGrass.png",
-                                             nse.import_dir() + "normalGrass.png",
-                                             fvec4(1,0,0,0.5f), 16.0, 0.6, fvec3(1,1,1), true);
 
-    nsentity * stone_tile = plg->create_tile("stone_tile",
-                                             nse.import_dir() + "diffuseStone.png",
-                                             nse.import_dir() + "normalStone.png",
-                                             fvec4(1,0,0,0.5f), 16.0, 0.6, fvec3(1,1,1), true);
+	// create grass mat
+	bf.grass_mat = plg->create<nsmaterial>("grass_mat");
+	nstexture * dif = plg->load<nstex2d>(nse.import_dir() + "diffuseGrass.png", false);
+	nstexture * nrm = plg->load<nstex2d>(nse.import_dir() + "normalGrass.png", false);
+	tex_map_info tmi;
+	tmi.tex_id = dif->full_id();
+	bf.grass_mat->add_tex_map(nsmaterial::diffuse, tmi, true);
+	tmi.tex_id = nrm->full_id();
+	bf.grass_mat->add_tex_map(nsmaterial::normal, tmi, true);
 
     nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
     nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
-    nsentity * cam = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
-    nsentity * ui_button = plg->create<nsentity>("button_new_match");
-
-    new_scene->add(cam,nullptr,true,fvec3(0,0,-20));
-    new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    uint32 plid = new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-
-	instance_tform * itf =
-		&point_light->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[plid];
-
-	new_scene->add(spot_light, itf, false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-
-    new_scene->add_gridded(grass_tile,ivec3(8,8,1));
-
-	new_scene->add(stone_tile,
-				   &grass_tile->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[3],
-				   true,
-				   fvec3(0,0,-20));
 	
-	grass_tile->get<nstform_comp>()->per_scene_info(
-	   new_scene)->m_tforms[3].set_parent(
-		   &spot_light->get<nstform_comp>()->per_scene_info(new_scene)->m_tforms[0], true);
-
-	
-    // Create material for the button bg
-    nsmaterial * mat = plg->create<nsmaterial>("btn_contents_mat");
-    //nstex2d * reg_tex = plg->load<nstex2d>(nse.import_dir() + "boona.jpg", true);
-    //mat->add_tex_map(nsmaterial::diffuse, tex_map_info(reg_tex->full_id(),fvec4(0.0f,0.0f,1.0f,1.0f)), true);
-    mat->set_color_mode(true);
-    mat->set_color(fvec4(0.0f,0.0f,0.0f,0.8f));
-	
-    // Create material for the button border
-    nsmaterial * border_mat = plg->create<nsmaterial>("border_mat");
-    border_mat->set_color_mode(true);
-    border_mat->set_color(fvec4(0.1f,0.1f,0.1f,1.0f));
-	
-    // Create material for the fnt rendering
-    nsmaterial * fnt_mat = plg->create<nsmaterial>("my_font");
-    fnt_mat->set_color_mode(true);
-    fnt_mat->set_color(fvec4(1.0f,0.0f,0.0f,0.8f));
-	
-    nsui_material_comp * uic = ui_button->create<nsui_material_comp>();
-    uic->mat_id = mat->full_id();
-    uic->border_mat_id = border_mat->full_id();
-    uic->border_size = fvec4(1,1,1,1);
-    uic->mat_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
-
-    nsui_text_comp * uitxt = ui_button->create<nsui_text_comp>();
-    nsfont * fnt = plg->load<nsfont>(nse.import_dir() + "sample.otf",true);
-    fnt->set_point_size(30);
-
-    uitxt->font_material_id = fnt_mat->full_id();
-    uitxt->font_id = fnt->full_id();
-    uitxt->text = ">>>";
-    uitxt->text_shader_id = nse.core()->get<nsshader>(UI_TEXT_SHADER)->full_id();
-    uitxt->text_alignment = nsui_text_comp::middle_left;
-    uitxt->margins = uivec4(3,3,3,3);
-
-    nsui_text_input_comp * uitxt_input = ui_button->create<nsui_text_input_comp>();
-    uitxt_input->cursor_color = fvec4(1,1,1,0.8);
-    uitxt_input->cursor_pixel_width = 2;
-    uitxt_input->cursor_blink_rate_ms = 430.0f;
-	
-    nsui_button_comp * uibtn = ui_button->create<nsui_button_comp>();
-    bf.m_router->connect(&bf,&button_funcs::on_new_game,uibtn->pressed);
-    bf.btn = uibtn;
-    uibtn->button_states[0].border_size = fvec4(10,10,10,10);
-    uibtn->button_states[0].border_color = fvec4(0,0,0,0.7);
-    uibtn->button_states[0].mat_color = fvec4(0.3, 0.3, 0.3, 0.5);
-    uibtn->button_states[0].text_color = fvec4(1.0,1.0,1.0,1.0);
-
-    uibtn->button_states[1].border_size = fvec4(0,0,10,0);
-    uibtn->button_states[1].border_color = fvec4(0,0,0,0.7);
-    uibtn->button_states[1].mat_color = fvec4(0.0, 0.0, 0.0, 0.5);
-    uibtn->button_states[1].text_color = fvec4(1.0,1.0,1.0,1.0);
-
-    uibtn->button_states[2].border_color = fvec4(0,0,1,1);
-    uibtn->button_states[2].border_size = fvec4(5,5,5,5);
-    uibtn->button_states[2].mat_color = fvec4(1,0,0,1);
-    uibtn->button_states[2].mat_color_mult = fvec4(0.7,0,0,1);
-
-    uibtn->button_states[3].border_color = fvec4(0.7,0.7,0.7,1);
-    uibtn->button_states[3].border_size = fvec4(5,5,5,5);
-    uibtn->button_states[3].mat_color = fvec4(0.4,0.4,0.4,0.6);
-	
-    nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();
+	nsui_canvas_comp * cc = canvas->create<nsui_canvas_comp>();
     cc->enable(true);
-    cc->add(ui_button);
 
-    nsrect_tform_comp * tuic = ui_button->get<nsrect_tform_comp>();
-    auto pic = tuic->canvas_info(cc);
-    pic->anchor_rect = fvec4(0.1f,0.9f,0.1f,0.9f);
-    float h = 40;
-    float w = 100;
-    pic->pixel_offset_rect = fvec4(-w/2, -h/2, w/2, h/2);
-    pic->pivot = fvec2(0.5f,0.5f);
-    pic->layer = 0;
-    pic->angle = 0.0f;
+	button_style bs;
+	
+	bs.fnt = plg->load<nsfont>(nse.import_dir() + "sample.otf",true);
+    bs.fnt->set_point_size(12);
 
-    vp->ui_canvases.push_back(canvas);
-    vp->camera = plg->get<nsentity>("scenecam");
+    bs.reg_states[0].border_color = fvec4(0.0f,0.0f,0.0f,0.7);
+    bs.reg_states[0].mat_color = fvec4(0.3, 0.3, 0.3, 0.5);
+    bs.reg_states[0].text_color = fvec4(1.0,1.0,1.0,1.0);
+
+    bs.reg_states[1].border_color = fvec4(0,0,0,0.7);
+    bs.reg_states[1].mat_color = fvec4(1.0, 0.0, 0.0, 0.5);
+    bs.reg_states[1].text_color = fvec4(1.0,1.0,1.0,1.0);
+
+    bs.reg_states[2].border_color = fvec4(0,0,1,1);
+    bs.reg_states[2].mat_color = fvec4(1,1,0,1);
+    bs.reg_states[2].text_color = fvec4(1.0,1.0,1.0,1.0);
+	
+    bs.reg_states[3].border_color = fvec4(0.7,0.7,0.7,1);
+    bs.reg_states[3].mat_color = fvec4(0.4,0.4,0.4,0.6);
+	bs.reg_states[3].text_color = fvec4(1.0,1.0,1.0,1.0);
+   
+
+	// Add stuff to scene
+	new_scene->add(vp->camera, nullptr,true,fvec3(0,0,-20));
+    new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+	new_scene->add(spot_light, nullptr, false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+
+	// Add stuff to canvas
+	nsui_button_comp * btn = create_button(
+		canvas,
+		"add_tile_btn",
+		bs,
+		fvec2(0.1, 0.9),
+		fvec2(100,30),
+		"Add Tile"
+		);
+	bf.m_router->connect(&bf, &button_funcs::on_add_tile, btn->pressed);
+
+	btn = create_button(
+		canvas,
+		"remove_selection_btn",
+		bs,
+		fvec2(0.1, 0.8),
+		fvec2(100,30),
+		"Delete Seleciton"
+		);
+	bf.m_router->connect(&bf, &button_funcs::on_remove_selection, btn->pressed);
+
+	// set the canvas and scene
+	vp->ui_canvases.push_back(canvas);
     nse.set_active_scene(plg->get<nsscene>("new_scene"));
 	
     e.start();
@@ -228,4 +242,61 @@ void setup_input_map(nsplugin * plg)
 	nsinput_map::trigger change_vp("mouse_pressed_in_viewport", nsinput_map::t_pressed);
     change_vp.add_key_mod(nsinput_map::key_any);
     im->add_mouse_trigger("main_global_ctxt", nsinput_map::left_button, change_vp);
+}
+
+
+nsui_button_comp * create_button(
+	nsentity * canvas,
+	const nsstring & button_name,
+	button_style style,
+	const fvec2 & norm_center_pos,
+	const fvec2 & size,
+	const nsstring & text
+	)
+{
+	nsplugin * plg = nsep.get<nsplugin>(canvas->plugin_id());
+	nsentity * bent = plg->create<nsentity>(button_name);
+
+	    // Create material for the button bg
+    nsmaterial * mat = plg->create<nsmaterial>(button_name);
+    mat->set_color_mode(true);
+	
+    // Create material for the button border
+    nsmaterial * border_mat = plg->create<nsmaterial>(button_name + "_border");
+    border_mat->set_color_mode(true);
+	
+	nsmaterial * fnt_mat = plg->create<nsmaterial>(button_name + "_fnt");
+    fnt_mat->set_color_mode(true);
+
+    nsui_material_comp * uic = bent->create<nsui_material_comp>();
+    uic->mat_id = mat->full_id();
+    uic->border_mat_id = border_mat->full_id();
+    uic->mat_shader_id = nse.core()->get<nsshader>(UI_SHADER)->full_id();
+
+    nsui_text_comp * uitxt = bent->create<nsui_text_comp>();
+    uitxt->font_material_id = fnt_mat->full_id();
+    uitxt->font_id = style.fnt->full_id();
+    uitxt->text = text;
+    uitxt->text_shader_id = nse.core()->get<nsshader>(UI_TEXT_SHADER)->full_id();
+    uitxt->text_alignment = nsui_text_comp::t_alignment(style.text_alignment);
+    uitxt->margins = style.text_margins;
+
+    nsui_button_comp * uibtn = bent->create<nsui_button_comp>();
+	for (uint8 i = 0; i < 4; ++i)
+	{
+		uibtn->button_states[i] = style.reg_states[i];
+		uibtn->toggled_button_states[i] = style.toggle_states[i];
+	}
+	
+    nsui_canvas_comp * cc = canvas->get<nsui_canvas_comp>();
+    cc->add(bent);
+
+    nsrect_tform_comp * tuic = bent->get<nsrect_tform_comp>();
+    auto pic = tuic->canvas_info(cc);
+    pic->anchor_rect = fvec4(norm_center_pos,norm_center_pos);
+    pic->pixel_offset_rect = fvec4(-size.w/2, -size.h/2, size.w/2, size.h/2);
+    pic->pivot = fvec2(0.5f,0.5f);
+    pic->layer = 0;
+    pic->angle = 0.0f;
+	return uibtn;
 }

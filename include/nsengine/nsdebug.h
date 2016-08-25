@@ -70,6 +70,7 @@ private:
 	bool m_console_open;
 	bool m_logging_messages;
 	bool m_render_messages;
+	bool m_std_out;
 	debug_level m_deb_level;
 	message_callback m_msg_cb;
 	void * m_msg_inst;

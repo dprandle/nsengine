@@ -252,6 +252,8 @@ struct gl_ctxt : public vid_ctxt
 
     void render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader);
 
+	void _add_instanced_draw_calls_from_scene(nsscene * scene);
+	
 	void _add_draw_calls_from_scene(nsscene * scene);
 
 	void _add_lights_from_scene(nsscene * scene);
