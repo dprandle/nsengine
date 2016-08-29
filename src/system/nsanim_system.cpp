@@ -68,7 +68,8 @@ void nsanim_system::update()
 			nsstring mCurrentAnim = animComp->current_anim_name();
 			if (meshID == 0 || animsetID == 0)
 			{
-				dprint("nsanim_system::update Cannot update animation without AnimSetID and MeshID");
+				dprint("nsanim_system::update Cannot update animation without anim set and mesh id");
+				animComp->post_update(false);
 				++entIter;
 				continue;
 			}
@@ -78,6 +79,7 @@ void nsanim_system::update()
 			{
 				dprint("nsanim_system::update mesh with id " + meshID.to_string() + " is null in anim ent " + (*entIter)->name());
 				++entIter;
+				animComp->post_update(false);
 				continue;
 			}
 
@@ -86,6 +88,7 @@ void nsanim_system::update()
 			{
 				dprint("nsanim_system::update msh node tree is null in anim ent " + (*entIter)->name());
 				++entIter;
+				animComp->post_update(false);
 				continue;
 			}
 
@@ -95,7 +98,9 @@ void nsanim_system::update()
 			nsanim_set * animset = get_asset<nsanim_set>(animsetID);
 			if (animset == nullptr)
 			{
+				dprint("nsanim_system::update animset is null in anim ent " + (*entIter)->name());
 				++entIter;
+				animComp->post_update(false);
 				continue;
 			}
 
@@ -103,6 +108,7 @@ void nsanim_system::update()
 			if (currAnim == nullptr)
 			{
 				dprint("nsanim_system::update anim set not found " + (*entIter)->name());
+				animComp->post_update(false);
 				++entIter;
 				continue;
 			}

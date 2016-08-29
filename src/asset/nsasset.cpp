@@ -11,9 +11,9 @@
 */
 
 #include <asset/nsasset.h>
-#ifdef NOTIFY_ENGINE_NAME_CHANGE
 #include <nsengine.h>
-#endif
+#include <nsevent.h>
+#include <nsevent_dispatcher.h>
 
 nsasset::nsasset(uint32 type_hash) :
 	m_icon_path(),
@@ -43,6 +43,7 @@ nsasset::nsasset(const nsasset & copy):
 nsasset::~nsasset()
 {
 	resource_destroyed(type(), full_id());
+	push_asset_destroyed(full_id());
 }
 
 const nsstring & nsasset::extension() const
@@ -138,7 +139,7 @@ void nsasset::rename(const nsstring & pRefName)
 
 	m_name = pRefName;
 	m_id = hash_id(pRefName);
-
+	push_asset_name_change(uivec2(m_plugin_id,tmp), full_id());
 #ifdef NOTIFY_ENGINE_NAME_CHANGE
 	if (m_owned) // if a manager owns this resource - otherwise we dont care
 		nse.name_change(uivec2(m_plugin_id, tmp),uivec2(m_plugin_id, m_id));

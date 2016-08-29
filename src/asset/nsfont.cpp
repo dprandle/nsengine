@@ -10,10 +10,12 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <iostream>
 #include <asset/nsfont.h>
 #include <nsengine.h>
 #include <asset/nstexture.h>
 #include <ft2build.h>
+#include <algorithm>
 #include FT_FREETYPE_H
 
 nsfont::nsfont():
@@ -21,7 +23,9 @@ nsfont::nsfont():
 	m_faces(),
 	m_font_file_data(),
 	m_cur_pt_size(DEFAULT_IMPORT_PT_SIZE),
-	m_cur_dpi(DEFAULT_FONT_DPI)
+	m_cur_dpi(DEFAULT_FONT_DPI),
+	eps(0.0f),
+	pad(4)
 {
 	set_ext(DEFAULT_FONT_EXTENSION);
 }
@@ -108,10 +112,9 @@ void nsfont::_build_face_texture(uint8 face_index)
 {
 	font_face & ff = m_faces[face_index];
 	FT_GlyphSlot g = ff.ft_face->glyph;
-	ivec2 pad(4,4);
 	
 	// running total size (for atlas)
-	ivec2 size;
+	uivec2 size;
 	
 	for(int i = 0; i < 128; ++i)
 	{
@@ -126,34 +129,39 @@ void nsfont::_build_face_texture(uint8 face_index)
 		ff.ci[i].adv.set(g->advance.x >> 6,g->advance.y >> 6);
 		ff.ci[i].bm_size.set(g->bitmap.width, g->bitmap.rows);
 		ff.ci[i].bm_lt.set(g->bitmap_left,g->bitmap_top);
-        ff.ci[i].tc.x = size.w + pad.x/2; // width before adding this char's width
 		ff.ci[i].bearing.set(g->metrics.horiBearingX >> 6,g->metrics.horiBearingY >> 6);
+
+        ff.ci[i].tc.x = size.w + pad.x/2; // width before adding this char's width
+        ff.ci[i].tc.z = ff.ci[i].tc.x + g->bitmap.width; // width after adding this char's width
+        ff.ci[i].tc.w = pad.y/2;
+        ff.ci[i].tc.y = ff.ci[i].tc.w + g->bitmap.rows;
+		ff.ci[i].tc += eps;
 
 		// add to width and take the largest height
 		size.w += g->bitmap.width + pad.x;
-		size.h = ivec2(size.h, g->bitmap.rows).max();
-
-        ff.ci[i].tc.y = pad.y/2;
-        ff.ci[i].tc.z = size.w - pad.x/2; // width after adding this char's width
-        ff.ci[i].tc.w = g->bitmap.rows + pad.y/2;
+		size.h = std::max(size.h, g->bitmap.rows);
 	}
+	
 	size.h += pad.y;
-	ff.atlas->resize(size, true);
-	uint8 * dat = ff.atlas->data();
+	ff.atlas->resize(ivec2(size.x,size.y), true);
+	ff.atlas->clear_data(0x00);
+	uint8 * dat = ff.atlas->size().w * pad.y/2 + ff.atlas->data() + pad.x / 2;
 	for (uint8 i = 0; i < 128; ++i)
 	{
-		if( FT_Load_Char(ff.ft_face, i, FT_LOAD_RENDER) )
-			continue;
+		FT_Load_Char(ff.ft_face, i, FT_LOAD_RENDER);
 		
-        int32 x_offset = int32(ff.ci[i].tc.x);
-        int32 y_offset = int32(ff.ci[i].tc.y);
-		
+
 		ivec2 bm_size(ff.ci[i].bm_size);
-        for (int32 row = 0; row < bm_size.h; ++row)
+		int32 row = 0, xoff = 0;
+		for (row = 0; row < bm_size.h; ++row)
 		{
-			for (uint32 j = 0; j < bm_size.w; ++j)
-                dat[(row+y_offset) * ff.atlas->size().w + j + x_offset] = g->bitmap.buffer[(bm_size.h- row - 1) * g->bitmap.width + j];
+			for (xoff = 0; xoff < bm_size.w; ++xoff)
+				dat[xoff] = g->bitmap.buffer[row*bm_size.w + xoff];
+			dat += size.w;
 		}
+		dat -= size.w * row;
+		dat += bm_size.w + pad.x;
+		
         ff.ci[i].tc.x = (ff.ci[i].tc.x) / size.w;
         ff.ci[i].tc.y = (ff.ci[i].tc.y) / size.h;
 		ff.ci[i].tc.z = (ff.ci[i].tc.z) / size.w;

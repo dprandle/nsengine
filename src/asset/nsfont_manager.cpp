@@ -141,6 +141,9 @@ bool nsfont_manager::_load_font_faces(nsfont * fnt)
 	fnt->m_faces.back().atlas->enable_group_save(false);
 	tex_params tp;
 	tp.min_filter = tmin_linear;
+	tp.mag_filter = tmag_linear;
+	tp.edge_behavior.x = te_clamp;
+	tp.edge_behavior.y = te_clamp;
 	fnt->m_faces.back().atlas->set_parameters(tp);
 	for (uint8 i = 1; i < num_faces; ++i)
 	{

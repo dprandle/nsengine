@@ -26,6 +26,7 @@
 #include <component/nsui_comp.h>
 #include <component/nsui_button_comp.h>
 #include <component/nsui_canvas_comp.h>
+#include <component/nssprite_comp.h>
 
 #include <system/nsinput_system.h>
 #include <system/nsselection_system.h>
@@ -85,6 +86,40 @@ struct button_funcs
 		}
 	}
 
+	void on_toggle_ac()
+	{
+		auto ent_iter = current_ents.begin();
+		while (ent_iter != current_ents.end())
+		{
+			if (nse.system<nsselection_system>()->selection_contains(uivec3((*ent_iter)->full_id(),0)))
+			{
+				nsanim_comp * ac = (*ent_iter)->get<nsanim_comp>();
+				if (ac == nullptr)
+					ac = (*ent_iter)->create<nsanim_comp>();
+				else
+					(*ent_iter)->destroy(ac->type());
+			}
+			++ent_iter;
+		}
+	}
+
+	void on_toggle_sc()
+	{
+		auto ent_iter = current_ents.begin();
+		while (ent_iter != current_ents.end())
+		{
+			if (nse.system<nsselection_system>()->selection_contains(uivec3((*ent_iter)->full_id(),0)))
+			{
+				nssprite_sheet_comp * sc = (*ent_iter)->get<nssprite_sheet_comp>();
+				if (sc == nullptr)
+					sc = (*ent_iter)->create<nssprite_sheet_comp>();
+				else
+					(*ent_iter)->destroy(sc->type());
+			}
+			++ent_iter;
+		}
+	}
+
 	std::vector<nsentity*> current_ents;
 	uint32 name_offset;
     nsplugin * plg;
@@ -123,7 +158,7 @@ nsui_button_comp * create_button(
 	const nsstring & button_name,
 	button_style style,
 	const fvec2 & norm_center_pos,
-	const fvec2 & size,
+	const fvec4 & offset,
 	const nsstring & text
 	);
 
@@ -173,10 +208,10 @@ int main()
 	button_style bs;
 	
 	bs.fnt = plg->load<nsfont>(nse.import_dir() + "sample.otf",true);
-    bs.fnt->set_point_size(12);
+    bs.fnt->set_point_size(18);
 
     bs.reg_states[0].border_color = fvec4(0.0f,0.0f,0.0f,0.7);
-    bs.reg_states[0].mat_color = fvec4(0.3, 0.3, 0.3, 0.5);
+    bs.reg_states[0].mat_color = fvec4(0.3, 0.3, 0.3, 1.0);
     bs.reg_states[0].text_color = fvec4(1.0,1.0,1.0,1.0);
 
     bs.reg_states[1].border_color = fvec4(0,0,0,0.7);
@@ -184,8 +219,8 @@ int main()
     bs.reg_states[1].text_color = fvec4(1.0,1.0,1.0,1.0);
 
     bs.reg_states[2].border_color = fvec4(0,0,1,1);
-    bs.reg_states[2].mat_color = fvec4(1,1,0,1);
-    bs.reg_states[2].text_color = fvec4(1.0,1.0,1.0,1.0);
+    bs.reg_states[2].mat_color = fvec4(0.0,0.0,0.0,1);
+    bs.reg_states[2].text_color = fvec4(1.0,1.0,0.0,1.0);
 	
     bs.reg_states[3].border_color = fvec4(0.7,0.7,0.7,1);
     bs.reg_states[3].mat_color = fvec4(0.4,0.4,0.4,0.6);
@@ -198,30 +233,55 @@ int main()
     new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 	new_scene->add(spot_light, nullptr, false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 
+	fvec2 button_size(200,60);
+	fvec2 start_pos(200,800);
+	
 	// Add stuff to canvas
 	nsui_button_comp * btn = create_button(
 		canvas,
 		"add_tile_btn",
 		bs,
-		fvec2(0.1, 0.9),
-		fvec2(100,30),
+		fvec2(0.0f),
+		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
 		"Add Tile"
 		);
 	bf.m_router->connect(&bf, &button_funcs::on_add_tile, btn->pressed);
-
+	start_pos.y -= 100.0f;
 	btn = create_button(
 		canvas,
 		"remove_selection_btn",
 		bs,
-		fvec2(0.1, 0.8),
-		fvec2(100,30),
-		"Delete Seleciton"
+		fvec2(0.0f),
+		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
+		"Delete Selection"
 		);
 	bf.m_router->connect(&bf, &button_funcs::on_remove_selection, btn->pressed);
+	start_pos.y -= 100;
+	btn = create_button(
+		canvas,
+		"toggle_anim_comp_to_selection_btn",
+		bs,
+		fvec2(0.0f),
+		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
+		"Toggle AC Selection"
+		);	
+	bf.m_router->connect(&bf, &button_funcs::on_toggle_ac, btn->pressed);
+	start_pos.y -= 100;
+	btn = create_button(
+		canvas,
+		"toggle_sprite_comp_to_selection_btn",
+		bs,
+		fvec2(0.0f),
+		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
+		"Toggle SC Selection"
+		);	
+	bf.m_router->connect(&bf, &button_funcs::on_toggle_sc, btn->pressed);
 
 	// set the canvas and scene
 	vp->ui_canvases.push_back(canvas);
     nse.set_active_scene(plg->get<nsscene>("new_scene"));
+
+	plg->save(bs.fnt->get_atlas(0));
 	
     e.start();
     while (e.running())
@@ -261,7 +321,7 @@ nsui_button_comp * create_button(
 	const nsstring & button_name,
 	button_style style,
 	const fvec2 & norm_center_pos,
-	const fvec2 & size,
+	const fvec4 & offset,
 	const nsstring & text
 	)
 {
@@ -305,7 +365,7 @@ nsui_button_comp * create_button(
     nsrect_tform_comp * tuic = bent->get<nsrect_tform_comp>();
     auto pic = tuic->canvas_info(cc);
     pic->anchor_rect = fvec4(norm_center_pos,norm_center_pos);
-    pic->pixel_offset_rect = fvec4(-size.w/2, -size.h/2, size.w/2, size.h/2);
+    pic->pixel_offset_rect = offset;
     pic->pivot = fvec2(0.5f,0.5f);
     pic->layer = 0;
     pic->angle = 0.0f;

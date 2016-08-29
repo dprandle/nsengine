@@ -86,7 +86,7 @@ void main()
 	{
 		alpha = texture(uitexture, tex_coord).r;
 		final_frag_color = frag_color_out * color_mult + color_add;
-		final_frag_color.a *= alpha;
+		final_frag_color.a = alpha;
 	}
 	else
 	{

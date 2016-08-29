@@ -1215,11 +1215,6 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 		terComp = (*iter)->get<nsterrain_comp>();
 		currentMesh = get_asset<nsmesh>(rComp->mesh_id());
 
-		if (rComp->update_posted())
-		{
-			
-		}
-		
 		if (lc != nullptr)
 		{
 			if (lc->update_posted())
@@ -1265,7 +1260,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 					shader = nse.core()->get<nsshader>(GBUFFER_SHADER);
 			}
 
-			if (animComp != nullptr)
+			if (animComp != nullptr && !animComp->final_transforms()->empty())
 				fTForms = animComp->final_transforms();
 
 			if (terComp != nullptr)

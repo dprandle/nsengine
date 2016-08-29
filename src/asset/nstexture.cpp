@@ -50,6 +50,12 @@ nstexture::~nstexture()
 	delete [] m_raw_data;
 }
 
+void nstexture::clear_data(uint8 clear_val)
+{
+	for (uint32 i = 0; i < pixel_count() * bytes_per_pixel(); ++i)
+		m_raw_data[i] = clear_val;
+}
+
 nstexture & nstexture::operator=(nstexture_inst rhs)
 {
 	nsasset::operator=(rhs);
@@ -277,8 +283,8 @@ void nstex1d::resize(int32 w, bool resize_data)
 		return;
 	}
 	
-	if (m_width >= w)
-		m_width = w;
+	if (m_width == w)
+		return;
 	else
 	{
 		uint8 * tmp = m_raw_data;
@@ -399,8 +405,8 @@ void nstex2d::resize(const ivec2 & size, bool resize_data)
 	}
 
 	uint32 new_size = size.x * size.y * bytes_per_pixel();
-	if (pixel_count()*bytes_per_pixel() >= new_size)
-		m_size = size;
+	if (pixel_count()*bytes_per_pixel() == new_size)
+		return;
 	else
 	{
 		uint8 * tmp = m_raw_data;
@@ -469,8 +475,8 @@ void nstex3d::resize(const ivec3 & size, bool resize_data)
 	}
 		
 	uint32 new_size = size.x * size.y * size.z * bytes_per_pixel();
-	if (pixel_count()*bytes_per_pixel() >= new_size)
-		m_size = size;
+	if (pixel_count()*bytes_per_pixel() == new_size)
+		return;
 	else
 	{
 		uint8 * tmp = m_raw_data;
@@ -540,8 +546,8 @@ void nstex_cubemap::resize(const ivec2 & size, bool resize_data)
 	}
 
 	uint32 new_size = size.x * size.y * 6 * bytes_per_pixel();
-	if (pixel_count()*bytes_per_pixel() >= new_size)
-		m_size = size;
+	if (pixel_count()*bytes_per_pixel() == new_size)
+		return;
 	else
 	{
 		uint8 * tmp = m_raw_data;

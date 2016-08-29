@@ -158,6 +158,8 @@ class nstexture : public nsasset, public nsvideo_object
 	
 	virtual void copy_data(uint8 * data, uint32 data_size, uint32 pixel_offset, bool repeat);
 
+	void clear_data(uint8 clear_val);
+
 	uint8 * data();
 
 	void set_format(tex_format tf);

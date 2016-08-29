@@ -18,6 +18,9 @@ This file contains all of the neccessary declarations for the NSEvent struct.
 
 #include <iostream>
 
+#define push_asset_destroyed(asset_id) nse.event_dispatch()->push<asset_name_change_event>(asset_id, uivec2(0))
+#define push_asset_name_change(old_id,new_id) nse.event_dispatch()->push<asset_name_change_event>(old_id,new_id)
+
 struct nsevent
 {
 
@@ -286,6 +289,19 @@ struct audio_stop_streaming_event : public nsevent
 	
 	uivec3 source_id;
 	uint32 effect_index;
+};
+
+// A name change to 0,0,0 signifies asset deletion
+struct asset_name_change_event : public nsevent
+{
+	asset_name_change_event(const uivec2 & old, const uivec2 & new_):
+		nsevent(),
+		old_name(old),
+		new_name(new_)
+	{}
+	
+	uivec2 old_name;
+	uivec2 new_name;
 };
 
 #endif

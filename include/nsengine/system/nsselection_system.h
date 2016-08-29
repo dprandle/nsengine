@@ -38,6 +38,8 @@ struct nsstate_event;
 class nsselection_system : public nssystem
 {
 public:
+
+	SLOT_OBJECT
 	
 	enum axis_t
 	{
@@ -153,6 +155,8 @@ protected:
 	bool _handle_move_selection_toggle(nsaction_event * evnt);
 	bool _handle_rotate_selection(nsaction_event * evnt);
 	bool _handle_scene_ent_removed(scene_ent_removed * evnt);
+
+	void on_ent_destroyed(uint32 type_id, uivec2 ent_id);
 	
 	void _reset_focus(const uivec3 & pickid);
 
@@ -199,6 +203,7 @@ protected:
 	void _draw_occ();
 	void _draw_ent_occ(nsentity * ent);
 	void _draw_hidden();
+	void _update_selection();
 
 	uivec3 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
 	entity_ptr_set m_selected_ents;

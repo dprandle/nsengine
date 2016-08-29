@@ -811,6 +811,7 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 			nsrender_comp * ent_rcomp = (*fiter)->get<nsrender_comp>();
 			nsanim_comp * ent_acomp = (*fiter)->get<nsanim_comp>();
 			nssprite_sheet_comp * ent_scomp = (*fiter)->get<nssprite_sheet_comp>();
+
 			// The render comps must be equivalent (see operator ==) and the anim/sprite comps must have same address
 			if (ent_rcomp != nullptr && (*rcomp) == (*ent_rcomp) && acomp == ent_acomp && scomp == ent_scomp)
 			{
@@ -829,7 +830,6 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 					psi->shared_geom_tforms.push_back(ent_tcomp);
 					psi->shared_geom_tforms.push_back(tcomp);
 					psi->needs_update = true;
-					//	ent_rcomp->currently_instanced = true;
 				}
 #ifdef NSDEBUG
 				nsstringstream ss;
@@ -838,7 +838,6 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 					ss << tcomp->inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
 				dprint(ss.str());
 #endif
-//				rcomp->currently_instanced = true;
 				return;
 			}
 		}
@@ -853,6 +852,12 @@ void nsscene::make_ent_not_instanced(nsentity * ent)
 	{
 		dprint("nsscene::make_ent_not_instanced render component being removed from scene after tform comp");
 		return;
+	}
+
+	if (tfc->inst_obj == nullptr)
+	{
+		dprint("nsscene::make_ent_not_instanced no need to remove instanced obj - not instanced");
+		return;		
 	}
 	
 	auto iter = tfc->inst_obj->shared_geom_tforms.begin();

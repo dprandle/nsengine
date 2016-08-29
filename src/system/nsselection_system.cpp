@@ -109,6 +109,9 @@ bool nsselection_system::add_to_selection(nsentity * ent, uint32 tformid)
 	}
 	
 	m_selected_ents.insert(ent);
+	
+	sig_connect(ent->resource_destroyed, nsselection_system::on_ent_destroyed);
+	
 	selComp->set_selected(m_active_scene, true);
 	if (selComp->selection(m_active_scene)->emplace(tformid).second)
 	{
@@ -234,6 +237,7 @@ void nsselection_system::refresh_selection(nsscene * scene_to_refresh)
 		sel_per_scene_info * psi = (*iter)->get<nssel_comp>()->scene_info(m_active_scene);
 		if (psi == nullptr)
 		{
+			sig_disconnect((*iter)->resource_destroyed);
 			iter = m_selected_ents.erase(iter);
 		}
 		else
@@ -253,6 +257,7 @@ void nsselection_system::clear_selection()
 		sel_per_scene_info * psi = (*iter)->get<nssel_comp>()->scene_info(m_active_scene);
 		psi->m_selection.clear();
 		psi->m_selected = false;
+		sig_disconnect((*iter)->resource_destroyed);
 		++iter;
 	}
 	m_selected_ents.clear();
@@ -1216,6 +1221,11 @@ bool nsselection_system::valid_tile_swap()
 	return true;
 }
 
+void nsselection_system::_update_selection()
+{
+	
+}
+
 void nsselection_system::update()
 {
 	if (scene_error_check())
@@ -1226,6 +1236,7 @@ void nsselection_system::update()
 		nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 		m_send_foc_event = false;
 	}
+	
 
     if (m_toggle_move)
 	{
@@ -1290,7 +1301,23 @@ void nsselection_system::update()
 	while (iter != m_selected_ents.end())
 	{
 		nssel_comp * sc = (*iter)->get<nssel_comp>();
+
+		if (sc == nullptr)
+		{
+			dprint("removing " + (*iter)->name() + " from selection as it now longer has sel comp");
+			iter = m_selected_ents.erase(iter);
+			continue;
+		}
+
 		sel_per_scene_info * psi = sc->scene_info(m_active_scene);
+
+		if (psi == nullptr)
+		{
+			dprint("removing " + (*iter)->name() + " from selection as it now longer is in the active scene " + m_active_scene->name());
+			iter = m_selected_ents.erase(iter);
+			continue;
+		}
+
 		nstform_comp * tc = (*iter)->get<nstform_comp>();
 		if (sc->update_posted() || tc->update_posted())
 		{
@@ -1502,3 +1529,20 @@ bool nsselection_system::_handle_rotate_selection(nsaction_event * evnt)
 	rotate_selection(::orientation(fvec4(0,0,1,30)));
 	return true;
 }
+
+void nsselection_system::on_ent_destroyed(uint32 type_id, uivec2 ent_id)
+{
+	auto iter = m_selected_ents.begin();
+	while (iter != m_selected_ents.end())
+	{
+		if (type_id == (*iter)->type() && (*iter)->full_id() == ent_id)
+		{
+			iter = m_selected_ents.erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+	}
+}
+

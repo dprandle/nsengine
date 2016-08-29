@@ -14,7 +14,7 @@
 #define NSFONT_H
 
 #define DEFAULT_IMPORT_PT_SIZE 44
-#define DEFAULT_FONT_DPI 100.13
+#define DEFAULT_FONT_DPI 96
 
 #include <asset/nsasset.h>
 
@@ -96,6 +96,8 @@ class nsfont : public nsasset
 	std::vector<uint8> m_font_file_data;
 	float m_cur_pt_size;
 	uint16 m_cur_dpi;
+	ivec2 pad;
+	fvec4 eps;
 };
 
 template<class PUPer>
