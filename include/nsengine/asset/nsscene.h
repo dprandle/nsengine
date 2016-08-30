@@ -24,6 +24,7 @@ class nstile_grid;
 class nscube_grid;
 class nsrender_comp;
 class nstform_system;
+class nstform_comp;
 
 class nsscene : public nsasset
 {
@@ -58,29 +59,10 @@ class nsscene : public nsasset
 	
 	nsscene & operator=(nsscene rhs);
 
-	uint32 add(
+	nstform_comp * add(
 		nsentity * ent,
-		instance_tform * parent,
-		const instance_tform & tf_info,
-		bool add_chilren);
-
-	uint32 add(
-		nsentity * ent_,
-		instance_tform * parent = nullptr,
-		bool snap_to_grid = true,
-		const fvec3 & pos_ = fvec3(),
-		const fquat & rot_ = fquat(),
-		const fvec3 & scale_ = fvec3(1.0f, 1.0f, 1.0f)
-		);
-
-
-	void add_gridded(
-		nsentity * ent_, 
-		const ivec3 & bounds_, 
-		const fvec3 & starting_pos_=fvec3(),
-		const fquat & rot_ = fquat(),
-		const fvec3 & scale_ = fvec3(1.0f,1.0f,1.0f)
-		);
+		const tform_info & tf_info,
+		bool add_children_recursively);
 
 	void change_max_players(int32 amount_);
 

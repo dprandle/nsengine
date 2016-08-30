@@ -120,41 +120,36 @@ void nsscene::clear()
 }
 
 
-uint32 nsscene::add(
+nstform_comp * nsscene::add(
 	nsentity * ent,
-	instance_tform * parent,
-	const instance_tform & tf_info,
-	bool add_children)
+	const tform_info & tf_info,
+	bool add_children_recursively)
 {
 	if (!m_enabled)
 	{
-		dprint("nsscene::add Cannot add entity to disabled scene " + m_name);
-		return -1;
+		dprint("nsscene::add cannot add entity to disabled scene " + m_name);
+		return nullptr;
 	}
 
-	nstform_comp * tComp = ent->get<nstform_comp>();
-	nsoccupy_comp * occComp = ent->get<nsoccupy_comp>();
-
-	bool make_tform = false;
+	nstform_comp * tf_comp = ent->get<nstform_comp>();
+	nsoccupy_comp * occ_comp = ent->get<nsoccupy_comp>();
 	
 	// If there is no tranform component, then make one
-	if (tComp == nullptr)
+	if (tf_comp != nullptr)
 	{
-		tComp = ent->create<nstform_comp>();
-		make_tform = true;
+		dprint("nsscene::add entity " + ent->name() + " already has a tform comp cannot add to scene " + m_name);
+		return nullptr;
 	}
-
-    auto fiter = tComp->m_scenes_info.find(this);
-    if (fiter == tComp->m_scenes_info.end())
-    {
-        fiter = tComp->m_scenes_info.emplace(
-                    this,
-                    new tform_per_scene_info()).first;
-    }
+	
+	tf_comp = ent->create<nstform_comp>();
+	tf_comp->m_scene = this;
+	
+	tf_comp->set_tf_info(tf_info);
+	
 	tform_per_scene_info & pse = *fiter->second;
 	pse.video_context_init();
 	pse.scene = this;
-	pse.owner = tComp;
+	pse.owner = tf_comp;
 	uint32 tfid = pse.m_tforms.size();
 	pse.m_tforms.resize(tfid + 1);
 	instance_tform & tf = pse.m_tforms[tfid];
@@ -165,34 +160,34 @@ uint32 nsscene::add(
 	// If there is an occupy component, attemp at inserting it in to the map. It will fail if the space
 	// is already occupied therefore we need to remove the tranform component and set the entities scene
 	// ID to 0 again if the add fails, since that means no other instances of the entity are in the scene
-	if (occComp != nullptr)
+	if (occ_comp != nullptr)
 	{
 		// Get the transform ID that would result if we inserted it in to the scene
 		// We don't want to insert it yet because we first want to check if the space is open
 		uint32 pID = pse.m_tforms.size();
-		if (!m_tile_grid->add(uivec3(ent->full_id(), pID), occComp->spaces(), tf_info.world_position()))
+		if (!m_tile_grid->add(uivec3(ent->full_id(), pID), occ_comp->spaces(), tf_info.world_position()))
 		{
 			tf.set_parent(nullptr, true);
 			pse.m_tforms.resize(tfid);
 
 			if (pse.m_tforms.empty())
-				tComp->m_scenes_info.erase(fiter);
+				tf_comp->m_scenes_info.erase(fiter);
 
-			if (tComp->m_scenes_info.empty())
+			if (tf_comp->m_scenes_info.empty())
 				ent->destroy<nstform_comp>();
 			
 			return -1;
 		}
 	}
 
-	if (add_children)
+	if (add_children_recursively)
 	{
 		for (uint32 i = 0; i < tf_info.m_children.size(); ++i)
 		{
 			instance_handle ihnd = tf_info.m_children[i];
 			instance_tform & chld = ihnd.tfc->m_tforms[ihnd.ind];
 			
-			if (add(chld.owner()->owner->owner(), &tf, chld, add_children) == -1)
+			if (add(chld.owner()->owner->owner(), &tf, chld, add_children_recursively) == -1)
 			{
 				dprint("nsscene::add Could not add child of " + ent->name() + " tformid " + std::to_string(tfid) + " because occupy_comp did not allow it");
 			}
@@ -209,99 +204,83 @@ uint32 nsscene::add(
 		nse.event_dispatch()->push<scene_ent_added>(ent->full_id(),full_id());
 	}
 	
-	tComp->post_update(true);
+	tf_comp->post_update(true);
 	pse.m_buffer_resized = true;
 	return tfid;
 }
 
-uint32 nsscene::add(
-	nsentity * ent,
-	instance_tform * parent,
-	bool snap_to_grid,
-	const fvec3 & pPos,
-	const fquat & orient_,
-	const fvec3 & scaling_)
-{
-	instance_tform tf;
-	tf.snap_to_grid = snap_to_grid;
-	tf.m_position = pPos;
-	tf.m_orient = orient_;
-	tf.m_scaling = scaling_;
-	return add(ent, parent, tf, false);
-}
+// void nsscene::add_gridded(
+// 	nsentity * ent,
+// 	const ivec3 & bounds,
+// 	const fvec3 & starting_pos,
+// 	const fquat & orient_,
+// 	const fvec3 & scaling_
+// 	)
+// {
+// 	if (!m_enabled)
+// 	{
+// 		dprint("nsscene::add_gridded Cannot add entity to disabled scene " + m_name);
+// 		return;
+// 	}
 
-void nsscene::add_gridded(
-	nsentity * ent,
-	const ivec3 & bounds,
-	const fvec3 & starting_pos,
-	const fquat & orient_,
-	const fvec3 & scaling_
-	)
-{
-	if (!m_enabled)
-	{
-		dprint("nsscene::add_gridded Cannot add entity to disabled scene " + m_name);
-		return;
-	}
+// 	nstform_comp * tf_comp = ent->get<nstform_comp>();
+//     bool added_tform = false;
+// 	if (tf_comp == nullptr)
+//     {
+// 		tf_comp = ent->create<nstform_comp>();
+//         added_tform = true;
+//     }
 
-	nstform_comp * tComp = ent->get<nstform_comp>();
-    bool added_tform = false;
-	if (tComp == nullptr)
-    {
-		tComp = ent->create<nstform_comp>();
-        added_tform = true;
-    }
+// 	// Create a new per scene tform entry
+// 	auto fiter = tf_comp->m_scenes_info.find(this);
+//     if (fiter == tf_comp->m_scenes_info.end())
+//     {
+//         fiter = tf_comp->m_scenes_info.emplace(
+//                     this,
+//                     new tform_per_scene_info()).first;
+//     }
+// 	tform_per_scene_info & pse = *fiter->second;
+// 	pse.video_context_init();
+// 	pse.owner = tf_comp;
+// 	pse.scene = this;
+// 	// Figure out the total number of transforms needed and allocate that 
+// 	// much memory (addTransforms does this)
+// 	uint32 addSize = bounds.x * bounds.y * bounds.z;
+// 	pse.m_tforms.reserve(pse.m_tforms.size() + addSize);
+// 	instance_tform itf;
+// 	for (int32 z = 0; z < bounds.z; ++z)
+// 	{
+// 		for (int32 y = 0; y < bounds.y; ++y)
+// 		{
+// 			for (int32 x = 0; x < bounds.x; ++x)
+// 			{
+// 				float xP = X_GRID * x * 2.0f;
+// 				float yP = Y_GRID * y;
+// 				float zP = Z_GRID * z;
+// 				if (y % 2 != 0)
+// 					xP += X_GRID;
+// 				fvec3 pos(xP, yP, zP);
+// 				pos += starting_pos;
 
-	// Create a new per scene tform entry
-	auto fiter = tComp->m_scenes_info.find(this);
-    if (fiter == tComp->m_scenes_info.end())
-    {
-        fiter = tComp->m_scenes_info.emplace(
-                    this,
-                    new tform_per_scene_info()).first;
-    }
-	tform_per_scene_info & pse = *fiter->second;
-	pse.video_context_init();
-	pse.owner = tComp;
-	pse.scene = this;
-	// Figure out the total number of transforms needed and allocate that 
-	// much memory (addTransforms does this)
-	uint32 addSize = bounds.x * bounds.y * bounds.z;
-	pse.m_tforms.reserve(pse.m_tforms.size() + addSize);
-	instance_tform itf;
-	for (int32 z = 0; z < bounds.z; ++z)
-	{
-		for (int32 y = 0; y < bounds.y; ++y)
-		{
-			for (int32 x = 0; x < bounds.x; ++x)
-			{
-				float xP = X_GRID * x * 2.0f;
-				float yP = Y_GRID * y;
-				float zP = Z_GRID * z;
-				if (y % 2 != 0)
-					xP += X_GRID;
-				fvec3 pos(xP, yP, zP);
-				pos += starting_pos;
+// 				itf.m_position = pos;
+// 				itf.m_orient = orient_;
+// 				itf.m_scaling = scaling_;
+// 				itf.snap_to_grid = true;
+// 				if (add(ent, nullptr, itf, false) == -1)
+// 				{
+// 					dprint("nsscene::add_gridded Could not add grid position " + ivec3(x,y,z).to_string() + " to entity " + ent->name() + " because occupy component would not allow it");
+// 				}
+// 			}
+// 		}
+// 	}
 
-				itf.m_position = pos;
-				itf.m_orient = orient_;
-				itf.m_scaling = scaling_;
-				itf.snap_to_grid = true;
-				if (add(ent, nullptr, itf, false) == -1)
-				{
-					dprint("nsscene::add_gridded Could not add grid position " + ivec3(x,y,z).to_string() + " to entity " + ent->name() + " because occupy component would not allow it");
-				}
-			}
-		}
-	}
-
-    if (added_tform)
-    {
-        _add_all_comp_entries(ent);
-        sig_connect(ent->component_added, nsscene::_on_comp_add);
-        sig_connect(ent->component_removed, nsscene::_on_comp_remove);
-    }
-}
+//     if (added_tform)
+//     {
+//         _add_all_comp_entries(ent);
+//         sig_connect(ent->component_added, nsscene::_on_comp_add);
+//         sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+//     }
+// }
 
 void nsscene::change_max_players(int32 pAmount)
 {
@@ -594,11 +573,11 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 		return false;
 	}
 
-	nstform_comp * tComp = itform->owner()->owner;
-	nsentity * entity = tComp->owner();
+	nstform_comp * tf_comp = itform->owner()->owner;
+	nsentity * entity = tf_comp->owner();
 	
-	auto fiter = tComp->m_scenes_info.find(this);
-	if (fiter == tComp->m_scenes_info.end())
+	auto fiter = tf_comp->m_scenes_info.find(this);
+	if (fiter == tf_comp->m_scenes_info.end())
 	{
 		dprint("nsscene::remove entity " + entity->name() + " not found in scene");
 		return false;
@@ -678,17 +657,17 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 			selection->erase(tformid);
 	}
 	
-	nsoccupy_comp * occComp = entity->get<nsoccupy_comp>();
-	if (occComp != nullptr)
+	nsoccupy_comp * occ_comp = entity->get<nsoccupy_comp>();
+	if (occ_comp != nullptr)
 	{
-		m_tile_grid->remove(occComp->spaces(), pos);
+		m_tile_grid->remove(occ_comp->spaces(), pos);
 
 		// This should take care of updating the reference ID for the space that got switched..
 		if (tformid != -1)
 		{
 			fvec3 newPos = pse->m_tforms[tformid].world_position();
-			m_tile_grid->remove(occComp->spaces(), newPos);
-			m_tile_grid->add(uivec3(entity->full_id(), tformid), occComp->spaces(), newPos);
+			m_tile_grid->remove(occ_comp->spaces(), newPos);
+			m_tile_grid->add(uivec3(entity->full_id(), tformid), occ_comp->spaces(), newPos);
 		}
 	}
 
@@ -696,13 +675,13 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 	
 	if (tformid == -1)
 	{
-		sig_disconnect(tComp->owner()->component_added);
-		sig_disconnect(tComp->owner()->component_removed);
-		_remove_all_comp_entries(tComp->owner());
+		sig_disconnect(tf_comp->owner()->component_added);
+		sig_disconnect(tf_comp->owner()->component_removed);
+		_remove_all_comp_entries(tf_comp->owner());
 
 		delete pse;
-		tComp->m_scenes_info.erase(fiter);		
-		if (tComp->m_scenes_info.empty())
+		tf_comp->m_scenes_info.erase(fiter);		
+		if (tf_comp->m_scenes_info.empty())
 			entity->destroy<nstform_comp>();
 
 		nse.event_dispatch()->push<scene_ent_removed>(entity->full_id(),full_id());
@@ -715,10 +694,10 @@ bool nsscene::remove(instance_tform * itform, bool remove_children)
 
 bool nsscene::remove(nsentity * entity, uint32 tformid, bool remove_children)
 {
-	nstform_comp * tComp = entity->get<nstform_comp>();
-	if (tComp == nullptr)
+	nstform_comp * tf_comp = entity->get<nstform_comp>();
+	if (tf_comp == nullptr)
 		return false;
-	return remove(&tComp->per_scene_info(this)->m_tforms[tformid], remove_children);
+	return remove(&tf_comp->per_scene_info(this)->m_tforms[tformid], remove_children);
 }
 
 bool nsscene::remove(fvec3 & pWorldPos, bool remove_children)
