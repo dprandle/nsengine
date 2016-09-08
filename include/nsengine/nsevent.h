@@ -199,28 +199,6 @@ struct window_resize_event : public nsevent
 	ivec2 new_size;
 };
 
-struct scene_tform_added : public nsevent
-{
-	scene_tform_added(const uivec3 & item_id, const uivec2 & scene_id):
-		nsevent(),
-		tfid(item_id),
-		scn_id(scene_id)
-	{}
-	uivec3 tfid;
-	uivec2 scn_id;
-};
-
-struct scene_tform_removed : public nsevent
-{
-	scene_tform_removed(const uivec3 & item_id, const uivec2 & scene_id):
-		nsevent(),
-		tfid(item_id),
-		scn_id(scene_id)
-	{}
-	uivec3 tfid;
-	uivec2 scn_id;
-};
-
 struct scene_ent_added : public nsevent
 {
 	scene_ent_added(const uivec2 & ent_id_, const uivec2 & scene_id):

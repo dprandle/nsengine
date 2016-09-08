@@ -56,12 +56,7 @@ nscube_grid & nscube_grid::operator=(nscube_grid rhs)
 	return *this;
 }
 
-bool nscube_grid::insert(instance_tform * itf)
-{
-	return insert(uivec3(itf->owner()->owner->owner()->full_id(),itf->current_tform_id()), itf->phys.aabb);
-}
-
-bool nscube_grid::insert(const uivec3 & item_, const ibox & aabb_post_tform)
+bool nscube_grid::insert(const uivec2 & item_, const ibox & aabb_post_tform)
 {
 	ibox bounds(aabb_post_tform);
 	if (aabb_post_tform.max == ivec3(0) && aabb_post_tform.min == ivec3(0))
@@ -95,17 +90,17 @@ bool nscube_grid::insert(const uivec3 & item_, const ibox & aabb_post_tform)
 	return ret;	
 }
 
-bool nscube_grid::insert(const uivec3 & item_, const fbox & aabb_post_tform)
+bool nscube_grid::insert(const uivec2 & item_, const fbox & aabb_post_tform)
 {
 	return insert(item_, grid_from(aabb_post_tform));
 }
 
-uivec3_vector * nscube_grid::items_at(const fvec3 & pos_)
+uivec2_vector * nscube_grid::items_at(const fvec3 & pos_)
 {
 	return items_at(grid_from(pos_));
 }
 
-uivec3_vector * nscube_grid::items_at(const ivec3 & grid_pos_)
+uivec2_vector * nscube_grid::items_at(const ivec3 & grid_pos_)
 {
 	uivec4 ind = index_from(grid_pos_);
 	if (_index_in_bounds(ind))
@@ -113,12 +108,12 @@ uivec3_vector * nscube_grid::items_at(const ivec3 & grid_pos_)
 	return nullptr;
 }
 
-void nscube_grid::items_within(const fbox & grid_bounds_, uivec3_vector * found_items)
+void nscube_grid::items_within(const fbox & grid_bounds_, uivec2_vector * found_items)
 {
 	items_within(grid_from(grid_bounds_), found_items);
 }
 
-void nscube_grid::items_within(const ibox & grid_bounds_, uivec3_vector * found_items)
+void nscube_grid::items_within(const ibox & grid_bounds_, uivec2_vector * found_items)
 {
 	for (int32 z = grid_bounds_.min.z; z < grid_bounds_.max.z; ++z)
 	{
@@ -126,7 +121,7 @@ void nscube_grid::items_within(const ibox & grid_bounds_, uivec3_vector * found_
 		{
 			for (int32 x = grid_bounds_.min.x; x < grid_bounds_.max.x; ++x)
 			{
-				uivec3_vector * items = items_at(ivec3(x,y,z));
+				uivec2_vector * items = items_at(ivec3(x,y,z));
 				if (items != nullptr)
 					found_items->insert(found_items->end(),items->begin(),items->end());
 			}
@@ -152,22 +147,7 @@ const ibox & nscube_grid::grid_bounds()
 	return m_world_bounds;
 }
 
-void nscube_grid::search_and_remove(nsentity * ent, uint32 tform_id, const ibox & search_bounds)
-{
-	search_and_remove(uivec3(ent->full_id(),tform_id), search_bounds);
-}
-
-void nscube_grid::search_and_remove(nsentity * ent, uint32 tform_id, const fbox & aabb)
-{
-	search_and_remove(uivec3(ent->full_id(),tform_id), grid_from(aabb));
-}
-
-void nscube_grid::search_and_remove(const uivec3 & tf_id, const fbox & aabb)
-{
-	search_and_remove(tf_id, grid_from(aabb));
-}
-
-void nscube_grid::search_and_remove(const uivec3 & tf_id, const ibox & search_bounds)
+void nscube_grid::search_and_remove(const uivec2 & ent_id_, const ibox & search_bounds)
 {
 	ibox bounds(search_bounds);
 	if (bounds.min == ivec3(0) && bounds.max == ivec3(0))
@@ -183,77 +163,15 @@ void nscube_grid::search_and_remove(const uivec3 & tf_id, const ibox & search_bo
 			{
 				space.set(k,j,i);
 				ind = index_from(space);
-				_remove_item(ind, tf_id);
+				_remove_item(ind, ent_id_);
 			}
 		}
 	}
 }
 
-void nscube_grid::search_and_remove(nsentity * ent, const ibox & search_bounds)
+void nscube_grid::search_and_remove(const uivec2 & ent_id_, const fbox & aabb)
 {
-	search_and_remove(ent->full_id(), search_bounds);
-}
-
-void nscube_grid::search_and_remove(nsentity * ent, const fbox & aabb)
-{
-	search_and_remove(ent->full_id(), grid_from(aabb));
-}
-
-void nscube_grid::search_and_remove(const uivec2 & tf_id, const fbox & aabb)
-{
-	search_and_remove(tf_id, grid_from(aabb));
-}
-
-void nscube_grid::search_and_remove(const uivec2 & tf_id, const ibox & search_bounds)
-{
-	ibox bounds(search_bounds);
-	if (bounds.min == ivec3(0) && bounds.max == ivec3(0))
-		bounds = m_world_bounds;
-
-	ivec3 space;
-	uivec4 ind;
-	for (int i = bounds.min.z; i < bounds.max.z; ++i)
-	{
-		for (int j = bounds.min.y; j < bounds.max.y; ++j)
-		{
-			for (int k = bounds.min.x; k < bounds.max.x; ++k)
-			{
-				space.set(k,j,i);
-				ind = index_from(space);
-				_remove_item(ind, tf_id);
-			}
-		}
-	}
-}
-
-void nscube_grid::remove(nsentity * ent)
-{
-	search_and_remove(ent->full_id());
-}
-
-void nscube_grid::remove(instance_tform * tform)
-{
-	search_and_remove(uivec3(tform->owner()->owner->owner()->full_id(),tform->current_tform_id()), tform->phys.aabb);
-}
-
-bool nscube_grid::_remove_item(const uivec4 & ind, const uivec3 & item)
-{
-	bool rem = false;
-	if (_index_in_bounds(ind))
-	{
-		auto iter = world_map[ind.w][ind.z][ind.y][ind.x].begin();
-		while (iter != world_map[ind.w][ind.z][ind.y][ind.x].end())
-		{
-			if (item == (*iter))
-			{
-				iter = world_map[ind.w][ind.z][ind.y][ind.x].erase(iter);
-				rem = true;
-			}
-			else
-				++iter;
-		}
-	}
-	return rem;
+	search_and_remove(ent_id_, grid_from(aabb));
 }
 
 bool nscube_grid::_remove_item(const uivec4 & ind, const uivec2 & item)
@@ -264,7 +182,7 @@ bool nscube_grid::_remove_item(const uivec4 & ind, const uivec2 & item)
 		auto iter = world_map[ind.w][ind.z][ind.y][ind.x].begin();
 		while (iter != world_map[ind.w][ind.z][ind.y][ind.x].end())
 		{
-			if (item == (*iter).xy())
+			if (item == (*iter))
 			{
 				iter = world_map[ind.w][ind.z][ind.y][ind.x].erase(iter);
 				rem = true;
@@ -290,8 +208,8 @@ void nscube_grid::name_change(const uivec2 & oldid, const uivec2 newid)
 					auto iter = world_map[i][z][y][x].begin();
 					while (iter != world_map[i][z][y][x].end())
 					{
-						if (iter->xy() == oldid)
-							iter->set(newid.x,newid.y,iter->z);
+						if (*iter == oldid)
+							*iter = newid;
 						++iter;
 					}
 				}
@@ -299,7 +217,6 @@ void nscube_grid::name_change(const uivec2 & oldid, const uivec2 newid)
 		}
 	}
 }
-
 
 ivec3 nscube_grid::grid_from(const fvec3 & world_pos)
 {
@@ -476,9 +393,9 @@ void nscube_grid::_update_bounds()
 }
 
 
-bool nscube_grid::_item_already_there(const uivec4 & ind, const uivec3 & item)
+bool nscube_grid::_item_already_there(const uivec4 & ind, const uivec2 & item)
 {
-	uivec3_vector::iterator iter = world_map[ind.w][ind.z][ind.y][ind.x].begin();
+	uivec2_vector::iterator iter = world_map[ind.w][ind.z][ind.y][ind.x].begin();
 	while (iter != world_map[ind.w][ind.z][ind.y][ind.x].end())
 	{
 		if ((*iter) == item)

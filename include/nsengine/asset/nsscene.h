@@ -26,27 +26,18 @@ class nsrender_comp;
 class nstform_system;
 class nstform_comp;
 
+struct pupped_info
+{
+	uivec2 ent_id;
+	tform_info tf_info;
+};
+
+typedef std::vector<pupped_info> pupped_vec_info;
+
 class nsscene : public nsasset
 {
 	SLOT_OBJECT
 	public:
-
-	struct pupped_tform_info
-	{
-		pupped_tform_info(uint32 tfid=-1, const instance_tform & it=instance_tform());
-		instance_tform itf;
-        uivec3 ent_tform_id;
-		uivec3 parent;
-		std::vector<uivec3> children;
-	};
-
-	typedef std::vector<pupped_tform_info> pupped_vec;
-
-	struct pupped_vec_info
-	{
-		pupped_vec pv;
-		uivec2 sky_id;
-	};
 	
 	template<class PUPer>
 	friend void pup(PUPer & p, nsscene & sc);
@@ -62,7 +53,13 @@ class nsscene : public nsasset
 	nstform_comp * add(
 		nsentity * ent,
 		const tform_info & tf_info,
-		bool add_children_recursively);
+		bool preserve_world_tform);
+
+	nstform_comp * add(
+		nsentity * ent,
+		const fvec3 & pos = fvec3(),
+		const fquat & orient = fquat(),
+		const fvec3 & scale = fvec3(1.0f));
 
 	void change_max_players(int32 amount_);
 
@@ -72,7 +69,7 @@ class nsscene : public nsasset
 
 	nsentity * find_entity(const uivec2 & id) const;
 
-	uivec3 ref_id(const fvec3 & pWorldPos) const;
+	uivec2 ref_id(const fvec3 & pWorldPos) const;
 
     const fvec4 & bg_color() const;
 
@@ -128,10 +125,6 @@ class nsscene : public nsasset
 
 	bool remove(nsentity * ent, bool remove_children);
 
-	bool remove(instance_tform * itform, bool remove_children);
-
-	bool remove(nsentity * entity, uint32 tformid, bool remove_children);
-
     void set_bg_color(const fvec4 & bg_color);
 
 	void set_creator(const nsstring & pCreator);
@@ -142,12 +135,9 @@ class nsscene : public nsasset
 
 	void set_notes(const nsstring & pNotes);
 
-	void set_skydome(nsentity * skydome, bool addToSceneIfNeeded = true);
-
-	pupped_vec & unloaded();
+	void set_skydome(nsentity * skydome, bool add_to_scene_if_needed);
 
 	nscube_grid * cube_grid;
-
 	
 private:
 
@@ -156,11 +146,15 @@ private:
 	
 	void _remove_all_comp_entries(nsentity * ent);
 	void _add_all_comp_entries(nsentity * ent);
+
 	void _on_comp_remove(nscomponent * comp_t);
 	void _on_comp_add(nscomponent * comp_t);
+
 	void _populate_pup_vec();
-		
-	nsentity *  m_skydome;
+
+	void _add_children_recursively();
+
+	uivec2 m_skydome;
 	uint32 m_max_players;
     fvec4 m_bg_color;
 	nsstring m_notes;
@@ -175,22 +169,6 @@ private:
 };
 
 template<class PUPer>
-void pup(PUPer & p, nsscene::pupped_tform_info & ptfi, const nsstring & var_name)
-{
-	pup(p, ptfi.ent_tform_id, var_name + ".ent_id");
-	pup(p, ptfi.itf, var_name);
-	pup(p, ptfi.parent, var_name + ".parent");
-	pup(p, ptfi.children, var_name + ".children");
-}
-
-template<class PUPer>
-void pup(PUPer & p, nsscene::pupped_vec_info & pi, const nsstring & var_name)
-{
-	pup(p, pi.pv, var_name + ".pv");
-	pup(p, pi.sky_id, var_name + ".sky_id");
-}
-
-template<class PUPer>
 void pup(PUPer & p, nsscene & sc)
 {
 	if (sc.m_enabled)
@@ -199,13 +177,13 @@ void pup(PUPer & p, nsscene & sc)
 			return;
 		sc._populate_pup_vec();
 		pup(p, sc.m_pupped_tforms, "scene_tforms");
-		sc.m_pupped_tforms.pv.clear();
-		sc.m_pupped_tforms.sky_id = uivec2();
+		sc.m_pupped_tforms.clear();
 	}
 	else
 	{
         pup(p, sc.m_pupped_tforms, "scene_tforms");
 	}
+	pup(p, sc.m_skydome, "skydome_id");
     pup(p, sc.m_max_players, "max_players");
 	pup(p, sc.m_bg_color, "bg_color");
 	pup(p, sc.m_notes, "notes");

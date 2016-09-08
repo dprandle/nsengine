@@ -30,7 +30,7 @@ This file contains all of the neccessary declarations for the nstile_grid class.
 class nstile_grid
 {
 public:
-	typedef std::vector<uivec3_vector> map_layer;
+	typedef std::vector<uivec2_vector> map_layer;
 	typedef std::vector<map_layer> map_quadrant;
 	typedef std::vector<map_quadrant> map_world;
 
@@ -77,23 +77,23 @@ public:
 
 	nstile_grid & operator=(nstile_grid rhs);
 	
-	bool add(const uivec3 & item_, const fvec3 & pos_);
+	bool add(const uivec2 & item_, const fvec3 & pos_);
 
-	bool add(const uivec3 & item_, const ivec3 & space_, const fvec3 & origin_ = fvec3());
+	bool add(const uivec2 & item_, const ivec3 & space_, const fvec3 & origin_ = fvec3());
 
-	bool add(const uivec3 item_, const ivec3_vector & spaces_, const fvec3 & origin_ = fvec3());
+	bool add(const uivec2 & item_, const ivec3_vector & spaces_, const fvec3 & origin_ = fvec3());
 
-	const uivec3 & at(const map_index & space_) const;
+	const uivec2 & at(const map_index & space_) const;
 
 	void init();
 
 	void release();
 
-	uivec3 get(const fvec3 & pos_) const;
+	uivec2 get(const fvec3 & pos_) const;
 
-	uivec3 get(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;
+	uivec2 get(const ivec3 & space_, const fvec3 & origin_ = fvec3()) const;
 
-	uivec3_vector bounded_set(const fvec3 & point1_, const fvec3 & point2_);
+	uivec2_vector bounded_set(const fvec3 & point1_, const fvec3 & point2_);
 
 	grid_bounds occupied_bounds();
 
@@ -118,11 +118,6 @@ public:
 	bool remove(const fvec3 & pos_);
 
 	bool remove(const ivec3 & space_, const fvec3 & origin_ = fvec3());
-
-	/*!
-	Go through entire grid_ and remove any occurances that have this transform ID
-	*/
-	void remove(const uivec3 & id);
 
 	/*!
 	Go through entire grid_ and remove any occurances that have this entity ID
@@ -156,7 +151,7 @@ public:
 private:
 	bool _check_bounds(const map_index & index_) const;
 	void _resize_for_space(const map_index & index_);
-	const uivec3 & _get_id(const map_index & index_);
+	const uivec2 & _get_id(const map_index & index_);
 
 	map_world m_world_map;
 };

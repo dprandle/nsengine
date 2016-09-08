@@ -66,156 +66,157 @@ void nsbuild_system::change_layer(const int32 & pAmount)
 
 void nsbuild_system::enable(const bool & pEnable)
 {
-	if (scene_error_check())
-		return;
+	// if (scene_error_check())
+	// 	return;
 	
-	if (pEnable && !m_enabled)
-	{
-		m_enabled = pEnable;
-		nse.system<nsinput_system>()->push_context(BUILD_MODE_CTXT);
-		nse.system<nsselection_system>()->clear_selection();
+	// if (pEnable && !m_enabled)
+	// {
+	// 	m_enabled = pEnable;
+	// 	nse.system<nsinput_system>()->push_context(BUILD_MODE_CTXT);
+	// 	nse.system<nsselection_system>()->clear_selection();
 
-		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::begin);
+	// 	nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::begin);
 
-		if (m_current_brush_type == brush_tile)
-		{
-			if (m_tile_brush == nullptr)
-				return;
+	// 	if (m_current_brush_type == brush_tile)
+	// 	{
+	// 		if (m_tile_brush == nullptr)
+	// 			return;
 
-			if (m_mirror_mode)
-			{
-				m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH, m_tile_brush);
-			}
+	// 		if (m_mirror_mode)
+	// 		{
+	// 			m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH, m_tile_brush);
+	// 		}
 
-			nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
+	// 		nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
 
-			nssel_comp * selComp = m_tile_brush->get<nssel_comp>();
-			if (selComp == nullptr || brushComp == nullptr)
-				return;
+	// 		nssel_comp * selComp = m_tile_brush->get<nssel_comp>();
+	// 		if (selComp == nullptr || brushComp == nullptr)
+	// 			return;
 
-            bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();
-            nse.system<nsselection_system>()->enable_mirror_selection(false);
+    //         bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();
+    //         nse.system<nsselection_system>()->enable_mirror_selection(false);
 
-			auto brushIter = brushComp->begin();
-			while (brushIter != brushComp->end())
-			{
-				fvec3 pos = nstile_grid::world(ivec3(brushIter->x, brushIter->y, m_layer));
-				uint32 tFormID = m_active_scene->add(m_tile_brush, nullptr, true, pos);
-				m_tile_brush->get<nstform_comp>()->save_with_scene = false;
-				nse.system<nsselection_system>()->add_to_selection(m_tile_brush, tFormID);
-				nse.system<nsselection_system>()->set_focus_entity(uivec3(m_tile_brush->full_id(),tFormID));					
-				if (m_mirror_mode)
-				{
-					fvec3 mirrorPos = m_mirror_center*2.0f - pos;
-					mirrorPos.z = pos.z;
-					uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, true, mirrorPos);
-					m_mirror_brush->get<nstform_comp>()->save_with_scene = false;
-					nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
-					tform_per_scene_info * tmirror_psi = m_mirror_brush->get<nstform_comp>()->per_scene_info(m_active_scene);					
-					tmirror_psi->m_tforms[mirror_tform_id].set_hidden_state(nstform_comp::hide_all);
-				}
-
-				if (*brushIter == ivec2())
-					m_tile_brush_center_tform_id = tFormID;
-
-				tform_per_scene_info * tpsi      = m_mirror_brush->get<nstform_comp>()->per_scene_info(m_active_scene);					
-				tpsi->m_tforms[tFormID].set_hidden_state(nstform_comp::hide_all);
-				++brushIter;
-			}
-
-			//nse.system<nsselection_system>()->set_focus_entity(
-			//	uivec3(m_tile_brush->full_id(),m_tile_brush_center_tform_id)
-			//	);
-			
-			selComp->set_selected(m_active_scene, true);
-
-            nse.system<nsselection_system>()->enable_mirror_selection(tmp);
-			to_cursor();
-		}
-		else if (m_current_brush_type == brush_object)
-		{
-			
-			if (m_object_brush == nullptr)
-				return;
-
-			if (m_object_build_ent == nullptr)
-				return;
-
-			m_object_brush->destroy<nsrender_comp>();
-			m_object_brush->destroy<nslight_comp>();
-            m_object_brush->create(m_object_build_ent->get<nsrender_comp>());
-			m_object_brush->create(m_object_build_ent->get<nslight_comp>());
-			fvec3 pos = nstile_grid::world(ivec3(0,0,m_layer));
-			
-			if (m_mirror_mode)
-				m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH, m_object_brush);
-
-			nssel_comp * selComp = m_object_brush->get<nssel_comp>();
-			uint32 tFormID = m_active_scene->add(m_object_brush, nullptr, false, pos);
-			m_object_brush->get<nstform_comp>()->save_with_scene = false;
-			nse.system<nsselection_system>()->add_to_selection(m_object_brush, tFormID);
-			selComp->set_selected(m_active_scene, true);
-
-			nse.system<nsselection_system>()->set_focus_entity(
-				uivec3(m_object_brush->full_id(),tFormID)
-				);
-
-			tform_per_scene_info * ppsi = m_object_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
-			ppsi->m_tforms[tFormID].set_hidden_state(nstform_comp::hide_all);
-			
-			bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();				
-			nse.system<nsselection_system>()->enable_mirror_selection(false);				
+	// 		auto brushIter = brushComp->begin();
+	// 		while (brushIter != brushComp->end())
+	// 		{
+	// 			fvec3 pos = nstile_grid::world(ivec3(brushIter->x, brushIter->y, m_layer));
 				
-			if (m_mirror_mode)
-			{
-				fvec3 mirrorPos = m_mirror_center*2.0f - pos;
-				mirrorPos.z = pos.z;
-				uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, false, mirrorPos);
-				m_mirror_brush->get<nstform_comp>()->save_with_scene = false;
-				nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
-				tform_per_scene_info * tmirror_psi = m_mirror_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
-				tmirror_psi->m_tforms[mirror_tform_id].set_hidden_state(nstform_comp::hide_all);
-			}
+	// 			uint32 tFormID = m_active_scene->add(m_tile_brush, nullptr, true, pos);
+	// 			m_tile_brush->get<nstform_comp>()->save_with_scene = false;
+	// 			nse.system<nsselection_system>()->add_to_selection(m_tile_brush, tFormID);
+	// 			nse.system<nsselection_system>()->set_focus_entity(uivec3(m_tile_brush->full_id(),tFormID));					
+	// 			if (m_mirror_mode)
+	// 			{
+	// 				fvec3 mirrorPos = m_mirror_center*2.0f - pos;
+	// 				mirrorPos.z = pos.z;
+	// 				uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, true, mirrorPos);
+	// 				m_mirror_brush->get<nstform_comp>()->save_with_scene = false;
+	// 				nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
+	// 				tform_per_scene_info * tmirror_psi = m_mirror_brush->get<nstform_comp>()->per_scene_info(m_active_scene);					
+	// 				tmirror_psi->m_tforms[mirror_tform_id].set_hidden_state(nstform_comp::hide_all);
+	// 			}
 
-			m_object_brush->destroy<nsoccupy_comp>();
-            m_object_brush->create(m_object_build_ent->get<nsoccupy_comp>());
+	// 			if (*brushIter == ivec2())
+	// 				m_tile_brush_center_tform_id = tFormID;
 
-			if (m_mirror_mode)
-			{
-				m_mirror_brush->destroy<nsoccupy_comp>();
-				m_mirror_brush->create(m_object_build_ent->get<nsoccupy_comp>());
-			}
+	// 			tform_per_scene_info * tpsi      = m_mirror_brush->get<nstform_comp>()->per_scene_info(m_active_scene);					
+	// 			tpsi->m_tforms[tFormID].set_hidden_state(nstform_comp::hide_all);
+	// 			++brushIter;
+	// 		}
+
+	// 		//nse.system<nsselection_system>()->set_focus_entity(
+	// 		//	uivec3(m_tile_brush->full_id(),m_tile_brush_center_tform_id)
+	// 		//	);
+			
+	// 		selComp->set_selected(m_active_scene, true);
+
+    //         nse.system<nsselection_system>()->enable_mirror_selection(tmp);
+	// 		to_cursor();
+	// 	}
+	// 	else if (m_current_brush_type == brush_object)
+	// 	{
+			
+	// 		if (m_object_brush == nullptr)
+	// 			return;
+
+	// 		if (m_object_build_ent == nullptr)
+	// 			return;
+
+	// 		m_object_brush->destroy<nsrender_comp>();
+	// 		m_object_brush->destroy<nslight_comp>();
+    //         m_object_brush->create(m_object_build_ent->get<nsrender_comp>());
+	// 		m_object_brush->create(m_object_build_ent->get<nslight_comp>());
+	// 		fvec3 pos = nstile_grid::world(ivec3(0,0,m_layer));
+			
+	// 		if (m_mirror_mode)
+	// 			m_mirror_brush = nse.core()->create<nsentity>(ENT_MIRROR_BRUSH, m_object_brush);
+
+	// 		nssel_comp * selComp = m_object_brush->get<nssel_comp>();
+	// 		uint32 tFormID = m_active_scene->add(m_object_brush, nullptr, false, pos);
+	// 		m_object_brush->get<nstform_comp>()->save_with_scene = false;
+	// 		nse.system<nsselection_system>()->add_to_selection(m_object_brush, tFormID);
+	// 		selComp->set_selected(m_active_scene, true);
+
+	// 		nse.system<nsselection_system>()->set_focus_entity(
+	// 			uivec3(m_object_brush->full_id(),tFormID)
+	// 			);
+
+	// 		tform_per_scene_info * ppsi = m_object_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 		ppsi->m_tforms[tFormID].set_hidden_state(nstform_comp::hide_all);
+			
+	// 		bool tmp = nse.system<nsselection_system>()->mirror_selection_enabled();				
+	// 		nse.system<nsselection_system>()->enable_mirror_selection(false);				
+				
+	// 		if (m_mirror_mode)
+	// 		{
+	// 			fvec3 mirrorPos = m_mirror_center*2.0f - pos;
+	// 			mirrorPos.z = pos.z;
+	// 			uint32 mirror_tform_id = m_active_scene->add(m_mirror_brush, nullptr, false, mirrorPos);
+	// 			m_mirror_brush->get<nstform_comp>()->save_with_scene = false;
+	// 			nse.system<nsselection_system>()->add_to_selection(m_mirror_brush, mirror_tform_id);
+	// 			tform_per_scene_info * tmirror_psi = m_mirror_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 			tmirror_psi->m_tforms[mirror_tform_id].set_hidden_state(nstform_comp::hide_all);
+	// 		}
+
+	// 		m_object_brush->destroy<nsoccupy_comp>();
+    //         m_object_brush->create(m_object_build_ent->get<nsoccupy_comp>());
+
+	// 		if (m_mirror_mode)
+	// 		{
+	// 			m_mirror_brush->destroy<nsoccupy_comp>();
+	// 			m_mirror_brush->create(m_object_build_ent->get<nsoccupy_comp>());
+	// 		}
 				
 
-			nse.system<nsselection_system>()->enable_mirror_selection(tmp);
-			to_cursor();
-		}
-		else
-			return;
-	}
-	else if (!pEnable && m_enabled)
-	{
-		m_enabled = pEnable;
-		nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::end);
-		nse.system<nsinput_system>()->pop_context();
+	// 		nse.system<nsselection_system>()->enable_mirror_selection(tmp);
+	// 		to_cursor();
+	// 	}
+	// 	else
+	// 		return;
+	// }
+	// else if (!pEnable && m_enabled)
+	// {
+	// 	m_enabled = pEnable;
+	// 	nse.event_dispatch()->push<nsaction_event>(hash_id(NSSEL_MOVE_TOGGLE), nsaction_event::end);
+	// 	nse.system<nsinput_system>()->pop_context();
 
-		if (m_current_brush_type == brush_object && m_object_brush != nullptr)
-		{
-			m_object_brush->destroy<nsoccupy_comp>();
-			m_object_brush->destroy<nsrender_comp>();
-			m_object_brush->destroy<nslight_comp>();
-			m_active_scene->remove(m_object_brush, true);
-		}
+	// 	if (m_current_brush_type == brush_object && m_object_brush != nullptr)
+	// 	{
+	// 		m_object_brush->destroy<nsoccupy_comp>();
+	// 		m_object_brush->destroy<nsrender_comp>();
+	// 		m_object_brush->destroy<nslight_comp>();
+	// 		m_active_scene->remove(m_object_brush, true);
+	// 	}
 
-		if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
-		{
-			m_active_scene->remove(m_tile_brush, true);
-		}
+	// 	if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
+	// 	{
+	// 		m_active_scene->remove(m_tile_brush, true);
+	// 	}
 
-		nse.system<nsselection_system>()->clear_selection();
-        nse.core()->destroy<nsentity>(ENT_MIRROR_BRUSH);
-		m_mirror_brush = nullptr;
-	}
+	// 	nse.system<nsselection_system>()->clear_selection();
+    //     nse.core()->destroy<nsentity>(ENT_MIRROR_BRUSH);
+	// 	m_mirror_brush = nullptr;
+	// }
 }
 
 void nsbuild_system::enable_stamp_mode(bool enable)
@@ -240,36 +241,36 @@ void nsbuild_system::enable_mirror(bool pEnable)
 
 void nsbuild_system::erase()
 {
-	if (m_active_scene == nullptr)
-		return;
+	// if (m_active_scene == nullptr)
+	// 	return;
 
-	if (m_current_brush_type == brush_tile)
-	{
-		if (m_tile_brush == nullptr)
-			return;
+	// if (m_current_brush_type == brush_tile)
+	// {
+	// 	if (m_tile_brush == nullptr)
+	// 		return;
 
-		nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
-		if (brushComp == nullptr)
-			return;
+	// 	nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
+	// 	if (brushComp == nullptr)
+	// 		return;
 
-		auto brushIter = brushComp->begin();
-		while (brushIter != brushComp->end())
-		{
-			for (int32 i = 0; i < brushComp->height(); ++i)
-			{
-				instance_tform * tfi = &m_tile_brush->get<nstform_comp>()->per_scene_info(m_active_scene)->m_tforms[m_tile_brush_center_tform_id];
-				fvec3 pos = tfi->world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i));
-				m_active_scene->remove(pos, false);
-				if (m_mirror_mode)
-				{
-					fvec3 new_pos = m_mirror_center*2.0f - pos;
-					new_pos.z = pos.z;
-					m_active_scene->remove(new_pos, false);
-				}
-			}
-			++brushIter;
-		}
-	}
+	// 	auto brushIter = brushComp->begin();
+	// 	while (brushIter != brushComp->end())
+	// 	{
+	// 		for (int32 i = 0; i < brushComp->height(); ++i)
+	// 		{
+	// 			instance_tform * tfi = &m_tile_brush->get<nstform_comp>()->per_scene_info(m_active_scene)->m_tforms[m_tile_brush_center_tform_id];
+	// 			fvec3 pos = tfi->world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i));
+	// 			m_active_scene->remove(pos, false);
+	// 			if (m_mirror_mode)
+	// 			{
+	// 				fvec3 new_pos = m_mirror_center*2.0f - pos;
+	// 				new_pos.z = pos.z;
+	// 				m_active_scene->remove(new_pos, false);
+	// 			}
+	// 		}
+	// 		++brushIter;
+	// 	}
+	// }
 }
 
 const fvec4 nsbuild_system::active_brush_color() const
@@ -360,68 +361,68 @@ bool nsbuild_system::mirror() const
 
 void nsbuild_system::to_cursor()
 {
-	viewport * vp = nse.video_driver()->current_context()->focused_vp;
-	if (vp == nullptr)
-		return;
+	// viewport * vp = nse.video_driver()->current_context()->focused_vp;
+	// if (vp == nullptr)
+	// 	return;
 
-	nsentity * camera = vp->camera;
-	if (camera == nullptr)
-		return;
+	// nsentity * camera = vp->camera;
+	// if (camera == nullptr)
+	// 	return;
 
-	nstform_comp * cam_tform = camera->get<nstform_comp>();
-	nscam_comp * camc = camera->get<nscam_comp>();
+	// nstform_comp * cam_tform = camera->get<nstform_comp>();
+	// nscam_comp * camc = camera->get<nscam_comp>();
 
-	nstform_comp * brush_tform = nullptr;
-	instance_tform * itf = nullptr;
-	fvec3 original_pos;
+	// nstform_comp * brush_tform = nullptr;
+	// instance_tform * itf = nullptr;
+	// fvec3 original_pos;
 	
-	if (m_current_brush_type == brush_tile)
-	{
-		if (m_tile_brush == nullptr)
-			return;
-		brush_tform = m_tile_brush->get<nstform_comp>();
-		if (brush_tform == nullptr)
-			return;
-		itf = &brush_tform->per_scene_info(m_active_scene)->m_tforms[m_tile_brush_center_tform_id];
-		original_pos = itf->world_position();
-	}
-	else if (m_current_brush_type == brush_object)
-	{
-		if (m_object_brush == nullptr)
-			return;
-		brush_tform = m_object_brush->get<nstform_comp>();
-		if (brush_tform == nullptr)
-			return;
-		itf = &brush_tform->per_scene_info(m_active_scene)->m_tforms[0];
-		original_pos = itf->world_position();
-	}
-	else
-		return;
+	// if (m_current_brush_type == brush_tile)
+	// {
+	// 	if (m_tile_brush == nullptr)
+	// 		return;
+	// 	brush_tform = m_tile_brush->get<nstform_comp>();
+	// 	if (brush_tform == nullptr)
+	// 		return;
+	// 	itf = &brush_tform->per_scene_info(m_active_scene)->m_tforms[m_tile_brush_center_tform_id];
+	// 	original_pos = itf->world_position();
+	// }
+	// else if (m_current_brush_type == brush_object)
+	// {
+	// 	if (m_object_brush == nullptr)
+	// 		return;
+	// 	brush_tform = m_object_brush->get<nstform_comp>();
+	// 	if (brush_tform == nullptr)
+	// 		return;
+	// 	itf = &brush_tform->per_scene_info(m_active_scene)->m_tforms[0];
+	// 	original_pos = itf->world_position();
+	// }
+	// else
+	// 	return;
 
-	fvec4 screen_space = camc->proj_cam() * fvec4(original_pos, 1.0f);
+	// fvec4 screen_space = camc->proj_cam() * fvec4(original_pos, 1.0f);
 
-	screen_space /= screen_space.w;
-	screen_space.x = (2*m_norm_mpos.u-1);
-	screen_space.y = (2*m_norm_mpos.v-1);
+	// screen_space /= screen_space.w;
+	// screen_space.x = (2*m_norm_mpos.u-1);
+	// screen_space.y = (2*m_norm_mpos.v-1);
 
-	fvec4 new_pos = camc->inv_proj_cam() * screen_space;
+	// fvec4 new_pos = camc->inv_proj_cam() * screen_space;
 	
-	new_pos /= new_pos.w;
+	// new_pos /= new_pos.w;
 
-	fvec3 fpos(new_pos.xyz());
-	fvec3 castVec = fpos - cam_tform->per_scene_info(m_active_scene)->m_tforms[0].world_position();
-	castVec.normalize();
+	// fvec3 fpos(new_pos.xyz());
+	// fvec3 castVec = fpos - cam_tform->per_scene_info(m_active_scene)->m_tforms[0].world_position();
+	// castVec.normalize();
 
-	fvec3 normal(0.0f,0.0f,-1.0f);
-	float denom = normal * castVec;
-	float depth = 0.0f;
-	depth = (normal * (original_pos - fpos)) / denom;
+	// fvec3 normal(0.0f,0.0f,-1.0f);
+	// float denom = normal * castVec;
+	// float depth = 0.0f;
+	// depth = (normal * (original_pos - fpos)) / denom;
 	
-	fpos += castVec*depth;
-	fpos -= original_pos;
+	// fpos += castVec*depth;
+	// fpos -= original_pos;
 	
-	// for (uint32 i = 0; i < brush_tform->instance_count(m_active_scene); ++i)
-	// 	brush_tform->translate(fpos, i);
+	// // for (uint32 i = 0; i < brush_tform->instance_count(m_active_scene); ++i)
+	// // 	brush_tform->translate(fpos, i);
 }
 
 nsentity * nsbuild_system::tile_brush()
@@ -436,87 +437,87 @@ nsentity * nsbuild_system::object_brush()
 
 void nsbuild_system::paint()
 {
-	if (m_active_scene == nullptr)
-		return;
+	// if (m_active_scene == nullptr)
+	// 	return;
 	
-	if (m_current_brush_type == brush_tile)
-	{
-		if (m_tile_build_ent == nullptr)
-			return;
+	// if (m_current_brush_type == brush_tile)
+	// {
+	// 	if (m_tile_build_ent == nullptr)
+	// 		return;
 
-		if (m_tile_brush == nullptr)
-			return;
+	// 	if (m_tile_brush == nullptr)
+	// 		return;
 
-		nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
-		if (brushComp == nullptr)
-			return;
+	// 	nstile_brush_comp * brushComp = m_tile_brush->get<nstile_brush_comp>();
+	// 	if (brushComp == nullptr)
+	// 		return;
 
-		tform_per_scene_info * tpsi=m_tile_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 	tform_per_scene_info * tpsi=m_tile_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
 
-		auto brushIter = brushComp->begin();
-		while (brushIter != brushComp->end())
-		{
-			for (int32 i = 0; i < brushComp->height(); ++i)
-			{
-				fvec3 pos = tpsi->m_tforms[m_tile_brush_center_tform_id].world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
-				nstile_grid::snap(pos);
+	// 	auto brushIter = brushComp->begin();
+	// 	while (brushIter != brushComp->end())
+	// 	{
+	// 		for (int32 i = 0; i < brushComp->height(); ++i)
+	// 		{
+	// 			fvec3 pos = tpsi->m_tforms[m_tile_brush_center_tform_id].world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+	// 			nstile_grid::snap(pos);
 				
-				if (m_overwrite)
-				{
-					m_active_scene->remove(pos, false);
-					if (m_mirror_mode)
-					{
-						fvec3 new_pos = m_mirror_center*2.0f - pos;
-						new_pos.z = pos.z;
-						m_active_scene->remove(new_pos, false);
-					}
-				}
+	// 			if (m_overwrite)
+	// 			{
+	// 				m_active_scene->remove(pos, false);
+	// 				if (m_mirror_mode)
+	// 				{
+	// 					fvec3 new_pos = m_mirror_center*2.0f - pos;
+	// 					new_pos.z = pos.z;
+	// 					m_active_scene->remove(new_pos, false);
+	// 				}
+	// 			}
 
-				uint32 tFormID = m_active_scene->add(m_tile_build_ent, nullptr, true, pos);
+	// 			uint32 tFormID = m_active_scene->add(m_tile_build_ent, nullptr, true, pos);
 				
-				if (tFormID != -1)
-				{
-					if (m_mirror_mode)
-					{
-						fvec3 new_pos = m_mirror_center*2.0f - pos;
-						new_pos.z = pos.z;
-						uint32 tFormMID = m_active_scene->add(m_tile_build_ent, nullptr, true, new_pos);
-						if (tFormMID == -1)
-						{
-                            m_active_scene->remove(m_tile_build_ent, tFormID, true);
-							continue;
-						}
-					}
-				}
-			}
-			++brushIter;
-		}
-	}
-	else if (m_current_brush_type == brush_object)
-	{
-		if (m_object_brush == nullptr || m_object_build_ent == nullptr)
-			return;
+	// 			if (tFormID != -1)
+	// 			{
+	// 				if (m_mirror_mode)
+	// 				{
+	// 					fvec3 new_pos = m_mirror_center*2.0f - pos;
+	// 					new_pos.z = pos.z;
+	// 					uint32 tFormMID = m_active_scene->add(m_tile_build_ent, nullptr, true, new_pos);
+	// 					if (tFormMID == -1)
+	// 					{
+    //                         m_active_scene->remove(m_tile_build_ent, tFormID, true);
+	// 						continue;
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		++brushIter;
+	// 	}
+	// }
+	// else if (m_current_brush_type == brush_object)
+	// {
+	// 	if (m_object_brush == nullptr || m_object_build_ent == nullptr)
+	// 		return;
 
-		fvec3 pos = m_object_brush->get<nstform_comp>()->per_scene_info(m_active_scene)->m_tforms[0].world_position();
-		nstile_grid::snap(pos);
-		uint32 tFormID = m_active_scene->add(m_object_build_ent, nullptr, false, pos);
+	// 	fvec3 pos = m_object_brush->get<nstform_comp>()->per_scene_info(m_active_scene)->m_tforms[0].world_position();
+	// 	nstile_grid::snap(pos);
+	// 	uint32 tFormID = m_active_scene->add(m_object_build_ent, nullptr, false, pos);
 
-		if (tFormID != -1)
-		{
-			if (m_mirror_mode)
-			{
-				fvec3 new_pos = m_mirror_center*2.0f - pos;
-				new_pos.z = pos.z;
-				uint32 tFormMID = m_active_scene->add(m_object_build_ent, nullptr, false, new_pos);
-				if (tFormMID == -1)
-				{
-					m_active_scene->remove(m_object_build_ent, tFormID, false);
-					return;
-				}
-			}
-		}
-	}
-	to_cursor();
+	// 	if (tFormID != -1)
+	// 	{
+	// 		if (m_mirror_mode)
+	// 		{
+	// 			fvec3 new_pos = m_mirror_center*2.0f - pos;
+	// 			new_pos.z = pos.z;
+	// 			uint32 tFormMID = m_active_scene->add(m_object_build_ent, nullptr, false, new_pos);
+	// 			if (tFormMID == -1)
+	// 			{
+	// 				m_active_scene->remove(m_object_build_ent, tFormID, false);
+	// 				return;
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// to_cursor();
 }
 
 void nsbuild_system::set_active_brush_color(const fvec4 & pColor)
@@ -636,113 +637,113 @@ int32 nsbuild_system::update_priority()
 
 void nsbuild_system::update()
 {
-	if (scene_error_check())
-		return;
+	// if (scene_error_check())
+	// 	return;
 	
-	if (m_painting)
-	{
-		paint();
-		if (m_stamp_mode)
-			m_painting = false;
-	}
+	// if (m_painting)
+	// {
+	// 	paint();
+	// 	if (m_stamp_mode)
+	// 		m_painting = false;
+	// }
 
-	if (m_erasing)
-	{
-		erase();
-		if (m_stamp_mode)
-			m_erasing = false;
-	}
+	// if (m_erasing)
+	// {
+	// 	erase();
+	// 	if (m_stamp_mode)
+	// 		m_erasing = false;
+	// }
 
-    if (m_enabled)
-	{
-        if (m_current_brush_type == brush_tile && m_tile_brush != nullptr && m_mirror_mode)
-		{
-			nstform_comp * brush_tform = m_tile_brush->get<nstform_comp>();
-			nstform_comp * mirror_tform = m_mirror_brush->get<nstform_comp>();
-			tform_per_scene_info * tpsi = brush_tform->per_scene_info(m_active_scene);
-			tform_per_scene_info * tmirror_psi = mirror_tform->per_scene_info(m_active_scene);
-			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-			{
-				fvec3 wp = tpsi->m_tforms[i].world_position();
-				fvec3 new_pos = m_mirror_center*2.0f - wp;
-				new_pos.z = wp.z;
-				tmirror_psi->m_tforms[i].set_world_position(new_pos);
-			}
-		}
-        else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
-		{
-			nstform_comp * obj_tform = m_object_brush->get<nstform_comp>();
-			tform_per_scene_info * tpsi = obj_tform->per_scene_info(m_active_scene);
+    // if (m_enabled)
+	// {
+    //     if (m_current_brush_type == brush_tile && m_tile_brush != nullptr && m_mirror_mode)
+	// 	{
+	// 		nstform_comp * brush_tform = m_tile_brush->get<nstform_comp>();
+	// 		nstform_comp * mirror_tform = m_mirror_brush->get<nstform_comp>();
+	// 		tform_per_scene_info * tpsi = brush_tform->per_scene_info(m_active_scene);
+	// 		tform_per_scene_info * tmirror_psi = mirror_tform->per_scene_info(m_active_scene);
+	// 		for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 		{
+	// 			fvec3 wp = tpsi->m_tforms[i].world_position();
+	// 			fvec3 new_pos = m_mirror_center*2.0f - wp;
+	// 			new_pos.z = wp.z;
+	// 			tmirror_psi->m_tforms[i].set_world_position(new_pos);
+	// 		}
+	// 	}
+    //     else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
+	// 	{
+	// 		nstform_comp * obj_tform = m_object_brush->get<nstform_comp>();
+	// 		tform_per_scene_info * tpsi = obj_tform->per_scene_info(m_active_scene);
 			
-			fvec3 wp = tpsi->m_tforms[0].world_position();
-			nssel_comp * selComp = m_object_brush->get<nssel_comp>();
-			bool no_collision = true;
+	// 		fvec3 wp = tpsi->m_tforms[0].world_position();
+	// 		nssel_comp * selComp = m_object_brush->get<nssel_comp>();
+	// 		bool no_collision = true;
 
-			nsoccupy_comp * occComp = m_object_brush->get<nsoccupy_comp>();
-			if (occComp != nullptr)
-			{
-				auto selection = selComp->selection(m_active_scene);
-				if (selection != nullptr)
-				{
-					auto selIter = selection->begin();
-					while (selIter != selection->end())
-					{
-						no_collision = no_collision && !m_active_scene->grid().occupied(occComp->spaces(), tpsi->m_tforms[*selIter].world_position());
-						++selIter;
-					}
-				}
-			}
+	// 		nsoccupy_comp * occComp = m_object_brush->get<nsoccupy_comp>();
+	// 		if (occComp != nullptr)
+	// 		{
+	// 			auto selection = selComp->selection(m_active_scene);
+	// 			if (selection != nullptr)
+	// 			{
+	// 				auto selIter = selection->begin();
+	// 				while (selIter != selection->end())
+	// 				{
+	// 					no_collision = no_collision && !m_active_scene->grid().occupied(occComp->spaces(), tpsi->m_tforms[*selIter].world_position());
+	// 					++selIter;
+	// 				}
+	// 			}
+	// 		}
 
-			if (m_mirror_mode)
-			{
-				nstform_comp * mirror_tform = m_mirror_brush->get<nstform_comp>();				
-				fvec3 new_pos = m_mirror_center*2.0f - wp;
-				new_pos.z = wp.z;
-				instance_tform * mirror_itf = &mirror_tform->per_scene_info(m_active_scene)->m_tforms[0];
-				mirror_itf->set_world_position(new_pos);				
-				nssel_comp * selComp2 = m_mirror_brush->get<nssel_comp>();
-				nsoccupy_comp * occComp2 = m_mirror_brush->get<nsoccupy_comp>();
-				if (occComp2 != nullptr)
-				{
-					auto selection = selComp2->selection(m_active_scene);
-					if (selection != nullptr)
-					{
-						auto selIter = selection->begin();
-						while (selIter != selection->end())
-						{
-							no_collision = no_collision && !m_active_scene->grid().occupied(occComp2->spaces(), mirror_itf->world_position());
-							++selIter;
-						}
-					}
-				}	
-			}	
+	// 		if (m_mirror_mode)
+	// 		{
+	// 			nstform_comp * mirror_tform = m_mirror_brush->get<nstform_comp>();				
+	// 			fvec3 new_pos = m_mirror_center*2.0f - wp;
+	// 			new_pos.z = wp.z;
+	// 			instance_tform * mirror_itf = &mirror_tform->per_scene_info(m_active_scene)->m_tforms[0];
+	// 			mirror_itf->set_world_position(new_pos);				
+	// 			nssel_comp * selComp2 = m_mirror_brush->get<nssel_comp>();
+	// 			nsoccupy_comp * occComp2 = m_mirror_brush->get<nsoccupy_comp>();
+	// 			if (occComp2 != nullptr)
+	// 			{
+	// 				auto selection = selComp2->selection(m_active_scene);
+	// 				if (selection != nullptr)
+	// 				{
+	// 					auto selIter = selection->begin();
+	// 					while (selIter != selection->end())
+	// 					{
+	// 						no_collision = no_collision && !m_active_scene->grid().occupied(occComp2->spaces(), mirror_itf->world_position());
+	// 						++selIter;
+	// 					}
+	// 				}
+	// 			}	
+	// 		}	
 
-			if (!no_collision)
-				set_active_brush_color(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
-			else
-				set_active_brush_color(m_object_brush->get<nssel_comp>()->default_color());
-		}
-		to_cursor();
-	}
+	// 		if (!no_collision)
+	// 			set_active_brush_color(fvec4(1.0f, 0.0f, 0.0f, 1.0f));
+	// 		else
+	// 			set_active_brush_color(m_object_brush->get<nssel_comp>()->default_color());
+	// 	}
+	// 	to_cursor();
+	// }
 
-	if (m_enabled)
-	{
-		float z = 0.0;
-		tform_per_scene_info * tpsi = nullptr;
+	// if (m_enabled)
+	// {
+	// 	float z = 0.0;
+	// 	tform_per_scene_info * tpsi = nullptr;
 
-		if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
-			tpsi = m_tile_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
-		else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
-			tpsi = m_object_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 	if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
+	// 		tpsi = m_tile_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 	else if (m_current_brush_type == brush_object && m_object_build_ent != nullptr)
+	// 		tpsi = m_object_brush->get<nstform_comp>()->per_scene_info(m_active_scene);
 		
-		z = tpsi->m_tforms[0].world_position().z;
-		m_layer = nstile_grid::grid(fvec3(0,0,z)).z;
+	// 	z = tpsi->m_tforms[0].world_position().z;
+	// 	m_layer = nstile_grid::grid(fvec3(0,0,z)).z;
 
-		if (m_current_mode == erase_mode && m_tile_brush != nullptr)
-			set_active_brush_color(fvec4(1.0f,0.0f,0.0f,1.0f));
-		else if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
-			set_active_brush_color(m_tile_brush->get<nssel_comp>()->default_color());
-	}
+	// 	if (m_current_mode == erase_mode && m_tile_brush != nullptr)
+	// 		set_active_brush_color(fvec4(1.0f,0.0f,0.0f,1.0f));
+	// 	else if (m_current_brush_type == brush_tile && m_tile_brush != nullptr)
+	// 		set_active_brush_color(m_tile_brush->get<nssel_comp>()->default_color());
+	// }
 }
 
 bool nsbuild_system::_handle_cam_change_event(nscam_change_event * evnt)
@@ -753,78 +754,78 @@ bool nsbuild_system::_handle_cam_change_event(nscam_change_event * evnt)
 
 bool nsbuild_system::_handle_initial_snap_brush_z(nsaction_event * evnt)
 {
-	if (m_enabled)
-	{
-		if (m_object_brush != nullptr)
-		{
-			nstform_comp * tc = m_object_brush->get<nstform_comp>();
-			if (tc != nullptr)
-			{
-				tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
-				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-				{
-					fvec3 wpos = tpsi->m_tforms[i].world_position();
-					nstile_grid::snap(wpos);
-					tpsi->m_tforms[i].set_world_position(wpos);
-				}
-			}
-		}
-		if (m_tile_brush != nullptr)
-		{
-			nstform_comp * tc = m_tile_brush->get<nstform_comp>();
-			if (tc != nullptr)
-			{
-				tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
-				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-				{
-					fvec3 wpos = tpsi->m_tforms[i].world_position();
-					nstile_grid::snap(wpos);
-					tpsi->m_tforms[i].set_world_position(wpos);
-				}
+	// if (m_enabled)
+	// {
+	// 	if (m_object_brush != nullptr)
+	// 	{
+	// 		nstform_comp * tc = m_object_brush->get<nstform_comp>();
+	// 		if (tc != nullptr)
+	// 		{
+	// 			tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
+	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 			{
+	// 				fvec3 wpos = tpsi->m_tforms[i].world_position();
+	// 				nstile_grid::snap(wpos);
+	// 				tpsi->m_tforms[i].set_world_position(wpos);
+	// 			}
+	// 		}
+	// 	}
+	// 	if (m_tile_brush != nullptr)
+	// 	{
+	// 		nstform_comp * tc = m_tile_brush->get<nstform_comp>();
+	// 		if (tc != nullptr)
+	// 		{
+	// 			tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
+	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 			{
+	// 				fvec3 wpos = tpsi->m_tforms[i].world_position();
+	// 				nstile_grid::snap(wpos);
+	// 				tpsi->m_tforms[i].set_world_position(wpos);
+	// 			}
 
-			}
-		}
-	}
+	// 		}
+	// 	}
+	// }
 	return true;
 }
 
 bool nsbuild_system::_handle_snap_z(nsaction_event * evnt)
 {
-	if (m_enabled)
-	{
-		if (m_object_brush != nullptr)
-		{
-			nstform_comp * tc = m_object_brush->get<nstform_comp>();
-			if (tc != nullptr)
-			{
-				tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
-				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-				{
-					instance_tform & itf = tpsi->m_tforms[i];
-					fvec3 wpos = itf.world_position();
-					nstile_grid::snap(wpos);
-					itf.set_world_position(fvec3(itf.world_position().xy(),wpos.z));
-				}
-				to_cursor();
-			}			
-		}
-		if (m_tile_brush != nullptr)
-		{
-			nstform_comp * tc = m_tile_brush->get<nstform_comp>();
-			if (tc != nullptr)
-			{
-				tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
-				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-				{
-					instance_tform * itf = &tpsi->m_tforms[i];
-					fvec3 wpos = itf->world_position();
-					nstile_grid::snap(wpos);
-					itf->set_world_position(fvec3(itf->world_position().xy(),wpos.z));
-				}
-				to_cursor();
-			}
-		}
-	}
+	// if (m_enabled)
+	// {
+	// 	if (m_object_brush != nullptr)
+	// 	{
+	// 		nstform_comp * tc = m_object_brush->get<nstform_comp>();
+	// 		if (tc != nullptr)
+	// 		{
+	// 			tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
+	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 			{
+	// 				instance_tform & itf = tpsi->m_tforms[i];
+	// 				fvec3 wpos = itf.world_position();
+	// 				nstile_grid::snap(wpos);
+	// 				itf.set_world_position(fvec3(itf.world_position().xy(),wpos.z));
+	// 			}
+	// 			to_cursor();
+	// 		}			
+	// 	}
+	// 	if (m_tile_brush != nullptr)
+	// 	{
+	// 		nstform_comp * tc = m_tile_brush->get<nstform_comp>();
+	// 		if (tc != nullptr)
+	// 		{
+	// 			tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
+	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 			{
+	// 				instance_tform * itf = &tpsi->m_tforms[i];
+	// 				fvec3 wpos = itf->world_position();
+	// 				nstile_grid::snap(wpos);
+	// 				itf->set_world_position(fvec3(itf->world_position().xy(),wpos.z));
+	// 			}
+	// 			to_cursor();
+	// 		}
+	// 	}
+	// }
 	return true;
 }
 

@@ -42,7 +42,7 @@ This file contains all of the neccessary declarations for the nscube_grid class.
 class nsentity;
 struct instance_tform;
 
-typedef std::vector<std::vector<uivec3_vector>> cube_grid_layer;
+typedef std::vector<std::vector<uivec2_vector>> cube_grid_layer;
 typedef std::vector<cube_grid_layer> cube_grid_quadrant;
 typedef cube_grid_quadrant cube_grid_world[QUADRANT_COUNT];
 
@@ -74,37 +74,21 @@ public:
 
 	void release();
 
-	bool insert(const uivec3 & item_, const ibox & aabb_post_tform);
+	bool insert(const uivec2 & item_, const ibox & aabb_post_tform);
+	bool insert(const uivec2 & item_, const fbox & aabb_post_tform);
 
-	bool insert(const uivec3 & item_, const fbox & aabb_post_tform);
+	uivec2_vector * items_at(const fvec3 & pos_);
+	uivec2_vector * items_at(const ivec3 & grid_pos_);
 
-	bool insert(instance_tform * itf);
-
-	uivec3_vector * items_at(const fvec3 & pos_);
-
-	uivec3_vector * items_at(const ivec3 & grid_pos_);
-
-	void items_within(const fbox & grid_bounds_, uivec3_vector * found_items);
-
-	void items_within(const ibox & grid_bounds_, uivec3_vector * found_items);
+	void items_within(const fbox & grid_bounds_, uivec2_vector * found_items);
+	void items_within(const ibox & grid_bounds_, uivec2_vector * found_items);
 
 	const ibox & grid_bounds();
 
 	// search bounds will limit the search to specified bounds
-	void search_and_remove(nsentity * ent, const ibox & search_bounds=ibox());
-	void search_and_remove(nsentity * ent, const fbox & aabb);
 	void search_and_remove(const uivec2 & ent_id, const fbox & aabb);
 	void search_and_remove(const uivec2 & ent_id, const ibox & search_bounds=ibox());
 
-	// search bounds will limit the search to specified bounds
-	void search_and_remove(nsentity * ent, uint32 tform_id, const ibox & search_bounds=ibox());
-	void search_and_remove(nsentity * ent, uint32 tform_id, const fbox & aabb);
-	void search_and_remove(const uivec3 & tf_id, const fbox & aabb);
-	void search_and_remove(const uivec3 & tf_id, const ibox & search_bounds=ibox());
-
-	void remove(nsentity * ent);
-	void remove(instance_tform * tform);
-	
 	void name_change(const uivec2 & old_id_, const uivec2 new_id_);
 
 	static ivec3 grid_from(const fvec3 & world_);
@@ -127,8 +111,7 @@ private:
 	void _update_bounds();
 
 	bool _index_in_bounds(const uivec4 & ind);
-	bool _item_already_there(const uivec4 & index, const uivec3 & item);
-	bool _remove_item(const uivec4 & index, const uivec3 & item);
+	bool _item_already_there(const uivec4 & index, const uivec2 & item);
 	bool _remove_item(const uivec4 & index, const uivec2 & item);
 
 	ibox m_world_bounds;

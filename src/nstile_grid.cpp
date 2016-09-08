@@ -51,12 +51,12 @@ nstile_grid & nstile_grid::operator=(nstile_grid rhs)
 	return *this;
 }
 
-bool nstile_grid::add(const uivec3 & pItem, const fvec3 & pPos)
+bool nstile_grid::add(const uivec2 & pItem, const fvec3 & pPos)
 {
 	return add(pItem, ivec3(), pPos);
 }
 
-bool nstile_grid::add(const uivec3 & pItem, const ivec3 & pSpace, const fvec3 & pOrigin)
+bool nstile_grid::add(const uivec2 & pItem, const ivec3 & pSpace, const fvec3 & pOrigin)
 {
 	if (occupied(pSpace, pOrigin))
 		return false;
@@ -72,7 +72,7 @@ bool nstile_grid::add(const uivec3 & pItem, const ivec3 & pSpace, const fvec3 & 
 	return true;
 }
 
-bool nstile_grid::add(const uivec3 pItem, const ivec3_vector & pSpaces, const fvec3 & pOrigin)
+bool nstile_grid::add(const uivec2 & pItem, const ivec3_vector & pSpaces, const fvec3 & pOrigin)
 {
 	for (uint32 i = 0; i < pSpaces.size(); ++i)
 	{
@@ -87,7 +87,7 @@ bool nstile_grid::add(const uivec3 pItem, const ivec3_vector & pSpaces, const fv
 	return true;
 }
 
-const uivec3 & nstile_grid::at(const map_index & pSpace) const
+const uivec2 & nstile_grid::at(const map_index & pSpace) const
 {
 	if (!_check_bounds(pSpace))
 		throw(std::exception());
@@ -95,15 +95,15 @@ const uivec3 & nstile_grid::at(const map_index & pSpace) const
 	return m_world_map[pSpace.quad_index][pSpace.raw_index.z][pSpace.raw_index.y][pSpace.raw_index.x];
 }
 
-uivec3 nstile_grid::get(const fvec3 & pPos) const
+uivec2 nstile_grid::get(const fvec3 & pPos) const
 {
 	return get(ivec3(), pPos);
 }
 
-uivec3 nstile_grid::get(const ivec3 & pSpace, const fvec3 & pOrigin) const
+uivec2 nstile_grid::get(const ivec3 & pSpace, const fvec3 & pOrigin) const
 {
 	if (!occupied(pSpace, pOrigin)) // also will check bounds here and return false if out of bounds
-		return uivec3();
+		return uivec2();
 
 	ivec3 space = pSpace + grid(pOrigin);
 	map_index ind = index(space);
@@ -309,7 +309,7 @@ nstile_grid::grid_bounds nstile_grid::occupied_bounds()
 			{
 				for (uint32 x = 0; x < m_world_map[i][z][y].size(); ++x)
 				{
-					if (m_world_map[i][z][y][x] != uivec3())
+					if (m_world_map[i][z][y][x] != uivec2())
 					{
 						ivec3 gridPos = grid(map_index(i, x, y, z));
 						if (gridPos.x > g.max_space.x)
@@ -346,7 +346,7 @@ bool nstile_grid::occupied(const ivec3 & pSpace, const fvec3 & pOrigin) const
 	if (!_check_bounds(ind))
 		return false;
 
-	return (m_world_map[ind.quad_index][ind.raw_index.z][ind.raw_index.y][ind.raw_index.x] != uivec3());
+	return (m_world_map[ind.quad_index][ind.raw_index.z][ind.raw_index.y][ind.raw_index.x] != uivec2());
 }
 
 bool nstile_grid::occupied(const ivec3_vector & pSpaces, const fvec3 & pOrigin) const
@@ -373,7 +373,7 @@ bool nstile_grid::remove(const ivec3 & pSpace, const fvec3 & pOrigin)
 	map_index ind = index(space);
 
 	// Set the space to (0,0) which signifies no item
-	m_world_map[ind.quad_index][ind.raw_index.z][ind.raw_index.y][ind.raw_index.x] = uivec3();
+	m_world_map[ind.quad_index][ind.raw_index.z][ind.raw_index.y][ind.raw_index.x] = uivec2();
 	return true;
 }
 
@@ -394,7 +394,7 @@ void nstile_grid::remove(const uint32 plugid)
 				for (uint32 x = 0; x < m_world_map[i][z][y].size(); ++x)
 				{
 					if (m_world_map[i][z][y][x].x == plugid)
-						m_world_map[i][z][y][x] = uivec3();
+						m_world_map[i][z][y][x] = uivec2();
 				}
 			}
 		}
@@ -430,7 +430,7 @@ void nstile_grid::remove(const uivec2 & id)
 				for (uint32 x = 0; x < m_world_map[i][z][y].size(); ++x)
 				{
 					if (m_world_map[i][z][y][x].x == id.x && m_world_map[i][z][y][x].y == id.y)
-						m_world_map[i][z][y][x] = uivec3();
+						m_world_map[i][z][y][x] = uivec2();
 				}
 			}
 		}
@@ -462,9 +462,9 @@ void nstile_grid::name_change(const uivec2 & oldid, const uivec2 newid)
 }
 
 
-uivec3_vector nstile_grid::bounded_set(const fvec3 & pPoint1, const fvec3 & pPoint2)
+uivec2_vector nstile_grid::bounded_set(const fvec3 & pPoint1, const fvec3 & pPoint2)
 {
-	uivec3_vector retSet;
+	uivec2_vector retSet;
 	fvec3 min(pPoint1);
 	fvec3 max(pPoint2);
 
@@ -498,7 +498,7 @@ uivec3_vector nstile_grid::bounded_set(const fvec3 & pPoint1, const fvec3 & pPoi
 			for (; minGrid.x <= maxGrid.x; ++minGrid.x)
 			{
 				map_index ind = index(minGrid);
-				const uivec3 & id = _get_id(ind);
+				const uivec2 & id = _get_id(ind);
 				if (id == 0)
 					continue;
 				retSet.push_back(id);
@@ -662,7 +662,7 @@ void nstile_grid::_resize_for_space(const map_index & pIndex)
 		m_world_map[pIndex.quad_index][pIndex.raw_index.z][pIndex.raw_index.y].resize(pIndex.raw_index.x + TILE_GRID_RESIZE_PAD);
 }
 
-const uivec3 & nstile_grid::_get_id(const map_index & pIndex)
+const uivec2 & nstile_grid::_get_id(const map_index & pIndex)
 {
 	return m_world_map[pIndex.quad_index][pIndex.raw_index.z][pIndex.raw_index.y][pIndex.raw_index.x];
 }

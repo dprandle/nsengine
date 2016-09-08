@@ -68,7 +68,15 @@ struct tform_per_scene_info : public nsvideo_object
 
 struct tform_info
 {
-	tform_info();
+	tform_info(
+		const uivec2 & parent=uivec2(),
+		const fvec3 & pos=fvec3(),
+		const fquat & ornt=fquat(),
+		const fvec3 & scale=fvec3(1.0f),
+		int32 hide_state=0,
+		const std::vector<uivec2> & children_=std::vector<uivec2>()
+		);
+	
 	uivec2 m_parent;
 	int32 m_hidden_state;
 	fquat m_orient;
@@ -140,7 +148,7 @@ class nstform_comp : public nscomponent
 
 	const tform_info & tf_info() const;
 
-	void set_tf_info(const tform_info & tfi_);
+	void set_tf_info(const tform_info & tfi_, bool preserve_world_tform);
 
 	void set_world_position(const fvec3 & pos);
 
@@ -177,6 +185,7 @@ class nstform_comp : public nscomponent
 	tform_per_scene_info * inst_obj; // shared among all instances
 	uint32 inst_id; // move to per scene info
 	bool in_cube_grid;
+	bool save_with_scene;
 
   private:
 	nsscene * m_scene; // dynamically assigned

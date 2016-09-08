@@ -77,7 +77,8 @@ void nsaudio_system::init()
 
 void nsaudio_system::release()
 {
-	
+	alcDestroyContext(m_ctxt);
+	alcCloseDevice(m_device);
 }
 
 void nsaudio_system::update()
@@ -95,17 +96,10 @@ void nsaudio_system::update()
 		nstform_comp * tfc = listener_ent->get<nstform_comp>();
 		if (tfc != nullptr)
 		{
-			tform_per_scene_info * psi = tfc->per_scene_info(m_active_scene);
-			if (psi != nullptr)
-			{
-				if (listener.z < psi->m_tforms.size())
-				{
-					pos = psi->m_tforms[listener.z].world_position() / units_per_meter;
-					vel = psi->m_tforms[listener.z].phys.velocity / units_per_meter;
-					fquat ori = psi->m_tforms[listener.z].world_orientation();
-					dir.a = ori.target(); dir.b = ori.up();
-				}
-			}
+			pos = tfc->world_position() / units_per_meter;
+			vel = fvec3(0.0f);//tfc->phys.velocity / units_per_meter;
+			fquat ori = tfc->world_orientation();
+			dir.a = ori.target(); dir.b = ori.up();
 		}
 	}
 
@@ -196,22 +190,13 @@ bool nsaudio_system::handle_audio_play_event(audio_play_event * evnt)
 	nstform_comp * tfc = ent->get<nstform_comp>();
 	if (tfc != nullptr)
 	{
-		tform_per_scene_info * psi = tfc->per_scene_info(m_active_scene);
-		if (psi != nullptr)
-		{
-			if (evnt->source_id.z < psi->m_tforms.size())
-			{
-				instance_tform & itf = psi->m_tforms[evnt->source_id.z];
-				pos = itf.world_position() / units_per_meter;
-				vel = itf.phys.velocity  / units_per_meter;
-				dir = itf.world_orientation().target().normalize();
-				dir.z *= -1.0f;
-			}
-		}
+		pos = tfc->world_position() / units_per_meter;
+		vel = fvec3(1.0f);
+		dir = tfc->world_orientation().target().normalize();
+		dir.z *= -1.0f;
 	}
 
 	nsaudio_source_comp * ac = ent->get<nsaudio_source_comp>();
-
     alSourcefv(ac->sources[evnt->effect_index]->al_source, AL_POSITION, pos.data);
     alSourcefv(ac->sources[evnt->effect_index]->al_source, AL_VELOCITY, vel.data);
 	alSourcefv(ac->sources[evnt->effect_index]->al_source, AL_DIRECTION, dir.data);
@@ -230,18 +215,10 @@ bool nsaudio_system::handle_audio_start_streaming_event(audio_start_streaming_ev
 	nstform_comp * tfc = src->get<nstform_comp>();
 	if (tfc != nullptr)
 	{
-		tform_per_scene_info * psi = tfc->per_scene_info(m_active_scene);
-		if (psi != nullptr)
-		{
-			if (evnt->source_id.z < psi->m_tforms.size())
-			{
-				instance_tform & itf = psi->m_tforms[evnt->source_id.z];
-				pos = itf.world_position() / units_per_meter;
-				vel = itf.phys.velocity  / units_per_meter;
-				dir = itf.world_orientation().target().normalize();
-				dir.z *= -1.0f;
-			}
-		}
+		pos = tfc->world_position() / units_per_meter;
+		vel = fvec3(1.0f);//itf.phys.velocity  / units_per_meter;
+		dir = tfc->world_orientation().target().normalize();
+		dir.z *= -1.0f;
 	}
 
 	nsaudio_source_comp * ac = src->get<nsaudio_source_comp>();

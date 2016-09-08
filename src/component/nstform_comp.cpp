@@ -23,13 +23,19 @@
 #include <opengl/nsgl_buffer.h>
 #include <asset/nsscene.h>
 
-tform_info::tform_info():
-	m_parent(),
-	m_hidden_state(0),
-	m_orient(),
-	m_position(),
-	m_scaling(1.0f, 1.0f, 1.0f),
-	m_children()
+tform_info::tform_info(
+	const uivec2 & parent,
+	const fvec3 & pos,
+	const fquat & ornt,
+	const fvec3 & scale,
+	int32 hide_state,
+	const std::vector<uivec2> & children_):
+	m_parent(parent),
+	m_hidden_state(hide_state),
+	m_orient(ornt),
+	m_position(pos),
+	m_scaling(scale),
+	m_children(children_)
 {}
 
 nstform_comp::nstform_comp():
@@ -37,6 +43,7 @@ nstform_comp::nstform_comp():
 	inst_obj(nullptr),
 	inst_id(0),
 	in_cube_grid(false),
+	save_with_scene(true),
 	m_tfi(),
 	m_render_update(true),
 	m_world_tform(),
@@ -50,6 +57,7 @@ nstform_comp::nstform_comp(const nstform_comp & copy):
 	inst_obj(nullptr),
 	inst_id(0),
 	in_cube_grid(false),
+	save_with_scene(copy.save_with_scene),
 	m_tfi(copy.m_tfi),
 	m_render_update(true),
 	m_world_tform(copy.m_world_tform),
@@ -437,18 +445,23 @@ const tform_info & nstform_comp::tf_info() const
 	return m_tfi;
 }
 
-void nstform_comp::set_tf_info(const tform_info & tfi_)
+void nstform_comp::set_tf_info(const tform_info & tfi_, bool preserve_world_tform)
 {
-	nsentity * prnt = m_scene->find_entity(tfi_.m_parent);
+	nsentity * prnt = nullptr;
+	if (tfi_.m_parent != uivec2(0))
+		prnt = m_scene->find_entity(tfi_.m_parent);
+	
 	if (prnt != nullptr)
-		set_parent(prnt->get<nstform_comp>(), true);
+		set_parent(prnt->get<nstform_comp>(), preserve_world_tform);
+
 	remove_children(true);
 	for (uint32 i = 0; i < tfi_.m_children.size(); ++i)
 	{
 		nsentity * child = m_scene->find_entity(tfi_.m_children[i]);
 		if (child != nullptr)
-			add_child(child->get<nstform_comp>(), true);
+			add_child(child->get<nstform_comp>(), preserve_world_tform);
 	}
+	
 	set_local_position(tfi_.m_position);
 	set_local_orientation(tfi_.m_orient);
 	set_scaling(tfi_.m_scaling);
