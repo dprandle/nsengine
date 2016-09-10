@@ -76,20 +76,6 @@ struct nsgl_tform_comp_obj : public nsvid_obj
 	uint32 last_size;
 };
 
-struct nsgl_sel_comp_obj : public nsvid_obj
-{
-	nsgl_sel_comp_obj(nsvideo_object * parent_);
-	
-	~nsgl_sel_comp_obj();
-	
-	void update();
-
-	nsgl_buffer * gl_tform_buffer;
-
-	uint32 last_size;
-
-};
-
 struct nsgl_particle_comp_obj : public nsvid_obj
 {
 	nsgl_particle_comp_obj(nsvideo_object * parent_);

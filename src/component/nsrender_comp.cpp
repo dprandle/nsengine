@@ -23,7 +23,8 @@
 nsrender_comp::nsrender_comp() : 
 	nscomponent(type_to_hash(nsrender_comp)),
 	m_cast_shadow(true),
-	m_mesh_id(0)
+	m_mesh_id(0),
+	transparent_picking(false)
 //	currently_instanced(false)
 {}
 
@@ -34,7 +35,8 @@ nsrender_comp::nsrender_comp(const nsrender_comp & rend_comp):
 	nscomponent(rend_comp),
 	m_cast_shadow(rend_comp.m_cast_shadow),
 	m_mesh_id(rend_comp.m_mesh_id),
-	m_mats(rend_comp.m_mats)
+	m_mats(rend_comp.m_mats),
+	transparent_picking(rend_comp.transparent_picking)
 //	currently_instanced(false)
 {}
 	
@@ -230,12 +232,13 @@ void nsrender_comp::set_mesh_id(const uivec2 & pMeshID)
 
 bool nsrender_comp::operator==(const nsrender_comp & rhs_)
 {
-	return (m_mesh_id == rhs_.m_mesh_id && m_mats == rhs_.m_mats);
+	return (m_mesh_id == rhs_.m_mesh_id && m_mats == rhs_.m_mats && transparent_picking == rhs_.transparent_picking);
 }
 
 nsrender_comp & nsrender_comp::operator=(nsrender_comp rhs_)
 {
 	nscomponent::operator=(rhs_);
+	std::swap(transparent_picking, rhs_.transparent_picking);
 	std::swap(m_cast_shadow, rhs_.m_cast_shadow);
 	std::swap(m_mesh_id, rhs_.m_mesh_id);
 	std::swap(m_mats, rhs_.m_mats);

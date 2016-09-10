@@ -25,29 +25,10 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 
 class nsshader;
 class nstimer;
-struct nsgl_buffer;
-class nsscene;
-class nssel_comp;
-
-struct sel_per_scene_info : public nsvideo_object
-{
-	sel_per_scene_info(nssel_comp * owner_, nsscene * scn);
-	~sel_per_scene_info();
-
-	void video_context_init();
-
-	nssel_comp * owner;
-	nsscene * scene;
-	ui_uset m_selection;
-	bool m_selected;
-};
 
 class nssel_comp : public nscomponent
 {
-public:
-
-	friend nsscene;
-	
+public:	
 	template <class PUPer>
 	friend void pup(PUPer & p, nssel_comp & sc);
 
@@ -57,8 +38,6 @@ public:
 
 	~nssel_comp();
 	
-	void clear_all_selections();
-
 	void enable_draw(bool enable_);
 
 	void enable_move(const bool & enable_);
@@ -77,23 +56,19 @@ public:
 
 	bool move_enabled();
 
-	bool selected(nsscene * scn);
-
 	void enable_transparent_picking(bool enable);
 
 	bool transparent_picking_enabled() const;
 
-	ui_uset * selection(nsscene * scn);
-
 	virtual void pup(nsfile_pupper * p);
-
-	sel_per_scene_info * scene_info(nsscene * scn);
 
 	void set_default_sel_color(const fvec4 & col_);
 
 	void set_mask_alpha(const float & alpha_);
 
-	void set_selected(nsscene * scn, bool selected_);
+	bool selected();
+
+	void set_selected(bool selected_);
 
 	void set_color(const fvec4 & col_);
 
@@ -101,8 +76,7 @@ public:
 
 private:
 
-	std::unordered_map<nsscene*, sel_per_scene_info*> m_scene_selection;
-
+	bool m_selected;
 	fvec4 m_default_sel_color;
 	fvec4 m_sel_color;
 	float m_mask_alpha;

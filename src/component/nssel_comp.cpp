@@ -30,6 +30,7 @@ nssel_comp::nssel_comp() :
 
 nssel_comp::nssel_comp(const nssel_comp & copy):
 	nscomponent(copy),
+	m_selected(false),
 	m_default_sel_color(copy.m_default_sel_color),
 	m_sel_color(copy.m_sel_color),
 	m_mask_alpha(copy.m_mask_alpha),
@@ -39,21 +40,7 @@ nssel_comp::nssel_comp(const nssel_comp & copy):
 {}
 
 nssel_comp::~nssel_comp()
-{
-	m_scene_selection.clear();
-}
-
-void nssel_comp::clear_all_selections()
-{
-	auto iter = m_scene_selection.begin();
-	while (iter != m_scene_selection.end())
-	{
-		iter->second->m_selection.clear();
-		iter->second->m_selected = false;
-		++iter;
-	}
-	m_update = true;
-}
+{}
 
 void nssel_comp::enable_draw(bool pEnable)
 {
@@ -107,48 +94,40 @@ bool nssel_comp::move_enabled()
 	return m_move_with_input;
 }
 
-bool nssel_comp::selected(nsscene * scn)
-{
-	auto fiter = m_scene_selection.find(scn);
-	if (fiter != m_scene_selection.end())
-		return fiter->second->m_selected;
-	return false;
-}
-
-ui_uset * nssel_comp::selection(nsscene * scn)
-{
-	auto fiter = m_scene_selection.find(scn);
-	if (fiter != m_scene_selection.end())
-		return &fiter->second->m_selection;
-	return nullptr;
-}
-
 void nssel_comp::set_default_sel_color(const fvec4 & pColor)
 {
 	m_default_sel_color = pColor;
 	m_sel_color = pColor;
+	post_update(true);
 }
 
 void nssel_comp::set_mask_alpha(const float & pAlpha)
 {
 	m_mask_alpha = pAlpha;
+	post_update(true);
 }
 
-void nssel_comp::set_selected(nsscene * scn, bool pSelected)
+void nssel_comp::set_selected(bool pSelected)
 {
-	auto fiter = m_scene_selection.find(scn);
-	if (fiter != m_scene_selection.end())
-		fiter->second->m_selected = pSelected;
+	m_selected = pSelected;
+	post_update(true);
+}
+
+bool nssel_comp::selected()
+{
+	return m_selected;
 }
 
 void nssel_comp::set_color(const fvec4 & pColor)
 {
 	m_sel_color = pColor;
+	post_update(true);
 }
 
 void nssel_comp::enable_transparent_picking(bool enable)
 {
 	m_transparent_picking_enabled = enable;
+	post_update(true);
 }
 
 bool nssel_comp::transparent_picking_enabled() const
@@ -167,43 +146,4 @@ nssel_comp & nssel_comp::operator=(nssel_comp rhs_)
 	std::swap(m_transparent_picking_enabled, rhs_.m_transparent_picking_enabled);
 	post_update(true);
 	return (*this);
-}
-
-sel_per_scene_info::sel_per_scene_info(nssel_comp * owner_, nsscene * scn):
-	nsvideo_object(),
-	owner(owner_),
-	scene(scn),
-	m_selection(),
-	m_selected(false)
-{
-	video_context_init();
-}
-
-sel_per_scene_info * nssel_comp::scene_info(nsscene * scn)
-{
-	auto fiter = m_scene_selection.find(scn);
-	if (fiter != m_scene_selection.end())
-		return fiter->second;
-	return nullptr;
-}
-
-void sel_per_scene_info::video_context_init()
-{
-	vid_ctxt * vc = nse.video_driver()->current_context();
-	if (vc != nullptr)
-	{
-		if (ctxt_objs[vc->context_id] == nullptr)
-		{
-			ctxt_objs[vc->context_id] = nse.factory<nsvid_obj_factory>(SEL_VID_OBJ_GUID)->create(this);
-		}
-		else
-		{
-			dprint("sel_per_scene_info::video_context_init - Context has already been initialized for sel_psi " + owner->owner()->name() + " in scene " + scene->name() + " in ctxtid " + std::to_string(vc->context_id));
-		}
-	}
-}
-
-sel_per_scene_info::~sel_per_scene_info()
-{
-	m_selection.clear();
 }

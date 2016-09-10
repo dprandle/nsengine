@@ -475,8 +475,8 @@ bool nsscene::remove(nsentity * ent, bool remove_children)
 	ent->destroy<nstform_comp>();
 	nse.event_dispatch()->push<scene_ent_removed>(ent->full_id(),full_id());
 
-	if (m_skydome == ent)
-		m_skydome = nullptr;
+	if (m_skydome == ent->full_id())
+		m_skydome = uivec2(0);
 
 	return true;
 }
@@ -641,13 +641,6 @@ void nsscene::_on_comp_add(nscomponent * comp_t)
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
 	fiter.first->second.emplace(comp_t->owner());
 	dprint("nsscene::_on_comp_add added component " + hash_to_guid(comp_t->type()) + " in entity " + comp_t->owner()->name() + " to scene " + m_name);
-	if (comp_t->type() == type_to_hash(nssel_comp))
-	{
-		dprint("nsscene::_on_comp_add adding scene to selection component");
-		nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
-		auto emp_iter = sc->m_scene_selection.emplace(this, new sel_per_scene_info(sc,this));
-		assert(emp_iter.second);
-	}
 	if (comp_t->type() == type_to_hash(nsrender_comp))
 	{
 		dprint("nscene::_on_comp_add analyzing render component...");
@@ -668,18 +661,16 @@ void nsscene::_on_comp_remove(nscomponent * comp_t)
 	dprint("nsscene::_on_comp_remove removed component " + hash_to_guid(comp_t->type()) + " in entity " + comp_t->owner()->name() + " from scene " + m_name);
 	if (comp_t->type() == type_to_hash(nssel_comp))
 	{
-		dprint("nsscene::_on_comp_remove removing scene from selection component");
-		nssel_comp * sc = static_cast<nssel_comp*>(comp_t);
-		auto emp_iter = sc->m_scene_selection.find(this);
-		delete emp_iter->second;
-		sc->m_scene_selection.erase(emp_iter);
+		dprint("nsscene::_on_comp_remove making sure entity is de-selected");
+		nse.system<nsselection_system>()->remove_from_selection(comp_t->owner());
 	}
 	if (comp_t->type() == type_to_hash(nsrender_comp))
 	{
 		dprint("nscene::_on_comp_remove analyzing render component...");
 		make_ent_not_instanced(comp_t->owner());
 	}
-	if (comp_t->type() == type_to_hash(nsanim_comp) || comp_t->type() == type_to_hash(nssprite_sheet_comp))
+	if (comp_t->type() == type_to_hash(nsanim_comp)
+		|| comp_t->type() == type_to_hash(nssprite_sheet_comp))
 	{
 		make_ent_not_instanced(comp_t->owner());
 		make_ent_instanced_if_needed(comp_t->owner());

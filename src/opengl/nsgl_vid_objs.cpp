@@ -304,16 +304,17 @@ nsgl_tform_comp_obj::~nsgl_tform_comp_obj()
 void nsgl_tform_comp_obj::update()
 {
 	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
+
 	
 	bool did_resize = false;
-    if (psi->m_tforms.size() != last_size)
+    if (psi->shared_geom_tforms.size() != last_size)
     {
 		did_resize = true;
 		gl_tform_buffer->bind();
-		gl_tform_buffer->allocate<fmat4>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
+		gl_tform_buffer->allocate<fmat4>(psi->shared_geom_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
 		gl_tform_id_buffer->bind();
-		gl_tform_id_buffer->allocate<uint32>(psi->m_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
-		last_size = psi->m_tforms.size();
+		gl_tform_id_buffer->allocate<uint32>(psi->shared_geom_tforms.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
+		last_size = psi->shared_geom_tforms.size();
     }
 
 	gl_tform_buffer->bind();
@@ -323,10 +324,10 @@ void nsgl_tform_comp_obj::update()
     uint32 * mappedI = gl_tform_id_buffer->map<uint32>(nsgl_buffer::write_only);
 	gl_tform_id_buffer->unbind();
 
-	psi->m_visible_count = 0;
-	for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
+	psi->visible_count = 0;
+	for (uint32 i = 0; i < psi->shared_geom_tforms.size(); ++i)
 	{
-		instance_tform * itf = &psi->m_tforms[i];				
+		nstform_comp * itf = psi->shared_geom_tforms[i];
 		int32 state = itf->hidden_state();
 		bool layerBit = (state & nstform_comp::hide_layer) == nstform_comp::hide_layer;
 		bool objectBit = (state & nstform_comp::hide_object) == nstform_comp::hide_object;
@@ -335,9 +336,13 @@ void nsgl_tform_comp_obj::update()
 
         if (!hideBit && (!layerBit && (showBit || !objectBit)))
         {
-			mappedT[psi->m_visible_count] = itf->world_tf();
-			mappedI[psi->m_visible_count] = i;
-			++psi->m_visible_count;
+			if (itf->render_update() || did_resize)
+			{
+				mappedT[psi->visible_count] = itf->world_tf();
+				mappedI[psi->visible_count] = itf->owner()->id();
+				itf->set_render_update(false);
+			}
+			++psi->visible_count;
         }
 	}
 	gl_tform_buffer->bind();
@@ -345,54 +350,8 @@ void nsgl_tform_comp_obj::update()
 	gl_tform_id_buffer->bind();
 	gl_tform_id_buffer->unmap();
 	gl_tform_id_buffer->unbind();
+	psi->needs_update = false;
 	needs_update = false;
-}
-
-nsgl_sel_comp_obj::nsgl_sel_comp_obj(nsvideo_object * parent_):
-	nsvid_obj(parent_),
-	gl_tform_buffer(new nsgl_buffer),
-	last_size(0)
-{
-	gl_tform_buffer->target = nsgl_buffer::array;
-	gl_tform_buffer->init();
-}
-
-nsgl_sel_comp_obj::~nsgl_sel_comp_obj()
-{
-	gl_tform_buffer->release();
-	delete gl_tform_buffer;
-}
-
-void nsgl_sel_comp_obj::update()
-{
-	sel_per_scene_info * psi = (sel_per_scene_info*)parent;
-	tform_per_scene_info * tfpsi =
-		psi->owner->owner()->get<nstform_comp>()->per_scene_info(psi->scene);
-	
-	gl_tform_buffer->bind();
-
-	if (psi->m_selection.size() != last_size)
-    {
-		gl_tform_buffer->allocate<fmat4>(psi->m_selection.size(), nullptr, nsgl_buffer::mutable_dynamic_draw);
-        last_size = psi->m_selection.size();
-    }
-	
-	if (!psi->m_selection.empty())
-	{
-		fmat4 * mapped = gl_tform_buffer->map_range<fmat4>(0, psi->m_selection.size(), nsgl_buffer::map_write);
-
-		uint32 count = 0;
-		auto sel_iter = psi->m_selection.begin();
-		while (sel_iter != psi->m_selection.end())
-		{
-			mapped[count] = tfpsi->m_tforms[*sel_iter].world_tf();
-			++sel_iter;
-			++count;
-		}
-		gl_tform_buffer->unmap();
-	}
-	gl_tform_buffer->unbind();
-	needs_update = false;	
 }
 
 nsgl_particle_comp_obj::nsgl_particle_comp_obj(nsvideo_object * parent_):

@@ -91,34 +91,28 @@ bool nsselection_system::add_to_selection(nsentity * ent, uint32 tformid)
 			dprint("nsselection_system::add_to_selection tForm is null for ent " + ent->name());
 			return false;
 		}
-		tform_per_scene_info * tpsi = tForm->per_scene_info(m_active_scene);
 
-		if (tformid > tpsi->m_tforms.size())
-		{
-			dprint("nsselection_system::add_to_selection Index out of bounds for " + ent->name());
-			return false;
-		}
-
-		fvec3 wp = tpsi->m_tforms[tformid].world_position();
+		fvec3 wp = tForm->world_position();
 		fvec3 newPos = nse.system<nsbuild_system>()->center()*2.0f - wp;
 		newPos.z = wp.z;
 
-		uivec3 id = m_active_scene->grid().get(newPos);
-		if (id.xy() == ent->full_id())
-			selComp->selection(m_active_scene)->emplace(id.z);
+		uivec2 id = m_active_scene->grid().get(newPos);
+		nsentity * mir_ent = m_active_scene->find_entity(id);
+		if (mir_ent != nullptr)
+		{
+			nssel_comp * scmirror = mir_ent->get<nssel_comp>();
+			if (scmirror != nullptr)
+			{
+				selComp->set_selected(true);
+				m_selected_ents.emplace(ent);
+			}
+		}
 	}
-	
-	m_selected_ents.insert(ent);
 	
 	sig_connect(ent->resource_destroyed, nsselection_system::on_ent_destroyed);
-	
-	selComp->set_selected(m_active_scene, true);
-	if (selComp->selection(m_active_scene)->emplace(tformid).second)
-	{
-		selComp->post_update(true);
-		return true;
-	}
-	return false;
+	selComp->set_selected(true);
+	auto ret = m_selected_ents.emplace(ent);
+	return ret.second;
 }
 
 bool nsselection_system::add_selection_to_grid(nsscene * scn)
@@ -131,50 +125,37 @@ bool nsselection_system::add_selection_to_grid(nsscene * scn)
 		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 		nsphysic_comp * phcomp = (*iter)->get<nsphysic_comp>();
 		
-		auto selection = selComp->selection(scn);
-		if (selection != nullptr)
+		fvec3 pos = tComp->world_position();				
+		if (occComp != nullptr)
 		{
-			tform_per_scene_info * psi = tComp->per_scene_info(scn);
-			auto selIter = selection->begin();
-			while (selIter != selection->end())
+			if (!scn->grid().add((*iter)->full_id(), occComp->spaces(), pos))
 			{
-				fvec3 pos = psi->m_tforms[*selIter].world_position();
-				if (occComp != nullptr && !scn->grid().add
-					(
-						uivec3((*iter)->full_id(), *selIter),
-						occComp->spaces(),
-						pos))
-				{
-					dprint("nsselection_system::add_selection_to_grid Could not add selection to grid");
-					return false;
-				}
-
-				if (phcomp != nullptr && !phcomp->dynamic)
-					psi->m_tforms[*selIter].in_cube_grid = false;
-					
-				++selIter;
+				dprint("nsselection_system::add_selection_to_grid Could not add selection to grid");
+				return false;
 			}
 		}
+
+		if (phcomp != nullptr && !phcomp->dynamic)
+			tComp->in_cube_grid = false;
+					
 		++iter;
 	}
 	return true;
 }
 
-bool nsselection_system::selection_contains(const uivec3 & itemid)
+entity_ptr_set & nsselection_system::current_selection()
 {
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		if ((*iter)->full_id() == itemid.xy())
-		{
-			nssel_comp * sc = (*iter)->get<nssel_comp>();
-			auto selection = sc->selection(m_active_scene);
-			if (selection->find(itemid.z) != selection->end())
-				return true; 
-		}
-		++iter;
-	}
-	return false;
+	return m_selected_ents;
+}
+
+bool nsselection_system::selection_contains(const uivec2 & itemid)
+{
+	nsentity * ent = m_active_scene->find_entity(itemid);
+	if (ent == nullptr)
+		return false;
+
+	auto fiter = m_selected_ents.find(ent);
+	return fiter != m_selected_ents.end();	
 }
 
 bool nsselection_system::selection_being_dragged()
@@ -182,7 +163,7 @@ bool nsselection_system::selection_being_dragged()
 	return m_moving;
 }
 
-void nsselection_system::set_focus_entity(const uivec3 & focus_ent)
+void nsselection_system::set_focus_entity(const uivec2 & focus_ent)
 {
 	m_focus_ent = focus_ent;
 	m_send_foc_event = true;
@@ -229,39 +210,19 @@ bool nsselection_system::selection_collides_with_tilegrid()
 	// return has_collision;
 }
 
-void nsselection_system::refresh_selection(nsscene * scene_to_refresh)
-{
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		sel_per_scene_info * psi = (*iter)->get<nssel_comp>()->scene_info(m_active_scene);
-		if (psi == nullptr)
-		{
-			sig_disconnect((*iter)->resource_destroyed);
-			iter = m_selected_ents.erase(iter);
-		}
-		else
-		{
-			psi->m_selection.clear();
-			psi->m_selected = false;
-			++iter;
-		}
-	}	
-}
-
 void nsselection_system::clear_selection()
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
 	{
-		sel_per_scene_info * psi = (*iter)->get<nssel_comp>()->scene_info(m_active_scene);
-		psi->m_selection.clear();
-		psi->m_selected = false;
+		
+		nssel_comp * sc = (*iter)->get<nssel_comp>();
+		sc->set_selected(false);
 		sig_disconnect((*iter)->resource_destroyed);
 		++iter;
 	}
 	m_selected_ents.clear();
-	m_focus_ent = uivec3();
+	m_focus_ent = uivec2();
 	m_send_foc_event = true;
 }
 
@@ -482,22 +443,12 @@ void nsselection_system::delete_selection()
     // we have to make a copy because if all instances of a selected entity
     // are removed from the scene the entity will be removed from m_selected_ents
     entity_ptr_set copy(m_selected_ents);
-   // std::copy(m_selected_ents.begin(), m_selected_ents.end(), copy.begin());
-
     auto iter = copy.begin();
     while (iter != copy.end())
 	{
-		nssel_comp * selC = (*iter)->get<nssel_comp>();
-		auto selection = selC->selection(m_active_scene);
-		if (selection != nullptr)
-		{
-			while (selection->begin() != selection->end())
-				m_active_scene->remove(*iter,*selection->begin(), false);
-		}
-        ++iter;
+		m_active_scene->remove(*iter, false);
+		++iter;
 	}
-
-    //clear_selection();
 }
 
 bool nsselection_system::empty()
@@ -519,7 +470,6 @@ void nsselection_system::init()
 	register_action_handler(nsselection_system::_handle_move_selection_z, NSSEL_MOVE_Z);
 	register_action_handler(nsselection_system::_handle_move_selection_toggle, NSSEL_MOVE_TOGGLE);
 	register_action_handler(nsselection_system::_handle_rotate_selection, "rotate_selection");
-	register_handler(nsselection_system::_handle_scene_ent_removed);
 }
 
 void nsselection_system::release()
@@ -561,108 +511,107 @@ int32 nsselection_system::update_priority()
 // 	}
 // }
 
-void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec3 & pID, bool pSnapZOnly)
+void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec2 & pID, bool pSnapZOnly)
 {
-	if (m_active_scene == nullptr)
-		return;
+	// if (m_active_scene == nullptr)
+	// 	return;
 	
-	viewport * vp = nse.video_driver()->current_context()->focused_vp;
-	if (vp == nullptr)
-		return;
+	// viewport * vp = nse.video_driver()->current_context()->focused_vp;
+	// if (vp == nullptr)
+	// 	return;
 
-	nsentity * cam = vp->camera;
-	if (cam == nullptr)
-		return;
+	// nsentity * cam = vp->camera;
+	// if (cam == nullptr)
+	// 	return;
 
-	if (ent == nullptr)
-		return;
+	// if (ent == nullptr)
+	// 	return;
 
-	nssel_comp * sc = ent->get<nssel_comp>();
-	nstform_comp * tc = ent->get<nstform_comp>();
-	auto selection = sc->selection(m_active_scene);
-	tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
+	// nssel_comp * sc = ent->get<nssel_comp>();
+	// nstform_comp * tc = ent->get<nstform_comp>();
+	// tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
 	
-	if (pPressed)
-	{
-		if (ent->plugin_id() == pID.x && ent->id() == pID.y)
-		{
-			if (selection != nullptr && selection->find(pID.z) == selection->end())
-				set_selection(ent, pID.z);
+	// if (pPressed)
+	// {
+	// 	if (ent->full_id() == pID)
+	// 	{
+	// 		if (selection != nullptr && selection->find(pID.z) == selection->end())
+	// 			set_selection(ent);
 
-			m_focus_ent = pID;
-			if (!m_moving)
-			{
-				fvec3 originalPos = tpsi->m_tforms[m_focus_ent.z].world_position();
-				m_cached_point = originalPos;
-				remove_from_grid();
-				m_moving = true;
-			}
-		}
-		else if (!selection_contains(pID))
-		{
-			clear_selection();
-			m_focus_ent = uivec3();
-		}
-	}
-	else
-	{
-		if (sc->selected(m_active_scene))
-		{
-			if (pSnapZOnly)
-			{
-				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-				{
-					instance_tform & itf = tpsi->m_tforms[i];
-					fvec3 wpos = itf.world_position();
-					nstile_grid::snap(wpos);
-					itf.set_world_position(fvec3(itf.world_position().xy(),wpos.z));
-				}
-			}
-			else
-			{
-				for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-				{
-					instance_tform & itf = tpsi->m_tforms[i];
-					fvec3 wpos = itf.world_position();
-					nstile_grid::snap(wpos);
-					itf.set_world_position(wpos);
-				}				
-			}
-		}
+	// 		m_focus_ent = pID;
+	// 		if (!m_moving)
+	// 		{
+	// 			fvec3 originalPos = tc->world_position();
+	// 			m_cached_point = originalPos;
+	// 			remove_from_grid();
+	// 			m_moving = true;
+	// 		}
+	// 	}
+	// 	else if (!selection_contains(pID))
+	// 	{
+	// 		clear_selection();
+	// 		m_focus_ent = uivec2();
+	// 	}
+	// }
+	// else
+	// {
+	// 	if (sc->selected(m_active_scene))
+	// 	{
+	// 		if (pSnapZOnly)
+	// 		{
+	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 			{
+	// 				instance_tform & itf = tpsi->m_tforms[i];
+	// 				fvec3 wpos = itf.world_position();
+	// 				nstile_grid::snap(wpos);
+	// 				itf.set_world_position(fvec3(itf.world_position().xy(),wpos.z));
+	// 			}
+	// 		}
+	// 		else
+	// 		{
+	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
+	// 			{
+	// 				instance_tform & itf = tpsi->m_tforms[i];
+	// 				fvec3 wpos = itf.world_position();
+	// 				nstile_grid::snap(wpos);
+	// 				itf.set_world_position(wpos);
+	// 			}				
+	// 		}
+	// 	}
 			
 
-		if (m_moving)
-		{		
-			nsentity * ent = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
-			if (ent == nullptr)
-				return;
-			tform_per_scene_info * tfpsi = ent->get<nstform_comp>()->per_scene_info(m_active_scene);
-			instance_tform & f_itf = tfpsi->m_tforms[m_focus_ent.z];
+	// 	if (m_moving)
+	// 	{		
+	// 		nsentity * ent = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
+	// 		if (ent == nullptr)
+	// 			return;
+	// 		tform_per_scene_info * tfpsi = ent->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 		instance_tform & f_itf = tfpsi->m_tforms[m_focus_ent.z];
 
-			if (selection_collides_with_tilegrid())
-			{
-				f_itf.recursive_compute();
-				fvec3 pTranslate = m_cached_point - f_itf.world_position();
+	// 		if (selection_collides_with_tilegrid())
+	// 		{
+	// 			f_itf.recursive_compute();
+	// 			fvec3 pTranslate = m_cached_point - f_itf.world_position();
 
-				translate_selection(pTranslate);
-				set_selection_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
+	// 			translate_selection(pTranslate);
+	// 			set_selection_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
 
-				if (!add_selection_to_grid(m_active_scene))
-				{
-					dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
-				}
-			}
-			else
-			{
-				fvec3 pos = f_itf.world_position();
-				m_active_scene->grid().snap(pos);
-				add_selection_to_grid(m_active_scene);
-			}
+	// 			if (!add_selection_to_grid(m_active_scene))
+	// 			{
+	// 				dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
+	// 			}
+	// 		}
+	// 		else
+	// 		{
+	// 			fvec3 pos = f_itf.world_position();
+	// 			m_active_scene->grid().snap(pos);
+	// 			add_selection_to_grid(m_active_scene);
+	// 		}
 
-			m_moving = false;
-			m_cached_point = fvec3();
-		}
-	}
+	// 		m_moving = false;
+	// 		m_cached_point = fvec3();
+	// 	}
+	// }
 }
 
 void nsselection_system::translate_selection(const fvec3 & amount)
@@ -726,56 +675,56 @@ void nsselection_system::set_occupied_spaces(bool show)
 
 void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
 {
-	if (ent == nullptr || m_active_scene == nullptr)
-		return;
+	// if (ent == nullptr || m_active_scene == nullptr)
+	// 	return;
 	
-	uivec3 pi = pick(pPos.x, pPos.y);
-	nssel_comp * sc = ent->get<nssel_comp>();
+	// uivec3 pi = pick(pPos.x, pPos.y);
+	// nssel_comp * sc = ent->get<nssel_comp>();
 
-	if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
-	{
-		m_focus_ent = pi;
-		nsentity * tileBrush = nse.system<nsbuild_system>()->tile_brush();
-		if (tileBrush == nullptr)
-		{
-			add_to_selection(ent, pi.z);
-			return;
-		}
-		nstile_brush_comp * brushComp = tileBrush->get<nstile_brush_comp>();
-		if (brushComp == nullptr)
-		{
-			add_to_selection(ent, pi.z);
-			return;
-		}
+	// if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
+	// {
+	// 	m_focus_ent = pi;
+	// 	nsentity * tileBrush = nse.system<nsbuild_system>()->tile_brush();
+	// 	if (tileBrush == nullptr)
+	// 	{
+	// 		add_to_selection(ent, pi.z);
+	// 		return;
+	// 	}
+	// 	nstile_brush_comp * brushComp = tileBrush->get<nstile_brush_comp>();
+	// 	if (brushComp == nullptr)
+	// 	{
+	// 		add_to_selection(ent, pi.z);
+	// 		return;
+	// 	}
 
-		auto brushIter = brushComp->begin();
-		while (brushIter != brushComp->end())
-		{
-			for (int32 i = 0; i < brushComp->height(); ++i)
-			{
-				nsentity * focEnt = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
-				if (focEnt == nullptr)
-					continue;
+	// 	auto brushIter = brushComp->begin();
+	// 	while (brushIter != brushComp->end())
+	// 	{
+	// 		for (int32 i = 0; i < brushComp->height(); ++i)
+	// 		{
+	// 			nsentity * focEnt = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
+	// 			if (focEnt == nullptr)
+	// 				continue;
 
-				nstform_comp * tForm = focEnt->get<nstform_comp>();
-				tform_per_scene_info * tpsi = tForm->per_scene_info(m_active_scene);
+	// 			nstform_comp * tForm = focEnt->get<nstform_comp>();
+	// 			tform_per_scene_info * tpsi = tForm->per_scene_info(m_active_scene);
 				
-				instance_tform & itf = tpsi->m_tforms[m_focus_ent.z];
-				fvec3 pos = itf.world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
-				uivec3 refid = m_active_scene->ref_id(pos);
-				nsentity * selEnt = get_entity(refid.xy());
-				if (selEnt == nullptr)
-					continue;
-				nssel_comp * selComp = selEnt->get<nssel_comp>();
-				if (selComp == nullptr)
-					continue;
+	// 			instance_tform & itf = tpsi->m_tforms[m_focus_ent.z];
+	// 			fvec3 pos = itf.world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
+	// 			uivec3 refid = m_active_scene->ref_id(pos);
+	// 			nsentity * selEnt = get_entity(refid.xy());
+	// 			if (selEnt == nullptr)
+	// 				continue;
+	// 			nssel_comp * selComp = selEnt->get<nssel_comp>();
+	// 			if (selComp == nullptr)
+	// 				continue;
 
-				add_to_selection(ent, refid.z);
-			}
-			++brushIter;
-		}
+	// 			add_to_selection(ent, refid.z);
+	// 		}
+	// 		++brushIter;
+	// 	}
 
-	}
+	// }
 }
 
 void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_, const fvec4 & norm_vp)
@@ -862,60 +811,60 @@ const uivec3 & nsselection_system::selection_center_entity_id()
 
 void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const uivec3 & pID)
 {
-	if (m_active_scene == nullptr || ent == nullptr)
-		return;
+	// if (m_active_scene == nullptr || ent == nullptr)
+	// 	return;
 
-	nssel_comp * sc = ent->get<nssel_comp>();
+	// nssel_comp * sc = ent->get<nssel_comp>();
 	
-	if (pPressed)
-	{
-		nsentity * ent = sc->owner();
-		if (ent->plugin_id() == pID.x && ent->id() == pID.y)
-		{
-			if (!selection_contains(pID))
-			{
-				add_to_selection(ent, pID.z);
-				m_focus_ent = pID;
-			}
-			else
-			{
-				remove_from_selection(ent, pID.z);
-				m_focus_ent = uivec3();
-				if (!m_selected_ents.empty())
-				{
-					nsentity * ent = m_active_scene->find_entity(pID.x, pID.y);
-					if (ent != nullptr)
-					{
-						auto iter = m_selected_ents.find(ent);
-						if (iter != m_selected_ents.end())
-						{
-							nssel_comp * selComp = (*iter)->get<nssel_comp>();
+	// if (pPressed)
+	// {
+	// 	nsentity * ent = sc->owner();
+	// 	if (ent->plugin_id() == pID.x && ent->id() == pID.y)
+	// 	{
+	// 		if (!selection_contains(pID))
+	// 		{
+	// 			add_to_selection(ent, pID.z);
+	// 			m_focus_ent = pID;
+	// 		}
+	// 		else
+	// 		{
+	// 			remove_from_selection(ent, pID.z);
+	// 			m_focus_ent = uivec3();
+	// 			if (!m_selected_ents.empty())
+	// 			{
+	// 				nsentity * ent = m_active_scene->find_entity(pID.x, pID.y);
+	// 				if (ent != nullptr)
+	// 				{
+	// 					auto iter = m_selected_ents.find(ent);
+	// 					if (iter != m_selected_ents.end())
+	// 					{
+	// 						nssel_comp * selComp = (*iter)->get<nssel_comp>();
 							
-							m_focus_ent.x = (*iter)->plugin_id();
-							m_focus_ent.y = (*iter)->id();
-							m_focus_ent.z = (*selComp->selection(m_active_scene)->begin());
-						}
-						else
-						{
-							auto entFirst = m_selected_ents.begin();
-							nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
-							m_focus_ent.x = (*entFirst)->plugin_id();
-							m_focus_ent.y = (*entFirst)->id();
-							m_focus_ent.z = (*selComp->selection(m_active_scene)->begin());
-						}
-					}
-					else
-					{
-						auto entFirst = m_selected_ents.begin();
-						nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
-						m_focus_ent.y = (*entFirst)->plugin_id();
-						m_focus_ent.y = (*entFirst)->id();
-						m_focus_ent.z = *selComp->selection(m_active_scene)->begin();
-					}
-				}
-			}
-		}
-	}
+	// 						m_focus_ent.x = (*iter)->plugin_id();
+	// 						m_focus_ent.y = (*iter)->id();
+	// 						m_focus_ent.z = (*selComp->selection(m_active_scene)->begin());
+	// 					}
+	// 					else
+	// 					{
+	// 						auto entFirst = m_selected_ents.begin();
+	// 						nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
+	// 						m_focus_ent.x = (*entFirst)->plugin_id();
+	// 						m_focus_ent.y = (*entFirst)->id();
+	// 						m_focus_ent.z = (*selComp->selection(m_active_scene)->begin());
+	// 					}
+	// 				}
+	// 				else
+	// 				{
+	// 					auto entFirst = m_selected_ents.begin();
+	// 					nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
+	// 					m_focus_ent.y = (*entFirst)->plugin_id();
+	// 					m_focus_ent.y = (*entFirst)->id();
+	// 					m_focus_ent.z = *selComp->selection(m_active_scene)->begin();
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 void nsselection_system::_reset_focus(const uivec3 & pickid)
@@ -946,7 +895,7 @@ void nsselection_system::_reset_focus(const uivec3 & pickid)
 	// // original_pos = tc->per_scene_info(m_active_scene)->m_tforms[pickid.z].world_position();
 }
 
-void nsselection_system::remove_from_selection(nsentity * ent, uint32 pTFormID)
+void nsselection_system::remove_from_selection(nsentity * ent)
 {
 	if (ent == nullptr || m_active_scene == nullptr)
 		return;
@@ -955,18 +904,8 @@ void nsselection_system::remove_from_selection(nsentity * ent, uint32 pTFormID)
 	if (selcomp == nullptr)
 		return;
 
-	sel_per_scene_info * spsi = selcomp->scene_info(m_active_scene);
-	if (spsi == nullptr)
-		return;
-	
-	spsi->m_selection.erase(pTFormID);
-	selcomp->post_update(true);
-	if (spsi->m_selection.empty())
-	{
-		spsi->m_selected = false;
-		auto iter = m_selected_ents.find(ent);
-		m_selected_ents.erase(iter);
-	}
+	seccomp->set_selected(false);
+	m_selected_ents.erase(ent);
 }
 
 void nsselection_system::remove_from_grid()
@@ -1513,14 +1452,6 @@ bool nsselection_system::_handle_move_selection_toggle(nsaction_event * evnt)
 	}
 	m_toggle_move = true;
 	m_moving = evnt->cur_state;
-	return true;
-}
-
-bool nsselection_system::_handle_scene_ent_removed(scene_ent_removed * evnt)
-{
-	nsscene * scn = get_asset<nsscene>(evnt->scn_id);
-	if (scn != nullptr)
-		refresh_selection(scn);
 	return true;
 }
 

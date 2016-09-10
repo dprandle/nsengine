@@ -49,9 +49,9 @@ struct single_draw_call : public gl_draw_call
 		height_minmax(),
 		entity_id(0),
 		plugin_id(0),
-		transform_count(0),
 		casts_shadows(false),
-		transparent_picking(false)
+		transparent_picking(false),
+		sel_color()
 	{}
 	
 	~single_draw_call() {}
@@ -63,9 +63,9 @@ struct single_draw_call : public gl_draw_call
 	fvec2 height_minmax;
 	uint32 entity_id;
 	uint32 plugin_id;
-	uint32 transform_count;
 	bool casts_shadows;
 	bool transparent_picking;
+	fvec4 sel_color;
 };
 
 struct instanced_draw_call : public gl_draw_call
@@ -78,12 +78,10 @@ struct instanced_draw_call : public gl_draw_call
 		tform_id_buffer(nullptr),
 		anim_transforms(nullptr),
 		height_minmax(),
-		entity_id(0),
 		plugin_id(0),
 		transform_count(0),
 		casts_shadows(false),
-		transparent_picking(false),
-		sel_color()
+		transparent_picking(false)
 	{}
 	
 	~instanced_draw_call() {}
@@ -94,12 +92,10 @@ struct instanced_draw_call : public gl_draw_call
 	nsgl_buffer * tform_id_buffer;
 	fmat4_vector * anim_transforms;
 	fvec2 height_minmax;
-	uint32 entity_id;
 	uint32 plugin_id;
 	uint32 transform_count;
 	bool casts_shadows;
 	bool transparent_picking;
-	fvec4 sel_color;
 };
 
 typedef std::map<nsmaterial*, uint32> mat_id_map;

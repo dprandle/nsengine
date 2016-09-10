@@ -52,7 +52,7 @@ public:
 
 	~nsselection_system();
 
-	bool add_to_selection(nsentity * ent, uint32 tformid);
+	bool add_to_selection(nsentity * ent);
 
 	bool add_selection_to_grid(nsscene * scn);
 
@@ -64,7 +64,9 @@ public:
 
 	void clear_selection();
 
-	bool selection_contains(const uivec3 & itemid);
+	bool selection_contains(const uivec2 & itemid);
+
+	entity_ptr_set & current_selection();
 
 	bool empty();
 
@@ -93,21 +95,19 @@ public:
 
 	bool selection_being_dragged();
 
-	void remove_from_selection(nsentity * ent, uint32 pTFormID);
+	void remove_from_selection(nsentity * ent);
 
 	void remove_from_grid();
 
-	void refresh_selection(nsscene * scene_to_refresh);
-
 	void reset_color();
 
-	bool set_selection(nsentity * ent, uint32 tformid);
+	bool set_selection(nsentity * ent);
 
 	void set_selection_color(const fvec4 & pColor);
 
 	void setup_input_map(nsinput_map * imap, const nsstring & global_ctxt_name);
 
-	void set_focus_entity(const uivec3 & focus_ent);
+	void set_focus_entity(const uivec2 & focus_ent);
 
 	void set_occupied_spaces(bool show);
 
@@ -158,7 +158,7 @@ protected:
 
 	void on_ent_destroyed(uint32 type_id, uivec2 ent_id);
 	
-	void _reset_focus(const uivec3 & pickid);
+	void _reset_focus(const uivec2 & pickid);
 
 	// virtual void _on_rotate_x(
 	// 	nsentity * ent,
@@ -178,14 +178,14 @@ protected:
 	virtual void _on_select(
 		nsentity * ent,
 		bool pPressed,
-		const uivec3 & pID,
+		const uivec2 & pID,
 		bool pSnapZOnly = false
 		);
 
 	virtual void _on_multi_select(
 		nsentity * ent,
 		bool pPressed,
-		const uivec3 & pID
+		const uivec2 & pID
 		);
 
 	virtual void _on_paint_select(
@@ -205,7 +205,7 @@ protected:
 	void _draw_hidden();
 	void _update_selection();
 
-	uivec3 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
+	uivec2 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
 	entity_ptr_set m_selected_ents;
 	fvec3 m_total_frame_translation;
 	bool m_moving;

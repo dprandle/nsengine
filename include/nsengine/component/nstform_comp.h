@@ -183,7 +183,7 @@ class nstform_comp : public nscomponent
 	const fmat4 & local_inv_tf() const;
 	
 	tform_per_scene_info * inst_obj; // shared among all instances
-	uint32 inst_id; // move to per scene info
+	uint32 inst_id; // shouldnt need anymore
 	bool in_cube_grid;
 	bool save_with_scene;
 

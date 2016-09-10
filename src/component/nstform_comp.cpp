@@ -298,6 +298,9 @@ void nstform_comp::recursive_compute()
 			dprint("nstform_comp::recursive_compute entity " + m_owner->name() + " has child that cannot be found in scene - id " + m_tfi.m_children[i].to_string());
 		}
     }
+	
+	if (inst_obj == nullptr)
+		m_render_update = false;
 }
 
 const fmat4 & nstform_comp::world_tf() const

@@ -246,6 +246,8 @@ struct gl_ctxt : public vid_ctxt
 
 	void bind_gbuffer_textures(nsgl_framebuffer * fb);
 	
+	void render_single_dc(single_draw_call * idc, nsgl_shader * bound_shader);
+	
     void render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader);
 
     void render_light_dc(light_draw_call * idc, nsgl_shader * bound_shader);
@@ -274,6 +276,7 @@ struct gl_ctxt : public vid_ctxt
 	nsgl_driver * driver;
 	
 	std::vector<instanced_draw_call> all_instanced_draw_calls;
+	std::vector<single_draw_call> all_single_draw_calls;
 	std::vector<light_draw_call> all_light_draw_calls;
 	std::vector<ui_draw_call> all_ui_draw_calls;
 };

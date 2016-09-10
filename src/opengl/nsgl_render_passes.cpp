@@ -263,7 +263,7 @@ void selection_render_pass::render()
 {
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
-		instanced_draw_call * dc = (instanced_draw_call*)(*rq)[i];
+		single_draw_call * dc = (single_draw_call*)(*rq)[i];
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_none);
 
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
@@ -309,7 +309,7 @@ void selection_render_pass::render()
 		driver_ctxt->set_stencil_func(GL_NOTEQUAL, 1, -1);
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
 		gl_shdr->set_uniform("fragColOut", fvec4(dc->sel_color.rgb(),1.0f));	
-        driver_ctxt->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_single_dc(dc, gl_shdr);
 		
         glLineWidth(lineWidth[0]);
         gl_err_check("selection_render_pass::render - glLineWidth error 2");
@@ -323,15 +323,94 @@ void selection_render_pass::render()
 		driver_ctxt->enable_depth_test(false);
 		driver_ctxt->set_stencil_func(GL_EQUAL, 1, 0);
 		gl_shdr->set_uniform("fragColOut", dc->sel_color);
-        driver_ctxt->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_single_dc(dc, gl_shdr);
 	}	
 }
 
-void gbuffer_render_pass::render()
+void gbuffer_single_draw_render_pass::render()
+{
+	for (uint32 i = 0; i < rq->size(); ++i)
+	{
+		single_draw_call * dc = (single_draw_call*)(*rq)[i];
+		
+		ivec4 & viewp = gl_state.current_viewport;
+		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
+		
+		gl_shdr->bind();
+		gl_shdr->set_uniform("diffuseMap", DIFFUSE_TEX_UNIT);
+		gl_shdr->set_uniform("normalMap", NORMAL_TEX_UNIT);
+		gl_shdr->set_uniform("opacityMap", OPACITY_TEX_UNIT);
+		gl_shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
+		gl_shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
+		fmat4 proj_cam = vp->camera->get<nscam_comp>()->proj_cam();
+		if (vp->camera != nullptr)
+			gl_shdr->set_uniform("projCamMat", proj_cam);
+
+		gl_shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
+		gl_shdr->set_uniform("hasDiffuseMap", dc->mat->contains(nsmaterial::diffuse));
+		gl_shdr->set_uniform("hasOpacityMap", dc->mat->contains(nsmaterial::opacity));
+		gl_shdr->set_uniform("hasNormalMap", dc->mat->contains(nsmaterial::normal));
+		gl_shdr->set_uniform("colorMode", dc->mat->color_mode());
+		gl_shdr->set_uniform("fragColOut", dc->mat->color());
+		gl_shdr->set_uniform("force_alpha", dc->mat->using_alpha_from_color());
+		gl_shdr->set_uniform("material_id",  dc->mat_index);
+
+		uint32 ent_id = dc->entity_id;
+		if (dc->transparent_picking)
+			ent_id = 0;
+
+		if (dc->mat != nullptr)
+		{
+			tex_map_info tmi = dc->mat->mat_tex_info(nsmaterial::diffuse);
+			gl_shdr->set_uniform("tex_coord_rect_d", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_d", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_d", tmi.color_add);
+
+			tmi = dc->mat->mat_tex_info(nsmaterial::normal);
+			gl_shdr->set_uniform("tex_coord_rect_n", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_n", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_n", tmi.color_add);
+
+			tmi = dc->mat->mat_tex_info(nsmaterial::opacity);
+			gl_shdr->set_uniform("tex_coord_rect_o", tmi.coord_rect);
+			gl_shdr->set_uniform("color_mult_o", tmi.color_mult);
+			gl_shdr->set_uniform("color_add_o", tmi.color_add);
+		}
+
+		gl_shdr->set_uniform("hminmax", dc->height_minmax);
+		gl_shdr->set_uniform("pluginID", dc->plugin_id);
+
+		if (dc->submesh->m_node != NULL)
+			gl_shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
+		else
+			gl_shdr->set_uniform("nodeTransform", fmat4());
+
+		if (!dc->submesh->m_has_tex_coords)
+			gl_shdr->set_uniform("colorMode", true);
+
+		if (dc->anim_transforms != NULL)
+		{
+			gl_shdr->set_uniform("hasBones", true);
+			for (uint32 i = 0; i < dc->anim_transforms->size(); ++i)
+				gl_shdr->set_uniform("boneTransforms[" + std::to_string(i) + "]", (*dc->anim_transforms)[i]);
+		}
+		else
+			gl_shdr->set_uniform("hasBones", false);
+
+		driver_ctxt->enable_culling(dc->mat->culling());
+		driver_ctxt->set_cull_face(dc->mat->cull_mode());
+		driver_ctxt->bind_textures(dc->mat);
+        driver_ctxt->render_single_dc(dc, gl_shdr);
+	}
+    driver_ctxt->bind_gbuffer_textures(ren_target);
+}
+
+void gbuffer_instanced_draw_render_pass::render()
 {
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
 		instanced_draw_call * dc = (instanced_draw_call*)(*rq)[i];
+		
 		ivec4 & viewp = gl_state.current_viewport;
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
 		
@@ -404,6 +483,7 @@ void gbuffer_render_pass::render()
 	}
     driver_ctxt->bind_gbuffer_textures(ren_target);
 }
+
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 void oit_render_pass::render()
@@ -620,8 +700,7 @@ void light_pass::render()
 		gl_shdr->set_uniform("projLightMat", dc->proj_light_mat);
 		gl_shdr->set_uniform("bgColor", dc->bg_color);
 		gl_shdr->set_uniform("light.direction", dc->direction);
-		gl_shdr->set_uniform("camWorldPos",
-vp->camera->get<nstform_comp>()->per_scene_info(dc->scn)->m_tforms[0].world_position());
+		gl_shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->world_position());
 		gl_shdr->set_uniform("fog_factor", vp->m_fog_nf);
 		gl_shdr->set_uniform("fog_color", vp->m_fog_color);
 		gl_shdr->set_uniform("lightingEnabled", vp->dir_lights);

@@ -22,6 +22,8 @@
 #include <opengl/nsgl_shader.h>
 #include <opengl/nsgl_vao.h>
 
+#include <system/nsselection_system.h>
+
 #include <asset/nsmaterial.h>
 #include <asset/nsshader.h>
 #include <component/nsui_button_comp.h>
@@ -1004,29 +1006,38 @@ void gl_ctxt::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	}
 }
 
+void gl_ctxt::render_single_dc(single_draw_call * idc, nsgl_shader * bound_shader)
+{
+	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
+	so->gl_vao->bind();
+	bound_shader->set_uniform("transform", idc->transform);
+    bound_shader->validate();
+	gl_err_check("instanced_geometry_draw_call::render pre");
+    glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
+				   static_cast<GLsizei>(idc->submesh->m_indices.size()),
+				   GL_UNSIGNED_INT,
+				   0);
+    gl_err_check("instanced_geometry_draw_call::render post");
+	so->gl_vao->unbind();	
+}
+
 void gl_ctxt::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader)
 {
 	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
 	so->gl_vao->bind();
 	
-	if (idc->tform_buffer != nullptr)
+	idc->tform_buffer->bind();
+	for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
 	{
-		idc->tform_buffer->bind();
-		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
-		{
-			so->gl_vao->add(idc->tform_buffer, nsgl_shader::loc_instance_tform + tfInd);
-			so->gl_vao->vertex_attrib_ptr(nsgl_shader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-			so->gl_vao->vertex_attrib_div(nsgl_shader::loc_instance_tform + tfInd, 1);
-		}
+		so->gl_vao->add(idc->tform_buffer, nsgl_shader::loc_instance_tform + tfInd);
+		so->gl_vao->vertex_attrib_ptr(nsgl_shader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+		so->gl_vao->vertex_attrib_div(nsgl_shader::loc_instance_tform + tfInd, 1);
 	}
 
-	if (idc->tform_id_buffer != nullptr)
-	{
-		idc->tform_id_buffer->bind();
-		so->gl_vao->add(idc->tform_id_buffer, nsgl_shader::loc_ref_id);
-		so->gl_vao->vertex_attrib_I_ptr(nsgl_shader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
-		so->gl_vao->vertex_attrib_div(nsgl_shader::loc_ref_id, 1);	
-	}
+	idc->tform_id_buffer->bind();
+	so->gl_vao->add(idc->tform_id_buffer, nsgl_shader::loc_ref_id);
+	so->gl_vao->vertex_attrib_I_ptr(nsgl_shader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
+	so->gl_vao->vertex_attrib_div(nsgl_shader::loc_ref_id, 1);	
 
     bound_shader->validate();
 	gl_err_check("instanced_geometry_draw_call::render pre");
@@ -1036,17 +1047,11 @@ void gl_ctxt::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound
 							0,
                             idc->transform_count);
     gl_err_check("instanced_geometry_draw_call::render post");
-	if (idc->tform_buffer != nullptr)
-	{
-		idc->tform_buffer->bind();
-		so->gl_vao->remove(idc->tform_buffer);
-	}
+	idc->tform_buffer->bind();
+	so->gl_vao->remove(idc->tform_buffer);
 
-	if (idc->tform_id_buffer != nullptr)
-	{
-		idc->tform_id_buffer->bind();
-		so->gl_vao->remove(idc->tform_id_buffer);
-	}
+	idc->tform_id_buffer->bind();
+	so->gl_vao->remove(idc->tform_id_buffer);
 	so->gl_vao->unbind();
 }
 
@@ -1101,7 +1106,6 @@ void gl_ctxt::_add_lights_from_scene(nsscene * scene)
 	{
 		nslight_comp * lcomp = (*l_iter)->get<nslight_comp>();
 		nstform_comp * tcomp = (*l_iter)->get<nstform_comp>();
-		tform_per_scene_info * tpsi = tcomp->per_scene_info(scene);
 		nsmesh * boundingMesh = get_asset<nsmesh>(lcomp->mesh_id());
 		
 		all_light_draw_calls.resize(all_light_draw_calls.size()+1);
@@ -1115,57 +1119,53 @@ void gl_ctxt::_add_lights_from_scene(nsscene * scene)
 			proj = ortho(-100.0f,100.0f,100.0f,-100.0f,100.0f,-100.0f);
 
 		
-		for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-		{
-			light_draw_call * ldc = &all_light_draw_calls[all_light_draw_calls.size()-1];
-			auto itf = &tpsi->m_tforms[i];
+		light_draw_call * ldc = &all_light_draw_calls[all_light_draw_calls.size()-1];
 			
-			ldc->submesh = nullptr;
-			ldc->bg_color = scene->bg_color();
-			ldc->direction = itf->world_orientation().target();
-			ldc->diffuse_intensity = lcomp->intensity().x;
-			ldc->ambient_intensity = lcomp->intensity().y;
-			ldc->cast_shadows = lcomp->cast_shadows();
-			ldc->light_color = lcomp->color();
-			ldc->scn = scene;
-			ldc->light_type = lcomp->get_light_type();
-			ldc->shadow_samples = lcomp->shadow_samples();
-			ldc->shadow_darkness = lcomp->shadow_darkness();
-			ldc->material_ids = &mat_shader_ids;
-			ldc->spot_atten = lcomp->atten();
-			ldc->light_pos = itf->world_position();
-			ldc->light_transform = itf->world_tf() % lcomp->scaling();
-			ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
-			if (lcomp->get_light_type() == nslight_comp::l_dir)
+		ldc->submesh = nullptr;
+		ldc->bg_color = scene->bg_color();
+		ldc->direction = tcomp->world_orientation().target();
+		ldc->diffuse_intensity = lcomp->intensity().x;
+		ldc->ambient_intensity = lcomp->intensity().y;
+		ldc->cast_shadows = lcomp->cast_shadows();
+		ldc->light_color = lcomp->color();
+		ldc->scn = scene;
+		ldc->light_type = lcomp->get_light_type();
+		ldc->shadow_samples = lcomp->shadow_samples();
+		ldc->shadow_darkness = lcomp->shadow_darkness();
+		ldc->material_ids = &mat_shader_ids;
+		ldc->spot_atten = lcomp->atten();
+		ldc->light_pos = tcomp->world_position();
+		ldc->light_transform = tcomp->world_tf() % lcomp->scaling();
+		ldc->max_depth = lcomp->shadow_clipping().y - lcomp->shadow_clipping().x;
+		if (lcomp->get_light_type() == nslight_comp::l_dir)
+		{
+			ldc->proj_light_mat = proj * tcomp->world_inv_tf();
+			ldc->shdr = nse.core()->get<nsshader>(DIR_LIGHT_SHADER);
+			dc_dq->push_back(ldc);
+		}
+		else if (lcomp->get_light_type() == nslight_comp::l_spot)
+		{
+			ldc->shdr = nse.core()->get<nsshader>(SPOT_LIGHT_SHADER);
+			ldc->proj_light_mat = proj * tcomp->world_inv_tf();
+			if (boundingMesh != nullptr)
 			{
-				ldc->proj_light_mat = proj * itf->world_inv_tf();
-				ldc->shdr = nse.core()->get<nsshader>(DIR_LIGHT_SHADER);
-				dc_dq->push_back(ldc);
-			}
-			else if (lcomp->get_light_type() == nslight_comp::l_spot)
-			{
-				ldc->shdr = nse.core()->get<nsshader>(SPOT_LIGHT_SHADER);
-				ldc->proj_light_mat = proj * itf->world_inv_tf();
-				if (boundingMesh != nullptr)
+				for (uint32 i = 0; i < boundingMesh->count(); ++i)
 				{
-					for (uint32 i = 0; i < boundingMesh->count(); ++i)
-					{
-						ldc->submesh = boundingMesh->sub(i);
-						dc_sq->push_back(ldc);
-					}
+					ldc->submesh = boundingMesh->sub(i);
+					dc_sq->push_back(ldc);
 				}
 			}
-			else
+		}
+		else
+		{
+			ldc->shdr = nse.core()->get<nsshader>(POINT_LIGHT_SHADER);
+			ldc->proj_light_mat = proj;
+			if (boundingMesh != nullptr)
 			{
-				ldc->shdr = nse.core()->get<nsshader>(POINT_LIGHT_SHADER);
-				ldc->proj_light_mat = proj;
-				if (boundingMesh != nullptr)
+				for (uint32 i = 0; i < boundingMesh->count(); ++i)
 				{
-					for (uint32 i = 0; i < boundingMesh->count(); ++i)
-					{
-						ldc->submesh = boundingMesh->sub(i);
-						dc_pq->push_back(ldc);
-					}
+					ldc->submesh = boundingMesh->sub(i);
+					dc_pq->push_back(ldc);
 				}
 			}
 		}
@@ -1200,15 +1200,95 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 	nsmesh * currentMesh = nullptr;
 	nslight_comp * lc = nullptr;
 	nssel_comp * sc = nullptr;
-	bool transparent_picking = false;
 	uint32 mat_id = 0;
 
+	vid_ctxt * curctxt = nse.video_driver()->current_context();
+	auto inst_obj_iter = curctxt->instance_objs.begin();
+	while (inst_obj_iter != curctxt->instance_objs.end())
+	{
+		terh.set(0.0f, 1.0f);
+		rComp = (*inst_obj_iter)->shared_geom_tforms[0]->owner()->get<nsrender_comp>();
+		animComp = (*inst_obj_iter)->shared_geom_tforms[0]->owner()->get<nsanim_comp>();
+		currentMesh = get_asset<nsmesh>(rComp->mesh_id());
+
+		if (currentMesh == nullptr)
+		{
+			++inst_obj_iter;
+			continue;
+		}
+
+		nsmesh::submesh * mSMesh = nullptr;
+		nsmaterial * mat = nullptr;
+		fmat4_vector * fTForms = nullptr;
+		nsshader * shader = nullptr;
+		for (uint32 i = 0; i < currentMesh->count(); ++i)
+		{
+			mSMesh = currentMesh->sub(i);
+			
+			mat = get_asset<nsmaterial>(rComp->material_id(i));
+			if (mat == nullptr)
+				mat = nse.video_driver<nsgl_driver>()->default_mat();
+
+			shader = get_asset<nsshader>(mat->shader_id());
+			if (shader == nullptr)
+			{
+				if (mat->wireframe())
+					shader = nse.core()->get<nsshader>(GBUFFER_WF_SHADER);
+				else if (mat->alpha_blend())
+					shader = nse.core()->get<nsshader>(GBUFFER_TRANS_SHADER);
+				else
+					shader = nse.core()->get<nsshader>(GBUFFER_SHADER);
+			}
+
+			if (animComp != nullptr && !animComp->final_transforms()->empty())
+				fTForms = animComp->final_transforms();
+
+			all_instanced_draw_calls.resize(all_instanced_draw_calls.size()+1);
+			instanced_draw_call * dc = &all_instanced_draw_calls[all_instanced_draw_calls.size()-1];
+				
+			dc->submesh = mSMesh;
+			dc->tform_buffer = (*inst_obj_iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_buffer;
+			dc->tform_id_buffer = (*inst_obj_iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_id_buffer;
+			dc->anim_transforms = fTForms;
+			dc->height_minmax = terh;
+			dc->plugin_id = rComp->owner()->plugin_id();
+			dc->transform_count = (*inst_obj_iter)->visible_count;
+			dc->scn = scene;
+			dc->casts_shadows = rComp->cast_shadow();
+			dc->transparent_picking = false;
+			dc->mat_index = mat_id;
+			dc->mat = mat;
+			dc->shdr = shader;
+			if (mat->alpha_blend())
+			{
+				dc->transparent_picking = rComp->transparent_picking;
+				scene_tdcq->push_back(dc);
+			}
+			else
+			{
+				scene_dcq->push_back(dc);
+			}
+
+			auto inserted = mat_shader_ids.emplace(mat, mat_id);
+			if (inserted.second)
+				++mat_id;
+		}
+	}
+	
 	auto iter = ents->begin();
 	while (iter != ents->end())
 	{
 		terh.set(0.0f, 1.0f);
 		rComp = (*iter)->get<nsrender_comp>();
 		tComp = (*iter)->get<nstform_comp>();
+
+		// if instance obj skip
+		if (tComp->inst_obj != nullptr)
+		{
+			++iter;
+			continue;
+		}
+		
 		lc = (*iter)->get<nslight_comp>();
 		sc = (*iter)->get<nssel_comp>();
 		animComp = (*iter)->get<nsanim_comp>();
@@ -1228,11 +1308,6 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 		{
 			++iter;
 			continue;
-		}
-
-		if (sc != nullptr)
-		{
-			transparent_picking = sc->transparent_picking_enabled();
 		}
 		
 		nsmesh::submesh * mSMesh = nullptr;
@@ -1266,60 +1341,56 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 			if (terComp != nullptr)
 				terh = terComp->height_bounds();
 
+
 			
-			if (tComp != nullptr)
-			{			  all_instanced_draw_calls.resize(all_instanced_draw_calls.size()+1);
-				instanced_draw_call * dc = &all_instanced_draw_calls[all_instanced_draw_calls.size()-1];
-				dc->submesh = mSMesh;
-				dc->tform_buffer =
-					tComp->per_scene_info(scene)->video_obj<nsgl_tform_comp_obj>()->gl_tform_buffer;
-				dc->tform_id_buffer =
-					tComp->per_scene_info(scene)->video_obj<nsgl_tform_comp_obj>()->gl_tform_id_buffer;
-				dc->anim_transforms = fTForms;
-				dc->height_minmax = terh;
-				dc->entity_id = (*iter)->id();
-				dc->plugin_id = (*iter)->plugin_id();
-				dc->transform_count = tComp->per_scene_info(scene)->m_visible_count;
-				dc->scn = scene;
-				dc->casts_shadows = rComp->cast_shadow();
-				dc->transparent_picking = false;
-				dc->mat_index = mat_id;
-				dc->mat = mat;
-				dc->shdr = shader;
-				if (mat->alpha_blend())
-				{
-					dc->transparent_picking = transparent_picking;
-					scene_tdcq->push_back(dc);
-				}
-				else
-				{
-					scene_dcq->push_back(dc);
-				}
+			all_single_draw_calls.resize(all_single_draw_calls.size()+1);
+			single_draw_call * dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
+			dc->submesh = mSMesh;
+			dc->anim_transforms = fTForms;
+			dc->height_minmax = terh;
+			dc->entity_id = (*iter)->id();
+			dc->plugin_id = (*iter)->plugin_id();
+			dc->transform = tComp->world_tf();
+			dc->scn = scene;
+			dc->casts_shadows = rComp->cast_shadow();
+			dc->transparent_picking = false;
+			dc->mat_index = mat_id;
+			dc->mat = mat;
+			dc->shdr = shader;
 
-				if (sc != nullptr && sc->selected(scene))
-				{
-					all_instanced_draw_calls.resize(
-						all_instanced_draw_calls.size()+1);
-					instanced_draw_call * sel_dc = &all_instanced_draw_calls[all_instanced_draw_calls.size()-1];
-					sel_dc->submesh = mSMesh;
-                    sel_dc->scn = scene;
-					sel_dc->tform_buffer =
-						sc->scene_info(sel_dc->scn)->video_obj<nsgl_sel_comp_obj>()->gl_tform_buffer;
-					sel_dc->tform_id_buffer = nullptr;
-					sel_dc->anim_transforms = fTForms;
-					sel_dc->height_minmax = terh;
-					sel_dc->transform_count = sc->selection(scene)->size();
-					sel_dc->shdr = nse.core()->get<nsshader>(SELECTION_SHADER);
-					sel_dc->mat = mat;
-					sel_dc->sel_color = sc->color();
-					scene_sel->push_back(sel_dc);
-				}
-
-				auto inserted = mat_shader_ids.emplace(mat, mat_id);
-				if (inserted.second)
-					++mat_id;
+			if (mat->alpha_blend())
+			{
+				dc->transparent_picking = rComp->transparent_picking;
+				scene_tdcq->push_back(dc);
 			}
+			else
+			{
+				scene_dcq->push_back(dc);
+			}
+
+			auto inserted = mat_shader_ids.emplace(mat, mat_id);
+			if (inserted.second)
+				++mat_id;
  		}
+
+		// add selection draw calls
+		entity_ptr_set & ents = nse.system<nsselection_system>()->current_selection();
+		auto sel_ent_iter = ents.begin();
+		while (sel_ent_iter != ents.end())
+		{
+			nssel_comp * sc = (*sel_ent_iter)->get<nssel_comp>();
+			all_single_draw_calls.resize(all_single_draw_calls.size()+1);
+			single_draw_call * sel_dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
+			sel_dc->submesh = mSMesh;
+			sel_dc->scn = scene;
+			sel_dc->anim_transforms = fTForms;
+			sel_dc->height_minmax = terh;
+			sel_dc->shdr = nse.core()->get<nsshader>(SELECTION_SHADER);
+			sel_dc->mat = mat;
+			sel_dc->sel_color = sc->color();
+			scene_sel->push_back(sel_dc);
+			++sel_ent_iter;
+		}
 		
 		++iter;
 	}
@@ -1334,7 +1405,6 @@ nsgl_driver::nsgl_driver() :
     nse.register_vid_obj_type<nsgl_texture_obj>(TEXTURE_VID_OBJ_GUID);
     nse.register_vid_obj_type<nsgl_submesh_obj>(MESH_VID_OBJ_GUID);
     nse.register_vid_obj_type<nsgl_tform_comp_obj>(TFORM_VID_OBJ_GUID);
-    nse.register_vid_obj_type<nsgl_sel_comp_obj>(SEL_VID_OBJ_GUID);
     nse.register_vid_obj_type<nsgl_particle_comp_obj>(PARTICLE_VID_OBJ_GUID);
 }
 

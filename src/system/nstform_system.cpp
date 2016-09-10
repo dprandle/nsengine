@@ -71,29 +71,22 @@ void nstform_system::update()
 	auto ent_iter = scene_ents->begin();
 	while (ent_iter != scene_ents->end())
 	{
-		tform_per_scene_info * psi = (*ent_iter)->get<nstform_comp>()->per_scene_info(m_active_scene);
-		for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
+		nstform_comp * tfc = (*ent_iter)->get<nstform_comp>();
+		if (tfc->update_posted())
 		{
-			instance_tform & itf = psi->m_tforms[i];
-			if (itf.parent() == nullptr)
-				itf.recursive_compute();
-		}
+			if (tfc->parent() == nullptr)
+				tfc->recursive_compute();
+		}		
 		++ent_iter;
 	}
 
-	ent_iter = scene_ents->begin();
-	while (ent_iter != scene_ents->end())
+	vid_ctxt * vctxt = nse.video_driver()->current_context();
+	auto iter = vctxt->instance_objs.begin();
+	while (iter != vctxt->instance_objs.end())
 	{
-		nstform_comp * tForm = (*ent_iter)->get<nstform_comp>();
-        if (tForm->update_posted())
-		{
-			tform_per_scene_info * psi = tForm->per_scene_info(m_active_scene);
-			psi->video_update();
-			tForm->post_update(false);
-		}
-		++ent_iter;
+		(*iter)->video_update();
+		++iter;
 	}
-
 }
 
 int32 nstform_system::update_priority()
