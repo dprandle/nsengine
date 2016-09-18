@@ -47,6 +47,9 @@ render_shaders::render_shaders() :
 	deflt(nullptr),
 	deflt_wireframe(nullptr),
 	deflt_translucent(nullptr),
+	deflt_instanced(nullptr),
+	deflt_instanced_wireframe(nullptr),
+	deflt_instanced_translucent(nullptr),
 	dir_light(nullptr),
 	point_light(nullptr),
 	spot_light(nullptr),
@@ -63,6 +66,8 @@ bool render_shaders::error() const
 	return (
 		deflt->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		deflt_wireframe->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		deflt_instanced->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		deflt_instanced_wireframe->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		dir_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		point_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		spot_light->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
@@ -71,6 +76,7 @@ bool render_shaders::error() const
 		shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		deflt_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		deflt_instanced_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		frag_sort->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 #endif
 		deflt_particle->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
@@ -82,6 +88,8 @@ bool render_shaders::valid() const
 	return (
 		deflt != nullptr &&
 		deflt_wireframe != nullptr &&
+		deflt_instanced != nullptr &&
+		deflt_instanced_wireframe != nullptr &&
 		dir_light != nullptr &&
 		point_light != nullptr &&
 		spot_light != nullptr &&
@@ -90,6 +98,7 @@ bool render_shaders::valid() const
 		shadow_2d != nullptr &&
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		deflt_translucent != nullptr &&
+		deflt_instanced_translucent != nullptr &&
 		frag_sort != nullptr &&
 #endif
 		deflt_particle != nullptr &&
@@ -242,7 +251,7 @@ void gl_ctxt::init()
 	m_single_point->allocate(1, &point, nsgl_buffer::mutable_dynamic_draw);
 	m_single_point->unbind();
 
-	all_instanced_draw_calls.reserve(MAX_INSTANCED_DRAW_CALLS);
+	all_single_draw_calls.reserve(MAX_SINGLE_DRAW_CALLS);
 	all_light_draw_calls.reserve(MAX_LIGHTS_IN_SCENE);
 	all_ui_draw_calls.reserve(MAX_UI_DRAW_CALLS);	
 }
@@ -389,17 +398,17 @@ void gl_ctxt::destroy_render_target(const nsstring & name)
 void gl_ctxt::create_default_render_passes()
 {
 	// setup gbuffer geometry stage
-	gbuffer_render_pass * gbuf_pass = new gbuffer_render_pass;
-	gbuf_pass->rq = queue(SCENE_OPAQUE_QUEUE);
-	gbuf_pass->ren_target = render_target(GBUFFER_TARGET);
-	gbuf_pass->gl_state.depth_test = true;
-	gbuf_pass->gl_state.depth_write = true;
-	gbuf_pass->gl_state.culling = true;
-	gbuf_pass->gl_state.cull_face = GL_BACK;
-	gbuf_pass->gl_state.blending = false;
-	gbuf_pass->gl_state.stencil_test = false;
-	gbuf_pass->driver_ctxt = this;
-	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+	gbuffer_single_draw_render_pass * gbuf_single_draw_pass = new gbuffer_single_draw_render_pass;
+	gbuf_single_draw_pass->rq = queue(SCENE_OPAQUE_QUEUE);
+	gbuf_single_draw_pass->ren_target = render_target(GBUFFER_TARGET);
+	gbuf_single_draw_pass->gl_state.depth_test = true;
+	gbuf_single_draw_pass->gl_state.depth_write = true;
+	gbuf_single_draw_pass->gl_state.culling = true;
+	gbuf_single_draw_pass->gl_state.cull_face = GL_BACK;
+	gbuf_single_draw_pass->gl_state.blending = false;
+	gbuf_single_draw_pass->gl_state.stencil_test = false;
+	gbuf_single_draw_pass->driver_ctxt = this;
+	gbuf_single_draw_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	oit_render_pass * oit_pass = new oit_render_pass;
@@ -563,7 +572,7 @@ void gl_ctxt::create_default_render_passes()
 	final_pass->gl_state.cull_face = GL_BACK;
 	final_pass->driver_ctxt = this;
 
-	render_passes.push_back(gbuf_pass);
+	render_passes.push_back(gbuf_single_draw_pass);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
     render_passes.push_back(oit_pass);
 #endif
@@ -603,6 +612,7 @@ void gl_ctxt::push_scene(nsscene * scn)
 	if (ents == nullptr)
 		return;
 
+	top_mat_id = 0;
 	_add_instanced_draw_calls_from_scene(scn);
 	_add_draw_calls_from_scene(scn);
 	_add_lights_from_scene(scn);
@@ -610,6 +620,17 @@ void gl_ctxt::push_scene(nsscene * scn)
 
 void gl_ctxt::_add_instanced_draw_calls_from_scene(nsscene * scene)
 {
+	nsentity * camera = focused_vp->camera;
+
+	// update render components and the draw call list
+	render_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
+	render_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
+	nscam_comp * cc = camera->get<nscam_comp>();
+	fvec2 terh;
+	nsrender_comp * rComp = nullptr;
+	nsanim_comp * animComp = nullptr;
+	nsmesh * currentMesh = nullptr;
+
 	auto iter = instance_objs.begin();
 	while (iter != instance_objs.end())
 	{
@@ -625,7 +646,76 @@ void gl_ctxt::_add_instanced_draw_calls_from_scene(nsscene * scene)
 		}
 		else
 		{
-			// make instanced draw call
+			terh.set(0.0f, 1.0f);
+			rComp = (*iter)->shared_geom_tforms[0]->owner()->get<nsrender_comp>();
+			animComp = (*iter)->shared_geom_tforms[0]->owner()->get<nsanim_comp>();
+			currentMesh = get_asset<nsmesh>(rComp->mesh_id());
+
+			if (currentMesh == nullptr)
+			{
+				++iter;
+				continue;
+			}
+
+			nsmesh::submesh * mSMesh = nullptr;
+			nsmaterial * mat = nullptr;
+			fmat4_vector * fTForms = nullptr;
+			nsshader * shader = nullptr;
+			for (uint32 i = 0; i < currentMesh->count(); ++i)
+			{
+				mSMesh = currentMesh->sub(i);
+			
+				mat = get_asset<nsmaterial>(rComp->material_id(i));
+				if (mat == nullptr)
+					mat = nse.video_driver<nsgl_driver>()->default_mat();
+
+				shader = get_asset<nsshader>(mat->shader_id());
+				if (shader == nullptr)
+				{
+					if (mat->wireframe())
+						shader = nse.core()->get<nsshader>(GBUFFER_INSTANCED_WF_SHADER);
+					else if (mat->alpha_blend())
+						shader = nse.core()->get<nsshader>(GBUFFER_INSTANCED_TRANS_SHADER);
+					else
+						shader = nse.core()->get<nsshader>(GBUFFER_INSTANCED_SHADER);
+				}
+
+				if (animComp != nullptr && !animComp->final_transforms()->empty())
+					fTForms = animComp->final_transforms();
+
+				all_single_draw_calls.resize(all_single_draw_calls.size()+1);
+				geometry_draw_call * dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
+				
+				dc->submesh = mSMesh;
+				dc->anim_transforms = fTForms;
+				dc->height_minmax = terh;
+				dc->plugin_id = rComp->owner()->plugin_id();
+				dc->scn = scene;
+				dc->casts_shadows = rComp->cast_shadow();
+				dc->transparent_picking = false;
+				dc->mat_index = top_mat_id;
+				dc->mat = mat;
+				dc->shdr = shader;
+				dc->instanced = true;
+
+				dc->instanced_dci.tform_buffer = (*iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_buffer;
+				dc->instanced_dci.tform_id_buffer = (*iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_id_buffer;
+				dc->instanced_dci.transform_count = (*iter)->visible_count;
+
+				if (mat->alpha_blend())
+				{
+					dc->transparent_picking = rComp->transparent_picking;
+					scene_tdcq->push_back(dc);
+				}
+				else
+				{
+					scene_dcq->push_back(dc);
+				}
+
+				auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
+				if (inserted.second)
+					++top_mat_id;
+			}
 			++iter;
 		}
 	}
@@ -705,7 +795,7 @@ void gl_ctxt::clear_render_queues()
 {
 	vid_ctxt::clear_render_queues();
 	mat_shader_ids.clear();
-	all_instanced_draw_calls.resize(0);
+	all_single_draw_calls.resize(0);
 	all_light_draw_calls.resize(0);
 	all_ui_draw_calls.resize(0);
 }
@@ -1006,52 +1096,55 @@ void gl_ctxt::bind_gbuffer_textures(nsgl_framebuffer * fb)
 	}
 }
 
-void gl_ctxt::render_single_dc(single_draw_call * idc, nsgl_shader * bound_shader)
+void gl_ctxt::render_geometry_dc(geometry_draw_call * idc, nsgl_shader * bound_shader)
 {
 	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
 	so->gl_vao->bind();
-	bound_shader->set_uniform("transform", idc->transform);
-    bound_shader->validate();
-	gl_err_check("instanced_geometry_draw_call::render pre");
-    glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
-				   static_cast<GLsizei>(idc->submesh->m_indices.size()),
-				   GL_UNSIGNED_INT,
-				   0);
-    gl_err_check("instanced_geometry_draw_call::render post");
-	so->gl_vao->unbind();	
-}
-
-void gl_ctxt::render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader)
-{
-	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
-	so->gl_vao->bind();
-	
-	idc->tform_buffer->bind();
-	for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
+	if (!idc->instanced)
 	{
-		so->gl_vao->add(idc->tform_buffer, nsgl_shader::loc_instance_tform + tfInd);
-		so->gl_vao->vertex_attrib_ptr(nsgl_shader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
-		so->gl_vao->vertex_attrib_div(nsgl_shader::loc_instance_tform + tfInd, 1);
+		if (idc->transparent_picking)
+			bound_shader->set_uniform("entityID", idc->single_dci.entity_id);
+		else
+			bound_shader->set_uniform("entityID", 0);
+		bound_shader->set_uniform("transform", idc->single_dci.transform);
+		bound_shader->validate();
+		gl_err_check("instanced_geometry_draw_call::render pre");
+		glDrawElements(get_gl_prim_type(idc->submesh->m_prim_type),
+					   static_cast<GLsizei>(idc->submesh->m_indices.size()),
+					   GL_UNSIGNED_INT,
+					   0);
+		gl_err_check("instanced_geometry_draw_call::render post");
+		so->gl_vao->unbind();
 	}
+	else
+	{	
+		idc->instanced_dci.tform_buffer->bind();
+		for (uint32 tfInd = 0; tfInd < 4; ++tfInd)
+		{
+			so->gl_vao->add(idc->instanced_dci.tform_buffer, nsgl_shader::loc_instance_tform + tfInd);
+			so->gl_vao->vertex_attrib_ptr(nsgl_shader::loc_instance_tform + tfInd, 4, GL_FLOAT, GL_FALSE, sizeof(fmat4), sizeof(fvec4)*tfInd);
+			so->gl_vao->vertex_attrib_div(nsgl_shader::loc_instance_tform + tfInd, 1);
+		}
 
-	idc->tform_id_buffer->bind();
-	so->gl_vao->add(idc->tform_id_buffer, nsgl_shader::loc_ref_id);
-	so->gl_vao->vertex_attrib_I_ptr(nsgl_shader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
-	so->gl_vao->vertex_attrib_div(nsgl_shader::loc_ref_id, 1);	
+		idc->instanced_dci.tform_id_buffer->bind();
+		so->gl_vao->add(idc->instanced_dci.tform_id_buffer, nsgl_shader::loc_ref_id);
+		so->gl_vao->vertex_attrib_I_ptr(nsgl_shader::loc_ref_id, 1, GL_UNSIGNED_INT, sizeof(uint32), 0);
+		so->gl_vao->vertex_attrib_div(nsgl_shader::loc_ref_id, 1);	
 
-    bound_shader->validate();
-	gl_err_check("instanced_geometry_draw_call::render pre");
-    glDrawElementsInstanced(get_gl_prim_type(idc->submesh->m_prim_type),
-							static_cast<GLsizei>(idc->submesh->m_indices.size()),
-							GL_UNSIGNED_INT,
-							0,
-                            idc->transform_count);
-    gl_err_check("instanced_geometry_draw_call::render post");
-	idc->tform_buffer->bind();
-	so->gl_vao->remove(idc->tform_buffer);
+		bound_shader->validate();
+		gl_err_check("instanced_geometry_draw_call::render pre");
+		glDrawElementsInstanced(get_gl_prim_type(idc->submesh->m_prim_type),
+								static_cast<GLsizei>(idc->submesh->m_indices.size()),
+								GL_UNSIGNED_INT,
+								0,
+								idc->instanced_dci.transform_count);
+		gl_err_check("instanced_geometry_draw_call::render post");
+		idc->instanced_dci.tform_buffer->bind();
+		so->gl_vao->remove(idc->instanced_dci.tform_buffer);
 
-	idc->tform_id_buffer->bind();
-	so->gl_vao->remove(idc->tform_id_buffer);
+		idc->instanced_dci.tform_id_buffer->bind();
+		so->gl_vao->remove(idc->instanced_dci.tform_id_buffer);
+	}
 	so->gl_vao->unbind();
 }
 
@@ -1200,81 +1293,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 	nsmesh * currentMesh = nullptr;
 	nslight_comp * lc = nullptr;
 	nssel_comp * sc = nullptr;
-	uint32 mat_id = 0;
 
-	vid_ctxt * curctxt = nse.video_driver()->current_context();
-	auto inst_obj_iter = curctxt->instance_objs.begin();
-	while (inst_obj_iter != curctxt->instance_objs.end())
-	{
-		terh.set(0.0f, 1.0f);
-		rComp = (*inst_obj_iter)->shared_geom_tforms[0]->owner()->get<nsrender_comp>();
-		animComp = (*inst_obj_iter)->shared_geom_tforms[0]->owner()->get<nsanim_comp>();
-		currentMesh = get_asset<nsmesh>(rComp->mesh_id());
-
-		if (currentMesh == nullptr)
-		{
-			++inst_obj_iter;
-			continue;
-		}
-
-		nsmesh::submesh * mSMesh = nullptr;
-		nsmaterial * mat = nullptr;
-		fmat4_vector * fTForms = nullptr;
-		nsshader * shader = nullptr;
-		for (uint32 i = 0; i < currentMesh->count(); ++i)
-		{
-			mSMesh = currentMesh->sub(i);
-			
-			mat = get_asset<nsmaterial>(rComp->material_id(i));
-			if (mat == nullptr)
-				mat = nse.video_driver<nsgl_driver>()->default_mat();
-
-			shader = get_asset<nsshader>(mat->shader_id());
-			if (shader == nullptr)
-			{
-				if (mat->wireframe())
-					shader = nse.core()->get<nsshader>(GBUFFER_WF_SHADER);
-				else if (mat->alpha_blend())
-					shader = nse.core()->get<nsshader>(GBUFFER_TRANS_SHADER);
-				else
-					shader = nse.core()->get<nsshader>(GBUFFER_SHADER);
-			}
-
-			if (animComp != nullptr && !animComp->final_transforms()->empty())
-				fTForms = animComp->final_transforms();
-
-			all_instanced_draw_calls.resize(all_instanced_draw_calls.size()+1);
-			instanced_draw_call * dc = &all_instanced_draw_calls[all_instanced_draw_calls.size()-1];
-				
-			dc->submesh = mSMesh;
-			dc->tform_buffer = (*inst_obj_iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_buffer;
-			dc->tform_id_buffer = (*inst_obj_iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_id_buffer;
-			dc->anim_transforms = fTForms;
-			dc->height_minmax = terh;
-			dc->plugin_id = rComp->owner()->plugin_id();
-			dc->transform_count = (*inst_obj_iter)->visible_count;
-			dc->scn = scene;
-			dc->casts_shadows = rComp->cast_shadow();
-			dc->transparent_picking = false;
-			dc->mat_index = mat_id;
-			dc->mat = mat;
-			dc->shdr = shader;
-			if (mat->alpha_blend())
-			{
-				dc->transparent_picking = rComp->transparent_picking;
-				scene_tdcq->push_back(dc);
-			}
-			else
-			{
-				scene_dcq->push_back(dc);
-			}
-
-			auto inserted = mat_shader_ids.emplace(mat, mat_id);
-			if (inserted.second)
-				++mat_id;
-		}
-	}
-	
 	auto iter = ents->begin();
 	while (iter != ents->end())
 	{
@@ -1340,23 +1359,22 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 
 			if (terComp != nullptr)
 				terh = terComp->height_bounds();
-
-
 			
 			all_single_draw_calls.resize(all_single_draw_calls.size()+1);
-			single_draw_call * dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
+			geometry_draw_call * dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
 			dc->submesh = mSMesh;
 			dc->anim_transforms = fTForms;
 			dc->height_minmax = terh;
-			dc->entity_id = (*iter)->id();
 			dc->plugin_id = (*iter)->plugin_id();
-			dc->transform = tComp->world_tf();
 			dc->scn = scene;
 			dc->casts_shadows = rComp->cast_shadow();
 			dc->transparent_picking = false;
-			dc->mat_index = mat_id;
+			dc->mat_index = top_mat_id;
 			dc->mat = mat;
 			dc->shdr = shader;
+			dc->single_dci.entity_id = (*iter)->id();
+			dc->single_dci.transform = tComp->world_tf();
+
 
 			if (mat->alpha_blend())
 			{
@@ -1368,9 +1386,9 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 				scene_dcq->push_back(dc);
 			}
 
-			auto inserted = mat_shader_ids.emplace(mat, mat_id);
+			auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
 			if (inserted.second)
-				++mat_id;
+				++top_mat_id;
  		}
 
 		// add selection draw calls
@@ -1380,7 +1398,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 		{
 			nssel_comp * sc = (*sel_ent_iter)->get<nssel_comp>();
 			all_single_draw_calls.resize(all_single_draw_calls.size()+1);
-			single_draw_call * sel_dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
+			geometry_draw_call * sel_dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
 			sel_dc->submesh = mSMesh;
 			sel_dc->scn = scene;
 			sel_dc->anim_transforms = fTForms;
@@ -1434,9 +1452,12 @@ void nsgl_driver::init()
     nsstring shext(DEFAULT_SHADER_EXTENSION), dir(SHADER_DIR);
     rshaders.deflt = cplg->load<nsshader>(dir + nsstring(GBUFFER_SHADER) + shext, true);
 	rshaders.deflt_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_WF_SHADER) + shext, true);
+    rshaders.deflt_instanced = cplg->load<nsshader>(dir + nsstring(GBUFFER_INSTANCED_SHADER) + shext, true);
+	rshaders.deflt_instanced_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_INSTANCED_WF_SHADER) + shext, true);
 	rshaders.light_stencil = cplg->load<nsshader>(dir + nsstring(LIGHTSTENCIL_SHADER) + shext, true);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
     rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	rshaders.deflt_instanced_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_INSTANCED_TRANS_SHADER) + shext, true);
 	rshaders.frag_sort = cplg->load<nsshader>(dir + nsstring(FRAGMENT_SORT_SHADER) + shext, true);
 #endif
 	rshaders.dir_light = cplg->load<nsshader>(dir + nsstring(DIR_LIGHT_SHADER) + shext, true);

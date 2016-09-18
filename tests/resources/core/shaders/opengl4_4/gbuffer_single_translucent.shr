@@ -10,11 +10,6 @@ layout (location = 2) in vec3 norm;
 layout (location = 3) in vec3 tang;
 layout (location = 4) in ivec4 boneIDs;
 layout (location = 5) in vec4 boneWeights;
-layout (location = 6) in vec4 trans1;
-layout (location = 7) in vec4 trans2;
-layout (location = 8) in vec4 trans3;
-layout (location = 9) in vec4 trans4;
-layout (location = 10) in uint referenceID;
 
 uniform sampler2D heightMap;
 uniform sampler2D diffuseMap;
@@ -24,23 +19,17 @@ uniform mat4 boneTransforms[100];
 uniform bool hasBones;
 uniform bool hasHeightMap;
 uniform vec2 hminmax;
+uniform mat4 transform;
 
-mat4 transform;
 vec4 localPos;
 
 out vec2 texCoords;
 out vec3 normal;
 out vec3 tangent;
 out vec4 worldPos;
-flat out uint refID;
 
 void main()
 {
-	transform[0] = vec4(trans1.x, trans2.x, trans3.x, trans4.x);
-	transform[1] = vec4(trans1.y, trans2.y, trans3.y, trans4.y);
-	transform[2] = vec4(trans1.z, trans2.z, trans3.z, trans4.z);
-	transform[3] = vec4(trans1.w, trans2.w, trans3.w, trans4.w);
-
 	if (hasBones)
 	{
 		mat4 boneTrans = boneTransforms[boneIDs.x] * boneWeights.x;
@@ -66,7 +55,6 @@ void main()
 		worldPos.z += heightMult*(hminmax.y - hminmax.x) + hminmax.x;
 	}
 	texCoords = tex;
-	refID = referenceID;
 	gl_Position = projCamMat * worldPos;
 }
 
@@ -124,8 +112,6 @@ in vec2 texCoords;
 in vec3 normal;
 in vec3 tangent;
 in vec4 worldPos;
-
-flat in uint refID;
 
 uniform vec4 viewport;
 
@@ -248,7 +234,7 @@ void main()
 		fdata.mat_id = material_id;
 		fdata.next = old_ll_index;
 		fdata.depth = gl_FragCoord.z;
-		fdata.ids = uvec4(pluginID, entityID, refID, 0);
+		fdata.ids = uvec4(pluginID, entityID, 0, 0);
 		linked_list[new_ll_index] = pack_frag_data(fdata);
 	}
 }

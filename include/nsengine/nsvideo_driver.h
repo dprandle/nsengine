@@ -211,6 +211,8 @@ struct vid_ctxt
 	std::list<vp_node> vp_list;
 	std::set<nsvid_obj*> registered_vid_objs;
 
+	uint32 top_mat_id;
+
 	std::vector<tform_per_scene_info*> instance_objs;
 };
 

@@ -263,7 +263,7 @@ void selection_render_pass::render()
 {
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
-		single_draw_call * dc = (single_draw_call*)(*rq)[i];
+		geometry_draw_call * dc = (geometry_draw_call*)(*rq)[i];
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_none);
 
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
@@ -289,7 +289,7 @@ void selection_render_pass::render()
 		}
 		gl_shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-        driver_ctxt->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_geometry_dc(dc, gl_shdr);
 		
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         gl_err_check("selection_render_pass::render - glPolygonMode error 1");
@@ -309,7 +309,7 @@ void selection_render_pass::render()
 		driver_ctxt->set_stencil_func(GL_NOTEQUAL, 1, -1);
 		ren_target->set_draw_buffer(nsgl_framebuffer::att_color);
 		gl_shdr->set_uniform("fragColOut", fvec4(dc->sel_color.rgb(),1.0f));	
-        driver_ctxt->render_single_dc(dc, gl_shdr);
+        driver_ctxt->render_geometry_dc(dc, gl_shdr);
 		
         glLineWidth(lineWidth[0]);
         gl_err_check("selection_render_pass::render - glLineWidth error 2");
@@ -323,7 +323,7 @@ void selection_render_pass::render()
 		driver_ctxt->enable_depth_test(false);
 		driver_ctxt->set_stencil_func(GL_EQUAL, 1, 0);
 		gl_shdr->set_uniform("fragColOut", dc->sel_color);
-        driver_ctxt->render_single_dc(dc, gl_shdr);
+        driver_ctxt->render_geometry_dc(dc, gl_shdr);
 	}	
 }
 
@@ -331,7 +331,7 @@ void gbuffer_single_draw_render_pass::render()
 {
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
-		single_draw_call * dc = (single_draw_call*)(*rq)[i];
+		geometry_draw_call * dc = (geometry_draw_call*)(*rq)[i];
 		
 		ivec4 & viewp = gl_state.current_viewport;
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
@@ -354,10 +354,6 @@ void gbuffer_single_draw_render_pass::render()
 		gl_shdr->set_uniform("fragColOut", dc->mat->color());
 		gl_shdr->set_uniform("force_alpha", dc->mat->using_alpha_from_color());
 		gl_shdr->set_uniform("material_id",  dc->mat_index);
-
-		uint32 ent_id = dc->entity_id;
-		if (dc->transparent_picking)
-			ent_id = 0;
 
 		if (dc->mat != nullptr)
 		{
@@ -400,90 +396,10 @@ void gbuffer_single_draw_render_pass::render()
 		driver_ctxt->enable_culling(dc->mat->culling());
 		driver_ctxt->set_cull_face(dc->mat->cull_mode());
 		driver_ctxt->bind_textures(dc->mat);
-        driver_ctxt->render_single_dc(dc, gl_shdr);
+        driver_ctxt->render_geometry_dc(dc, gl_shdr);
 	}
     driver_ctxt->bind_gbuffer_textures(ren_target);
 }
-
-void gbuffer_instanced_draw_render_pass::render()
-{
-	for (uint32 i = 0; i < rq->size(); ++i)
-	{
-		instanced_draw_call * dc = (instanced_draw_call*)(*rq)[i];
-		
-		ivec4 & viewp = gl_state.current_viewport;
-		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
-		
-		gl_shdr->bind();
-		gl_shdr->set_uniform("diffuseMap", DIFFUSE_TEX_UNIT);
-		gl_shdr->set_uniform("normalMap", NORMAL_TEX_UNIT);
-		gl_shdr->set_uniform("opacityMap", OPACITY_TEX_UNIT);
-		gl_shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
-		gl_shdr->set_uniform("viewport", fvec4(viewp.x, viewp.y, viewp.z, viewp.w));
-		fmat4 proj_cam = vp->camera->get<nscam_comp>()->proj_cam();
-		if (vp->camera != nullptr)
-			gl_shdr->set_uniform("projCamMat", proj_cam);
-
-		gl_shdr->set_uniform("hasHeightMap", dc->mat->contains(nsmaterial::height));
-		gl_shdr->set_uniform("hasDiffuseMap", dc->mat->contains(nsmaterial::diffuse));
-		gl_shdr->set_uniform("hasOpacityMap", dc->mat->contains(nsmaterial::opacity));
-		gl_shdr->set_uniform("hasNormalMap", dc->mat->contains(nsmaterial::normal));
-		gl_shdr->set_uniform("colorMode", dc->mat->color_mode());
-		gl_shdr->set_uniform("fragColOut", dc->mat->color());
-		gl_shdr->set_uniform("force_alpha", dc->mat->using_alpha_from_color());
-		gl_shdr->set_uniform("material_id",  dc->mat_index);
-
-		uint32 ent_id = dc->entity_id;
-		if (dc->transparent_picking)
-			ent_id = 0;
-
-		if (dc->mat != nullptr)
-		{
-			tex_map_info tmi = dc->mat->mat_tex_info(nsmaterial::diffuse);
-			gl_shdr->set_uniform("tex_coord_rect_d", tmi.coord_rect);
-			gl_shdr->set_uniform("color_mult_d", tmi.color_mult);
-			gl_shdr->set_uniform("color_add_d", tmi.color_add);
-
-			tmi = dc->mat->mat_tex_info(nsmaterial::normal);
-			gl_shdr->set_uniform("tex_coord_rect_n", tmi.coord_rect);
-			gl_shdr->set_uniform("color_mult_n", tmi.color_mult);
-			gl_shdr->set_uniform("color_add_n", tmi.color_add);
-
-			tmi = dc->mat->mat_tex_info(nsmaterial::opacity);
-			gl_shdr->set_uniform("tex_coord_rect_o", tmi.coord_rect);
-			gl_shdr->set_uniform("color_mult_o", tmi.color_mult);
-			gl_shdr->set_uniform("color_add_o", tmi.color_add);
-		}
-
-		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-		gl_shdr->set_uniform("entityID", ent_id);
-		gl_shdr->set_uniform("pluginID", dc->plugin_id);
-
-		if (dc->submesh->m_node != NULL)
-			gl_shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
-		else
-			gl_shdr->set_uniform("nodeTransform", fmat4());
-
-		if (!dc->submesh->m_has_tex_coords)
-			gl_shdr->set_uniform("colorMode", true);
-
-		if (dc->anim_transforms != NULL)
-		{
-			gl_shdr->set_uniform("hasBones", true);
-			for (uint32 i = 0; i < dc->anim_transforms->size(); ++i)
-				gl_shdr->set_uniform("boneTransforms[" + std::to_string(i) + "]", (*dc->anim_transforms)[i]);
-		}
-		else
-			gl_shdr->set_uniform("hasBones", false);
-
-		driver_ctxt->enable_culling(dc->mat->culling());
-		driver_ctxt->set_cull_face(dc->mat->cull_mode());
-		driver_ctxt->bind_textures(dc->mat);
-        driver_ctxt->render_instanced_dc(dc, gl_shdr);
-	}
-    driver_ctxt->bind_gbuffer_textures(ren_target);
-}
-
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 void oit_render_pass::render()
@@ -492,7 +408,7 @@ void oit_render_pass::render()
 	ren_target->set_draw_buffer(nsgl_framebuffer::att_none);
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
-		instanced_draw_call * dc = (instanced_draw_call*)(*rq)[i];
+		geometry_draw_call * dc = (geometry_draw_call*)(*rq)[i];
 		nsgl_shader * gl_shdr = dc->shdr->video_obj<nsgl_shader_obj>()->gl_shdr;
 		
 		gl_shdr->bind();
@@ -531,12 +447,7 @@ void oit_render_pass::render()
 			gl_shdr->set_uniform("color_add_o", tmi.color_add);
 		}
 
-		uint32 ent_id = dc->entity_id;
-		if (dc->transparent_picking)
-			ent_id = 0;
-
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-		gl_shdr->set_uniform("entityID", ent_id);
 		gl_shdr->set_uniform("pluginID", dc->plugin_id);
 
 		if (dc->submesh->m_node != NULL)
@@ -563,7 +474,7 @@ void oit_render_pass::render()
 			driver_ctxt->bind_textures(dc->mat);
 		}
 	    tbuffers->bind_buffers();
-        driver_ctxt->render_instanced_dc(dc, gl_shdr);
+        driver_ctxt->render_geometry_dc(dc, gl_shdr);
 	}
 	ren_target->update_draw_buffers();
 	driver_ctxt->enable_depth_test(false);
@@ -613,7 +524,7 @@ void light_shadow_pass::render()
 	
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
-		instanced_draw_call * idc = (instanced_draw_call*)(*rq)[i];
+		geometry_draw_call * idc = (geometry_draw_call*)(*rq)[i];
 		if (idc->casts_shadows)
 		{
 			if (idc->submesh->m_node != nullptr)
@@ -637,9 +548,40 @@ void light_shadow_pass::render()
 
 			driver_ctxt->enable_culling(idc->mat->culling());
 			driver_ctxt->set_cull_face(idc->mat->cull_mode());
-            driver_ctxt->render_instanced_dc(idc, cur_shdr);
+            driver_ctxt->render_geometry_dc(idc, cur_shdr);
 		}
 	}
+
+	for (uint32 i = 0; i < rq->size(); ++i)
+	{
+		geometry_draw_call * idc = (geometry_draw_call*)(*rq)[i];
+		if (idc->casts_shadows)
+		{
+			if (idc->submesh->m_node != nullptr)
+				cur_shdr->set_uniform("nodeTransform", idc->submesh->m_node->m_world_tform);
+			else
+				cur_shdr->set_uniform("nodeTransform", fmat4());
+
+			if (idc->anim_transforms != nullptr)
+			{
+				for (uint32 i = 0; i < idc->anim_transforms->size(); ++i)
+					cur_shdr->set_uniform(
+						"boneTransforms[" + std::to_string(i) + "]", (*idc->anim_transforms)[i]);
+				cur_shdr->set_uniform("hasBones", true);
+			}
+			else
+			{
+				cur_shdr->set_uniform("hasBones", false);
+			}
+			cur_shdr->set_uniform("hasHeightMap", idc->mat->contains(nsmaterial::height));
+			cur_shdr->set_uniform("hminmax", idc->height_minmax);
+
+			driver_ctxt->enable_culling(idc->mat->culling());
+			driver_ctxt->set_cull_face(idc->mat->cull_mode());
+            driver_ctxt->render_geometry_dc(idc, cur_shdr);
+		}
+	}
+
 }
 
 void light_pass::render()

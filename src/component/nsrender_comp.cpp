@@ -25,7 +25,6 @@ nsrender_comp::nsrender_comp() :
 	m_cast_shadow(true),
 	m_mesh_id(0),
 	transparent_picking(false)
-//	currently_instanced(false)
 {}
 
 nsrender_comp::~nsrender_comp()
@@ -37,7 +36,6 @@ nsrender_comp::nsrender_comp(const nsrender_comp & rend_comp):
 	m_mesh_id(rend_comp.m_mesh_id),
 	m_mats(rend_comp.m_mats),
 	transparent_picking(rend_comp.transparent_picking)
-//	currently_instanced(false)
 {}
 	
 void nsrender_comp::clear_mats()

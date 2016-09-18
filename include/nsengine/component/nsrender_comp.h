@@ -96,7 +96,6 @@ public:
 
 	bool operator==(const nsrender_comp & rhs_);
 
-//	bool currently_instanced;
 	bool transparent_picking;
 	
 private:

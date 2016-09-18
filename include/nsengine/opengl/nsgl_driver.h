@@ -16,9 +16,12 @@
 #define OPENGL
 
 // Default shaders
-#define GBUFFER_SHADER "gbufferdefault"
-#define GBUFFER_WF_SHADER "gbufferdefault_wireframe"
-#define GBUFFER_TRANS_SHADER "gbufferdefault_translucent"
+#define GBUFFER_SHADER "gbuffer_single"
+#define GBUFFER_WF_SHADER "gbuffer_single_wireframe"
+#define GBUFFER_TRANS_SHADER "gbuffer_single_translucent"
+#define GBUFFER_INSTANCED_SHADER "gbuffer_instanced"
+#define GBUFFER_INSTANCED_WF_SHADER "gbuffer_instanced_wireframe"
+#define GBUFFER_INSTANCED_TRANS_SHADER "gbuffer_instanced_translucent"
 #define RENDER_PARTICLE_SHADER "renderparticle"
 #define PARTICLE_PROCESS_SHADER "xfbparticle"
 #define LIGHTSTENCIL_SHADER "lightstencil"
@@ -70,7 +73,8 @@
 #define DEFAULT_FOG_FACTOR_FAR 80
 
 // Max draw_calls
-#define MAX_INSTANCED_DRAW_CALLS 4096
+#define MAX_SINGLE_DRAW_CALLS 4096
+#define MAX_INSTANCED_DRAW_CALLS 1024
 #define MAX_LIGHTS_IN_SCENE 4096
 #define MAX_GBUFFER_DRAWS 2048
 #define MAX_UI_DRAW_CALLS 1024
@@ -102,6 +106,9 @@ struct render_shaders
 	nsshader * deflt;
 	nsshader * deflt_wireframe;
 	nsshader * deflt_translucent;
+	nsshader * deflt_instanced;
+	nsshader * deflt_instanced_wireframe;
+	nsshader * deflt_instanced_translucent;
 	nsshader * dir_light;
 	nsshader * point_light;
 	nsshader * spot_light;
@@ -246,10 +253,8 @@ struct gl_ctxt : public vid_ctxt
 
 	void bind_gbuffer_textures(nsgl_framebuffer * fb);
 	
-	void render_single_dc(single_draw_call * idc, nsgl_shader * bound_shader);
+	void render_geometry_dc(geometry_draw_call * idc, nsgl_shader * bound_shader);
 	
-    void render_instanced_dc(instanced_draw_call * idc, nsgl_shader * bound_shader);
-
     void render_light_dc(light_draw_call * idc, nsgl_shader * bound_shader);
 
     void render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader);
@@ -275,8 +280,7 @@ struct gl_ctxt : public vid_ctxt
 
 	nsgl_driver * driver;
 	
-	std::vector<instanced_draw_call> all_instanced_draw_calls;
-	std::vector<single_draw_call> all_single_draw_calls;
+	std::vector<geometry_draw_call> all_single_draw_calls;
 	std::vector<light_draw_call> all_light_draw_calls;
 	std::vector<ui_draw_call> all_ui_draw_calls;
 };

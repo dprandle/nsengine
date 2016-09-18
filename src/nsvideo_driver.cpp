@@ -34,6 +34,7 @@ vid_ctxt::vid_ctxt(uint32 cntxt_id):
 	render_passes(),
 	need_release(),
 	focused_vp(nullptr),
+	top_mat_id(0),
 	vp_list(),
 	registered_vid_objs()
 {}

@@ -70,7 +70,7 @@ public:
 
 	bool empty();
 
-	const uivec3 & selection_center_entity_id();
+	const uivec2 & selection_center_entity_id();
 
 	void enable_mirror_selection(bool enable_);
 

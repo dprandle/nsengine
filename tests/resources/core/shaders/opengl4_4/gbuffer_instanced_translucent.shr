@@ -1,0 +1,255 @@
+type:<nsstring>nsshader</nsstring>
+stage.size:<uint32>2</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>
+#version 440
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 tex;
+layout (location = 2) in vec3 norm;
+layout (location = 3) in vec3 tang;
+layout (location = 4) in ivec4 boneIDs;
+layout (location = 5) in vec4 boneWeights;
+layout (location = 6) in vec4 trans1;
+layout (location = 7) in vec4 trans2;
+layout (location = 8) in vec4 trans3;
+layout (location = 9) in vec4 trans4;
+layout (location = 10) in uint referenceID;
+
+uniform sampler2D heightMap;
+uniform sampler2D diffuseMap;
+uniform mat4 nodeTransform;
+uniform mat4 projCamMat;
+uniform mat4 boneTransforms[100];
+uniform bool hasBones;
+uniform bool hasHeightMap;
+uniform vec2 hminmax;
+
+mat4 transform;
+vec4 localPos;
+
+out vec2 texCoords;
+out vec3 normal;
+out vec3 tangent;
+out vec4 worldPos;
+flat out uint ent_id;
+
+void main()
+{
+	transform[0] = vec4(trans1.x, trans2.x, trans3.x, trans4.x);
+	transform[1] = vec4(trans1.y, trans2.y, trans3.y, trans4.y);
+	transform[2] = vec4(trans1.z, trans2.z, trans3.z, trans4.z);
+	transform[3] = vec4(trans1.w, trans2.w, trans3.w, trans4.w);
+
+	if (hasBones)
+	{
+		mat4 boneTrans = boneTransforms[boneIDs.x] * boneWeights.x;
+		boneTrans += boneTransforms[boneIDs.y] * boneWeights.y;
+		boneTrans += boneTransforms[boneIDs.z] * boneWeights.z;
+		boneTrans += boneTransforms[boneIDs.w] * boneWeights.w;
+		localPos = boneTrans * vec4(position, 1.0);
+		normal = (transform * boneTrans * vec4(norm, 0.0)).xyz;
+		tangent = (transform * boneTrans * vec4(tang, 0.0)).xyz;
+	}
+	else
+	{
+		localPos = nodeTransform * vec4(position, 1.0);
+		normal = (transform  * nodeTransform * vec4(norm, 0.0)).xyz;
+		tangent = (transform  * nodeTransform * vec4(tang, 0.0)).xyz;
+	}
+	
+	worldPos = transform * localPos;
+
+	if (hasHeightMap)
+	{
+		float heightMult = textureLod(heightMap, tex, 0.0).r; // store height info in red channel
+		worldPos.z += heightMult*(hminmax.y - hminmax.x) + hminmax.x;
+	}
+	texCoords = tex;
+	ent_id = referenceID;
+	gl_Position = projCamMat * worldPos;
+}
+
+</nsstring>
+stage[1].name:<nsstring>fragment</nsstring>
+stage[1].source:<nsstring>
+#version 440
+
+#define PI 3.141592653
+#define MAX_UINT 65536
+#define MAX_INT 32768
+#define MAX_POS 10000
+#define MAX_RES_X 1980
+#define MAX_RES_Y 1020
+
+struct packed_fragment_data // 48 bytes total
+{
+	vec3 wpos;
+	uint color;
+	uint normal;
+	int next;
+	float depth;
+	uint mat_id;
+	uvec4 ids;
+};
+
+struct unpacked_fragment_data
+{
+	vec4 color;
+	vec3 normal;
+	int next;
+	float depth;
+	vec3 wpos;
+	uint mat_id;
+	uvec4 ids;
+};
+
+// counter
+layout (binding = 0, offset = 0) uniform atomic_uint atom_counter;
+
+layout(early_fragment_tests) in;
+
+// header
+layout (std430, binding=0) buffer header_array
+{
+	int header_indices[];	
+};
+
+layout (std430, binding=1) buffer fragment_linked_list
+{
+	packed_fragment_data linked_list[];
+};
+
+in vec2 texCoords;
+in vec3 normal;
+in vec3 tangent;
+in vec4 worldPos;
+
+flat in uint ent_id;
+
+uniform vec4 viewport;
+
+uniform sampler2D diffuseMap;
+uniform sampler2D opacityMap;
+uniform sampler2D normalMap;
+
+uniform vec4 tex_coord_rect_d;
+uniform vec4 tex_coord_rect_o;
+uniform vec4 tex_coord_rect_n;
+
+uniform vec4 color_add_d;
+uniform vec4 color_mult_d;
+
+uniform vec4 color_add_n;
+uniform vec4 color_mult_n;
+
+uniform vec4 color_add_o;
+uniform vec4 color_mult_o;
+
+uniform uint material_id;
+uniform bool colorMode;
+uniform bool force_alpha;
+uniform vec4 fragColOut;
+uniform bool hasDiffuseMap;
+uniform bool hasNormalMap;
+uniform bool hasOpacityMap;
+uniform bool hasHeightMap;
+uniform uint pluginID;
+
+vec2 adj_tex_coords(vec4 rect)
+{
+	vec2 texc;
+	texc.x = texCoords.x * (rect.z - rect.x) + rect.x;
+	texc.y = texCoords.y * (rect.w - rect.y) + rect.y;
+	return texc;
+}
+
+uint pack_color(vec4 color)
+{
+	uint ret = 0x00000000;
+	uint r = uint(color.r * 255);
+	uint g = uint(color.g * 255);
+	uint b = uint(color.b * 255);
+	uint a = uint(color.a * 255);
+	ret = (r << 24) | (g << 16) | (b << 8) | a;
+	return ret;
+}
+
+uint pack_normal(vec3 normal)
+{
+	uint ret = uint(abs(normal.y) * MAX_UINT);
+	ret |= ((uint(abs(normal.x) * MAX_UINT) << 16) & 0xFFFF0000);
+	return ret;
+}
+
+packed_fragment_data pack_frag_data(unpacked_fragment_data updat)
+{
+	packed_fragment_data dat;
+	dat.color = pack_color(updat.color);
+	dat.depth = updat.depth;
+	dat.wpos = updat.wpos;
+	dat.next = updat.next;
+	dat.normal = pack_normal(updat.normal);
+	dat.mat_id = updat.mat_id;
+	uint res = uint(updat.normal.z < 0) | (uint(updat.normal.y < 0)) << 1 | (uint(updat.normal.x < 0) << 2);
+	dat.mat_id |= (res << 16);
+	dat.ids = updat.ids;
+	return dat;
+}
+
+vec3 calculateNormalMap()
+{
+    vec3 norm = normalize(normal);
+	if (!colorMode && hasNormalMap)
+	{
+		vec3 tang = normalize(tangent);
+		tang = normalize(tang - dot(tang, norm) * norm);
+		vec3 biTangent = cross(tang, norm);
+		vec3 bmNormal = (texture(normalMap, adj_tex_coords(tex_coord_rect_n))*color_mult_n + color_add_n).xyz;
+		bmNormal = 2.0 * bmNormal - vec3(1.0, 1.0, 1.0);
+		vec3 nNormal;
+		mat3 transBumpMap = mat3(tang, biTangent, norm);
+		nNormal = transBumpMap * bmNormal;
+		nNormal = normalize(nNormal);
+		return nNormal;
+	}
+	return norm;
+}
+
+void main()
+{
+	int header_index, new_ll_index, old_ll_index;
+	
+	unpacked_fragment_data fdata;
+	fdata.color = fragColOut;
+	if (!colorMode && hasDiffuseMap)
+	{
+		if (hasHeightMap)
+			fdata.color = texture(diffuseMap, vec2(worldPos.xy)/20);
+		else
+			fdata.color = texture(diffuseMap, adj_tex_coords(tex_coord_rect_d)) * color_mult_d + color_add_d;
+	}
+
+	if (hasOpacityMap)
+		fdata.color.a = (texture(opacityMap, adj_tex_coords(tex_coord_rect_o)) * color_mult_o + color_add_o).a;
+
+	if (force_alpha)
+		fdata.color.a = fragColOut.a;
+
+	// get header index
+	header_index = int(gl_FragCoord.x + gl_FragCoord.y*viewport.z);
+	new_ll_index = int(atomicCounterIncrement(atom_counter));
+	if (new_ll_index < MAX_RES_X*MAX_RES_Y*2)
+	{
+		old_ll_index = atomicExchange(header_indices[header_index], new_ll_index);
+		fdata.normal = calculateNormalMap();
+		fdata.wpos = worldPos.xyz;
+		fdata.mat_id = material_id;
+		fdata.next = old_ll_index;
+		fdata.depth = gl_FragCoord.z;
+		fdata.ids = uvec4(pluginID, ent_id, 0, 0);
+		linked_list[new_ll_index] = pack_frag_data(fdata);
+	}
+}
+
+</nsstring>

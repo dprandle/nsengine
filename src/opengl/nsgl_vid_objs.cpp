@@ -42,6 +42,7 @@ nsgl_shader_obj::~nsgl_shader_obj()
 void nsgl_shader_obj::update()
 {
 	nsshader * shdr = (nsshader*)parent;
+	dprint("nsgl_shader_obj::update - updating video info for shader " + shdr->name());
 	for (uint32 i = 0; i < shdr->shader_stages.size(); ++i)
 	{
         if (!shdr->shader_stages[i].source.empty())
@@ -304,8 +305,6 @@ nsgl_tform_comp_obj::~nsgl_tform_comp_obj()
 void nsgl_tform_comp_obj::update()
 {
 	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
-
-	
 	bool did_resize = false;
     if (psi->shared_geom_tforms.size() != last_size)
     {

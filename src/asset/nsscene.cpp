@@ -570,6 +570,7 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 				else
 				{
 					tform_per_scene_info * psi = new tform_per_scene_info;
+					psi->video_context_init();
 					nse.video_driver()->current_context()->instance_objs.push_back(psi);
 					tcomp->inst_obj = psi;
 					ent_tcomp->inst_obj = psi;
@@ -770,7 +771,7 @@ void nsscene::_populate_pup_vec()
 	{
         nstform_comp * tfc = (*ent_iter)->get<nstform_comp>();
 		if (tfc->save_with_scene)
-			m_pupped_tforms.emplace_back(tfc->tf_info());
+			m_pupped_tforms.emplace_back((*ent_iter)->full_id(),tfc->tf_info());
 		++ent_iter;
 	}
 }

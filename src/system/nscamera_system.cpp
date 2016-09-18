@@ -748,7 +748,7 @@ bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
     if (scene_error_check())
         return true;
 
-	nsentity * ent = m_active_scene->find_entity(evnt->focus_id.xy());
+	nsentity * ent = m_active_scene->find_entity(evnt->focus_id);
 	if (ent == nullptr)
 		return true;
 	

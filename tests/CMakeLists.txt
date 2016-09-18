@@ -33,8 +33,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 add_executable(most_basic_test most_basic_test.cpp)
 set_target_properties(most_basic_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(window_test window_test.cpp)
-set_target_properties(window_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+# add_executable(window_test window_test.cpp)
+# set_target_properties(window_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-add_executable(audio_test audio_test.cpp)
-set_target_properties(audio_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+# add_executable(audio_test audio_test.cpp)
+# set_target_properties(audio_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

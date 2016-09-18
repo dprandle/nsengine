@@ -38,64 +38,62 @@ struct gl_draw_call : public draw_call
 	uint32 mat_index;
 };
 
-struct single_draw_call : public gl_draw_call
+struct single_geom_info
 {
-	single_draw_call():
+	single_geom_info():
+		transform(),
+		entity_id(0)
+	{}
+	~single_geom_info() {}	
+	uint32 entity_id;
+	fmat4 transform;	
+};
+
+struct instanced_geom_info
+{
+	instanced_geom_info():
+		tform_buffer(nullptr),
+		tform_id_buffer(nullptr),
+		transform_count(0)
+	{}
+	~instanced_geom_info() {}
+	
+	nsgl_buffer * tform_buffer;
+	nsgl_buffer * tform_id_buffer;
+	uint32 transform_count;
+};
+
+struct geometry_draw_call : public gl_draw_call
+{
+	geometry_draw_call():
 		gl_draw_call(),
 		scn(nullptr),
 		submesh(nullptr),
-		transform(),
 		anim_transforms(nullptr),
 		height_minmax(),
-		entity_id(0),
 		plugin_id(0),
 		casts_shadows(false),
 		transparent_picking(false),
-		sel_color()
+		sel_color(),
+		instanced(false),
+		single_dci(),
+		instanced_dci()
 	{}
 	
-	~single_draw_call() {}
+	~geometry_draw_call() {}
 
 	nsscene * scn;
 	nsmesh::submesh * submesh;
-	fmat4 transform;
 	fmat4_vector * anim_transforms;
 	fvec2 height_minmax;
-	uint32 entity_id;
 	uint32 plugin_id;
-	bool casts_shadows;
 	bool transparent_picking;
+	bool casts_shadows;
 	fvec4 sel_color;
-};
+	bool instanced;
 
-struct instanced_draw_call : public gl_draw_call
-{
-	instanced_draw_call():
-		gl_draw_call(),
-		scn(nullptr),
-		submesh(nullptr),
-		tform_buffer(nullptr),
-		tform_id_buffer(nullptr),
-		anim_transforms(nullptr),
-		height_minmax(),
-		plugin_id(0),
-		transform_count(0),
-		casts_shadows(false),
-		transparent_picking(false)
-	{}
-	
-	~instanced_draw_call() {}
-
-	nsscene * scn;
-	nsmesh::submesh * submesh;
-	nsgl_buffer * tform_buffer;
-	nsgl_buffer * tform_id_buffer;
-	fmat4_vector * anim_transforms;
-	fvec2 height_minmax;
-	uint32 plugin_id;
-	uint32 transform_count;
-	bool casts_shadows;
-	bool transparent_picking;
+	single_geom_info single_dci;
+	instanced_geom_info instanced_dci;
 };
 
 typedef std::map<nsmaterial*, uint32> mat_id_map;

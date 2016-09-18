@@ -28,6 +28,12 @@ class nstform_comp;
 
 struct pupped_info
 {
+	pupped_info(const uivec2 & ent_id_ = uivec2(),
+				const tform_info & tf_inf=tform_info()):
+		ent_id(ent_id_),
+		tf_info(tf_inf)
+	{}
+	
 	uivec2 ent_id;
 	tform_info tf_info;
 };
@@ -167,6 +173,13 @@ private:
 	pupped_vec_info m_unloaded_tforms;
 	pupped_vec_info m_pupped_tforms;
 };
+
+template<class PUPer>
+void pup(PUPer & p, pupped_info & pi, const nsstring & var_name)
+{
+	pup(p, pi.ent_id, var_name + ".ent_id");
+	pup(p, pi.tf_info, var_name + ".tf_info");
+}
 
 template<class PUPer>
 void pup(PUPer & p, nsscene & sc)

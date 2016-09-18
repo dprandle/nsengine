@@ -173,12 +173,12 @@ struct nsaction_event : public nsevent
 
 struct nssel_focus_event : public nsevent
 {  	
-	nssel_focus_event(const uivec3 & focid_):
+	nssel_focus_event(const uivec2 & focid_):
 		nsevent(),
 		focus_id(focid_)
 	{}
 
-	uivec3 focus_id;
+	uivec2 focus_id;
 };
 
 struct nscam_change_event : public nsevent

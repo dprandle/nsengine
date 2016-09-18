@@ -65,7 +65,7 @@ struct button_funcs
 		nsentity * tile = plg->create_tile(name, grass_mat, false);
 		if (tile == nullptr)
 			tile = plg->get<nsentity>(name);
-		scn->add(tile,nullptr,true,cur_offset);
+		scn->add(tile,cur_offset);
 		cur_offset += fvec3(2 * X_GRID,0.0f,0.0f);
 		++name_offset;
 		current_ents.push_back(tile);
@@ -73,51 +73,14 @@ struct button_funcs
 
 	void on_remove_selection()
 	{
-		auto ent_iter = current_ents.begin();
-		while (ent_iter != current_ents.end())
-		{
-			if (nse.system<nsselection_system>()->selection_contains(uivec3((*ent_iter)->full_id(),0)))
-			{
-				plg->destroy(*ent_iter);
-				ent_iter = current_ents.erase(ent_iter);
-			}
-			else
-				++ent_iter;
-		}
 	}
 
 	void on_toggle_ac()
 	{
-		auto ent_iter = current_ents.begin();
-		while (ent_iter != current_ents.end())
-		{
-			if (nse.system<nsselection_system>()->selection_contains(uivec3((*ent_iter)->full_id(),0)))
-			{
-				nsanim_comp * ac = (*ent_iter)->get<nsanim_comp>();
-				if (ac == nullptr)
-					ac = (*ent_iter)->create<nsanim_comp>();
-				else
-					(*ent_iter)->destroy(ac->type());
-			}
-			++ent_iter;
-		}
 	}
 
 	void on_toggle_sc()
 	{
-		auto ent_iter = current_ents.begin();
-		while (ent_iter != current_ents.end())
-		{
-			if (nse.system<nsselection_system>()->selection_contains(uivec3((*ent_iter)->full_id(),0)))
-			{
-				nssprite_sheet_comp * sc = (*ent_iter)->get<nssprite_sheet_comp>();
-				if (sc == nullptr)
-					sc = (*ent_iter)->create<nssprite_sheet_comp>();
-				else
-					(*ent_iter)->destroy(sc->type());
-			}
-			++ent_iter;
-		}
 	}
 
 	std::vector<nsentity*> current_ents;
@@ -228,10 +191,10 @@ int main()
    
 
 	// Add stuff to scene
-	new_scene->add(vp->camera, nullptr,true,fvec3(0,0,-20));
-    new_scene->add(dirl, nullptr, false, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-    new_scene->add(point_light, nullptr, false, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
-	new_scene->add(spot_light, nullptr, false, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+	new_scene->add(vp->camera, fvec3(0,0,-20));
+    new_scene->add(dirl, fvec3(5.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+    new_scene->add(point_light, fvec3(5.0f, 20.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
+	new_scene->add(spot_light, fvec3(20.0f, 5.0f, -20.0f), orientation(fvec4(1,0,0,20.0f)));
 
 	fvec2 button_size(200,60);
 	fvec2 start_pos(200,800);
