@@ -615,6 +615,7 @@ void gl_ctxt::push_scene(nsscene * scn)
 	top_mat_id = 0;
 	_add_instanced_draw_calls_from_scene(scn);
 	_add_draw_calls_from_scene(scn);
+	_add_selection_draw_calls(scn);
 	_add_lights_from_scene(scn);
 }
 
@@ -1102,10 +1103,10 @@ void gl_ctxt::render_geometry_dc(geometry_draw_call * idc, nsgl_shader * bound_s
 	so->gl_vao->bind();
 	if (!idc->instanced)
 	{
-		if (idc->transparent_picking)
+        if (!idc->mat->alpha_blend() || idc->transparent_picking)
 			bound_shader->set_uniform("entityID", idc->single_dci.entity_id);
 		else
-			bound_shader->set_uniform("entityID", 0);
+            bound_shader->set_uniform("entityID", uint32(0));
 		bound_shader->set_uniform("transform", idc->single_dci.transform);
 		bound_shader->validate();
 		gl_err_check("instanced_geometry_draw_call::render pre");
@@ -1282,7 +1283,6 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 	// update render components and the draw call list
 	render_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
 	render_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
-	render_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
 
 	nscam_comp * cc = camera->get<nscam_comp>();	
 	fvec2 terh;
@@ -1333,6 +1333,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 		nsmaterial * mat = nullptr;
 		fmat4_vector * fTForms = nullptr;
 		nsshader * shader = nullptr;
+
 		for (uint32 i = 0; i < currentMesh->count(); ++i)
 		{
 			mSMesh = currentMesh->sub(i);
@@ -1375,7 +1376,6 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 			dc->single_dci.entity_id = (*iter)->id();
 			dc->single_dci.transform = tComp->world_tf();
 
-
 			if (mat->alpha_blend())
 			{
 				dc->transparent_picking = rComp->transparent_picking;
@@ -1390,30 +1390,65 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 			if (inserted.second)
 				++top_mat_id;
  		}
+		
+		++iter;
+	}
+}
 
-		// add selection draw calls
-		entity_ptr_set & ents = nse.system<nsselection_system>()->current_selection();
-		auto sel_ent_iter = ents.begin();
-		while (sel_ent_iter != ents.end())
+void gl_ctxt::_add_selection_draw_calls(nsscene * scene)
+{
+	// add selection draw calls
+	render_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
+
+	entity_ptr_set & ents = nse.system<nsselection_system>()->current_selection();
+	auto sel_ent_iter = ents.begin();
+	while (sel_ent_iter != ents.end())
+	{
+		nsrender_comp * rComp = (*sel_ent_iter)->get<nsrender_comp>();
+		nsmesh * currentMesh = get_asset<nsmesh>(rComp->mesh_id());
+		if (currentMesh == nullptr)
 		{
-			nssel_comp * sc = (*sel_ent_iter)->get<nssel_comp>();
+			++sel_ent_iter;
+			continue;
+		}
+
+		nstform_comp * tform = (*sel_ent_iter)->get<nstform_comp>();
+		nssel_comp * sc = (*sel_ent_iter)->get<nssel_comp>();
+
+		nsterrain_comp * tc = (*sel_ent_iter)->get<nsterrain_comp>();
+		fvec2 terh;		
+		if (tc != nullptr)
+			terh = tc->height_bounds();
+
+		nsanim_comp * ac = (*sel_ent_iter)->get<nsanim_comp>();
+		fmat4_vector * fTForms = nullptr;
+		if (ac != nullptr && !ac->final_transforms()->empty())
+			fTForms = ac->final_transforms();
+		
+		for (uint32 i = 0; i < currentMesh->count(); ++i)
+		{
 			all_single_draw_calls.resize(all_single_draw_calls.size()+1);
 			geometry_draw_call * sel_dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
-			sel_dc->submesh = mSMesh;
+
+			nsmaterial * mat = get_asset<nsmaterial>(rComp->material_id(i));
+			if (mat == nullptr)
+				mat = nse.video_driver<nsgl_driver>()->default_mat();
+			
+			sel_dc->submesh = currentMesh->sub(i);
 			sel_dc->scn = scene;
 			sel_dc->anim_transforms = fTForms;
 			sel_dc->height_minmax = terh;
 			sel_dc->shdr = nse.core()->get<nsshader>(SELECTION_SHADER);
 			sel_dc->mat = mat;
 			sel_dc->sel_color = sc->color();
+			sel_dc->single_dci.transform = tform->world_tf();
 			scene_sel->push_back(sel_dc);
-			++sel_ent_iter;
 		}
 		
-		++iter;
+		++sel_ent_iter;
 	}
+		
 }
-
 
 nsgl_driver::nsgl_driver() :
 	nsvideo_driver(),

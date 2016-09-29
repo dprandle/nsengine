@@ -482,138 +482,6 @@ int32 nsselection_system::update_priority()
 	return SEL_SYS_UPDATE_PR;
 }
 
-// void nsselection_system::_on_rotate_x(nsentity * ent, bool pPressed)
-// {
-// 	if (ent == nullptr)
-// 		return;
-// 	nssel_comp * sc = ent->get<nssel_comp>();
-// 	if (sc->selected() && pPressed)
-// 		rotate(ent, nstform_comp::dir_right, 45.0f);
-// }
-
-// void nsselection_system::_on_rotate_y(nsentity * ent, bool pPressed)
-// {
-// 	if (ent == nullptr)
-// 		return;
-// 	nssel_comp * sc = ent->get<nssel_comp>();
-// 	if (sc->selected() && pPressed)
-// 		rotate(ent, nstform_comp::dir_target, 45.0f);
-// }
-
-// void nsselection_system::_on_rotate_z(nsentity * ent, bool pPressed)
-// {
-// 	if (ent == nullptr)
-// 		return;
-// 	nssel_comp * sc = ent->get<nssel_comp>();
-// 	if (sc->selected() && pPressed)
-// 	{
-// 		rotate(ent, nstform_comp::dir_up, 45.0f);
-// 	}
-// }
-
-void nsselection_system::_on_select(nsentity * ent, bool pPressed, const uivec2 & pID, bool pSnapZOnly)
-{
-	// if (m_active_scene == nullptr)
-	// 	return;
-	
-	// viewport * vp = nse.video_driver()->current_context()->focused_vp;
-	// if (vp == nullptr)
-	// 	return;
-
-	// nsentity * cam = vp->camera;
-	// if (cam == nullptr)
-	// 	return;
-
-	// if (ent == nullptr)
-	// 	return;
-
-	// nssel_comp * sc = ent->get<nssel_comp>();
-	// nstform_comp * tc = ent->get<nstform_comp>();
-	// tform_per_scene_info * tpsi = tc->per_scene_info(m_active_scene);
-	
-	// if (pPressed)
-	// {
-	// 	if (ent->full_id() == pID)
-	// 	{
-	// 		if (selection != nullptr && selection->find(pID.z) == selection->end())
-	// 			set_selection(ent);
-
-	// 		m_focus_ent = pID;
-	// 		if (!m_moving)
-	// 		{
-	// 			fvec3 originalPos = tc->world_position();
-	// 			m_cached_point = originalPos;
-	// 			remove_from_grid();
-	// 			m_moving = true;
-	// 		}
-	// 	}
-	// 	else if (!selection_contains(pID))
-	// 	{
-	// 		clear_selection();
-	// 		m_focus_ent = uivec2();
-	// 	}
-	// }
-	// else
-	// {
-	// 	if (sc->selected(m_active_scene))
-	// 	{
-	// 		if (pSnapZOnly)
-	// 		{
-	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-	// 			{
-	// 				instance_tform & itf = tpsi->m_tforms[i];
-	// 				fvec3 wpos = itf.world_position();
-	// 				nstile_grid::snap(wpos);
-	// 				itf.set_world_position(fvec3(itf.world_position().xy(),wpos.z));
-	// 			}
-	// 		}
-	// 		else
-	// 		{
-	// 			for (uint32 i = 0; i < tpsi->m_tforms.size(); ++i)
-	// 			{
-	// 				instance_tform & itf = tpsi->m_tforms[i];
-	// 				fvec3 wpos = itf.world_position();
-	// 				nstile_grid::snap(wpos);
-	// 				itf.set_world_position(wpos);
-	// 			}				
-	// 		}
-	// 	}
-			
-
-	// 	if (m_moving)
-	// 	{		
-	// 		nsentity * ent = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
-	// 		if (ent == nullptr)
-	// 			return;
-	// 		tform_per_scene_info * tfpsi = ent->get<nstform_comp>()->per_scene_info(m_active_scene);
-	// 		instance_tform & f_itf = tfpsi->m_tforms[m_focus_ent.z];
-
-	// 		if (selection_collides_with_tilegrid())
-	// 		{
-	// 			f_itf.recursive_compute();
-	// 			fvec3 pTranslate = m_cached_point - f_itf.world_position();
-
-	// 			translate_selection(pTranslate);
-	// 			set_selection_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
-
-	// 			if (!add_selection_to_grid(m_active_scene))
-	// 			{
-	// 				dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
-	// 			}
-	// 		}
-	// 		else
-	// 		{
-	// 			fvec3 pos = f_itf.world_position();
-	// 			m_active_scene->grid().snap(pos);
-	// 			add_selection_to_grid(m_active_scene);
-	// 		}
-
-	// 		m_moving = false;
-	// 		m_cached_point = fvec3();
-	// 	}
-	// }
-}
-
 void nsselection_system::translate_selection(const fvec3 & amount)
 {
 	if (m_active_scene == nullptr)
@@ -648,60 +516,6 @@ void nsselection_system::rotate_selection(const fquat & rotation)
 void nsselection_system::set_occupied_spaces(bool show)
 {
 	m_draw_occ = show;
-}
-
-void nsselection_system::_on_paint_select(nsentity * ent, const fvec2 & pPos)
-{
-	// if (ent == nullptr || m_active_scene == nullptr)
-	// 	return;
-	
-	// uivec3 pi = pick(pPos.x, pPos.y);
-	// nssel_comp * sc = ent->get<nssel_comp>();
-
-	// if (ent->plugin_id() == pi.x && ent->id() == pi.y) // needs the pointing thing
-	// {
-	// 	m_focus_ent = pi;
-	// 	nsentity * tileBrush = nse.system<nsbuild_system>()->tile_brush();
-	// 	if (tileBrush == nullptr)
-	// 	{
-	// 		add_to_selection(ent, pi.z);
-	// 		return;
-	// 	}
-	// 	nstile_brush_comp * brushComp = tileBrush->get<nstile_brush_comp>();
-	// 	if (brushComp == nullptr)
-	// 	{
-	// 		add_to_selection(ent, pi.z);
-	// 		return;
-	// 	}
-
-	// 	auto brushIter = brushComp->begin();
-	// 	while (brushIter != brushComp->end())
-	// 	{
-	// 		for (int32 i = 0; i < brushComp->height(); ++i)
-	// 		{
-	// 			nsentity * focEnt = m_active_scene->find_entity(m_focus_ent.x, m_focus_ent.y);
-	// 			if (focEnt == nullptr)
-	// 				continue;
-
-	// 			nstform_comp * tForm = focEnt->get<nstform_comp>();
-	// 			tform_per_scene_info * tpsi = tForm->per_scene_info(m_active_scene);
-				
-	// 			instance_tform & itf = tpsi->m_tforms[m_focus_ent.z];
-	// 			fvec3 pos = itf.world_position() + nstile_grid::world(ivec3(brushIter->x, brushIter->y, -i)); // add in height when get working
-	// 			uivec3 refid = m_active_scene->ref_id(pos);
-	// 			nsentity * selEnt = get_entity(refid.xy());
-	// 			if (selEnt == nullptr)
-	// 				continue;
-	// 			nssel_comp * selComp = selEnt->get<nssel_comp>();
-	// 			if (selComp == nullptr)
-	// 				continue;
-
-	// 			add_to_selection(ent, refid.z);
-	// 		}
-	// 		++brushIter;
-	// 	}
-
-	// }
 }
 
 void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, uint16 axis_, const fvec4 & norm_vp)
@@ -742,37 +556,23 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 	fvec3 castVec = fpos - cam_tform->world_position();
 	castVec.normalize();
 	float depth = 0.0f;
-	fvec3 normal;
+    fvec3 normal(0.0f,0.0f,-1.0f);
 
     fvec3 targetVec = cam_tform->world_orientation().target();
-	fvec3 projVec = project_plane(targetVec, fvec3(0.0f,0.0f,-1.0f));
-	fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
-	
-	float angle = targetVec.angle_to(projVec);
-	float angleX = projVec.xy().angle_to(projVecX);
-	
-	// Set normal if not moving in a single plane
-//	if ((axis_ == (axis_x | axis_y | axis_z) && angle > 35.0f) || (axis_ & axis_z) != axis_z)
+    fvec3 projVec = project_plane(targetVec, normal);
+    fvec2 projVecX = project(projVec.xy(), fvec2(1.0,0.0));
+    float angleX = projVec.xy().angle_to(projVecX);
 
-	normal.set(0.0f,0.0f,-1.0f);
-	// else
-	// {
-	// 	if (axis_ == axis_z || axis_ == (axis_x | axis_y | axis_z))
-	// 	{
-	// 		if (angleX < 45.0f)
-	// 			normal.set(-1.0f,0.0f,0.0f);
-	// 		else
-	// 			normal.set(0.0f,-1.0f,0.0f);
-	// 	}
-	// 	else
-	// 	{
-	// 		if ((axis_ & axis_x) != axis_x)
-	// 			normal.set(-1.0f,0.0f,0.0f);
-	// 		else
-	// 			normal.set(0.0f,-1.0f,0.0f);
-	// 	}
-	// }
-	
+    // Set normal if not moving in a single plane
+    uint32 result = axis_ & axis_z;
+    if (result == axis_z)
+    {
+        if (angleX < 45.0f)
+            normal.set(-1.0f,0.0f,0.0f);
+        else
+            normal.set(0.0f,-1.0f,0.0f);
+    }
+
 	depth = (normal * (originalPos - fpos)) / (normal * castVec);
 	fpos += castVec*depth;
 	fpos -= originalPos;	
@@ -783,64 +583,6 @@ void nsselection_system::_on_draw_object(nsentity * ent, const fvec2 & pDelta, u
 const uivec2 & nsselection_system::selection_center_entity_id()
 {
 	return m_focus_ent;
-}
-
-void nsselection_system::_on_multi_select(nsentity * ent, bool pPressed, const uivec2 & pID)
-{
-	// if (m_active_scene == nullptr || ent == nullptr)
-	// 	return;
-
-	// nssel_comp * sc = ent->get<nssel_comp>();
-	
-	// if (pPressed)
-	// {
-	// 	nsentity * ent = sc->owner();
-	// 	if (ent->plugin_id() == pID.x && ent->id() == pID.y)
-	// 	{
-	// 		if (!selection_contains(pID))
-	// 		{
-	// 			add_to_selection(ent, pID.z);
-	// 			m_focus_ent = pID;
-	// 		}
-	// 		else
-	// 		{
-	// 			remove_from_selection(ent, pID.z);
-	// 			m_focus_ent = uivec3();
-	// 			if (!m_selected_ents.empty())
-	// 			{
-	// 				nsentity * ent = m_active_scene->find_entity(pID.x, pID.y);
-	// 				if (ent != nullptr)
-	// 				{
-	// 					auto iter = m_selected_ents.find(ent);
-	// 					if (iter != m_selected_ents.end())
-	// 					{
-	// 						nssel_comp * selComp = (*iter)->get<nssel_comp>();
-							
-	// 						m_focus_ent.x = (*iter)->plugin_id();
-	// 						m_focus_ent.y = (*iter)->id();
-	// 						m_focus_ent.z = (*selComp->selection(m_active_scene)->begin());
-	// 					}
-	// 					else
-	// 					{
-	// 						auto entFirst = m_selected_ents.begin();
-	// 						nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
-	// 						m_focus_ent.x = (*entFirst)->plugin_id();
-	// 						m_focus_ent.y = (*entFirst)->id();
-	// 						m_focus_ent.z = (*selComp->selection(m_active_scene)->begin());
-	// 					}
-	// 				}
-	// 				else
-	// 				{
-	// 					auto entFirst = m_selected_ents.begin();
-	// 					nssel_comp * selComp = (*entFirst)->get<nssel_comp>();
-	// 					m_focus_ent.y = (*entFirst)->plugin_id();
-	// 					m_focus_ent.y = (*entFirst)->id();
-	// 					m_focus_ent.z = *selComp->selection(m_active_scene)->begin();
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 }
 
 void nsselection_system::_reset_focus(const uivec2 & pickid)
@@ -861,14 +603,6 @@ void nsselection_system::_reset_focus(const uivec2 & pickid)
 
 	if (selection_contains(m_focus_ent))
 		return;
-
-	// nsentity * ent = get_asset<nsentity>(pickid.xy());
-	// nssel_comp * sc;
-	// if (ent == nullptr || (sc = ent->get<nssel_comp>()) == nullptr || m_active_scene == nullptr)
-	// 	return;
-
-	// // nstform_comp * tc = ent->get<nstform_comp>();
-	// // original_pos = tc->per_scene_info(m_active_scene)->m_tforms[pickid.z].world_position();
 }
 
 void nsselection_system::remove_from_selection(nsentity * ent)
@@ -1025,94 +759,6 @@ void nsselection_system::setup_input_map(nsinput_map * imap, const nsstring & gl
 
 }
 
-void nsselection_system::tile_swap(nsentity * pNewTile)
-{
-	// if (m_active_scene == nullptr)
-	// 	return;
-
-	// if (pNewTile == nullptr)
-	// {
-	// 	dprint("nsselection_system::swapTiles pNewTile is nullptr");
-	// 	return;
-	// }
-	// if (!valid_tile_swap())
-	// 	return;
-
-	// std::vector<fvec3> posVec;
-
-	// auto iter = m_selected_ents.begin();
-	// while (iter != m_selected_ents.end())
-	// {
-	// 	nssel_comp * selC = (*iter)->get<nssel_comp>();
-	// 	nstform_comp * tComp = (*iter)->get<nstform_comp>();
-	// 	tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_scene);
-	// 	auto selection = selC->selection(m_active_scene);
-	// 	if (selection == nullptr)
-	// 	{
-	// 		++iter;
-	// 		continue;
-	// 	}
-		
-	// 	posVec.resize(selection->size());
-	// 	uint32 i = 0;
-	// 	auto iter2 = selection->begin();
-	// 	while (iter2 != selection->end())
-	// 	{
-	// 		posVec[i] = tpsi->m_tforms[*iter2].world_position();
-	// 		++iter2;
-	// 		++i;
-	// 	}
-
-	// 	for (uint32 cur = 0; cur < posVec.size(); ++cur)
-	// 	{
-	// 		uivec3 id = m_active_scene->ref_id(posVec[cur]);
-	// 		nstform_comp * tfc = m_active_scene->find_entity(id.xy())->get<nstform_comp>();
-	// 		instance_tform & copy = tfc->per_scene_info(m_active_scene)->m_tforms[id.z];			
-	// 		m_active_scene->add(pNewTile, nullptr, copy, false);
-	// 		m_active_scene->remove(posVec[cur], false);
-	// 	}
-
-	// 	++iter;
-	// }
-	// clear_selection();
-}
-
-// bool nsselection_system::valid_brush()
-// {
-// 	if (m_selected_ents.empty())
-// 		return false;
-
-// 	auto iter = m_selected_ents.begin();
-// 	while (iter != m_selected_ents.end())
-// 	{
-// 		if (!(*iter)->has<nstile_comp>())
-// 			return false;
-
-// 		nssel_comp * selComp = (*iter)->get<nssel_comp>();
-// 		nstform_comp * tComp = (*iter)->get<nstform_comp>();
-
-// 		int32 newZ = nstile_grid::index_z(tComp->wpos().z);
-
-// 		auto selIter = selComp->begin();
-// 		int32 z = 0;
-
-// 		if (selIter != selComp->end())
-// 			z = nstile_grid::index_z(tComp->wpos(*selIter).z);
-// 		else
-// 			return false;
-
-// 		while (selIter != selComp->end())
-// 		{
-// 			int32 newZ = nstile_grid::index_z(tComp->wpos(*selIter).z);
-// 			if (newZ != z)
-// 				return false;
-// 			++selIter;
-// 		}
-// 		++iter;
-// 	}
-// 	return true;
-// }
-
 bool nsselection_system::valid_tile_swap()
 {
 	if (m_selected_ents.empty())
@@ -1126,11 +772,6 @@ bool nsselection_system::valid_tile_swap()
 		++iter;
 	}
 	return true;
-}
-
-void nsselection_system::_update_selection()
-{
-	
 }
 
 void nsselection_system::update()
@@ -1287,7 +928,7 @@ bool nsselection_system::_handle_move_select(nsaction_event * evnt)
 	if (vp == nullptr)
 		return true;
 	nsentity * ent = get_asset<nsentity>(m_focus_ent);
-	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y | axis_z, vp->normalized_bounds);
+    _on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
 	return true;
 }
 

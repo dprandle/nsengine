@@ -43,9 +43,9 @@ public:
 	
 	enum axis_t
 	{
-		axis_x=0x0001,
-		axis_y=0x0010,
-		axis_z=0x0100
+        axis_x=0x01,
+        axis_y=0x02,
+        axis_z=0x04
 	};
 
 	nsselection_system();
@@ -89,7 +89,6 @@ public:
 	void init();
 
 	void release();
-//	bool valid_brush();
 
 	bool valid_tile_swap();
 
@@ -120,8 +119,6 @@ public:
 	void snap_selection_to_grid();
 
 	const fvec4 & mirror_tile_color();
-
-	void tile_swap(nsentity * newtile);
 
 	virtual void update();
 	
@@ -160,50 +157,16 @@ protected:
 	
 	void _reset_focus(const uivec2 & pickid);
 
-	// virtual void _on_rotate_x(
-	// 	nsentity * ent,
-	// 	bool pPressed
-	// 	);
-
-	// virtual void _on_rotate_y(
-	// 	nsentity * ent,
-	// 	bool pPressed
-	// 	);
-
-	// virtual void _on_rotate_z(
-	// 	nsentity * ent,
-	// 	bool pPressed
-	// 	);
-
-	virtual void _on_select(
-		nsentity * ent,
-		bool pPressed,
-		const uivec2 & pID,
-		bool pSnapZOnly = false
-		);
-
-	virtual void _on_multi_select(
-		nsentity * ent,
-		bool pPressed,
-		const uivec2 & pID
-		);
-
-	virtual void _on_paint_select(
-		nsentity * ent,
-		const fvec2 & pPos
-		);
-
 	virtual void _on_draw_object(
 		nsentity * ent,
 		const fvec2 & pDelta,
 		uint16 _axis,
-		const fvec4 & norm_vp=fvec4(1.0f)
+        const fvec4 & norm_vp
 		);
 
 	void _draw_occ();
 	void _draw_ent_occ(nsentity * ent);
 	void _draw_hidden();
-	void _update_selection();
 
 	uivec2 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
 	entity_ptr_set m_selected_ents;

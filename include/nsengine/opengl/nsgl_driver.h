@@ -263,6 +263,8 @@ struct gl_ctxt : public vid_ctxt
 	
 	void _add_draw_calls_from_scene(nsscene * scene);
 
+	void _add_selection_draw_calls(nsscene * scene);
+
 	void _add_lights_from_scene(nsscene * scene);
 
 	GLEWContext * glew_context; // created in ctor

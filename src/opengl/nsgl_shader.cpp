@@ -368,7 +368,8 @@ void nsgl_shader::set_uniform(const nsstring & var_name, int32 data)
 		glUniform1i(init_uniform_loc(var_name), data);
 	else
 		glUniform1i(iter->second, data);
-	gl_err_check("nsgl_shader::set_uniform(int32)");
+    if (gl_err_check("nsgl_shader::set_uniform(int32)"))
+        dprint("Detected error");
 }
 
 void nsgl_shader::set_uniform(const nsstring & var_name, uint32 data)
