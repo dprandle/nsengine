@@ -1,7 +1,7 @@
 #ifndef NSMAT3_H
 #define NSMAT3_H
 
-#include <math/nsmat2.h>
+#include <nsmath/nsmat2.h>
 #include <iomanip>
 
 template <class T>

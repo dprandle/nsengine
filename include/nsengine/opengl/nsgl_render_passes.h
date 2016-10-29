@@ -14,7 +14,7 @@
 #define NSGL_RENDER_PASSES_H
 
 #include <nsplatform.h>
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <nsvideo_driver.h>
 
 #ifdef GL_4_4

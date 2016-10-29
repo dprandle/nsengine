@@ -14,7 +14,7 @@
 #define NSVIDEO_DRIVER_H
 
 #include <nsstring.h>
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <nsunordered_map.h>
 #include <nsset.h>
 #include <list>

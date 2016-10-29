@@ -2,7 +2,7 @@
 #ifndef NSVEC4_H
 #define NSVEC4_H
 
-#include <math/nsvec3.h>
+#include <nsmath/nsvec3.h>
 
 template <class T>
 nsvec4<T> operator*(const int32 & lhs_, const nsvec4<T> & rhs_);

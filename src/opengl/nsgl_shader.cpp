@@ -1,4 +1,4 @@
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <opengl/nsgl_shader.h>
 #include <opengl/nsgl_driver.h>
 #include <string.h>

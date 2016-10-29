@@ -36,7 +36,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <component/nsterrain_comp.h>
 #include <asset/nsplugin_manager.h>
 #include <nsevent.h>
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <opengl/nsgl_gbuffer.h>
 #include <component/nsanim_comp.h>
 #include <component/nsrender_comp.h>

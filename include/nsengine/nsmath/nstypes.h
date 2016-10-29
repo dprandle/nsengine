@@ -2,7 +2,7 @@
 #define NSTYPES_H
 
 #include <stdint.h>
- 
+
 typedef wchar_t wchar;
 
 #ifdef WIN32

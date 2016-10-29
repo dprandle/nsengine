@@ -18,6 +18,11 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <nsfactory.h>
 
 #include <system/nstform_system.h>
+#include <system/nscamera_system.h>
+#include <system/nsselection_system.h>
+#include <system/nsinput_system.h>
+#include <system/nsui_system.h>
+
 #include <asset/nsplugin.h>
 #include <asset/nsentity.h>
 #include <asset/nstexture.h>
@@ -124,6 +129,23 @@ bool nsplugin::add_manager(nsasset_manager * manag)
 		return true;
 	}
 	return false;
+}
+
+nsinput_map * nsplugin::create_global_input_map(const nsstring & imap_name, const nsstring & global_ctxt_name)
+{
+	nsinput_map * im = create<nsinput_map>(imap_name);
+    im->create_context(global_ctxt_name);
+
+	nse.system<nscamera_system>()->setup_input_map(im, global_ctxt_name);
+    nse.system<nsselection_system>()->setup_input_map(im, global_ctxt_name);
+    nse.system<nsui_system>()->setup_input_map(im, global_ctxt_name);
+    nse.system<nsinput_system>()->set_input_map(im->full_id());
+    nse.system<nsinput_system>()->push_context(global_ctxt_name);
+
+	nsinput_map::trigger change_vp(VIEWPORT_CHANGE, nsinput_map::t_pressed);
+    change_vp.add_key_mod(nsinput_map::key_any);
+    im->add_mouse_trigger(global_ctxt_name, nsinput_map::left_button, change_vp);
+	return im;
 }
 
 nsasset * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsasset * to_copy)

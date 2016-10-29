@@ -10,7 +10,7 @@
 #ifndef NSCALLBACK_H
 #define NSCALLBACK_H
 
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 
 struct nscallback
 {

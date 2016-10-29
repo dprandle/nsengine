@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 */
 
 #include <iostream>
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <system/nsbuild_system.h>
 #include <nsevent_dispatcher.h>
 #include <component/nstile_brush_comp.h>

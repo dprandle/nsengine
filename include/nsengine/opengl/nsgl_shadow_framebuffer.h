@@ -1,7 +1,7 @@
 #ifndef NSSHADOWBUF_OBJECT_H
 #define NSSHADOWBUF_OBJECT_H
 
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <asset/nstexture.h>
 #include <opengl/nsgl_framebuffer.h>
 

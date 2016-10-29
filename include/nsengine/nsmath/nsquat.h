@@ -1,7 +1,7 @@
 #ifndef NSQUAT_H
 #define NSQUAT_H
 
-#include <math/nsvec4.h>
+#include <nsmath/nsvec4.h>
 #include <cmath>
 
 template <class T>

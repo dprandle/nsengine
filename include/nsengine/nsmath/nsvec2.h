@@ -6,7 +6,7 @@
 #include <nsstring.h>
 #include <cmath>
 #include <stdexcept>
-#include <nstypes.h>
+#include <nsmath/nstypes.h>
 
 template <class T>
 struct nsvec3;

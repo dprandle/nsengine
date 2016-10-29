@@ -10,7 +10,7 @@ Description:
 	the ol' girl out
 *-----------------------------------------------------------------------------------------------------*/
 
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <asset/nsshader.h>
 #include <asset/nsmaterial.h>
 #include <component/nstform_comp.h>

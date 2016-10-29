@@ -16,7 +16,7 @@
 #define DEFAULT_DEBUG_LOG "enginedebug.log"
 
 #include <nsstring.h>
-#include <nstypes.h>
+#include <nsmath/nstypes.h>
 
 class nslog_file;
 

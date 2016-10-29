@@ -1,7 +1,7 @@
 #ifndef NSMAP_H
 #define NSMAP_H
 
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <map>
 
 typedef std::map<float,char> f_c_map;

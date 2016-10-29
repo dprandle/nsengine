@@ -19,6 +19,7 @@ This file contains all of the neccessary declarations for the nsplugin class.
 
 #define DEFAULT_ADD_NAME_TO_RES_DIR true
 
+class nsinput_map;
 class nsentity;
 class nsscene;
 class nsmaterial;
@@ -82,6 +83,8 @@ public:
 	}
 
 	nsasset * create(uint32 res_typeid, const nsstring & resName, nsasset * to_copy);
+
+	nsinput_map * create_global_input_map(const nsstring & imap_name, const nsstring & global_ctxt_name);
 
 	nsentity * create_camera(const nsstring & name,
 		float fov,

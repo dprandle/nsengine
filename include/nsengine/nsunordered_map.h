@@ -1,7 +1,7 @@
 #ifndef NSUNORDERED_MAP_H
 #define NSUNORDERED_MAP_H
 
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <nsenum_hash.h>
 #include <unordered_map>
 

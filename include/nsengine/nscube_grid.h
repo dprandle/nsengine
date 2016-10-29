@@ -37,7 +37,7 @@ This file contains all of the neccessary declarations for the nscube_grid class.
 #include <nsvector.h>
 #include <nsunordered_map.h>
 #include <nsunordered_set.h>
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 
 class nsentity;
 struct instance_tform;

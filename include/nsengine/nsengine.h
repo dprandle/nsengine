@@ -156,7 +156,7 @@ extern nsengine * global_engine_ptr;
 #include <map>
 #include <nsfactory.h>
 #include <typeindex>
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <unordered_map>
 
 #ifdef NSDEBUG

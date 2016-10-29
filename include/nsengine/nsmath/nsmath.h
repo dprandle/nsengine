@@ -4,7 +4,7 @@
 #define PI 3.14159265359f
 #define EPS 0.0001f
 
-#include <nstypes.h>
+#include <nsmath/nstypes.h>
 #include <cmath>
 #include <stdexcept>
 #include <nsstring.h>
@@ -28,7 +28,7 @@ T radians(const T & val_);
 
 float random_float(float high_ = 1.0f, float low_ = 0.0f);
 
-#include <math/nsmat4.h>
+#include <nsmath/nsmat4.h>
 
 // Math typedefs
 typedef nsvec2<char> cvec2;

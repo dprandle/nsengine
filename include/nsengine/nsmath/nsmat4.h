@@ -1,7 +1,7 @@
 #ifndef NSMAT4_H
 #define NSMAT4_H
 
-#include <math/nsmat3.h>
+#include <nsmath/nsmat3.h>
 #include <iomanip>
 
 template <class T>

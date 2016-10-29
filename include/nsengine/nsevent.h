@@ -10,7 +10,7 @@ This file contains all of the neccessary declarations for the NSEvent struct.
 \copywrite Earth Banana Games 2013
 */
 
-#include <math/nsmath.h>
+#include <nsmath/nsmath.h>
 #include <asset/nsinput_map.h>
 
 #ifndef NSEVENT_H

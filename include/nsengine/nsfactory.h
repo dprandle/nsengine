@@ -2,7 +2,7 @@
 #define NSFACTORY_H
 
 //#include <nsglobal.h>
-#include <nstypes.h>
+#include <nsmath/nstypes.h>
 
 class nscomponent;
 class nssystem;
