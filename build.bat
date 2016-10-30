@@ -39,21 +39,15 @@ for %%x in (%*) do (
     )
 )
 
-rmdir /q /s "bin" 2> nul
-rmdir /q /s "lib" 2> nul
-
 if %CLEANUP_BUILD%==YES (
     echo Cleaning previous builds...
     rmdir /q /s "build"
-    rmdir /q /s "deps\assimp\build"
-    rmdir /q /s "deps\freetype\build"
-    rmdir /q /s "deps\glfw\build"
 )
 
 if %BUILD_64%==YES (
     echo Setting up x64 build....................................
     set PLATFORM="x64"
-    set CMAKE_PFORM = " Win64"
+    set CMAKE_PFORM= Win64
     if %CLEANUP_BUILD%==YES (
         echo Making directories...
         call :doMakeDirs
@@ -73,7 +67,7 @@ if %BUILD_64%==YES (
 if %BUILD_32%==YES (
     echo Setting up x86 build....................................
     set PLATFORM="x86"
-    set CMAKE_PFORM = ""
+    set CMAKE_PFORM=
     if %CLEANUP_BUILD%==YES (
         echo Making directories...
         call :doMakeDirs
@@ -91,28 +85,16 @@ if %BUILD_32%==YES (
 )
 
 :doMakeDirs
-mkdir "deps\assimp\build\%PLATFORM%" 2> nul
-mkdir "deps\glfw\build\%PLATFORM%" 2> nul
-mkdir "deps\freetype\build\%PLATFORM%" 2> nul
-mkdir "build\%PLATFORM%" 2> nul
+mkdir "build\\%PLATFORM%" 2> nul
+mkdir "lib\\%PLATFORM%" 2> nul
+mkdir "bin\\%PLATFORM%" 2> nul
 EXIT /B
 
 :doBuild
-echo Configuring assimp for %PLATFORM% %CONFIG_CMAKE%...
-call :buildAssimp
-echo Configuring freetype for %PLATFORM% %CONFIG_CMAKE%...
-call :buildFreetype
-echo Configuring glfw for %PLATFORM% %CONFIG_CMAKE%....
-call :buildGLFW
+call :doLibCopy
 echo Configuring nsengine for %PLATFORM% %CONFIG_CMAKE%...
 call :buildNSEngine
 if %DO_BUILD%==YES (
-    echo Building %CONFIG_CMAKE% version of assimp for %PLATFORM%...
-    cmake --build deps\assimp\build\\%PLATFORM% --config %CONFIG_CMAKE%
-    echo Building %CONFIG_CMAKE% version freetype for %PLATFORM%...
-    cmake --build deps\freetype\build\\%PLATFORM% --config %CONFIG_CMAKE%
-    echo Building %CONFIG_CMAKE% version glfw for %PLATFORM%....
-    cmake --build deps\glfw\build\\%PLATFORM% --config %CONFIG_CMAKE%
     echo Building %CONFIG_CMAKE% version nsengine for %PLATFORM%...
     cmake --build build\\%PLATFORM% --config %CONFIG_CMAKE%
 )
@@ -121,53 +103,31 @@ EXIT /B
 
 :doCopy
 echo Copying files from tests\imports and tests\resources...
-xcopy "tests\import" "bin\\%PLATFORM%\\%CONFIG_CMAKE%\import" /e /v /f /i /y > nul
-xcopy "tests\resources" "bin\\%PLATFORM%\\%CONFIG_CMAKE%\resources" /e /v /f /i /y > nul
-mkdir "bin\\%PLATFORM%\\%CONFIG_CMAKE%\logs" > nul
+xcopy "tests\import" "bin\\%PLATFORM%\import" /e /v /f /i /y > nul
+xcopy "tests\resources" "bin\\%PLATFORM%\resources" /e /v /f /i /y > nul
+mkdir "bin\\%PLATFORM%\logs" > nul
 EXIT /B
 
-:buildAssimp
-chdir "deps\assimp\build\\%PLATFORM%"
-cmake -G "Visual Studio 14"^
- -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="%PROJ_PATH%/lib/%PLATFORM%"^
- -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="%PROJ_PATH%/lib/%PLATFORM%"^
- -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="%PROJ_PATH%/bin/%PLATFORM%"^
- -DASSIMP_BUILD_ZLIB=OFF^
- -DCMAKE_BUILD_TYPE=%CONFIG_CMAKE% ^
- -DASSIMP_BUILD_ASSIMP_TOOLS=OFF^
- -DASSIMP_BUILD_TESTS=OFF ..\..
-chdir %PROJ_PATH%
-EXIT /B
-
-:buildFreetype
-chdir "deps\freetype\build\\%PLATFORM%"
-cmake -G "Visual Studio 14"^
- -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="%PROJ_PATH%/lib/%PLATFORM%"^
- -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="%PROJ_PATH%/lib/%PLATFORM%"^
- -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="%PROJ_PATH%/bin/%PLATFORM%"^
- -DWITH_ZLIB=OFF^
- -DCMAKE_BUILD_TYPE=%CONFIG_CMAKE% ..\..
-chdir %PROJ_PATH%
-EXIT /B
-
-:buildGLFW
-chdir "deps\glfw\build\\%PLATFORM%"
-cmake -G "Visual Studio 14"^
- -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="%PROJ_PATH%/lib/%PLATFORM%"^
- -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="%PROJ_PATH%/lib/%PLATFORM%"^
- -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="%PROJ_PATH%/bin/%PLATFORM%"^
- -DGLFW_BUILD_EXAMPLES=OFF^
- -DGLFW_BUILD_TESTS=OFF^
- -DBUILD_SHARED_LIBS=ON^
- -DGLFW_BUILD_DOCS=OFF^
- -DCMAKE_DEBUG_POSTFIX="d"^
- -DCMAKE_BUILD_TYPE=%CONFIG_CMAKE% ..\..
-chdir %PROJ_PATH%
+:doLibCopy
+xcopy "deps\sndfile\lib\\%PLATFORM%\libsndfile-1.def" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\sndfile\lib\\%PLATFORM%\libsndfile-1.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\sndfile\bin\\%PLATFORM%\libsndfile-1.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\lib\\%PLATFORM%\glfw3dll.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\lib\\%PLATFORM%\glfw3ddll.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\bin\\%PLATFORM%\glfw3.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\bin\\%PLATFORM%\glfw3d.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\bin\\%PLATFORM%\glfw3d.pdb" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\freetype\lib\\%PLATFORM%\freetype.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\freetype\lib\\%PLATFORM%\freetyped.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\assimp\lib\\%PLATFORM%\assimp-vc140-mt.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\assimp\bin\\%PLATFORM%\assimp-vc140-mt.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\openal\lib\\%PLATFORM%\OpenAL32.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
 EXIT /B
 
 :buildNSEngine
 chdir "build\\%PLATFORM%"
-cmake -G "Visual Studio 14"^
+echo "Visual Studio 14 2015%CMAKE_PFORM%"
+cmake -G "Visual Studio 14 2015%CMAKE_PFORM%"^
  -DCMAKE_BUILD_TYPE=%CONFIG_CMAKE%^
  -DPLATFORM=%PLATFORM% ..\..
 chdir %PROJ_PATH%
