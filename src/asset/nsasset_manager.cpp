@@ -487,6 +487,7 @@ void nsasset_manager::destroy_all()
 	{
 		iter->second->release();
 		delete iter->second;
+		iter->second = nullptr;
 		++iter;
 	}
 	m_id_resmap.clear();
