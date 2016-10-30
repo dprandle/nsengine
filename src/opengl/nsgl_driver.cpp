@@ -1484,32 +1484,32 @@ void nsgl_driver::init()
 
 
 	// Rendering shaders
-    nsstring shext(DEFAULT_SHADER_EXTENSION), dir(SHADER_DIR);
-    rshaders.deflt = cplg->load<nsshader>(dir + nsstring(GBUFFER_SHADER) + shext, true);
-	rshaders.deflt_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_WF_SHADER) + shext, true);
-    rshaders.deflt_instanced = cplg->load<nsshader>(dir + nsstring(GBUFFER_INSTANCED_SHADER) + shext, true);
-	rshaders.deflt_instanced_wireframe = cplg->load<nsshader>(dir + nsstring(GBUFFER_INSTANCED_WF_SHADER) + shext, true);
-	rshaders.light_stencil = cplg->load<nsshader>(dir + nsstring(LIGHTSTENCIL_SHADER) + shext, true);
+    nsstring shext(DEFAULT_SHADER_EXTENSION);
+    rshaders.deflt = cplg->load<nsshader>(nsstring(GBUFFER_SHADER) + shext, true);
+	rshaders.deflt_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_WF_SHADER) + shext, true);
+    rshaders.deflt_instanced = cplg->load<nsshader>(nsstring(GBUFFER_INSTANCED_SHADER) + shext, true);
+	rshaders.deflt_instanced_wireframe = cplg->load<nsshader>(nsstring(GBUFFER_INSTANCED_WF_SHADER) + shext, true);
+	rshaders.light_stencil = cplg->load<nsshader>(nsstring(LIGHTSTENCIL_SHADER) + shext, true);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
-    rshaders.deflt_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_TRANS_SHADER) + shext, true);
-	rshaders.deflt_instanced_translucent = cplg->load<nsshader>(dir + nsstring(GBUFFER_INSTANCED_TRANS_SHADER) + shext, true);
-	rshaders.frag_sort = cplg->load<nsshader>(dir + nsstring(FRAGMENT_SORT_SHADER) + shext, true);
+    rshaders.deflt_translucent = cplg->load<nsshader>(nsstring(GBUFFER_TRANS_SHADER) + shext, true);
+	rshaders.deflt_instanced_translucent = cplg->load<nsshader>(nsstring(GBUFFER_INSTANCED_TRANS_SHADER) + shext, true);
+	rshaders.frag_sort = cplg->load<nsshader>(nsstring(FRAGMENT_SORT_SHADER) + shext, true);
 #endif
-	rshaders.dir_light = cplg->load<nsshader>(dir + nsstring(DIR_LIGHT_SHADER) + shext, true);
-	rshaders.point_light = cplg->load<nsshader>(dir + nsstring(POINT_LIGHT_SHADER) + shext, true);
-	rshaders.spot_light = cplg->load<nsshader>(dir + nsstring(SPOT_LIGHT_SHADER) + shext, true);
-	rshaders.shadow_cube = cplg->load<nsshader>(dir + nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.shadow_2d = cplg->load<nsshader>(dir + nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.sel_shader = cplg->load<nsshader>(dir + nsstring(SELECTION_SHADER) + shext, true);
-	rshaders.deflt_particle = cplg->load<nsshader>(dir + nsstring(RENDER_PARTICLE_SHADER) + shext, true);
-	cplg->load<nsshader>(dir + nsstring(SKYBOX_SHADER) + shext, true);
-	cplg->load<nsshader>(dir + nsstring(UI_SHADER) + shext, true);
-	cplg->load<nsshader>(dir + nsstring(UI_TEXT_SHADER) + shext, true);
+	rshaders.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
+	rshaders.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
+	rshaders.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
+	rshaders.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
+	rshaders.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_SHADER) + shext, true);
+	cplg->load<nsshader>(nsstring(UI_TEXT_SHADER) + shext, true);
 
     // FIGURE THIS OUT LATER
 	// particle transform feedback shader
     //nsgl_shader * ps =
-    cplg->load<nsshader>(dir + nsstring(PARTICLE_PROCESS_SHADER) + shext, true);
+    cplg->load<nsshader>(nsstring(PARTICLE_PROCESS_SHADER) + shext, true);
 //	std::vector<nsstring> outLocs2;
 //	outLocs2.push_back("gPosOut");
 //	outLocs2.push_back("gVelOut");

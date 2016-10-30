@@ -18,7 +18,7 @@
 #include <nsvideo_driver.h>
 
 #ifdef GL_4_4
-#define SHADER_DIR "opengl4_4/"
+#define SHADER_DIR "opengl4_1/"
 #define ORDER_INDEPENDENT_TRANSLUCENCY
 #elif defined(GL_4_1)
 #define SHADER_DIR "opengl4_1/"
