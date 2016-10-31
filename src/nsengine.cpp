@@ -167,7 +167,6 @@ nssystem * nsengine::create_system(uint32 type_id)
         delete system;
         return NULL;
     }
-    system->init();	
     return system;
 }
 
@@ -325,6 +324,7 @@ void nsengine::init(nsvideo_driver * drvr)
     plg->enable_group_save(false);
 
     _create_factory_systems();
+	_init_systems();
     m_driver->init();
     m_initialized = true;
     if (!m_driver->initialized())
@@ -488,6 +488,16 @@ void nsengine::_create_factory_systems()
     {
         if (fiter->second->type() == nsfactory::f_system)
             create_system(guid(fiter->first));
+        ++fiter;
+    }
+}
+
+void nsengine::_init_systems()
+{
+    auto fiter = m_systems->begin();
+    while (fiter != m_systems->end())
+    {
+		fiter->second->init();
         ++fiter;
     }
 }

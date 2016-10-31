@@ -184,6 +184,8 @@ protected:
 	bool m_draw_occ;
 	fvec2 m_cached_point_last;
 	fmat4 m_trans;
+
+	nsentity * last_pressed;
 };
 
 #endif

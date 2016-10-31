@@ -22,6 +22,7 @@ This file contains all of the neccessary declarations for the nssel_comp class.
 #include <component/nscomponent.h>
 #include <nsunordered_set.h>
 #include <nsvideo_driver.h>
+#include <nsrouter.h>
 
 class nsshader;
 class nstimer;
@@ -73,6 +74,10 @@ public:
 	void set_color(const fvec4 & col_);
 
 	nssel_comp & operator=(nssel_comp rhs_);
+
+	ns::signal<nsentity*> clicked;
+	ns::signal<nsentity*> pressed;
+	ns::signal<nsentity*> released;
 
 private:
 

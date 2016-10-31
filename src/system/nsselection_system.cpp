@@ -56,7 +56,8 @@ nsselection_system::nsselection_system() :
 	m_toggle_move(false),
 	m_send_foc_event(false),
 	m_mirror_tile_color(fvec4(1.0f, 0.0f, 1.0f, 0.7f)),
-	m_started_drag_over_ui(false)
+	m_started_drag_over_ui(false),
+	last_pressed(nullptr)
 {}
 
 nsselection_system::~nsselection_system()
@@ -678,7 +679,7 @@ void nsselection_system::setup_input_map(nsinput_map * imap, const nsstring & gl
 	
 	nsinput_map::trigger selectentity(
 		NSSEL_SELECT,
-		nsinput_map::t_pressed);
+		nsinput_map::t_both);
     imap->add_mouse_trigger(global_ctxt_name, nsinput_map::left_button,selectentity);
 
 	nsinput_map::trigger shiftselect(
@@ -881,12 +882,35 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 {		
 	uivec2 pickid = pick(evnt->norm_mpos).xy();
 	nsentity * selectedEnt = get_asset<nsentity>(pickid);
-	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
-		return true;
-	if (!selection_contains(pickid))
-		clear_selection();
-	add_to_selection(selectedEnt);
-	_reset_focus(pickid);
+
+	if (evnt->cur_state == nsaction_event::begin)
+	{
+		last_pressed = selectedEnt;
+		if (selectedEnt != nullptr)
+		{
+			if (selectedEnt->has<nsrect_tform_comp>())
+				return true;
+			nssel_comp * sc = selectedEnt->get<nssel_comp>();
+			sc->pressed(selectedEnt);
+		}
+		if (!selection_contains(pickid))
+			clear_selection();
+		add_to_selection(selectedEnt);
+		_reset_focus(pickid);
+	}
+	else
+	{
+		if (selectedEnt != nullptr)
+		{
+			nssel_comp * sc = selectedEnt->get<nssel_comp>();
+			sc->released(selectedEnt);
+			
+			if (last_pressed == selectedEnt)
+				sc->clicked(selectedEnt);
+		}
+		last_pressed = nullptr;
+	}
+	
 	return true;
 }
 

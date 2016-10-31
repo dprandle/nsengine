@@ -576,6 +576,7 @@ private:
 	}
 
 	void _init_factories();
+	void _init_systems();
 	void _destroy_factories();
 
 	void _remove_sys(uint32 type_id);
