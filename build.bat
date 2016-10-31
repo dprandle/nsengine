@@ -109,19 +109,15 @@ mkdir "bin\\%PLATFORM%\logs" > nul
 EXIT /B
 
 :doLibCopy
-xcopy "deps\sndfile\lib\\%PLATFORM%\libsndfile-1.def" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\sndfile\lib\\%PLATFORM%\libsndfile-1.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\sndfile\bin\\%PLATFORM%\libsndfile-1.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\glfw\lib\\%PLATFORM%\glfw3dll.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\glfw\lib\\%PLATFORM%\glfw3ddll.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\glfw\bin\\%PLATFORM%\glfw3.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\glfw\bin\\%PLATFORM%\glfw3d.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\glfw\bin\\%PLATFORM%\glfw3d.pdb" "bin\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\freetype\lib\\%PLATFORM%\freetype.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\freetype\lib\\%PLATFORM%\freetyped.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\assimp\lib\\%PLATFORM%\assimp-vc140-mt.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\assimp\bin\\%PLATFORM%\assimp-vc140-mt.dll" "bin\\%PLATFORM%" /e /v /f /i /y > nul
-xcopy "deps\openal\lib\\%PLATFORM%\OpenAL32.lib" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\sndfile\lib\\%PLATFORM%" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\sndfile\bin\\%PLATFORM%" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\lib\\%PLATFORM%" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\glfw\bin\\%PLATFORM%" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\freetype\lib\\%PLATFORM%" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\assimp\lib\\%PLATFORM%" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\assimp\bin\\%PLATFORM%" "bin\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\openal\lib\\%PLATFORM%" "lib\\%PLATFORM%" /e /v /f /i /y > nul
+xcopy "deps\openal\bin\\%PLATFORM%" "bin\\%PLATFORM%" /e /v /f /i /y > nul
 EXIT /B
 
 :buildNSEngine
