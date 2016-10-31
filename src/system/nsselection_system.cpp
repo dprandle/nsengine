@@ -891,7 +891,11 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 			if (selectedEnt->has<nsrect_tform_comp>())
 				return true;
 			nssel_comp * sc = selectedEnt->get<nssel_comp>();
-			sc->pressed(selectedEnt);
+			if (sc != nullptr)
+			{
+				dprint("What the crap");
+				sc->pressed(selectedEnt);
+			}
 		}
 		if (!selection_contains(pickid))
 			clear_selection();
@@ -903,10 +907,13 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 		if (selectedEnt != nullptr)
 		{
 			nssel_comp * sc = selectedEnt->get<nssel_comp>();
-			sc->released(selectedEnt);
+			if (sc != nullptr)
+			{
+				sc->released(selectedEnt);
 			
-			if (last_pressed == selectedEnt)
-				sc->clicked(selectedEnt);
+				if (last_pressed == selectedEnt)
+					sc->clicked(selectedEnt);
+			}
 		}
 		last_pressed = nullptr;
 	}

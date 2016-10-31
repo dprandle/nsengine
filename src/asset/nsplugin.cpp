@@ -160,6 +160,30 @@ nsasset * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsasset 
 	return rm->create(res_typeid, resName, to_copy);
 }
 
+nsentity * nsplugin::create_sprite(const nsstring & sprite_name, const nsstring & tex_filename, bool match_tex_dims, bool alpha_enabled)
+{
+	nstex2d * bg = load<nstex2d>(tex_filename, true);
+	bg->flip_horizontal();
+	nsmesh_plane * plane = create<nsmesh_plane>(sprite_name);
+
+	if (match_tex_dims)
+		plane->bake_scaling(fvec3(bg->size().w/2,bg->size().h/2,1.0f));
+	
+	nsmaterial * mat = create<nsmaterial>(sprite_name);
+	mat->add_tex_map(nsmaterial::diffuse, bg->full_id());
+
+	mat->set_alpha_blend(alpha_enabled);
+	
+	nsentity * bgent = create<nsentity>(sprite_name);
+	nsrender_comp * rc = bgent->create<nsrender_comp>();
+	
+	bgent->create<nssel_comp>();
+	rc->set_mesh_id(plane->full_id());
+	rc->set_material(0, mat->full_id());
+	rc->transparent_picking = true;
+	return bgent;
+}
+
 nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec2 & screenDim, const fvec2 & clipnf)
 {
 	if (!m_enabled)

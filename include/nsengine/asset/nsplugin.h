@@ -86,6 +86,8 @@ public:
 
 	nsinput_map * create_global_input_map(const nsstring & imap_name, const nsstring & global_ctxt_name);
 
+	nsentity * create_sprite(const nsstring & sprite_name, const nsstring & tex_filename, bool match_tex_dims, bool alpha_enabled);
+
 	nsentity * create_camera(const nsstring & name,
 		float fov,
 		const uivec2 & screenDim,

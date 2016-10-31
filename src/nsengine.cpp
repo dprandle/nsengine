@@ -324,11 +324,11 @@ void nsengine::init(nsvideo_driver * drvr)
     plg->enable_group_save(false);
 
     _create_factory_systems();
-	_init_systems();
     m_driver->init();
     m_initialized = true;
     if (!m_driver->initialized())
         release();
+	_init_systems();
 }
 
 bool nsengine::running()

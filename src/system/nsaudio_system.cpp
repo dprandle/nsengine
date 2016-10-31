@@ -52,8 +52,7 @@ void nsaudio_system::init()
     m_device = alcOpenDevice(nullptr);
     if(!m_device)
     {
-		dprint("nsaudio_system::init Unable to initialize openAL audio device");
-		
+		dprint("nsaudio_system::init Unable to initialize openAL audio device");		
     }
 	else
 	{
@@ -104,9 +103,9 @@ void nsaudio_system::update()
 	}
 
 	alListenerf(AL_GAIN,master_gain);
-	alListenerfv(AL_POSITION,pos.data);
-	alListenerfv(AL_VELOCITY,vel.data);
-	alListenerfv(AL_ORIENTATION,dir.a.data);
+	//alListenerfv(AL_POSITION,pos.data);
+	//alListenerfv(AL_VELOCITY,vel.data);
+	//alListenerfv(AL_ORIENTATION,dir.a.data);
 	
 	entity_set * es = m_active_scene->entities_with_comp<nsaudio_source_comp>();
 	if (es == nullptr)
