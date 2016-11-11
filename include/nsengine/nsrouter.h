@@ -34,21 +34,21 @@ class nsrouter
 		ns::slot_concrete<T, Args...> * slot_ptr = new ns::slot_concrete<T, Args...>(inst, mf);
 		slot_ptr->connected_signal = &sig;
 		slot_ptr->router = this;
-		sig.slots.push_back(slot_ptr);
-		slots.push_back(slot_ptr);
+                sig.con_slots.push_back(slot_ptr);
+                con_slots.push_back(slot_ptr);
 	}
 
 	template <class... Args>
 	void disconnect(ns::signal<Args...> & sig)
 	{
-		auto iter = slots.begin();
-		while (iter != slots.end())
+                auto iter = con_slots.begin();
+                while (iter != con_slots.end())
 		{
 			ns::slot<Args...> * cast_down = dynamic_cast<ns::slot<Args...>*>(*iter);
 			if (cast_down != nullptr && cast_down->connected_signal == &sig)
 			{
 				delete *iter;
-				iter = slots.erase(iter);
+                                iter = con_slots.erase(iter);
 			}
 			else
 				++iter;
@@ -59,7 +59,7 @@ class nsrouter
 
   private:
 	
-	std::vector<ns::slot_base*> slots;
+        std::vector<ns::slot_base*> con_slots;
 };
 
 #endif

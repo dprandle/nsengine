@@ -39,7 +39,7 @@ void nscube_grid::init()
 {
 	for (uint32 i = 0; i < QUADRANT_COUNT; ++i)
 	{
-		world_map[i].resize(DEFAULT_GRID_Z_SIZE);
+        world_map[i].resize(DEFAULT_GRID_Z_SIZE);
 		for (uint32 j = 0; j < DEFAULT_GRID_Z_SIZE; ++j)
 		{
 			world_map[i][j].resize(DEFAULT_GRID_Y_SIZE);

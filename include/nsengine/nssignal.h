@@ -66,31 +66,31 @@ struct signal
 {
 	~signal()
 	{
-		while (slots.begin() != slots.end())
-			assist_delete(slots.back());
+                while (con_slots.begin() != con_slots.end())
+                        assist_delete(con_slots.back());
 	}
 	
     void operator()(Args... args)
     {
-		auto iter = slots.begin();
-		while (iter != slots.end())
+                auto iter = con_slots.begin();
+                while (iter != con_slots.end())
 		{
 			(*iter)->call(args...);
 			++iter;
 		}
     }
     
-    std::vector<slot<Args...>*> slots;
+    std::vector<slot<Args...>*> con_slots;
 };
 
 template<class... Args>
 slot<Args...>::~slot()
 {
-	auto iter = connected_signal->slots.begin();
-	while (iter != connected_signal->slots.end())
+        auto iter = connected_signal->con_slots.begin();
+        while (iter != connected_signal->con_slots.end())
 	{
 		if (this == *iter)
-			iter = connected_signal->slots.erase(iter);
+                        iter = connected_signal->con_slots.erase(iter);
 		else
 			++iter;
 	}
