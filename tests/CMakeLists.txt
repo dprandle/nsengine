@@ -53,6 +53,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${PLATFORM})
 add_executable(most_basic_test most_basic_test.cpp)
 set_target_properties(most_basic_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
+add_executable(prefab_testing prefab_testing.cpp)
+set_target_properties(most_basic_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
 if (WIN32)
     set_target_properties(most_basic_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
     set_target_properties(most_basic_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )

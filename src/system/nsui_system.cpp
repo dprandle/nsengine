@@ -14,7 +14,7 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #include <system/nsselection_system.h>
 #include <system/nsui_system.h>
 #include <asset/nsentity.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsplugin_manager.h>
 #include <component/nsui_comp.h>
 #include <asset/nsshader.h>
@@ -325,7 +325,7 @@ bool nsui_system::_handle_mouse_press(nsaction_event * evnt)
 				if (uibtn != nullptr && uibtn->is_enabled)
 				{
 					uibtn->is_pressed = true;
-					uibtn->clicked();
+					emit_sig uibtn->clicked();
 					m_pressed_button = uibtn;
 				}
             }
@@ -372,11 +372,11 @@ bool nsui_system::_handle_mouse_release(nsaction_event * evnt)
 			pos[3] = (tform * fvec3(outer_pos,1.0f)).xy();
             if (point_in_rect(mpos % vp_size, pos) && m_pressed_button == uibtn)
             {
-				uibtn->pressed();
+				emit_sig uibtn->pressed();
 				if (uibtn->toggle_enabled)
 				{
 					uibtn->is_toggled = !uibtn->is_toggled;
-					uibtn->toggled(uibtn->is_toggled);
+					emit_sig uibtn->toggled(uibtn->is_toggled);
 				}
             }
 			uibtn->is_pressed = false;

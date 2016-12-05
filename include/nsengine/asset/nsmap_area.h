@@ -1,9 +1,9 @@
 /*! 
-	\file nsscene.h
+	\file nsmap_area.h
 	
-	\brief Header file for nsscene class
+	\brief Header file for nsmap_area class
 
-	This file contains all of the neccessary declarations for the nsscene class.
+	This file contains all of the neccessary declarations for the nsmap_area class.
 
 	\author Daniel Randle
 	\date November 23 2013
@@ -20,58 +20,39 @@
 //#include <nstile_grid.h>
 #include <component/nsoccupy_comp.h>
 
+class nsprefab_comp;
 class nstile_grid;
 class nscube_grid;
 class nsrender_comp;
 class nstform_system;
 class nstform_comp;
 
-struct pupped_info
-{
-	pupped_info(const uivec2 & ent_id_ = uivec2(),
-				const tform_info & tf_inf=tform_info()):
-		ent_id(ent_id_),
-		tf_info(tf_inf)
-	{}
-	
-	uivec2 ent_id;
-	tform_info tf_info;
-};
+typedef std::vector<packed_ent_tform> packed_tform_vec;
 
-typedef std::vector<pupped_info> pupped_vec_info;
-
-class nsscene : public nsasset
+class nsmap_area : public nsasset
 {
 	SLOT_OBJECT
 	public:
 	
 	template<class PUPer>
-	friend void pup(PUPer & p, nsscene & sc);
+	friend void pup(PUPer & p, nsmap_area & sc);
 
-	nsscene();
+	nsmap_area();
 
-	nsscene(const nsscene & copy_);
+	nsmap_area(const nsmap_area & copy_);
 
-	~nsscene();
+	~nsmap_area();
 	
-	nsscene & operator=(nsscene rhs);
+	nsmap_area & operator=(nsmap_area rhs);
 
-	nstform_comp * add(
+	nstform_comp * add_entity(
 		nsentity * ent,
-		const tform_info & tf_info,
-		bool preserve_world_tform);
-
-	nstform_comp * add(
-		nsentity * ent,
-		const fvec3 & pos = fvec3(),
-		const fquat & orient = fquat(),
-		const fvec3 & scale = fvec3(1.0f));
+		tform_info * tf_info = nullptr,
+		bool tform_is_world_space = true);
 
 	void change_max_players(int32 amount_);
 
 	void clear();
-
-	nsentity * find_entity(uint32 plug_id, uint32 res_id) const;
 
 	nsentity * find_entity(const uivec2 & id) const;
 
@@ -144,8 +125,19 @@ class nsscene : public nsasset
 	void set_skydome(nsentity * skydome, bool add_to_scene_if_needed);
 
 	nscube_grid * cube_grid;
+
+	ns::signal<nsentity*> entity_added;
+	ns::signal<nsentity*> entity_removed;
 	
 private:
+
+	nstform_comp * add_from_prefab(nsprefab_comp * pfc,
+								   tform_info * tf_info,
+								   bool tform_is_world_space);
+
+	void add_from_packed_vec(const packed_tform_vec & tforms, packed_tform_vec & unable_to_add);
+
+	void make_valid(tform_info * tf);
 
 	void make_ent_instanced_if_needed(nsentity * ent);
 	void make_ent_not_instanced(nsentity * ent);
@@ -170,19 +162,19 @@ private:
 	
 	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
 
-	pupped_vec_info m_unloaded_tforms;
-	pupped_vec_info m_pupped_tforms;
+	packed_tform_vec m_unloaded_tforms;
+	packed_tform_vec m_pupped_tforms;
 };
 
 template<class PUPer>
-void pup(PUPer & p, pupped_info & pi, const nsstring & var_name)
+void pup(PUPer & p, packed_ent_tform & pi, const nsstring & var_name)
 {
 	pup(p, pi.ent_id, var_name + ".ent_id");
 	pup(p, pi.tf_info, var_name + ".tf_info");
 }
 
 template<class PUPer>
-void pup(PUPer & p, nsscene & sc)
+void pup(PUPer & p, nsmap_area & sc)
 {
 	if (sc.m_enabled)
 	{

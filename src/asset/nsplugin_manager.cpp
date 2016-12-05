@@ -17,7 +17,7 @@ This file contains all of the neccessary definitions for the nsplugin_manager cl
 #include <asset/nsanim_manager.h>
 #include <nsengine.h>
 #include <asset/nsmat_manager.h>
-#include <asset/nsscene_manager.h>
+#include <asset/nsmap_area_manager.h>
 #include <asset/nsentity_manager.h>
 
 nsplugin * get_plugin(uint32 id)

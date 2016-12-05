@@ -29,7 +29,7 @@ This file contains all of the neccessary declarations for the nsselection_system
 #define NSSEL_MOVE_TOGGLE "move_selection_toggle"
 #define SELECTION_INPUT_CTXT "selection_controls"
 
-class nsscene;
+class nsmap_area;
 class nssel_comp;
 class nsselection_shader;
 struct nsaction_event;
@@ -54,7 +54,7 @@ public:
 
 	bool add_to_selection(nsentity * ent);
 
-	bool add_selection_to_grid(nsscene * scn);
+	bool add_selection_to_grid(nsmap_area * scn);
 
 	void change_layer(int32 pChange);
 

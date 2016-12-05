@@ -2,7 +2,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <component/nsaudio_source_comp.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsentity.h>
 #include <asset/nsaudio_clip.h>
 #include <component/nstform_comp.h>

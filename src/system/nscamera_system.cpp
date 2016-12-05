@@ -20,7 +20,7 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <nsevent.h>
 #include <component/nscam_comp.h>
 #include <nstimer.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 
 
 nscamera_system::nscamera_system() :
@@ -157,7 +157,7 @@ void nscamera_system::set_view(camera_view_t view_)
 	nstform_comp * manip_tc = m_cam_focus_manipulator->get<nstform_comp>();
 	if (manip_tc == nullptr)
 	{
-		m_active_scene->add(m_cam_focus_manipulator);
+		m_active_scene->add_entity(m_cam_focus_manipulator);
 		manip_tc = m_cam_focus_manipulator->get<nstform_comp>();
 		manip_tc->save_with_scene = false;
 	}
@@ -410,7 +410,7 @@ void nscamera_system::update()
 
 	if (tc == nullptr)
 	{
-		m_active_scene->add(m_cam_focus_manipulator);
+		m_active_scene->add_entity(m_cam_focus_manipulator);
 		tc = m_cam_focus_manipulator->get<nstform_comp>();
 		tc->save_with_scene = false;
 	}
@@ -736,7 +736,7 @@ bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 	return true;
 }
 
-void nscamera_system::set_active_scene(nsscene * active_scene)
+void nscamera_system::set_active_scene(nsmap_area * active_scene)
 {
     if (m_active_scene != nullptr && m_active_scene->is_enabled())
 		m_active_scene->remove(m_cam_focus_manipulator, false);
@@ -759,7 +759,7 @@ bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 	nstform_comp * focus_ent_tc = m_cam_focus_manipulator->get<nstform_comp>();
 	if (focus_ent_tc == nullptr)
 	{
-		focus_ent_tc = m_active_scene->add(m_cam_focus_manipulator);
+		focus_ent_tc = m_active_scene->add_entity(m_cam_focus_manipulator);
 		focus_ent_tc->save_with_scene = false;
 	}
 

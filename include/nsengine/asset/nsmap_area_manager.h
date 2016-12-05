@@ -14,9 +14,9 @@ This file contains all of the neccessary declarations for the nsscene_manager cl
 #define NSSCENE_MANAGER_H
 
 #include <asset/nsasset_manager.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 
-nsscene * get_scene(const uivec2 & id);
+nsmap_area * get_scene(const uivec2 & id);
 
 class nsscene_manager : public nsasset_manager
 {

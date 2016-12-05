@@ -17,8 +17,8 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <iostream>
 #include <nsvector.h>
 #include <system/nsselection_system.h>
-#include <asset/nsscene_manager.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area_manager.h>
+#include <asset/nsmap_area.h>
 #include <nsevent_dispatcher.h>
 #include <system/nstform_system.h>
 #include <component/nssel_comp.h>
@@ -116,7 +116,7 @@ bool nsselection_system::add_to_selection(nsentity * ent)
 	return ret.second;
 }
 
-bool nsselection_system::add_selection_to_grid(nsscene * scn)
+bool nsselection_system::add_selection_to_grid(nsmap_area * scn)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
@@ -893,8 +893,7 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 			nssel_comp * sc = selectedEnt->get<nssel_comp>();
 			if (sc != nullptr)
 			{
-				dprint("What the crap");
-				sc->pressed(selectedEnt);
+				emit_sig sc->pressed(selectedEnt);
 			}
 		}
 		if (!selection_contains(pickid))
@@ -909,10 +908,10 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 			nssel_comp * sc = selectedEnt->get<nssel_comp>();
 			if (sc != nullptr)
 			{
-				sc->released(selectedEnt);
+				emit_sig sc->released(selectedEnt);
 			
 				if (last_pressed == selectedEnt)
-					sc->clicked(selectedEnt);
+					emit_sig sc->clicked(selectedEnt);
 			}
 		}
 		last_pressed = nullptr;

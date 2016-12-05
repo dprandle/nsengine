@@ -23,7 +23,7 @@ struct nsgl_buffer;
 struct nsgl_vao;
 struct nsgl_xfb;
 class nstimer;
-class nsscene;
+class nsmap_area;
 
 struct accel_over_time
 {
@@ -85,6 +85,19 @@ struct tform_info
 	std::vector<uivec2> m_children;	
 };
 
+struct packed_ent_tform
+{
+	packed_ent_tform(const uivec2 & ent_id_ = uivec2(),
+				const tform_info & tf_inf=tform_info()):
+		ent_id(ent_id_),
+		tf_info(tf_inf)
+	{}
+	
+	uivec2 ent_id;
+	tform_info tf_info;
+};
+
+
 class nstform_comp : public nscomponent
 {
   public:
@@ -99,7 +112,7 @@ class nstform_comp : public nscomponent
 
 	template <class PUPer>
 	friend void pup(PUPer & p, nstform_comp & iv, const nsstring & var_name);
-	friend class nsscene;
+	friend class nsmap_area;
 	friend class nsrender_system;	
 	
 	nstform_comp();
@@ -188,7 +201,6 @@ class nstform_comp : public nscomponent
 	bool save_with_scene;
 
   private:
-	nsscene * m_scene; // dynamically assigned
 	tform_info m_tfi;	
 	bool m_render_update;
 	fmat4 m_world_tform;

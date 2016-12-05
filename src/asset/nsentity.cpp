@@ -15,6 +15,7 @@
 #include <nsfactory.h>
 #include <nsengine.h>
 #include <asset/nsplugin_manager.h>
+#include <component/nsprefab_reference_comp.h>
 
 nsentity::nsentity() :
 	nsasset(type_to_hash(nsentity)),
@@ -65,7 +66,7 @@ bool nsentity::add(nscomponent * pComp)
 	if (ret.second)
 	{
 		pComp->set_owner(this);
-		component_added(pComp);
+		emit_sig component_added(pComp);
 	}
 	return ret.second;
 }
@@ -180,7 +181,14 @@ nscomponent * nsentity::get(uint32 type_id)
 	comp_set::iterator iter = m_components.find(type_id);
 	if (iter != m_components.end())
 		return iter->second;
-	return NULL;
+
+	comp_set::iterator prefab_iter = m_components.find(type_to_hash(nsprefab_reference_comp));
+	if (prefab_iter != m_components.end())
+	{
+		nsprefab_reference_comp * ref = static_cast<nsprefab_reference_comp*>(prefab_iter->second);
+		return ref->get_source_comp(type_id);
+	}
+	return nullptr;
 }
 
 void nsentity::name_change(const uivec2 & oldid, const uivec2 newid)
@@ -219,7 +227,8 @@ bool nsentity::has(const nsstring & guid)
 
 bool nsentity::has(uint32 type_id)
 {
-	return (m_components.find(type_id) != m_components.end());
+	nscomponent * comp = get(type_id);
+	return comp != nullptr;
 }
 
 void nsentity::init()
@@ -242,7 +251,7 @@ nscomponent * nsentity::remove(uint32 type_id)
 		comp_t->release();
 		m_components.erase(iter);
 		dprint("nsentity::remove - removing \"" + nse.guid(type_id) + "\" from entity " + m_name + "\"");
-		component_removed(comp_t);
+		emit_sig component_removed(comp_t);
 		comp_t->set_owner(NULL);
 	}
 	else

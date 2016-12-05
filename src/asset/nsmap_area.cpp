@@ -10,10 +10,12 @@
 	\copywrite Earth Banana Games 2013
 */
 
+#include <component/nsprefab_comp.h>
+#include <component/nsprefab_reference_comp.h>
 #include <system/nsselection_system.h>
 #include <component/nstile_brush_comp.h>
-#include <asset/nsscene.h>
-#include <asset/nsscene_manager.h>
+#include <asset/nsmap_area.h>
+#include <asset/nsmap_area_manager.h>
 #include <asset/nsentity.h>
 #include <component/nsrender_comp.h>
 #include <component/nsanim_comp.h>
@@ -31,8 +33,8 @@
 #include <nscube_grid.h>
 #include <component/nssprite_comp.h>
 
-nsscene::nsscene():
-	nsasset(type_to_hash(nsscene)),
+nsmap_area::nsmap_area():
+	nsasset(type_to_hash(nsmap_area)),
 	m_skydome(),
 	m_max_players(0),
 	m_bg_color(),
@@ -48,7 +50,7 @@ nsscene::nsscene():
 }
 
 
-nsscene::nsscene(const nsscene & copy_):
+nsmap_area::nsmap_area(const nsmap_area & copy_):
 	nsasset(copy_),
 	m_skydome(copy_.m_skydome),
 	m_max_players(copy_.m_max_players),
@@ -62,7 +64,7 @@ nsscene::nsscene(const nsscene & copy_):
 	m_unloaded_tforms()
 {}
 
-nsscene::~nsscene()
+nsmap_area::~nsmap_area()
 {
     if (m_enabled)
         enable(false);
@@ -70,7 +72,7 @@ nsscene::~nsscene()
 	delete cube_grid;
 }
 
-nsscene & nsscene::operator=(nsscene rhs)
+nsmap_area & nsmap_area::operator=(nsmap_area rhs)
 {
 	nsasset::operator=(rhs);
 	std::swap(m_skydome,rhs.m_skydome);
@@ -84,7 +86,7 @@ nsscene & nsscene::operator=(nsscene rhs)
 	return *this;
 }
 
-void nsscene::clear()
+void nsmap_area::clear()
 {
 	if (!m_enabled)
 	{
@@ -102,37 +104,79 @@ void nsscene::clear()
 	m_unloaded_tforms.clear();
 }
 
+nstform_comp * nsmap_area::add_from_prefab(nsprefab_comp * pfc,
+							   tform_info * tf_info,
+							   bool tform_is_world_space)
+{
+	std::vector<packed_ent_tform> refs;
+	std::vector<packed_ent_tform> unadded_refs;
+	
+	nsplugin * this_plg = nsep.get<nsplugin>(plugin_id());
+	nstform_comp * ret = nullptr;
+	
+	pfc->create_references(this_plg, refs);
 
-nstform_comp * nsscene::add(
+	if (refs.empty())
+		return ret;
+
+	tform_info inf;
+	if (tf_info != nullptr)
+	{
+		inf.m_orient = tf_info->m_orient;
+		inf.m_position = tf_info->m_position;
+		inf.m_scaling = tf_info->m_scaling;
+	}
+	
+    ret = add_entity(get_asset<nsentity>(refs[0].ent_id),&inf,tform_is_world_space);
+    refs[0] = refs.back();
+    refs.pop_back();
+	
+	add_from_packed_vec(refs, unadded_refs);
+	
+	return ret;
+}
+
+nstform_comp * nsmap_area::add_entity(
 	nsentity * ent,
-	const tform_info & tf_info,
-	bool preserve_world_tform)
+	tform_info * tf_info,
+	bool tform_is_world_space)
 {
 	if (!m_enabled)
 	{
 		dprint("nsscene::add cannot add entity to disabled scene " + m_name);
 		return nullptr;
 	}
-
+	
 	if (ent == nullptr)
 	{
 		dprint("nsscene::add unable to add null entity to scene");
 		return nullptr;
 	}
 
+	nsprefab_comp * pf_comp = ent->get<nsprefab_comp>();
+	if (pf_comp != nullptr)
+		return add_from_prefab(pf_comp, tf_info, tform_is_world_space);
+
 	nstform_comp * tf_comp = ent->get<nstform_comp>();
 	nsoccupy_comp * occ_comp = ent->get<nsoccupy_comp>();
 	
 	// If there is no tranform component, then make one
-	if (tf_comp != nullptr)
+	if (tf_comp == nullptr)
 	{
-		dprint("nsscene::add entity " + ent->name() + " already has a tform comp cannot add to scene " + m_name);
+        dprint("nsscene::add_entity " + ent->name() + " is being added to the scene " + m_name);
+		tf_comp = ent->create<nstform_comp>();
+	}
+	else
+	{
+		dprint("nsscene::add_entity " + ent->name() + " already has tform_comp and cannot be added to " + m_name);
 		return nullptr;
 	}
-	
-	tf_comp = ent->create<nstform_comp>();
-	tf_comp->m_scene = this;
-	tf_comp->set_tf_info(tf_info, preserve_world_tform);
+
+	if (tf_info != nullptr)
+	{
+		make_valid(tf_info);
+		tf_comp->set_tf_info(*tf_info, tform_is_world_space);
+	}
 	
 	if (occ_comp != nullptr)
 	{
@@ -144,24 +188,15 @@ nstform_comp * nsscene::add(
 	}
 
 	_add_all_comp_entries(ent);
-	sig_connect(ent->component_added, nsscene::_on_comp_add);
-	sig_connect(ent->component_removed, nsscene::_on_comp_remove);
+	sig_connect(ent->component_added, nsmap_area::_on_comp_add);
+	sig_connect(ent->component_removed, nsmap_area::_on_comp_remove);
 	nse.event_dispatch()->push<scene_ent_added>(ent->full_id(),full_id());
 	tf_comp->post_update(true);
+	emit_sig entity_added(ent);
 	return tf_comp;
 }
 
-nstform_comp * nsscene::add(
-	nsentity * ent,
-	const fvec3 & pos,
-	const fquat & orient,
-	const fvec3 & scale)
-{
-	tform_info tfi(uivec2(0), pos, orient, scale);
-	return add(ent, tfi, false);
-}
-
-void nsscene::change_max_players(int32 pAmount)
+void nsmap_area::change_max_players(int32 pAmount)
 {
 	if ((m_max_players + pAmount) > SCENE_MAX_PLAYERS || (m_max_players + pAmount) < 2)
 	{
@@ -172,7 +207,7 @@ void nsscene::change_max_players(int32 pAmount)
 	m_max_players += pAmount;
 }
 
-nsentity * nsscene::find_entity(const uivec2 & id) const
+nsentity * nsmap_area::find_entity(const uivec2 & id) const
 {
 	auto ents = entities_in_scene();
 	if (ents == nullptr)
@@ -187,12 +222,7 @@ nsentity * nsscene::find_entity(const uivec2 & id) const
 	return nullptr;
 }
 
-nsentity * nsscene::find_entity(uint32 plug_id, uint32 res_id) const
-{
-	return find_entity(uivec2(plug_id,res_id));
-}
-
-bool nsscene::has_dir_light() const
+bool nsmap_area::has_dir_light() const
 {
 	auto ents = entities_in_scene();
 	if (ents == nullptr)
@@ -212,17 +242,17 @@ bool nsscene::has_dir_light() const
 	return false;
 }
 
-const fvec4 & nsscene::bg_color() const
+const fvec4 & nsmap_area::bg_color() const
 {
 	return m_bg_color;
 }
 
-const nsstring & nsscene::creator() const
+const nsstring & nsmap_area::creator() const
 {
 	return m_creator;
 }
 
-void nsscene::pup(nsfile_pupper * p)
+void nsmap_area::pup(nsfile_pupper * p)
 {
 	if (p->type() == nsfile_pupper::pup_binary)
 	{
@@ -236,25 +266,25 @@ void nsscene::pup(nsfile_pupper * p)
 	}
 }
 
-uint32 nsscene::max_players() const
+uint32 nsmap_area::max_players() const
 {
 	return m_max_players;
 }
 
-uivec2 nsscene::ref_id(const fvec3 & pWorldPos) const
+uivec2 nsmap_area::ref_id(const fvec3 & pWorldPos) const
 {
 	return m_tile_grid->get(pWorldPos);
 }
 
-nsentity * nsscene::skydome() const
+nsentity * nsmap_area::skydome() const
 {
 	return find_entity(m_skydome);
 }
 
 /*!
-Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
+  Get the other resources that this Scene uses. This is given by all the Entities that currently exist in the scene.
 */
-uivec3_vector nsscene::resources()
+uivec3_vector nsmap_area::resources()
 {
 	auto ents = entities_in_scene();
 	uivec3_vector ret;
@@ -272,17 +302,17 @@ uivec3_vector nsscene::resources()
 	return ret;
 }
 
-const nsstring & nsscene::notes() const
+const nsstring & nsmap_area::notes() const
 {
 	return m_notes;
 }
 
-nstile_grid & nsscene::grid()
+nstile_grid & nsmap_area::grid()
 {
 	return *m_tile_grid;
 }
 
-const entity_set * nsscene::entities_with_comp(uint32 comp_type_id) const
+const entity_set * nsmap_area::entities_with_comp(uint32 comp_type_id) const
 {
 	auto fiter = m_ents_by_comp.find(comp_type_id);
 	if (fiter != m_ents_by_comp.end())
@@ -290,7 +320,7 @@ const entity_set * nsscene::entities_with_comp(uint32 comp_type_id) const
 	return nullptr;
 }
 
-entity_set * nsscene::entities_with_comp(uint32 comp_type_id)
+entity_set * nsmap_area::entities_with_comp(uint32 comp_type_id)
 {
 	auto fiter = m_ents_by_comp.find(comp_type_id);
 	if (fiter != m_ents_by_comp.end())
@@ -298,17 +328,17 @@ entity_set * nsscene::entities_with_comp(uint32 comp_type_id)
 	return nullptr;		
 }
 
-const entity_set * nsscene::entities_in_scene() const
+const entity_set * nsmap_area::entities_in_scene() const
 {
 	return entities_with_comp<nstform_comp>();
 }
 
-entity_set * nsscene::entities_in_scene()
+entity_set * nsmap_area::entities_in_scene()
 {
 	return entities_with_comp<nstform_comp>();		
 }
 
-void nsscene::hide_layer(int32 pLayer, bool pHide)
+void nsmap_area::hide_layer(int32 pLayer, bool pHide)
 {
 	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
 	for (int32 y = g.min_space.y; y <= g.max_space.y; ++y)
@@ -318,7 +348,7 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 			uivec2 id = m_tile_grid->get(ivec3(x, y, -pLayer));
 			if (id != uivec2())
 			{
-				nsentity * ent = find_entity(id.x, id.y);
+				nsentity * ent = find_entity(id);
 				if (ent != nullptr)
 				{
 					nstform_comp * tc = ent->get<nstform_comp>();
@@ -332,7 +362,7 @@ void nsscene::hide_layer(int32 pLayer, bool pHide)
 	}
 }
 
-void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
+void nsmap_area::hide_layers_above(int32 pBaseLayer, bool pHide)
 {
 	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
 	pBaseLayer *= -1;
@@ -346,7 +376,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 				uivec2 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec2())
 				{
-					nsentity * ent = find_entity(id.x, id.y);
+					nsentity * ent = find_entity(id);
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
@@ -369,7 +399,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 				uivec2 id = m_tile_grid->get(ivec3(x, y, pBaseLayer));
 				if (id != uivec2())
 				{
-					nsentity * ent = find_entity(id.x, id.y);
+					nsentity * ent = find_entity(id);
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
@@ -381,7 +411,7 @@ void nsscene::hide_layers_above(int32 pBaseLayer, bool pHide)
 	}
 }
 
-void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
+void nsmap_area::hide_layers_below(int32 pTopLayer, bool pHide)
 {
 	nstile_grid::grid_bounds g = m_tile_grid->occupied_bounds();
 	pTopLayer *= -1;
@@ -395,7 +425,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 				uivec2 id = m_tile_grid->get(ivec3(x, y, z));
 				if (id != uivec2())
 				{
-					nsentity * ent = find_entity(id.x, id.y);
+					nsentity * ent = find_entity(id);
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
@@ -417,7 +447,7 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 				uivec2 id = m_tile_grid->get(ivec3(x, y, pTopLayer));
 				if (id != uivec2())
 				{
-					nsentity * ent = find_entity(id.x, id.y);
+					nsentity * ent = find_entity(id);
 					if (ent != nullptr)
 					{
 						nstform_comp * tc = ent->get<nstform_comp>();
@@ -429,16 +459,16 @@ void nsscene::hide_layers_below(int32 pTopLayer, bool pHide)
 	}
 }
 
-void nsscene::init()
+void nsmap_area::init()
 {
 }
 
-void nsscene::name_change(const uivec2 & oldid, const uivec2 newid)
+void nsmap_area::name_change(const uivec2 & oldid, const uivec2 newid)
 {
 	m_tile_grid->name_change(oldid, newid);
 }
 
-bool nsscene::remove(nsentity * ent, bool remove_children)
+bool nsmap_area::remove(nsentity * ent, bool remove_children)
 {
 	if (!m_enabled)
 	{
@@ -478,10 +508,12 @@ bool nsscene::remove(nsentity * ent, bool remove_children)
 	if (m_skydome == ent->full_id())
 		m_skydome = uivec2(0);
 
+	emit_sig entity_removed(ent);
+
 	return true;
 }
 
-bool nsscene::remove(fvec3 & pWorldPos, bool remove_children)
+bool nsmap_area::remove(fvec3 & pWorldPos, bool remove_children)
 {
 	nsentity * ent = find_entity(m_tile_grid->get(pWorldPos));
 	if (ent == nullptr)
@@ -489,17 +521,17 @@ bool nsscene::remove(fvec3 & pWorldPos, bool remove_children)
 	return remove(ent, remove_children);
 }
 
-void nsscene::set_bg_color(const fvec4 & bg_color)
+void nsmap_area::set_bg_color(const fvec4 & bg_color)
 {
     m_bg_color = bg_color;
 }
 
-void nsscene::set_creator(const nsstring & pCreator)
+void nsmap_area::set_creator(const nsstring & pCreator)
 {
 	m_creator = pCreator;
 }
 
-void nsscene::set_max_players(uint32 pMaxPlayers)
+void nsmap_area::set_max_players(uint32 pMaxPlayers)
 {
 	if (pMaxPlayers > SCENE_MAX_PLAYERS || pMaxPlayers < 2)
 	{
@@ -509,12 +541,12 @@ void nsscene::set_max_players(uint32 pMaxPlayers)
 	m_max_players = pMaxPlayers;
 }
 
-void nsscene::set_notes(const nsstring & notes_)
+void nsmap_area::set_notes(const nsstring & notes_)
 {
 	m_notes = notes_;
 }
 
-void nsscene::set_skydome(nsentity * skydome, bool add_to_scene_if_needed)
+void nsmap_area::set_skydome(nsentity * skydome, bool add_to_scene_if_needed)
 {
 	if (skydome == nullptr)
 		return;
@@ -530,18 +562,18 @@ void nsscene::set_skydome(nsentity * skydome, bool add_to_scene_if_needed)
 	{
 		if (add_to_scene_if_needed)
 		{
-			if (add(skydome) != nullptr)
+			if (add_entity(skydome) != nullptr)
 				set_skydome(skydome, false);
 		}
 	}
 }
 
-bool nsscene::is_enabled()
+bool nsmap_area::is_enabled()
 {
 	return m_enabled;
 }
 
-void nsscene::make_ent_instanced_if_needed(nsentity * ent)
+void nsmap_area::make_ent_instanced_if_needed(nsentity * ent)
 {
 	entity_set * ents_with_rcomp = entities_with_comp<nsrender_comp>();
 	auto fiter = ents_with_rcomp->begin();
@@ -592,7 +624,7 @@ void nsscene::make_ent_instanced_if_needed(nsentity * ent)
 	}
 }
 
-void nsscene::make_ent_not_instanced(nsentity * ent)
+void nsmap_area::make_ent_not_instanced(nsentity * ent)
 {
 	nstform_comp * tfc = ent->get<nstform_comp>();
 	if (tfc == nullptr)
@@ -637,7 +669,7 @@ void nsscene::make_ent_not_instanced(nsentity * ent)
 }
 
 // This adds the component from the comp by type list in the scene
-void nsscene::_on_comp_add(nscomponent * comp_t)
+void nsmap_area::_on_comp_add(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
 	fiter.first->second.emplace(comp_t->owner());
@@ -655,7 +687,7 @@ void nsscene::_on_comp_add(nscomponent * comp_t)
 }
 
 // This removes the component from the comp by type list in the scene
-void nsscene::_on_comp_remove(nscomponent * comp_t)
+void nsmap_area::_on_comp_remove(nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.find(comp_t->type());
 	fiter->second.erase(comp_t->owner());
@@ -678,7 +710,7 @@ void nsscene::_on_comp_remove(nscomponent * comp_t)
 	}
 }
 
-void nsscene::_remove_all_comp_entries(nsentity * ent)
+void nsmap_area::_remove_all_comp_entries(nsentity * ent)
 {
 	auto citer = ent->begin();
 	while (citer != ent->end())
@@ -688,7 +720,7 @@ void nsscene::_remove_all_comp_entries(nsentity * ent)
 	}
 }
 
-void nsscene::_add_all_comp_entries(nsentity * ent)
+void nsmap_area::_add_all_comp_entries(nsentity * ent)
 {
 	auto citer = ent->begin();
 	while (citer != ent->end())
@@ -698,54 +730,52 @@ void nsscene::_add_all_comp_entries(nsentity * ent)
 	}	
 }
 
-void nsscene::enable(bool to_enable)
+void nsmap_area::add_from_packed_vec(const packed_tform_vec & tforms, packed_tform_vec & unable_to_add)
+{
+	auto add_iter = tforms.begin();
+	while (add_iter != tforms.end())
+	{
+		nsentity * ent = get_asset<nsentity>(add_iter->ent_id);
+		tform_info tf_info(
+			uivec2(),
+			add_iter->tf_info.m_position,
+			add_iter->tf_info.m_orient,
+			add_iter->tf_info.m_scaling,
+			add_iter->tf_info.m_hidden_state);
+		nstform_comp * tfc = add_entity(ent,&tf_info,false);
+
+		if (tfc == nullptr)
+		{
+			unable_to_add.emplace_back(*add_iter);
+			dprint("nsscene::add_from_packed_vec - could not load tform - unable to add ent!!!");
+		}
+		
+		++add_iter;
+	}
+
+	// After having added all tforms, preserving the ids, we should be able to assign parent/children
+	// accordingly now
+	auto piter = tforms.begin();
+	while (piter != tforms.end())
+	{
+		nsentity * ent = get_asset<nsentity>(piter->ent_id);
+		nstform_comp * tfc = ent->get<nstform_comp>();
+		if (tfc != nullptr)
+			tfc->set_tf_info(piter->tf_info, false);
+		++piter;
+	}
+}
+
+void nsmap_area::enable(bool to_enable)
 {
 	if (to_enable)
 	{
 		if (m_enabled)
 			return;
-
+		
 		m_tile_grid->init();
         m_enabled = true;
-		
-		// If enabling the scene, go through the pupped vec and load - clear the pupped vec after loading
-		// Any unloaded tforms are added to the "unloaded" pupped vec
-		
-		auto add_iter = m_pupped_tforms.begin();
-		while (add_iter != m_pupped_tforms.end())
-		{
-			nsentity * ent = get_asset<nsentity>(add_iter->ent_id);
-			tform_info tf_info(
-				uivec2(),
-				add_iter->tf_info.m_position,
-				add_iter->tf_info.m_orient,
-				add_iter->tf_info.m_scaling,
-				add_iter->tf_info.m_hidden_state);
-			nstform_comp * tfc = add(ent,tf_info,false);
-
-			if (tfc == nullptr)
-			{
-				m_unloaded_tforms.emplace_back(*add_iter);
-				add_iter = m_pupped_tforms.erase(add_iter);
-				dprint("nsscene::enable - could not load tform - unable to find entity id " + add_iter->ent_id.to_string());
-			}
-			else
-			{
-				++add_iter;
-			}
-		}
-
-		// After having added all tforms, preserving the ids, we should be able to assign parent/children
-		// accordingly now
-		auto piter = m_pupped_tforms.begin();
-		while (piter != m_pupped_tforms.end())
-		{
-			nsentity * ent = get_asset<nsentity>(piter->ent_id);
-			nstform_comp * tfc = ent->get<nstform_comp>();
-			tfc->set_tf_info(piter->tf_info, false);
-			++piter;
-		}
-
+		add_from_packed_vec(m_pupped_tforms, m_unloaded_tforms);
 		m_pupped_tforms.clear();
 	}
 	else
@@ -762,8 +792,27 @@ void nsscene::enable(bool to_enable)
 	}
 }
 
+void nsmap_area::make_valid(tform_info * tf)
+{
+    if (find_entity(tf->m_parent) == nullptr && tf->m_parent != uivec2(0))
+	{
+		dprint("nsprefab_comp::make_valid Parent " + tf->m_parent.to_string() + " was invalid");
+		tf->m_parent = uivec2(0);
+	}
+	auto iter = tf->m_children.begin();
+	while (iter != tf->m_children.end())
+	{
+		if (find_entity(*iter) == nullptr)
+		{
+			dprint("nsprefab_comp::make_valid Child " + iter->to_string() + " was invalid");
+			iter = tf->m_children.erase(iter);
+		}
+		else
+			++iter;
+	}
+}
 
-void nsscene::_populate_pup_vec()
+void nsmap_area::_populate_pup_vec()
 {
 	auto ents = entities_in_scene();
 	auto ent_iter = ents->begin();
@@ -775,5 +824,3 @@ void nsscene::_populate_pup_vec()
 		++ent_iter;
 	}
 }
-
-

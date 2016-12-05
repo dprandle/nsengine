@@ -101,7 +101,7 @@ class nscamera_system : public nssystem
 
 	void setup_input_map(nsinput_map * imap, const nsstring & global_imap_name);
 
-	void set_active_scene(nsscene * active_scene);
+	void set_active_scene(nsmap_area * active_scene);
 
 	bool x_inverted(const camera_mode & mode_ = mode_free);
 

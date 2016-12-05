@@ -1,6 +1,6 @@
 #include <system/nssprite_anim_system.h>
 #include <nsengine.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <component/nssprite_comp.h>
 #include <asset/nsmaterial.h>
 #include <component/nsrender_comp.h>
@@ -61,7 +61,7 @@ void nssprite_anim_system::update()
 				get_asset<nsmaterial>(rc->material_id(0))->set_map_tex_id(nsmaterial::diffuse, cur_anim->tex->full_id());
 				if (cur_anim->frames[index].emit_signal)
 				{
-					cur_anim->next_frame(
+					emit_sig cur_anim->next_frame(
 						anim_frame_sound_info((*scn_iter),scc->animations[scc->current_anim], index));
 				}
 				cur_anim->current_frame = index;

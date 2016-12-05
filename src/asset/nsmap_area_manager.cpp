@@ -10,20 +10,20 @@ This file contains all of the neccessary definitions for the nsscene_manager cla
 \copywrite Earth Banana Games 2013
 */
 
-#include <asset/nsscene_manager.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area_manager.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsentity.h>
 #include <nsengine.h>
 #include <asset/nsentity_manager.h>
 #include <nsplatform.h>
 #include <asset/nsplugin_manager.h>
 
-nsscene * get_scene(const uivec2 & id)
+nsmap_area * get_scene(const uivec2 & id)
 {
 	nsplugin * plg = get_plugin(id.x);
 	if (plg == nullptr)
 		return nullptr;
-	return plg->get<nsscene>(id.y);
+	return plg->get<nsmap_area>(id.y);
 }
 
 nsscene_manager::nsscene_manager() :

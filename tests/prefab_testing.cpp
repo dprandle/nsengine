@@ -18,6 +18,7 @@
 #include <asset/nsmap_area_manager.h>
 #include <asset/nsaudio_clip.h>
 
+#include <component/nsprefab_comp.h>
 #include <component/nscam_comp.h>
 #include <component/nssel_comp.h>
 #include <component/nsrender_comp.h>
@@ -47,50 +48,18 @@ void setup_input_map(nsplugin * plg);
 struct button_funcs
 {
 	button_funcs():
-		name_offset(0),
-		plg(nullptr),
 		scn(nullptr),
-		grass_mat(nullptr),
-		m_router(nullptr),
-		cur_offset()
+		m_router(nullptr)
 	{}
 	
-    void on_new_game()
-    {
-    }
-
-	void on_add_tile()
+	void on_add_prefab()
 	{
-		nsstring name("grass_tile" + std::to_string(name_offset));
-		nsentity * tile = plg->create_tile(name, grass_mat, false);
-		if (tile == nullptr)
-			tile = plg->get<nsentity>(name);
-		tform_info tf(uivec2(),cur_offset);
-		scn->add_entity(tile,&tf);
-		cur_offset += fvec3(2 * X_GRID,0.0f,0.0f);
-		++name_offset;
-		current_ents.push_back(tile);
+		scn->add_entity(prefab);
 	}
 
-	void on_remove_selection()
-	{
-	}
-
-	void on_toggle_ac()
-	{
-	}
-
-	void on_toggle_sc()
-	{
-	}
-
-	std::vector<nsentity*> current_ents;
-	uint32 name_offset;
-    nsplugin * plg;
+	nsentity * prefab;
     nsmap_area * scn;
-	nsmaterial * grass_mat;
     nsrouter * m_router;
-	fvec3 cur_offset;
 };
 
 struct button_style
@@ -135,34 +104,78 @@ int main()
     bf.m_router = new nsrouter;
     e.init(new nsgl_driver);
 	
-    nsgl_window wind(ivec2(800,600), "Basic Test");
+    nsgl_window wind(ivec2(800,600), "Prefab Test");
     viewport * vp = wind.vid_context()->insert_viewport("main_view",fvec4(0.0f,0.0f,1.0f,1.0f));
 	
-    nsplugin * plg = nsep.create<nsplugin>("most_basic_test");
+    nsplugin * plg = nsep.create<nsplugin>("prefab_testing");
     plg->enable(true);
-	bf.plg = plg;
 	
-    vp->camera = plg->create_camera("scenecam", 60.0f, uivec2(400, 400), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+    vp->camera = plg->create_camera("scenecam", 60.0f, uivec2(800, 600), fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
     setup_input_map(plg);
 
-    nsmap_area * new_scene = plg->create<nsmap_area>("new_scene");
-    new_scene->enable(true);
-	bf.scn = new_scene;
+    bf.scn = plg->create<nsmap_area>("new_scene");
+    bf.scn->enable(true);
+    bf.scn->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));	
+
+	bf.prefab = plg->create<nsentity>("grass_prefab");
+
+	// create prefab
+	nsentity * first_tile = plg->create_tile(
+		"grass_tile1",
+		nse.import_dir() + "diffuseGrass.png",
+		nse.import_dir() + "normalGrass.png",
+		fvec4(1,0,0,1),
+		4.0f,
+		0.5f,
+		fvec3(1,0,0),
+		false
+		);
+
+	nsentity * second_tile = plg->create_tile(
+		"grass_tile2",
+		nse.import_dir() + "diffuseGrass.png",
+		nse.import_dir() + "normalGrass.png",
+		fvec4(1,0,0,1),
+		4.0f,
+		0.5f,
+		fvec3(1,0,0),
+		false
+		);
+
+	nsentity * third_tile = plg->create_tile(
+		"grass_tile3",
+		nse.import_dir() + "diffuseGrass.png",
+		nse.import_dir() + "normalGrass.png",
+		fvec4(1,0,0,1),
+		4.0f,
+		0.5f,
+		fvec3(1,0,0),
+		false
+		);
+
+    nsentity * fourth_tile = plg->create_tile(
+        "grass_tile4",
+        nse.import_dir() + "diffuseGrass.png",
+        nse.import_dir() + "normalGrass.png",
+        fvec4(1,0,0,1),
+        4.0f,
+        0.5f,
+        fvec3(1,0,0),
+        false
+        );
+
+
+	nsprefab_comp * pfc = bf.prefab->create<nsprefab_comp>();
+	tform_info tfi;
+	pfc->add_entity(first_tile->full_id(), &tfi, true);
+	tfi.m_position = nstile_grid::world(ivec3(0,1,0));
+	pfc->add_entity(second_tile->full_id(), &tfi, true);
+	tfi.m_position = nstile_grid::world(ivec3(1,0,0));
+	pfc->add_entity(third_tile->full_id(), &tfi, true);
+
+
 	
-    new_scene->set_bg_color(fvec3(0.7f, 0.7f, 1.0f));
 
-	// create grass mat
-	bf.grass_mat = plg->create<nsmaterial>("grass_mat");
-	nstexture * dif = plg->load<nstex2d>(nse.import_dir() + "diffuseGrass.png", false);
-	nstexture * nrm = plg->load<nstex2d>(nse.import_dir() + "normalGrass.png", false);
-	tex_map_info tmi;
-	tmi.tex_id = dif->full_id();
-	bf.grass_mat->add_tex_map(nsmaterial::diffuse, tmi, true);
-	tmi.tex_id = nrm->full_id();
-	bf.grass_mat->add_tex_map(nsmaterial::normal, tmi, true);
-
-    nsentity * point_light = plg->create_point_light("point_light", 1.0f, 0.0f, 30.0f);
-    nsentity * spot_light = plg->create_spot_light("spot_light", 1.0f, 0.0f, 100.0f, 10.0f, fvec3(0.0f,0.0f,1.0f));
     nsentity * dirl = plg->create_dir_light("dirlight", 1.0f, 0.0f,fvec3(1.0f,1.0f,1.0f),true,0.5f,2);
     nsentity * canvas = plg->create<nsentity>("canvas");
 	
@@ -170,22 +183,17 @@ int main()
     cc->enable(true);
 
 	button_style bs;
-	
 	bs.fnt = plg->load<nsfont>(nse.import_dir() + "sample.otf",true);
     bs.fnt->set_point_size(18);
-
     bs.reg_states[0].border_color = fvec4(0.0f,0.0f,0.0f,0.7);
     bs.reg_states[0].mat_color = fvec4(0.3, 0.3, 0.3, 1.0);
     bs.reg_states[0].text_color = fvec4(1.0,1.0,1.0,1.0);
-
     bs.reg_states[1].border_color = fvec4(0,0,0,0.7);
     bs.reg_states[1].mat_color = fvec4(1.0, 0.0, 0.0, 0.5);
     bs.reg_states[1].text_color = fvec4(1.0,1.0,1.0,1.0);
-
     bs.reg_states[2].border_color = fvec4(0,0,1,1);
     bs.reg_states[2].mat_color = fvec4(0.0,0.0,0.0,1);
     bs.reg_states[2].text_color = fvec4(1.0,1.0,0.0,1.0);
-	
     bs.reg_states[3].border_color = fvec4(0.7,0.7,0.7,1);
     bs.reg_states[3].mat_color = fvec4(0.4,0.4,0.4,0.6);
 	bs.reg_states[3].text_color = fvec4(1.0,1.0,1.0,1.0);
@@ -193,21 +201,13 @@ int main()
 
 	// Add stuff to scene
 	tform_info tf(uivec2(),fvec3(0,0,-20));
-	new_scene->add_entity(vp->camera, &tf);
+	bf.scn->add_entity(vp->camera, &tf);
 
 	tf.m_position = fvec3(5.0f, 5.0f, -20.0f);
 	tf.m_orient = orientation(fvec4(1,0,0,20.0f));
-    new_scene->add_entity(dirl, &tf);
+    bf.scn->add_entity(dirl, &tf);
 
-	tf.m_position = fvec3(5.0f, 20.0f, -20.0f);
-	tf.m_orient = orientation(fvec4(1,0,0,20.0f));
-    new_scene->add_entity(point_light, &tf);
-
-	//tf.m_parent = vp->camera->full_id();
-	tf.m_position = fvec3(20.0f, 5.0f, -20.0f);
-	tf.m_children.push_back(point_light->full_id());
-	tf.m_orient = orientation(fvec4(1,0,0,20.0f));
-	new_scene->add_entity(spot_light, &tf);
+    bf.scn->add_entity(fourth_tile, &tfi, true);
 
 	fvec2 button_size(200,60);
 	fvec2 start_pos(200,800);
@@ -215,49 +215,17 @@ int main()
 	// Add stuff to canvas
 	nsui_button_comp * btn = create_button(
 		canvas,
-		"add_tile_btn",
+		"add_prefab_btn",
 		bs,
 		fvec2(0.0f),
 		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
-		"Add Tile"
+		"Add Prefab"
 		);
-	bf.m_router->connect(&bf, &button_funcs::on_add_tile, btn->pressed);
-	start_pos.y -= 100.0f;
-	btn = create_button(
-		canvas,
-		"remove_selection_btn",
-		bs,
-		fvec2(0.0f),
-		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
-		"Delete Selection"
-		);
-	bf.m_router->connect(&bf, &button_funcs::on_remove_selection, btn->pressed);
-	start_pos.y -= 100;
-	btn = create_button(
-		canvas,
-		"toggle_anim_comp_to_selection_btn",
-		bs,
-		fvec2(0.0f),
-		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
-		"Toggle AC Selection"
-		);	
-	bf.m_router->connect(&bf, &button_funcs::on_toggle_ac, btn->pressed);
-	start_pos.y -= 100;
-	btn = create_button(
-		canvas,
-		"toggle_sprite_comp_to_selection_btn",
-		bs,
-		fvec2(0.0f),
-		fvec4(start_pos - button_size / 2.0f,start_pos + button_size / 2.0f),
-		"Toggle SC Selection"
-		);	
-	bf.m_router->connect(&bf, &button_funcs::on_toggle_sc, btn->pressed);
+	bf.m_router->connect(&bf, &button_funcs::on_add_prefab, btn->pressed);
 
 	// set the canvas and scene
 	vp->ui_canvases.push_back(canvas);
-    nse.set_active_scene(plg->get<nsmap_area>("new_scene"));
-
-	plg->save(bs.fnt->get_atlas(0));
+    nse.set_active_scene(bf.scn);
 	
     e.start();
     while (e.running())

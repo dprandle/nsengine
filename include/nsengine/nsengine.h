@@ -111,7 +111,7 @@ This file contains all of the neccessary declartations for the nsengine class.
 #define UI_SYS_UPDATE_PR 20000
 
 
-class nsscene;
+class nsmap_area;
 class nsvideo_driver;
 class nstform_system;
 class nsanim_manager;
@@ -179,7 +179,7 @@ public:
 
 	typedef std::map<int32, uint32> sys_priority_map;
 
-    nsscene * active_scene();
+    nsmap_area * active_scene();
 	
 	bool add_system(nssystem * pSystem);
 
@@ -486,7 +486,7 @@ public:
 
 	void init(nsvideo_driver * driver);	
 
-	void set_active_scene(nsscene * active_scene);
+	void set_active_scene(nsmap_area * active_scene);
 
 	void start();
 
@@ -593,7 +593,7 @@ private:
 	nsplugin_manager * m_plugins;
 	nsevent_dispatcher * m_event_disp;
 	nstimer * m_timer;
-    nsscene * m_active_scene;
+    nsmap_area * m_active_scene;
 
 #ifdef NSDEBUG
 	nsdebug * m_deb;

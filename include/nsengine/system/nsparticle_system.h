@@ -17,7 +17,7 @@ This file contains all of the neccessary declarations for the nsparticle_system 
 
 #include <system/nssystem.h>
 
-class nsscene;
+class nsmap_area;
 class nssel_comp;
 class nsshader;
 

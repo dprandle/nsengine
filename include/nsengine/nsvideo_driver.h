@@ -26,7 +26,7 @@ struct sel_per_scene_info;
 class nstexture;
 //class nsshader;
 class nsentity;
-class nsscene;
+class nsmap_area;
 
 #define SHADER_VID_OBJ_GUID "nsshader_vid_obj"
 #define TEXTURE_VID_OBJ_GUID "nstexture_vid_obj"
@@ -184,7 +184,7 @@ struct vid_ctxt
 
 	virtual uivec3 pick(const fvec2 & mouse_pos) = 0;
 
-	virtual void push_scene(nsscene * scn) = 0;
+	virtual void push_scene(nsmap_area * scn) = 0;
 
 	virtual void push_entity(nsentity * ent) = 0;
 
@@ -194,7 +194,7 @@ struct vid_ctxt
 
 	virtual void render_to_all_viewports() = 0;
 
-	virtual void render(nsscene * scn) = 0;
+	virtual void render(nsmap_area * scn) = 0;
 
 	virtual void setup_default_rendering() = 0;
 

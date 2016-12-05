@@ -384,7 +384,7 @@ bool nsvideo_driver::make_context_current(uint8 c_id)
 
 	// Context switch signal occurs which should be connected to the
 	// slot on each nsvid_obj - this slot will initialize any uninitialized vid_ctxt_objs in theory
-	context_switch(m_current_context);
+	emit_sig context_switch(m_current_context);
 
 	// Auto cleanup will delete all vid_ctxt_objs that were deleted
 	if (m_current_context->auto_cleanup)

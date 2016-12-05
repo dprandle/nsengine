@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the nsanim_system class
 #include <system/nsanim_system.h>
 #include <component/nsanim_comp.h>
 #include <asset/nsentity.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsanim_manager.h>
 #include <asset/nsmesh_manager.h>
 #include <nsengine.h>

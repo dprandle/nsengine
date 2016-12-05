@@ -21,7 +21,7 @@
 #include <asset/nsshader.h>
 #include <asset/nsmesh.h>
 #include <opengl/nsgl_buffer.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 
 tform_info::tform_info(
 	const uivec2 & parent,
@@ -130,7 +130,7 @@ void nstform_comp::release()
 
 void nstform_comp::translate_world_space(const fvec3 & amount)
 {
-	nsentity * ent = m_scene->find_entity(m_tfi.m_parent);
+	nsentity * ent = get_asset<nsentity>(m_tfi.m_parent);
     if (ent != nullptr)
 	{
 		nstform_comp * itf = ent->get<nstform_comp>();
@@ -147,7 +147,7 @@ void nstform_comp::add_child(nstform_comp * child, bool keep_world_transform)
 	if (has_child(child))
 		return;
 
-	nsentity * parnt = m_scene->find_entity(child->m_tfi.m_parent);
+	nsentity * parnt = get_asset<nsentity>(child->m_tfi.m_parent);
 	if (parnt != nullptr)
 	{
 		nstform_comp * cparent_itf = parnt->get<nstform_comp>();
@@ -210,7 +210,7 @@ void nstform_comp::remove_children(bool keep_world_transform)
 	auto citer = m_tfi.m_children.begin();
     while (citer != m_tfi.m_children.end())
 	{
-		nsentity * ent = m_scene->find_entity(*citer);
+		nsentity * ent = get_asset<nsentity>(*citer);
 		if (ent != nullptr)
 		{
 			nstform_comp * chld = ent->get<nstform_comp>();
@@ -239,7 +239,7 @@ void nstform_comp::set_parent(nstform_comp * parent, bool keep_world_transform)
 {
 	if (parent == nullptr)
 	{
-		nsentity * cur_parent = m_scene->find_entity(m_tfi.m_parent);
+		nsentity * cur_parent = get_asset<nsentity>(m_tfi.m_parent);
 		if (cur_parent != nullptr)
 		{
 			nstform_comp * par_itf = cur_parent->get<nstform_comp>();
@@ -252,7 +252,7 @@ void nstform_comp::set_parent(nstform_comp * parent, bool keep_world_transform)
 
 nstform_comp * nstform_comp::parent() const
 {
-	nsentity * par = m_scene->find_entity(m_tfi.m_parent);
+	nsentity * par = get_asset<nsentity>(m_tfi.m_parent);
 	if (par != nullptr)
 		return par->get<nstform_comp>();
 	return nullptr;
@@ -286,7 +286,7 @@ void nstform_comp::recursive_compute()
 
 	for (uint32 i = 0; i < m_tfi.m_children.size(); ++i)
     {
-		nsentity * chld = m_scene->find_entity(m_tfi.m_children[i]);
+		nsentity * chld = get_asset<nsentity>(m_tfi.m_children[i]);
 		if (chld != nullptr)
 		{
 			nstform_comp * child_itf = chld->get<nstform_comp>();
@@ -427,7 +427,7 @@ nstform_comp * nstform_comp::child(uint32 index)
 {
     if (index >= m_tfi.m_children.size())
         return nullptr;
-	nsentity * ent = m_scene->find_entity(m_tfi.m_children[index]);
+	nsentity * ent = get_asset<nsentity>(m_tfi.m_children[index]);
 	if (ent != nullptr)
 		return ent->get<nstform_comp>();
 	return nullptr;
@@ -452,7 +452,7 @@ void nstform_comp::set_tf_info(const tform_info & tfi_, bool preserve_world_tfor
 {
 	nsentity * prnt = nullptr;
 	if (tfi_.m_parent != uivec2(0))
-		prnt = m_scene->find_entity(tfi_.m_parent);
+		prnt = get_asset<nsentity>(tfi_.m_parent);
 	
 	if (prnt != nullptr)
 		set_parent(prnt->get<nstform_comp>(), preserve_world_tform);
@@ -460,7 +460,7 @@ void nstform_comp::set_tf_info(const tform_info & tfi_, bool preserve_world_tfor
 	remove_children(true);
 	for (uint32 i = 0; i < tfi_.m_children.size(); ++i)
 	{
-		nsentity * child = m_scene->find_entity(tfi_.m_children[i]);
+		nsentity * child = get_asset<nsentity>(tfi_.m_children[i]);
 		if (child != nullptr)
 			add_child(child->get<nstform_comp>(), preserve_world_tform);
 	}

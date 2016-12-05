@@ -42,7 +42,7 @@ nsasset::nsasset(const nsasset & copy):
 
 nsasset::~nsasset()
 {
-	resource_destroyed(type(), full_id());
+	emit_sig resource_destroyed(type(), full_id());
 	push_asset_destroyed(full_id());
 }
 

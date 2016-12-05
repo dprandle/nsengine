@@ -82,7 +82,7 @@ struct geometry_draw_call : public gl_draw_call
 	
 	~geometry_draw_call() {}
 
-	nsscene * scn;
+	nsmap_area * scn;
 	nsmesh::submesh * submesh;
 	fmat4_vector * anim_transforms;
 	fvec2 height_minmax;
@@ -124,7 +124,7 @@ struct light_draw_call : public gl_draw_call
 	
 	~light_draw_call() {}
 
-	nsscene * scn;
+	nsmap_area * scn;
 	fmat4 proj_light_mat;
 	fmat4 light_transform;
 	fvec3 light_pos;

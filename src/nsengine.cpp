@@ -9,6 +9,8 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
+#include <component/nsprefab_comp.h>
+#include <component/nsprefab_reference_comp.h>
 #include <component/nssprite_comp.h>
 #include <component/nsui_button_comp.h>
 #include <component/nsui_canvas_comp.h>
@@ -19,7 +21,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nsplatform.h>
 #include <nsengine.h>
 #include <system/nstform_system.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsinput_map_manager.h>
 #include <asset/nsentity_manager.h>
 #include <asset/nsanim_manager.h>
@@ -30,7 +32,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <asset/nsshader_manager.h>
 #include <asset/nsinput_map.h>
 #include <nspupper.h>
-#include <asset/nsscene_manager.h>
+#include <asset/nsmap_area_manager.h>
 #include <component/nssel_comp.h>
 #include <component/nsterrain_comp.h>
 #include <system/nsanim_system.h>
@@ -286,7 +288,7 @@ void nsengine::stop()
 {
     if (m_initialized && m_running)
     {
-        m_timer->pause();
+        m_timer->stop();
         m_running = false;
     }
 }
@@ -413,7 +415,7 @@ uint32 nsengine::type_id(std::type_index type)
     return 0;
 }
 
-nsscene * nsengine::active_scene()
+nsmap_area * nsengine::active_scene()
 {
     return m_active_scene;
 }
@@ -427,7 +429,7 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
     return f;
 }
 
-void nsengine::set_active_scene(nsscene * active_scene)
+void nsengine::set_active_scene(nsmap_area * active_scene)
 {
     m_active_scene = active_scene;
 
@@ -544,6 +546,8 @@ void nsengine::_cleanup_driver()
 
 void nsengine::_init_factories()
 {
+	register_component<nsprefab_comp>("nsprefab_comp");
+    register_component<nsprefab_reference_comp>("nsprefab_reference_comp");
     register_component<nsrect_tform_comp>("nsrect_tform_comp");
     register_component<nsanim_comp>("nsanim_comp");
     register_component<nscam_comp>("nscam_comp");
@@ -594,7 +598,7 @@ void nsengine::_init_factories()
     register_resource<nsentity, nsentity_manager>("nsentity");
     register_resource<nsmaterial, nsmat_manager>("nsmaterial");
     register_resource<nsplugin, nsplugin_manager>("nsplugin");
-    register_resource<nsscene, nsscene_manager>("nsscene");
+    register_resource<nsmap_area, nsscene_manager>("nsmap_area");
     register_resource<nsmesh, nsmesh_manager>("nsmesh");
     register_resource<nsmesh_plane, nsmesh_manager>("nsmesh_plane");
     register_abstract_resource<nstexture, nstex_manager>("nstexture");

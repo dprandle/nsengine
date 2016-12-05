@@ -16,7 +16,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 #include <nsevent_dispatcher.h>
 #include <system/nsparticle_system.h>
 #include <component/nsparticle_comp.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <nsengine.h>
 #include <opengl/nsgl_framebuffer.h>
 #include <system/nstform_system.h>

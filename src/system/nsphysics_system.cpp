@@ -6,7 +6,7 @@
 #include <asset/nsplugin.h>
 #include <asset/nsentity_manager.h>
 #include <asset/nsentity.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <component/nssel_comp.h>
 #include <nscube_grid.h>
 #include <component/nsphysic_comp.h>
@@ -102,11 +102,11 @@ void nsphysics_system::draw_tile_grid()
 				auto items = m_active_scene->cube_grid->items_at(ivec3(x,y,z));
 				if (items != nullptr && !items->empty())
 				{
-					m_active_scene->add(
-						bb_shower,
-						nscube_grid::world_from(ivec3(x,y,-1)),
-						fquat(),
-						fvec3(CUBE_X_GRID/2.3f,CUBE_Y_GRID/2.30f,1.0f));
+					tform_info tf;
+					tf.m_scaling = fvec3(CUBE_X_GRID/2.3f,CUBE_Y_GRID/2.30f,1.0f);
+					tf.m_position = nscube_grid::world_from(ivec3(x,y,-1));
+					
+					m_active_scene->add_entity(bb_shower, &tf);
 				}
 			}
 		}

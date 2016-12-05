@@ -13,8 +13,8 @@
 
 #include <asset/nsentity_manager.h>
 #include <nsengine.h>
-#include <asset/nsscene_manager.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area_manager.h>
+#include <asset/nsmap_area.h>
 #include <nsengine.h>
 #include <asset/nsplugin_manager.h>
 

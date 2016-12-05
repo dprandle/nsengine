@@ -16,7 +16,7 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 #include <nsevent.h>
 #include <nsevent_dispatcher.h>
 #include <asset/nsinput_map.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsplugin.h>
 #include <asset/nsplugin_manager.h>
 

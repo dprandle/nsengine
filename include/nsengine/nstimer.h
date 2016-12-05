@@ -15,32 +15,61 @@ This file contains all of the neccessary declarations for the nstimer class.
 
 #define FIXED_TIME_STEP 1/100.0
 
-class nstimer 
+#include <nstimer.h>
+#include <nscallback.h>
+
+class nstimer;
+
+double system_time();
+
+struct nstimer_callback
+{
+    nstimer_callback();
+    virtual ~nstimer_callback();
+    virtual void run() = 0;
+    nstimer * timer;
+};
+
+class nstimer
 {
 public:
-	nstimer();
-	~nstimer();
 
-	double dt();
+    enum cb_mode {
+        no_shot,
+        single_shot,
+        continous_shot
+    };
 
-	double elapsed();
+    nstimer();
+    ~nstimer();
+
+    double dt();
+    double elapsed();
+    double elapsed_since_callback();
+    bool running();
 
 	double fixed();
 
-	float & lag();
+    void set_callback(nstimer_callback * cb);
+    void set_callback_mode(cb_mode mode);
+    void set_callback_delay(double ms);
 
-	void pause();
+    nstimer_callback * callback();
+    cb_mode callback_mode();
+    double callback_delay();
 
-	void resume();
-
-	void start();
-
-	void update();
+    void stop();
+    void start();
+    void update();
 
 private:
-	double m_start;
-	double m_current;
-	double m_last;
-	bool m_running;
+    double m_start;
+    double m_current;
+    double m_last;
+    double m_last_cb;
+    double m_cb_delay;
+    bool m_running;
+    nstimer_callback * m_cb;
+    cb_mode m_cmode;
 };
 #endif

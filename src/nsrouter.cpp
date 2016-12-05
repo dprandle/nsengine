@@ -22,22 +22,22 @@ nsrouter::~nsrouter()
 
 void nsrouter::disconnect_all()
 {
-	while (slots.begin() != slots.end())
+	while (con_slots.begin() != con_slots.end())
 	{
-		delete slots.back();
-		slots.pop_back();
+		delete con_slots.back();
+		con_slots.pop_back();
 	}		
 }
 
 void nsrouter::remove_slot(ns::slot_base * slot)
 {
-	auto iter = slots.begin();
-	while (iter != slots.end())
+	auto iter = con_slots.begin();
+	while (iter != con_slots.end())
 	{
 		if (*iter == slot)
 		{
 			delete *iter;
-			iter = slots.erase(iter);
+			iter = con_slots.erase(iter);
 		}
 		else
 			++iter;

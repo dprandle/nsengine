@@ -32,7 +32,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 
 #include <asset/nsfont_manager.h>
 #include <asset/nsasset_manager.h>
-#include <asset/nsscene_manager.h>
+#include <asset/nsmap_area_manager.h>
 #include <asset/nsmat_manager.h>
 #include <asset/nsanim_manager.h>
 #include <asset/nsmesh_manager.h>

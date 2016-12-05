@@ -17,7 +17,7 @@
 #include <system/nstform_system.h>
 #include <nsvideo_driver.h>
 #include <component/nscam_comp.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <asset/nsplugin.h>
 #include <asset/nsmesh.h>
 #include <asset/nstexture.h>
@@ -72,11 +72,8 @@ void nstform_system::update()
 	while (ent_iter != scene_ents->end())
 	{
 		nstform_comp * tfc = (*ent_iter)->get<nstform_comp>();
-		if (tfc->update_posted())
-		{
-			if (tfc->parent() == nullptr)
-				tfc->recursive_compute();
-		}		
+		if (tfc->parent() == nullptr)
+			tfc->recursive_compute();
 		++ent_iter;
 	}
 

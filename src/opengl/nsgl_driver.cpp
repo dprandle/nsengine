@@ -31,7 +31,7 @@
 #include <asset/nsmesh.h>
 #include <component/nsui_comp.h>
 #include <asset/nsfont.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <component/nscam_comp.h>
 #include <component/nslight_comp.h>
 #include <component/nsrender_comp.h>
@@ -601,7 +601,7 @@ const ivec2 & gl_ctxt::window_size()
 	return m_default_target->size;
 }
 
-void gl_ctxt::push_scene(nsscene * scn)
+void gl_ctxt::push_scene(nsmap_area * scn)
 {
 	// now go through second time after recursive update
     if (scn == nullptr)
@@ -619,7 +619,7 @@ void gl_ctxt::push_scene(nsscene * scn)
 	_add_lights_from_scene(scn);
 }
 
-void gl_ctxt::_add_instanced_draw_calls_from_scene(nsscene * scene)
+void gl_ctxt::_add_instanced_draw_calls_from_scene(nsmap_area * scene)
 {
 	nsentity * camera = focused_vp->camera;
 
@@ -835,7 +835,7 @@ void gl_ctxt::render_to_viewport(viewport * vp)
 	#endif
 }
 
-void gl_ctxt::render(nsscene *scn)
+void gl_ctxt::render(nsmap_area *scn)
 {
     if (auto_update_vobjs)
         update_vid_objs();
@@ -1185,7 +1185,7 @@ void gl_ctxt::render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader)
     so->gl_vao->unbind();
 }
 
-void gl_ctxt::_add_lights_from_scene(nsscene * scene)
+void gl_ctxt::_add_lights_from_scene(nsmap_area * scene)
 {
 	auto ents = scene->entities_with_comp<nslight_comp>();
 	if (ents == nullptr)
@@ -1267,7 +1267,7 @@ void gl_ctxt::_add_lights_from_scene(nsscene * scene)
 	}
 }
 
-void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
+void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
 {
 	if (focused_vp == nullptr)
 		return;
@@ -1395,7 +1395,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsscene * scene)
 	}
 }
 
-void gl_ctxt::_add_selection_draw_calls(nsscene * scene)
+void gl_ctxt::_add_selection_draw_calls(nsmap_area * scene)
 {
 	// add selection draw calls
 	render_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);

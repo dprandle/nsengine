@@ -16,7 +16,7 @@ This file contains all of the neccessary definitions for the nssel_comp class.
 #include <component/nssel_comp.h>
 #include <nstimer.h>
 #include <opengl/nsgl_buffer.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 
 nssel_comp::nssel_comp() :
 	nscomponent(type_to_hash(nssel_comp)),

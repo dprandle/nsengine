@@ -16,7 +16,7 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 #include <nsevent_dispatcher.h>
 #include <component/nstile_brush_comp.h>
 #include <nsevent.h>
-#include <asset/nsscene.h>
+#include <asset/nsmap_area.h>
 #include <component/nstile_comp.h>
 #include <nstile_grid.h>
 #include <component/nssel_comp.h>

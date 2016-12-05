@@ -48,7 +48,7 @@ bool nsgl_shader::compile(shader_stage stage, const nsstring & source)
 		nsstring info(infoLog);
 		info = "----Error compiline shader stage " + stage_name(stage) + " ----\n" + info;
 		error_state = error_compile;
-		compile_error_msg(info,si->stage);
+		emit_sig compile_error_msg(info,si->stage);
 		dprint(info);
 		glDeleteShader(si->gl_id);
 		gl_err_check("nsgl_shader::compile Error deleting shader");
@@ -120,7 +120,7 @@ bool nsgl_shader::link()
 		glGetProgramInfoLog(gl_id, sizeof(infoLog), NULL,(GLchar*)infoLog);
 		nsstring info(infoLog);
 		info = "----Error linking shader----\n" + info;
-		link_error_msg(info);
+		emit_sig link_error_msg(info);
 		dprint(info);
 		error_state = error_link;
 		glDeleteProgram(gl_id);
@@ -415,7 +415,7 @@ bool nsgl_shader::validate()
         glGetProgramInfoLog(gl_id, sizeof(infoLog), NULL, infoLog);
 		nsstring info(infoLog);
 		info = "----Error validating shader----\n" + info;
-		validation_error_msg(info);
+		emit_sig validation_error_msg(info);
 		dprint(info);
         return false;
     }

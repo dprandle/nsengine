@@ -13,6 +13,8 @@ This file contains all of the neccessary definitions for the nssignal class.
 #ifndef NSSIGNAL_H
 #define NSSIGNAL_H
 
+#define emit_sig
+
 #include <nsvector.h>
 
 class nsrouter;
@@ -66,14 +68,14 @@ struct signal
 {
 	~signal()
 	{
-                while (con_slots.begin() != con_slots.end())
-                        assist_delete(con_slots.back());
+        while (con_slots.begin() != con_slots.end())
+            assist_delete(con_slots.back());
 	}
 	
     void operator()(Args... args)
     {
-                auto iter = con_slots.begin();
-                while (iter != con_slots.end())
+        auto iter = con_slots.begin();
+        while (iter != con_slots.end())
 		{
 			(*iter)->call(args...);
 			++iter;

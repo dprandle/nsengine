@@ -21,7 +21,7 @@ This file contains all of the neccessary declarations for the nsplugin class.
 
 class nsinput_map;
 class nsentity;
-class nsscene;
+class nsmap_area;
 class nsmaterial;
 class nsanim_set;
 class nsmesh;
