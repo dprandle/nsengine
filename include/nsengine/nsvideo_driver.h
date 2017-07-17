@@ -26,7 +26,7 @@ struct sel_per_scene_info;
 class nstexture;
 //class nsshader;
 class nsentity;
-class nsmap_area;
+class nstform_ent_chunk;
 
 #define SHADER_VID_OBJ_GUID "nsshader_vid_obj"
 #define TEXTURE_VID_OBJ_GUID "nstexture_vid_obj"
@@ -51,6 +51,7 @@ struct viewport
 			  nsentity * cam=nullptr,
 			  uint32 window_tag_=0,
 			  const ivec4 & bounds_=ivec4(),
+			  const fvec4 & bg_color = fvec4(0.7,0.7,0.9),
 			  const fvec4 & fog_color=fvec4(1,1,1,1),
 			  const uivec2 & fog_near_far=uivec2(200,300),
 			  bool lighting=true,
@@ -62,6 +63,7 @@ struct viewport
 		camera(cam),
 		window_tag(window_tag_),
 		bounds(bounds_),
+		m_bg_color(bg_color),
 		m_fog_nf(fog_near_far),
 		m_fog_color(fog_color),
 		spot_lights(lighting),
@@ -88,6 +90,7 @@ struct viewport
 	bool debug_draw;
 	uivec2 m_fog_nf;
 	fvec4 m_fog_color;
+	fvec4 m_bg_color;
 	nsentity * camera;
 	std::vector<nsentity*> ui_canvases;
 };
@@ -184,17 +187,13 @@ struct vid_ctxt
 
 	virtual uivec3 pick(const fvec2 & mouse_pos) = 0;
 
-	virtual void push_scene(nsmap_area * scn) = 0;
-
-	virtual void push_entity(nsentity * ent) = 0;
+	virtual void push_chunk(nstform_ent_chunk * scn) = 0;
 
 	virtual void push_viewport_ui(viewport * vp) = 0;
 
 	virtual void render_to_viewport(viewport * vp) = 0;
 
 	virtual void render_to_all_viewports() = 0;
-
-	virtual void render(nsmap_area * scn) = 0;
 
 	virtual void setup_default_rendering() = 0;
 
@@ -261,14 +260,16 @@ struct nsvid_obj
 
 	bool needs_update;
 
-	nsvideo_object * parent;
+	nsvideo_object * parent_vid_obj;
+
+	nsstring attached_to_type;
 };
 
 class nsvideo_object
 {
 	SLOT_OBJECT
   public:
-	nsvideo_object();
+	nsvideo_object(const nsstring & attached_type);
 
 	virtual ~nsvideo_object();
 
@@ -285,6 +286,8 @@ class nsvideo_object
 	virtual void video_update();
 
 	virtual void on_context_switch(vid_ctxt * current_ctxt);
+
+	const nsstring & attached_to();
 	
 	template<class obj_type>
 	obj_type * video_obj()
@@ -295,6 +298,7 @@ class nsvideo_object
 	nsvid_obj * video_obj();
 
   protected:
+	nsstring attached_to_type;
 	bool share_between_contexts;
 	nsvid_obj * ctxt_objs[16];
 };

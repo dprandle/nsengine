@@ -14,7 +14,7 @@
 #include <opengl/nsgl_framebuffer.h>
 #include <nsengine.h>
 #include <asset/nsshader.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <component/nscam_comp.h>
 
 vp_node::vp_node(const nsstring & vp_name_, viewport * vp_):
@@ -61,7 +61,7 @@ vid_ctxt::~vid_ctxt()
 void vid_ctxt::release()
 {
 	while (registered_vid_objs.begin() != registered_vid_objs.end())
-		(*registered_vid_objs.begin())->parent->video_context_release();
+		(*registered_vid_objs.begin())->parent_vid_obj->video_context_release();
 }
 
 void vid_ctxt::update_vid_objs()
@@ -405,9 +405,10 @@ bool nsvideo_driver::initialized()
 
 nsvid_obj::nsvid_obj(nsvideo_object * parent_):
 		needs_update(true),
-		parent(parent_)
+		parent_vid_obj(parent_)
 {
 	nse.video_driver()->current_context()->registered_vid_objs.emplace(this);
+	attached_to_type = parent_vid_obj->attached_to();
 }
 	
 nsvid_obj::~nsvid_obj()
@@ -415,7 +416,8 @@ nsvid_obj::~nsvid_obj()
 	nse.video_driver()->current_context()->registered_vid_objs.erase(this);
 }
 
-nsvideo_object::nsvideo_object():
+nsvideo_object::nsvideo_object(const nsstring & attached_type):
+	attached_to_type(attached_type),
 	ctxt_objs(),
 	share_between_contexts(true)
 {
@@ -451,7 +453,7 @@ nsvideo_object::~nsvideo_object()
 		if (ctxt_objs[i] != nullptr)
 		{
 			vid_ctxt * ctxt = nse.video_driver()->context(i);
-			ctxt_objs[i]->parent = nullptr;
+			ctxt_objs[i]->parent_vid_obj = nullptr;
 			ctxt->need_release.push_back(ctxt_objs[i]);
 			ctxt_objs[i] = nullptr;
 		}
@@ -473,11 +475,16 @@ void nsvideo_object::video_context_release()
 	{
 		if (ctxt_objs[vcxt->context_id] != nullptr)
 		{
+			dprint("Video object attached to " + ctxt_objs[vcxt->context_id]->attached_to_type + " of context " + std::to_string(vcxt->context_id) + " was successfully released");
 			delete ctxt_objs[vcxt->context_id];
 			ctxt_objs[vcxt->context_id] = nullptr;
-			dprint("nsvideo_object::video_context_release Video object of context " + std::to_string(vcxt->context_id) + " was successfully released");
 		}
 	}
+}
+
+const nsstring & nsvideo_object::attached_to()
+{
+	return attached_to_type;
 }
 	
 void nsvideo_object::video_update()

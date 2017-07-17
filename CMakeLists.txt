@@ -54,8 +54,8 @@ include_directories(
 "${GLFW_INCLUDE_DIR}"
 "${FREETYPE_INCLUDE_DIR}"
 "${SNDFILE_INCLUDE_DIR}"
-"${OPENAL_INCLUDE_DIR}"
 )
+
 # Preprocessor definitions
 add_definitions(-DGLEW_MX -DGLEW_STATIC -DSTB_IMAGE_WRITE_IMPLEMENTATION -DSTB_IMAGE_IMPLEMENTATION)
 
@@ -71,6 +71,12 @@ if (UNIX)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 elseif (WIN32)
+
+  # only include openAL directory for windows - linux has to use the downloaded libs
+  include_directories(
+    "${OPENAL_INCLUDE_DIR}"
+    )
+
   set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} /WX /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:LIBCMT" )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")

@@ -17,8 +17,6 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <iostream>
 #include <nsvector.h>
 #include <system/nsselection_system.h>
-#include <asset/nsmap_area_manager.h>
-#include <asset/nsmap_area.h>
 #include <nsevent_dispatcher.h>
 #include <system/nstform_system.h>
 #include <component/nssel_comp.h>
@@ -26,7 +24,6 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <component/nstile_comp.h>
 #include <asset/nsshader.h>
 #include <nsevent.h>
-#include <asset/nsentity_manager.h>
 #include <component/nsoccupy_comp.h>
 #include <asset/nsmat_manager.h>
 #include <nstile_grid.h>
@@ -41,6 +38,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <component/nsanim_comp.h>
 #include <component/nsrender_comp.h>
 #include <component/nsphysic_comp.h>
+#include <nsworld_data.h>
 
 nsselection_system::nsselection_system() :
     nssystem(type_to_hash(nsselection_system)),
@@ -97,26 +95,25 @@ bool nsselection_system::add_to_selection(nsentity * ent)
 		fvec3 newPos = nse.system<nsbuild_system>()->center()*2.0f - wp;
 		newPos.z = wp.z;
 
-		uivec2 id = m_active_scene->grid().get(newPos);
-		nsentity * mir_ent = m_active_scene->find_entity(id);
-		if (mir_ent != nullptr)
-		{
-			nssel_comp * scmirror = mir_ent->get<nssel_comp>();
-			if (scmirror != nullptr)
-			{
-				selComp->set_selected(true);
-				m_selected_ents.emplace(ent);
-			}
-		}
+//		uivec2 id = m_active_chunk->grid().get(newPos);
+		// nsentity * mir_ent = m_active_chunk->find_entity(id);
+		// if (mir_ent != nullptr)
+		// {
+		// 	nssel_comp * scmirror = mir_ent->get<nssel_comp>();
+		// 	if (scmirror != nullptr)
+		// 	{
+		// 		selComp->set_selected(true);
+		// 		m_selected_ents.emplace(ent);
+		// 	}
+		// }
 	}
 	
-	sig_connect(ent->resource_destroyed, nsselection_system::on_ent_destroyed);
 	selComp->set_selected(true);
 	auto ret = m_selected_ents.emplace(ent);
 	return ret.second;
 }
 
-bool nsselection_system::add_selection_to_grid(nsmap_area * scn)
+bool nsselection_system::add_selection_to_grid(nstform_ent_chunk * chnk)
 {
 	auto iter = m_selected_ents.begin();
 	while (iter != m_selected_ents.end())
@@ -126,32 +123,32 @@ bool nsselection_system::add_selection_to_grid(nsmap_area * scn)
 		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 		nsphysic_comp * phcomp = (*iter)->get<nsphysic_comp>();
 		
-		fvec3 pos = tComp->world_position();				
-		if (occComp != nullptr)
-		{
-			if (!scn->grid().add((*iter)->full_id(), occComp->spaces(), pos))
-			{
-				dprint("nsselection_system::add_selection_to_grid Could not add selection to grid");
-				return false;
-			}
-		}
+		// fvec3 pos = tComp->world_position();				
+		// if (occComp != nullptr)
+		// {
+		// 	if (!chnk->grid().add((*iter)->full_id(), occComp->spaces(), pos))
+		// 	{
+		// 		dprint("nsselection_system::add_selection_to_grid Could not add selection to grid");
+		// 		return false;
+		// 	}
+		// }
 
-		if (phcomp != nullptr && !phcomp->dynamic)
-			tComp->in_cube_grid = false;
+		// if (phcomp != nullptr && !phcomp->dynamic)
+		// 	tComp->in_cube_grid = false;
 					
 		++iter;
 	}
 	return true;
 }
 
-entity_ptr_set & nsselection_system::current_selection()
+entity_set & nsselection_system::current_selection()
 {
 	return m_selected_ents;
 }
 
 bool nsselection_system::selection_contains(const uivec2 & itemid)
 {
-	nsentity * ent = m_active_scene->find_entity(itemid);
+	nsentity * ent = get_entity(itemid);
 	if (ent == nullptr)
 		return false;
 
@@ -183,7 +180,7 @@ void nsselection_system::change_layer(int32 pChange)
 bool nsselection_system::selection_collides_with_tilegrid()
 {
 	return false;
-	// if (m_active_scene == nullptr)
+	// if (m_active_chunk == nullptr)
 	// 	return false;
 
 	// bool has_collision = false;
@@ -192,17 +189,17 @@ bool nsselection_system::selection_collides_with_tilegrid()
 	// {
 	// 	nssel_comp * selComp = (*iter)->get<nssel_comp>();
 	// 	nstform_comp * tComp = (*iter)->get<nstform_comp>();
-	// 	tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_scene);
+	// 	tform_per_scene_info * tpsi = tComp->per_scene_info(m_active_chunk);
 	// 	nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 	// 	if (occComp != nullptr)
 	// 	{
-	// 		auto selection = selComp->selection(m_active_scene); 
+	// 		auto selection = selComp->selection(m_active_chunk); 
 	// 		auto selIter = selection->begin();
 	// 		while (selIter != selection->end())
 	// 		{
 	// 			fvec3 wpos = tpsi->m_tforms[*selIter].world_position();
 	// 			has_collision = has_collision ||
-	// 				m_active_scene->grid().occupied(occComp->spaces(), wpos);
+	// 				m_active_chunk->grid().occupied(occComp->spaces(), wpos);
 	// 			++selIter;
 	// 		}
 	// 	}			
@@ -219,7 +216,6 @@ void nsselection_system::clear_selection()
 		
 		nssel_comp * sc = (*iter)->get<nssel_comp>();
 		sc->set_selected(false);
-		sig_disconnect((*iter)->resource_destroyed);
 		++iter;
 	}
 	m_selected_ents.clear();
@@ -438,16 +434,16 @@ void nsselection_system::_draw_hidden()
 
 void nsselection_system::delete_selection()
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return;
 
     // we have to make a copy because if all instances of a selected entity
     // are removed from the scene the entity will be removed from m_selected_ents
-    entity_ptr_set copy(m_selected_ents);
+    entity_set copy(m_selected_ents);
     auto iter = copy.begin();
     while (iter != copy.end())
 	{
-		m_active_scene->remove(*iter, false);
+		m_active_chunk->remove(*iter, false);
 		++iter;
 	}
 }
@@ -485,7 +481,7 @@ int32 nsselection_system::update_priority()
 
 void nsselection_system::translate_selection(const fvec3 & amount)
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return;
 	
 	auto iter = m_selected_ents.begin();
@@ -501,7 +497,7 @@ void nsselection_system::translate_selection(const fvec3 & amount)
 
 void nsselection_system::rotate_selection(const fquat & rotation)
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return;
 	
 	auto iter = m_selected_ents.begin();
@@ -608,7 +604,7 @@ void nsselection_system::_reset_focus(const uivec2 & pickid)
 
 void nsselection_system::remove_from_selection(nsentity * ent)
 {
-	if (ent == nullptr || m_active_scene == nullptr)
+	if (ent == nullptr || m_active_chunk == nullptr)
 		return;
 
 	nssel_comp * selcomp = ent->get<nssel_comp>();
@@ -621,7 +617,7 @@ void nsselection_system::remove_from_selection(nsentity * ent)
 
 void nsselection_system::remove_from_grid()
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return;
 	
 	auto iter = m_selected_ents.begin();
@@ -632,16 +628,16 @@ void nsselection_system::remove_from_grid()
 		nsoccupy_comp * occComp = (*iter)->get<nsoccupy_comp>();
 		nsphysic_comp * phcomp = (*iter)->get<nsphysic_comp>();
 
-		if (selComp->selected())
-		{
-			if (occComp != nullptr)
-				m_active_scene->grid().remove(occComp->spaces(), tComp->world_position());
+// 		if (selComp->selected())
+// 		{
+// 			if (occComp != nullptr)
+// 				m_active_chunk->grid().remove(occComp->spaces(), tComp->world_position());
 
-			if (phcomp != nullptr && !phcomp->dynamic)
-			{
-//				m_active_scene->cube_grid->search_and_remove((*iter)->full_id(), itf.phys.aabb);
-			}
-		}
+// 			if (phcomp != nullptr && !phcomp->dynamic)
+// 			{
+// //				m_active_chunk->cube_grid->search_and_remove((*iter)->full_id(), itf.phys.aabb);
+// 			}
+// 		}
 		++iter;
 	}
 }
@@ -777,7 +773,7 @@ bool nsselection_system::valid_tile_swap()
 
 void nsselection_system::update()
 {
-	if (scene_error_check())
+	if (chunk_error_check())
 		return;
 	
 	if (m_send_foc_event)
@@ -790,7 +786,7 @@ void nsselection_system::update()
     if (m_toggle_move)
 	{
 		m_toggle_move = false;
-		nsentity * ent = m_active_scene->find_entity(m_focus_ent);
+		nsentity * ent = get_entity(m_focus_ent);
 		if (ent != nullptr)
 		{
 			nstform_comp * foc_tform = ent->get<nstform_comp>();
@@ -810,7 +806,7 @@ void nsselection_system::update()
 					fvec3 pTranslate = m_cached_point - foc_tform->world_position();
 					translate_selection(pTranslate);
 					set_selection_color(fvec4(DEFAULT_SEL_R, DEFAULT_SEL_G, DEFAULT_SEL_B, DEFAULT_SEL_A));
-					if (!add_selection_to_grid(m_active_scene))
+					if (!add_selection_to_grid(m_active_chunk))
 					{
 						dprint("nsselection_system::onSelect Error in resetting tiles to original grid position");
 					}
@@ -818,9 +814,9 @@ void nsselection_system::update()
 				else
 				{
 					fvec3 pos = foc_tform->world_position();
-					m_active_scene->grid().snap(pos);
+					//m_active_chunk->grid().snap(pos);
 					if (!nse.system<nsbuild_system>()->enabled())
-						add_selection_to_grid(m_active_scene);
+						add_selection_to_grid(m_active_chunk);
 					nse.event_dispatch()->push<nssel_focus_event>(m_focus_ent);
 				}
 				
@@ -863,7 +859,7 @@ void nsselection_system::update()
 
 void nsselection_system::snap_selection_to_grid()
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return;
 	
 	auto iter = m_selected_ents.begin();
@@ -881,7 +877,7 @@ void nsselection_system::snap_selection_to_grid()
 bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 {		
 	uivec2 pickid = pick(evnt->norm_mpos).xy();
-	nsentity * selectedEnt = get_asset<nsentity>(pickid);
+	nsentity * selectedEnt = get_entity(pickid);
 
 	if (evnt->cur_state == nsaction_event::begin)
 	{
@@ -923,7 +919,7 @@ bool nsselection_system::_handle_selected_entity(nsaction_event * evnt)
 bool nsselection_system::_handle_multi_select(nsaction_event * evnt)
 {		
 	uivec2 pickid = pick(evnt->norm_mpos).xy();
-	nsentity * selectedEnt = get_asset<nsentity>(pickid);
+	nsentity * selectedEnt = get_entity(pickid);
 
 	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
 		return true;
@@ -939,7 +935,7 @@ bool nsselection_system::_handle_multi_select(nsaction_event * evnt)
 bool nsselection_system::_handle_shift_select(nsaction_event * evnt)
 {
 	uivec2 pickid = pick(evnt->norm_mpos).xy();
-	nsentity * selectedEnt = get_asset<nsentity>(pickid);
+	nsentity * selectedEnt = get_entity(pickid);
 
 	if (selectedEnt != nullptr && selectedEnt->has<nsrect_tform_comp>())
 		return true;
@@ -957,7 +953,7 @@ bool nsselection_system::_handle_move_select(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
     _on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
 	return true;
 }
@@ -969,7 +965,7 @@ bool nsselection_system::_handle_move_selection_xy(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
         return true;
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
 	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_y, vp->normalized_bounds);
 	return true;
 }
@@ -981,7 +977,7 @@ bool nsselection_system::_handle_move_selection_zy(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
 	_on_draw_object(ent, evnt->norm_delta, axis_y | axis_z, vp->normalized_bounds);
 	return true;
 }
@@ -993,7 +989,7 @@ bool nsselection_system::_handle_move_selection_zx(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
 	_on_draw_object(ent, evnt->norm_delta, axis_x | axis_z, vp->normalized_bounds);
 	return true;
 }
@@ -1005,7 +1001,7 @@ bool nsselection_system::_handle_move_selection_x(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
 	_on_draw_object(ent, evnt->norm_delta, axis_x, vp->normalized_bounds);
 	return true;
 }
@@ -1017,7 +1013,7 @@ bool nsselection_system::_handle_move_selection_y(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
 	_on_draw_object(ent, evnt->norm_delta, axis_y, vp->normalized_bounds);
 	return true;
 }
@@ -1029,7 +1025,7 @@ bool nsselection_system::_handle_move_selection_z(nsaction_event * evnt)
 	viewport * vp = nse.video_driver()->current_context()->front_viewport_at_screen_pos(evnt->norm_mpos);
 	if (vp == nullptr)
 		return true;		
-	nsentity * ent = get_asset<nsentity>(m_focus_ent);
+	nsentity * ent = get_entity(m_focus_ent);
 	_on_draw_object(ent, evnt->norm_delta, axis_z,vp->normalized_bounds);
 	return true;
 }
@@ -1062,17 +1058,17 @@ bool nsselection_system::_handle_rotate_selection(nsaction_event * evnt)
 
 void nsselection_system::on_ent_destroyed(uint32 type_id, uivec2 ent_id)
 {
-	auto iter = m_selected_ents.begin();
-	while (iter != m_selected_ents.end())
-	{
-		if (type_id == (*iter)->type() && (*iter)->full_id() == ent_id)
-		{
-			iter = m_selected_ents.erase(iter);
-		}
-		else
-		{
-			++iter;
-		}
-	}
+	// auto iter = m_selected_ents.begin();
+	// while (iter != m_selected_ents.end())
+	// {
+	// 	if (type_id == (*iter)->type() && (*iter)->full_id() == ent_id)
+	// 	{
+	// 		iter = m_selected_ents.erase(iter);
+	// 	}
+	// 	else
+	// 	{
+	// 		++iter;
+	// 	}
+	// }
 }
 

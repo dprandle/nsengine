@@ -1,11 +1,12 @@
 #include <system/nssprite_anim_system.h>
 #include <nsengine.h>
-#include <asset/nsmap_area.h>
 #include <component/nssprite_comp.h>
 #include <asset/nsmaterial.h>
 #include <component/nsrender_comp.h>
 #include <nstimer.h>
 #include <asset/nstexture.h>
+#include <nsentity.h>
+#include <nsworld_data.h>
 
 nssprite_anim_system::nssprite_anim_system():
 	nssystem(type_to_hash(nssprite_anim_system))
@@ -27,11 +28,8 @@ void nssprite_anim_system::release()
 {}
 
 void nssprite_anim_system::update()
-{
-	if (scene_error_check())
-		return;
-	
-	entity_set * ents = m_active_scene->entities_with_comp<nssprite_sheet_comp>();
+{	
+	entity_set * ents = m_active_chunk->entities_with_comp<nssprite_sheet_comp>();
 
 	if (ents == nullptr)
 		return;

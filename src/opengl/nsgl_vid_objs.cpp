@@ -11,7 +11,6 @@
 */
 
 #include <nstimer.h>
-#include <asset/nsentity.h>
 #include <opengl/nsgl_vid_objs.h>
 #include <opengl/nsgl_shader.h>
 #include <opengl/nsgl_buffer.h>
@@ -24,6 +23,7 @@
 #include <component/nsparticle_comp.h>
 #include <component/nssel_comp.h>
 #include <nsengine.h>
+#include <nsentity.h>
 #include <opengl/nsgl_driver.h>
 
 nsgl_shader_obj::nsgl_shader_obj(nsvideo_object * parent_):
@@ -41,7 +41,7 @@ nsgl_shader_obj::~nsgl_shader_obj()
 
 void nsgl_shader_obj::update()
 {
-	nsshader * shdr = (nsshader*)parent;
+	nsshader * shdr = (nsshader*)parent_vid_obj;
 	dprint("nsgl_shader_obj::update - updating video info for shader " + shdr->name());
 	for (uint32 i = 0; i < shdr->shader_stages.size(); ++i)
 	{
@@ -73,7 +73,7 @@ nsgl_texture_obj::nsgl_texture_obj(nsvideo_object * parent_):
 	nsvid_obj(parent_),
 	gl_tex(new nsgl_texture())
 {
-	nstexture * tex = (nstexture*)parent;	
+	nstexture * tex = (nstexture*)parent_vid_obj;	
 	gl_tex->init();
 	if (tex->type() == type_to_hash(nstex1d))
 	{
@@ -107,7 +107,7 @@ nsgl_texture_obj::~nsgl_texture_obj()
 
 void nsgl_texture_obj::update()
 {
-	nstexture * tex = (nstexture*)parent;
+	nstexture * tex = (nstexture*)parent_vid_obj;
 	gl_tex->bind();
 	if (tex->type() == type_to_hash(nstex1d))
 	{
@@ -224,7 +224,7 @@ nsgl_submesh_obj::~nsgl_submesh_obj()
 
 void nsgl_submesh_obj::update()
 {
-	nsmesh::submesh * subm = static_cast<nsmesh::submesh*>(parent);
+	nsmesh::submesh * subm = static_cast<nsmesh::submesh*>(parent_vid_obj);
 	
 	gl_vert_buf->bind();
 	gl_vert_buf->allocate(subm->m_verts, nsgl_buffer::mutable_static_draw);
@@ -304,7 +304,7 @@ nsgl_tform_comp_obj::~nsgl_tform_comp_obj()
 
 void nsgl_tform_comp_obj::update()
 {
-	tform_per_scene_info * psi = (tform_per_scene_info*)parent;
+	tform_per_scene_info * psi = (tform_per_scene_info*)parent_vid_obj;
 	bool did_resize = false;
     if (psi->shared_geom_tforms.size() != last_size)
     {
@@ -360,7 +360,7 @@ nsgl_particle_comp_obj::nsgl_particle_comp_obj(nsvideo_object * parent_):
 	gl_front_buffer(new nsgl_buffer()),
 	gl_back_buffer(new nsgl_buffer())
 {
-	nsparticle_comp * pcomp = (nsparticle_comp*)parent;
+	nsparticle_comp * pcomp = (nsparticle_comp*)parent_vid_obj;
 	
 	gl_xfbs[0] = new nsgl_xfb();
 	gl_xfbs[1] = new nsgl_xfb();
@@ -446,7 +446,7 @@ nsgl_particle_comp_obj::~nsgl_particle_comp_obj()
 
 void nsgl_particle_comp_obj::update()
 {
-	nsparticle_comp * comp = (nsparticle_comp *)parent;
+	nsparticle_comp * comp = (nsparticle_comp *)parent_vid_obj;
 	if (comp->simulating())
         comp->elapsed() += double(nse.timer()->fixed());
 

@@ -78,7 +78,7 @@ public:
 
 	void set_ext( const nsstring & pExt);
 
-	void rename(const nsstring & pResName);
+	void rename(const nsstring & new_name);
 
 	uivec2 full_id();
 
@@ -91,6 +91,7 @@ public:
 	nsasset & operator=(nsasset_inst rhs);
 
 	ns::signal<uint32, uivec2> resource_destroyed;
+	ns::signal<const uivec2 &, const uivec2 &> asset_renamed;
 	
 protected:
 

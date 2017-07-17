@@ -2,10 +2,13 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <component/nsaudio_source_comp.h>
-#include <asset/nsmap_area.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <asset/nsaudio_clip.h>
 #include <component/nstform_comp.h>
+#include <nsworld_data.h>
+
+
+ALCcontext * alc_context;
 
 void al_error_check(const nsstring & func)
 {
@@ -37,9 +40,7 @@ void al_error_check(const nsstring & func)
 nsaudio_system::nsaudio_system():
 	nssystem(type_to_hash(nsaudio_system)),
 	master_gain(1.0f),
-	units_per_meter(1.0f),
-	m_device(nullptr),
-	m_ctxt(nullptr)
+	units_per_meter(1.0f)
 {
 	
 }
@@ -49,8 +50,8 @@ nsaudio_system::~nsaudio_system()
 
 void nsaudio_system::init()
 {
-    m_device = alcOpenDevice(nullptr);
-    if(!m_device)
+    ALCdevice * alc_device = alcOpenDevice(nullptr);
+    if(!alc_device)
     {
 		dprint("nsaudio_system::init Unable to initialize openAL audio device");		
     }
@@ -58,8 +59,8 @@ void nsaudio_system::init()
 	{
 		dprint("nsaudio_system::init Successfully initialized openAL audio device");
 	}
-    m_ctxt = alcCreateContext(m_device, nullptr);
-    if(!m_ctxt)
+    alc_context = alcCreateContext(alc_device, nullptr);
+    if(!alc_context)
     {
 		dprint("nsaudio_system::init Unable to initialize openAL audio context");
 	}
@@ -67,7 +68,7 @@ void nsaudio_system::init()
 	{
 		dprint("nsaudio_system::init Successfully initialized openAL audio context");
 	}
-	alcMakeContextCurrent(m_ctxt);
+	alcMakeContextCurrent(alc_context);
 
 	register_handler(nsaudio_system::handle_audio_play_event);
 	register_handler(nsaudio_system::handle_audio_start_streaming_event);
@@ -76,20 +77,22 @@ void nsaudio_system::init()
 
 void nsaudio_system::release()
 {
-	alcDestroyContext(m_ctxt);
-	alcCloseDevice(m_device);
+	ALCdevice * alc_device = alcGetContextsDevice(alc_context);
+	alcMakeContextCurrent(nullptr);
+	alcDestroyContext(alc_context);
+    alcCloseDevice(alc_device);
 }
 
 void nsaudio_system::update()
 {
-    if (scene_error_check())
+    if (chunk_error_check())
 		return;
 
 	fvec3 pos;
 	fvec3 vel;
 	fbox dir(fvec3(0.0f,0.0f,-1.0f),fvec3(0.0f,1.0f,0.0f));
 	
-	nsentity * listener_ent = get_asset<nsentity>(listener.xy());
+	nsentity * listener_ent = m_active_chunk->find_entity(listener.y);
 	if (listener_ent != nullptr)
 	{
 		nstform_comp * tfc = listener_ent->get<nstform_comp>();
@@ -107,7 +110,7 @@ void nsaudio_system::update()
 	//alListenerfv(AL_VELOCITY,vel.data);
 	//alListenerfv(AL_ORIENTATION,dir.a.data);
 	
-	entity_set * es = m_active_scene->entities_with_comp<nsaudio_source_comp>();
+	entity_set * es = m_active_chunk->entities_with_comp<nsaudio_source_comp>();
 	if (es == nullptr)
 		return;
 	
@@ -178,10 +181,10 @@ void nsaudio_system::update()
 
 bool nsaudio_system::handle_audio_play_event(audio_play_event * evnt)
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return true;
 
-	nsentity * ent = m_active_scene->find_entity(evnt->source_id.xy());
+	nsentity * ent = m_active_chunk->find_entity(evnt->source_id.y);
 	if (ent == nullptr)
 		return true;
 
@@ -205,10 +208,10 @@ bool nsaudio_system::handle_audio_play_event(audio_play_event * evnt)
 
 bool nsaudio_system::handle_audio_start_streaming_event(audio_start_streaming_event * evnt)
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 		return true;
 	
-	nsentity * src = m_active_scene->find_entity(evnt->source_id.xy());
+	nsentity * src = m_active_chunk->find_entity(evnt->source_id.y);
 	
 	fvec3 pos, vel, dir;
 	nstform_comp * tfc = src->get<nstform_comp>();

@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nstile_comp class.
 */
 
 #include <component/nstile_comp.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 
 nstile_comp::nstile_comp() :
 	nscomponent(type_to_hash(nstile_comp))

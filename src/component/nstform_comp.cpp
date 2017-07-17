@@ -13,7 +13,7 @@
 #include <nscube_grid.h>
 #include <component/nstform_comp.h>
 #include <component/nsrender_comp.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <nstile_grid.h>
 #include <nsengine.h>
 #include <opengl/nsgl_xfb.h>
@@ -21,15 +21,15 @@
 #include <asset/nsshader.h>
 #include <asset/nsmesh.h>
 #include <opengl/nsgl_buffer.h>
-#include <asset/nsmap_area.h>
+#include <nsworld_data.h>
 
 tform_info::tform_info(
-	const uivec2 & parent,
+	uint32 parent,
 	const fvec3 & pos,
 	const fquat & ornt,
 	const fvec3 & scale,
 	int32 hide_state,
-	const std::vector<uivec2> & children_):
+	const ui_vector & children_):
 	m_parent(parent),
 	m_hidden_state(hide_state),
 	m_orient(ornt),
@@ -38,32 +38,33 @@ tform_info::tform_info(
 	m_children(children_)
 {}
 
+nsstring tform_info::to_string() const
+{
+	return ("pos: " + m_position.to_string() + "    orient: " + m_orient.to_string() + "    scaling: " + m_scaling.to_string());
+}
+
 nstform_comp::nstform_comp():
 	nscomponent(type_to_hash(nstform_comp)),
 	inst_obj(nullptr),
-	inst_id(0),
-	in_cube_grid(false),
-	save_with_scene(true),
 	m_tfi(),
 	m_render_update(true),
 	m_world_tform(),
 	m_world_inv_tform(),
 	m_local_tform(),
-	m_local_inv_tform()
+	m_local_inv_tform(),
+	m_owning_chunk(nullptr)
 {}
 
 nstform_comp::nstform_comp(const nstform_comp & copy):
 	nscomponent(copy),
 	inst_obj(nullptr),
-	inst_id(0),
-	in_cube_grid(false),
-	save_with_scene(copy.save_with_scene),
 	m_tfi(copy.m_tfi),
 	m_render_update(true),
 	m_world_tform(copy.m_world_tform),
 	m_world_inv_tform(copy.m_world_inv_tform),
 	m_local_tform(copy.m_local_tform),
-	m_local_inv_tform(copy.m_local_inv_tform)
+	m_local_inv_tform(copy.m_local_inv_tform),
+	m_owning_chunk(nullptr)
 {}
 
 nstform_comp::~nstform_comp()
@@ -75,7 +76,7 @@ nstform_comp::~nstform_comp()
 nstform_comp & nstform_comp::operator=(nstform_comp rhs)
 {
 	nscomponent::operator=(rhs);
-	std::swap(m_owner, rhs.m_owner);
+	std::swap(m_owning_chunk, rhs.m_owning_chunk);
 	std::swap(m_tfi, rhs.m_tfi);
 	std::swap(m_render_update, rhs.m_render_update);
 	std::swap(m_world_tform, rhs.m_world_tform);
@@ -130,61 +131,60 @@ void nstform_comp::release()
 
 void nstform_comp::translate_world_space(const fvec3 & amount)
 {
-	nsentity * ent = get_asset<nsentity>(m_tfi.m_parent);
-    if (ent != nullptr)
-	{
-		nstform_comp * itf = ent->get<nstform_comp>();
-        m_tfi.m_position = (itf->world_inv_tf() * fvec4(world_position() + amount,1.0f)).xyz();
-	}
+	nstform_comp * prnt = parent();
+
+    if (prnt != nullptr)
+        m_tfi.m_position = (prnt->world_inv_tf() * fvec4(world_position() + amount,1.0f)).xyz();
     else
         m_tfi.m_position += amount;
-    post_update(true);
+
+	post_update(true);
 }
 
-void nstform_comp::add_child(nstform_comp * child, bool keep_world_transform)
+void nstform_comp::add_child(nstform_comp * chld, bool keep_world_transform)
 {
-	assert(child != nullptr);
-	if (has_child(child))
-		return;
-
-	nsentity * parnt = get_asset<nsentity>(child->m_tfi.m_parent);
-	if (parnt != nullptr)
+	assert(this != chld && child != nullptr);
+	if (has_child(chld))
 	{
-		nstform_comp * cparent_itf = parnt->get<nstform_comp>();
-        cparent_itf->remove_child(child, keep_world_transform);
+		dprint("Cannot add " + chld->owner()->name() + " as child of " + owner()->name() + " - already a child");
+		return;
 	}
-		
+
+	nstform_comp * cparent_itf = chld->parent();
+	if (cparent_itf != nullptr)
+		cparent_itf->remove_child(chld, keep_world_transform);
+
+	// This will update our transform in case our parent
     if (update_posted())
         recursive_compute();
 
-    m_tfi.m_children.push_back(child->owner()->full_id());
+    m_tfi.m_children.push_back(chld->owner()->id());
 
-    if (child->update_posted())
-        child->recursive_compute();
+    if (chld->update_posted())
+        chld->recursive_compute();
 
-    fvec3 wpos = child->world_position();
-    fquat worient = child->world_orientation();
-	child->m_tfi.m_parent = owner()->full_id();
-    child->post_update(true);
+    fvec3 wpos = chld->world_position();
+    fquat worient = chld->world_orientation();
+	chld->m_tfi.m_parent = owner()->id();
+    chld->post_update(true);
     if (keep_world_transform)
     {
-        child->set_world_orientation(worient);
-        child->set_world_position(wpos);
+        chld->set_world_orientation(worient);
+        chld->set_world_position(wpos);
     }
 }
 
 void nstform_comp::remove_child(nstform_comp * child, bool keep_world_transform)
 {
-    if (update_posted())
-        recursive_compute();
+    root()->recursive_compute();
 
 	nsentity * ent = child->owner();
 	auto child_iter = m_tfi.m_children.begin();
 	while (child_iter != m_tfi.m_children.end())
 	{
-		if (*child_iter == ent->full_id())
+		if (*child_iter == ent->id())
 		{
-			dprint("nstform_comp::remove_child removing child " + ent->name() + " from parent " + owner()->name());
+			dprint("Removing child " + ent->name() + " from parent " + owner()->name());
 			m_tfi.m_children.erase(child_iter);
 
 			if (child->update_posted())
@@ -192,7 +192,7 @@ void nstform_comp::remove_child(nstform_comp * child, bool keep_world_transform)
 
 			fvec3 wpos = child->world_position();
 			fquat worient = child->world_orientation();
-			child->m_tfi.m_parent = uivec2(0);
+			child->m_tfi.m_parent = 0;
 			child->post_update(true);
 			if (keep_world_transform)
 			{
@@ -210,53 +210,80 @@ void nstform_comp::remove_children(bool keep_world_transform)
 	auto citer = m_tfi.m_children.begin();
     while (citer != m_tfi.m_children.end())
 	{
-		nsentity * ent = get_asset<nsentity>(*citer);
-		if (ent != nullptr)
-		{
-			nstform_comp * chld = ent->get<nstform_comp>();
-			remove_child(chld, keep_world_transform);
-		}
-		else
-		{
-			dprint("nstform_comp::remove_children - child with id " + citer->to_string() + " could not be located in scene - will be removed anyway");
-		}
+		remove_child(child(*citer), keep_world_transform);
 		++citer;
 	}
 	m_tfi.m_children.clear();
 }
 
-bool nstform_comp::has_child(nstform_comp * child)
+void nstform_comp::cache_tform()
+{
+	m_prev_tform = m_world_tform;
+}
+
+fmat4 & nstform_comp::cached_tform()
+{
+	return m_prev_tform;
+}
+
+bool nstform_comp::has_child(nstform_comp * chld)
 {
 	for (uint32 i = 0; i < m_tfi.m_children.size(); ++i)
 	{
-		if (m_tfi.m_children[i] == child->owner()->full_id() || child->has_child(child))
+		uint32 cur_id = m_tfi.m_children[i];
+		nstform_comp * cur_chld = child(i);
+		if (cur_id == chld->owner()->id() || cur_chld->has_child(chld))
 			return true;
 	}
 	return false;
 }
 
-void nstform_comp::set_parent(nstform_comp * parent, bool keep_world_transform)
+void nstform_comp::set_parent(nstform_comp * pnt, bool keep_world_transform)
 {
-	if (parent == nullptr)
+	if (pnt == nullptr)
 	{
-		nsentity * cur_parent = get_asset<nsentity>(m_tfi.m_parent);
+		nstform_comp * cur_parent = parent();
 		if (cur_parent != nullptr)
-		{
-			nstform_comp * par_itf = cur_parent->get<nstform_comp>();
-            par_itf->remove_child(this, keep_world_transform);
-		}
+            cur_parent->remove_child(this, keep_world_transform);
 	}
 	else
-        parent->add_child(this,keep_world_transform);
+        pnt->add_child(this, keep_world_transform);
 }
 
-nstform_comp * nstform_comp::parent() const
+nstform_comp * nstform_comp::parent()
 {
-	nsentity * par = get_asset<nsentity>(m_tfi.m_parent);
+	nsentity * par = m_owning_chunk->find_entity(m_tfi.m_parent);
 	if (par != nullptr)
 		return par->get<nstform_comp>();
 	return nullptr;
 }
+
+nstform_comp * nstform_comp::root()
+{
+	nstform_comp * prnt = parent();
+	if (prnt != nullptr)
+		return prnt->root();
+	else
+		return this;
+}
+
+const nstform_comp * nstform_comp::parent() const
+{
+	nsentity * par = m_owning_chunk->find_entity(m_tfi.m_parent);
+	if (par != nullptr)
+		return par->get<nstform_comp>();
+	return nullptr;
+}
+
+const nstform_comp * nstform_comp::root() const
+{
+	const nstform_comp * prnt = parent();
+	if (prnt != nullptr)
+		return prnt->root();
+	else
+		return this;
+}
+
 
 void nstform_comp::recursive_compute()
 {
@@ -286,17 +313,9 @@ void nstform_comp::recursive_compute()
 
 	for (uint32 i = 0; i < m_tfi.m_children.size(); ++i)
     {
-		nsentity * chld = get_asset<nsentity>(m_tfi.m_children[i]);
-		if (chld != nullptr)
-		{
-			nstform_comp * child_itf = chld->get<nstform_comp>();
-			child_itf->post_update(child_itf->m_update || m_render_update);
-			child_itf->recursive_compute();
-		}
-		else
-		{
-			dprint("nstform_comp::recursive_compute entity " + m_owner->name() + " has child that cannot be found in scene - id " + m_tfi.m_children[i].to_string());
-		}
+		nstform_comp * child_itf = child(i);
+		child_itf->post_update(child_itf->m_update || m_render_update);
+		child_itf->recursive_compute();
     }
 	
 	if (inst_obj == nullptr)
@@ -353,7 +372,7 @@ void nstform_comp::rotate(const fquat & rotation)
 
 fvec3 nstform_comp::world_position() const
 {
-	nstform_comp * par_itf = parent();
+	const nstform_comp * par_itf = parent();
 	if (par_itf != nullptr)
         return (par_itf->world_tf() * fvec4(m_tfi.m_position)).xyz();
 	return m_tfi.m_position;
@@ -361,7 +380,7 @@ fvec3 nstform_comp::world_position() const
 
 fquat nstform_comp::world_orientation() const
 {
-	nstform_comp * par_itf = parent();
+	const nstform_comp * par_itf = parent();
     if (par_itf != nullptr)
         return par_itf->world_orientation() * m_tfi.m_orient;
     return m_tfi.m_orient;
@@ -427,10 +446,15 @@ nstform_comp * nstform_comp::child(uint32 index)
 {
     if (index >= m_tfi.m_children.size())
         return nullptr;
-	nsentity * ent = get_asset<nsentity>(m_tfi.m_children[index]);
+	nsentity * ent = m_owning_chunk->find_entity(m_tfi.m_children[index]);
 	if (ent != nullptr)
 		return ent->get<nstform_comp>();
 	return nullptr;
+}
+
+uint32 nstform_comp::chunk_id()
+{
+	return m_owning_chunk->chunk_id();
 }
 
 uint32 nstform_comp::child_count()
@@ -451,8 +475,8 @@ const tform_info & nstform_comp::tf_info() const
 void nstform_comp::set_tf_info(const tform_info & tfi_, bool preserve_world_tform)
 {
 	nsentity * prnt = nullptr;
-	if (tfi_.m_parent != uivec2(0))
-		prnt = get_asset<nsentity>(tfi_.m_parent);
+	if (tfi_.m_parent != 0)
+		prnt = m_owning_chunk->find_entity(tfi_.m_parent);
 	
 	if (prnt != nullptr)
 		set_parent(prnt->get<nstform_comp>(), preserve_world_tform);
@@ -460,9 +484,9 @@ void nstform_comp::set_tf_info(const tform_info & tfi_, bool preserve_world_tfor
 	remove_children(true);
 	for (uint32 i = 0; i < tfi_.m_children.size(); ++i)
 	{
-		nsentity * child = get_asset<nsentity>(tfi_.m_children[i]);
-		if (child != nullptr)
-			add_child(child->get<nstform_comp>(), preserve_world_tform);
+		nsentity * chld = m_owning_chunk->find_entity(tfi_.m_children[i]);
+		if (chld != nullptr)
+			add_child(chld->get<nstform_comp>(), preserve_world_tform);
 	}
 	
 	set_local_position(tfi_.m_position);
@@ -478,7 +502,7 @@ bool nstform_comp::render_update() const
 }
 
 tform_per_scene_info::tform_per_scene_info():
-	nsvideo_object(),
+	nsvideo_object("tform_per_scene_info"),
 	shared_geom_tforms(),
 	visible_count(0),
 	needs_update(true)

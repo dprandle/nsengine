@@ -46,7 +46,7 @@ enum window_creation_hint
 
 struct vid_ctxt;
 
-void window_poll_input();
+void poll_input_events();
 
 class nswindow
 {
@@ -68,8 +68,9 @@ class nswindow
 
 	virtual bool is_open();
 
+	virtual void render() = 0;
 
-	virtual void update() = 0;
+	virtual void swap_buffers() = 0;
 
 	virtual void make_current() = 0;
 	

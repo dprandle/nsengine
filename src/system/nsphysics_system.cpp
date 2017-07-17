@@ -4,13 +4,11 @@
 #include <asset/nsmaterial.h>
 #include <component/nsrender_comp.h>
 #include <asset/nsplugin.h>
-#include <asset/nsentity_manager.h>
-#include <asset/nsentity.h>
-#include <asset/nsmap_area.h>
 #include <component/nssel_comp.h>
 #include <nscube_grid.h>
 #include <component/nsphysic_comp.h>
 #include <nstimer.h>
+#include <nsentity.h>
 
 nsphysics_system::nsphysics_system():
 	nssystem(type_to_hash(nsphysics_system)),
@@ -30,13 +28,13 @@ void nsphysics_system::init()
 
 	nsmesh_plane * mp = cplg->create<nsmesh_plane>("mesh_plane");
 		
-	bb_shower = cplg->create<nsentity>("bbshower");
-	nsmaterial * red_mat = cplg->create<nsmaterial>("red_mat");
-	red_mat->set_color_mode(true);
-	red_mat->set_color(fvec4(1.0f,0.0f,0.0f,1.0f));
-	nsrender_comp * rc = bb_shower->create<nsrender_comp>();
-	rc->set_mesh_id(mp->full_id());
-	rc->set_material(0, red_mat->full_id());
+	// bb_shower = cplg->create<nsentity>("bbshower");
+	// nsmaterial * red_mat = cplg->create<nsmaterial>("red_mat");
+	// red_mat->set_color_mode(true);
+	// red_mat->set_color(fvec4(1.0f,0.0f,0.0f,1.0f));
+	// nsrender_comp * rc = bb_shower->create<nsrender_comp>();
+	// rc->set_mesh_id(mp->full_id());
+	// rc->set_material(0, red_mat->full_id());
 
 	register_action_handler(nsphysics_system::handle_toggle_draw_grid, "toggle_draw_grid");
 }
@@ -53,8 +51,8 @@ void nsphysics_system::setup_input_map(nsinput_map * im, const nsstring & gctxt)
 
 bool nsphysics_system::handle_toggle_draw_grid(nsaction_event * evnt)
 {
-	m_active_scene->remove(bb_shower, false);
-	draw_grid = !draw_grid;
+//	m_active_chunk->remove(bb_shower, false);
+//	draw_grid = !draw_grid;
 	return true;
 }
 
@@ -65,52 +63,52 @@ void nsphysics_system::release()
 
 void nsphysics_system::draw_tile_grid()
 {
-	if (!draw_grid)
-		return;
+	// if (!draw_grid)
+	// 	return;
 	
-	ibox wb = m_active_scene->cube_grid->grid_bounds();
+	// ibox wb = m_active_chunk->cube_grid->grid_bounds();
 
-	nsentity * cam = nse.video_driver()->current_context()->focused_vp->camera;
-	if (cam != nullptr)
-	{
-		nstform_comp * tc = cam->get<nstform_comp>();
-		if (tc != nullptr)
-		{
-				fquat ornt = tc->world_orientation();
-				fvec3 cwpos = tc->world_position();
+	// nsentity * cam = nse.video_driver()->current_context()->focused_vp->camera;
+	// if (cam != nullptr)
+	// {
+	// 	nstform_comp * tc = cam->get<nstform_comp>();
+	// 	if (tc != nullptr)
+	// 	{
+	// 			fquat ornt = tc->world_orientation();
+	// 			fvec3 cwpos = tc->world_position();
 
-				fvec3 far_pos = cwpos + ornt.target() * cam_grid_cube.z/2.0f;
-				far_pos += ornt.right() * cam_grid_cube.x / 2.0f;
-				far_pos += ornt.up() * cam_grid_cube.y / 2.0f;
+	// 			fvec3 far_pos = cwpos + ornt.target() * cam_grid_cube.z/2.0f;
+	// 			far_pos += ornt.right() * cam_grid_cube.x / 2.0f;
+	// 			far_pos += ornt.up() * cam_grid_cube.y / 2.0f;
 				
-				cwpos += ornt.up() * -cam_grid_cube.y / 2.0f;
-				cwpos += ornt.right() * -cam_grid_cube.x / 2.0f;
+	// 			cwpos += ornt.up() * -cam_grid_cube.y / 2.0f;
+	// 			cwpos += ornt.right() * -cam_grid_cube.x / 2.0f;
 				
-				fbox bb(cwpos, far_pos);
-				ibox cam_bb = nscube_grid::grid_from(bb);
-				wb.min.maximize(cam_bb.min);
-				wb.max.minimize(cam_bb.max);
-		}
-	}
-	m_active_scene->remove(bb_shower, false);
-	for (int z = wb.min.z; z < wb.max.z; ++z)
-	{
-		for (int y = wb.min.y; y < wb.max.y; ++y)
-		{
-			for (int x = wb.min.x; x < wb.max.x; ++x)
-			{
-				auto items = m_active_scene->cube_grid->items_at(ivec3(x,y,z));
-				if (items != nullptr && !items->empty())
-				{
-					tform_info tf;
-					tf.m_scaling = fvec3(CUBE_X_GRID/2.3f,CUBE_Y_GRID/2.30f,1.0f);
-					tf.m_position = nscube_grid::world_from(ivec3(x,y,-1));
+	// 			fbox bb(cwpos, far_pos);
+	// 			ibox cam_bb = nscube_grid::grid_from(bb);
+	// 			wb.min.maximize(cam_bb.min);
+	// 			wb.max.minimize(cam_bb.max);
+	// 	}
+	// }
+	// m_active_chunk->remove(bb_shower, false);
+	// for (int z = wb.min.z; z < wb.max.z; ++z)
+	// {
+	// 	for (int y = wb.min.y; y < wb.max.y; ++y)
+	// 	{
+	// 		for (int x = wb.min.x; x < wb.max.x; ++x)
+	// 		{
+	// 			auto items = m_active_chunk->cube_grid->items_at(ivec3(x,y,z));
+	// 			if (items != nullptr && !items->empty())
+	// 			{
+	// 				tform_info tf;
+	// 				tf.m_scaling = fvec3(CUBE_X_GRID/2.3f,CUBE_Y_GRID/2.30f,1.0f);
+	// 				tf.m_position = nscube_grid::world_from(ivec3(x,y,-1));
 					
-					m_active_scene->add_entity(bb_shower, &tf);
-				}
-			}
-		}
-	}		
+	// 				m_active_chunk->add_entity(bb_shower, &tf);
+	// 			}
+	// 		}
+	// 	}
+	// }		
 }
 
 void nsphysics_system::update()
@@ -121,7 +119,7 @@ void nsphysics_system::update()
 	// draw_tile_grid();
 
 	// // Lets do some physics!
-	// entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();
+	// entity_set * ents = m_active_chunk->entities_with_comp<nsphysic_comp>();
 
 	// if (ents == nullptr)
 	// 	return;
@@ -134,17 +132,17 @@ void nsphysics_system::update()
 	// 	nssel_comp *sc = (*iter)->get<nssel_comp>();
 	// 	sel_per_scene_info * spi = nullptr;
 	// 	if (sc != nullptr)
-	// 		spi = sc->scene_info(m_active_scene);
+	// 		spi = sc->scene_info(m_active_chunk);
 			
-	// 	tform_per_scene_info * psi = tc->per_scene_info(m_active_scene);
+	// 	tform_per_scene_info * psi = tc->per_scene_info(m_active_chunk);
 	// 	for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 	// 	{
 	// 		instance_tform & itf = psi->m_tforms[i];				
 
 	// 		if (pc->dynamic)
 	// 		{
-	// 			m_active_scene->cube_grid->remove(&itf);
-	// 			m_active_scene->cube_grid->search_and_remove(uivec3((*iter)->full_id(),i),
+	// 			m_active_chunk->cube_grid->remove(&itf);
+	// 			m_active_chunk->cube_grid->search_and_remove(uivec3((*iter)->full_id(),i),
 	// 														 itf.phys.aabb);
 	// 			itf.in_cube_grid = false;
 
@@ -175,7 +173,7 @@ void nsphysics_system::update()
 	// 		{
 	// 			itf.recursive_compute();
 	// 			itf.phys.aabb = transform_obb_to_aabb(pc->obb, itf.world_tf());
-	// 			m_active_scene->cube_grid->insert(&itf);
+	// 			m_active_chunk->cube_grid->insert(&itf);
 	// 			itf.in_cube_grid = true;
 	// 		}
 
@@ -230,9 +228,9 @@ fbox nsphysics_system::calc_final_velocities(const fvec3 & init_vel_a,
 
 void nsphysics_system::check_and_resolve_collisions()
 {
-	// nscube_grid * cg = m_active_scene->cube_grid; // shortcut
+	// nscube_grid * cg = m_active_chunk->cube_grid; // shortcut
 		
-	// entity_set * ents = m_active_scene->entities_with_comp<nsphysic_comp>();		
+	// entity_set * ents = m_active_chunk->entities_with_comp<nsphysic_comp>();		
 	// auto iter = ents->begin();
 	// while (iter != ents->end())
 	// {
@@ -246,7 +244,7 @@ void nsphysics_system::check_and_resolve_collisions()
 			
 	// 	nstform_comp * tc = (*iter)->get<nstform_comp>();
 		
-	// 	tform_per_scene_info * psi = tc->per_scene_info(m_active_scene);
+	// 	tform_per_scene_info * psi = tc->per_scene_info(m_active_chunk);
 	// 	for (uint32 i = 0; i < psi->m_tforms.size(); ++i)
 	// 	{
 	// 		instance_tform & itf = psi->m_tforms[i];
@@ -288,7 +286,7 @@ void nsphysics_system::check_and_resolve_collisions()
 	// 			clampf(bounciness, 0.0f, 1.0f);
 
 	// 			tform_per_scene_info * psi_col =
-	// 				ent_col->get<nstform_comp>()->per_scene_info(m_active_scene);
+	// 				ent_col->get<nstform_comp>()->per_scene_info(m_active_chunk);
 
 	// 			instance_tform & tfi_col = psi_col->m_tforms[item_iter->space_ind.z];
 

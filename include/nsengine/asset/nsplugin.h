@@ -50,12 +50,6 @@ public:
 	// manager guid 
 	typedef std::unordered_multimap<nsstring, res_info> res_type_map;
 
-	enum tile_t
-	{
-		tile_full,
-		tile_half
-	};
-
 	nsplugin();
 	nsplugin(const nsplugin & copy_);
 
@@ -85,91 +79,6 @@ public:
 	nsasset * create(uint32 res_typeid, const nsstring & resName, nsasset * to_copy);
 
 	nsinput_map * create_global_input_map(const nsstring & imap_name, const nsstring & global_ctxt_name);
-
-	nsentity * create_sprite(const nsstring & sprite_name, const nsstring & tex_filename, bool match_tex_dims, bool alpha_enabled);
-
-	nsentity * create_camera(const nsstring & name,
-		float fov,
-		const uivec2 & screenDim,
-		const fvec2 & clipnf);
-
-	nsentity * create_camera(const nsstring & name, 
-		const fvec2 & lrclip, 
-		const fvec2 & tbclip, 
-		const fvec2 & nfclip);
-
-	nsentity * create_terrain(const nsstring & name,
-		float hmin,
-		float hmax, 
-		const nsstring & hmfile, 
-		const nsstring & dmfile = "", 
-		const nsstring & nmfile = "");
-
-	nsentity * create_dir_light(const nsstring & name,
-		float diffuse,
-		float ambient,
-		const fvec3 & color = fvec3(1, 1, 1),
-		bool castshadows = true,
-		float shadowdarkness = 1.0f,
-		int32 shadowsamples = 2);
-
-	nsentity * create_point_light(const nsstring & name,
-		float diffuse,
-		float ambient,
-		float distance,
-		const fvec3 & color = fvec3(1, 1, 1),
-		bool castshadows = true,
-		float shadowdarkness = 1.0f,
-		int32 shadowsamples = 2);
-
-	nsentity * create_spot_light(const nsstring & name,
-		float diffuse,
-		float ambient,
-		float distance,
-		float radius,
-		const fvec3 & color = fvec3(1, 1, 1),
-		bool castshadows = true,
-		float shadowdarkness = 1.0f,
-		int32 shadowsamples = 2);
-
-	nsentity * create_tile(const nsstring & name,
-		fvec4 m_col,
-		float s_pwr,
-		float s_int32,
-		fvec3 s_col,
-		bool collides,
-		tile_t type = tile_full);
-
-	nsentity * create_tile(const nsstring & name,
-		const nsstring & difftex,
-		const nsstring & normtex,
-		fvec4 m_col,
-		float s_pwr,
-		float s_int32,
-		fvec3 s_col,
-		bool collides,
-		tile_t type = tile_full);
-
-	nsentity * create_tile(const nsstring & name,
-		nsmaterial * mat,
-		bool collides,
-		tile_t type=tile_full);
-
-	nsentity * create_tile(const nsstring & name,
-						   const nsstring & matname,
-						   bool collides, 
-						   tile_t type = tile_full);
-
-	nsentity * create_tile(const nsstring & name,
-						   uint32 matid,
-						   bool collides, 
-						   tile_t type = tile_full);
-
-	nsentity * create_skydome(const nsstring & name,
-							  nsstring cubemap_relative_fname,
-							  const nsstring & image_ext,
-							  const nsstring & tex_subdir="");
-
 
 	template<class ManagerType>
 	ManagerType * create_manager()
@@ -259,27 +168,25 @@ public:
 
 	nsasset * load(uint32 res_typeid, const nsstring & fname, bool finalize_);
 
-	nsentity * load_model(const nsstring & entname,
-						 nsstring fname,
-						 const nsstring & meshname = "",
-						 bool occupy_comp = true, 
-						 bool pFlipUVs = false);
+	bool load_model_assets(
+		nsstring fname,
+		const nsstring & meshname = "",
+		bool flipuv = false);
 
-	bool load_model_resources(nsstring fname,
-							const nsstring & meshname = "",
-							bool flipuv = false);
+	nsmesh * load_model_mesh(
+		nsstring fname,
+		const nsstring & meshname = "",
+		bool flipuv = false);
 
-	nsmesh * load_model_mesh(nsstring fname,
-							const nsstring & meshname = "",
-							bool flipuv = false);
+	bool load_model_mats(
+		nsstring fname,
+		const nsstring & meshname = "",
+		bool flipuv = false);
 
-	bool load_model_mats(nsstring fname,
-						 const nsstring & meshname = "",
-						 bool flipuv = false);
-
-	nsanim_set * load_model_anim(nsstring fname,
-						 const nsstring & meshname = "",
-						 bool flipuv = false);
+	nsanim_set * load_model_anim(
+		nsstring fname,
+		const nsstring & meshname = "",
+		bool flipuv = false);
 
 	void enable(bool enable_);
 
@@ -399,5 +306,157 @@ void pup(PUPer & p, nsplugin & plug)
 	pup(p, plug.m_parents, "parents");
 	pup(p, plug.m_resmap, "resmap");
 }
+
+
+
+
+
+
+
+
+
+// Move to different file when get a chance
+
+
+enum tile_t
+{
+	tile_full,
+	tile_half
+};
+
+
+nsentity * create_entity_from_model(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & entname,
+	nsstring fname,
+	const nsstring & meshname = "",
+	bool occupy_comp = true, 
+	bool pFlipUVs = false);
+
+nsentity * create_sprite(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & sprite_name,
+	const nsstring & tex_filename,
+	bool match_tex_dims,
+	bool alpha_enabled);
+
+nsentity * create_camera(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float fov,
+	const uivec2 & screenDim,
+	const fvec2 & clipnf);
+
+nsentity * create_camera(
+	nstform_ent_chunk * chnk,
+	const nsstring & name, 
+	const fvec2 & lrclip, 
+	const fvec2 & tbclip, 
+	const fvec2 & nfclip);
+
+nsentity * create_terrain(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float hmin,
+	float hmax, 
+	const nsstring & hmfile, 
+	const nsstring & dmfile = "", 
+	const nsstring & nmfile = "");
+
+nsentity * create_dir_light(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float diffuse,
+	float ambient,
+	const fvec3 & color = fvec3(1, 1, 1),
+	bool castshadows = true,
+	float shadowdarkness = 1.0f,
+	int32 shadowsamples = 2);
+
+nsentity * create_point_light(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float diffuse,
+	float ambient,
+	float distance,
+	const fvec3 & color = fvec3(1, 1, 1),
+	bool castshadows = true,
+	float shadowdarkness = 1.0f,
+	int32 shadowsamples = 2);
+
+nsentity * create_spot_light(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float diffuse,
+	float ambient,
+	float distance,
+	float radius,
+	const fvec3 & color = fvec3(1, 1, 1),
+	bool castshadows = true,
+	float shadowdarkness = 1.0f,
+	int32 shadowsamples = 2);
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	fvec4 m_col,
+	float s_pwr,
+	float s_int32,
+	fvec3 s_col,
+	bool collides,
+	tile_t type = tile_full);
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	const nsstring & difftex,
+	const nsstring & normtex,
+	fvec4 m_col,
+	float s_pwr,
+	float s_int32,
+	fvec3 s_col,
+	bool collides,
+	tile_t type = tile_full);
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	nsmaterial * mat,
+	bool collides,
+	tile_t type=tile_full);
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	const nsstring & matname,
+	bool collides, 
+	tile_t type = tile_full);
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	uint32 matid,
+	bool collides, 
+	tile_t type = tile_full);
+
+nsentity * create_skydome(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	nsstring cubemap_relative_fname,
+	const nsstring & image_ext,
+	const nsstring & tex_subdir="");
+
+
+
+
 
 #endif

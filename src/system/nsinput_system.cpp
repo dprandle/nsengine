@@ -16,7 +16,7 @@ This file contains all of the neccessary definitions for the nsinput_system clas
 #include <nsevent.h>
 #include <nsevent_dispatcher.h>
 #include <asset/nsinput_map.h>
-#include <asset/nsmap_area.h>
+#include <nsworld_data.h>
 #include <asset/nsplugin.h>
 #include <asset/nsplugin_manager.h>
 
@@ -393,7 +393,7 @@ const uivec2 & nsinput_system::input_map()
 
 void nsinput_system::update()
 {
-	if (scene_error_check())
+	if (chunk_error_check())
 		return;
 }
 

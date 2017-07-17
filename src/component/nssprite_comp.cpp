@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nssprite_comp class
 */
 
 #include <component/nssprite_comp.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 
 sprite_animation::sprite_animation():
 	name(),

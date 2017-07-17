@@ -23,7 +23,7 @@
 #include <opengl/nsgl_vao.h>
 
 #include <system/nsselection_system.h>
-
+#include <nsworld_data.h>
 #include <asset/nsmaterial.h>
 #include <asset/nsshader.h>
 #include <component/nsui_button_comp.h>
@@ -31,7 +31,7 @@
 #include <asset/nsmesh.h>
 #include <component/nsui_comp.h>
 #include <asset/nsfont.h>
-#include <asset/nsmap_area.h>
+#include <nsworld_data.h>
 #include <component/nscam_comp.h>
 #include <component/nslight_comp.h>
 #include <component/nsrender_comp.h>
@@ -601,31 +601,31 @@ const ivec2 & gl_ctxt::window_size()
 	return m_default_target->size;
 }
 
-void gl_ctxt::push_scene(nsmap_area * scn)
+void gl_ctxt::push_chunk(nstform_ent_chunk * chnk)
 {
 	// now go through second time after recursive update
-    if (scn == nullptr)
+    if (chnk == nullptr)
         return;
 
-	auto ents = scn->entities_in_scene();
+	auto ents = chnk->all_entities();
 
 	if (ents == nullptr)
 		return;
 
 	top_mat_id = 0;
-	_add_instanced_draw_calls_from_scene(scn);
-	_add_draw_calls_from_scene(scn);
-	_add_selection_draw_calls(scn);
-	_add_lights_from_scene(scn);
+	_add_instanced_draw_calls_from_chunk(chnk);
+	_add_draw_calls_from_chunk(chnk);
+	_add_selection_draw_calls(chnk);
+	_add_lights_from_chunk(chnk);
 }
 
-void gl_ctxt::_add_instanced_draw_calls_from_scene(nsmap_area * scene)
+void gl_ctxt::_add_instanced_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 {
 	nsentity * camera = focused_vp->camera;
 
 	// update render components and the draw call list
-	render_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
-	render_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
+	render_queue * chunk_dcq = queue(SCENE_OPAQUE_QUEUE);
+	render_queue * chunk_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
 	nscam_comp * cc = camera->get<nscam_comp>();
 	fvec2 terh;
 	nsrender_comp * rComp = nullptr;
@@ -640,7 +640,7 @@ void gl_ctxt::_add_instanced_draw_calls_from_scene(nsmap_area * scene)
 			for (uint32 j = 0; j < (*iter)->shared_geom_tforms.size(); ++j)
 				(*iter)->shared_geom_tforms[j]->inst_obj = nullptr;
 
-			dprint("gl_ctxt::_add_instanced_draw_calls_from_scene removing shared instance obj as no more shared mesh/material combos left");
+			dprint("gl_ctxt::_add_instanced_draw_calls_from_chunk removing shared instance obj as no more shared mesh/material combos left");
 			(*iter)->video_context_release();
 			delete (*iter);
 			iter = instance_objs.erase(iter);
@@ -690,8 +690,7 @@ void gl_ctxt::_add_instanced_draw_calls_from_scene(nsmap_area * scene)
 				dc->submesh = mSMesh;
 				dc->anim_transforms = fTForms;
 				dc->height_minmax = terh;
-				dc->plugin_id = rComp->owner()->plugin_id();
-				dc->scn = scene;
+				dc->chunk_id = rComp->owner()->chunk_id();
 				dc->casts_shadows = rComp->cast_shadow();
 				dc->transparent_picking = false;
 				dc->mat_index = top_mat_id;
@@ -706,11 +705,11 @@ void gl_ctxt::_add_instanced_draw_calls_from_scene(nsmap_area * scene)
 				if (mat->alpha_blend())
 				{
 					dc->transparent_picking = rComp->transparent_picking;
-					scene_tdcq->push_back(dc);
+					chunk_tdcq->push_back(dc);
 				}
 				else
 				{
-					scene_dcq->push_back(dc);
+					chunk_dcq->push_back(dc);
 				}
 
 				auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
@@ -788,10 +787,6 @@ void gl_ctxt::push_viewport_ui(viewport * vp)
 	}	
 }
 
-void gl_ctxt::push_entity(nsentity * ent)
-{
-}
-
 void gl_ctxt::clear_render_queues()
 {
 	vid_ctxt::clear_render_queues();
@@ -833,16 +828,6 @@ void gl_ctxt::render_to_viewport(viewport * vp)
 	#ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	m_tbuffers->reset_atomic_counter();
 	#endif
-}
-
-void gl_ctxt::render(nsmap_area *scn)
-{
-    if (auto_update_vobjs)
-        update_vid_objs();
-
-	push_scene(scn);
-	render_to_all_viewports();
-	clear_render_queues();
 }
 
 void gl_ctxt::render_to_all_viewports()
@@ -1185,9 +1170,9 @@ void gl_ctxt::render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader)
     so->gl_vao->unbind();
 }
 
-void gl_ctxt::_add_lights_from_scene(nsmap_area * scene)
+void gl_ctxt::_add_lights_from_chunk(nstform_ent_chunk * chunk)
 {
-	auto ents = scene->entities_with_comp<nslight_comp>();
+	auto ents = chunk->entities_with_comp<nslight_comp>();
 	if (ents == nullptr)
 		return;
 	
@@ -1216,13 +1201,11 @@ void gl_ctxt::_add_lights_from_scene(nsmap_area * scene)
 		light_draw_call * ldc = &all_light_draw_calls[all_light_draw_calls.size()-1];
 			
 		ldc->submesh = nullptr;
-		ldc->bg_color = scene->bg_color();
 		ldc->direction = tcomp->world_orientation().target();
 		ldc->diffuse_intensity = lcomp->intensity().x;
 		ldc->ambient_intensity = lcomp->intensity().y;
 		ldc->cast_shadows = lcomp->cast_shadows();
 		ldc->light_color = lcomp->color();
-		ldc->scn = scene;
 		ldc->light_type = lcomp->get_light_type();
 		ldc->shadow_samples = lcomp->shadow_samples();
 		ldc->shadow_darkness = lcomp->shadow_darkness();
@@ -1267,7 +1250,7 @@ void gl_ctxt::_add_lights_from_scene(nsmap_area * scene)
 	}
 }
 
-void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
+void gl_ctxt::_add_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 {
 	if (focused_vp == nullptr)
 		return;
@@ -1276,13 +1259,13 @@ void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
 	if (camera == NULL)
 		return;
 
-	auto ents = scene->entities_with_comp<nsrender_comp>();
+	auto ents = chunk->all_entities();
 	if (ents == nullptr)
 		return;
 
 	// update render components and the draw call list
-	render_queue * scene_dcq = queue(SCENE_OPAQUE_QUEUE);
-	render_queue * scene_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
+	render_queue * chunk_dcq = queue(SCENE_OPAQUE_QUEUE);
+	render_queue * chunk_tdcq = queue(SCENE_TRANSLUCENT_QUEUE);
 
 	nscam_comp * cc = camera->get<nscam_comp>();	
 	fvec2 terh;
@@ -1302,7 +1285,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
 		tComp = (*iter)->get<nstform_comp>();
 
 		// if instance obj skip
-		if (tComp->inst_obj != nullptr)
+		if (tComp->inst_obj != nullptr || rComp == nullptr)
 		{
 			++iter;
 			continue;
@@ -1366,8 +1349,7 @@ void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
 			dc->submesh = mSMesh;
 			dc->anim_transforms = fTForms;
 			dc->height_minmax = terh;
-			dc->plugin_id = (*iter)->plugin_id();
-			dc->scn = scene;
+			dc->chunk_id = (*iter)->chunk_id();
 			dc->casts_shadows = rComp->cast_shadow();
 			dc->transparent_picking = false;
 			dc->mat_index = top_mat_id;
@@ -1379,11 +1361,11 @@ void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
 			if (mat->alpha_blend())
 			{
 				dc->transparent_picking = rComp->transparent_picking;
-				scene_tdcq->push_back(dc);
+				chunk_tdcq->push_back(dc);
 			}
 			else
 			{
-				scene_dcq->push_back(dc);
+				chunk_dcq->push_back(dc);
 			}
 
 			auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
@@ -1395,12 +1377,12 @@ void gl_ctxt::_add_draw_calls_from_scene(nsmap_area * scene)
 	}
 }
 
-void gl_ctxt::_add_selection_draw_calls(nsmap_area * scene)
+void gl_ctxt::_add_selection_draw_calls(nstform_ent_chunk * chunk)
 {
 	// add selection draw calls
-	render_queue * scene_sel = queue(SCENE_SELECTION_QUEUE);
+	render_queue * chunk_sel = queue(SCENE_SELECTION_QUEUE);
 
-	entity_ptr_set & ents = nse.system<nsselection_system>()->current_selection();
+	entity_set & ents = nse.system<nsselection_system>()->current_selection();
 	auto sel_ent_iter = ents.begin();
 	while (sel_ent_iter != ents.end())
 	{
@@ -1435,14 +1417,13 @@ void gl_ctxt::_add_selection_draw_calls(nsmap_area * scene)
 				mat = nse.video_driver<nsgl_driver>()->default_mat();
 			
 			sel_dc->submesh = currentMesh->sub(i);
-			sel_dc->scn = scene;
 			sel_dc->anim_transforms = fTForms;
 			sel_dc->height_minmax = terh;
 			sel_dc->shdr = nse.core()->get<nsshader>(SELECTION_SHADER);
 			sel_dc->mat = mat;
 			sel_dc->sel_color = sc->color();
 			sel_dc->single_dci.transform = tform->world_tf();
-			scene_sel->push_back(sel_dc);
+			chunk_sel->push_back(sel_dc);
 		}
 		
 		++sel_ent_iter;

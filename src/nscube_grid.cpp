@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nscube_grid class.
 */
 
 #include <nscube_grid.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <component/nstform_comp.h>
 
 nscube_grid::nscube_grid()

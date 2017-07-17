@@ -512,7 +512,8 @@ void nsmesh::submesh::connected_joints::add_joint(uint32 pBoneID, float pWeight)
 	}
 }
 
-nsmesh::submesh::submesh(nsmesh * pParentMesh): 
+nsmesh::submesh::submesh(nsmesh * pParentMesh):
+	nsvideo_object("nssubmesh"),
 	m_verts(),
 	m_tex_coords(),
 	m_normals(),
@@ -532,6 +533,7 @@ nsmesh::submesh::submesh(nsmesh * pParentMesh):
 }
 
 nsmesh::submesh::submesh(const submesh & copy_):
+	nsvideo_object("nssubmesh"),
 	m_verts(copy_.m_verts),
 	m_tex_coords(copy_.m_tex_coords),
 	m_normals(copy_.m_normals),

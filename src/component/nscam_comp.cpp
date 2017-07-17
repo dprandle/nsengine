@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nscam_comp class.
 */
 
 #include <component/nscam_comp.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <nstimer.h>
 #include <component/nstform_comp.h>
 #include <algorithm>

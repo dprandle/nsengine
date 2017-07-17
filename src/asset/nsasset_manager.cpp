@@ -18,6 +18,7 @@ This file contains all of the neccessary definitions for the nsasset_manager cla
 #include <nscallback.h>
 #include <hash/sha256.h>
 #include <asset/nsasset.h>
+#include <asset/nsplugin_manager.h>
 
 nsasset_manager::nsasset_manager(uint32 hashed_type):
 m_res_dir(),
@@ -36,24 +37,30 @@ nsasset_manager::~nsasset_manager()
 
 bool nsasset_manager::add(nsasset * res)
 {
-	if (res == NULL)
+	if (res == nullptr)
 	{
-		dprint("nsasset_manager::add Can not add NULL valued resource");
+		dprint("Can not add nullptr asset to " + hash_to_guid(m_hashed_type));
 		return false;
 	}
 
 	auto check = m_id_resmap.emplace(res->id(), res);
 	if (check.second)
 	{
-		dprint("nsasset_manager::add Successfully added resource with name " + res->name());
 		res->m_plugin_id = m_plugin_id;
+		dprint("Successfully added " + res->name() + " to " + formatted_full_name());
 		res->m_owned = true;
+		sig_connect(res->asset_renamed, nsasset_manager::asset_renamed);
 	}
 	else
 	{
-		dprint("nsasset_manager::add Could not add resource with name " + res->name() + " because resource with that name already exists");
+		dprint("Could not add " + res->name() + " to because asset with that name already exists in " + formatted_full_name());
 	}
 	return check.second;	
+}
+
+nsstring nsasset_manager::formatted_full_name()
+{
+    return hash_to_guid(m_hashed_type) + ":" + nsep.get(m_plugin_id)->name();
 }
 
 nsasset_manager::map_type::iterator nsasset_manager::begin()
@@ -93,14 +100,14 @@ nsasset * nsasset_manager::create(uint32 res_type_id, const nsstring & resName, 
 		return nullptr;
 	
 	// Create the resource and add it to the map - if there is a resource with the same name already
-	// in the map then insertion will have failed, so delete the created resource and retun NULL
+	// in the map then insertion will have failed, so delete the created resource and retun nullptr
 	nsasset * res = nse.factory<nsasset_factory>(res_type_id)->create(to_copy);
 	res->rename(resName);
 	if (!add(res))
 	{
-		dprint("nsasset_manager::create Deleting unadded " + nse.guid(res_type_id) + " with name " + resName);
+		dprint("Deleting unadded " + nse.guid(res_type_id) + " with name " + resName);
 		delete res;
-		return NULL;
+		return nullptr;
 	}
 	res->init();
 	return res;
@@ -113,9 +120,9 @@ nsasset * nsasset_manager::create(const nsstring &guid_, const nsstring &res_nam
 
 bool nsasset_manager::contains(nsasset * res)
 {
-	if (res == NULL)
+	if (res == nullptr)
 		return false;
-	return (get(res->id()) != NULL);
+	return (get(res->id()) != nullptr);
 }
 
 uint32 nsasset_manager::count() const
@@ -131,12 +138,12 @@ bool nsasset_manager::del(nsasset * res)
 
 	if (ret)
 	{
-		dprint("nsasset_manager::del - Succesfully deleted file with name: " + fName);
+		dprint("Succesfully deleted file with name: " + fName);
 		destroy(res);
 	}
 	else
 	{
-		dprint("nsasset_manager::del - Could not delete file with name: " + fName);
+		dprint("Could not delete file with name: " + fName);
 	}
 	
 	return ret;
@@ -166,7 +173,7 @@ nsasset * nsasset_manager::get(uint32 resid)
 	map_type::iterator iter = m_id_resmap.find(resid);
 	if (iter != m_id_resmap.end())
 		return iter->second;
-	return NULL;
+	return nullptr;
 }
 
 nsasset * nsasset_manager::get(const nsstring & resName)
@@ -199,7 +206,7 @@ nsasset * nsasset_manager::load(const nsstring & res_guid,
 nsasset * nsasset_manager::load(uint32 res_type_id, const nsstring & fname, bool finalize_)
 {
 	if (fname.empty())
-		return NULL;
+		return nullptr;
 	
 	nsstring resName(fname);
 	nsstring resExtension;
@@ -246,23 +253,23 @@ nsasset * nsasset_manager::load(uint32 res_type_id, const nsstring & fname, bool
 
 	if (!file.is_open())
 	{
-		dprint("nsasset_manager::load Error opening resource file " + fName);
+		dprint("Error opening resource file " + fName);
 		delete p;
-		return NULL;
+		return nullptr;
 	}
 
 	nsasset * res = get(resName);
 	nsstring restype(nse.guid(res_type_id));
-	if (res == NULL)
+	if (res == nullptr)
 	{
 		res = create(res_type_id, resName);
 	}
 	else
 	{
-		dprint("nsasset_manager::load - Error trying to load " + restype  + " with same name as already existing " + restype + " - " + resName);
+		dprint("Error trying to load " + restype  + " with same name as already existing " + restype + " - " + resName);
 		file.close();
 		delete p;
-		return NULL;
+		return nullptr;
 	}
 
 	res->set_subdir(subDir);
@@ -277,16 +284,16 @@ nsasset * nsasset_manager::load(uint32 res_type_id, const nsstring & fname, bool
 
 	if (rt != nse.guid(res_type_id))
 	{
-		dprint("nsasset_manager::load Attempted to load resource type " + restype + " from file that is not of that type: " + fName);
+		dprint("Attempted to load resource type " + restype + " from file that is not of that type: " + fName);
 		delete p;
 		file.close();
 		destroy(res);
-		return NULL;
+		return nullptr;
 	}
 
 
 	res->pup(p);
-	dprint("nsasset_manager::load Succesfully loaded resource from file " + fName);
+	dprint("Succesfully loaded resource from file " + fName);
 	if (finalize_)
 		res->finalize();
 	delete p;
@@ -314,9 +321,9 @@ void nsasset_manager::name_change(const uivec2 & oldid, const uivec2 newid)
 	if (oldid.x == m_plugin_id)
 	{
 		nsasset * res = get<nsasset>(oldid.y);
-		if (res != NULL)
+		if (res != nullptr)
 		{
-			dprint("nsasset_manager::name_change - name change in res_manager " + hash_to_guid(m_hashed_type));
+			dprint("Name change in res_manager " + hash_to_guid(m_hashed_type));
 			remove(oldid.y);
 			add(res);
 		}
@@ -337,14 +344,19 @@ uint32 nsasset_manager::plugin_id()
 
 nsasset * nsasset_manager::remove(uint32 res_id)
 {
-	nsasset * res = get(res_id);
-	if (res == NULL)
-		return NULL;
-	m_id_resmap.erase(res_id);
-	res->m_plugin_id = 0;
-	res->m_owned = false;
-	dprint("nsasset_manager::remove Succesfully removed resource " + res->name());
-	return res;
+	auto iter = m_id_resmap.find(res_id);
+	if (iter != m_id_resmap.end())
+	{
+		nsasset * res = iter->second;
+		m_id_resmap.erase(iter);
+		res->m_plugin_id = 0;
+		res->m_owned = false;
+		sig_disconnect(res->asset_renamed);
+		dprint("Succesfully removed " + res->name() + " from " + formatted_full_name());
+		return res;
+	}
+	dprint("Could not remove " + std::to_string(res_id) + " from " + formatted_full_name() + " - could not find id in resmap");
+	return nullptr;
 }
 
 nsasset * nsasset_manager::remove(const nsstring & resName)
@@ -354,7 +366,7 @@ nsasset * nsasset_manager::remove(const nsstring & resName)
 
 nsasset * nsasset_manager::remove(nsasset * res)
 {
-	if (res != NULL)
+	if (res != nullptr)
 		return remove(res->id());
 	return res;
 }
@@ -363,7 +375,7 @@ bool nsasset_manager::rename(const nsstring & oldName, const nsstring & newName)
 {
 	nsasset * res = get(oldName);
 
-	if (res == NULL) // resource not in map
+	if (res == nullptr) // resource not in map
 		return false;
 
 	res->rename(newName); // name change will propagate
@@ -376,11 +388,11 @@ bool nsasset_manager::rename(const nsstring & oldName, const nsstring & newName)
 			
     if (ret)
 	{
-		dprint("nsasset_manager::rename Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
+		dprint("Succesfully renamed file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	else
 	{
-		dprint("nsasset_manager::rename Could not rename file with old name: " + oldName + " to file with new name: " + newName);
+		dprint("Could not rename file with old name: " + oldName + " to file with new name: " + newName);
 	}
 	
     return ret;
@@ -394,7 +406,7 @@ void nsasset_manager::save_all(const nsstring & path, nssave_resouces_callback *
 	{
 		// Save the current iterated resource to file
 		bool success = save(iter->second, path);
-		if (scallback != NULL)
+		if (scallback != nullptr)
 		{
 			scallback->saved = success;
 			scallback->res_id = iter->second->full_id();
@@ -406,12 +418,6 @@ void nsasset_manager::save_all(const nsstring & path, nssave_resouces_callback *
 
 bool nsasset_manager::save(nsasset * res,const nsstring & path)
 {
-	if (res == NULL)
-	{
-		dprint("nsasset_manager::save : Cannot save NULL valued resource");
-		return false;
-	}
-
 	nsstring fName(res->name() + res->extension());
 
 	if (path == "")
@@ -423,7 +429,7 @@ bool nsasset_manager::save(nsasset * res,const nsstring & path)
     bool fret = platform::create_dir(fName);
 	if (fret)
 	{
-		dprint("nsasset_manager::save Created directory " + fName);
+		dprint("Created directory " + fName);
 	}
 
 	nsfstream file;
@@ -441,7 +447,7 @@ bool nsasset_manager::save(nsasset * res,const nsstring & path)
 
 	if (!file.is_open())
 	{
-		dprint("nsasset_manager::save : Error opening file " + fName);
+		dprint("Error opening file " + fName);
 		delete p;
 		return false;
 	}
@@ -455,7 +461,7 @@ bool nsasset_manager::save(nsasset * res,const nsstring & path)
 		pup(*(static_cast<nstext_file_pupper*>(p)), rest, "type");
 
 	res->pup(p);
-	dprint("nsasset_manager::save Succesfully saved " + rest + " to file " + fName);
+	dprint("Succesfully saved " + rest + " to file " + fName);
 	delete p;
 	file.close();
 	return true;
@@ -495,14 +501,14 @@ void nsasset_manager::destroy_all()
 
 bool nsasset_manager::destroy(nsasset * res)
 {
-	if (res != NULL)
+	if (res != nullptr)
 	{
 		uint32 id = res->id();
 		nsstring name = res->name();
 		res->release();
 		delete res;
 		m_id_resmap.erase(id);
-		dprint("nsasset_manager::destroy Successfully destroyed " + name);
+		dprint("Successfully destroyed " + name);
 		return true;
 	}
 	return false;
@@ -511,6 +517,32 @@ bool nsasset_manager::destroy(nsasset * res)
 void nsasset_manager::set_res_dir(const nsstring & pDirectory)
 {
 	m_res_dir = pDirectory;
+}
+
+void nsasset_manager::asset_renamed(const uivec2 & old_name, const uivec2 & new_name)
+{
+	// first see if we need to remove and re-add
+	if (old_name.x == m_plugin_id)
+	{
+		nsasset * res = get<nsasset>(old_name.y);
+		if (res != nullptr)
+		{
+			nsasset * changed_to_name = get(new_name.y);
+			if (changed_to_name != nullptr)
+			{
+				nsstring new_name = res->name() + std::to_string(old_name.y);
+				dprint("Had to edit name in " + formatted_full_name() + " during name change from old asset id " + old_name.to_string() + " to proposed name " + res->name() + " (id " + std::to_string(res->id()) + ") as it is not unique - changing to " + new_name + " (id " + std::to_string(hash_id(new_name)) + ")");
+				res->rename(new_name);
+			}
+			else
+			{			
+
+				dprint("Name change in " + formatted_full_name() + " from old asset id " + old_name.to_string() + " to new asset id " + new_name.to_string());
+				remove(old_name.y);
+				add(res);
+			}
+		}
+	}
 }
 
 nsstring nsasset_manager::name_from_filename(const nsstring & fname)

@@ -15,7 +15,7 @@ This file contains all of the neccessary declarations for the nsui_canvas_comp c
 
 #include <component/nscomponent.h>
 #include <component/nsrect_tform_comp.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <nsrouter.h>
 
 class nsui_canvas_comp : public nscomponent
@@ -80,7 +80,7 @@ public:
 	void _on_comp_add(nscomponent * comp_t);
 	void _on_comp_remove(nscomponent * comp_t);
 	std::vector<uivec2> m_unloaded_ents;
-	std::unordered_map<uint32, std::unordered_set<nsentity*>> m_ents_by_comp;
+	std::unordered_map<uint32, entity_set> m_ents_by_comp;
 	
 	struct rect_info
 	{

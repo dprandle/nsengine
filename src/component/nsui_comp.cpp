@@ -11,7 +11,7 @@ This file contains all of the neccessary definitions for the nsui_comp class.
 */
 
 #include <component/nsui_comp.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 
 nsui_material_comp::nsui_material_comp() :
 	nscomponent(type_to_hash(nsui_material_comp)),

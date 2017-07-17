@@ -13,7 +13,7 @@ This file contains all of the neccessary definitions for the nsoccupy_comp class
 
 #include <component/nsoccupy_comp.h>
 #include <nstile_grid.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <asset/nsplugin.h>
 #include <cmath>
 #include <asset/nsmesh.h>

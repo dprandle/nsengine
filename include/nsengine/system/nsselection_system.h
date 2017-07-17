@@ -13,8 +13,8 @@ This file contains all of the neccessary declarations for the nsselection_system
 #ifndef NSSELECTION_SYSTEM_H
 #define NSSELECTION_SYSTEM_H
 
+#include <nsentity.h>
 #include <system/nssystem.h>
-#include <asset/nsentity_manager.h>
 
 #define NSSEL_SELECT "select_entity"
 #define NSSEL_SHIFTSELECT "shift_select"
@@ -29,12 +29,11 @@ This file contains all of the neccessary declarations for the nsselection_system
 #define NSSEL_MOVE_TOGGLE "move_selection_toggle"
 #define SELECTION_INPUT_CTXT "selection_controls"
 
-class nsmap_area;
 class nssel_comp;
 class nsselection_shader;
 struct nsaction_event;
 struct nsstate_event;
-
+class nstform_ent_chunk;
 class nsselection_system : public nssystem
 {
 public:
@@ -54,7 +53,7 @@ public:
 
 	bool add_to_selection(nsentity * ent);
 
-	bool add_selection_to_grid(nsmap_area * scn);
+	bool add_selection_to_grid(nstform_ent_chunk * scn);
 
 	void change_layer(int32 pChange);
 
@@ -66,7 +65,7 @@ public:
 
 	bool selection_contains(const uivec2 & itemid);
 
-	entity_ptr_set & current_selection();
+	entity_set & current_selection();
 
 	bool empty();
 
@@ -151,7 +150,6 @@ protected:
 	bool _handle_move_selection_z(nsaction_event * evnt);
 	bool _handle_move_selection_toggle(nsaction_event * evnt);
 	bool _handle_rotate_selection(nsaction_event * evnt);
-	bool _handle_scene_ent_removed(scene_ent_removed * evnt);
 
 	void on_ent_destroyed(uint32 type_id, uivec2 ent_id);
 	
@@ -169,7 +167,7 @@ protected:
 	void _draw_hidden();
 
 	uivec2 m_focus_ent; //!< The entity/tform ID that the selection is focused on (the center of rotation)
-	entity_ptr_set m_selected_ents;
+	entity_set m_selected_ents;
 	fvec3 m_total_frame_translation;
 	bool m_moving;
 	bool m_toggle_move;

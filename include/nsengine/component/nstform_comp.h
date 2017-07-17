@@ -24,6 +24,7 @@ struct nsgl_vao;
 struct nsgl_xfb;
 class nstimer;
 class nsmap_area;
+class nstform_ent_chunk;
 
 struct accel_over_time
 {
@@ -69,20 +70,23 @@ struct tform_per_scene_info : public nsvideo_object
 struct tform_info
 {
 	tform_info(
-		const uivec2 & parent=uivec2(),
+		uint32 parent=0,
 		const fvec3 & pos=fvec3(),
 		const fquat & ornt=fquat(),
 		const fvec3 & scale=fvec3(1.0f),
 		int32 hide_state=0,
-		const std::vector<uivec2> & children_=std::vector<uivec2>()
+		const ui_vector & children_=ui_vector()
 		);
+
+	nsstring to_string() const;
 	
-	uivec2 m_parent;
 	int32 m_hidden_state;
 	fquat m_orient;
 	fvec3 m_position;
-	fvec3 m_scaling;	
-	std::vector<uivec2> m_children;	
+	fvec3 m_scaling;
+	
+	uint32 m_parent;
+	ui_vector m_children;
 };
 
 struct packed_ent_tform
@@ -112,8 +116,10 @@ class nstform_comp : public nscomponent
 
 	template <class PUPer>
 	friend void pup(PUPer & p, nstform_comp & iv, const nsstring & var_name);
+	
 	friend class nsmap_area;
-	friend class nsrender_system;	
+	friend class nsrender_system;
+	friend class nstform_ent_chunk;
 	
 	nstform_comp();
 
@@ -141,9 +147,17 @@ class nstform_comp : public nscomponent
 	
     void set_parent(nstform_comp * parent, bool keep_world_transform);
 	
-	nstform_comp * parent() const;
+	nstform_comp * parent();
+
+	nstform_comp * root();
+
+	const nstform_comp * parent() const;
+
+	const nstform_comp * root() const;
 
 	nstform_comp * child(uint32 index);
+
+	uint32 chunk_id();
 
 	uint32 child_count();
 
@@ -196,17 +210,21 @@ class nstform_comp : public nscomponent
 	const fmat4 & local_inv_tf() const;
 	
 	tform_per_scene_info * inst_obj; // shared among all instances
-	uint32 inst_id; // shouldnt need anymore
-	bool in_cube_grid;
-	bool save_with_scene;
+
+	void cache_tform();
+
+	fmat4 & cached_tform();
 
   private:
-	tform_info m_tfi;	
 	bool m_render_update;
+	tform_info m_tfi;		
 	fmat4 m_world_tform;
 	fmat4 m_world_inv_tform;
 	fmat4 m_local_tform;
 	fmat4 m_local_inv_tform;
+
+	fmat4 m_prev_tform;
+	nstform_ent_chunk * m_owning_chunk;
 };
 
 template <class PUPer>

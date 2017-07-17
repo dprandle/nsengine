@@ -51,7 +51,9 @@ class nsgl_window : public nswindow
 
 	void close();
 
-	void update();
+	void render();
+
+	void swap_buffers();
 	
 	void make_current();
 

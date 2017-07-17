@@ -67,11 +67,11 @@ struct geometry_draw_call : public gl_draw_call
 {
 	geometry_draw_call():
 		gl_draw_call(),
-		scn(nullptr),
+		//	scn(nullptr),
 		submesh(nullptr),
 		anim_transforms(nullptr),
 		height_minmax(),
-		plugin_id(0),
+		chunk_id(0),
 		casts_shadows(false),
 		transparent_picking(false),
 		sel_color(),
@@ -82,11 +82,10 @@ struct geometry_draw_call : public gl_draw_call
 	
 	~geometry_draw_call() {}
 
-	nsmap_area * scn;
 	nsmesh::submesh * submesh;
 	fmat4_vector * anim_transforms;
 	fvec2 height_minmax;
-	uint32 plugin_id;
+	uint32 chunk_id;
 	bool transparent_picking;
 	bool casts_shadows;
 	fvec4 sel_color;
@@ -102,11 +101,10 @@ struct light_draw_call : public gl_draw_call
 {
 	light_draw_call():
 		gl_draw_call(),
-		scn(nullptr),
+		//	scn(nullptr),
 		proj_light_mat(),
 		light_transform(),
 		light_pos(),
-		bg_color(),
 		direction(),
 		cast_shadows(false),
 		light_color(),
@@ -124,11 +122,10 @@ struct light_draw_call : public gl_draw_call
 	
 	~light_draw_call() {}
 
-	nsmap_area * scn;
+	//nsmap_area * scn;
 	fmat4 proj_light_mat;
 	fmat4 light_transform;
 	fvec3 light_pos;
-	fvec4 bg_color;
 	fvec3 direction;
 	bool cast_shadows;
 	fvec3 light_color;

@@ -133,17 +133,14 @@ void nsasset::set_ext(const nsstring & pExt)
 	m_ext = pExt;
 }
 
-void nsasset::rename(const nsstring & pRefName)
+void nsasset::rename(const nsstring & new_name)
 {
 	uint32 tmp = m_id;
-
-	m_name = pRefName;
-	m_id = hash_id(pRefName);
-	push_asset_name_change(uivec2(m_plugin_id,tmp), full_id());
-#ifdef NOTIFY_ENGINE_NAME_CHANGE
-	if (m_owned) // if a manager owns this resource - otherwise we dont care
-		nse.name_change(uivec2(m_plugin_id, tmp),uivec2(m_plugin_id, m_id));
-#endif
+	m_name = new_name;
+	m_id = hash_id(new_name);
+	uivec2 old_name(m_plugin_id,tmp);
+	push_asset_name_change(old_name, full_id());
+	emit_sig asset_renamed(old_name, full_id());
 }
 
 void nsasset::set_subdir(const nsstring & pDir)

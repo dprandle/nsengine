@@ -92,6 +92,8 @@ public:
 	}
 };
 
+#include <vector>
+
 class nscomp_factory : public nsfactory
 {
 public:

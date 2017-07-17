@@ -187,9 +187,9 @@ struct nscam_change_event : public nsevent
 	{}
 };
 
-struct window_resize_event : public nsevent
+struct window_resized : public nsevent
 {
-	window_resize_event(uint32 window_tag_, const ivec2 & new_size_):
+	window_resized(uint32 window_tag_, const ivec2 & new_size_):
 		nsevent(),
 		window_tag(window_tag_),
 		new_size(new_size_)
@@ -197,28 +197,6 @@ struct window_resize_event : public nsevent
 
 	uint32 window_tag;
 	ivec2 new_size;
-};
-
-struct scene_ent_added : public nsevent
-{
-	scene_ent_added(const uivec2 & ent_id_, const uivec2 & scene_id):
-		nsevent(),
-		ent_id(ent_id_),
-		scn_id(scene_id)
-	{}
-	uivec2 ent_id;
-	uivec2 scn_id;
-};
-
-struct scene_ent_removed : public nsevent
-{
-	scene_ent_removed(const uivec2 & ent_id_, const uivec2 & scene_id):
-		nsevent(),
-		ent_id(ent_id_),
-		scn_id(scene_id)
-	{}
-	uivec2 ent_id;
-	uivec2 scn_id;
 };
 
 struct collision_event : public nsevent

@@ -372,7 +372,7 @@ struct nsvec2
 		return *this = transform2d_(2).xy();
 	}
 
-	nsstring to_string(bool polar_ = false)
+	nsstring to_string(bool polar_ = false) const
 	{
 		nsstringstream ss;
 		if (polar_)

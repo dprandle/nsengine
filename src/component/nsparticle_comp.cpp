@@ -17,12 +17,13 @@ This file contains all of the neccessary definitions for the nsparticle_comp cla
 #include <opengl/nsgl_buffer.h>
 #include <asset/nstex_manager.h>
 #include <asset/nsshader_manager.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <asset/nsmat_manager.h>
 #include <nsengine.h>
 
 nsparticle_comp::nsparticle_comp() :
 	nscomponent(type_to_hash(nsparticle_comp)),
+	nsvideo_object("nsparticle_comp"),
 	m_simulating(false),
 	m_first(true),
 	m_mat_id(0),
@@ -56,6 +57,7 @@ nsparticle_comp::nsparticle_comp() :
 
 nsparticle_comp::nsparticle_comp(const nsparticle_comp & copy):
 	nscomponent(copy),
+	nsvideo_object("nsparticle_comp"),
 	m_motion_keys(copy.m_motion_keys),
 	m_visual_keys(copy.m_visual_keys),
 	m_mat_id(copy.m_mat_id),

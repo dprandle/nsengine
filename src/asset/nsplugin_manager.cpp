@@ -17,8 +17,6 @@ This file contains all of the neccessary definitions for the nsplugin_manager cl
 #include <asset/nsanim_manager.h>
 #include <nsengine.h>
 #include <asset/nsmat_manager.h>
-#include <asset/nsmap_area_manager.h>
-#include <asset/nsentity_manager.h>
 
 nsplugin * get_plugin(uint32 id)
 {
@@ -30,6 +28,11 @@ nsplugin_manager::nsplugin_manager() :
 {
 	set_local_dir(LOCAL_PLUGIN_DIR_DEFAULT);
 	set_save_mode(text);
+}
+
+nsstring nsplugin_manager::formatted_full_name()
+{
+    return hash_to_guid(m_hashed_type);
 }
 
 nsplugin_manager::~nsplugin_manager()

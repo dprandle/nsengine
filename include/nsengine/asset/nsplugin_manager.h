@@ -23,6 +23,8 @@ class nsplugin_manager : public nsasset_manager
 public:
 
 	MANAGER_TEMPLATES
+
+	virtual nsstring formatted_full_name();
 	
 	nsplugin_manager();	
 	~nsplugin_manager();

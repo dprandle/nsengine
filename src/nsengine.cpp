@@ -9,7 +9,6 @@ This file contains all of the neccessary definitions for the nsengine class.
 \copywrite Earth Banana Games 2013
 */
 
-#include <component/nsprefab_comp.h>
 #include <component/nsprefab_reference_comp.h>
 #include <component/nssprite_comp.h>
 #include <component/nsui_button_comp.h>
@@ -21,9 +20,7 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <nsplatform.h>
 #include <nsengine.h>
 #include <system/nstform_system.h>
-#include <asset/nsmap_area.h>
 #include <asset/nsinput_map_manager.h>
-#include <asset/nsentity_manager.h>
 #include <asset/nsanim_manager.h>
 #include <asset/nsmesh_manager.h>
 #include <asset/nstex_manager.h>
@@ -32,14 +29,13 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <asset/nsshader_manager.h>
 #include <asset/nsinput_map.h>
 #include <nspupper.h>
-#include <asset/nsmap_area_manager.h>
 #include <component/nssel_comp.h>
 #include <component/nsterrain_comp.h>
 #include <system/nsanim_system.h>
 #include <system/nsinput_system.h>
 #include <component/nsparticle_comp.h>
 #include <nstimer.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <system/nscamera_system.h>
 #include <system/nsselection_system.h>
 #include <nsevent.h>
@@ -63,7 +59,9 @@ This file contains all of the neccessary definitions for the nsengine class.
 #include <asset/nsfont_manager.h>
 #include <system/nsaudio_system.h>
 #include <asset/nsaudio_manager.h>
-
+#include <nsworld_data.h>
+#include <asset/nsprefab.h>
+#include <asset/nsprefab_manager.h>
 #include <component/nsaudio_source_comp.h>
 #include <system/nssprite_anim_system.h>
 #include <system/nsphysics_system.h>
@@ -87,21 +85,77 @@ nsengine::nsengine():
     m_plugins(nullptr),
     m_event_disp(nullptr),
     m_timer(nullptr),
-    m_active_scene(nullptr),
 #ifdef NSDEBUG
     m_deb(nullptr),
 #endif
     m_import_dir(),
     m_cwd(),
+	m_world(nullptr),
     m_running(false),
     m_initialized(false)
 {
     global_engine_ptr = this;
     _init_factories();
+
+	m_systems = new system_hash_map;
+    m_event_disp = new nsevent_dispatcher;
+    m_timer = new nstimer;
+
+    platform::platform_init();
+    m_cwd = platform::cwd();
+    m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
+
+#ifdef NSDEBUG
+    m_deb = new nsdebug;
+    m_deb->set_log_file("engine_debug.log");
+    m_deb->set_log_dir(m_cwd + "logs");
+    m_deb->clear_log();
+#endif
+
+    srand(static_cast<unsigned>(time(0)));
+
+    m_plugins = new nsplugin_manager;
+    m_plugins->set_res_dir(m_cwd);
+
+    nsplugin * plg = m_plugins->create<nsplugin>(ENGINE_PLUG);
+    plg->init();
+    plg->enable(true);
+    plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
+    plg->enable_group_save(false);
+
+	m_world = new nsworld_data;
+	m_world->create_chunk(ENGINE_CHUNK);
 }
 
 nsengine::~nsengine()
 {
+	m_plugins->destroy_all();
+    delete m_plugins;
+    m_plugins = nullptr;
+
+	delete m_world;
+
+    m_event_disp->clear();
+    delete m_event_disp;
+    m_event_disp = nullptr;
+
+    delete m_systems;
+    m_systems = nullptr;
+
+    delete m_event_disp;
+    m_event_disp = nullptr;
+
+    delete m_timer;
+    m_timer = nullptr;
+
+    delete m_driver;
+    m_driver = nullptr;
+
+#ifdef NSDEBUG
+    delete m_deb;
+    m_deb = nullptr;
+#endif
+
 	_destroy_factories();
 }
 
@@ -275,62 +329,80 @@ void nsengine::set_import_dir(const nsstring & dir)
     m_import_dir = dir;
 }
 
-void nsengine::start()
-{
-    if (m_initialized && !m_running)
+void nsengine::start_registered_systems()
+{	
+    if (!m_running)
     {
-        m_timer->start();
         m_running = true;
+		_create_factory_systems();
+		auto fiter = m_systems->begin();
+		while (fiter != m_systems->end())
+		{
+			fiter->second->init();
+			++fiter;
+		}
+        m_timer->start();
     }
+	else
+	{
+		dprint("Cannot start registered systems because they are already running");
+	}
 }
 
-void nsengine::stop()
+void nsengine::stop_registered_systems()
 {
-    if (m_initialized && m_running)
+	
+    if (m_running)
     {
         m_timer->stop();
+
+		// delete all systems
+		auto iter = m_systems->begin();
+		while (iter != m_systems->end())
+		{
+			iter->second->release();
+			delete iter->second;
+			iter->second = NULL;
+			++iter;
+		}
+		m_systems->clear();
+		m_sys_update_order.clear();
+
         m_running = false;
     }
+	else
+	{
+		dprint("Cannot stop registered systems because they haven't been started");
+	}
 }
 
-void nsengine::init(nsvideo_driver * drvr)
+void nsengine::set_video_driver(nsvideo_driver * driver)
 {
-    if (m_initialized)
-        return;
+	if (driver == nullptr && m_driver != nullptr)
+	{
+		m_driver->release();
+		delete m_driver;
+		m_driver = nullptr;
+	}
+	
+	if (m_driver != nullptr)
+	{
+		dprint("Warning - setting engine video driver when previously set!");
+	}
+	
+	m_driver = driver;
+}
 
-    m_driver = drvr;
-    m_systems = new system_hash_map;
-    m_event_disp = new nsevent_dispatcher;
-    m_timer = new nstimer;
+void nsengine::init()
+{	
+	// if (m_initialized)
+    //     return;
 
-    platform::platform_init();
-    m_cwd = platform::cwd();
-    m_import_dir = m_cwd + nsstring(DEFAULT_IMPORT_DIR);
+	// if (m_driver == nullptr)
+	// {
+	// 	dprint("Cannot initialize engine without video driver set!");
+	// }
 
-#ifdef NSDEBUG
-    m_deb = new nsdebug;
-    m_deb->set_log_file("engine_debug.log");
-    m_deb->set_log_dir(m_cwd + "logs");
-    m_deb->clear_log();
-#endif
-
-    srand(static_cast<unsigned>(time(0)));
-
-    m_plugins = new nsplugin_manager;
-    m_plugins->set_res_dir(m_cwd);
-
-    nsplugin * plg = m_plugins->create<nsplugin>(ENGINE_PLUG);
-    plg->init();
-    plg->enable(true);
-    plg->set_managers_res_dir(m_cwd + DEFAULT_CORE_DIR);
-    plg->enable_group_save(false);
-
-    _create_factory_systems();
-    m_driver->init();
-    m_initialized = true;
-    if (!m_driver->initialized())
-        release();
-	_init_systems();
 }
 
 bool nsengine::running()
@@ -340,47 +412,9 @@ bool nsengine::running()
 
 void nsengine::release()
 {
-    if (!m_initialized)
-        return;
+    // if (!m_initialized)
+    //     return;
 
-    m_plugins->destroy_all();
-    delete m_plugins;
-    m_plugins = nullptr;
-
-    // delete all systems
-    auto iter = m_systems->begin();
-    while (iter != m_systems->end())
-    {
-        iter->second->release();
-        delete iter->second;
-        iter->second = NULL;
-        ++iter;
-    }
-    m_systems->clear();
-    m_sys_update_order.clear();
-
-    m_event_disp->clear();
-    delete m_event_disp;
-    m_event_disp = nullptr;
-
-    delete m_systems;
-    m_systems = nullptr;
-
-    delete m_event_disp;
-    m_event_disp = nullptr;
-
-    delete m_timer;
-    m_timer = nullptr;
-
-    delete m_driver;
-    m_driver = nullptr;
-
-#ifdef NSDEBUG
-    delete m_deb;
-    m_deb = nullptr;
-#endif
-
-    m_initialized = false;
 }
 
 nsfactory * nsengine::factory(uint32 hash_id)
@@ -415,11 +449,6 @@ uint32 nsengine::type_id(std::type_index type)
     return 0;
 }
 
-nsmap_area * nsengine::active_scene()
-{
-    return m_active_scene;
-}
-
 nsfactory * nsengine::_remove_factory(uint32 hash_id)
 {
     nsfactory * f = factory(hash_id);
@@ -427,21 +456,6 @@ nsfactory * nsengine::_remove_factory(uint32 hash_id)
         return NULL;
     m_factories.erase(hash_id);
     return f;
-}
-
-void nsengine::set_active_scene(nsmap_area * active_scene)
-{
-    m_active_scene = active_scene;
-
-    if (m_active_scene != nullptr && !m_active_scene->is_enabled())
-        m_active_scene->enable(true);
-
-    auto sys_iter = m_systems->begin();
-    while (sys_iter != m_systems->end())
-    {
-        sys_iter->second->set_active_scene(m_active_scene);
-        ++sys_iter;
-    }
 }
 
 void nsengine::update()
@@ -462,11 +476,30 @@ void nsengine::update()
         {
             nssystem * sys = system(sys_iter->second);
             event_dispatch()->process(sys);
-            sys->update();
+
+			// Run update for each chunk
+			auto chunk_iter = m_world->begin();
+			while (chunk_iter != m_world->end())
+			{
+				sys->set_active_chunk(chunk_iter->second);
+				sys->update();
+				++chunk_iter;
+			}
+
             ++sys_iter;
         }
         accumulator -= timer()->fixed();
     }
+}
+
+nsworld_data * nsengine::world()
+{
+	return m_world;
+}
+
+nstform_ent_chunk * nsengine::engine_chunk()
+{
+	return m_world->chunk(ENGINE_CHUNK);
 }
 
 void nsengine::_remove_sys(uint32 type_id)
@@ -496,12 +529,6 @@ void nsengine::_create_factory_systems()
 
 void nsengine::_init_systems()
 {
-    auto fiter = m_systems->begin();
-    while (fiter != m_systems->end())
-    {
-		fiter->second->init();
-        ++fiter;
-    }
 }
 
 #ifdef NSDEBUG
@@ -546,7 +573,6 @@ void nsengine::_cleanup_driver()
 
 void nsengine::_init_factories()
 {
-	register_component<nsprefab_comp>("nsprefab_comp");
     register_component<nsprefab_reference_comp>("nsprefab_reference_comp");
     register_component<nsrect_tform_comp>("nsrect_tform_comp");
     register_component<nsanim_comp>("nsanim_comp");
@@ -583,22 +609,20 @@ void nsengine::_init_factories()
 	register_system<nsphysics_system>("nsphysic_system");
 
     register_manager<nsanim_manager>("nsanim_manager");
-    register_manager<nsentity_manager>("nsentity_manager");
     register_manager<nsmat_manager>("nsmat_manager");
     register_manager<nsmesh_manager>("nsmesh_manager");
-    register_manager<nsscene_manager>("nsscene_manager");
     register_manager<nsshader_manager>("nsshader_manager");
     register_manager<nstex_manager>("nstex_manager");
     register_manager<nsinput_map_manager>("nsinput_map_manager");
     register_manager<nsplugin_manager>("nsplugin_manager");
     register_manager<nsfont_manager>("nsfont_manager");
 	register_manager<nsaudio_manager>("nsaudio_manager");
+	register_manager<nsprefab_manager>("nsprefab_manager");
+
 
     register_resource<nsanim_set, nsanim_manager>("nsanim_set");
-    register_resource<nsentity, nsentity_manager>("nsentity");
     register_resource<nsmaterial, nsmat_manager>("nsmaterial");
     register_resource<nsplugin, nsplugin_manager>("nsplugin");
-    register_resource<nsmap_area, nsscene_manager>("nsmap_area");
     register_resource<nsmesh, nsmesh_manager>("nsmesh");
     register_resource<nsmesh_plane, nsmesh_manager>("nsmesh_plane");
     register_abstract_resource<nstexture, nstex_manager>("nstexture");
@@ -610,6 +634,7 @@ void nsengine::_init_factories()
     register_resource<nsfont, nsfont_manager>("nsfont");
     register_resource<nsinput_map, nsinput_map_manager>("nsinput_map");
 	register_resource<nsaudio_clip, nsaudio_manager>("nsaudio_clip");
+	register_resource<nsprefab, nsprefab_manager>("nsprefab");
 }
 
 void nsengine::_destroy_factories()

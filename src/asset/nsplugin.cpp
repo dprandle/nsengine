@@ -1,13 +1,13 @@
 /*!
-\file nsplugin.cpp
+  \file nsplugin.cpp
 
-\brief Definition file for nsplugin class
+  \brief Definition file for nsplugin class
 
-This file contains all of the neccessary definitions for the nsplugin class.
+  This file contains all of the neccessary definitions for the nsplugin class.
 
-\author Daniel Randle
-\date August 23 2014
-\copywrite Earth Banana Games 2013
+  \author Daniel Randle
+  \date August 23 2014
+  \copywrite Earth Banana Games 2013
 */
 
 #include <assimp/postprocess.h>
@@ -24,7 +24,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <system/nsui_system.h>
 
 #include <asset/nsplugin.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <asset/nstexture.h>
 #include <asset/nsshader.h>
 #include <component/nsui_canvas_comp.h>
@@ -32,13 +32,11 @@ This file contains all of the neccessary definitions for the nsplugin class.
 
 #include <asset/nsfont_manager.h>
 #include <asset/nsasset_manager.h>
-#include <asset/nsmap_area_manager.h>
 #include <asset/nsmat_manager.h>
 #include <asset/nsanim_manager.h>
 #include <asset/nsmesh_manager.h>
 #include <asset/nsplugin_manager.h>
 #include <asset/nstex_manager.h>
-#include <asset/nsentity_manager.h>
 
 #include <component/nscam_comp.h>
 #include <component/nsanim_comp.h>
@@ -49,6 +47,7 @@ This file contains all of the neccessary definitions for the nsplugin class.
 #include <component/nstile_comp.h>
 #include <component/nslight_comp.h>
 
+#include <nsworld_data.h>
 
 // SHOULD GO AWAY WHEN DOING MAT THING
 #include <opengl/nsgl_driver.h>
@@ -99,7 +98,7 @@ nsplugin & nsplugin::operator=(nsplugin rhs)
 
 bool nsplugin::add(nsasset * res)
 {
-	if (res == NULL)
+	if (res == nullptr)
 		return false;
 
 	if (!m_enabled)
@@ -114,7 +113,7 @@ bool nsplugin::add(nsasset * res)
 
 bool nsplugin::add_manager(nsasset_manager * manag)
 {
-	if (manag == NULL)
+	if (manag == nullptr)
 		return false;
 
 	auto iter = m_managers.emplace(manag->type(), manag);
@@ -160,210 +159,14 @@ nsasset * nsplugin::create(uint32 res_typeid, const nsstring & resName, nsasset 
 	return rm->create(res_typeid, resName, to_copy);
 }
 
-nsentity * nsplugin::create_sprite(const nsstring & sprite_name, const nsstring & tex_filename, bool match_tex_dims, bool alpha_enabled)
-{
-	nstex2d * bg = load<nstex2d>(tex_filename, true);
-	bg->flip_horizontal();
-	nsmesh_plane * plane = create<nsmesh_plane>(sprite_name);
-
-	if (match_tex_dims)
-		plane->bake_scaling(fvec3(bg->size().w/2,bg->size().h/2,1.0f));
-	
-	nsmaterial * mat = create<nsmaterial>(sprite_name);
-	mat->add_tex_map(nsmaterial::diffuse, bg->full_id());
-
-	mat->set_alpha_blend(alpha_enabled);
-	
-	nsentity * bgent = create<nsentity>(sprite_name);
-	nsrender_comp * rc = bgent->create<nsrender_comp>();
-	
-	bgent->create<nssel_comp>();
-	rc->set_mesh_id(plane->full_id());
-	rc->set_material(0, mat->full_id());
-	rc->transparent_picking = true;
-	return bgent;
-}
-
-nsentity * nsplugin::create_camera(const nsstring & name, float fov, const uivec2 & screenDim, const fvec2 & clipnf)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_camera The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsentity * cament = create<nsentity>(name);
-	if (cament == NULL)
-		return NULL;
-	nscam_comp * camc = cament->create<nscam_comp>();
-	if (camc == NULL)
-		return NULL;
-
-	camc->set_fov(fov);
-	camc->resize_screen(screenDim.w, screenDim.h);
-	camc->set_persp_nf_clip(clipnf);
-	camc->set_proj_mode(nscam_comp::proj_persp);
-	return cament;
-}
 
 bool nsplugin::contains(nsasset * res)
 {
-	if (res == NULL)
+	if (res == nullptr)
 		return false;
 	
 	nsasset_manager * rm = manager(nse.manager_id(res->type()));
 	return rm->contains(res);
-}
-
-nsentity * nsplugin::create_camera(const nsstring & name, const fvec2 & lrclip, const fvec2 & tbclip, const fvec2 & nfclip)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_camera The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsentity * cament = create<nsentity>(name);
-	if (cament == NULL)
-		return NULL;
-
-	nscam_comp * camc = cament->create<nscam_comp>();
-	if (camc == NULL)
-		return NULL;
-
-	camc->set_ortho_lr_clip(lrclip);
-	camc->set_ortho_tb_clip(tbclip);
-	camc->set_ortho_nf_clip(nfclip);
-	camc->set_proj_mode(nscam_comp::proj_ortho);
-	return cament;
-}
-
-nsentity * nsplugin::create_dir_light(const nsstring & name,
-	float diffuse,
-	float ambient,
-	const fvec3 & color,
-	bool castshadows,
-	float shadowdarkness,
-	int32 shadowsamples)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_dir_light The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
-	if (bounds == NULL)
-		return NULL;
-	nsentity * lt = create<nsentity>(name);
-	if (lt == NULL)
-		return NULL;
-	nslight_comp * lc = lt->create<nslight_comp>();
-	if (lc == NULL)
-	{
-		destroy(lt);
-		return NULL;
-	}
-	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
-	lc->set_type(nslight_comp::l_dir);
-	lc->set_angle(30.0f);
-	lc->set_intensity(diffuse, ambient);
-	lc->set_color(color);
-	lc->set_cast_shadows(castshadows);
-	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	lc->set_shadow_darkness(shadowdarkness);
-	lc->set_shadow_samples(shadowsamples);
-	return lt;
-}
-
-nsentity * nsplugin::create_point_light(const nsstring & name,
-	float diffuse,
-	float ambient,
-	float distance,
-	const fvec3 & color,
-	bool castshadows,
-	float shadowdarkness,
-	int32 shadowsamples)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_point_light The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
-	if (bounds == NULL)
-		return NULL;
-	nsentity * lt = create<nsentity>(name);
-	if (lt == NULL)
-		return NULL;
-	nslight_comp * lc = lt->create<nslight_comp>();
-	if (lc == NULL)
-	{
-		destroy(lt);
-		return NULL;
-	}
-	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
-	lc->set_type(nslight_comp::l_point);
-	lc->set_intensity(diffuse, ambient);
-	lc->set_color(color);
-	lc->set_distance(distance);
-	lc->set_cast_shadows(castshadows);
-	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	lc->set_shadow_darkness(shadowdarkness);
-	lc->set_shadow_samples(shadowsamples);
-	lt->create<nssel_comp>();
-	nsrender_comp * rc = lt->create<nsrender_comp>();
-	rc->set_mesh_id(bounds->full_id());
-	rc->set_cast_shadow(false);
-	return lt;
-}
-
-nsentity * nsplugin::create_spot_light(const nsstring & name,
-float diffuse,
-float ambient,
-float distance,
-float radius,
-const fvec3 & color,
-bool castshadows,
-float shadowdarkness,
-int32 shadowsamples)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_spot_light The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
-	if (bounds == NULL)
-		return NULL;
-	nsentity * lt = create<nsentity>(name);
-	if (lt == NULL)
-		return NULL;
-	nslight_comp * lc = lt->create<nslight_comp>();
-	if (lc == NULL)
-	{
-		destroy(lt);
-		return NULL;
-	}
-	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
-	lc->set_type(nslight_comp::l_spot);
-	lc->set_intensity(diffuse, ambient);
-	lc->set_color(color);
-	lc->set_cast_shadows(castshadows);
-	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	lc->set_shadow_darkness(shadowdarkness);
-	lc->set_shadow_samples(shadowsamples);
-	lc->set_distance(distance);
-	lc->set_radius(radius);
-
-	nsrender_comp * rc = lt->create<nsrender_comp>();
-	rc->set_mesh_id(bounds->full_id());
-	rc->set_cast_shadow(false);
-	lt->create<nssel_comp>();
-
-	return lt;
 }
 
 nsasset_manager * nsplugin::create_manager(const nsstring & manager_guid)
@@ -378,234 +181,9 @@ nsasset_manager * nsplugin::create_manager(uint32 manager_typeid)
 	if (!add_manager(man))
 	{
 		delete man;
-		return NULL;
+		return nullptr;
 	}
 	return man;
-}
-
-nsentity * nsplugin::create_tile(const nsstring & name,
-	fvec4 m_col,
-	float s_pwr,
-	float s_int32,
-	fvec3 s_col,
-	bool collides,
-	tile_t type)
-{
-	return create_tile(name,"","",m_col,s_pwr,s_int32,s_col,collides,type);
-}
-
-nsentity * nsplugin::create_tile(const nsstring & name,
-	const nsstring & difftex,
-	const nsstring & normtex,
-	fvec4 m_col,
-	float s_pwr,
-	float s_int32,
-	fvec3 s_col,
-	bool collides,
-	tile_t type)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_tile The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsmaterial * mat = get<nsmaterial>(name);
-	if (mat == NULL)
-		mat = create<nsmaterial>(name);
-
-	if (mat == NULL)
-		return NULL;
-
-	mat->set_cull_mode(GL_BACK);
-	mat->enable_culling(true);
-	mat->set_specular_color(s_col);
-	mat->set_color(m_col);
-	mat->set_specular_power(s_pwr);
-	mat->set_specular_intensity(s_int32);
-
-	nstexture * tdiff = get<nstex2d>(difftex);
-	if (tdiff == NULL)
-		tdiff = load<nstex2d>(difftex, true);
-	
-	nstexture * tnorm = get<nstex2d>(normtex);
-	if (tnorm == NULL)
-		tnorm = load<nstex2d>(normtex, true);
-	
-	if (tdiff != NULL)
-		mat->add_tex_map(nsmaterial::diffuse, tdiff->full_id());
-	if (tnorm != NULL)
-		mat->add_tex_map(nsmaterial::normal, tnorm->full_id());
-	if (tdiff == NULL && tnorm == NULL)
-	{
-		mat->set_color_mode(true);
-		if (mat->color().a < 1.0f)
-		{
-			mat->enable_culling(false);
-			mat->set_alpha_blend(true);
-		}
-	}
-	return create_tile(name, mat, collides, type);
-}
-
-nsentity * nsplugin::create_tile(const nsstring & name,
-	nsmaterial * mat, bool collides, tile_t type)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_tile The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsentity * ent = create<nsentity>(name);
-	if (ent == NULL)
-		return NULL;
-
-	nsrender_comp * rc = ent->create<nsrender_comp>();
-	nssel_comp * sc = ent->create<nssel_comp>();
-	nstile_comp * tc = ent->create<nstile_comp>();
-	if (rc == NULL || sc == NULL || tc == NULL)
-	{
-		destroy(ent);
-		return NULL;
-	}
-
-	nsmesh * msh = NULL;
-	if (type == tile_full)
-		msh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
-	else
-		msh = nse.core()->get<nsmesh>(MESH_HALF_TILE);
-
-	if (collides)
-	{
-		nsoccupy_comp * oc = ent->create<nsoccupy_comp>();
-		oc->build(msh->aabb());
-		oc->set_mesh_id(msh->full_id());
-	}
-
-	rc->set_mesh_id(msh->full_id());
-	if (mat != NULL)
-		rc->set_material(0, mat->full_id());
-	return ent;
-}
-
-nsentity * nsplugin::create_tile(const nsstring & name,
-	const nsstring & matname, bool collides, tile_t type)
-{
-	return create_tile(name, get<nsmaterial>(matname), collides, type);
-}
-
-nsentity * nsplugin::create_tile(const nsstring & name,
-	uint32 matid, bool collides, tile_t type)
-{
-	return create_tile(name, get<nsmaterial>(matid), collides, type);
-}
-
-nsentity * nsplugin::create_skydome(const nsstring & name,
-									nsstring cubemap_relative_fname,
-									const nsstring & image_ext,
-									const nsstring & tex_subdir)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_skydome The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsentity * skybox = create<nsentity>(name);	
-	nstexture * sky_box = manager<nstex_manager>()->load_cubemap(cubemap_relative_fname, image_ext);
-	sky_box->set_subdir(tex_subdir);
-	
-	nsmaterial * sb_mat = create<nsmaterial>(name);
-	sb_mat->add_tex_map(nsmaterial::diffuse, sky_box->full_id());
-	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
-	sb_mat->set_cull_mode(GL_FRONT);
-	
-	nsrender_comp * rc = skybox->create<nsrender_comp>();
-	rc->set_cast_shadow(false);
-	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_SKYDOME)->full_id());
-	rc->set_material(0, sb_mat->full_id());
-
-	return skybox;
-}
-
-nsentity * nsplugin::create_terrain(const nsstring & name, 
-	float hmin, 
-	float hmax, 
-	const nsstring & hmfile, 
-	const nsstring & dmfile, 
-	const nsstring & nmfile)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::create_terrain The plugin " + m_name + " is not enabled - it must be enabled to create stuff");
-		return nullptr;
-	}
-
-	nsentity * terr = create<nsentity>(name);
-
-	if (terr == NULL)
-		return NULL;
-
-	nsterrain_comp * tc = terr->create<nsterrain_comp>();
-	tc->set_height_bounds(hmin, hmax);
-	nsrender_comp * rc = terr->create<nsrender_comp>();
-	rc->set_cast_shadow(true);
-	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
-	
-	nsmaterial * termat = create<nsmaterial>(name);
-	if (termat == NULL)
-	{
-		destroy(terr);
-		return NULL;
-	}
-	termat->enable_culling(false);
-	rc->set_material(0, termat->full_id(), true);
-
-	nstex2d * hm = NULL, * dm = NULL, * nm = NULL;
-	hm = load<nstex2d>(hmfile, true);
-
-	if (hm == NULL)
-	{
-		destroy(termat);
-		destroy(terr);
-		return NULL;
-	}
-
-	if (!dmfile.empty())
-	{
-		
-		dm = load<nstex2d>(dmfile, true);
-		if (dm == NULL)
-		{
-			destroy(hm);
-			destroy(termat);
-			destroy(terr);
-			return NULL;
-		}
-	}
-
-	if (!nmfile.empty())
-	{
-		nm = load<nstex2d>(nmfile, true);
-		if (nm == NULL)
-		{
-			destroy(dm);
-			destroy(hm);
-			destroy(termat);
-			destroy(terr);
-			return NULL;
-		}
-	}
-
-	termat->add_tex_map(nsmaterial::height, hm->full_id());
-	if (dm != NULL)
-		termat->add_tex_map(nsmaterial::diffuse, dm->full_id());
-	if (nm != NULL)
-		termat->add_tex_map(nsmaterial::normal, nm->full_id());
-
-	
-	return terr;
 }
 
 bool nsplugin::destroy_manager(const nsstring & manager_guid)
@@ -699,7 +277,7 @@ nsasset * nsplugin::get(uint32 res_typeid, const nsstring & resName)
 void nsplugin::init()
 {
 	auto fiter = nse.begin_factory();
-	nsasset_manager * rm = NULL;
+	nsasset_manager * rm = nullptr;
 	while (fiter != nse.end_factory())
 	{
 		nsfactory * plug_man_fac = nse.factory<nsplugin_manager>();
@@ -736,104 +314,7 @@ nsasset * nsplugin::load(uint32 res_typeid, const nsstring & fname, bool finaliz
 	return rm->load(res_typeid, fname, finalize_);
 }
 
-
-nsentity * nsplugin::load_model(
-	const nsstring & entname,
-	nsstring fname,
-	const nsstring & model_name,
-	bool occupy_comp,
-	bool flipuv)
-{
-	if (!m_enabled)
-	{
-		dprint("nsplugin::load_model The plugin " + m_name + " is not enabled - it must be enabled to load stuff");
-		return nullptr;
-	}
-
-	nsentity * ent = create<nsentity>(entname);
-	nsrender_comp * renderComp = ent->create<nsrender_comp>();
-
-	nsstring sceneName = model_name;
-	if (sceneName.empty())
-	{
-		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
-		sceneName = sceneName.erase(sceneName.find_last_of("."), nsstring::npos);
-	}
-
-	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
-
-	uint32 flag = 0;
-
-	if (flipuv)
-		flag = aiProcess_ConvertToLeftHanded;
-
-	Assimp::Importer importer;
-	const aiScene * scene = importer.ReadFile(fname.c_str(),
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_Triangulate |
-		aiProcess_SortByPType |
-		aiProcess_ImproveCacheLocality |
-		flag |
-		aiProcess_GenUVCoords |
-		aiProcess_TransformUVCoords |
-		aiProcess_FindDegenerates |
-		aiProcess_ValidateDataStructure |
-		aiProcess_OptimizeMeshes |
-		aiProcess_OptimizeGraph |
-		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
-		aiProcess_RemoveRedundantMaterials |
-		aiProcess_FixInfacingNormals |
-		aiProcess_FindInvalidData
-		// May include optimizing scene etc here
-		);
-
-
-	nsmesh * renderMesh = manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
-	renderComp->set_mesh_id(m_id, renderMesh->id());
-
-	if (occupy_comp)
-	{
-		nsoccupy_comp * occ = ent->create<nsoccupy_comp>();
-		occ->build(renderMesh->aabb());
-	}
-	
-	if (scene->HasMaterials())
-	{
-		std::map<uint32, uint32> indexMap;
-		for (uint32 i = 0; i < scene->mNumMaterials; ++i)
-		{
-			nsstringstream ss;
-			ss << sceneName << "_" << i;
-			const aiMaterial* aiMat = scene->mMaterials[i];
-			nsmaterial * mat = manager<nsmat_manager>()->assimp_load_material(ss.str(), aiMat, dir);
-			if (mat != NULL)
-				indexMap[i] = mat->id();
-		}
-
-		for (uint32 i = 0; i < scene->mNumMeshes; ++i)
-		{
-			const aiMesh* mesh = scene->mMeshes[i];
-			if (mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
-				continue;
-
-			uint32 mI = mesh->mMaterialIndex;
-			auto fIter = indexMap.find(mI);
-			if (fIter != indexMap.end())
-				renderComp->set_material(i, m_id, fIter->second);
-		}
-	}
-
-	if (scene->HasAnimations())
-	{
-		nsanim_set * animSet = manager<nsanim_manager>()->assimp_load_anim_set(scene, sceneName);
-		nsanim_comp * animComp = ent->create<nsanim_comp>();
-		animComp->set_anim_set_id(m_id, animSet->id());
-	}
-	ent->create<nssel_comp>();
-	return ent;
-}
-
-bool nsplugin::load_model_resources(
+bool nsplugin::load_model_assets(
 	nsstring fname,
 	const nsstring & model_name,
 	bool flipuv)
@@ -862,22 +343,22 @@ bool nsplugin::load_model_resources(
 
 	Assimp::Importer importer;
 	const aiScene * scene = importer.ReadFile(fname.c_str(),
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_Triangulate |
-		aiProcess_SortByPType |
-		flag |
-		aiProcess_GenUVCoords |
-		aiProcess_TransformUVCoords |
-		aiProcess_ImproveCacheLocality |
-		aiProcess_FindDegenerates |
-		aiProcess_ValidateDataStructure |
-		aiProcess_OptimizeMeshes |
-		aiProcess_OptimizeGraph |
-		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
-		aiProcess_RemoveRedundantMaterials |
-		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
-		aiProcess_FindInvalidData
-		// May include optimizing scene etc here
+											  aiProcess_JoinIdenticalVertices |
+											  aiProcess_Triangulate |
+											  aiProcess_SortByPType |
+											  flag |
+											  aiProcess_GenUVCoords |
+											  aiProcess_TransformUVCoords |
+											  aiProcess_ImproveCacheLocality |
+											  aiProcess_FindDegenerates |
+											  aiProcess_ValidateDataStructure |
+											  aiProcess_OptimizeMeshes |
+											  aiProcess_OptimizeGraph |
+											  aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+											  aiProcess_RemoveRedundantMaterials |
+											  aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+											  aiProcess_FindInvalidData
+											  // May include optimizing scene etc here
 		);
 
 	nsmesh * mesh = manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
@@ -928,22 +409,22 @@ nsmesh * nsplugin::load_model_mesh(
 
 	Assimp::Importer importer;
 	const aiScene * scene = importer.ReadFile(fname.c_str(),
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_Triangulate |
-		aiProcess_SortByPType |
-		flag |
-		aiProcess_GenUVCoords |
-		aiProcess_TransformUVCoords |
-		aiProcess_ImproveCacheLocality |
-		aiProcess_FindDegenerates |
-		aiProcess_ValidateDataStructure |
-		aiProcess_OptimizeMeshes |
-		aiProcess_OptimizeGraph |
-		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
-		aiProcess_RemoveRedundantMaterials |
-		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
-		aiProcess_FindInvalidData
-		// May include optimizing scene etc here
+											  aiProcess_JoinIdenticalVertices |
+											  aiProcess_Triangulate |
+											  aiProcess_SortByPType |
+											  flag |
+											  aiProcess_GenUVCoords |
+											  aiProcess_TransformUVCoords |
+											  aiProcess_ImproveCacheLocality |
+											  aiProcess_FindDegenerates |
+											  aiProcess_ValidateDataStructure |
+											  aiProcess_OptimizeMeshes |
+											  aiProcess_OptimizeGraph |
+											  aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+											  aiProcess_RemoveRedundantMaterials |
+											  aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+											  aiProcess_FindInvalidData
+											  // May include optimizing scene etc here
 		);
 
 	return manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
@@ -978,22 +459,22 @@ bool nsplugin::load_model_mats(
 
 	Assimp::Importer importer;
 	const aiScene * scene = importer.ReadFile(fname.c_str(),
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_Triangulate |
-		aiProcess_SortByPType |
-		flag |
-		aiProcess_GenUVCoords |
-		aiProcess_TransformUVCoords |
-		aiProcess_ImproveCacheLocality |
-		aiProcess_FindDegenerates |
-		aiProcess_ValidateDataStructure |
-		aiProcess_OptimizeMeshes |
-		aiProcess_OptimizeGraph |
-		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
-		aiProcess_RemoveRedundantMaterials |
-		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
-		aiProcess_FindInvalidData
-		// May include optimizing scene etc here
+											  aiProcess_JoinIdenticalVertices |
+											  aiProcess_Triangulate |
+											  aiProcess_SortByPType |
+											  flag |
+											  aiProcess_GenUVCoords |
+											  aiProcess_TransformUVCoords |
+											  aiProcess_ImproveCacheLocality |
+											  aiProcess_FindDegenerates |
+											  aiProcess_ValidateDataStructure |
+											  aiProcess_OptimizeMeshes |
+											  aiProcess_OptimizeGraph |
+											  aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+											  aiProcess_RemoveRedundantMaterials |
+											  aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+											  aiProcess_FindInvalidData
+											  // May include optimizing scene etc here
 		);
 
 	if (scene->HasMaterials())
@@ -1040,28 +521,28 @@ nsanim_set * nsplugin::load_model_anim(
 
 	Assimp::Importer importer;
 	const aiScene * scene = importer.ReadFile(fname.c_str(),
-		aiProcess_JoinIdenticalVertices |
-		aiProcess_Triangulate |
-		aiProcess_SortByPType |
-		flag |
-		aiProcess_GenUVCoords |
-		aiProcess_TransformUVCoords |
-		aiProcess_ImproveCacheLocality |
-		aiProcess_FindDegenerates |
-		aiProcess_ValidateDataStructure |
-		aiProcess_OptimizeMeshes |
-		aiProcess_OptimizeGraph |
-		aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
-		aiProcess_RemoveRedundantMaterials |
-		aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
-		aiProcess_FindInvalidData
-		// May include optimizing scene etc here
+											  aiProcess_JoinIdenticalVertices |
+											  aiProcess_Triangulate |
+											  aiProcess_SortByPType |
+											  flag |
+											  aiProcess_GenUVCoords |
+											  aiProcess_TransformUVCoords |
+											  aiProcess_ImproveCacheLocality |
+											  aiProcess_FindDegenerates |
+											  aiProcess_ValidateDataStructure |
+											  aiProcess_OptimizeMeshes |
+											  aiProcess_OptimizeGraph |
+											  aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+											  aiProcess_RemoveRedundantMaterials |
+											  aiProcess_FixInfacingNormals | // may give incorrect results sometimes - usually not though
+											  aiProcess_FindInvalidData
+											  // May include optimizing scene etc here
 		);
 
 	if (scene->HasAnimations())
 		return manager<nsanim_manager>()->assimp_load_anim_set(scene, sceneName);
 
-	return NULL;		
+	return nullptr;		
 }
 
 nsasset_manager * nsplugin::manager(const nsstring & manager_guid)
@@ -1073,7 +554,7 @@ nsasset_manager * nsplugin::manager(uint32 manager_typeid)
 {	
 	auto iter = m_managers.find(manager_typeid);
 	if (iter == m_managers.end())
-		return NULL;
+		return nullptr;
 	return iter->second;	
 }
 
@@ -1143,7 +624,7 @@ void nsplugin::enable(bool enable_)
 			nsasset_manager * rm = manager(liter->first);
 			nsasset * r = rm->load(liter->second.m_res_guid,liter->second.m_res_subdir_and_name, false);
 
-			if (r == NULL)
+			if (r == nullptr)
 				m_unloaded.emplace(liter->first, liter->second);
 			else
 				r->set_icon_path(liter->second.m_icon_path);
@@ -1301,7 +782,7 @@ uint32 nsplugin::resource_count()
 
 bool nsplugin::destroy(nsasset * res)
 {
-	if (res == NULL)
+	if (res == nullptr)
 		return false;
 
 	if (!m_enabled)
@@ -1380,7 +861,7 @@ void nsplugin::_update_parents()
 		if (resIter->x != m_id) // if the owning plugin of this get is not us, then add it to parents
 		{
 			nsplugin * plug = get_plugin(resIter->x);
-			if (plug != NULL && plug->id() != nse.core()->id())
+			if (plug != nullptr && plug->id() != nse.core()->id())
 				m_parents.insert(plug->name());
 		}
 		++resIter;
@@ -1413,7 +894,7 @@ bool nsplugin::parents_enabled()
 	while (piter != m_parents.end())
 	{
 		nsplugin * parent = nsep.get<nsplugin>(*piter);
-		if (parent == NULL || !parent->is_enabled())
+		if (parent == nullptr || !parent->is_enabled())
 			return false;
 		++piter;
 	}
@@ -1422,23 +903,6 @@ bool nsplugin::parents_enabled()
 
 void nsplugin::destroy_all()
 {
-    // destroy scenes and canvases first
-    manager<nsscene_manager>()->destroy_all();
-
-    auto emgr = manager<nsentity_manager>();
-    auto ent_iter = emgr->begin();
-    while (ent_iter != emgr->end())
-    {
-        nsentity * cur_ent = emgr->get<nsentity>(ent_iter->first);
-		nscomponent * cmp = cur_ent->get<nsui_canvas_comp>();
-		
-		if (cmp != nullptr)
-			cur_ent->destroy(cmp->type());
-
-        ++ent_iter;
-    }
-
-
 	auto iter = m_managers.begin();
 	while (iter != m_managers.end())
 	{
@@ -1455,3 +919,525 @@ nsplugin::res_info::res_info(
 	m_res_subdir_and_name(subdir_and_name),
 	m_icon_path(icon_path)	
 {}
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	fvec4 m_col,
+	float s_pwr,
+	float s_int32,
+	fvec3 s_col,
+	bool collides,
+	tile_t type)
+{
+	return create_tile(assets, chnk, name,"","",m_col,s_pwr,s_int32,s_col,collides,type);
+}
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	const nsstring & difftex,
+	const nsstring & normtex,
+	fvec4 m_col,
+	float s_pwr,
+	float s_int32,
+	fvec3 s_col,
+	bool collides,
+	tile_t type)
+{
+	nsmaterial * mat = assets->get<nsmaterial>(name);
+	if (mat == nullptr)
+		mat = assets->create<nsmaterial>(name);
+
+	if (mat == nullptr)
+		return nullptr;
+
+	mat->set_cull_mode(GL_BACK);
+	mat->enable_culling(true);
+	mat->set_specular_color(s_col);
+	mat->set_color(m_col);
+	mat->set_specular_power(s_pwr);
+	mat->set_specular_intensity(s_int32);
+
+	nstexture * tdiff = assets->get<nstex2d>(nsasset_manager::name_from_filename(difftex));
+	if (tdiff == nullptr)
+		tdiff = assets->load<nstex2d>(difftex, true);
+	
+	nstexture * tnorm = assets->get<nstex2d>(nsasset_manager::name_from_filename(normtex));
+	if (tnorm == nullptr)
+		tnorm = assets->load<nstex2d>(normtex, true);
+	
+	if (tdiff != nullptr)
+		mat->add_tex_map(nsmaterial::diffuse, tdiff->full_id());
+	if (tnorm != nullptr)
+		mat->add_tex_map(nsmaterial::normal, tnorm->full_id());
+	if (tdiff == nullptr && tnorm == nullptr)
+	{
+		mat->set_color_mode(true);
+		if (mat->color().a < 1.0f)
+		{
+			mat->enable_culling(false);
+			mat->set_alpha_blend(true);
+		}
+	}
+	return create_tile(assets, chnk, name, mat, collides, type);
+}
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	nsmaterial * mat,
+	bool collides,
+	tile_t type)
+{
+	nsentity * ent = chnk->create_entity(name);
+	if (ent == nullptr)
+		return nullptr;
+
+	nsrender_comp * rc = ent->create<nsrender_comp>();
+	nssel_comp * sc = ent->create<nssel_comp>();
+	nstile_comp * tc = ent->create<nstile_comp>();
+	if (rc == nullptr || sc == nullptr || tc == nullptr)
+	{
+		chnk->destroy(ent, true);
+		return nullptr;
+	}
+
+	nsmesh * msh = nullptr;
+	if (type == tile_full)
+		msh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
+	else
+		msh = nse.core()->get<nsmesh>(MESH_HALF_TILE);
+
+	if (collides)
+	{
+		nsoccupy_comp * oc = ent->create<nsoccupy_comp>();
+		oc->build(msh->aabb());
+		oc->set_mesh_id(msh->full_id());
+	}
+
+	rc->set_mesh_id(msh->full_id());
+	if (mat != nullptr)
+		rc->set_material(0, mat->full_id());
+	return ent;
+}
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	const nsstring & matname,
+	bool collides,
+	tile_t type)
+{
+	return create_tile(assets, chnk, name, assets->get<nsmaterial>(matname), collides, type);
+}
+
+nsentity * create_tile(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	uint32 matid,
+	bool collides,
+	tile_t type)
+{
+	return create_tile(assets, chnk, name, assets->get<nsmaterial>(matid), collides, type);
+}
+
+nsentity * create_skydome(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	nsstring cubemap_relative_fname,
+	const nsstring & image_ext,
+	const nsstring & tex_subdir)
+{
+	nsentity * skybox = chnk->create_entity(name);
+	
+	nstexture * sky_box = assets->manager<nstex_manager>()->load_cubemap(cubemap_relative_fname, image_ext);
+	sky_box->set_subdir(tex_subdir);
+	
+	nsmaterial * sb_mat = assets->create<nsmaterial>(name);
+	sb_mat->add_tex_map(nsmaterial::diffuse, sky_box->full_id());
+	sb_mat->set_shader_id(nse.core()->get<nsshader>(SKYBOX_SHADER)->full_id());
+	sb_mat->set_cull_mode(GL_FRONT);
+	
+	nsrender_comp * rc = skybox->create<nsrender_comp>();
+	rc->set_cast_shadow(false);
+	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_SKYDOME)->full_id());
+	rc->set_material(0, sb_mat->full_id());
+
+	return skybox;
+}
+
+nsentity * create_terrain(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & name, 
+	float hmin, 
+	float hmax, 
+	const nsstring & hmfile, 
+	const nsstring & dmfile, 
+	const nsstring & nmfile)
+{
+	nsentity * terr = chnk->create_entity(name);
+
+	if (terr == nullptr)
+		return nullptr;
+
+	nsterrain_comp * tc = terr->create<nsterrain_comp>();
+	tc->set_height_bounds(hmin, hmax);
+	nsrender_comp * rc = terr->create<nsrender_comp>();
+	rc->set_cast_shadow(true);
+	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
+	
+	nsmaterial * termat = assets->create<nsmaterial>(name);
+	if (termat == nullptr)
+	{
+		chnk->destroy(terr, false);
+		return nullptr;
+	}
+	termat->enable_culling(false);
+	rc->set_material(0, termat->full_id(), true);
+
+	nstex2d * hm = nullptr, * dm = nullptr, * nm = nullptr;
+	hm = assets->load<nstex2d>(hmfile, true);
+
+	if (hm == nullptr)
+	{
+		assets->destroy(termat);
+		chnk->destroy(terr, true);
+		return nullptr;
+	}
+
+	if (!dmfile.empty())
+	{
+		
+		dm = assets->load<nstex2d>(dmfile, true);
+		if (dm == nullptr)
+		{
+			assets->destroy(hm);
+			assets->destroy(termat);
+			chnk->destroy(terr, true);
+			return nullptr;
+		}
+	}
+
+	if (!nmfile.empty())
+	{
+		nm = assets->load<nstex2d>(nmfile, true);
+		if (nm == nullptr)
+		{
+			assets->destroy(dm);
+			assets->destroy(hm);
+			assets->destroy(termat);
+			chnk->destroy(terr, true);
+			return nullptr;
+		}
+	}
+
+	termat->add_tex_map(nsmaterial::height, hm->full_id());
+	if (dm != nullptr)
+		termat->add_tex_map(nsmaterial::diffuse, dm->full_id());
+	if (nm != nullptr)
+		termat->add_tex_map(nsmaterial::normal, nm->full_id());
+
+	
+	return terr;
+}
+
+nsentity * create_sprite(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & sprite_name,
+	const nsstring & tex_filename,
+	bool match_tex_dims,
+	bool alpha_enabled)
+{
+	nstex2d * bg = assets->load<nstex2d>(tex_filename, true);
+	bg->flip_horizontal();
+	nsmesh_plane * plane = assets->create<nsmesh_plane>(sprite_name);
+
+	if (match_tex_dims)
+		plane->bake_scaling(fvec3(bg->size().w/2,bg->size().h/2,1.0f));
+	
+	nsmaterial * mat = assets->create<nsmaterial>(sprite_name);
+	mat->add_tex_map(nsmaterial::diffuse, bg->full_id());
+
+	mat->set_alpha_blend(alpha_enabled);
+	
+	nsentity * bgent = chnk->create_entity(sprite_name);
+	nsrender_comp * rc = bgent->create<nsrender_comp>();
+	
+	bgent->create<nssel_comp>();
+	rc->set_mesh_id(plane->full_id());
+	rc->set_material(0, mat->full_id());
+	rc->transparent_picking = true;
+	return bgent;
+}
+
+nsentity * create_camera(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float fov,
+	const uivec2 & screenDim,
+	const fvec2 & clipnf)
+{
+	nsentity * cament = chnk->create_entity(name);
+	if (cament == nullptr)
+		return nullptr;
+	nscam_comp * camc = cament->create<nscam_comp>();
+	if (camc == nullptr)
+		return nullptr;
+
+	camc->set_fov(fov);
+	camc->resize_screen(screenDim.w, screenDim.h);
+	camc->set_persp_nf_clip(clipnf);
+	camc->set_proj_mode(nscam_comp::proj_persp);
+	return cament;
+}
+
+
+nsentity * create_camera(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	const fvec2 & lrclip,
+	const fvec2 & tbclip,
+	const fvec2 & nfclip)
+{
+	nsentity * cament = chnk->create_entity(name);
+	if (cament == nullptr)
+		return nullptr;
+
+	nscam_comp * camc = cament->create<nscam_comp>();
+	if (camc == nullptr)
+		return nullptr;
+
+	camc->set_ortho_lr_clip(lrclip);
+	camc->set_ortho_tb_clip(tbclip);
+	camc->set_ortho_nf_clip(nfclip);
+	camc->set_proj_mode(nscam_comp::proj_ortho);
+	return cament;
+}
+
+nsentity * create_dir_light(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float diffuse,
+	float ambient,
+	const fvec3 & color,
+	bool castshadows,
+	float shadowdarkness,
+	int32 shadowsamples)
+{
+	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
+	if (bounds == nullptr)
+		return nullptr;
+	nsentity * lt = chnk->create_entity(name);
+	if (lt == nullptr)
+		return nullptr;
+	nslight_comp * lc = lt->create<nslight_comp>();
+	if (lc == nullptr)
+	{
+		chnk->destroy(lt, true);
+		return nullptr;
+	}
+	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
+	lc->set_type(nslight_comp::l_dir);
+	lc->set_angle(30.0f);
+	lc->set_intensity(diffuse, ambient);
+	lc->set_color(color);
+	lc->set_cast_shadows(castshadows);
+	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	lc->set_shadow_darkness(shadowdarkness);
+	lc->set_shadow_samples(shadowsamples);
+	return lt;
+}
+
+nsentity * create_point_light(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float diffuse,
+	float ambient,
+	float distance,
+	const fvec3 & color,
+	bool castshadows,
+	float shadowdarkness,
+	int32 shadowsamples)
+{
+	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
+	if (bounds == nullptr)
+		return nullptr;
+	nsentity * lt = chnk->create_entity(name);
+	if (lt == nullptr)
+		return nullptr;
+	nslight_comp * lc = lt->create<nslight_comp>();
+	if (lc == nullptr)
+	{
+		chnk->destroy(lt, true);
+		return nullptr;
+	}
+	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
+	lc->set_type(nslight_comp::l_point);
+	lc->set_intensity(diffuse, ambient);
+	lc->set_color(color);
+	lc->set_distance(distance);
+	lc->set_cast_shadows(castshadows);
+	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	lc->set_shadow_darkness(shadowdarkness);
+	lc->set_shadow_samples(shadowsamples);
+	lt->create<nssel_comp>();
+	nsrender_comp * rc = lt->create<nsrender_comp>();
+	rc->set_mesh_id(bounds->full_id());
+	rc->set_cast_shadow(false);
+	return lt;
+}
+
+nsentity * create_spot_light(
+	nstform_ent_chunk * chnk,
+	const nsstring & name,
+	float diffuse,
+	float ambient,
+	float distance,
+	float radius,
+	const fvec3 & color,
+	bool castshadows,
+	float shadowdarkness,
+	int32 shadowsamples)
+{
+	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
+	if (bounds == nullptr)
+		return nullptr;
+	nsentity * lt = chnk->create_entity(name);
+	if (lt == nullptr)
+		return nullptr;
+	nslight_comp * lc = lt->create<nslight_comp>();
+	if (lc == nullptr)
+	{
+		chnk->destroy(lt, true);
+		return nullptr;
+	}
+	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
+	lc->set_type(nslight_comp::l_spot);
+	lc->set_intensity(diffuse, ambient);
+	lc->set_color(color);
+	lc->set_cast_shadows(castshadows);
+	lc->set_shadow_clipping(fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	lc->set_shadow_darkness(shadowdarkness);
+	lc->set_shadow_samples(shadowsamples);
+	lc->set_distance(distance);
+	lc->set_radius(radius);
+
+	nsrender_comp * rc = lt->create<nsrender_comp>();
+	rc->set_mesh_id(bounds->full_id());
+	rc->set_cast_shadow(false);
+	lt->create<nssel_comp>();
+
+	return lt;
+}
+
+
+nsentity * create_entity_from_model(
+	nsplugin * assets,
+	nstform_ent_chunk * chnk,
+	const nsstring & entname,
+	nsstring fname,
+	const nsstring & model_name,
+	bool occupy_comp,
+	bool flipuv)
+{
+	nsentity * ent = chnk->create_entity(entname);
+	nsrender_comp * renderComp = ent->create<nsrender_comp>();
+
+	nsstring sceneName = model_name;
+	if (sceneName.empty())
+	{
+		sceneName = fname.substr(fname.find_last_of("/\\") + 1);
+		sceneName = sceneName.erase(sceneName.find_last_of("."), nsstring::npos);
+	}
+
+	nsstring dir = fname.substr(0, fname.find_last_of("/\\") + 1);
+
+	uint32 flag = 0;
+
+	if (flipuv)
+		flag = aiProcess_ConvertToLeftHanded;
+
+	Assimp::Importer importer;
+	const aiScene * scene = importer.ReadFile(fname.c_str(),
+											  aiProcess_JoinIdenticalVertices |
+											  aiProcess_Triangulate |
+											  aiProcess_SortByPType |
+											  aiProcess_ImproveCacheLocality |
+											  flag |
+											  aiProcess_GenUVCoords |
+											  aiProcess_TransformUVCoords |
+											  aiProcess_FindDegenerates |
+											  aiProcess_ValidateDataStructure |
+											  aiProcess_OptimizeMeshes |
+											  aiProcess_OptimizeGraph |
+											  aiProcess_GenSmoothNormals | // Use this always - if normals included this process wont happen
+											  aiProcess_RemoveRedundantMaterials |
+											  aiProcess_FixInfacingNormals |
+											  aiProcess_FindInvalidData
+											  // May include optimizing scene etc here
+		);
+
+
+	nsmesh * renderMesh = assets->get<nsmesh>(sceneName);
+	if (renderMesh == nullptr)
+		renderMesh = assets->manager<nsmesh_manager>()->assimp_load_mesh(scene, sceneName);
+	
+	renderComp->set_mesh_id(renderMesh->full_id());
+
+	if (occupy_comp)
+	{
+		nsoccupy_comp * occ = ent->create<nsoccupy_comp>();
+		occ->build(renderMesh->aabb());
+	}
+	
+	if (scene->HasMaterials())
+	{
+		std::map<uint32, uivec2> indexMap;
+		for (uint32 i = 0; i < scene->mNumMaterials; ++i)
+		{
+			nsstringstream ss;
+			ss << sceneName << "_" << i;
+			const aiMaterial* aiMat = scene->mMaterials[i];
+
+			nsmaterial * mat = assets->get<nsmaterial>(ss.str());
+			if (mat == nullptr)
+				mat = assets->manager<nsmat_manager>()->assimp_load_material(ss.str(), aiMat, dir);
+			
+			if (mat != nullptr)
+				indexMap[i] = mat->full_id();
+		}
+
+		for (uint32 i = 0; i < scene->mNumMeshes; ++i)
+		{
+			const aiMesh* mesh = scene->mMeshes[i];
+			if (mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
+				continue;
+
+			uint32 mI = mesh->mMaterialIndex;
+			auto fIter = indexMap.find(mI);
+			if (fIter != indexMap.end())
+				renderComp->set_material(i, fIter->second);
+		}
+	}
+
+	if (scene->HasAnimations())
+	{
+		nsanim_set * animSet = assets->get<nsanim_set>(sceneName);
+		if (animSet == nullptr)
+			animSet = assets->manager<nsanim_manager>()->assimp_load_anim_set(scene, sceneName);
+		
+		nsanim_comp * animComp = ent->create<nsanim_comp>();
+		animComp->set_anim_set_id(animSet->full_id());
+	}
+	ent->create<nssel_comp>();
+	return ent;
+}

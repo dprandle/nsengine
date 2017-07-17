@@ -12,7 +12,7 @@
 
 #include <component/nsrender_comp.h>
 #include <asset/nsmesh.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <nstimer.h>
 #include <asset/nsmaterial.h>
 #include <asset/nsmat_manager.h>

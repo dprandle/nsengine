@@ -25,7 +25,7 @@ Description:
 
 nsshader::nsshader():
 	nsasset(type_to_hash(nsshader)),
-	nsvideo_object(),
+	nsvideo_object("nsshader"),
 	shader_stages()
 {
 	video_context_init();
@@ -34,7 +34,7 @@ nsshader::nsshader():
 
 nsshader::nsshader(const nsshader & copy_):
 	nsasset(copy_),
-	nsvideo_object(),
+	nsvideo_object("nsshader"),
 	shader_stages(copy_.shader_stages)
 {
 	video_context_init();

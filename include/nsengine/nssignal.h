@@ -74,8 +74,11 @@ struct signal
 	
     void operator()(Args... args)
     {
-        auto iter = con_slots.begin();
-        while (iter != con_slots.end())
+		// By using a temp copy instead of the originals, slot functions can disconnect from
+		// signals - ie modify con_slots without causing crashes
+		std::vector<slot<Args...>*> tmp_copy = con_slots;
+        auto iter = tmp_copy.begin();
+        while (iter != tmp_copy.end())
 		{
 			(*iter)->call(args...);
 			++iter;

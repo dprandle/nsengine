@@ -13,13 +13,11 @@ This file contains all of the neccessary declarations for the nsui_system class.
 #include <asset/nsinput_map.h>
 #include <system/nsselection_system.h>
 #include <system/nsui_system.h>
-#include <asset/nsentity.h>
-#include <asset/nsmap_area.h>
+#include <nsentity.h>
 #include <asset/nsplugin_manager.h>
 #include <component/nsui_comp.h>
 #include <asset/nsshader.h>
 #include <asset/nsmaterial.h>
-#include <asset/nsentity_manager.h>
 #include <opengl/nsgl_driver.h>
 #include <opengl/nsgl_framebuffer.h>
 #include <nstimer.h>

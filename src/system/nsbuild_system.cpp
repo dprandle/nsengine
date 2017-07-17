@@ -16,7 +16,6 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 #include <nsevent_dispatcher.h>
 #include <component/nstile_brush_comp.h>
 #include <nsevent.h>
-#include <asset/nsmap_area.h>
 #include <component/nstile_comp.h>
 #include <nstile_grid.h>
 #include <component/nssel_comp.h>
@@ -25,10 +24,9 @@ This file contains all of the neccessary definitions for the nsbuild_system clas
 #include <system/nsselection_system.h>
 #include <component/nsrender_comp.h>
 #include <asset/nsinput_map_manager.h>
-#include <asset/nsentity_manager.h>
 #include <asset/nsplugin_manager.h>
 #include <system/nsinput_system.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <component/nslight_comp.h>
 #include <component/nscam_comp.h>
 #include <system/nscamera_system.h>
@@ -314,21 +312,21 @@ const nsbuild_system::mode_t & nsbuild_system::mode() const
 
 void nsbuild_system::init()
 {
-	nsplugin * cplg = nse.core();
+	// nsplugin * cplg = nse.core();
 
-	if (cplg == nullptr)
-	{
-		dprint("nsbuild_system::init - You must first call nse.start before initializing");
-		return;
-	}
+	// if (cplg == nullptr)
+	// {
+	// 	dprint("nsbuild_system::init - You must first call nse.start before initializing");
+	// 	return;
+	// }
 	
-	m_object_brush = cplg->create<nsentity>(ENT_OBJECT_BRUSH);
-	nssel_comp * sc = m_object_brush->create<nssel_comp>();	
-	sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
-	sc->set_mask_alpha(0.2f);
-	sc->enable_draw(true);
-	sc->enable_move(true);
+	// m_object_brush = cplg->create<nsentity>(ENT_OBJECT_BRUSH);
+	// nssel_comp * sc = m_object_brush->create<nssel_comp>();	
+	// sc->set_default_sel_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	// sc->set_color(fvec4(0.0f, 1.0f, 0.0f, 1.0f));
+	// sc->set_mask_alpha(0.2f);
+	// sc->enable_draw(true);
+	// sc->enable_move(true);
 
 	register_action_handler(nsbuild_system::_handle_select_move_toggle, NSSEL_MOVE_TOGGLE);
 	register_action_handler(nsbuild_system::_handle_snap_z, NSSNAP_BRUSH_Z);

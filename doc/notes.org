@@ -1,10 +1,3 @@
-* Notes
-
-I am now updating the push_scene, push_entity, and _push_light_draw_calls, and rendering calls within the gl_driver to work correctly.
-
-After that I will need to go through the render() function for each pass and transfer them to use any changed draw calls.
-
-
 
 ** Directories
 
@@ -72,3 +65,13 @@ SPACE to replace one, and 'n' to skip.
 
 To escape an regexp char simply put brackets "[char]" around it.
 IE to search for "nsrender_system.h" type "nsrender_system[.]h"
+
+
+
+
+Need to make "notes" and "creator" part of all assets just like icon image - should be saved as meta data in the plugin
+    Probably would be good to make a puppable meta-deta struct that precedes each asset in the plugin file
+    This struct could also contain the name for example, so that the filename and name of asset don't necessarily have to match
+
+Left off with tform comp - making it so that it is compatible with the new map_area type. Also thinking about making sure that changes to tree branches
+will correctly be computed in to child tree branch transforms when getting world transforms and such.

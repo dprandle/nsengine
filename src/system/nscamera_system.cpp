@@ -13,15 +13,14 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <iostream>
 #include <system/nstform_system.h>
 #include <system/nscamera_system.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <system/nsselection_system.h>
 #include <asset/nsplugin_manager.h>
 #include <nsevent_dispatcher.h>
 #include <nsevent.h>
+#include <nsworld_data.h>
 #include <component/nscam_comp.h>
 #include <nstimer.h>
-#include <asset/nsmap_area.h>
-
 
 nscamera_system::nscamera_system() :
 	nssystem(type_to_hash(nscamera_system)),
@@ -42,14 +41,7 @@ nscamera_system::~nscamera_system()
 
 void nscamera_system::init()
 {
-	nsplugin * cplg = nse.core();
-	if (cplg == nullptr)
-	{
-		dprint("nscamera_system::init - You must first call nse.start before initializing");
-		return;
-	}
-	m_cam_focus_manipulator = cplg->create<nsentity>("camera_focus_manipulator");
-
+//	m_cam_focus_manipulator = nse.engine_chunk()->create_entity("camera_focus_manipulator");
 	register_handler(nscamera_system::_handle_sel_focus_event);
 	register_action_handler(nscamera_system::_handle_camera_forward, NSCAM_FORWARD);
 	register_action_handler(nscamera_system::_handle_camera_backward, NSCAM_BACKWARD);
@@ -142,8 +134,6 @@ void nscamera_system::set_sensitivity(float pSensitivity, const sensitivity_t & 
 
 void nscamera_system::set_view(camera_view_t view_)
 {	
-	if (m_active_scene == nullptr)
-		return;
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
 	if (vp == nullptr)
 		return;
@@ -157,9 +147,8 @@ void nscamera_system::set_view(camera_view_t view_)
 	nstform_comp * manip_tc = m_cam_focus_manipulator->get<nstform_comp>();
 	if (manip_tc == nullptr)
 	{
-		m_active_scene->add_entity(m_cam_focus_manipulator);
+		m_active_chunk->add_entity(m_cam_focus_manipulator);
 		manip_tc = m_cam_focus_manipulator->get<nstform_comp>();
-		manip_tc->save_with_scene = false;
 	}
 	
 	m_anim_view = true;
@@ -393,7 +382,7 @@ void nscamera_system::_on_cam_zoom(nscam_comp * pCam, nstform_comp * tComp, floa
 
 void nscamera_system::update()
 {
-	if (scene_error_check())
+	if (chunk_error_check())
 		return;
 	
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -406,23 +395,20 @@ void nscamera_system::update()
 
     nscam_comp * camComp = cam->get<nscam_comp>();
     nstform_comp * camTComp = cam->get<nstform_comp>();
-	nstform_comp * tc = m_cam_focus_manipulator->get<nstform_comp>();
 
-	if (tc == nullptr)
-	{
-		m_active_scene->add_entity(m_cam_focus_manipulator);
-		tc = m_cam_focus_manipulator->get<nstform_comp>();
-		tc->save_with_scene = false;
-	}
+//	if (m_cam_focus_manipulator == nullptr)
+//		m_cam_focus_manipulator = m_active_chunk->create_entity("cam_focus_manipulator");
 
-    if (m_cam_mode == mode_focus && camTComp->parent() == nullptr)
-        camTComp->set_parent(tc, true);
-    else if (m_cam_mode == mode_free && camTComp->parent() != nullptr)
-    {
-        camTComp->set_parent(nullptr, true);
-        tc->set_local_orientation(fquat());
-        tc->set_local_position(fvec3());
-    }
+//	nstform_comp * tc = m_cam_focus_manipulator->get<nstform_comp>();
+
+//    if (m_cam_mode == mode_focus && camTComp->parent() == nullptr)
+//        camTComp->set_parent(tc, true);
+//    else if (m_cam_mode == mode_free && camTComp->parent() != nullptr)
+//    {
+//        camTComp->set_parent(nullptr, true);
+//        tc->set_local_orientation(fquat());
+//        tc->set_local_position(fvec3());
+//    }
 
 		
     if (camComp->update_posted())
@@ -453,7 +439,7 @@ void nscamera_system::update()
                            nse.timer()->fixed());
         }
 
-		tc->recursive_compute();
+//		tc->recursive_compute();
 
         camTComp->post_update(true);
         camTComp->recursive_compute();
@@ -484,12 +470,12 @@ void nscamera_system::update()
         }
 
 		// Update the skybox with the current camera's position
-		nsentity * skyDome = m_active_scene->skydome();
-		if (skyDome != nullptr)
-		{
-			nstform_comp * tComp = skyDome->get<nstform_comp>();
-			tComp->set_world_position(camTComp->world_position());
-		}
+//		nsentity * skyDome = m_active_chunk->skydome();
+//		if (skyDome != nullptr)
+//		{
+//			nstform_comp * tComp = skyDome->get<nstform_comp>();
+//			tComp->set_world_position(camTComp->world_position());
+//		}
 	}
 }
 
@@ -500,7 +486,7 @@ void nscamera_system::set_camera_focus_manipulator(nsentity * cam_manip)
 
 bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -524,7 +510,7 @@ bool nscamera_system::_handle_camera_tilt_pan(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -548,7 +534,7 @@ bool nscamera_system::_handle_camera_move(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_zoom(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -570,7 +556,7 @@ bool nscamera_system::_handle_camera_zoom(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_top_view_0(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_top_0);
@@ -579,7 +565,7 @@ bool nscamera_system::_handle_camera_top_view_0(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_iso_view_0(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_iso_0);
@@ -588,7 +574,7 @@ bool nscamera_system::_handle_camera_iso_view_0(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_front_view_0(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_front_0);
@@ -597,7 +583,7 @@ bool nscamera_system::_handle_camera_front_view_0(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_top_view_120(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_top_120);
@@ -606,7 +592,7 @@ bool nscamera_system::_handle_camera_top_view_120(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_iso_view_120(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_iso_120);
@@ -615,7 +601,7 @@ bool nscamera_system::_handle_camera_iso_view_120(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_front_view_120(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_front_120);
@@ -624,7 +610,7 @@ bool nscamera_system::_handle_camera_front_view_120(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_top_view_240(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_top_240);
@@ -633,7 +619,7 @@ bool nscamera_system::_handle_camera_top_view_240(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_iso_view_240(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_iso_240);
@@ -642,7 +628,7 @@ bool nscamera_system::_handle_camera_iso_view_240(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_front_view_240(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	set_view(view_front_240);
@@ -651,7 +637,7 @@ bool nscamera_system::_handle_camera_front_view_240(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_toggle_mode(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	toggle_mode();
@@ -660,7 +646,7 @@ bool nscamera_system::_handle_camera_toggle_mode(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -679,7 +665,7 @@ bool nscamera_system::_handle_camera_forward(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -699,7 +685,7 @@ bool nscamera_system::_handle_camera_backward(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -719,7 +705,7 @@ bool nscamera_system::_handle_camera_left(nsaction_event * evnt)
 
 bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
 	viewport * vp = nse.video_driver()->current_context()->focused_vp;
@@ -736,19 +722,19 @@ bool nscamera_system::_handle_camera_right(nsaction_event * evnt)
 	return true;
 }
 
-void nscamera_system::set_active_scene(nsmap_area * active_scene)
+void nscamera_system::set_active_chunk(nstform_ent_chunk * active_chunk)
 {
-    if (m_active_scene != nullptr && m_active_scene->is_enabled())
-		m_active_scene->remove(m_cam_focus_manipulator, false);
-	nssystem::set_active_scene(active_scene);
+//    if (m_active_chunk != nullptr)
+//		m_active_chunk->remove(m_cam_focus_manipulator, false);
+	nssystem::set_active_chunk(active_chunk);
 }
 
 bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 {
-    if (scene_error_check())
+    if (chunk_error_check())
         return true;
 
-	nsentity * ent = m_active_scene->find_entity(evnt->focus_id);
+	nsentity * ent = m_active_chunk->find_entity(evnt->focus_id.y);
 	if (ent == nullptr)
 		return true;
 	
@@ -756,24 +742,19 @@ bool nscamera_system::_handle_sel_focus_event(nssel_focus_event * evnt)
 	if (ent_tc == nullptr)
 		return true;
 
-	nstform_comp * focus_ent_tc = m_cam_focus_manipulator->get<nstform_comp>();
-	if (focus_ent_tc == nullptr)
-	{
-		focus_ent_tc = m_active_scene->add_entity(m_cam_focus_manipulator);
-		focus_ent_tc->save_with_scene = false;
-	}
+	// nstform_comp * focus_ent_tc = m_cam_focus_manipulator->get<nstform_comp>();
 
-    nstform_comp * child_itf = focus_ent_tc->child(0);
+    // nstform_comp * child_itf = focus_ent_tc->child(0);
 
-    fvec3 wpos;
-    if (child_itf != nullptr)
-        wpos = child_itf->world_position();
+    // fvec3 wpos;
+    // if (child_itf != nullptr)
+    //     wpos = child_itf->world_position();
 
-    focus_ent_tc->set_world_position(ent_tc->world_position());
-    focus_ent_tc->recursive_compute();
+    // focus_ent_tc->set_world_position(ent_tc->world_position());
+    // focus_ent_tc->recursive_compute();
 
-    if (child_itf != nullptr)
-        child_itf->set_world_position(wpos);
+    // if (child_itf != nullptr)
+    //     child_itf->set_world_position(wpos);
 
 	return true;
 }

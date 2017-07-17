@@ -3,18 +3,47 @@
 
 class nsprefab_comp;
 class nsentity;
+class nsprefab;
 
 class nsprefab_reference_comp : public nscomponent
 {
   public:
 
-	friend nsprefab_comp;
+	friend class nsprefab;
 	
 	nsprefab_reference_comp();
 
 	nsprefab_reference_comp(const nsprefab_reference_comp & copy);
 
 	~nsprefab_reference_comp();
+
+	template<class T>
+	void add_restricted_type()
+	{
+		uint32 tid = nse.type_id(std::type_index(typeid(T)));
+		add_restricted_type(tid);
+	}
+
+	template<class T>
+	void remove_restricted_type()
+	{
+		uint32 tid = nse.type_id(std::type_index(typeid(T)));
+		remove_restricted_type(tid);
+	}
+
+	template<class T>
+	bool type_allowed()
+	{
+		uint32 tid = nse.type_id(std::type_index(typeid(T)));
+		return type_allowed(tid);
+	}
+
+
+	void add_restricted_type(uint32 t);
+	
+	bool type_allowed(uint32 t);
+
+	void remove_restricted_type(uint32 t);
 
 	void init();
 
@@ -30,7 +59,9 @@ class nsprefab_reference_comp : public nscomponent
 
 	nsentity * get_source_ent();
 
-	nsentity * get_source_prefab();
+	void get_source_comp_set(std::set<uint32> & ret);
+
+	nsprefab * get_source_prefab();
 
 	template<class T>
 	T * get_source_comp()
@@ -39,14 +70,15 @@ class nsprefab_reference_comp : public nscomponent
 		return static_cast<T*>(get_source_comp(tid));
 	}
 
-	nscomponent * get_source_comp(int tid);
-
+	nscomponent * get_source_comp(uint32 tid);
+	
 	ns::signal<uint32, uint32> reference_id_changed;
 
   private:
 
+	std::set<uint32> m_restricted_types;
 
 	uint32 ref_id;
 	uivec2 prefab_id;
-	uivec2 ent_id;
+	uint32 ent_id;
 };

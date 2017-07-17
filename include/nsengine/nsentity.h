@@ -10,6 +10,12 @@
 	\copywrite Earth Banana Games 2013
 */
 
+// World entities should be in main engine... loaded from prefabs or directly added
+// No saving mechanism should be directly implemented for the world..
+// The scene should simply use the world to decide what is veiwable/within its frustum
+
+// Should the world own the entities? 
+
 #ifndef NSENTITY_H
 #define NSENTITY_H
 
@@ -20,8 +26,9 @@
 
 typedef std::unordered_set<nsentity*> entity_set;
 
+
 class nscomponent;
-class nsentity : public nsasset
+class nsentity
 {
 public:
 	typedef std::unordered_map<uint32, nscomponent*> comp_set;
@@ -35,12 +42,11 @@ public:
 	
 	~nsentity();
 
+	void get_comp_set(std::set<uint32> & ret);
+
 	nsentity & operator=(nsentity rhs);
 
 	bool add(nscomponent * pComp);
-
-	comp_set::iterator begin();
-	comp_set::iterator end();
 
 	void finalize();
 
@@ -83,13 +89,13 @@ public:
 
 	uint32 count();
 
-	virtual void name_change(const uivec2 & oldid, const uivec2 newid);
+	void name_change(const uivec2 & oldid, const uivec2 newid);
 
 	/*!
 	Get the other resources that this Entity uses. This is given by all the components attached to the entity.
 	\return Map of resource ID to resource type containing all used resources
 	*/
-	virtual uivec3_vector resources();
+	uivec3_vector resources();
 	
 	template<class comp_type>
 	bool has()
@@ -105,6 +111,16 @@ public:
 	void init();
 
 	void release();
+
+	const nsstring & name() const;
+
+	uint32 id() const;
+
+	uint32 chunk_id();
+
+	uivec2 full_id();
+
+	void rename(const nsstring & pRefName);
 
 	template<class comp_type>
 	comp_type * remove()
@@ -128,7 +144,7 @@ public:
 
 	void post_update(const nsstring & compType, bool update);
 
-	virtual void pup(nsfile_pupper * p);
+	void pup(nsfile_pupper * p);
 
 	template<class comp_type>
 	bool update_posted()
@@ -138,12 +154,18 @@ public:
 
 	bool update_posted(const nsstring & compType);
 
+	ns::signal<uivec2> ent_rename;
 	ns::signal<nscomponent*> component_added;
 	ns::signal<nscomponent*> component_removed;
 	
 private:
+	
+	nsstring m_name;
+	uint32 m_id;
 	comp_set m_components;
 };
+
+nsentity * get_entity(const uivec2 & chunk_ent_id);
 
 template <class PUPer>
 void pup(PUPer & p, nsentity & ent)

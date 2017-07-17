@@ -5,6 +5,7 @@
 #include <opengl/nsgl_driver.h>
 #include <nsevent_dispatcher.h>
 #include <asset/nstexture.h>
+#include <nsworld_data.h>
 
 void glfw_key_press_callback(GLFWwindow * window_, int32 key_, int32 scancode_, int32 action_, int32 mods_);
 void glfw_mouse_button_callback(GLFWwindow * window_, int32 pButton, int32 action_, int32 mods_);
@@ -17,7 +18,7 @@ void glfw_minimize_window_callback(GLFWwindow * window, int min_or_restore);
 void glfw_maximize_window_callback(GLFWwindow * window, int max_or_restore);
 void glfw_window_position_callback(GLFWwindow * window, int x_pos, int y_pos);
 
-void window_poll_input()
+void poll_input_events()
 {
 	glfwPollEvents();
 }
@@ -108,11 +109,32 @@ nsgl_window::nsgl_window(
 	glfwMakeContextCurrent(m_window);
 	glfwSwapInterval(1);
 
-	m_driver = nse.video_driver<nsgl_driver>();
+	m_driver = new nsgl_driver;
+	nse.set_video_driver(m_driver);
+
+	m_driver->init();
     m_driver->create_context();
     m_ctxt = m_driver->current_context();
 	m_ctxt->setup_default_rendering();
-    nse.event_dispatch()->push<window_resize_event>(m_ctxt->context_id, fbsize);
+//    nse.event_dispatch()->push<window_resized>(m_ctxt->context_id, fbsize);
+}
+
+void nsgl_window::render()
+{
+	if (m_ctxt->auto_update_vobjs)
+        m_ctxt->update_vid_objs();
+
+	// Render each chunk
+	auto chunk_iter = nse.world()->begin();
+	while (chunk_iter != nse.world()->end())
+	{
+		m_ctxt->push_chunk(chunk_iter->second);
+		++chunk_iter;
+	}
+
+	m_ctxt->render_to_all_viewports();
+	m_ctxt->clear_render_queues();
+	swap_buffers();
 }
 
 nsgl_window::~nsgl_window()
@@ -138,7 +160,7 @@ void nsgl_window::close()
 		m_driver->make_context_current(ctxt->context_id);
 }
 
-void nsgl_window::update()
+void nsgl_window::swap_buffers()
 {
 	glfwSwapBuffers(m_window);	
 }
@@ -318,7 +340,7 @@ void glfw_resize_window_callback(GLFWwindow* window, int32 width, int32 height)
 		if (win->m_state == window_maximized)
 			glfw_maximize_window_callback(window, 0);
 	}
-    nse.event_dispatch()->push<window_resize_event>(0,win->m_size);
+    nse.event_dispatch()->push<window_resized>(0,win->m_size);
 #ifdef EVENT_OUTPUT
     std::cout << "window " << win->m_ctxt->context_id << " resize callback" << std::endl;
 #endif

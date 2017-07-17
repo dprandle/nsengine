@@ -11,52 +11,42 @@ This file contains all of the neccessary definitions for the nssystem class.
 */
 
 #include <system/nssystem.h>
-#include <asset/nsmap_area.h>
+#include <nsworld_data.h>
 
 nssystem::nssystem(uint32 hashed_type):
-	m_scene_null_error(false),
-	m_scene_disabled_error(false),
-	m_active_scene(nullptr),
+	m_chunk_null_error(false),
+	m_active_chunk(nullptr),
 	m_hashed_type(hashed_type)
 {}
 
 nssystem::~nssystem()
 {}
 
-nsmap_area * nssystem::active_scene()
+nstform_ent_chunk * nssystem::active_chunk()
 {
-	return m_active_scene;
+	return m_active_chunk;
 }
 
-bool nssystem::scene_error_check()
+bool nssystem::chunk_error_check()
 {
-	if (m_active_scene == nullptr)
+	if (m_active_chunk == nullptr)
 	{
-		if (!m_scene_null_error)
+		if (!m_chunk_null_error)
 		{
-			dprint(hash_to_guid(m_hashed_type) + "::scene_valid_check - Active scene is null - must assign active scene");
-			m_scene_null_error = true;
+			dprint(hash_to_guid(m_hashed_type) + "Active chunk is null in system " + hash_to_guid(m_hashed_type));
+			m_chunk_null_error = true;
 		}
-	}
-	else if (!m_active_scene->is_enabled())
-	{
-		if (!m_scene_disabled_error)
-		{
-			dprint(hash_to_guid(m_hashed_type) + "::scene_valid_check - Active scene is disabled - must enable active scene");
-			m_scene_disabled_error = true;
-		}		
 	}
 	else
 	{
-		m_scene_null_error = false;
-		m_scene_disabled_error = false;
+		m_chunk_null_error = false;
 	}
-	return m_scene_null_error || m_scene_disabled_error;
+	return m_chunk_null_error;
 }
 
-void nssystem::set_active_scene(nsmap_area * active_scene)
+void nssystem::set_active_chunk(nstform_ent_chunk * active_chunk)
 {
-	m_active_scene = active_scene;
+	m_active_chunk = active_chunk;
 }
 
 uint32 nssystem::type()

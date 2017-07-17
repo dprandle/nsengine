@@ -17,7 +17,7 @@ This file contains all of the neccessary declartations for the nssystem class.
 #include <nsunordered_map.h>
 
 class nstimer;
-class nsmap_area;
+class nstform_ent_chunk;
 
 class nssystem : public nsevent_handler
 {
@@ -32,23 +32,21 @@ public:
 
 	virtual void update() = 0;
 
-	virtual void set_active_scene(nsmap_area * active_scene);
+	virtual void set_active_chunk(nstform_ent_chunk * active_chunk);
 
 	virtual int32 update_priority() = 0;
 
-	nsmap_area * active_scene();
+	nstform_ent_chunk * active_chunk();
 
-	bool scene_error_check();
+	bool chunk_error_check();
 
 	uint32 type();
 
   protected:
 
-	bool m_scene_null_error;
+	bool m_chunk_null_error;
 
-	bool m_scene_disabled_error;
-
-	nsmap_area * m_active_scene;
+	nstform_ent_chunk * m_active_chunk;
 
   private:
 

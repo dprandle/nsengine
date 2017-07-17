@@ -18,7 +18,7 @@ Description:
 
 nstexture::nstexture(uint32 hashed_type) :
 	nsasset(hashed_type),
-	nsvideo_object(),
+	nsvideo_object("nstexture"),
 	compress(false),
 	m_auto_gen_mipmaps(true),
 	m_raw_data(nullptr),
@@ -32,7 +32,7 @@ nstexture::nstexture(uint32 hashed_type) :
 
 nstexture::nstexture(const nstexture & copy_):
 	nsasset(copy_),
-	nsvideo_object(),
+	nsvideo_object("nstexture"),
 	compress(copy_.compress),
 	m_auto_gen_mipmaps(copy_.m_auto_gen_mipmaps),
 	m_raw_data(new uint8[copy_.pixel_count()]),

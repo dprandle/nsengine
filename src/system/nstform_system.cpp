@@ -17,7 +17,7 @@
 #include <system/nstform_system.h>
 #include <nsvideo_driver.h>
 #include <component/nscam_comp.h>
-#include <asset/nsmap_area.h>
+#include <nsworld_data.h>
 #include <asset/nsplugin.h>
 #include <asset/nsmesh.h>
 #include <asset/nstexture.h>
@@ -59,17 +59,17 @@ void nstform_system::setup_input_map(nsinput_map * im, const nsstring & global_c
 
 void nstform_system::update()
 {
-	if (scene_error_check())
+	if (chunk_error_check())
 		return;
 	
-	auto scene_ents = m_active_scene->entities_in_scene();
-	if (scene_ents == nullptr)
+	auto chunk_ents = m_active_chunk->all_entities();
+	if (chunk_ents == nullptr)
 		return;
 	
 
 	// Go through and recursively update the scene
-	auto ent_iter = scene_ents->begin();
-	while (ent_iter != scene_ents->end())
+	auto ent_iter = chunk_ents->begin();
+	while (ent_iter != chunk_ents->end())
 	{
 		nstform_comp * tfc = (*ent_iter)->get<nstform_comp>();
 		if (tfc->parent() == nullptr)
@@ -91,7 +91,7 @@ int32 nstform_system::update_priority()
 	return TFORM_SYS_UPDATE_PR;
 }
 
-bool nstform_system::_handle_window_resize(window_resize_event * evt)
+bool nstform_system::_handle_window_resize(window_resized * evt)
 {
 	// This assumes that the event generated is for the current context - should be true unless there is
 	// a bug in the input event generating code

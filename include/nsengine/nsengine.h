@@ -15,6 +15,8 @@ This file contains all of the neccessary declartations for the nsengine class.
 
 #define ENGINE_PLUG "engine_core"
 
+#define ENGINE_CHUNK "nsengine_core"
+
 // Default relative directories
 #define DEFAULT_RESOURCE_DIR "resources/"
 #define DEFAULT_IMPORT_DIR "import/"
@@ -111,7 +113,6 @@ This file contains all of the neccessary declartations for the nsengine class.
 #define UI_SYS_UPDATE_PR 20000
 
 
-class nsmap_area;
 class nsvideo_driver;
 class nstform_system;
 class nsanim_manager;
@@ -130,7 +131,8 @@ class nsevent_dispatcher;
 struct nssave_resouces_callback;
 class nsasset_manager;
 class nsengine;
-
+class nsworld_data;
+class nstform_ent_chunk;
 
 // Debuggin setup
 //#define NSDEBUG
@@ -178,8 +180,6 @@ public:
 	~nsengine();
 
 	typedef std::map<int32, uint32> sys_priority_map;
-
-    nsmap_area * active_scene();
 	
 	bool add_system(nssystem * pSystem);
 
@@ -192,6 +192,8 @@ public:
 	{
 		return static_cast<T*>(m_driver);
 	}
+
+	void set_video_driver(nsvideo_driver * driver);
 	
 	template<class sys_type>
 	sys_type * create_system()
@@ -480,17 +482,19 @@ public:
 
 	void set_import_dir(const nsstring & dir);
 
+	nsworld_data * world();
+
+	nstform_ent_chunk * engine_chunk();
+
 	void release();
 
 	bool running();
 
-	void init(nsvideo_driver * driver);	
+	void init();
 
-	void set_active_scene(nsmap_area * active_scene);
+	void start_registered_systems();
 
-	void start();
-
-	void stop();
+	void stop_registered_systems();
 
 	template<class sys_type>
 	sys_type * system()
@@ -593,8 +597,9 @@ private:
 	nsplugin_manager * m_plugins;
 	nsevent_dispatcher * m_event_disp;
 	nstimer * m_timer;
-    nsmap_area * m_active_scene;
 
+	nsworld_data * m_world;
+	
 #ifdef NSDEBUG
 	nsdebug * m_deb;
 #endif

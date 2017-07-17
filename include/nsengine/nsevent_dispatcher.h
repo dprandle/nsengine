@@ -112,5 +112,6 @@ private:
 	listener_map m_listeners;
 };
 
+#define push_event(ev_type, ...) nse.event_dispatch()->push<ev_type>(__VA_ARGS__)
 
 #endif

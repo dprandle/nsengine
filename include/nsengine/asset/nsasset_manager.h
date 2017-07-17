@@ -31,11 +31,15 @@
 	using nsasset_manager::remove;
 
 #include <nsengine.h>
+#include <nsrouter.h>
 
 class nsasset;
 
 class nsasset_manager
 {
+
+	SLOT_OBJECT
+	
 public:
 
 	nsasset_manager(uint32 hashed_type);
@@ -92,6 +96,8 @@ public:
 	{
 		return contains(get(res_name));
 	}
+
+	virtual nsstring formatted_full_name();
 
 	template <class res_type>
 	res_type * create(const nsstring & res_name, nsasset * to_copy=nullptr)
@@ -197,12 +203,15 @@ public:
 	static nsstring path_from_filename(const nsstring & fname);
 	
 protected:
+	
 	uint32 m_hashed_type;
 	nsstring m_res_dir;
 	nsstring m_local_dir;
 	map_type m_id_resmap;
 	uint32 m_plugin_id;
 	s_mode m_save_mode;
+
+	void asset_renamed(const uivec2 & old_name, const uivec2 & new_name);
 };
 
 #endif

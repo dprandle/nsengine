@@ -12,18 +12,17 @@ This file contains all of the neccessary definitions for the nsanim_system class
 
 #include <system/nsanim_system.h>
 #include <component/nsanim_comp.h>
-#include <asset/nsentity.h>
-#include <asset/nsmap_area.h>
+#include <nsentity.h>
 #include <asset/nsanim_manager.h>
 #include <asset/nsmesh_manager.h>
 #include <nsengine.h>
 #include <nstimer.h>
 #include <nsevent.h>
 #include <nsevent_handler.h>
-#include <asset/nsentity_manager.h>
 #include <asset/nsplugin_manager.h>
 #include <asset/nsasset_manager.h>
 #include <component/nsrender_comp.h>
+#include <nsworld_data.h>
 
 nsanim_system::nsanim_system() :
 	nssystem(type_to_hash(nsanim_system))
@@ -41,10 +40,10 @@ void nsanim_system::release()
 
 void nsanim_system::update()
 {
-	if (scene_error_check())
+	if (chunk_error_check())
 		return;
 	
-	auto ents = m_active_scene->entities_with_comp<nsanim_comp>();
+	auto ents = m_active_chunk->entities_with_comp<nsanim_comp>();
 
 	if (ents == nullptr)
 		return;

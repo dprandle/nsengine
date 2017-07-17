@@ -14,7 +14,7 @@
 #include <nstimer.h>
 #include <nsengine.h>
 #include <asset/nsanim_manager.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 
 nsanim_comp::nsanim_comp():
 	nscomponent(type_to_hash(nsanim_comp)),

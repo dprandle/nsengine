@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the nsevent_dispatcher 
 #include <nsevent_dispatcher.h>
 #include <component/nssel_comp.h>
 #include <system/nssystem.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 
 nsevent_dispatcher::nsevent_dispatcher() : m_listener_events(), m_listeners()
 {}

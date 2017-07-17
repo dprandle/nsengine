@@ -15,7 +15,7 @@ This file contains all of the neccessary definitions for the nslight_comp class.
 #include <component/nslight_comp.h>
 #include <asset/nsmesh.h>
 #include <nstimer.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <component/nstform_comp.h>
 #include <nsengine.h>
 #include <asset/nsmesh_manager.h>

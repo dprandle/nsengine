@@ -88,7 +88,7 @@
 #include <opengl/nsgl_render_passes.h>
 
 class nsmaterial;
-class nsmap_area;
+class nstform_ent_chunk;
 
 struct nsgl_framebuffer;
 struct nsgl_buffer;
@@ -191,17 +191,13 @@ struct gl_ctxt : public vid_ctxt
 
 	uivec3 pick(const fvec2 & mouse_pos);
 
-	void push_scene(nsmap_area * scn);
-
-	void push_entity(nsentity * ent);
+	void push_chunk(nstform_ent_chunk * chnk);
 
 	void push_viewport_ui(viewport * vp);
 	
 	void render_to_viewport(viewport * vp);
 
 	void render_to_all_viewports();
-
-	void render(nsmap_area * scn);
 	
 	uint32 active_tex_unit();
 
@@ -259,13 +255,13 @@ struct gl_ctxt : public vid_ctxt
 
     void render_ui_dc(ui_draw_call * idc, nsgl_shader * bound_shader);
 
-	void _add_instanced_draw_calls_from_scene(nsmap_area * scene);
+	void _add_instanced_draw_calls_from_chunk(nstform_ent_chunk * scene);
 	
-	void _add_draw_calls_from_scene(nsmap_area * scene);
+	void _add_draw_calls_from_chunk(nstform_ent_chunk * scene);
 
-	void _add_selection_draw_calls(nsmap_area * scene);
+	void _add_selection_draw_calls(nstform_ent_chunk * scene);
 
-	void _add_lights_from_scene(nsmap_area * scene);
+	void _add_lights_from_chunk(nstform_ent_chunk * scene);
 
 	GLEWContext * glew_context; // created in ctor
 

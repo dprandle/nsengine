@@ -25,7 +25,7 @@
 #include <asset/nsshader.h>
 #include <asset/nsmesh.h>
 #include <asset/nsfont.h>
-#include <asset/nsentity.h>
+#include <nsentity.h>
 #include <component/nscam_comp.h>
 #include <component/nslight_comp.h>
 
@@ -374,7 +374,7 @@ void gbuffer_single_draw_render_pass::render()
 		}
 
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-		gl_shdr->set_uniform("pluginID", dc->plugin_id);
+		gl_shdr->set_uniform("pluginID", dc->chunk_id);
 
 		if (dc->submesh->m_node != NULL)
 			gl_shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
@@ -448,7 +448,7 @@ void oit_render_pass::render()
 		}
 
 		gl_shdr->set_uniform("hminmax", dc->height_minmax);
-		gl_shdr->set_uniform("pluginID", dc->plugin_id);
+		gl_shdr->set_uniform("pluginID", dc->chunk_id);
 
 		if (dc->submesh->m_node != NULL)
 			gl_shdr->set_uniform("nodeTransform", dc->submesh->m_node->m_world_tform);
@@ -640,7 +640,7 @@ void light_pass::render()
 		}
 
 		gl_shdr->set_uniform("projLightMat", dc->proj_light_mat);
-		gl_shdr->set_uniform("bgColor", dc->bg_color);
+		gl_shdr->set_uniform("bgColor", vp->m_bg_color);
 		gl_shdr->set_uniform("light.direction", dc->direction);
 		gl_shdr->set_uniform("camWorldPos", vp->camera->get<nstform_comp>()->world_position());
 		gl_shdr->set_uniform("fog_factor", vp->m_fog_nf);

@@ -39,7 +39,7 @@ class nstform_system : public nssystem
 	
   private:
 
-	bool _handle_window_resize(window_resize_event * evt);
+	bool _handle_window_resize(window_resized * evt);
 	bool _handle_viewport_change(nsaction_event * evt);
 };
 
