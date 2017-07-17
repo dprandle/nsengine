@@ -1,0 +1,8 @@
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*.{cpp,h,c,txt,fsh,vsh,gsh,shr,mat}]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
