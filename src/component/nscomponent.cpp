@@ -40,6 +40,8 @@ bool nscomponent::update_posted() const
 void nscomponent::post_update(bool pUpdate)
 {
 	m_update = pUpdate;
+	if (m_update)
+		emit_sig comp_edit(this);
 }
 
 uint32 nscomponent::type()

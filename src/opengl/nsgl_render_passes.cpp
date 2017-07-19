@@ -327,7 +327,7 @@ void selection_render_pass::render()
 	}	
 }
 
-void gbuffer_single_draw_render_pass::render()
+void gbuffer_render_pass::render()
 {
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
@@ -506,25 +506,35 @@ void light_shadow_pass::render()
 {
 	nsgl_shader * cur_shdr = nullptr;
 	ivec4 & viewp = gl_state.current_viewport;
-	if (ldc->light_type == nslight_comp::l_point)
-	{
-		cur_shdr = driver_ctxt->driver->rshaders.shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr;
-		cur_shdr->bind();
-		cur_shdr->set_uniform("lightPos", ldc->light_pos);
-		cur_shdr->set_uniform("maxDepth", ldc->max_depth);
-	}
-	else
-	{
-		cur_shdr = driver_ctxt->driver->rshaders.shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr;
-		cur_shdr->bind();
-	}
-	cur_shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
-	cur_shdr->set_uniform("projMat", ldc->proj_light_mat);
-	cur_shdr->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
 	
 	for (uint32 i = 0; i < rq->size(); ++i)
 	{
 		geometry_draw_call * idc = (geometry_draw_call*)(*rq)[i];
+
+		if (ldc->light_type == nslight_comp::l_point)
+		{
+			if (idc->instanced)
+				cur_shdr = driver_ctxt->driver->rshaders.shadow_cube_instanced->video_obj<nsgl_shader_obj>()->gl_shdr;
+			else
+				cur_shdr = driver_ctxt->driver->rshaders.shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr;
+			
+			cur_shdr->bind();
+			cur_shdr->set_uniform("lightPos", ldc->light_pos);
+			cur_shdr->set_uniform("maxDepth", ldc->max_depth);
+		}
+		else
+		{
+			if (idc->instanced)
+				cur_shdr = driver_ctxt->driver->rshaders.shadow_2d_instanced->video_obj<nsgl_shader_obj>()->gl_shdr;
+			else
+				cur_shdr = driver_ctxt->driver->rshaders.shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr;
+			
+			cur_shdr->bind();
+		}
+		cur_shdr->set_uniform("heightMap", HEIGHT_TEX_UNIT);
+		cur_shdr->set_uniform("projMat", ldc->proj_light_mat);
+		cur_shdr->set_uniform("viewport", fvec4(viewp.x,viewp.y,viewp.z,viewp.w));
+
 		if (idc->casts_shadows)
 		{
 			if (idc->submesh->m_node != nullptr)

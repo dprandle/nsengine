@@ -1,6 +1,7 @@
 type:<nsstring>nsshader</nsstring>
-vertex.type:<uint32>35633</uint32>
-vertex.source:<nsstring>#version 440
+stage.size:<uint32>1</uint32>
+stage[0].name:<nsstring>vertex</nsstring>
+stage[0].source:<nsstring>#version 440
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 tex;
@@ -8,11 +9,6 @@ layout (location = 2) in vec3 norm;
 layout (location = 3) in vec3 tang;
 layout (location = 4) in ivec4 boneIDs;
 layout (location = 5) in vec4 boneWeights;
-layout (location = 6) in vec4 trans1;
-layout (location = 7) in vec4 trans2;
-layout (location = 8) in vec4 trans3;
-layout (location = 9) in vec4 trans4;
-layout (location = 10) in uint referenceID;
 
 uniform sampler2D heightMap;
 uniform vec2 hminmax;
@@ -21,18 +17,13 @@ uniform mat4 nodeTransform;
 uniform mat4 projMat;
 uniform mat4 boneTransforms[100];
 uniform bool hasBones;
+uniform mat4 transform;
 
-mat4 transform;
 vec4 localPos;
 vec4 worldPos;
 
 void main()
 {
-	transform[0] = vec4(trans1.x, trans2.x, trans3.x, trans4.x);
-	transform[1] = vec4(trans1.y, trans2.y, trans3.y, trans4.y);
-	transform[2] = vec4(trans1.z, trans2.z, trans3.z, trans4.z);
-	transform[3] = vec4(trans1.w, trans2.w, trans3.w, trans4.w);
-
 	if (hasBones)
 	{
 		mat4 boneTrans = boneTransforms[boneIDs.x] * boneWeights.x;
@@ -42,7 +33,9 @@ void main()
 		localPos = boneTrans * vec4(position, 1.0);
 	}
 	else
+	{
 		localPos = nodeTransform * vec4(position, 1.0);
+	}
 
 	worldPos = transform * localPos;
 
@@ -53,9 +46,6 @@ void main()
 	}
 
     gl_Position = projMat * worldPos;
-}
+} 
+
 </nsstring>
-geometry.type:<uint32>36313</uint32>
-geometry.source:<nsstring></nsstring>
-fragment.type:<uint32>35632</uint32>
-fragment.source:<nsstring></nsstring>

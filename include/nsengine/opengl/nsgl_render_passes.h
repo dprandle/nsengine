@@ -85,7 +85,7 @@ struct gl_render_pass : public render_pass
 	opengl_state gl_state;
 };
 
-struct gbuffer_single_draw_render_pass : public gl_render_pass
+struct gbuffer_render_pass : public gl_render_pass
 {
 	virtual void render();
 };

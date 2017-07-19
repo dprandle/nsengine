@@ -102,24 +102,43 @@ int main()
 {
 	nsengine e; // will set the global engine pointer to this instance
     nsgl_window wind(ivec2(800,600), "Prefab Test");
+	tform_info tf;
 
 	nsplugin * plg = nsep.create<nsplugin>("testing_stuff");
 	plg->enable(true);
 	
     nstform_ent_chunk * chnk = nse.world()->create_chunk("global_chunk");
     viewport * vp = wind.vid_context()->insert_viewport("main_view",fvec4(0.0f,0.0f,1.0f,1.0f));
-
+	
+	tf.m_position = fvec3(0,0,-50);
 	vp->camera = create_camera(
 		chnk,
 		"main_cam",
+		&tf,
+		true,
 		60.0f,
 		uivec2(800,600),
 		fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
-	
+
+    nsentity * dirl = create_dir_light(
+        chnk,
+        "dirlight",
+		&tf,
+		true,
+        0.8f,
+        0.0f,
+        fvec3(1.0f,1.0f,1.0f),
+        true,
+        1.0f,
+        4);
+
+	tf.m_position = fvec3(0,0,-2);
 	nsentity * first_tile = create_tile(
 		plg,
 		chnk,
-		"grass_tile1",
+        "grass_tile",
+        &tf,
+		true,
 		nse.import_dir() + "diffuseGrass.png",
 		nse.import_dir() + "normalGrass.png",
 		fvec4(1,0,0,1),
@@ -129,15 +148,43 @@ int main()
 		false
 		);
 
-    nsentity * dirl = create_dir_light(
-		chnk,
-		"dirlight",
-		0.8f,
-		0.2f,
-		fvec3(1.0f,1.0f,1.0f),
-		true,
-		0.5f,
-		2);
+    nsentity * tile = create_tile(
+        plg,
+        chnk,
+        "brick_tile",
+        &tf,
+        true,
+        nse.import_dir() + "diffuseBrick.png",
+        nse.import_dir() + "normalBrick.png",
+        fvec4(1,0,0,1),
+        4.0f,
+        0.5f,
+        fvec3(1,0,0),
+        false
+        );
+
+    for (int i = 0; i < 20; ++i)
+    {
+        for (int j = 0; j < 20; ++j)
+        {
+            tf.m_position = fvec3(2*i*X_GRID,j*Y_GRID,0);
+            if (j % 2)
+                tf.m_position.x += X_GRID;
+
+            nsentity * tile = create_tile(
+                plg,
+                chnk,
+                "brick_tile" + std::to_string(i) + "_" + std::to_string(j),
+                &tf,
+                true,
+                "brick_tile",
+                false
+                );
+
+            //first_tile->get<nstform_comp>()->add_child(tile->get<nstform_comp>(),true);
+        }
+    }
+
 
 	
 	nse.start_registered_systems();
@@ -147,16 +194,7 @@ int main()
 		nse.update();
 		wind.render();
 		poll_input_events();
-        if (val)
-        {
-            nsgl_framebuffer * fb = wind.vid_context()->render_target(ACCUM_TARGET);
-            nsgl_framebuffer::attachment * att = fb->att(nsgl_framebuffer::att_color);
-            //att->m_texture->video_update()
-            nse.core()->save(att->m_texture, "coolio/foolio/");
-        }
 	}
-
-
 	nse.stop_registered_systems();
 
 

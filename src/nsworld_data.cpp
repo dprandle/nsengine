@@ -15,7 +15,7 @@ nstform_ent_chunk::~nstform_ent_chunk()
 
 nsentity * nstform_ent_chunk::create_entity(
 	const nsstring & name,
-	const tform_info & tf_info,
+	tform_info * tf_info,
 	bool tform_is_world_space)
 {
 	dprint("Creating entity " + name + " in chunk " + m_name);
@@ -77,7 +77,7 @@ void nstform_ent_chunk::_on_ent_rename(const uivec2 & ids)
 
 nstform_comp * nstform_ent_chunk::add_entity(
 	nsentity * ent,
-	const tform_info & tf_info,
+	tform_info * tf_info,
 	bool tform_is_world_space)
 {
 	auto ret = m_owned_ents.emplace(ent->id(), ent);
@@ -89,9 +89,17 @@ nstform_comp * nstform_ent_chunk::add_entity(
 	// If there is no tranform component, then make one otherwise cancel adding and return nullptr
 	if (tf_comp == nullptr)
 	{
-        dprint("Entity " + ent->name() + " is being added to chunk " + m_name + " with " + tf_info.to_string());
 		tf_comp = ent->create<nstform_comp>();
 		tf_comp->m_owning_chunk = this;
+		if (tf_info != nullptr)
+		{
+			dprint("Entity " + ent->name() + " is being added to chunk " + m_name + " with " + tf_info->to_string());
+			tf_comp->set_tf_info(*tf_info, tform_is_world_space);				
+		}
+		else
+		{
+			dprint("Entity " + ent->name() + " is being added to chunk " + m_name + " with null tf_info");
+		}
 	}
 	else
 	{
@@ -100,8 +108,6 @@ nstform_comp * nstform_ent_chunk::add_entity(
 		return nullptr;
 	}
 
-	tf_comp->set_tf_info(tf_info, tform_is_world_space);
-	
 	_add_all_comp_entries(ent);
 	sig_connect(ent->component_added, nstform_ent_chunk::_on_comp_add);
 	sig_connect(ent->component_removed, nstform_ent_chunk::_on_comp_remove);
@@ -295,6 +301,7 @@ nstform_ent_chunk * nsworld_data::create_chunk(const nsstring & name)
 		delete nc;
 		return nullptr;
 	}
+	emit_sig chunk_added(nc);
 	return nc;
 }
 
@@ -323,7 +330,16 @@ void nsworld_data::save_chunk_to_prefab(nsprefab * pf)
 	
 int nsworld_data::destroy_chunk(const nsstring & name)
 {
-	
+	auto iter = m_chunks.find(hash_id(name));
+	if (iter != m_chunks.end())
+	{
+		nstform_ent_chunk * chnk = iter->second;
+		iter = m_chunks.erase(iter);
+		emit_sig chunk_removed(chnk);
+		delete chnk;
+		return 1;
+	}
+	return 0;
 }
 
 nstform_ent_chunk * nsworld_data::chunk(const nsstring & name)

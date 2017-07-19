@@ -136,6 +136,7 @@ uivec3_vector nsanim_comp::resources()
 void nsanim_comp::set_current_animation(const nsstring & pAnimationName)
 {
 	m_current_anim = pAnimationName;
+	post_update(true);
 }
 
 void nsanim_comp::set_animate(bool pAnimate)

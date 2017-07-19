@@ -22,6 +22,7 @@
 #include <opengl/nsgl_shader.h>
 #include <opengl/nsgl_vao.h>
 
+#include <component/nssprite_comp.h>
 #include <system/nsselection_system.h>
 #include <nsworld_data.h>
 #include <asset/nsmaterial.h>
@@ -56,6 +57,8 @@ render_shaders::render_shaders() :
 	light_stencil(nullptr),
 	shadow_cube(nullptr),
 	shadow_2d(nullptr),
+	shadow_cube_instanced(nullptr),
+	shadow_2d_instanced(nullptr),
 	frag_sort(nullptr),
 	deflt_particle(nullptr),
 	sel_shader(nullptr)
@@ -74,6 +77,8 @@ bool render_shaders::error() const
 		light_stencil->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		shadow_cube->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		shadow_2d->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		shadow_cube_instanced->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
+		shadow_2d_instanced->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		deflt_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
 		deflt_instanced_translucent->video_obj<nsgl_shader_obj>()->gl_shdr->error_state != nsgl_shader::error_none ||
@@ -96,6 +101,8 @@ bool render_shaders::valid() const
 		light_stencil != nullptr &&
 		shadow_cube != nullptr &&
 		shadow_2d != nullptr &&
+		shadow_cube_instanced != nullptr &&
+		shadow_2d_instanced != nullptr &&
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 		deflt_translucent != nullptr &&
 		deflt_instanced_translucent != nullptr &&
@@ -398,17 +405,17 @@ void gl_ctxt::destroy_render_target(const nsstring & name)
 void gl_ctxt::create_default_render_passes()
 {
 	// setup gbuffer geometry stage
-	gbuffer_single_draw_render_pass * gbuf_single_draw_pass = new gbuffer_single_draw_render_pass;
-	gbuf_single_draw_pass->rq = queue(SCENE_OPAQUE_QUEUE);
-	gbuf_single_draw_pass->ren_target = render_target(GBUFFER_TARGET);
-	gbuf_single_draw_pass->gl_state.depth_test = true;
-	gbuf_single_draw_pass->gl_state.depth_write = true;
-	gbuf_single_draw_pass->gl_state.culling = true;
-	gbuf_single_draw_pass->gl_state.cull_face = GL_BACK;
-	gbuf_single_draw_pass->gl_state.blending = false;
-	gbuf_single_draw_pass->gl_state.stencil_test = false;
-	gbuf_single_draw_pass->driver_ctxt = this;
-	gbuf_single_draw_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+	gbuffer_render_pass * gbuf_pass = new gbuffer_render_pass;
+	gbuf_pass->rq = queue(SCENE_OPAQUE_QUEUE);
+	gbuf_pass->ren_target = render_target(GBUFFER_TARGET);
+	gbuf_pass->gl_state.depth_test = true;
+	gbuf_pass->gl_state.depth_write = true;
+	gbuf_pass->gl_state.culling = true;
+	gbuf_pass->gl_state.cull_face = GL_BACK;
+	gbuf_pass->gl_state.blending = false;
+	gbuf_pass->gl_state.stencil_test = false;
+	gbuf_pass->driver_ctxt = this;
+	gbuf_pass->gl_state.clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
 	oit_render_pass * oit_pass = new oit_render_pass;
@@ -572,7 +579,7 @@ void gl_ctxt::create_default_render_passes()
 	final_pass->gl_state.cull_face = GL_BACK;
 	final_pass->driver_ctxt = this;
 
-	render_passes.push_back(gbuf_single_draw_pass);
+	render_passes.push_back(gbuf_pass);
 #ifdef ORDER_INDEPENDENT_TRANSLUCENCY
     render_passes.push_back(oit_pass);
 #endif
@@ -702,6 +709,12 @@ void gl_ctxt::_add_instanced_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 				dc->instanced_dci.tform_id_buffer = (*iter)->video_obj<nsgl_tform_comp_obj>()->gl_tform_id_buffer;
 				dc->instanced_dci.transform_count = (*iter)->visible_count;
 
+				auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
+				dc->mat_index = inserted.first->second;
+				if (inserted.second)
+					++top_mat_id;
+
+
 				if (mat->alpha_blend())
 				{
 					dc->transparent_picking = rComp->transparent_picking;
@@ -711,10 +724,6 @@ void gl_ctxt::_add_instanced_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 				{
 					chunk_dcq->push_back(dc);
 				}
-
-				auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
-				if (inserted.second)
-					++top_mat_id;
 			}
 			++iter;
 		}
@@ -1085,6 +1094,7 @@ void gl_ctxt::bind_gbuffer_textures(nsgl_framebuffer * fb)
 void gl_ctxt::render_geometry_dc(geometry_draw_call * idc, nsgl_shader * bound_shader)
 {
 	nsgl_submesh_obj * so = idc->submesh->video_obj<nsgl_submesh_obj>();
+	
 	so->gl_vao->bind();
 	if (!idc->instanced)
 	{
@@ -1344,6 +1354,7 @@ void gl_ctxt::_add_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 			if (terComp != nullptr)
 				terh = terComp->height_bounds();
 			
+			
 			all_single_draw_calls.resize(all_single_draw_calls.size()+1);
 			geometry_draw_call * dc = &all_single_draw_calls[all_single_draw_calls.size()-1];
 			dc->submesh = mSMesh;
@@ -1352,11 +1363,15 @@ void gl_ctxt::_add_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 			dc->chunk_id = (*iter)->chunk_id();
 			dc->casts_shadows = rComp->cast_shadow();
 			dc->transparent_picking = false;
-			dc->mat_index = top_mat_id;
 			dc->mat = mat;
 			dc->shdr = shader;
 			dc->single_dci.entity_id = (*iter)->id();
 			dc->single_dci.transform = tComp->world_tf();
+
+			auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
+			dc->mat_index = inserted.first->second;
+			if (inserted.second)
+				++top_mat_id;
 
 			if (mat->alpha_blend())
 			{
@@ -1367,10 +1382,6 @@ void gl_ctxt::_add_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 			{
 				chunk_dcq->push_back(dc);
 			}
-
-			auto inserted = mat_shader_ids.emplace(mat, top_mat_id);
-			if (inserted.second)
-				++top_mat_id;
  		}
 		
 		++iter;
@@ -1479,8 +1490,10 @@ void nsgl_driver::init()
 	rshaders.dir_light = cplg->load<nsshader>(nsstring(DIR_LIGHT_SHADER) + shext, true);
 	rshaders.point_light = cplg->load<nsshader>(nsstring(POINT_LIGHT_SHADER) + shext, true);
 	rshaders.spot_light = cplg->load<nsshader>(nsstring(SPOT_LIGHT_SHADER) + shext, true);
-	rshaders.shadow_cube = cplg->load<nsshader>(nsstring(POINT_SHADOWMAP_SHADER) + shext, true);
-	rshaders.shadow_2d = cplg->load<nsshader>(nsstring(SPOT_SHADOWMAP_SHADER) + shext, true);
+	rshaders.shadow_cube = cplg->load<nsshader>(nsstring(SHADOW_CUBE_SHADER) + shext, true);
+	rshaders.shadow_2d = cplg->load<nsshader>(nsstring(SHADOW_2D_SHADER) + shext, true);
+	rshaders.shadow_cube_instanced = cplg->load<nsshader>(nsstring(SHADOW_CUBE_INSTANCED_SHADER) + shext, true);
+	rshaders.shadow_2d_instanced = cplg->load<nsshader>(nsstring(SHADOW_2D_INSTANCED_SHADER) + shext, true);
 	rshaders.sel_shader = cplg->load<nsshader>(nsstring(SELECTION_SHADER) + shext, true);
 	rshaders.deflt_particle = cplg->load<nsshader>(nsstring(RENDER_PARTICLE_SHADER) + shext, true);
 	cplg->load<nsshader>(nsstring(SKYBOX_SHADER) + shext, true);
@@ -1510,13 +1523,20 @@ void nsgl_driver::init()
     cplg->load<nsmesh>(nsstring(MESH_DIRLIGHT_BOUNDS) + nsstring(DEFAULT_MESH_EXTENSION), true);
     cplg->load<nsmesh>(nsstring(MESH_SKYDOME) + nsstring(DEFAULT_MESH_EXTENSION), true);
 
+	sig_connect(nse.world()->chunk_added, nsgl_driver::on_chunk_added);
+	sig_connect(nse.world()->chunk_removed, nsgl_driver::on_chunk_removed);
+	
 	nsvideo_driver::init();
 }
 
 void nsgl_driver::release()
 {
 	if (!m_initialized)
-		return;	
+		return;
+	
+	sig_disconnect(nse.world()->chunk_added);
+	sig_disconnect(nse.world()->chunk_removed);
+
 	nsvideo_driver::release();
 }
 
@@ -1613,4 +1633,172 @@ int32 get_gl_prim_type(mesh_primitive_type pt)
 	  default:
 		  return -1;
 	}
+}
+
+void nsgl_driver::on_chunk_added(nstform_ent_chunk * chnk)
+{
+	sig_connect(chnk->entity_added, nsgl_driver::on_chunk_ent_added);
+	sig_connect(chnk->entity_removed, nsgl_driver::on_chunk_ent_removed);
+}
+
+void nsgl_driver::on_chunk_removed(nstform_ent_chunk * chnk)
+{
+	sig_disconnect(chnk->entity_added);
+	sig_disconnect(chnk->entity_removed);
+}
+
+void nsgl_driver::on_chunk_ent_added(nsentity* ent)
+{
+	make_instanced_if_possible(ent, nse.world()->chunk(ent->get<nstform_comp>()->chunk_id()));
+	sig_connect(ent->component_added, nsgl_driver::on_chunk_ent_comp_added);
+	sig_connect(ent->component_removed, nsgl_driver::on_chunk_ent_comp_added);
+}
+
+void nsgl_driver::on_chunk_ent_removed(nsentity* ent)
+{
+	sig_disconnect(ent->component_added);
+	sig_disconnect(ent->component_removed);
+	remove_instancing(ent, nse.world()->chunk(ent->get<nstform_comp>()->chunk_id()));
+}
+
+void nsgl_driver::on_chunk_ent_comp_added(nscomponent * comp)
+{
+	nstform_ent_chunk * chnk = nse.world()->chunk(comp->owner()->get<nstform_comp>()->chunk_id());
+	if (comp->type() == type_to_hash(nsrender_comp))
+	{
+		make_instanced_if_possible(comp->owner(), chnk);
+	}
+	if (comp->type() == type_to_hash(nsanim_comp) || comp->type() == type_to_hash(nssprite_sheet_comp))
+	{
+		remove_instancing(comp->owner(), chnk);
+		make_instanced_if_possible(comp->owner(), chnk);
+	}
+	sig_connect(comp->comp_edit, nsgl_driver::on_chunk_ent_comp_edited);
+}
+
+void nsgl_driver::on_chunk_ent_comp_removed(nscomponent * comp)
+{
+	sig_disconnect(comp->comp_edit);
+	nstform_ent_chunk * chnk = nse.world()->chunk(comp->owner()->get<nstform_comp>()->chunk_id());
+	if (comp->type() == type_to_hash(nsrender_comp))
+	{
+		remove_instancing(comp->owner(), chnk);
+	}
+	if (comp->type() == type_to_hash(nsanim_comp) || comp->type() == type_to_hash(nssprite_sheet_comp))
+	{
+		remove_instancing(comp->owner(), chnk);
+		make_instanced_if_possible(comp->owner(), chnk);
+	}		
+}
+
+void nsgl_driver::on_chunk_ent_comp_edited(nscomponent * comp)
+{
+	nstform_ent_chunk * chnk = nse.world()->chunk(comp->owner()->get<nstform_comp>()->chunk_id());	
+	if (comp->type() == type_to_hash(nsrender_comp))
+	{
+		dprint("Render comp for " + comp->owner()->name() + " changed... analyzing render component");
+		remove_instancing(comp->owner(), chnk);
+		make_instanced_if_possible(comp->owner(), chnk);
+	}
+}
+
+void nsgl_driver::remove_instancing(nsentity * ent, nstform_ent_chunk * chnk)
+{
+	nstform_comp * tcomp = ent->get<nstform_comp>();
+	
+	if (tcomp->inst_obj != nullptr)
+	{
+		auto iter = tcomp->inst_obj->shared_geom_tforms.begin();
+		while (iter != tcomp->inst_obj->shared_geom_tforms.end())
+		{
+			if (tcomp == *iter)
+			{
+				iter = (*iter)->inst_obj->shared_geom_tforms.erase(iter);
+				dprint("Making " + ent->name() + " no longer instanced...");
+
+#ifdef NSDEBUG
+				nsstringstream ss;
+				ss << "The chunk now contains the following instanced ents\n";
+				for (uint32 i = 0; i < tcomp->inst_obj->shared_geom_tforms.size(); ++i)
+					ss << tcomp->inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
+				dprint(ss.str());
+#endif
+				tcomp->inst_obj = nullptr;
+
+				// If there is only one entity left -
+				// the auto update code should remove that and delete the obj
+				return;
+			}
+			++iter;
+		}
+	}		
+}
+	
+void nsgl_driver::make_instanced_if_possible(nsentity * ent, nstform_ent_chunk * chnk)
+{
+	nstform_comp * tcomp = ent->get<nstform_comp>();
+	
+	entity_set * ents_with_rcomp = chnk->entities_with_comp<nsrender_comp>();
+	if (ents_with_rcomp == nullptr)
+		return;
+	
+	auto fiter = ents_with_rcomp->begin();
+	while (fiter != ents_with_rcomp->end())
+	{
+		if (instancing_candidate(ent, *fiter))
+		{
+			nstform_comp * ent_tcomp = (*fiter)->get<nstform_comp>();
+
+			if (ent_tcomp->inst_obj != nullptr)
+			{
+				tcomp->inst_obj = ent_tcomp->inst_obj;
+				tcomp->inst_obj->shared_geom_tforms.push_back(tcomp);
+				tcomp->inst_obj->needs_update = true;
+			}
+			else
+			{
+				tform_per_scene_info * psi = new tform_per_scene_info;
+				psi->video_context_init();
+				nse.video_driver()->current_context()->instance_objs.push_back(psi);
+				tcomp->inst_obj = psi;
+				ent_tcomp->inst_obj = psi;
+				psi->shared_geom_tforms.push_back(ent_tcomp);
+				psi->shared_geom_tforms.push_back(tcomp);
+				psi->needs_update = true;
+			}
+#ifdef NSDEBUG
+			nsstringstream ss;
+			ss << "Making " + ent->name() + " instanced along with the following ents: \n";
+			for (uint32 i = 0; i < tcomp->inst_obj->shared_geom_tforms.size()-1; ++i)
+				ss << tcomp->inst_obj->shared_geom_tforms[i]->owner()->name() << "\n";
+			dprint(ss.str());
+#endif
+			return;
+		}
+		++fiter;
+	}
+		
+}
+
+bool instancing_candidate(nsentity * ent_checking, nsentity * checking_against)
+{
+	if (ent_checking == checking_against)
+		return false;
+	
+	nsanim_comp * acomp = ent_checking->get<nsanim_comp>();
+	nssprite_sheet_comp * scomp = ent_checking->get<nssprite_sheet_comp>();
+	nsrender_comp * rcomp = ent_checking->get<nsrender_comp>();	
+
+	nsrender_comp * ent_rcomp = checking_against->get<nsrender_comp>();
+	nsanim_comp * ent_acomp = checking_against->get<nsanim_comp>();
+	nssprite_sheet_comp * ent_scomp = checking_against->get<nssprite_sheet_comp>();
+
+	if (rcomp == nullptr || ent_rcomp == nullptr)
+		return false;
+
+	// The render comps must be equivalent (see operator ==) and the anim/sprite comps must have same address
+	return (ent_rcomp != nullptr &&
+			(*rcomp) == (*ent_rcomp) &&
+			acomp == ent_acomp &&
+			scomp == ent_scomp);
 }

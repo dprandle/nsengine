@@ -41,6 +41,7 @@ nsrender_comp::nsrender_comp(const nsrender_comp & rend_comp):
 void nsrender_comp::clear_mats()
 {
 	m_mats.clear();
+	post_update(true);
 }
 
 bool nsrender_comp::cast_shadow()
@@ -165,6 +166,7 @@ bool nsrender_comp::remove_material(uint32 pSubMeshIndex)
 	if (!has_material(pSubMeshIndex))
 		return false;
 	m_mats.erase(pSubMeshIndex);
+	post_update(true);
 	return true;
 }
 
@@ -183,6 +185,7 @@ bool nsrender_comp::remove_all_materials(const uivec2 & toremove)
 		else
 			++iter;
 	}
+	post_update(ret);
 	return ret;
 }
 
@@ -200,6 +203,7 @@ bool nsrender_comp::replace_material(const uivec2 & oldid, const uivec2 & newid)
 		}
 		++iter;
 	}
+	post_update(ret);
 	return ret;
 }
 
@@ -211,9 +215,11 @@ bool nsrender_comp::set_material(uint32 pSubMeshIndex, const uivec2 & pMatID, bo
 		if (!pReplace)
 			return false;
 		m_mats.at(pSubMeshIndex) = pMatID;
+		post_update(true);
 		return true;
 	}
 	m_mats[pSubMeshIndex] = pMatID;
+	post_update(true);
 	return true;
 }
 
@@ -221,11 +227,13 @@ bool nsrender_comp::set_material(uint32 pSubMeshIndex, const uivec2 & pMatID, bo
 void nsrender_comp::set_cast_shadow(bool pShadow)
 {
 	m_cast_shadow = pShadow;
+	post_update(true);
 }
 
 void nsrender_comp::set_mesh_id(const uivec2 & pMeshID)
 {
 	m_mesh_id = pMeshID;
+	post_update(true);
 }
 
 bool nsrender_comp::operator==(const nsrender_comp & rhs_)

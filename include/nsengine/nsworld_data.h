@@ -1,7 +1,7 @@
 #ifndef NSWORLD_DATA_H
 #define NSWORLD_DATA_H
 
-#include <component/nstform_comp.h>
+//#include <component/nstform_comp.h>
 #include <nsentity.h>
 
 struct entities_removed
@@ -39,7 +39,7 @@ class nstform_ent_chunk
 	 */
 	nsentity * create_entity(
 		const nsstring & name,
-		const tform_info & tf_info = tform_info(),
+		tform_info * tf_info = nullptr,
 		bool tform_is_world_space = true);
 	
 
@@ -62,7 +62,7 @@ class nstform_ent_chunk
 	 */
 	nstform_comp * add_entity(
 		nsentity * ent,
-		const tform_info & tf_info = tform_info(),
+		tform_info * tf_info = nullptr,
 		bool tform_is_world_space = true);
 
 	/*
@@ -140,8 +140,11 @@ class nstform_ent_chunk
 
 	void _remove_all_comp_entries(nsentity * ent);
 	void _add_all_comp_entries(nsentity * ent);
+
 	void _on_comp_remove(nscomponent * comp_t);
 	void _on_comp_add(nscomponent * comp_t);
+	void _on_comp_edit(nscomponent * comp_t);
+	
 	void _on_ent_rename(const uivec2 & ids);
 
 	nsstring m_name;
@@ -183,6 +186,9 @@ class nsworld_data
 	int destroy_chunk(const nsstring & name);
 
 	void release() {}
+
+	ns::signal<nstform_ent_chunk*> chunk_added;
+	ns::signal<nstform_ent_chunk*> chunk_removed;	
 
   private:
 

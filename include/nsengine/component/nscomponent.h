@@ -55,6 +55,8 @@ class nscomponent
 
 	nscomponent & operator=(nscomponent_inst rhs_);
 
+	ns::signal<nscomponent*> comp_edit;
+
   protected:
 	nsentity * m_owner;
 	uint32 m_hashed_type;

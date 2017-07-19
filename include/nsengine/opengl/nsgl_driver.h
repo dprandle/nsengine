@@ -16,9 +16,9 @@
 #define OPENGL
 
 // Default shaders
-#define GBUFFER_SHADER "gbuffer_single"
-#define GBUFFER_WF_SHADER "gbuffer_single_wireframe"
-#define GBUFFER_TRANS_SHADER "gbuffer_single_translucent"
+#define GBUFFER_SHADER "gbuffer"
+#define GBUFFER_WF_SHADER "gbuffer_wireframe"
+#define GBUFFER_TRANS_SHADER "gbuffer_translucent"
 #define GBUFFER_INSTANCED_SHADER "gbuffer_instanced"
 #define GBUFFER_INSTANCED_WF_SHADER "gbuffer_instanced_wireframe"
 #define GBUFFER_INSTANCED_TRANS_SHADER "gbuffer_instanced_translucent"
@@ -29,9 +29,10 @@
 #define DIR_LIGHT_SHADER "directionlight"
 #define FRAGMENT_SORT_SHADER "fragment_sort"
 #define POINT_LIGHT_SHADER "pointlight"
-#define POINT_SHADOWMAP_SHADER "pointshadowmap"
-#define SPOT_SHADOWMAP_SHADER "spotshadowmap"
-#define DIR_SHADOWMAP_SHADER "dirshadowmap"
+#define SHADOW_CUBE_SHADER "shadow_cube"
+#define SHADOW_2D_SHADER "shadow_2d"
+#define SHADOW_CUBE_INSTANCED_SHADER "shadow_cube_instanced"
+#define SHADOW_2D_INSTANCED_SHADER "shadow_2d_instanced"
 #define SELECTION_SHADER "selectionsolid"
 #define SKYBOX_SHADER "skybox"
 #define UI_SHADER "render_ui"
@@ -89,6 +90,7 @@
 
 class nsmaterial;
 class nstform_ent_chunk;
+class nscomponent;
 
 struct nsgl_framebuffer;
 struct nsgl_buffer;
@@ -115,6 +117,8 @@ struct render_shaders
 	nsshader * light_stencil;
 	nsshader * shadow_cube;
 	nsshader * shadow_2d;
+	nsshader * shadow_cube_instanced;
+	nsshader * shadow_2d_instanced;
 	nsshader * frag_sort;
 	nsshader * deflt_particle;
 	nsshader * sel_shader;
@@ -283,8 +287,12 @@ struct gl_ctxt : public vid_ctxt
 	std::vector<ui_draw_call> all_ui_draw_calls;
 };
 
+bool instancing_candidate(nsentity * ent_checking, nsentity * checking_against);
+
 class nsgl_driver : public nsvideo_driver
 {
+	SLOT_OBJECT
+	
   public:
 	enum render_pass_t
 	{
@@ -324,6 +332,24 @@ class nsgl_driver : public nsvideo_driver
 	render_shaders rshaders;
 	
   private:
+
+	void remove_instancing(nsentity * ent, nstform_ent_chunk * chnk);
+	
+	void make_instanced_if_possible(nsentity * ent, nstform_ent_chunk * chnk);
+
+	void on_chunk_added(nstform_ent_chunk * chnk);
+
+	void on_chunk_removed(nstform_ent_chunk * chnk);
+
+	void on_chunk_ent_added(nsentity*);
+
+	void on_chunk_ent_removed(nsentity*);
+
+	void on_chunk_ent_comp_added(nscomponent * comp);
+
+	void on_chunk_ent_comp_removed(nscomponent * comp);
+
+	void on_chunk_ent_comp_edited(nscomponent * comp);
 	
 	nsmaterial * m_default_mat;
 };
