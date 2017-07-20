@@ -10,6 +10,10 @@ nstform_ent_chunk::nstform_ent_chunk(const nsstring & name):
 	m_plug_id(0)
 {}
 
+nstform_ent_chunk::nstform_ent_chunk(const nstform_ent_chunk & copy)
+{
+}
+
 nstform_ent_chunk::~nstform_ent_chunk()
 {}
 
@@ -49,9 +53,9 @@ void nstform_ent_chunk::set_process_flag_bits(uint32 flags)
 	m_process_flag |= flags;
 }
 
-nsentity * nstform_ent_chunk::add_prefab(nsprefab * prefab)
+void nstform_ent_chunk::add_prefab(nsprefab * prefab)
 {
-	
+	prefab->create_references(this);
 }
 
 void nstform_ent_chunk::_on_ent_rename(const uivec2 & ids)
@@ -124,7 +128,7 @@ nsentity * nstform_ent_chunk::find_entity(uint32 id) const
 	return nullptr;
 }
 
-entities_removed nstform_ent_chunk::remove(nsentity * ent, bool remove_children)
+entities_removed nstform_ent_chunk::remove_entity(nsentity * ent, bool remove_children)
 {
 	entities_removed ret;
 	ret.root = nullptr;
@@ -147,7 +151,7 @@ entities_removed nstform_ent_chunk::remove(nsentity * ent, bool remove_children)
 	{
 		while (tf_comp->child_count() > 0)
 		{
-			entities_removed rem_ents = remove(tf_comp->child(0)->owner(),true); // append the removed child, if it was removed
+			entities_removed rem_ents = remove_entity(tf_comp->child(0)->owner(),true); // append the removed child, if it was removed
 			if (rem_ents.root != nullptr)
 				ret.children.push_back(rem_ents.root);
 			
@@ -183,7 +187,7 @@ entities_removed nstform_ent_chunk::remove(nsentity * ent, bool remove_children)
 
 uint32 nstform_ent_chunk::destroy(nsentity * ent, bool destroy_children)
 {
-	entities_removed rem = remove(ent, destroy_children);
+	entities_removed rem = remove_entity(ent, destroy_children);
 	uint32 cnt = 0;
 
 	// Destroy the main entity being passed in if it was successfully removed from chunk
@@ -252,19 +256,19 @@ entity_set * nstform_ent_chunk::all_entities()
 }
 
 // This adds the component from the comp by type list in the scene
-void nstform_ent_chunk::_on_comp_add(nscomponent * comp_t)
+void nstform_ent_chunk::_on_comp_add(nsentity * ent, nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
-	fiter.first->second.emplace(comp_t->owner());
-	dprint("Added component " + hash_to_guid(comp_t->type()) + " to " + comp_t->owner()->name() + " in chunk " + m_name);
+	fiter.first->second.emplace(ent);
+	dprint("Added component " + hash_to_guid(comp_t->type()) + " to " + ent->name() + " in chunk " + m_name);
 }
 
 // This removes the component from the comp by type list in the scene
-void nstform_ent_chunk::_on_comp_remove(nscomponent * comp_t)
+void nstform_ent_chunk::_on_comp_remove(nsentity * ent, nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.find(comp_t->type());
-	fiter->second.erase(comp_t->owner());
-	dprint("Removed component " + hash_to_guid(comp_t->type()) + " from " + comp_t->owner()->name() + " in chunk " + m_name);
+	fiter->second.erase(ent);
+	dprint("Removed component " + hash_to_guid(comp_t->type()) + " from " + ent->name() + " in chunk " + m_name);
 }
 
 void nstform_ent_chunk::_remove_all_comp_entries(nsentity * ent)
@@ -274,7 +278,7 @@ void nstform_ent_chunk::_remove_all_comp_entries(nsentity * ent)
 	auto iter = comps.begin();
 	while (iter != comps.end())
 	{
-		_on_comp_remove(ent->get(*iter));
+		_on_comp_remove(ent, ent->get(*iter));
 		++iter;
 	}
 }
@@ -286,7 +290,7 @@ void nstform_ent_chunk::_add_all_comp_entries(nsentity * ent)
 	auto iter = comps.begin();
 	while (iter != comps.end())
 	{
-		_on_comp_add(ent->get(*iter));
+		_on_comp_add(ent, ent->get(*iter));
 		++iter;
 	}
 }
@@ -314,12 +318,7 @@ nstform_ent_chunk * nsworld_data::create_chunk_from_prefab(nsprefab * pf, const 
 	nstform_ent_chunk * chnk = create_chunk(name);
 	if (chnk == nullptr)
 		return nullptr;
-	nsentity * pfroot = chnk->add_prefab(pf);
-	if (pfroot == nullptr)
-	{
-		destroy_chunk(name);
-		return nullptr;
-	}
+	chnk->add_prefab(pf);
 	return chnk;
 }
 

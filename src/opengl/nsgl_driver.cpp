@@ -658,7 +658,7 @@ void gl_ctxt::_add_instanced_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 			rComp = (*iter)->shared_geom_tforms[0]->owner()->get<nsrender_comp>();
 			animComp = (*iter)->shared_geom_tforms[0]->owner()->get<nsanim_comp>();
 			currentMesh = get_asset<nsmesh>(rComp->mesh_id());
-
+			
 			if (currentMesh == nullptr)
 			{
 				++iter;
@@ -697,7 +697,7 @@ void gl_ctxt::_add_instanced_draw_calls_from_chunk(nstform_ent_chunk * chunk)
 				dc->submesh = mSMesh;
 				dc->anim_transforms = fTForms;
 				dc->height_minmax = terh;
-				dc->chunk_id = rComp->owner()->chunk_id();
+				dc->chunk_id = (*iter)->shared_geom_tforms[0]->chunk_id();
 				dc->casts_shadows = rComp->cast_shadow();
 				dc->transparent_picking = false;
 				dc->mat_index = top_mat_id;
@@ -1661,44 +1661,44 @@ void nsgl_driver::on_chunk_ent_removed(nsentity* ent)
 	remove_instancing(ent, nse.world()->chunk(ent->get<nstform_comp>()->chunk_id()));
 }
 
-void nsgl_driver::on_chunk_ent_comp_added(nscomponent * comp)
+void nsgl_driver::on_chunk_ent_comp_added(nsentity * ent, nscomponent * comp)
 {
-	nstform_ent_chunk * chnk = nse.world()->chunk(comp->owner()->get<nstform_comp>()->chunk_id());
+	nstform_ent_chunk * chnk = nse.world()->chunk(ent->get<nstform_comp>()->chunk_id());
 	if (comp->type() == type_to_hash(nsrender_comp))
 	{
-		make_instanced_if_possible(comp->owner(), chnk);
+		make_instanced_if_possible(ent, chnk);
 	}
 	if (comp->type() == type_to_hash(nsanim_comp) || comp->type() == type_to_hash(nssprite_sheet_comp))
 	{
-		remove_instancing(comp->owner(), chnk);
-		make_instanced_if_possible(comp->owner(), chnk);
+		remove_instancing(ent, chnk);
+		make_instanced_if_possible(ent, chnk);
 	}
-	sig_connect(comp->comp_edit, nsgl_driver::on_chunk_ent_comp_edited);
+	sig_connect(ent->component_edited, nsgl_driver::on_chunk_ent_comp_edited);
 }
 
-void nsgl_driver::on_chunk_ent_comp_removed(nscomponent * comp)
+void nsgl_driver::on_chunk_ent_comp_removed(nsentity * ent, nscomponent * comp)
 {
-	sig_disconnect(comp->comp_edit);
-	nstform_ent_chunk * chnk = nse.world()->chunk(comp->owner()->get<nstform_comp>()->chunk_id());
+	sig_disconnect(ent->component_edited);
+	nstform_ent_chunk * chnk = nse.world()->chunk(ent->get<nstform_comp>()->chunk_id());
 	if (comp->type() == type_to_hash(nsrender_comp))
 	{
-		remove_instancing(comp->owner(), chnk);
+		remove_instancing(ent, chnk);
 	}
 	if (comp->type() == type_to_hash(nsanim_comp) || comp->type() == type_to_hash(nssprite_sheet_comp))
 	{
-		remove_instancing(comp->owner(), chnk);
-		make_instanced_if_possible(comp->owner(), chnk);
+		remove_instancing(ent, chnk);
+		make_instanced_if_possible(ent, chnk);
 	}		
 }
 
-void nsgl_driver::on_chunk_ent_comp_edited(nscomponent * comp)
+void nsgl_driver::on_chunk_ent_comp_edited(nsentity * ent, nscomponent * comp)
 {
-	nstform_ent_chunk * chnk = nse.world()->chunk(comp->owner()->get<nstform_comp>()->chunk_id());	
+	nstform_ent_chunk * chnk = nse.world()->chunk(ent->get<nstform_comp>()->chunk_id());
 	if (comp->type() == type_to_hash(nsrender_comp))
 	{
-		dprint("Render comp for " + comp->owner()->name() + " changed... analyzing render component");
-		remove_instancing(comp->owner(), chnk);
-		make_instanced_if_possible(comp->owner(), chnk);
+		dprint("Render comp for " + ent->name() + " changed... analyzing render component");
+		remove_instancing(ent, chnk);
+		make_instanced_if_possible(ent, chnk);
 	}
 }
 

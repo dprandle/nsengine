@@ -922,10 +922,7 @@ nsplugin::res_info::res_info(
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	fvec4 m_col,
 	float s_pwr,
 	float s_int32,
@@ -933,15 +930,12 @@ nsentity * create_tile(
 	bool collides,
 	tile_t type)
 {
-	return create_tile(assets, chnk, name,tf_info, tform_is_world_space, "","",m_col,s_pwr,s_int32,s_col,collides,type);
+	return create_tile(assets, name, "","",m_col,s_pwr,s_int32,s_col,collides,type);
 }
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const nsstring & difftex,
 	const nsstring & normtex,
 	fvec4 m_col,
@@ -986,20 +980,17 @@ nsentity * create_tile(
 			mat->set_alpha_blend(true);
 		}
 	}
-	return create_tile(assets, chnk, name, tf_info, tform_is_world_space, mat, collides, type);
+	return create_tile(assets, name, mat, collides, type);
 }
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	nsmaterial * mat,
 	bool collides,
 	tile_t type)
 {
-	nsentity * ent = ent = chnk->create_entity(name, tf_info, tform_is_world_space);
+	nsentity * ent = ent = new nsentity(name);
 	
 	if (ent == nullptr)
 		return nullptr;
@@ -1007,12 +998,6 @@ nsentity * create_tile(
 	nsrender_comp * rc = ent->create<nsrender_comp>();
 	nssel_comp * sc = ent->create<nssel_comp>();
 	nstile_comp * tc = ent->create<nstile_comp>();
-	if (rc == nullptr || sc == nullptr || tc == nullptr)
-	{
-		chnk->destroy(ent, true);
-		return nullptr;
-	}
-
 	nsmesh * msh = nullptr;
 	if (type == tile_full)
 		msh = nse.core()->get<nsmesh>(MESH_FULL_TILE);
@@ -1034,41 +1019,32 @@ nsentity * create_tile(
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const nsstring & matname,
 	bool collides,
 	tile_t type)
 {
-	return create_tile(assets, chnk, name, tf_info, tform_is_world_space, assets->get<nsmaterial>(matname), collides, type);
+	return create_tile(assets, name, assets->get<nsmaterial>(matname), collides, type);
 }
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	uint32 matid,
 	bool collides,
 	tile_t type)
 {
-	return create_tile(assets, chnk, name, tf_info, tform_is_world_space, assets->get<nsmaterial>(matid), collides, type);
+	return create_tile(assets, name, assets->get<nsmaterial>(matid), collides, type);
 }
 
 nsentity * create_skydome(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	nsstring cubemap_relative_fname,
 	const nsstring & image_ext,
 	const nsstring & tex_subdir)
 {
-	nsentity * skybox = chnk->create_entity(name, tf_info, tform_is_world_space);
+	nsentity * skybox = new nsentity(name);
 	
 	nstexture * sky_box = assets->manager<nstex_manager>()->load_cubemap(cubemap_relative_fname, image_ext);
 	sky_box->set_subdir(tex_subdir);
@@ -1088,17 +1064,14 @@ nsentity * create_skydome(
 
 nsentity * create_terrain(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name, 
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float hmin, 
 	float hmax, 
 	const nsstring & hmfile, 
 	const nsstring & dmfile, 
 	const nsstring & nmfile)
 {
-	nsentity * terr = chnk->create_entity(name, tf_info, tform_is_world_space);
+	nsentity * terr = new nsentity(name);
 
 	if (terr == nullptr)
 		return nullptr;
@@ -1110,11 +1083,6 @@ nsentity * create_terrain(
 	rc->set_mesh_id(nse.core()->get<nsmesh>(MESH_TERRAIN)->full_id());
 	
 	nsmaterial * termat = assets->create<nsmaterial>(name);
-	if (termat == nullptr)
-	{
-		chnk->destroy(terr, false);
-		return nullptr;
-	}
 	termat->enable_culling(false);
 	rc->set_material(0, termat->full_id(), true);
 
@@ -1124,7 +1092,7 @@ nsentity * create_terrain(
 	if (hm == nullptr)
 	{
 		assets->destroy(termat);
-		chnk->destroy(terr, true);
+		delete terr;
 		return nullptr;
 	}
 
@@ -1136,7 +1104,7 @@ nsentity * create_terrain(
 		{
 			assets->destroy(hm);
 			assets->destroy(termat);
-			chnk->destroy(terr, true);
+			delete terr;
 			return nullptr;
 		}
 	}
@@ -1149,7 +1117,7 @@ nsentity * create_terrain(
 			assets->destroy(dm);
 			assets->destroy(hm);
 			assets->destroy(termat);
-			chnk->destroy(terr, true);
+			delete terr;
 			return nullptr;
 		}
 	}
@@ -1159,17 +1127,13 @@ nsentity * create_terrain(
 		termat->add_tex_map(nsmaterial::diffuse, dm->full_id());
 	if (nm != nullptr)
 		termat->add_tex_map(nsmaterial::normal, nm->full_id());
-
 	
 	return terr;
 }
 
 nsentity * create_sprite(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & sprite_name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const nsstring & tex_filename,
 	bool match_tex_dims,
 	bool alpha_enabled)
@@ -1186,9 +1150,8 @@ nsentity * create_sprite(
 
 	mat->set_alpha_blend(alpha_enabled);
 	
-	nsentity * bgent = chnk->create_entity(sprite_name, tf_info, tform_is_world_space);
+	nsentity * bgent = new nsentity(sprite_name);
 	nsrender_comp * rc = bgent->create<nsrender_comp>();
-	
 	bgent->create<nssel_comp>();
 	rc->set_mesh_id(plane->full_id());
 	rc->set_material(0, mat->full_id());
@@ -1197,21 +1160,16 @@ nsentity * create_sprite(
 }
 
 nsentity * create_camera(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float fov,
 	const uivec2 & screenDim,
 	const fvec2 & clipnf)
 {
-	nsentity * cament = chnk->create_entity(name, tf_info, tform_is_world_space);
+	nsentity * cament = new nsentity(name);
 	if (cament == nullptr)
 		return nullptr;
-	nscam_comp * camc = cament->create<nscam_comp>();
-	if (camc == nullptr)
-		return nullptr;
 
+	nscam_comp * camc = cament->create<nscam_comp>();
 	camc->set_fov(fov);
 	camc->resize_screen(screenDim.w, screenDim.h);
 	camc->set_persp_nf_clip(clipnf);
@@ -1221,22 +1179,16 @@ nsentity * create_camera(
 
 
 nsentity * create_camera(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const fvec2 & lrclip,
 	const fvec2 & tbclip,
 	const fvec2 & nfclip)
 {
-	nsentity * cament = chnk->create_entity(name, tf_info, tform_is_world_space);
+	nsentity * cament = new nsentity(name);
 	if (cament == nullptr)
 		return nullptr;
 
 	nscam_comp * camc = cament->create<nscam_comp>();
-	if (camc == nullptr)
-		return nullptr;
-
 	camc->set_ortho_lr_clip(lrclip);
 	camc->set_ortho_tb_clip(tbclip);
 	camc->set_ortho_nf_clip(nfclip);
@@ -1245,10 +1197,7 @@ nsentity * create_camera(
 }
 
 nsentity * create_dir_light(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float diffuse,
 	float ambient,
 	const fvec3 & color,
@@ -1259,15 +1208,12 @@ nsentity * create_dir_light(
 	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_DIRLIGHT_BOUNDS);
 	if (bounds == nullptr)
 		return nullptr;
-	nsentity * lt = chnk->create_entity(name, tf_info, tform_is_world_space);
+
+	nsentity * lt = new nsentity(name);
 	if (lt == nullptr)
 		return nullptr;
+	
 	nslight_comp * lc = lt->create<nslight_comp>();
-	if (lc == nullptr)
-	{
-		chnk->destroy(lt, true);
-		return nullptr;
-	}
 	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
 	lc->set_type(nslight_comp::l_dir);
 	lc->set_angle(30.0f);
@@ -1281,10 +1227,7 @@ nsentity * create_dir_light(
 }
 
 nsentity * create_point_light(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float diffuse,
 	float ambient,
 	float distance,
@@ -1296,15 +1239,12 @@ nsentity * create_point_light(
 	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_POINTLIGHT_BOUNDS);
 	if (bounds == nullptr)
 		return nullptr;
-	nsentity * lt = chnk->create_entity(name, tf_info, tform_is_world_space);
+
+	nsentity * lt = new nsentity(name);
 	if (lt == nullptr)
 		return nullptr;
+
 	nslight_comp * lc = lt->create<nslight_comp>();
-	if (lc == nullptr)
-	{
-		chnk->destroy(lt, true);
-		return nullptr;
-	}
 	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
 	lc->set_type(nslight_comp::l_point);
 	lc->set_intensity(diffuse, ambient);
@@ -1322,10 +1262,7 @@ nsentity * create_point_light(
 }
 
 nsentity * create_spot_light(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float diffuse,
 	float ambient,
 	float distance,
@@ -1338,15 +1275,12 @@ nsentity * create_spot_light(
 	nsmesh * bounds = nse.core()->get<nsmesh>(MESH_SPOTLIGHT_BOUNDS);
 	if (bounds == nullptr)
 		return nullptr;
-	nsentity * lt = chnk->create_entity(name, tf_info, tform_is_world_space);
+
+	nsentity * lt = new nsentity(name);
 	if (lt == nullptr)
 		return nullptr;
+
 	nslight_comp * lc = lt->create<nslight_comp>();
-	if (lc == nullptr)
-	{
-		chnk->destroy(lt, true);
-		return nullptr;
-	}
 	lc->set_mesh_id(bounds->plugin_id(), bounds->id());
 	lc->set_type(nslight_comp::l_spot);
 	lc->set_intensity(diffuse, ambient);
@@ -1369,16 +1303,13 @@ nsentity * create_spot_light(
 
 nsentity * create_entity_from_model(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & entname,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	nsstring fname,
 	const nsstring & model_name,
 	bool occupy_comp,
 	bool flipuv)
 {
-	nsentity * ent = chnk->create_entity(entname, tf_info, tform_is_world_space);
+	nsentity * ent = new nsentity(entname);
 	nsrender_comp * renderComp = ent->create<nsrender_comp>();
 
 	nsstring sceneName = model_name;

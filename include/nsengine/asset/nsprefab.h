@@ -66,7 +66,7 @@ class nsprefab : public nsasset
 
   private:
 
-	void on_ref_ent_comp_removed(nscomponent * comp);
+	void on_ref_ent_comp_removed(nsentity * ent, nscomponent * comp);
 
 	// This is entity -> set<comp_hashed_type>. It is a set of component types that should
 	// be copied from the prefab entity whenever references are made for that entity

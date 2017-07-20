@@ -31,12 +31,16 @@ class nscomponent;
 class nsentity
 {
 public:
+	SLOT_OBJECT
+	
 	typedef std::unordered_map<uint32, nscomponent*> comp_set;
 
 	template <class PUPer>
 	friend void pup(PUPer & p, nsentity & ent);
 
 	nsentity();
+
+	nsentity(const nsstring & name);
 
 	nsentity(const nsentity & copy);
 	
@@ -155,10 +159,14 @@ public:
 	bool update_posted(const nsstring & compType);
 
 	ns::signal<uivec2> ent_rename;
-	ns::signal<nscomponent*> component_added;
-	ns::signal<nscomponent*> component_removed;
+	
+	ns::signal<nsentity *, nscomponent*> component_added;
+	ns::signal<nsentity *, nscomponent*> component_removed;
+	ns::signal<nsentity *, nscomponent*> component_edited;
 	
 private:
+
+	void on_comp_edit(nscomponent * comp);
 	
 	nsstring m_name;
 	uint32 m_id;

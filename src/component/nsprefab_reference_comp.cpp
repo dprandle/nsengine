@@ -3,6 +3,7 @@
 #include <asset/nsprefab.h>
 #include <nsengine.h>
 #include <nsworld_data.h>
+#include <component/nsrect_tform_comp.h>
 
 nsprefab_reference_comp::nsprefab_reference_comp():
 	nscomponent(type_to_hash(nsprefab_reference_comp)),
@@ -22,11 +23,18 @@ nsprefab_reference_comp::~nsprefab_reference_comp()
 
 void nsprefab_reference_comp::init()
 {
+	m_restricted_types.insert(type_to_hash(nstform_comp));
+	m_restricted_types.insert(type_to_hash(nsrect_tform_comp));
 }
 
 void nsprefab_reference_comp::release()
 {
 		
+}
+
+void nsprefab_reference_comp::on_source_comp_edit(nscomponent * comp)
+{
+	emit_sig comp_edit(comp);
 }
 
 void nsprefab_reference_comp::finalize()

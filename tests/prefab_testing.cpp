@@ -38,7 +38,7 @@
 #include <nsrouter.h>
 #include <nstile_grid.h>
 #include <nsworld_data.h>
-
+#include <asset/nsprefab.h>
 #include <iostream>
 #include <AL/al.h>
 
@@ -106,39 +106,63 @@ int main()
 
 	nsplugin * plg = nsep.create<nsplugin>("testing_stuff");
 	plg->enable(true);
+
+	nsprefab * pf = plg->create<nsprefab>("simple_map");
+	nstform_ent_chunk * chnk = pf->prefab_entities();
+    nstform_ent_chunk * chnk2 = nse.world()->create_chunk("global_chunk");
 	
-    nstform_ent_chunk * chnk = nse.world()->create_chunk("global_chunk");
     viewport * vp = wind.vid_context()->insert_viewport("main_view",fvec4(0.0f,0.0f,1.0f,1.0f));
 	
 	tf.m_position = fvec3(0,0,-50);
+
 	vp->camera = create_camera(
-		chnk,
 		"main_cam",
-		&tf,
-		true,
 		60.0f,
 		uivec2(800,600),
 		fvec2(DEFAULT_Z_NEAR, DEFAULT_Z_FAR));
+	chnk->add_entity(vp->camera, &tf, true);
+	
 
     nsentity * dirl = create_dir_light(
-        chnk,
         "dirlight",
-		&tf,
-		true,
         0.8f,
         0.0f,
         fvec3(1.0f,1.0f,1.0f),
         true,
         1.0f,
         4);
+	chnk->add_entity(dirl, &tf, true);
+	
+	tf.m_position.set(2.0f,2.0f,-2.0f);	
+	nsentity * spot_l = create_spot_light(
+        "spot_light",
+        0.8f,
+        0.0f,
+		20.0f,
+		5.0f,
+        fvec3(1.0f,1.0f,1.0f),
+        true,
+        1.0f,
+        4);
+	chnk->add_entity(spot_l, &tf, true);
+	
+	tf.m_position.set(6.0f,6.0f,-2.0f);	
+	nsentity * point_l = create_point_light(
+        "point_light",
+        0.8f,
+        0.0f,
+		40.0f,
+        fvec3(1.0f,1.0f,1.0f),
+        true,
+        1.0f,
+        4);
+
+    chnk->add_entity(point_l, &tf, true)->add_child(spot_l->get<nstform_comp>(), true);
 
 	tf.m_position = fvec3(0,0,-2);
 	nsentity * first_tile = create_tile(
 		plg,
-		chnk,
         "grass_tile",
-        &tf,
-		true,
 		nse.import_dir() + "diffuseGrass.png",
 		nse.import_dir() + "normalGrass.png",
 		fvec4(1,0,0,1),
@@ -148,12 +172,11 @@ int main()
 		false
 		);
 
+	chnk->add_entity(first_tile, &tf, true);
+
     nsentity * tile = create_tile(
         plg,
-        chnk,
         "brick_tile",
-        &tf,
-        true,
         nse.import_dir() + "diffuseBrick.png",
         nse.import_dir() + "normalBrick.png",
         fvec4(1,0,0,1),
@@ -163,9 +186,11 @@ int main()
         false
         );
 
-    for (int i = 0; i < 20; ++i)
+    chnk->add_entity(tile, &tf, true)->add_child(point_l->get<nstform_comp>(), true);;
+
+    for (int i = 2; i < 8; ++i)
     {
-        for (int j = 0; j < 20; ++j)
+        for (int j = 2; j < 8; ++j)
         {
             tf.m_position = fvec3(2*i*X_GRID,j*Y_GRID,0);
             if (j % 2)
@@ -173,20 +198,16 @@ int main()
 
             nsentity * tile = create_tile(
                 plg,
-                chnk,
                 "brick_tile" + std::to_string(i) + "_" + std::to_string(j),
-                &tf,
-                true,
                 "brick_tile",
                 false
                 );
 
-            //first_tile->get<nstform_comp>()->add_child(tile->get<nstform_comp>(),true);
+			chnk->add_entity(tile, &tf, true);
         }
     }
 
-
-	
+	chnk2->add_prefab(pf);
 	nse.start_registered_systems();
 	setup_input_map(plg);	
 	while (wind.is_open())

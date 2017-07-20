@@ -22,9 +22,13 @@ nsentity::nsentity() :
 	m_name(),
 	m_id(0),
 	m_components()
-{
-	m_components.clear();
-}
+{}
+
+nsentity::nsentity(const nsstring & name):
+	m_name(name),
+	m_id(hash_id(name)),
+	m_components()
+{}
 
 nsentity::nsentity(const nsentity & copy):
 	m_name(copy.m_name),
@@ -88,7 +92,8 @@ bool nsentity::add(nscomponent * cmp)
 	if (ret.second)
 	{
 		cmp->set_owner(this);
-		emit_sig component_added(cmp);
+		emit_sig component_added(this, cmp);
+		sig_connect(cmp->comp_edit, nsentity::on_comp_edit);
 	}
 	return ret.second;
 }
@@ -268,8 +273,9 @@ nscomponent * nsentity::remove(uint32 type_id)
 		comp_t->release();
 		m_components.erase(iter);
 		dprint("nsentity::remove - removing \"" + nse.guid(type_id) + "\" from entity " + m_name + "\"");
-		emit_sig component_removed(comp_t);
+		emit_sig component_removed(this, comp_t);
 		comp_t->set_owner(nullptr);
+		sig_disconnect(comp_t->comp_edit);
 	}
 	else
 	{
@@ -278,6 +284,11 @@ nscomponent * nsentity::remove(uint32 type_id)
 
 	return comp_t;
 	
+}
+
+void nsentity::on_comp_edit(nscomponent * comp)
+{
+	emit_sig component_edited(this, comp);
 }
 
 nscomponent * nsentity::remove(const nsstring & guid)

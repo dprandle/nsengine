@@ -328,10 +328,7 @@ enum tile_t
 
 nsentity * create_entity_from_model(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & entname,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	nsstring fname,
 	const nsstring & meshname = "",
 	bool occupy_comp = true, 
@@ -339,38 +336,26 @@ nsentity * create_entity_from_model(
 
 nsentity * create_sprite(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & sprite_name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const nsstring & tex_filename,
 	bool match_tex_dims,
 	bool alpha_enabled);
 
 nsentity * create_camera(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float fov,
 	const uivec2 & screenDim,
 	const fvec2 & clipnf);
 
 nsentity * create_camera(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const fvec2 & lrclip, 
 	const fvec2 & tbclip, 
 	const fvec2 & nfclip);
 
 nsentity * create_terrain(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float hmin,
 	float hmax, 
 	const nsstring & hmfile, 
@@ -378,10 +363,7 @@ nsentity * create_terrain(
 	const nsstring & nmfile = "");
 
 nsentity * create_dir_light(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float diffuse,
 	float ambient,
 	const fvec3 & color = fvec3(1, 1, 1),
@@ -390,10 +372,7 @@ nsentity * create_dir_light(
 	int32 shadowsamples = 2);
 
 nsentity * create_point_light(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float diffuse,
 	float ambient,
 	float distance,
@@ -403,10 +382,7 @@ nsentity * create_point_light(
 	int32 shadowsamples = 2);
 
 nsentity * create_spot_light(
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	float diffuse,
 	float ambient,
 	float distance,
@@ -418,10 +394,7 @@ nsentity * create_spot_light(
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	fvec4 m_col,
 	float s_pwr,
 	float s_int32,
@@ -431,10 +404,7 @@ nsentity * create_tile(
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const nsstring & difftex,
 	const nsstring & normtex,
 	fvec4 m_col,
@@ -446,40 +416,28 @@ nsentity * create_tile(
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	nsmaterial * mat,
 	bool collides,
 	tile_t type=tile_full);
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	const nsstring & matname,
 	bool collides, 
 	tile_t type = tile_full);
 
 nsentity * create_tile(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	uint32 matid,
 	bool collides, 
 	tile_t type = tile_full);
 
 nsentity * create_skydome(
 	nsplugin * assets,
-	nstform_ent_chunk * chnk,
 	const nsstring & name,
-	tform_info * tf_info,
-	bool tform_is_world_space,
 	nsstring cubemap_relative_fname,
 	const nsstring & image_ext,
 	const nsstring & tex_subdir="");

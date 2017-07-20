@@ -443,7 +443,7 @@ void nsselection_system::delete_selection()
     auto iter = copy.begin();
     while (iter != copy.end())
 	{
-		m_active_chunk->remove(*iter, false);
+		m_active_chunk->remove_entity(*iter, false);
 		++iter;
 	}
 }

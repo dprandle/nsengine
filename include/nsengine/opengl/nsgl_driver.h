@@ -345,11 +345,11 @@ class nsgl_driver : public nsvideo_driver
 
 	void on_chunk_ent_removed(nsentity*);
 
-	void on_chunk_ent_comp_added(nscomponent * comp);
+	void on_chunk_ent_comp_added(nsentity * ent, nscomponent * comp);
 
-	void on_chunk_ent_comp_removed(nscomponent * comp);
+	void on_chunk_ent_comp_removed(nsentity * ent, nscomponent * comp);
 
-	void on_chunk_ent_comp_edited(nscomponent * comp);
+	void on_chunk_ent_comp_edited(nsentity * ent, nscomponent * comp);
 	
 	nsmaterial * m_default_mat;
 };

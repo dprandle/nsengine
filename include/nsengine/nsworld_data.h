@@ -29,6 +29,8 @@ class nstform_ent_chunk
 
 	nstform_ent_chunk(const nsstring & name);
 
+	nstform_ent_chunk(const nstform_ent_chunk & copy);
+
 	~nstform_ent_chunk();
 
 	/*
@@ -70,7 +72,7 @@ class nstform_ent_chunk
 	  In fact, that's all this function does. The prefab knows how to correctly create all the necessary
 	  entities to represent the prefab.
 	 */
-	nsentity * add_prefab(nsprefab * prefab);
+	void add_prefab(nsprefab * prefab);
 	
 	/*
 	  Find the entity with id in owned ents and return it
@@ -87,7 +89,7 @@ class nstform_ent_chunk
 	  signals from the entities. After this call the chunk will no longer own the returned entities
 	  given in entities_removed, which means the caller will now own them.
 	 */
-	entities_removed remove(nsentity * ent, bool remove_children);
+	entities_removed remove_entity(nsentity * ent, bool remove_children);
 
 	/*
 	  Removes the entity (and children if bool is true) from the chunk using the remove function call,
@@ -141,9 +143,9 @@ class nstform_ent_chunk
 	void _remove_all_comp_entries(nsentity * ent);
 	void _add_all_comp_entries(nsentity * ent);
 
-	void _on_comp_remove(nscomponent * comp_t);
-	void _on_comp_add(nscomponent * comp_t);
-	void _on_comp_edit(nscomponent * comp_t);
+	void _on_comp_remove(nsentity * ent, nscomponent * comp_t);
+	void _on_comp_add(nsentity * ent, nscomponent * comp_t);
+	void _on_comp_edit(nsentity * ent, nscomponent * comp_t);
 	
 	void _on_ent_rename(const uivec2 & ids);
 

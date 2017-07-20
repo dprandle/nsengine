@@ -77,8 +77,8 @@ public:
 	void _add_all_comp_entries(nsentity * ent);
 	
 	// private slots
-	void _on_comp_add(nscomponent * comp_t);
-	void _on_comp_remove(nscomponent * comp_t);
+	void _on_comp_add(nsentity * ent, nscomponent * comp_t);
+	void _on_comp_remove(nsentity * ent, nscomponent * comp_t);
 	std::vector<uivec2> m_unloaded_ents;
 	std::unordered_map<uint32, entity_set> m_ents_by_comp;
 	

@@ -235,7 +235,7 @@ void nsui_canvas_comp::_remove_all_comp_entries(nsentity * ent)
 	auto iter = comps.begin();
 	while (iter != comps.end())
 	{
-		_on_comp_remove(ent->get(*iter));
+		_on_comp_remove(ent, ent->get(*iter));
 		++iter;
 	}
 }
@@ -247,7 +247,7 @@ void nsui_canvas_comp::_add_all_comp_entries(nsentity * ent)
 	auto iter = comps.begin();
 	while (iter != comps.end())
 	{
-		_on_comp_add(ent->get(*iter));
+		_on_comp_add(ent, ent->get(*iter));
 		++iter;
 	}
 }
@@ -309,20 +309,20 @@ void nsui_canvas_comp::_populate_pup_vec()
 	// }
 }
 
-void nsui_canvas_comp::_on_comp_add(nscomponent * comp_t)
+void nsui_canvas_comp::_on_comp_add(nsentity * ent, nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.emplace(comp_t->type(), std::unordered_set<nsentity*>());
-	fiter.first->second.emplace(comp_t->owner());
-	dprint("nsui_canvas_comp::_on_comp_add Added component " + hash_to_guid(comp_t->type()) + " to entity " + comp_t->owner()->name() + " in canvas " + m_owner->name());
+	fiter.first->second.emplace(ent);
+	dprint("nsui_canvas_comp::_on_comp_add Added component " + hash_to_guid(comp_t->type()) + " to entity " + ent->name() + " in canvas " + m_owner->name());
 }
 
-void nsui_canvas_comp::_on_comp_remove(nscomponent * comp_t)
+void nsui_canvas_comp::_on_comp_remove(nsentity * ent, nscomponent * comp_t)
 {
 	auto fiter = m_ents_by_comp.find(comp_t->type());
 	if (fiter != m_ents_by_comp.end())
 	{
-		fiter->second.erase(comp_t->owner());
-		dprint("nsui_canvas_comp::_on_comp_remove Removed component " + hash_to_guid(comp_t->type()) + " from entity " + comp_t->owner()->name() + " in canvas " + m_owner->name());
+		fiter->second.erase(ent);
+		dprint("nsui_canvas_comp::_on_comp_remove Removed component " + hash_to_guid(comp_t->type()) + " from entity " + ent->name() + " in canvas " + m_owner->name());
 	}
 	else
 	{
