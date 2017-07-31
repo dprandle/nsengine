@@ -22,6 +22,7 @@
 #include <asset/nsmesh.h>
 #include <opengl/nsgl_buffer.h>
 #include <nsworld_data.h>
+#include <nstform_ent_chunk.h>
 
 tform_info::tform_info(
 	uint32 parent,
@@ -494,6 +495,11 @@ void nstform_comp::set_tf_info(const tform_info & tfi_, bool preserve_world_tfor
 	set_scaling(tfi_.m_scaling);
 	set_hidden_state(tfi_.m_hidden_state);
 	post_update(true);
+}
+
+bool nstform_comp::copyable()
+{
+	return false;
 }
 
 bool nstform_comp::render_update() const

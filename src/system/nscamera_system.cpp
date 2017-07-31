@@ -21,6 +21,7 @@ This file contains all of the neccessary definitions for the NSCamController cla
 #include <nsworld_data.h>
 #include <component/nscam_comp.h>
 #include <nstimer.h>
+#include <nstform_ent_chunk.h>
 
 nscamera_system::nscamera_system() :
 	nssystem(type_to_hash(nscamera_system)),

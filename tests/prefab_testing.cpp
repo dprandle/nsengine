@@ -41,6 +41,7 @@
 #include <asset/nsprefab.h>
 #include <iostream>
 #include <AL/al.h>
+#include <nstform_ent_chunk.h>
 
 
 void setup_input_map(nsplugin * plg);
@@ -208,6 +209,10 @@ int main()
     }
 
 	chnk2->add_prefab(pf);
+
+	nsprefab * pf2 = plg->create<nsprefab>("second_pf");
+	nse.world()->save_chunk_to_prefab(chnk2, pf2);
+	
 	nse.start_registered_systems();
 	setup_input_map(plg);	
 	while (wind.is_open())

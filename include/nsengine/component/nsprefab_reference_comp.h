@@ -17,6 +17,8 @@ class nsprefab_reference_comp : public nscomponent
 
 	nsprefab_reference_comp(const nsprefab_reference_comp & copy);
 
+	nsprefab_reference_comp & operator=(nsprefab_reference_comp rhs);
+
 	~nsprefab_reference_comp();
 
 	template<class T>
@@ -78,12 +80,19 @@ class nsprefab_reference_comp : public nscomponent
 
   private:
 
+	void link_to_source();
+
+	void unlink_from_source();
+
+
 	/*
 	  This slot will emit the comp edit signal with the sources component as the arguement.
 	  This will cause the entitiy to emit a component_edited signal for the sources edited component,
 	  allowing the vid driver to re-analyse the instancing situation
 	*/
-	void on_source_comp_edit(nscomponent * comp);
+	void on_source_comp_add(nsentity * source, nscomponent * comp);
+	void on_source_comp_remove(nsentity * source, nscomponent * comp);
+	void on_source_comp_edit(nsentity * source, nscomponent * comp);
 
 	std::set<uint32> m_restricted_types;
 

@@ -16,6 +16,7 @@
 #include <nsengine.h>
 #include <asset/nsplugin_manager.h>
 #include <component/nsprefab_reference_comp.h>
+#include <nstform_ent_chunk.h>
 #include <nsworld_data.h>
 
 nsentity::nsentity() :
@@ -147,6 +148,9 @@ nscomponent * nsentity::create(uint32 type_id)
 nscomponent * nsentity::create(nscomponent * to_copy)
 {
 	if (to_copy == nullptr)
+		return nullptr;
+
+	if (!to_copy->copyable())
 		return nullptr;
 	
 	nscomponent * comp_t = nse.factory<nscomp_factory>(to_copy->type())->create(to_copy);

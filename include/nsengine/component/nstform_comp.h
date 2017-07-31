@@ -213,6 +213,8 @@ class nstform_comp : public nscomponent
 
 	void cache_tform();
 
+	bool copyable();
+
 	fmat4 & cached_tform();
 
   private:

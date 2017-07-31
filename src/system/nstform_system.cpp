@@ -25,6 +25,7 @@
 #include <asset/nsshader.h>
 #include <opengl/nsgl_framebuffer.h>
 #include <system/nsui_system.h>
+#include <nstform_ent_chunk.h>
 
 #include <component/nsanim_comp.h>
 #include <component/nsterrain_comp.h>

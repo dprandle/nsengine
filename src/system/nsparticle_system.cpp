@@ -31,6 +31,7 @@ This file contains all of the neccessary definitions for the nsparticle_system c
 #include <opengl/nsgl_xfb.h>
 #include <component/nscam_comp.h>
 #include <asset/nsplugin_manager.h>
+#include <nstform_ent_chunk.h>
 
 nsparticle_system::nsparticle_system() :
 	nssystem(type_to_hash(nsparticle_system))

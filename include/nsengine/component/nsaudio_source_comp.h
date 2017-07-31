@@ -58,6 +58,8 @@ class nsaudio_source_comp : public nscomponent
 
 	nsaudio_source_comp(const nsaudio_source_comp & copy);
 
+	nsaudio_source_comp & operator=(nsaudio_source_comp rhs_);
+
 	~nsaudio_source_comp();
 
 	void init();

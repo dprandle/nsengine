@@ -1,6 +1,7 @@
 #include <asset/nsprefab.h>
 #include <nsworld_data.h>
 #include <component/nsprefab_reference_comp.h>
+#include <nstform_ent_chunk.h>
 
 nsprefab::nsprefab():
 	nsasset(type_to_hash(nsprefab)),
@@ -70,14 +71,8 @@ void nsprefab::create_references(nstform_ent_chunk * chunk)
 		// removed signal
 		nsentity * ref_ent = new nsentity((*iter)->name() + "_" + std::to_string(ref_id));
 
-		if (!copy.m_children.empty())
-		{
-			for (uint32 i = 0; i < our_tform->child_count(); ++i)
-			{
-				uint32 child_ent_id = our_tform->child(i)->owner()->id();
-				need_to_add_children[ref_ent->id()].push_back(child_ent_id);
-			}
-		}
+		for (uint32 i = 0; i < copy.m_children.size(); ++i)
+			need_to_add_children[ref_ent->id()].push_back(copy.m_children[i]);
 
 		// Now zero out the parent and children for now - we will have to re-iterate and assign
 		// the parent/children with the tform comp of all the new entities.
@@ -88,6 +83,8 @@ void nsprefab::create_references(nstform_ent_chunk * chunk)
 		ref_comp->prefab_id = full_id();
 		ref_comp->ref_id = ref_id;
 		ref_comp->ent_id = (*iter)->id();
+
+		ref_comp->link_to_source();
 
 		// Create an entry in our reference map, or increase
 		reference_entry refent;

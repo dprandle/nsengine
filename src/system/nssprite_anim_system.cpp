@@ -7,6 +7,7 @@
 #include <asset/nstexture.h>
 #include <nsentity.h>
 #include <nsworld_data.h>
+#include <nstform_ent_chunk.h>
 
 nssprite_anim_system::nssprite_anim_system():
 	nssystem(type_to_hash(nssprite_anim_system))

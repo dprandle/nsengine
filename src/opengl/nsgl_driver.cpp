@@ -43,6 +43,7 @@
 #include <nsengine.h>
 #include <system/nsui_system.h>
 #include <nstimer.h>
+#include <nstform_ent_chunk.h>
 
 render_shaders::render_shaders() :
 	deflt(nullptr),

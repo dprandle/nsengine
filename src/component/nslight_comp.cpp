@@ -329,11 +329,14 @@ nslight_comp & nslight_comp::operator=(nslight_comp rhs_)
 	std::swap(m_light_type,rhs_.m_light_type);
 	std::swap(m_att_comp,rhs_.m_att_comp);
 	std::swap(m_intensity_comp,rhs_.m_intensity_comp);
+	std::swap(m_shadow_darkness,rhs_.m_shadow_darkness);
 	std::swap(m_angle,rhs_.m_angle);
 	std::swap(m_color,rhs_.m_color);
-	std::swap(m_bounding_mesh_id,rhs_.m_bounding_mesh_id);
+	std::swap(m_cast_shadows,rhs_.m_cast_shadows);
 	std::swap(m_shadow_samples,rhs_.m_shadow_samples);
-	std::swap(m_shadow_darkness,rhs_.m_shadow_darkness);
+	std::swap(m_bounding_mesh_id,rhs_.m_bounding_mesh_id);
+	std::swap(m_scaling,rhs_.m_scaling);
+	std::swap(m_shadow_clip,rhs_.m_shadow_clip);
 	post_update(true);
 	return (*this);
 }

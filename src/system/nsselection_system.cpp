@@ -39,6 +39,7 @@ This file contains all of the neccessary definitions for the NSControllerSystem 
 #include <component/nsrender_comp.h>
 #include <component/nsphysic_comp.h>
 #include <nsworld_data.h>
+#include <nstform_ent_chunk.h>
 
 nsselection_system::nsselection_system() :
     nssystem(type_to_hash(nsselection_system)),

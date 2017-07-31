@@ -23,6 +23,7 @@ This file contains all of the neccessary definitions for the nsanim_system class
 #include <asset/nsasset_manager.h>
 #include <component/nsrender_comp.h>
 #include <nsworld_data.h>
+#include <nstform_ent_chunk.h>
 
 nsanim_system::nsanim_system() :
 	nssystem(type_to_hash(nsanim_system))

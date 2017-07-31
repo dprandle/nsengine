@@ -27,6 +27,11 @@ nscomponent::nscomponent(const nscomponent & copy):
 nscomponent::~nscomponent()
 {}
 
+bool nscomponent::copyable()
+{
+	return true;
+}
+
 nsentity * nscomponent::owner()
 {
 	return m_owner;

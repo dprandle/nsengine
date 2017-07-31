@@ -32,9 +32,9 @@ nsoccupy_comp::nsoccupy_comp() :
 nsoccupy_comp::nsoccupy_comp(const nsoccupy_comp & copy):
 	nscomponent(copy),
 	m_spaces(copy.m_spaces),
-	m_draw_enabled(copy.m_draw_enabled),
 	m_mesh_id(copy.m_mesh_id),
-	m_mat_id(copy.m_mat_id)
+	m_mat_id(copy.m_mat_id),
+	m_draw_enabled(copy.m_draw_enabled)
 {}
 
 nsoccupy_comp::~nsoccupy_comp()

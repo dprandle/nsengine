@@ -6,7 +6,7 @@
 #include <asset/nsaudio_clip.h>
 #include <component/nstform_comp.h>
 #include <nsworld_data.h>
-
+#include <nstform_ent_chunk.h>
 
 ALCcontext * alc_context;
 

@@ -272,6 +272,7 @@ nscam_comp & nscam_comp::operator=(nscam_comp rhs_)
 	std::swap(m_lr_clip, rhs_.m_lr_clip);
 	std::swap(m_nf_clip, rhs_.m_nf_clip);
 	std::swap(m_proj_mode, rhs_.m_proj_mode);
+	std::swap(m_proj_mat, rhs_.m_proj_mat);
 	std::swap(m_inv_proj_mat, rhs_.m_inv_proj_mat);
 	std::swap(m_proj_cam, rhs_.m_proj_cam);
 	std::swap(m_inv_proj_cam, rhs_.m_inv_proj_cam);

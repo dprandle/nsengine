@@ -57,6 +57,8 @@ class nscomponent
 
 	ns::signal<nscomponent*> comp_edit;
 
+	virtual bool copyable();
+
   protected:
 	nsentity * m_owner;
 	uint32 m_hashed_type;
