@@ -165,7 +165,7 @@ nsrect_tform_comp * nsrect_tform_comp::parent(nsui_canvas_comp * canvas)
 	return nullptr;
 }
 
-per_canvas_info * nsrect_tform_comp::canvas_info(nsui_canvas_comp * canvas)
+rect_tform_info * nsrect_tform_comp::tf_info(nsui_canvas_comp * canvas)
 {
 	auto fiter = m_canvas_settings.find(canvas);
 	if (fiter == m_canvas_settings.end())

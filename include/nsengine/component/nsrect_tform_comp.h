@@ -17,21 +17,25 @@ This file contains all of the neccessary declarations for the nsrect_tform_comp 
 
 class nsui_canvas_comp;
 
-struct per_canvas_info
+struct rect_tform_info
 {
-	per_canvas_info():
+	rect_tform_info():
 		anchor_rect(0.0,0.0,1.0,1.0),
 		pixel_offset_rect(0,0,0,0),
 		angle(0.0f),
 		pivot(0,0),
 		layer(0)
 	{}
-		
+
+	fvec2 scale;
+	fmat3 content_world_tform;	
 	fvec4 anchor_rect;
 	fvec4 pixel_offset_rect;
 	float angle;
 	fvec2 pivot;
 	int32 layer;
+	uint32 m_parent;
+	ui_vector m_children;
 };
 
 class nsrect_tform_comp : public nscomponent
@@ -61,9 +65,9 @@ public:
 
 	void set_parent(nsui_canvas_comp * canvas, nsrect_tform_comp * parent);
 
-	nsrect_tform_comp * parent(nsui_canvas_comp * canvas);
+	nsrect_tform_comp * parent();
 
-	per_canvas_info * canvas_info(nsui_canvas_comp * canvas);
+	rect_tform_info * tf_info();
 
 	const fmat3 & content_transform(nsui_canvas_comp * canvas);
 
@@ -73,26 +77,11 @@ public:
 	
   private:
 	
-	struct per_canvas_settings
-	{
-		per_canvas_settings():
-			pci(),
-			m_parent(nullptr),
-			m_children()
-		{}
-		
-		per_canvas_info pci;
-		fvec2 scale;
-		fmat3 content_world_tform;		
-		nsrect_tform_comp * m_parent;
-		std::vector<nsrect_tform_comp*> m_children;		
-	};
-	
-	std::unordered_map<nsui_canvas_comp *, per_canvas_settings> m_canvas_settings;
+	rect_tform_info pci;
 };
 
 template<class PUPer>
-void pup(PUPer & p, per_canvas_info & pci, const nsstring & var_name)
+void pup(PUPer & p, rect_tform_info & pci, const nsstring & var_name)
 {
 	pup(p, pci.anchor_rect, var_name + ".anchor_rect");
 	pup(p, pci.pixel_offset_rect, var_name + ".pixel_offset_rect");

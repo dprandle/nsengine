@@ -206,8 +206,8 @@ void nsui_system::_sort_ents(nsui_canvas_comp * uicc)
 	{
 		for (uint32 d = 0 ; d < uicc->m_ordered_ents.size() - c - 1; d++)
 		{
-			auto * uic1 = uicc->m_ordered_ents[d]->get<nsrect_tform_comp>()->canvas_info(uicc);
-			auto * uic2 = uicc->m_ordered_ents[d+1]->get<nsrect_tform_comp>()->canvas_info(uicc);
+			auto * uic1 = uicc->m_ordered_ents[d]->get<nsrect_tform_comp>()->tf_info(uicc);
+			auto * uic2 = uicc->m_ordered_ents[d+1]->get<nsrect_tform_comp>()->tf_info(uicc);
 			if (uic1->layer > uic2->layer) /* For decreasing order use < */
 			{
 				nsentity * tmp = uicc->m_ordered_ents[d];

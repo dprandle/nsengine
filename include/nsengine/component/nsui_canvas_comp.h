@@ -84,7 +84,7 @@ public:
 	
 	struct rect_info
 	{
-		per_canvas_info pci;
+		rect_tform_info pci;
 		uivec2 pupped_parent;
 		uivec2 this_ent;
 		std::vector<uivec2> m_pupped_children;
