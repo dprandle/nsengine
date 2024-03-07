@@ -20,7 +20,7 @@ if (UNIX)
   link_libraries(nsmath)
   link_directories(${PROJECT_SOURCE_DIR}/lib/${PLATFORM})
   link_libraries(assimp)
-  link_libraries(debug glfwd)
+  link_libraries(debug glfw)
   link_libraries(optimized glfw)
   link_libraries(sndfile)
   link_libraries(openal)
@@ -37,7 +37,7 @@ elseif (WIN32)
   link_libraries(DbgHelp)
 endif()
 
-link_libraries(debug freetyped)
+link_libraries(debug freetype)
 link_libraries(optimized freetype)
 
 
