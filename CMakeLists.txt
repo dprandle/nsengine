@@ -5,6 +5,8 @@ project(nsengine)
 # Set the source directories
 set(NSENGINE_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
+set(OpenGL_GL_PREFERENCE GLVND)
+
 # Set the include directory
 set(NSENGINE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/nsengine)
 set(ASSIMP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/assimp/include)
